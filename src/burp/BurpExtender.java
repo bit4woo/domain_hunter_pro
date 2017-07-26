@@ -102,7 +102,7 @@ public class BurpExtender implements IBurpExtender, IHttpListener, ITab, IContex
 					}
 					
 					
-					if (domainlike.equals("")){
+					else if (domainlike.equals("")){
 						
 					}
 					else if (key.equals("Host:")&&value.contains(domainlike)){
