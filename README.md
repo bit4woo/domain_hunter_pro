@@ -1,9 +1,9 @@
 **domain_hunter**
 
-A Burp Suite extender that search *sub domains and similar domains* from sitemap
+A Burp Suite extender that search *<u>sub domains and similar domains</u>* from sitemap
 
 
 
 **screenshot**
 
-![screenshot](.\doc\screenshot.png)
+![screenshot](doc/screenshot.png)
