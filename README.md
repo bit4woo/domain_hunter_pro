@@ -6,4 +6,4 @@ A Burp Suite extender that search *<u>sub domains and similar domains</u>* from 
 
 **screenshot**
 
-![screenshot](doc/screenshot.png)
+![screenshot](doc/domain-hunter.png)
