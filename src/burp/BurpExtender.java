@@ -48,7 +48,7 @@ public class BurpExtender implements IBurpExtender, IHttpListener, ITab, IContex
     private IExtensionHelpers helpers;
     
     private PrintWriter stdout;//现在这里定义变量，再在registerExtenderCallbacks函数中实例化，如果都在函数中就只是局部变量，不能在这实例化，因为要用到其他参数。
-    private String ExtenderName = "Domain Hunter v0.1 by bit4";
+    private String ExtenderName = "Domain Hunter v0.2 by bit4";
     private String github = "https://github.com/bit4woo/domain_hunter";
     private Set subdomainofset = new HashSet();
     private Set domainlikeset = new HashSet();
