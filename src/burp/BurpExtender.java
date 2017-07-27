@@ -85,6 +85,8 @@ public class BurpExtender implements IBurpExtender, IHttpListener, ITab, IContex
 		
 	}
 	public void search(String subdomainof, String domainlike){
+			subdomainofset.clear();
+			domainlikeset.clear();
 		   IHttpRequestResponse[] response = callbacks.getSiteMap("http");
 		    //stdout.println(response[1]);
 		    for (IHttpRequestResponse x:response){
