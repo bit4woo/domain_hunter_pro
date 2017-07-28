@@ -1,6 +1,7 @@
 package burp;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -14,11 +15,13 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
 import javax.swing.table.DefaultTableModel;
@@ -37,6 +40,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.PrintWriter;
 import java.net.URI;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 
@@ -44,14 +48,17 @@ import java.net.URLEncoder;
 
 public class BurpExtender implements IBurpExtender, IHttpListener, ITab, IContextMenuFactory
 {
-    private IBurpExtenderCallbacks callbacks;
+    public IBurpExtenderCallbacks callbacks;
     private IExtensionHelpers helpers;
     
     private PrintWriter stdout;//现在这里定义变量，再在registerExtenderCallbacks函数中实例化，如果都在函数中就只是局部变量，不能在这实例化，因为要用到其他参数。
-    private String ExtenderName = "Domain Hunter v0.2 by bit4";
+    private String ExtenderName = "Domain Hunter v0.3 by bit4";
     private String github = "https://github.com/bit4woo/domain_hunter";
     private Set subdomainofset = new HashSet();
     private Set domainlikeset = new HashSet();
+    private Set subdomainofset_spider_all = new HashSet();
+    private Set domainlikeset_spider_all = new HashSet();
+    private Set url_spidered_set = new HashSet();
 	private JPanel contentPane;
 	private JTextField textFieldSubdomains;
 	private JTextField textFieldDomainsLike;
@@ -63,6 +70,7 @@ public class BurpExtender implements IBurpExtender, IHttpListener, ITab, IContex
 	private Component verticalStrut;
 	private JTextArea textArea;
 	private JTextArea textArea_1;
+	private JButton btnNewButton;
     
     @Override
     public void registerExtenderCallbacks(IBurpExtenderCallbacks callbacks)
@@ -84,7 +92,7 @@ public class BurpExtender implements IBurpExtender, IHttpListener, ITab, IContex
 		// TODO Auto-generated method stub
 		
 	}
-	public void search(String subdomainof, String domainlike){
+	public Map search(String subdomainof, String domainlike){
 			subdomainofset.clear();
 			domainlikeset.clear();
 		   IHttpRequestResponse[] response = callbacks.getSiteMap("http");
@@ -113,8 +121,70 @@ public class BurpExtender implements IBurpExtender, IHttpListener, ITab, IContex
 					}
 				}
 		    }
+		    
+		    Map result = new HashMap();
+		    result.put("subdomainofset", subdomainofset);
+		    result.put("domainlikeset", domainlikeset);
+		    return result;
+		    
 	}
  
+	public Map spiderall (String subdomainof, String domainlike) {
+		url_spidered_set.clear();
+	    
+	    int i = 0;
+	    int url_number = 0;
+	    int item_len = 0;
+	    while(i<=10) {
+	    	IHttpRequestResponse[] items = callbacks.getSiteMap("http");
+	    	int len = items.length;
+	    	//items.subList(item_len,len);
+	    	//IHttpRequestResponse[] subitems = Arrays.copyOfRange(items, item_len, len-1);
+	    	
+	    	/*
+	    	try {//验证是否需要从头开始遍历；结果是需要
+	    		stdout.println("10");
+		    	stdout.println(helpers.analyzeRequest(items[10]).getUrl());
+		    	stdout.println("56");
+		    	stdout.println(helpers.analyzeRequest(items[56]).getUrl());
+		    	stdout.println("100");
+		    	stdout.println(helpers.analyzeRequest(items[100]).getUrl());
+	    	}
+	    	catch (Exception e){
+	    		
+	    	}*/
+	    	
+		    for (IHttpRequestResponse x:items){// 新的循环好像不必从头开始？？？
+		    	IRequestInfo  analyzeRequest = helpers.analyzeRequest(x); //前面的操作可能已经修改了请求包，所以做后续的更改前，都需要从新获取。
+				URL url = analyzeRequest.getUrl();
+				String Host = url.getHost();
+				if (Host.endsWith("."+subdomainof)&& !url_spidered_set.contains(url)) {
+					url_spidered_set.add(url);
+					callbacks.includeInScope(url);//if not, will always show confirm message box.
+					callbacks.sendToSpider(url);
+				}
+				try {
+					Thread.sleep(60000);//单位毫秒，
+					search(subdomainof,domainlike);
+					textArea.setText(set2string(subdomainofset));
+					textArea.setText(set2string(domainlikeset));
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				}
+		    
+		    int size = url_spidered_set.size();
+		    if(size==url_number) {
+		    	break; //break while loop,when no new url to spider.
+		    }
+		    url_number = size;
+		    }
+	    return search(subdomainof,domainlike);
+	    //search(subdomainof,domainlike);
+	    }
+	
+	
 	public String set2string(Set set){
 	    Iterator iter = set.iterator();
 	    String result = "";
@@ -164,6 +234,7 @@ public class BurpExtender implements IBurpExtender, IHttpListener, ITab, IContex
 			textFieldDomainsLike.setColumns(20);
 			
 			btnSearch = new JButton("search");
+			btnSearch.setToolTipText("Do a single search from site map");
 			btnSearch.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					String subdomain = textFieldSubdomains.getText();
@@ -177,6 +248,44 @@ public class BurpExtender implements IBurpExtender, IHttpListener, ITab, IContex
 			});
 			panel.add(btnSearch);
 			
+			btnNewButton = new JButton("Spider all & Search");
+			btnNewButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					
+				    SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+				    	//可以在一个类中实现另一个类，直接实现原始类，没有变量处理的困扰；
+				    	//之前的想法是先单独实现一个worker类，在它里面处理各种，就多了一层实现，然后在这里调用，变量调用会是一个大问题。
+				    	//https://stackoverflow.com/questions/19708646/how-to-update-swing-ui-while-actionlistener-is-in-progress
+				        @Override
+				        protected Map doInBackground() throws Exception {                
+							String subdomain = textFieldSubdomains.getText();
+							String domainlike = textFieldDomainsLike.getText();
+							//stdout.println(subdomain);
+							//stdout.println(domainlike);
+							btnNewButton.setEnabled(false);
+							return spiderall(subdomain,domainlike);
+						
+				        }
+				        @Override
+				        protected void done() {
+				            try {
+					        	Map result = get();
+					        	subdomainofset = (Set) result.get("subdomainofset"); //之前的set变成了object
+					        	domainlikeset = (Set) result.get("domainlikeset");
+								textArea.setText(set2string(subdomainofset));
+								textArea_1.setText(set2string(domainlikeset));
+								btnNewButton.setEnabled(true);
+				            } catch (Exception e) {
+				                e.printStackTrace();
+				            }
+				        }
+				    };      
+				    worker.execute();
+				}
+			});
+			btnNewButton.setToolTipText("Spider and search recursively,This may take 10min!!!");
+			panel.add(btnNewButton);
+			
 			splitPane = new JSplitPane();
 			splitPane.setDividerLocation(0.5);
 			contentPane.add(splitPane, BorderLayout.CENTER);
@@ -186,6 +295,22 @@ public class BurpExtender implements IBurpExtender, IHttpListener, ITab, IContex
 			splitPane.setLeftComponent(textArea);
 			
 			textArea_1 = new JTextArea();
+			textArea.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseClicked(MouseEvent arg0) {
+					final JPopupMenu jp = new JPopupMenu();
+			        jp.add("^_^");
+			        textArea.addMouseListener(new MouseAdapter() {
+			            @Override
+			            public void mouseClicked(MouseEvent e) {
+			                if (e.getButton() == MouseEvent.BUTTON3) {
+			                    // 弹出菜单
+			                    jp.show(textArea, e.getX(), e.getY());
+			                }
+			            }
+			        });
+				}
+			});
 			textArea_1.setColumns(30);
 			splitPane.setRightComponent(textArea_1);
 			

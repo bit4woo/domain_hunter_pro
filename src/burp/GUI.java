@@ -6,8 +6,10 @@ import java.awt.EventQueue;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.JLabel;
 import javax.swing.JButton;
 import javax.swing.JTextArea;
@@ -29,6 +31,9 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import javax.swing.JScrollPane;
 
+
+import burp.BurpExtender;
+
 public class GUI extends JFrame {
 	
     private String ExtenderName = "Domain Hunter v0.1 by bit4";
@@ -47,6 +52,7 @@ public class GUI extends JFrame {
 	private Component verticalStrut;
 	private JTextArea textArea;
 	private JTextArea textArea_1;
+	private JButton btnNewButton;
 
 	/**
 	 * Launch the application.
@@ -105,22 +111,57 @@ public class GUI extends JFrame {
 		textFieldDomainsLike.setColumns(20);
 		
 		btnSearch = new JButton("search");
+		btnSearch.setToolTipText("Do a single search from site map");
 		btnSearch.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				String subdomain = lblSubDomainsOf.getText();
 				String domainlike = lblDomainsLike.getText();
-				search(subdomain,domainlike);
-				textArea.setText(subdomainofset);
-				textArea_1.setText(domainlikeset);
+				//search(subdomain,domainlike);
+				//textArea.setText(subdomainofset);
+				//textArea_1.setText(domainlikeset);
 			}
 		});
 		panel.add(btnSearch);
+		
+		btnNewButton = new JButton("Spider all & Search");
+		btnNewButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				String subdomain = lblSubDomainsOf.getText();
+				String domainlike = lblDomainsLike.getText();
+				//spiderall(subdomain,domainlike);
+				//textArea.setText(subdomainofset);
+				//textArea_1.setText(domainlikeset);
+			}
+		});
+		btnNewButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+		    
+			}
+		});
+		btnNewButton.setToolTipText("this may take 10min! spider and search recursively.");
+		panel.add(btnNewButton);
 		
 		splitPane = new JSplitPane();
 		splitPane.setDividerLocation(0.5);
 		contentPane.add(splitPane, BorderLayout.CENTER);
 		
 		textArea = new JTextArea();
+		textArea.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				final JPopupMenu jp = new JPopupMenu();
+		        jp.add("^_^");
+		        textArea.addMouseListener(new MouseAdapter() {
+		            @Override
+		            public void mouseClicked(MouseEvent e) {
+		                if (e.getButton() == MouseEvent.BUTTON3) {
+		                    // µ¯³ö²Ëµ¥
+		                    jp.show(textArea, e.getX(), e.getY());
+		                }
+		            }
+		        });
+			}
+		});
 		textArea.setColumns(30);
 		splitPane.setLeftComponent(textArea);
 		
@@ -133,7 +174,7 @@ public class GUI extends JFrame {
 		flowLayout.setAlignment(FlowLayout.LEFT);
 		contentPane.add(panel_2, BorderLayout.SOUTH);
 		
-		lblNewLabel_2 = new JLabel(extenderName+"    "+github);
+		lblNewLabel_2 = new JLabel("    "+github);
 		lblNewLabel_2.setFont(new Font("ËÎÌå", Font.BOLD, 12));
 		lblNewLabel_2.addMouseListener(new MouseAdapter() {
 			@Override
@@ -146,7 +187,7 @@ public class GUI extends JFrame {
 					}
 				} catch (Exception e2) {
 					// TODO: handle exception
-					BurpExtender.this.callbacks.printError(e2.getMessage());
+					//callbacks.printError(e2.getMessage());
 				}
 				
 			}
