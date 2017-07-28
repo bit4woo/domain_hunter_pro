@@ -135,7 +135,7 @@ public class BurpExtender implements IBurpExtender, IHttpListener, ITab, IContex
 	    int i = 0;
 	    int url_number = 0;
 	    int item_len = 0;
-	    while(i<=10) {
+	    while(i<=2) {
 	    	IHttpRequestResponse[] items = callbacks.getSiteMap("http");
 	    	int len = items.length;
 	    	//items.subList(item_len,len);
@@ -164,10 +164,7 @@ public class BurpExtender implements IBurpExtender, IHttpListener, ITab, IContex
 					callbacks.sendToSpider(url);
 				}
 				try {
-					Thread.sleep(60000);//单位毫秒，
-					search(subdomainof,domainlike);
-					textArea.setText(set2string(subdomainofset));
-					textArea.setText(set2string(domainlikeset));
+					Thread.sleep(5*60000);//单位毫秒，60000毫秒=一分钟
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -248,7 +245,7 @@ public class BurpExtender implements IBurpExtender, IHttpListener, ITab, IContex
 			});
 			panel.add(btnSearch);
 			
-			btnNewButton = new JButton("Spider all & Search");
+			btnNewButton = new JButton("Spider all");
 			btnNewButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					
@@ -283,7 +280,7 @@ public class BurpExtender implements IBurpExtender, IHttpListener, ITab, IContex
 				    worker.execute();
 				}
 			});
-			btnNewButton.setToolTipText("Spider and search recursively,This may take 10min!!!");
+			btnNewButton.setToolTipText("Crawl recursively,This may take 10min!!!");
 			panel.add(btnNewButton);
 			
 			splitPane = new JSplitPane();
