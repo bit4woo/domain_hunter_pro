@@ -52,7 +52,7 @@ public class BurpExtender implements IBurpExtender, IHttpListener, ITab, IContex
     private IExtensionHelpers helpers;
     
     private PrintWriter stdout;//现在这里定义变量，再在registerExtenderCallbacks函数中实例化，如果都在函数中就只是局部变量，不能在这实例化，因为要用到其他参数。
-    private String ExtenderName = "Domain Hunter v0.3 by bit4";
+    private String ExtenderName = "Domain Hunter v0.4 by bit4";
     private String github = "https://github.com/bit4woo/domain_hunter";
     private Set subdomainofset = new HashSet();
     private Set domainlikeset = new HashSet();
@@ -95,30 +95,30 @@ public class BurpExtender implements IBurpExtender, IHttpListener, ITab, IContex
 	public Map search(String subdomainof, String domainlike){
 			subdomainofset.clear();
 			domainlikeset.clear();
-		   IHttpRequestResponse[] response = callbacks.getSiteMap("http");
+		   IHttpRequestResponse[] response = callbacks.getSiteMap(null);
 		    //stdout.println(response[1]);
 		    for (IHttpRequestResponse x:response){
 		    	IRequestInfo  analyzeRequest = helpers.analyzeRequest(x); //前面的操作可能已经修改了请求包，所以做后续的更改前，都需要从新获取。
-				List<String> headers = analyzeRequest.getHeaders();
-				for (String header:headers){
-					String key = header.split(" ")[0];
-					String value = header.split(" ")[1];
-					if (subdomainof.equals("")){
-						
-					}
-					else if (key.equals("Host:")&&value.endsWith("."+subdomainof)){
-						subdomainofset.add(value);
-						//stdout.println(subdomainofset);
-					}
+				URL url = analyzeRequest.getUrl();
+				//stdout.println(url);
+				String Host = url.getHost();
+				//stdout.println(Host);
+
+				if (!subdomainof.contains(".")||subdomainof.endsWith(".")){
+					//如果域名为空，或者（不包含.号，或者点好在末尾的）
+				}
+				else if (Host.endsWith("."+subdomainof)){
+					subdomainofset.add(Host);
+					//stdout.println(subdomainofset);
+				}
+				
+				
+				else if (domainlike.equals("")){
 					
-					
-					else if (domainlike.equals("")){
-						
-					}
-					else if (key.equals("Host:")&&value.contains(domainlike)){
-						domainlikeset.add(value);
-						//stdout.println(domainlikeset);
-					}
+				}
+				else if (Host.contains(domainlike)){
+					domainlikeset.add(Host);
+					//stdout.println(domainlikeset);
 				}
 		    }
 		    
@@ -136,47 +136,45 @@ public class BurpExtender implements IBurpExtender, IHttpListener, ITab, IContex
 	    int url_number = 0;
 	    int item_len = 0;
 	    while(i<=2) {
-	    	IHttpRequestResponse[] items = callbacks.getSiteMap("http");
+	    	IHttpRequestResponse[] items = callbacks.getSiteMap(null); //null to return entire sitemap
 	    	int len = items.length;
-	    	//items.subList(item_len,len);
-	    	//IHttpRequestResponse[] subitems = Arrays.copyOfRange(items, item_len, len-1);
+	    	//stdout.println("item number: "+len);
 	    	
-	    	/*
-	    	try {//验证是否需要从头开始遍历；结果是需要
-	    		stdout.println("10");
-		    	stdout.println(helpers.analyzeRequest(items[10]).getUrl());
-		    	stdout.println("56");
-		    	stdout.println(helpers.analyzeRequest(items[56]).getUrl());
-		    	stdout.println("100");
-		    	stdout.println(helpers.analyzeRequest(items[100]).getUrl());
-	    	}
-	    	catch (Exception e){
-	    		
-	    	}*/
-	    	
-		    for (IHttpRequestResponse x:items){// 新的循环好像不必从头开始？？？
+		    for (IHttpRequestResponse x:items){// 经过验证每次都需要从头开始遍历，按一定offset获取的数据每次都可能不同
 		    	IRequestInfo  analyzeRequest = helpers.analyzeRequest(x); //前面的操作可能已经修改了请求包，所以做后续的更改前，都需要从新获取。
 				URL url = analyzeRequest.getUrl();
 				String Host = url.getHost();
-				if (Host.endsWith("."+subdomainof)&& !url_spidered_set.contains(url)) {
-					url_spidered_set.add(url);
-					callbacks.includeInScope(url);//if not, will always show confirm message box.
-					callbacks.sendToSpider(url);
+				String url_path = url.getPath();
+
+
+				if (Host.endsWith("."+subdomainof) && !url_spidered_set.contains(url)) {					
+					if(!uselessExtension(url_path)) {//exclude useless file extension request.
+						callbacks.includeInScope(url);//if not, will always show confirm message box.
+						callbacks.sendToSpider(url);
+						url_spidered_set.add(url);
+						//stdout.println(url+" has been added to spider");
+					}
 				}
-				try {
-					Thread.sleep(5*60000);//单位毫秒，60000毫秒=一分钟
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				}
+			}
+		    
+			try {
+				Thread.sleep(5*60000);//单位毫秒，60000毫秒=一分钟
+				stdout.println("sleep 1 min");
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				//e.printStackTrace();
+				stdout.print(e);
+			}
 		    
 		    int size = url_spidered_set.size();
 		    if(size==url_number) {
+		    	stdout.println("spider finished");
 		    	break; //break while loop,when no new url to spider.
 		    }
 		    url_number = size;
+	    	i++;
 		    }
+
 	    return search(subdomainof,domainlike);
 	    //search(subdomainof,domainlike);
 	    }
@@ -192,6 +190,20 @@ public class BurpExtender implements IBurpExtender, IHttpListener, ITab, IContex
 	    	result +="\n";
 	    }
 	    return result;
+	}
+	public Boolean uselessExtension(String urlpath) {
+		Set extendset = new HashSet();
+		extendset.add(".gif");
+		extendset.add(".jpg");
+		extendset.add(".png");
+		extendset.add(".css");
+		Iterator iter = extendset.iterator();
+		while (iter.hasNext()) {
+			if(urlpath.endsWith(iter.next().toString())) {//if no next(), this loop will not break out
+				return true;
+			}
+		}
+		return false;
 	}
 		
 	public void CGUI() {
@@ -280,7 +292,7 @@ public class BurpExtender implements IBurpExtender, IHttpListener, ITab, IContex
 				    worker.execute();
 				}
 			});
-			btnNewButton.setToolTipText("Crawl recursively,This may take 10min!!!");
+			btnNewButton.setToolTipText("Spider all subdomains recursively,This may take a long time!!!");
 			panel.add(btnNewButton);
 			
 			splitPane = new JSplitPane();
