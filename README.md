@@ -1,3 +1,7 @@
+**author**
+
+[bit4](https://github.com/bit4woo)
+
 **domain_hunter**
 
 A Burp Suite extender that search *<u>**sub domains and similar domains**</u>* from sitemap. Some times similar domain give you suprise^_^. that's why I care about it.
@@ -21,3 +25,7 @@ A Burp Suite extender that search *<u>**sub domains and similar domains**</u>* f
 **xmind of domain collection**
 
 ![xmind](doc/xmind.png)
+
+**Burp插件微信交流群**：
+
+![wechat_group](doc/wechat_group.jpg)
