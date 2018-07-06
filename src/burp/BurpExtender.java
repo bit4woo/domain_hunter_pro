@@ -1,7 +1,5 @@
 package burp;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -11,25 +9,22 @@ import java.util.Set;
 
 import javax.swing.Box;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JSplitPane;
-import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.EtchedBorder;
-import javax.swing.table.DefaultTableModel;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Desktop;
+import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -41,9 +36,6 @@ import java.awt.event.MouseEvent;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URL;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
-
 
 
 public class BurpExtender implements IBurpExtender, IHttpListener, ITab, IContextMenuFactory
@@ -52,13 +44,12 @@ public class BurpExtender implements IBurpExtender, IHttpListener, ITab, IContex
     private IExtensionHelpers helpers;
     
     private PrintWriter stdout;//现在这里定义变量，再在registerExtenderCallbacks函数中实例化，如果都在函数中就只是局部变量，不能在这实例化，因为要用到其他参数。
-    private String ExtenderName = "Domain Hunter v0.4 by bit4";
+    private String ExtenderName = "Domain Hunter v0.5 by bit4";
     private String github = "https://github.com/bit4woo/domain_hunter";
-    private Set subdomainofset = new HashSet();
-    private Set domainlikeset = new HashSet();
-    private Set subdomainofset_spider_all = new HashSet();
-    private Set domainlikeset_spider_all = new HashSet();
-    private Set url_spidered_set = new HashSet();
+    private Set<String> subdomainofset = new HashSet<String>();
+    private Set<String> domainlikeset = new HashSet<String>();
+    private Set<String> relatedDomainSet = new HashSet<String>();
+    private Set<URL> url_spidered_set = new HashSet<URL>();
 	private JPanel contentPane;
 	private JTextField textFieldSubdomains;
 	private JTextField textFieldDomainsLike;
@@ -71,6 +62,7 @@ public class BurpExtender implements IBurpExtender, IHttpListener, ITab, IContex
 	private JTextArea textArea;
 	private JTextArea textArea_1;
 	private JButton btnNewButton;
+	private JTextArea textArea_2;
     
     @Override
     public void registerExtenderCallbacks(IBurpExtenderCallbacks callbacks)
@@ -95,11 +87,13 @@ public class BurpExtender implements IBurpExtender, IHttpListener, ITab, IContex
 	public Map search(String subdomainof, String domainlike){
 			subdomainofset.clear();
 			domainlikeset.clear();
-		   IHttpRequestResponse[] response = callbacks.getSiteMap(null);
+			relatedDomainSet.clear();
+		   IHttpRequestResponse[] requestResponses = callbacks.getSiteMap(null);
 		    //stdout.println(response[1]);
-		    for (IHttpRequestResponse x:response){
+		    for (IHttpRequestResponse x:requestResponses){
 		    	IRequestInfo  analyzeRequest = helpers.analyzeRequest(x); //前面的操作可能已经修改了请求包，所以做后续的更改前，都需要从新获取。
 				URL url = analyzeRequest.getUrl();
+
 				//stdout.println(url);
 				String Host = url.getHost();
 				//stdout.println(Host);
@@ -110,6 +104,16 @@ public class BurpExtender implements IBurpExtender, IHttpListener, ITab, IContex
 				else if (Host.endsWith("."+subdomainof)){
 					subdomainofset.add(Host);
 					//stdout.println(subdomainofset);
+					
+					//get SANs info to get related domain, only when the [subdomain] is using https.
+					if(url.getProtocol().toLowerCase().equals("https")) {
+						try {
+							relatedDomainSet.addAll(certinfo.getSANs(url.toString()));
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
 				}
 				
 				
@@ -125,6 +129,7 @@ public class BurpExtender implements IBurpExtender, IHttpListener, ITab, IContex
 		    Map result = new HashMap();
 		    result.put("subdomainofset", subdomainofset);
 		    result.put("domainlikeset", domainlikeset);
+		    result.put("relatedDomainSet", relatedDomainSet);
 		    return result;
 		    
 	}
@@ -191,6 +196,7 @@ public class BurpExtender implements IBurpExtender, IHttpListener, ITab, IContex
 	    }
 	    return result;
 	}
+	
 	public Boolean uselessExtension(String urlpath) {
 		Set extendset = new HashSet();
 		extendset.add(".gif");
@@ -207,8 +213,7 @@ public class BurpExtender implements IBurpExtender, IHttpListener, ITab, IContex
 	}
 		
 	public void CGUI() {
-			
-			contentPane = new JPanel();
+			contentPane =  new JPanel();
 			contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 			contentPane.setLayout(new BorderLayout(0, 0));
 	
@@ -246,13 +251,35 @@ public class BurpExtender implements IBurpExtender, IHttpListener, ITab, IContex
 			btnSearch.setToolTipText("Do a single search from site map");
 			btnSearch.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
-					String subdomain = textFieldSubdomains.getText();
-					String domainlike = textFieldDomainsLike.getText();
-					//stdout.println(subdomain);
-					//stdout.println(domainlike);
-					search(subdomain,domainlike);
-					textArea.setText(set2string(subdomainofset));
-					textArea_1.setText(set2string(domainlikeset));
+					SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+				    	//using SwingWorker to prevent blocking burp main UI.
+
+				        @Override
+				        protected Map doInBackground() throws Exception {                
+							String subdomain = textFieldSubdomains.getText();
+							String domainlike = textFieldDomainsLike.getText();
+							btnSearch.setEnabled(false);
+							return search(subdomain,domainlike);
+				        }
+				        @Override
+				        protected void done() {
+				            try {
+					        	Map result = get();
+					        	subdomainofset = (Set) result.get("subdomainofset"); //之前的set变成了object
+					        	domainlikeset = (Set) result.get("domainlikeset");
+					        	relatedDomainSet = (Set) result.get("relatedDomainSet");
+								textArea.setText(set2string(subdomainofset));
+								textArea_1.setText(set2string(domainlikeset));
+								textArea_2.setText(set2string(relatedDomainSet));
+								btnSearch.setEnabled(true);
+				            } catch (Exception e) {
+				            	btnSearch.setEnabled(true);
+				                e.printStackTrace();
+				            }
+				        }
+				    };      
+				    worker.execute();
+					
 				}
 			});
 			panel.add(btnSearch);
@@ -297,13 +324,9 @@ public class BurpExtender implements IBurpExtender, IHttpListener, ITab, IContex
 			
 			splitPane = new JSplitPane();
 			splitPane.setDividerLocation(0.5);
-			contentPane.add(splitPane, BorderLayout.CENTER);
+			contentPane.add(splitPane, BorderLayout.WEST);
 			
 			textArea = new JTextArea();
-			textArea.setColumns(30);
-			splitPane.setLeftComponent(textArea);
-			
-			textArea_1 = new JTextArea();
 			textArea.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseClicked(MouseEvent arg0) {
@@ -320,8 +343,20 @@ public class BurpExtender implements IBurpExtender, IHttpListener, ITab, IContex
 			        });
 				}
 			});
+			textArea.setColumns(30);
+			splitPane.setLeftComponent(textArea);
+			
+			textArea_1 = new JTextArea();
 			textArea_1.setColumns(30);
 			splitPane.setRightComponent(textArea_1);
+			
+			JSplitPane splitPane_1 = new JSplitPane();
+			splitPane.setDividerLocation(0.5);
+			contentPane.add(splitPane_1, BorderLayout.EAST);
+			
+			textArea_2 = new JTextArea();
+			textArea_2.setColumns(30);
+			splitPane_1.setLeftComponent(textArea_2);
 			
 			panel_2 = new JPanel();
 			FlowLayout flowLayout = (FlowLayout) panel_2.getLayout();
