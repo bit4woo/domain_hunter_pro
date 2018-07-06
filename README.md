@@ -18,7 +18,7 @@ A Burp Suite extender that search *<u>**sub domains,similar domains and related 
 
 ![screenshot](doc/domain-hunter-v0.3.png)
 
-![domain-hunter-v0.5](doc\domain-hunter-v0.5.png)
+![domain-hunter-v0.5](doc/domain-hunter-v0.5.png)
 
 **change log**
 
