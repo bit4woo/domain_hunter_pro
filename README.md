@@ -4,7 +4,7 @@
 
 **domain_hunter**
 
-A Burp Suite extender that search *<u>**sub domains and similar domains**</u>* from sitemap. Some times similar domain give you suprise^_^. that's why I care about it.
+A Burp Suite extender that search *<u>**sub domains,similar domains and related domains**</u>* from sitemap. Some times similar domain and related domains give you surprise^_^. that's why I care about it.
 
 **usage**
 
@@ -18,9 +18,13 @@ A Burp Suite extender that search *<u>**sub domains and similar domains**</u>* f
 
 ![screenshot](doc/domain-hunter-v0.3.png)
 
+![domain-hunter-v0.5](doc\domain-hunter-v0.5.png)
+
 **change log**
 
 2017-07-28: Add a function to crawl all known subdomains; fix some bug.
+
+2018-07-06：Add the ability to get related domains by get SANs object of certification.  
 
 **xmind of domain collection**
 
