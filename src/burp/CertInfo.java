@@ -18,7 +18,7 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-public class certinfo {
+public class CertInfo {
     private static TrustManager myX509TrustManager = new X509TrustManager() { 
 
         @Override 

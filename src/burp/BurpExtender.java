@@ -34,8 +34,10 @@ import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.PrintWriter;
+import java.net.ConnectException;
 import java.net.URI;
 import java.net.URL;
+import java.net.UnknownHostException;
 
 
 public class BurpExtender implements IBurpExtender, IHttpListener, ITab, IContextMenuFactory
@@ -44,7 +46,8 @@ public class BurpExtender implements IBurpExtender, IHttpListener, ITab, IContex
     private IExtensionHelpers helpers;
     
     private PrintWriter stdout;//现在这里定义变量，再在registerExtenderCallbacks函数中实例化，如果都在函数中就只是局部变量，不能在这实例化，因为要用到其他参数。
-    private String ExtenderName = "Domain Hunter v0.5 by bit4";
+    private PrintWriter stderr;
+    private String ExtenderName = "Domain Hunter v0.6 by bit4";
     private String github = "https://github.com/bit4woo/domain_hunter";
     private Set<String> subdomainofset = new HashSet<String>();
     private Set<String> domainlikeset = new HashSet<String>();
@@ -68,6 +71,7 @@ public class BurpExtender implements IBurpExtender, IHttpListener, ITab, IContex
     public void registerExtenderCallbacks(IBurpExtenderCallbacks callbacks)
     {
     	stdout = new PrintWriter(callbacks.getStdout(), true);
+    	stderr = new PrintWriter(callbacks.getStderr(), true);
     	stdout.println(ExtenderName);
     	stdout.println(github);
         this.callbacks = callbacks;
@@ -88,31 +92,28 @@ public class BurpExtender implements IBurpExtender, IHttpListener, ITab, IContex
 			subdomainofset.clear();
 			domainlikeset.clear();
 			relatedDomainSet.clear();
+			Set<String> httpsURLs = new HashSet<String>();
 		   IHttpRequestResponse[] requestResponses = callbacks.getSiteMap(null);
 		    //stdout.println(response[1]);
 		    for (IHttpRequestResponse x:requestResponses){
-		    	IRequestInfo  analyzeRequest = helpers.analyzeRequest(x); //前面的操作可能已经修改了请求包，所以做后续的更改前，都需要从新获取。
-				URL url = analyzeRequest.getUrl();
-
+		    	
+		    	IHttpService httpservice = x.getHttpService();
+		    	String shortURL = httpservice.toString();
+				String Host = httpservice.getHost();
+				
 				//stdout.println(url);
-				String Host = url.getHost();
 				//stdout.println(Host);
 
 				if (!subdomainof.contains(".")||subdomainof.endsWith(".")){
-					//如果域名为空，或者（不包含.号，或者点好在末尾的）
+					//如果域名为空，或者（不包含.号，或者点号在末尾的）
 				}
 				else if (Host.endsWith("."+subdomainof)){
 					subdomainofset.add(Host);
 					//stdout.println(subdomainofset);
 					
 					//get SANs info to get related domain, only when the [subdomain] is using https.
-					if(url.getProtocol().toLowerCase().equals("https")) {
-						try {
-							relatedDomainSet.addAll(certinfo.getSANs(url.toString()));
-						} catch (Exception e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
+					if(httpservice.getProtocol().equalsIgnoreCase("https")) {
+							httpsURLs.add(shortURL);
 					}
 				}
 				
@@ -120,11 +121,42 @@ public class BurpExtender implements IBurpExtender, IHttpListener, ITab, IContex
 				else if (domainlike.equals("")){
 					
 				}
-				else if (Host.contains(domainlike)){
+				else if (Host.contains(domainlike) && !Host.equalsIgnoreCase(subdomainof)){
 					domainlikeset.add(Host);
 					//stdout.println(domainlikeset);
 				}
 		    }
+		    
+		    Set<String> tmpRelatedDomainSet = new HashSet<String>();
+		    //begin get related domains
+		    for(String url:httpsURLs) {
+		    	try {
+		    		tmpRelatedDomainSet.addAll(CertInfo.getSANs(url));
+				}catch(UnknownHostException e) {
+					stderr.println("UnknownHost "+ url);
+					continue;
+				}catch(ConnectException e) {
+					stderr.println("Connect Failed "+ url);
+					continue;
+				}
+		    	catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace(stderr);
+					continue;
+				}
+		    }
+		    
+		    //对 SANs的结果再做一次分类。
+		    for (String item:tmpRelatedDomainSet) {
+		    	if (item.endsWith("."+subdomainof)){
+					subdomainofset.add(item);
+				}else if (item.contains(domainlike) && !item.equalsIgnoreCase(subdomainof)){
+					domainlikeset.add(item);
+				}else {
+					relatedDomainSet.add(item);
+				}
+		    }
+		    
 		    
 		    Map result = new HashMap();
 		    result.put("subdomainofset", subdomainofset);
@@ -274,7 +306,7 @@ public class BurpExtender implements IBurpExtender, IHttpListener, ITab, IContex
 								btnSearch.setEnabled(true);
 				            } catch (Exception e) {
 				            	btnSearch.setEnabled(true);
-				                e.printStackTrace();
+				                e.printStackTrace(stderr);
 				            }
 				        }
 				    };      
