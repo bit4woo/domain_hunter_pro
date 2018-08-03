@@ -6,10 +6,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import javax.swing.Box;
 import javax.swing.JButton;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -24,7 +27,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Desktop;
-import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -34,10 +36,8 @@ import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.PrintWriter;
-import java.net.ConnectException;
 import java.net.URI;
 import java.net.URL;
-import java.net.UnknownHostException;
 
 
 public class BurpExtender implements IBurpExtender, IHttpListener, ITab, IContextMenuFactory
@@ -127,6 +127,37 @@ public class BurpExtender implements IBurpExtender, IHttpListener, ITab, IContex
 				}
 		    }
 		    
+		    stdout.println("sub-domains and similar-domains search finished\n");
+		    
+		    //多线程获取
+		    //Set<Future<Set<String>>> set = new HashSet<Future<Set<String>>>();
+	    	Map<String,Future<Set<String>>> urlResultmap = new HashMap<String,Future<Set<String>>>();
+	        ExecutorService pool = Executors.newFixedThreadPool(10);
+	        
+	        for (String url:httpsURLs) {
+	          Callable<Set<String>> callable = new ThreadCertInfo(url);
+	          Future<Set<String>> future = pool.submit(callable);
+	          //set.add(future);
+	          urlResultmap.put(url, future);
+	        }
+	        
+	        Set<String> tmpRelatedDomainSet = new HashSet<String>();
+	        for(String url:urlResultmap.keySet()) {
+	        	Future<Set<String>> future = urlResultmap.get(url);
+	        //for (Future<Set<String>> future : set) {
+	          try {
+	        	  stdout.println("founded related-domains :"+future.get() +" from "+url);
+	        	  if (future.get()!=null) {
+	        		  tmpRelatedDomainSet.addAll(future.get());
+	        	  }
+	        	  
+			} catch (Exception e) {
+				//e.printStackTrace(stderr);
+				stderr.println(e.getMessage());
+	        }
+	        }
+		    
+	        /* 单线程获取方式
 		    Set<String> tmpRelatedDomainSet = new HashSet<String>();
 		    //begin get related domains
 		    for(String url:httpsURLs) {
@@ -145,6 +176,7 @@ public class BurpExtender implements IBurpExtender, IHttpListener, ITab, IContex
 					continue;
 				}
 		    }
+		    */
 		    
 		    //对 SANs的结果再做一次分类。
 		    for (String item:tmpRelatedDomainSet) {

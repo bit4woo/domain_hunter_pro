@@ -51,6 +51,7 @@ public class CallableExample {
     int sum = 0;
     
     for (Future<Integer> future : set) {
+    	 System.out.print(future.get());
       sum += future.get();
     }
     

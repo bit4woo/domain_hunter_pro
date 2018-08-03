@@ -1,6 +1,9 @@
 package burp;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -8,11 +11,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import test.CallableExample.WordLengthCallable;
-
 public class ThreadCertInfo implements Callable<Set<String>>{
- 
-    private Set<String> Domains;
+	/*
     private Set<String> urls;
     public ThreadCertInfo(Set<String> urls) {
     	this.urls = urls;
@@ -20,7 +20,7 @@ public class ThreadCertInfo implements Callable<Set<String>>{
     
     
     @Override
-    public Set<String> call() throws Exception{
+    public Set<String> call(){
     	Set<String> tmpDomains = new HashSet<String>();
       for (int i=0;i<=urls.size()/10+1;i++) {//一般根据   【资源数量%线程数量+1】 来确定，保证资源得到处理
         
@@ -38,13 +38,22 @@ public class ThreadCertInfo implements Callable<Set<String>>{
       }
 	return null;
     }
-
+	*/
     
+	private String url;
+    public ThreadCertInfo(String url) {
+    	this.url = url;
+    }
+    
+    
+    @Override
+    public Set<String> call() throws Exception{
+		Set<String> tmpDomains = CertInfo.getSANs(url);
+		return tmpDomains;
+    }
+	
     public static void main(String[] args) {
-        
-        ExecutorService pool = Executors.newFixedThreadPool(3);
-        Set<Future<Integer>> set = new HashSet<Future<Integer>>();
-        
+
     	Set<String> urls = new HashSet<String>();
     	urls.add("https://202.77.129.30");
     	urls.add("https://ebppweb.alipay.com");
@@ -62,30 +71,54 @@ public class ThreadCertInfo implements Callable<Set<String>>{
     	urls.add("https://shenghuo.alipay.com");
     	urls.add("https://home.alipay.com");
     	
+    	Set<Future<Set<String>>> set = new HashSet<Future<Set<String>>>();
+    	Map<String,Future<Set<String>>> urlResultmap = new HashMap<String,Future<Set<String>>>();
+        ExecutorService pool = Executors.newFixedThreadPool(3);
         
         for (String word: urls) {
-          Callable<Integer> callable = new WordLengthCallable(word);
+
+          Callable<Set<String>> callable = new ThreadCertInfo(word);
           Future<Set<String>> future = pool.submit(callable);
           set.add(future);
+          urlResultmap.put(word, future);
         }
         
-        int sum = 0;
         
-        for (Future<Integer> future : set) {
+        
+        Set<String> Domains = new HashSet<String>();
+        for(String url:urlResultmap.keySet()) {
+        	Future<Set<String>> future = urlResultmap.get(url);
+        //for (Future<Set<String>> future : set) {
           try {
-			sum += future.get();
+        	  System.out.println(url);
+        	  System.out.println(future.get());
+        	  if (future.get()!=null) {
+        		  Domains.addAll(future.get());
+        	  }
+        	  
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println(e.getMessage());
 		} catch (ExecutionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println(e.getMessage());
+		}catch(Exception e) {
+			System.out.println(e.getMessage());
 		}
         }
         
-        System.out.printf("The sum of lengths is %s%n", sum);
-        System.exit(sum);
-        
+        System.out.println(set2string(Domains));
       }
 
+    
+    
+	public static String set2string(Set set){
+	    Iterator iter = set.iterator();
+	    String result = "";
+	    while(iter.hasNext())
+	    {
+	        //System.out.println(iter.next());  	
+	    	result +=iter.next();
+	    	result +="\n";
+	    }
+	    return result;
+	}
 }
