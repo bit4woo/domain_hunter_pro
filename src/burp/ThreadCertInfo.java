@@ -41,14 +41,16 @@ public class ThreadCertInfo implements Callable<Set<String>>{
 	*/
     
 	private String url;
-    public ThreadCertInfo(String url) {
+	private String domain;
+    public ThreadCertInfo(String url,String domain) {
     	this.url = url;
+    	this.domain = domain;
     }
     
     
     @Override
     public Set<String> call() throws Exception{
-		Set<String> tmpDomains = CertInfo.getSANs(url);
+		Set<String> tmpDomains = CertInfo.getSANs(url,domain);
 		return tmpDomains;
     }
 	
@@ -77,7 +79,7 @@ public class ThreadCertInfo implements Callable<Set<String>>{
         
         for (String word: urls) {
 
-          Callable<Set<String>> callable = new ThreadCertInfo(word);
+          Callable<Set<String>> callable = new ThreadCertInfo(word,"alipay.com");
           Future<Set<String>> future = pool.submit(callable);
           set.add(future);
           urlResultmap.put(word, future);
@@ -111,7 +113,7 @@ public class ThreadCertInfo implements Callable<Set<String>>{
     
     
 	public static String set2string(Set set){
-	    Iterator iter = set.iterator();
+	    Iterator<?> iter = set.iterator();
 	    String result = "";
 	    while(iter.hasNext())
 	    {

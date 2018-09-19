@@ -132,7 +132,7 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory
 		        ExecutorService pool = Executors.newFixedThreadPool(10);
 		        
 		        for (String url:httpsURLs) {
-		          Callable<Set<String>> callable = new ThreadCertInfo(url);
+		          Callable<Set<String>> callable = new ThreadCertInfo(url,subdomainof);
 		          Future<Set<String>> future = pool.submit(callable);
 		          //set.add(future);
 		          urlResultmap.put(url, future);
@@ -202,7 +202,6 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory
 			//如果域名为空，或者（不包含.号，或者点号在末尾的）
 		}
 		else {
-		    Set<String> host_crawled_set = new HashSet<String>();
 		    int i = 0;
 		    while(i<=2) {
 		    	IHttpRequestResponse[] items = callbacks.getSiteMap(null); //null to return entire sitemap
