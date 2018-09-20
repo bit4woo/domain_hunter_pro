@@ -37,7 +37,7 @@ public class CertInfo {
     };
     
 
-	public static Set<String> getSANs(String aURL,String domain) throws Exception{//only when domain key word in the Principal,return SANs
+	public static Set<String> getSANs(String aURL,String domainKeyword) throws Exception{//only when domain key word in the Principal,return SANs
 	    HostnameVerifier allHostsValid = new HostnameVerifier() {
 	        public boolean verify(String hostname, SSLSession session) {
 	            return true;
@@ -68,7 +68,6 @@ public class CertInfo {
                 //java.lang.NullPointerException. why??? need to confirm collection is not null
                 
                 String Principal = cer.getSubjectX500Principal().getName();
-                String domainKeyword = domain.toLowerCase().split("\\.")[0];
                 if (Principal.toLowerCase().contains(domainKeyword)) {
                 	//this may lead to miss some related domains, eg. https://www.YouTube.com ,it's principal is *.google.com
                 	//but our target is to get useful message, so we need to do this to void CDN provider,I think it's worth~, or any good idea?

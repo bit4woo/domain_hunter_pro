@@ -48,7 +48,7 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory
     
     private PrintWriter stdout;//现在这里定义变量，再在registerExtenderCallbacks函数中实例化，如果都在函数中就只是局部变量，不能在这实例化，因为要用到其他参数。
     private PrintWriter stderr;
-    private String ExtenderName = "Domain Hunter v0.7 by bit4";
+    private String ExtenderName = "Domain Hunter v0.9 by bit4";
     private String github = "https://github.com/bit4woo/domain_hunter";
     private Set<String> subdomainofset = new HashSet<String>();
     private Set<String> domainlikeset = new HashSet<String>();
@@ -83,15 +83,14 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory
         
     }
 
-	public Map search(String subdomainof, String domainlike){
+	public Map<String, Set<String>> search(String subdomainof, String domainlike){
 			subdomainofset.clear();
 			domainlikeset.clear();
 			relatedDomainSet.clear();
 			
 			
-			if (!subdomainof.contains(".")||subdomainof.endsWith(".")||subdomainof.equals("")){
-				//如果域名为空，或者（不包含.号，或者点号在末尾的）
-			}else {
+			if (subdomainof.contains(".")&&!subdomainof.endsWith(".")&&!subdomainof.startsWith("."))
+			{
 				Set<String> httpsURLs = new HashSet<String>();
 				IHttpRequestResponse[] requestResponses = callbacks.getSiteMap(null);
 				    //stdout.println(response[1]);
@@ -99,32 +98,41 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory
 			    	
 			    	IHttpService httpservice = x.getHttpService();
 			    	String shortURL = httpservice.toString();
+			    	String protocol =  httpservice.getProtocol();
 					String Host = httpservice.getHost();
 					
-					//stdout.println(url);
+					//stdout.println(shortURL);
 					//stdout.println(Host);
 					
 					if (Host.endsWith("."+subdomainof)){
 						subdomainofset.add(Host);
 						//stdout.println(subdomainofset);
-						
 						//get SANs info to get related domain, only when the [subdomain] is using https.
-						if(httpservice.getProtocol().equalsIgnoreCase("https")) {
+						if(protocol.equalsIgnoreCase("https")) {
 								httpsURLs.add(shortURL);
 						}
+						continue;
 					}
 					
 					
-					else if (domainlike.equals("")){
-						
-					}
-					else if (Host.contains(domainlike) && !Host.equalsIgnoreCase(subdomainof)){
+					if (!domainlike.equals("") && Host.contains(domainlike) && !Host.equalsIgnoreCase(subdomainof)){
 						domainlikeset.add(Host);
+						if(protocol.equalsIgnoreCase("https")) {
+							httpsURLs.add(shortURL);
+						}
 						//stdout.println(domainlikeset);
+						continue;
+					}
+					
+					if (validIP(Host)) {//https://202.77.129.30
+						if(protocol.equalsIgnoreCase("https")) {
+							httpsURLs.add(shortURL);
+						}
 					}
 			    }
 				    
-			    stdout.println("sub-domains and similar-domains search finished\n");
+			    stdout.println("sub-domains and similar-domains search finished,starting get related-domains\n");
+			    //stdout.println(httpsURLs);
 			    
 			    //多线程获取
 			    //Set<Future<Set<String>>> set = new HashSet<Future<Set<String>>>();
@@ -132,7 +140,7 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory
 		        ExecutorService pool = Executors.newFixedThreadPool(10);
 		        
 		        for (String url:httpsURLs) {
-		          Callable<Set<String>> callable = new ThreadCertInfo(url,subdomainof);
+		          Callable<Set<String>> callable = new ThreadCertInfo(url,domainlike);
 		          Future<Set<String>> future = pool.submit(callable);
 		          //set.add(future);
 		          urlResultmap.put(url, future);
@@ -179,7 +187,7 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory
 			    for (String item:tmpRelatedDomainSet) {
 			    	if (item.endsWith("."+subdomainof)){
 						subdomainofset.add(item);
-					}else if (item.contains(domainlike) && !item.equalsIgnoreCase(subdomainof)){
+					}else if (!domainlike.equals("") && item.contains(domainlike) && !item.equalsIgnoreCase(subdomainof)){
 						domainlikeset.add(item);
 					}else {
 						relatedDomainSet.add(item);
@@ -188,7 +196,7 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory
 
 			}
 		    
-		    Map result = new HashMap();
+		    Map<String, Set<String>> result = new HashMap<String, Set<String>>();
 		    result.put("subdomainofset", subdomainofset);
 		    result.put("domainlikeset", domainlikeset);
 		    result.put("relatedDomainSet", relatedDomainSet);
@@ -196,7 +204,7 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory
 		    
 	}
  
-	public Map spiderall (String subdomainof, String domainlike) {
+	public Map<String, Set<String>> spiderall (String subdomainof, String domainlike) {
 		
 		if (!subdomainof.contains(".")||subdomainof.endsWith(".")||subdomainof.equals("")){
 			//如果域名为空，或者（不包含.号，或者点号在末尾的）
@@ -205,7 +213,7 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory
 		    int i = 0;
 		    while(i<=2) {
 		    	IHttpRequestResponse[] items = callbacks.getSiteMap(null); //null to return entire sitemap
-		    	int len = items.length;
+		    	//int len = items.length;
 		    	//stdout.println("item number: "+len);
 		    	
 			    for (IHttpRequestResponse x:items){// 经过验证每次都需要从头开始遍历，按一定offset获取的数据每次都可能不同
@@ -377,8 +385,8 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory
 				        protected void done() {
 				            try {
 					        	Map result = get();
-					        	subdomainofset = (Set) result.get("subdomainofset"); //之前的set变成了object
-					        	domainlikeset = (Set) result.get("domainlikeset");
+					        	subdomainofset = (Set<String>) result.get("subdomainofset"); //之前的set变成了object
+					        	domainlikeset = (Set<String>) result.get("domainlikeset");
 								textArea.setText(set2string(subdomainofset));
 								textArea_1.setText(set2string(domainlikeset));
 								btnNewButton.setEnabled(true);
@@ -502,4 +510,36 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory
 	
 	//IContextMenuFactory 必须实现的方法
 	//各种burp必须的方法 --end
+	
+	
+	public static boolean validIP (String ip) {
+	    try {
+	        if ( ip == null || ip.isEmpty() ) {
+	            return false;
+	        }
+
+	        String[] parts = ip.split( "\\." );
+	        if ( parts.length != 4 ) {
+	            return false;
+	        }
+
+	        for ( String s : parts ) {
+	            int i = Integer.parseInt( s );
+	            if ( (i < 0) || (i > 255) ) {
+	                return false;
+	            }
+	        }
+	        if ( ip.endsWith(".") ) {
+	            return false;
+	        }
+
+	        return true;
+	    } catch (NumberFormatException nfe) {
+	        return false;
+	    }
+	}
+	
+	public static void main(String args[]) {
+		System.out.println("aaa".contains(""));
+	}
 }

@@ -41,16 +41,16 @@ public class ThreadCertInfo implements Callable<Set<String>>{
 	*/
     
 	private String url;
-	private String domain;
-    public ThreadCertInfo(String url,String domain) {
+	private String domainKeyword;
+    public ThreadCertInfo(String url,String domainKeyword) {
     	this.url = url;
-    	this.domain = domain;
+    	this.domainKeyword = domainKeyword;
     }
     
     
     @Override
     public Set<String> call() throws Exception{
-		Set<String> tmpDomains = CertInfo.getSANs(url,domain);
+		Set<String> tmpDomains = CertInfo.getSANs(url,domainKeyword);
 		return tmpDomains;
     }
 	
