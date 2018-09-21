@@ -48,8 +48,9 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory
     
     private PrintWriter stdout;//现在这里定义变量，再在registerExtenderCallbacks函数中实例化，如果都在函数中就只是局部变量，不能在这实例化，因为要用到其他参数。
     private PrintWriter stderr;
-    private String ExtenderName = "Domain Hunter v0.9 by bit4";
+    private String ExtenderName = "Domain Hunter v1.0 by bit4";
     private String github = "https://github.com/bit4woo/domain_hunter";
+    private String summary = "      Sub-domain:%s  Similar-domain:%s  Related-domain:%s  ^_^";
     private Set<String> subdomainofset = new HashSet<String>();
     private Set<String> domainlikeset = new HashSet<String>();
     private Set<String> relatedDomainSet = new HashSet<String>();
@@ -59,6 +60,7 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory
 	private JTextField textFieldDomainsLike;
 	private JLabel lblSubDomainsOf;
 	private JButton btnSearch;
+	private JLabel lblSummary;
 	private JPanel panel_2;
 	private JLabel lblNewLabel_2;
 	private JSplitPane splitPane;
@@ -131,7 +133,7 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory
 					}
 			    }
 				    
-			    stdout.println("sub-domains and similar-domains search finished,starting get related-domains\n");
+			    stdout.println("sub-domains and similar-domains search finished,starting get related-domains");
 			    //stdout.println(httpsURLs);
 			    
 			    //多线程获取
@@ -185,13 +187,15 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory
 			    
 			    //对 SANs的结果再做一次分类。
 			    for (String item:tmpRelatedDomainSet) {
-			    	if (item.endsWith("."+subdomainof)){
-						subdomainofset.add(item);
-					}else if (!domainlike.equals("") && item.contains(domainlike) && !item.equalsIgnoreCase(subdomainof)){
-						domainlikeset.add(item);
-					}else {
-						relatedDomainSet.add(item);
-					}
+			    	if (item.contains(".")&&!item.endsWith(".")&&!item.startsWith(".")) {
+				    	if (item.endsWith("."+subdomainof)){
+							subdomainofset.add(item);
+						}else if (!domainlike.equals("") && item.contains(domainlike) && !item.equalsIgnoreCase(subdomainof)){
+							domainlikeset.add(item);
+						}else {
+							relatedDomainSet.add(item);
+						}
+			    	}
 			    }
 
 			}
@@ -215,15 +219,13 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory
 		    	IHttpRequestResponse[] items = callbacks.getSiteMap(null); //null to return entire sitemap
 		    	//int len = items.length;
 		    	//stdout.println("item number: "+len);
-		    	
+		    	Set<URL> NeedToCrawl = new HashSet<URL>();
 			    for (IHttpRequestResponse x:items){// 经过验证每次都需要从头开始遍历，按一定offset获取的数据每次都可能不同
 			    	IRequestInfo  analyzeRequest = helpers.analyzeRequest(x); //前面的操作可能已经修改了请求包，所以做后续的更改前，都需要从新获取。
 					
-					URL url = analyzeRequest.getUrl();
-					String Host = url.getHost();
-					String url_path = url.getPath();
+					String Host = analyzeRequest.getUrl().getHost();
 					
-					URL shortUrl=url;
+					URL shortUrl=analyzeRequest.getUrl();
 					try {
 						String urlstring = x.getHttpService().toString();
 						shortUrl = new URL(urlstring);
@@ -231,18 +233,28 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory
 						e.printStackTrace(stdout);
 					}
 
-					if (Host.endsWith("."+subdomainof) && isResponseNull(x) && !uselessExtension(url_path)) {
-						if (!callbacks.isInScope(shortUrl)) { //reduce add scope action, to reduce the burp UI action.
-							callbacks.includeInScope(shortUrl);//if not, will always show confirm message box.
-						}
-						callbacks.sendToSpider(url);
+					if (Host.endsWith("."+subdomainof) && isResponseNull(x)) {
 						// to reduce memory usage, use isResponseNull() method to adjust whether the item crawled.
+						NeedToCrawl.add(shortUrl);
+						// to reduce memory usage, use shortUrl. base on my test, spider will crawl entire site when send short URL to it.
+						// this may miss some single page, but the single page often useless for domain collection
+						// see spideralltest() function.
 					}
 				}
 			    
+			    
+				for (URL shortUrl:NeedToCrawl) {
+					if (!callbacks.isInScope(shortUrl)) { //reduce add scope action, to reduce the burp UI action.
+						callbacks.includeInScope(shortUrl);//if not, will always show confirm message box.
+					}
+					callbacks.sendToSpider(shortUrl);
+				}
+
+			    
 				try {
 					Thread.sleep(5*60*1000);//单位毫秒，60000毫秒=一分钟
-					stdout.println("sleep 5 min");
+					stdout.println("sleep 5 minutes to wait spider");
+					//to wait spider
 				} catch (InterruptedException e) {
 					e.printStackTrace(stdout);
 				}
@@ -255,6 +267,25 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory
 	    }
 	
 	
+	public Map<String, Set<String>> spideralltest (String subdomainof, String domainlike) {
+		
+		int i = 0;
+		while (i<=10) {
+			try {
+				callbacks.sendToSpider(new URL("http://www.baidu.com/"));
+				Thread.sleep(1*60*1000);//单位毫秒，60000毫秒=一分钟
+				stdout.println("sleep 1 min");
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			i++;
+			// to reduce memory usage, use isResponseNull() method to adjust whether the item crawled.
+		}
+		
+		Map<String, Set<String>> result = new HashMap<String, Set<String>>();
+		return result;
+	}
 	public String set2string(Set set){
 	    Iterator iter = set.iterator();
 	    String result = "";
@@ -327,7 +358,7 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory
 			panel.add(textFieldDomainsLike);
 			textFieldDomainsLike.setColumns(20);
 			
-			btnSearch = new JButton("search");
+			btnSearch = new JButton("Search");
 			btnSearch.setToolTipText("Do a single search from site map");
 			btnSearch.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
@@ -352,6 +383,7 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory
 								textArea_1.setText(set2string(domainlikeset));
 								textArea_2.setText(set2string(relatedDomainSet));
 								btnSearch.setEnabled(true);
+								lblSummary.setText(String.format(summary, subdomainofset.size(),domainlikeset.size(),relatedDomainSet.size()));
 				            } catch (Exception e) {
 				            	btnSearch.setEnabled(true);
 				                e.printStackTrace(stderr);
@@ -364,7 +396,7 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory
 			});
 			panel.add(btnSearch);
 			
-			btnNewButton = new JButton("Spider all");
+			btnNewButton = new JButton("Spider All");
 			btnNewButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					
@@ -401,6 +433,9 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory
 			});
 			btnNewButton.setToolTipText("Spider all subdomains recursively,This may take a long time!!!");
 			panel.add(btnNewButton);
+			
+			lblSummary = new JLabel("      ^_^");
+			panel.add(lblSummary);
 			
 			splitPane = new JSplitPane();
 			splitPane.setDividerLocation(0.5);
