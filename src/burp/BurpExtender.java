@@ -231,17 +231,18 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory
 						e.printStackTrace(stdout);
 					}
 
-					if (Host.endsWith("."+subdomainof) && isResponseNull(x) && !uselessExtension(url_path)) {					
-			        	callbacks.includeInScope(shortUrl);//if not, will always show confirm message box.
+					if (Host.endsWith("."+subdomainof) && isResponseNull(x) && !uselessExtension(url_path)) {
+						if (!callbacks.isInScope(shortUrl)) { //reduce add scope action, to reduce the burp UI action.
+							callbacks.includeInScope(shortUrl);//if not, will always show confirm message box.
+						}
 						callbacks.sendToSpider(url);
 						// to reduce memory usage, use isResponseNull() method to adjust whether the item crawled.
-
 					}
 				}
 			    
 				try {
-					Thread.sleep(2*60*1000);//单位毫秒，60000毫秒=一分钟
-					stdout.println("sleep 2 min");
+					Thread.sleep(5*60*1000);//单位毫秒，60000毫秒=一分钟
+					stdout.println("sleep 5 min");
 				} catch (InterruptedException e) {
 					e.printStackTrace(stdout);
 				}
