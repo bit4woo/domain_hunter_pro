@@ -24,9 +24,19 @@ A Burp Suite extender that search *<u>**sub domains,similar domains and related 
 
 2017-07-28: Add a function to crawl all known subdomains; fix some bug.
 
-2018-07-06:Add the ability to get related domains by get SANs object of certification.  
+2018-07-06: Add the ability to get related domains by get SANs object of certification.  
 
-2018-08-03: use thread to speed up get related-domains.
+2018-08-03: Use thread to speed up get related-domains.
+
+2018-09-18: Optimize some steps to reduce memory usage.
+
+2018-09-19: Update getSANs() method to void get domains of CDN provider.
+
+2018-09-20: Update logic of getting possible https URLs that may contain related-domains
+
+2018-09-21: Update logic of "includeInScope" and "sendToSpider" to reduces UI action time
+
+2018-09-29: Add Upload function to support  upload result to your site or system
 
 **xmind of domain collection**
 

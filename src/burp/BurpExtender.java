@@ -23,6 +23,9 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
+
+import com.alibaba.fastjson.JSON;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -35,6 +38,7 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -48,18 +52,23 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory
     
     private PrintWriter stdout;//现在这里定义变量，再在registerExtenderCallbacks函数中实例化，如果都在函数中就只是局部变量，不能在这实例化，因为要用到其他参数。
     private PrintWriter stderr;
-    private String ExtenderName = "Domain Hunter v1.0 by bit4";
+    private String ExtenderName = "Domain Hunter v1.1 by bit4";
     private String github = "https://github.com/bit4woo/domain_hunter";
     private String summary = "      Sub-domain:%s  Similar-domain:%s  Related-domain:%s  ^_^";
     private Set<String> subdomainofset = new HashSet<String>();
     private Set<String> domainlikeset = new HashSet<String>();
     private Set<String> relatedDomainSet = new HashSet<String>();
+    
+    private String resultJson = "";//to upload
 
 	private JPanel contentPane;
 	private JTextField textFieldSubdomains;
 	private JTextField textFieldDomainsLike;
+	private JTextField textFieldUploadURL;
 	private JLabel lblSubDomainsOf;
 	private JButton btnSearch;
+	private JButton btnUpload;
+	private JButton btnSpiderAll;
 	private JLabel lblSummary;
 	private JPanel panel_2;
 	private JLabel lblNewLabel_2;
@@ -67,7 +76,7 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory
 	private Component verticalStrut;
 	private JTextArea textArea;
 	private JTextArea textArea_1;
-	private JButton btnNewButton;
+	
 	private JTextArea textArea_2;
     
     @Override
@@ -204,6 +213,9 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory
 		    result.put("subdomainofset", subdomainofset);
 		    result.put("domainlikeset", domainlikeset);
 		    result.put("relatedDomainSet", relatedDomainSet);
+		    
+		    resultJson = JSON.toJSONString(result);
+		    
 		    return result;
 		    
 	}
@@ -286,6 +298,23 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory
 		Map<String, Set<String>> result = new HashMap<String, Set<String>>();
 		return result;
 	}
+	
+	public Boolean upload() {
+		String url =  textFieldUploadURL.getText();
+		if ((url.toLowerCase().contains("http://") ||url.toLowerCase().contains("https://"))
+				&& !resultJson.equals("")){
+			try {
+				HTTPPost.httpPostRequest(url,resultJson);
+				return true;
+			} catch (IOException e) {
+				e.printStackTrace(stderr);
+				return false;
+			}
+		}
+		return false;
+		
+	}
+	
 	public String set2string(Set set){
 	    Iterator iter = set.iterator();
 	    String result = "";
@@ -358,6 +387,13 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory
 			panel.add(textFieldDomainsLike);
 			textFieldDomainsLike.setColumns(20);
 			
+			JLabel lblUploadURL = new JLabel("Upload URL ");
+			panel.add(lblUploadURL);
+			
+			textFieldUploadURL = new JTextField("http://");
+			panel.add(textFieldUploadURL);
+			textFieldUploadURL.setColumns(20);
+			
 			btnSearch = new JButton("Search");
 			btnSearch.setToolTipText("Do a single search from site map");
 			btnSearch.addActionListener(new ActionListener() {
@@ -396,8 +432,8 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory
 			});
 			panel.add(btnSearch);
 			
-			btnNewButton = new JButton("Spider All");
-			btnNewButton.addActionListener(new ActionListener() {
+			btnSpiderAll = new JButton("Spider All");
+			btnSpiderAll.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					
 				    SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
@@ -410,7 +446,7 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory
 							String domainlike = textFieldDomainsLike.getText();
 							//stdout.println(subdomain);
 							//stdout.println(domainlike);
-							btnNewButton.setEnabled(false);
+							btnSpiderAll.setEnabled(false);
 							return spiderall(subdomain,domainlike);
 						
 				        }
@@ -422,7 +458,7 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory
 					        	domainlikeset = (Set<String>) result.get("domainlikeset");
 								textArea.setText(set2string(subdomainofset));
 								textArea_1.setText(set2string(domainlikeset));
-								btnNewButton.setEnabled(true);
+								btnSpiderAll.setEnabled(true);
 				            } catch (Exception e) {
 				                e.printStackTrace();
 				            }
@@ -431,8 +467,28 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory
 				    worker.execute();
 				}
 			});
-			btnNewButton.setToolTipText("Spider all subdomains recursively,This may take a long time!!!");
-			panel.add(btnNewButton);
+			btnSpiderAll.setToolTipText("Spider all subdomains recursively,This may take a long time!!!");
+			panel.add(btnSpiderAll);
+			
+			
+			btnUpload = new JButton("Upload");
+			btnUpload.setToolTipText("Do a single search from site map");
+			btnUpload.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					SwingWorker<Boolean, Boolean> worker = new SwingWorker<Boolean, Boolean>() {
+				        @Override
+				        protected Boolean doInBackground() throws Exception {                
+				        	return upload();
+				        }
+				        @Override
+				        protected void done() {
+				        }
+				    };  
+				    worker.execute();
+					
+				}
+			});
+			panel.add(btnUpload);
 			
 			lblSummary = new JLabel("      ^_^");
 			panel.add(lblSummary);
