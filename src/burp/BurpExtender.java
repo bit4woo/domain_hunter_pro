@@ -115,7 +115,7 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory
 					//stdout.println(shortURL);
 					//stdout.println(Host);
 					
-					if (Host.endsWith("."+subdomainof)){
+					if (Host.endsWith("."+subdomainof)||Host.equalsIgnoreCase(subdomainof)){
 						subdomainofset.add(Host);
 						//stdout.println(subdomainofset);
 						//get SANs info to get related domain, only when the [subdomain] is using https.
@@ -126,7 +126,7 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory
 					}
 					
 					
-					if (!domainlike.equals("") && Host.contains(domainlike) && !Host.equalsIgnoreCase(subdomainof)){
+					if (!domainlike.equals("") && Host.contains(domainlike)){
 						domainlikeset.add(Host);
 						if(protocol.equalsIgnoreCase("https")) {
 							httpsURLs.add(shortURL);
@@ -197,9 +197,9 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory
 			    //对 SANs的结果再做一次分类。
 			    for (String item:tmpRelatedDomainSet) {
 			    	if (item.contains(".")&&!item.endsWith(".")&&!item.startsWith(".")) {
-				    	if (item.endsWith("."+subdomainof)){
+				    	if (item.endsWith("."+subdomainof) || item.equalsIgnoreCase(subdomainof)){
 							subdomainofset.add(item);
-						}else if (!domainlike.equals("") && item.contains(domainlike) && !item.equalsIgnoreCase(subdomainof)){
+						}else if (!domainlike.equals("") && item.contains(domainlike)){
 							domainlikeset.add(item);
 						}else {
 							relatedDomainSet.add(item);
