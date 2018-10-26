@@ -1,10 +1,10 @@
 #Fat Jar Configuration File
-#Sat Sep 29 19:15:20 CST 2018
+#Fri Oct 26 14:20:32 CST 2018
 onejar.license.required=true
 manifest.classpath=
 manifest.removesigners=true
 onejar.checkbox=false
-jarname=D\:\\github\\domain_hunter\\domain_hunter.v1.1.jar
+jarname=D\:\\github\\domain_hunter\\domain_hunter.v1.2.jar
 manifest.mergeall=true
 manifest.mainclass=
 manifest.file=<createnew>

@@ -163,7 +163,8 @@ public class CertInfo {
 	public static void main(String[] args) {
 		try {
 			//certInformation("https://jd.hk");
-			System.out.println(getSANs("https://202.77.129.10","jd"));
+			//System.out.println(getSANs("https://202.77.129.10","jd"));
+			System.out.println(getSANs("https://m.hemaos.com/","alibaba"));
 			//System.out.println(getSANs("https://open.163.com","163.com"));
 			//System.out.println(getSANs("https://open.163.com"));
 		} catch (Exception e) {

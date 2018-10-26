@@ -8,37 +8,40 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
+import javax.swing.RowSorter;
+import javax.swing.SortOrder;
 import javax.swing.SwingWorker;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JButton;
 import javax.swing.JTextArea;
 import java.awt.Font;
 import java.awt.FlowLayout;
 import javax.swing.JSplitPane;
-import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Desktop;
-import javax.swing.Box;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.PrintWriter;
 import java.awt.event.ActionEvent;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import javax.swing.JScrollPane;
 
 
 import java.net.URI;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import burp.BurpExtender;
-import burp.Commons.*;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
+import javax.swing.border.LineBorder;
+import javax.swing.ListSelectionModel;
 
-public class GUI extends JFrame {
+public class xxxx extends JFrame {
 	
     public String ExtenderName = "Domain Hunter v1.1 by bit4";
     public String github = "https://github.com/bit4woo/domain_hunter";
@@ -52,21 +55,29 @@ public class GUI extends JFrame {
     private PrintWriter stderr;
     
 	private JPanel contentPane;
-	private JTextField textFieldSubdomains;
-	private JTextField textFieldDomainsLike;
 	private JTextField textFieldUploadURL;
-	private JLabel lblSubDomainsOf;
 	private JButton btnSearch;
 	private JButton btnUpload;
 	private JButton btnSpiderAll;
 	private JLabel lblSummary;
-	private JPanel panel_2;
+	private JPanel FooterPanel;
 	private JLabel lblNewLabel_2;
-	private JSplitPane splitPane;
-	private Component verticalStrut;
-	private JTextArea textArea;
-	private JTextArea textArea_1;
-	private JTextArea textArea_2;
+	private JScrollPane TargetPanel;
+	private JTextArea textAreaSubdomains;
+	private JTextArea textAreaSimilarDomains;
+	
+	
+	
+	public String secretKey = null;
+	public int sortedColumn;
+	public SortOrder sortedMethod;
+	private JTable table;
+	private JPanel panel;
+	private JButton RemoveButton;
+	private JButton AddButton;
+	private JLabel lblRootdomain;
+	private JTextField textField;
+
 
 	/**
 	 * Launch the application.
@@ -75,7 +86,7 @@ public class GUI extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					GUI frame = new GUI();
+					xxxx frame = new xxxx();
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -87,49 +98,25 @@ public class GUI extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public GUI() {
+	public xxxx() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 930, 497);
+		setBounds(100, 100, 1174, 497);
 		contentPane =  new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		contentPane.setLayout(new BorderLayout(0, 0));
 		setContentPane(contentPane);
 
 		
-		JPanel panel = new JPanel();
-		FlowLayout flowLayout_1 = (FlowLayout) panel.getLayout();
-		flowLayout_1.setAlignment(FlowLayout.LEFT);
-		contentPane.add(panel, BorderLayout.NORTH);
-		
-		lblSubDomainsOf = new JLabel("SubDomains of  ");
-		panel.add(lblSubDomainsOf);
-		
-		textFieldSubdomains = new JTextField();
-		textFieldSubdomains.addFocusListener(new FocusAdapter() {
-			@Override
-			public void focusLost(FocusEvent arg0) {
-				String domain = textFieldSubdomains.getText();
-				textFieldDomainsLike.setText(domain.substring(0,domain.lastIndexOf(".")));
-			}
-		});
-		panel.add(textFieldSubdomains);
-		textFieldSubdomains.setColumns(20);
-		
-		verticalStrut = Box.createVerticalStrut(20);
-		panel.add(verticalStrut);
-		
-		JLabel lblDomainsLike = new JLabel("Domains like ");
-		panel.add(lblDomainsLike);
-		
-		textFieldDomainsLike = new JTextField();
-		panel.add(textFieldDomainsLike);
-		textFieldDomainsLike.setColumns(20);
+		JPanel HeaderPanel = new JPanel();
+		FlowLayout fl_HeaderPanel = (FlowLayout) HeaderPanel.getLayout();
+		fl_HeaderPanel.setAlignment(FlowLayout.LEFT);
+		contentPane.add(HeaderPanel, BorderLayout.NORTH);
 		
 		JLabel lblUploadURL = new JLabel("Upload URL ");
-		panel.add(lblUploadURL);
+		HeaderPanel.add(lblUploadURL);
 		
 		textFieldUploadURL = new JTextField("http://");
-		panel.add(textFieldUploadURL);
+		HeaderPanel.add(textFieldUploadURL);
 		textFieldUploadURL.setColumns(20);
 		
 		btnSearch = new JButton("Search");
@@ -140,11 +127,11 @@ public class GUI extends JFrame {
 			    	//using SwingWorker to prevent blocking burp main UI.
 
 			        @Override
-			        protected Map doInBackground() throws Exception {                
-						String subdomain = textFieldSubdomains.getText();
-						String domainlike = textFieldDomainsLike.getText();
+			        protected Map doInBackground() throws Exception {
+						Set<String> rootDomains = getRootDomains();
+						Set<String> keywords= getKeywords();
 						btnSearch.setEnabled(false);
-						return search(subdomain,domainlike);
+						return search(rootDomains,keywords);
 			        }
 			        @Override
 			        protected void done() {
@@ -153,9 +140,8 @@ public class GUI extends JFrame {
 				        	subdomainofset = (Set) result.get("subdomainofset"); //之前的set变成了object
 				        	domainlikeset = (Set) result.get("domainlikeset");
 				        	relatedDomainSet = (Set) result.get("relatedDomainSet");
-							textArea.setText(Commons.set2string(subdomainofset));
-							textArea_1.setText(Commons.set2string(domainlikeset));
-							textArea_2.setText(Commons.set2string(relatedDomainSet));
+							textAreaSubdomains.setText(Commons.set2string(subdomainofset));
+							textAreaSimilarDomains.setText(Commons.set2string(domainlikeset));
 							btnSearch.setEnabled(true);
 							lblSummary.setText(String.format(summary, subdomainofset.size(),domainlikeset.size(),relatedDomainSet.size()));
 			            } catch (Exception e) {
@@ -168,7 +154,7 @@ public class GUI extends JFrame {
 				
 			}
 		});
-		panel.add(btnSearch);
+		HeaderPanel.add(btnSearch);
 		
 		btnSpiderAll = new JButton("Spider All");
 		btnSpiderAll.addActionListener(new ActionListener() {
@@ -180,12 +166,12 @@ public class GUI extends JFrame {
 			    	//https://stackoverflow.com/questions/19708646/how-to-update-swing-ui-while-actionlistener-is-in-progress
 			        @Override
 			        protected Map doInBackground() throws Exception {                
-						String subdomain = textFieldSubdomains.getText();
-						String domainlike = textFieldDomainsLike.getText();
+						Set<String> rootDomains = getRootDomains();
+						Set<String> keywords= getKeywords();
 						//stdout.println(subdomain);
 						//stdout.println(domainlike);
 						btnSpiderAll.setEnabled(false);
-						return spiderall(subdomain,domainlike);
+						return spiderall(rootDomains,keywords);
 					
 			        }
 			        @Override
@@ -194,8 +180,8 @@ public class GUI extends JFrame {
 				        	Map result = get();
 				        	subdomainofset = (Set<String>) result.get("subdomainofset"); //之前的set变成了object
 				        	domainlikeset = (Set<String>) result.get("domainlikeset");
-							textArea.setText(Commons.set2string(subdomainofset));
-							textArea_1.setText(Commons.set2string(domainlikeset));
+							textAreaSubdomains.setText(Commons.set2string(subdomainofset));
+							textAreaSimilarDomains.setText(Commons.set2string(domainlikeset));
 							btnSpiderAll.setEnabled(true);
 			            } catch (Exception e) {
 			                e.printStackTrace(stderr);
@@ -206,7 +192,7 @@ public class GUI extends JFrame {
 			}
 		});
 		btnSpiderAll.setToolTipText("Spider all subdomains recursively,This may take a long time!!!");
-		panel.add(btnSpiderAll);
+		HeaderPanel.add(btnSpiderAll);
 		
 		
 		btnUpload = new JButton("Upload");
@@ -226,51 +212,128 @@ public class GUI extends JFrame {
 				
 			}
 		});
-		panel.add(btnUpload);
+		HeaderPanel.add(btnUpload);
 		
 		lblSummary = new JLabel("      ^_^");
-		panel.add(lblSummary);
+		HeaderPanel.add(lblSummary);
 		
-		splitPane = new JSplitPane();
-		splitPane.setDividerLocation(0.5);
-		contentPane.add(splitPane, BorderLayout.WEST);
+		TargetPanel = new JScrollPane();
+		TargetPanel.setViewportBorder(new LineBorder(new Color(0, 0, 0)));
+		contentPane.add(TargetPanel, BorderLayout.WEST);
 		
-		textArea = new JTextArea();
-		textArea.addMouseListener(new MouseAdapter() {
+		table = new JTable();
+		table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+		table.setBorder(new LineBorder(new Color(0, 0, 0)));
+		
+
+		
+		table.getTableHeader().addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				try {
+					sortedColumn = table.getRowSorter().getSortKeys().get(0).getColumn();
+					//System.out.println(sortedColumn);
+					sortedMethod = table.getRowSorter().getSortKeys().get(0).getSortOrder();
+					System.out.println(sortedMethod); //ASCENDING   DESCENDING
+				} catch (Exception e1) {
+					sortedColumn = -1;
+					sortedMethod = null;
+					e1.printStackTrace(stderr);
+				}
+			}
+		});
+		
+		DefaultTableModel tableModel =new DefaultTableModel(
+			new Object[][] {
+				//{"1", "1","1"},
+			},
+			new String[] {
+				"Root Domain", "Keyword", "Source"
+			}
+		);
+		table.setModel(tableModel);
+		//table.setTableHeader(tableHeader);
+		
+		
+		RowSorter<TableModel> sorter = new TableRowSorter<TableModel>(tableModel);
+		table.setRowSorter(sorter);
+		
+		table.setColumnSelectionAllowed(true);
+		table.setCellSelectionEnabled(true);
+		table.setSurrendersFocusOnKeystroke(true);
+		table.setFillsViewportHeight(true);
+		table.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
+		TargetPanel.setViewportView(table);
+		
+		panel = new JPanel();
+		contentPane.add(panel, BorderLayout.CENTER);
+		panel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+		
+		
+		AddButton = new JButton("Add");
+		AddButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
+				enteredRootDomain = enteredRootDomain.trim();
+				String keyword = enteredRootDomain.substring(0,enteredRootDomain.lastIndexOf("."));
+				tableModel.addRow(new Object[]{enteredRootDomain,keyword,"manual added"});
+			}
+		});
+		panel.add(AddButton);
+		
+		
+		RemoveButton = new JButton("Remove");
+		panel.add(RemoveButton);
+		RemoveButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				int[] rowindexs = table.getSelectedRows();
+				for (int i=0; i < rowindexs.length; i++){
+					rowindexs[i] = table.convertRowIndexToModel(rowindexs[i]);//转换为Model的索引，否则排序后索引不对应。
+				}
+				Arrays.sort(rowindexs);
+				
+				DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
+				for(int i=rowindexs.length-1;i>=0;i--){
+					tableModel.removeRow(rowindexs[i]);
+				}
+			}
+		});
+
+		
+		
+		
+		JSplitPane ResultSplitPane = new JSplitPane();
+
+		contentPane.add(ResultSplitPane, BorderLayout.EAST);
+		
+		textAreaSubdomains = new JTextArea();
+		ResultSplitPane.setLeftComponent(textAreaSubdomains);
+		textAreaSubdomains.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
 				final JPopupMenu jp = new JPopupMenu();
 		        jp.add("^_^");
-		        textArea.addMouseListener(new MouseAdapter() {
+		        textAreaSubdomains.addMouseListener(new MouseAdapter() {
 		            @Override
 		            public void mouseClicked(MouseEvent e) {
 		                if (e.getButton() == MouseEvent.BUTTON3) {
 		                    // 弹出菜单
-		                    jp.show(textArea, e.getX(), e.getY());
+		                    jp.show(textAreaSubdomains, e.getX(), e.getY());
 		                }
 		            }
 		        });
 			}
 		});
-		textArea.setColumns(30);
-		splitPane.setLeftComponent(textArea);
+		textAreaSubdomains.setColumns(30);
 		
-		textArea_1 = new JTextArea();
-		textArea_1.setColumns(30);
-		splitPane.setRightComponent(textArea_1);
+		textAreaSimilarDomains = new JTextArea();
+		ResultSplitPane.setRightComponent(textAreaSimilarDomains);
+		textAreaSimilarDomains.setColumns(30);
 		
-		JSplitPane splitPane_1 = new JSplitPane();
-		splitPane.setDividerLocation(0.5);
-		contentPane.add(splitPane_1, BorderLayout.EAST);
-		
-		textArea_2 = new JTextArea();
-		textArea_2.setColumns(30);
-		splitPane_1.setLeftComponent(textArea_2);
-		
-		panel_2 = new JPanel();
-		FlowLayout flowLayout = (FlowLayout) panel_2.getLayout();
-		flowLayout.setAlignment(FlowLayout.LEFT);
-		contentPane.add(panel_2, BorderLayout.SOUTH);
+		FooterPanel = new JPanel();
+		FlowLayout fl_FooterPanel = (FlowLayout) FooterPanel.getLayout();
+		fl_FooterPanel.setAlignment(FlowLayout.LEFT);
+		contentPane.add(FooterPanel, BorderLayout.SOUTH);
 		
 		lblNewLabel_2 = new JLabel(ExtenderName+"    "+github);
 		lblNewLabel_2.setFont(new Font("宋体", Font.BOLD, 12));
@@ -297,21 +360,59 @@ public class GUI extends JFrame {
 				lblNewLabel_2.setForeground(Color.BLACK);
 			}
 		});
-		panel_2.add(lblNewLabel_2);
+		FooterPanel.add(lblNewLabel_2);
 	}
 	
-	public Map<String, Set<String>> spiderall (String subdomainof, String domainlike) {
+	public Map<String, Set<String>> spiderall (Set<String> rootdomains, Set<String> keywords) {
 	    System.out.println("spiderall testing... you need to over write this function!");
 	    return null;
 	}
 	
 	
-	public Map<String, Set<String>> search(String subdomainof, String domainlike){
+	public Map<String, Set<String>> search(Set<String> rootdomains, Set<String> keywords){
 		System.out.println("search testing... you need to over write this function!");
 		return null;
 	}
 	public Boolean upload(String url,String resultJson) {
 		System.out.println("upload testing... you need to over write this function!");
 		return null;
+	}
+	
+	
+	public Set<String> getRootDomains() {
+		
+		Set<String> result = null;
+		int index=0;
+		for (int i=0;i<table.getColumnCount();i++) {
+			if (table.getColumnName(i).equals("Root Domain"));
+				index = i;
+		}
+    	
+		for(int j=0;j<table.getRowCount();j++){
+		  String onecell= (String)table.getValueAt(j,index);
+		  if (!onecell.equals("") && !onecell.equals(null)) {
+			  result.add(onecell);
+		  }
+		}
+		return result;
+	}
+	
+	
+	public Set<String> getKeywords() {
+		
+		Set<String> result = null;
+		int index=0;
+		for (int i=0;i<table.getColumnCount();i++) {
+			if (table.getColumnName(i).equals("keyword"));
+				index = i;
+		}
+    	
+		for(int j=0;j<table.getRowCount();j++){
+		  String onecell= (String)table.getValueAt(j,index);
+		  if (!onecell.equals("") && !onecell.equals(null)) {
+			  result.add(onecell);
+		  }
+		}
+		return result;
 	}
 }
