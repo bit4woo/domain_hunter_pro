@@ -11,6 +11,7 @@ import java.util.concurrent.Future;
 
 import javax.swing.SwingUtilities;
 import com.alibaba.fastjson.JSON;
+import com.google.common.net.InternetDomainName;
 
 import java.awt.Component;
 import java.awt.EventQueue;
@@ -21,11 +22,9 @@ import java.net.URL;
 
 
 public class BurpExtender extends GUI implements IBurpExtender, ITab {
-    public IBurpExtenderCallbacks callbacks;
+	private IBurpExtenderCallbacks callbacks;
     private IExtensionHelpers helpers;
     
-    private PrintWriter stdout;//现在这里定义变量，再在registerExtenderCallbacks函数中实例化，如果都在函数中就只是局部变量，不能在这实例化，因为要用到其他参数。
-    private PrintWriter stderr;
     
     @Override
     public void registerExtenderCallbacks(IBurpExtenderCallbacks callbacks)
@@ -44,130 +43,114 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab {
     
     @Override
 	public Map<String, Set<String>> search(Set<String> rootdomains, Set<String> keywords){
-			subdomainofset.clear();
-			domainlikeset.clear();
+
+    	subDomainSet.clear();
+		similarDomainSet.clear();
+		relatedDomainSet.clear();
+		
+		Set<String> httpsURLs = new HashSet<String>();
+		
+		Set<IHttpService> httpServiceSet = getHttpServiceFromSiteMap();
+		
+	    for (IHttpService httpservice:httpServiceSet){
+	    	
+	    	String shortURL = httpservice.toString();
+	    	String protocol =  httpservice.getProtocol();
+			String Host = httpservice.getHost();
 			
-			for (String rootdomain:rootdomains) {
-				if (rootdomain.contains(".")&&!rootdomain.endsWith(".")&&!rootdomain.startsWith("."))
-				{
-					Set<String> httpsURLs = new HashSet<String>();
-					IHttpRequestResponse[] requestResponses = callbacks.getSiteMap(null);
-					    //stdout.println(response[1]);
-				    for (IHttpRequestResponse x:requestResponses){
-				    	
-				    	IHttpService httpservice = x.getHttpService();
-				    	String shortURL = httpservice.toString();
-				    	String protocol =  httpservice.getProtocol();
-						String Host = httpservice.getHost();
-						
-						//stdout.println(shortURL);
-						//stdout.println(Host);
-						
-						if (Host.endsWith("."+rootdomain)||Host.equalsIgnoreCase(rootdomain)){
-							subdomainofset.add(Host);
-							//stdout.println(subdomainofset);
-							//get SANs info to get related domain, only when the [subdomain] is using https.
-							if(protocol.equalsIgnoreCase("https")) {
-									httpsURLs.add(shortURL);
-							}
-							continue;
-						}
-						
-						
-						if (!domainlike.equals("") && Host.contains(domainlike)){
-							domainlikeset.add(Host);
-							if(protocol.equalsIgnoreCase("https")) {
-								httpsURLs.add(shortURL);
-							}
-							//stdout.println(domainlikeset);
-							continue;
-						}
-						
-						if (Commons.validIP(Host)) {//https://202.77.129.30
-							if(protocol.equalsIgnoreCase("https")) {
-								httpsURLs.add(shortURL);
-							}
-						}
-				    }
-					    
-				    stdout.println("sub-domains and similar-domains search finished,starting get related-domains");
-				    //stdout.println(httpsURLs);
-				    
-				    //多线程获取
-				    //Set<Future<Set<String>>> set = new HashSet<Future<Set<String>>>();
-			    	Map<String,Future<Set<String>>> urlResultmap = new HashMap<String,Future<Set<String>>>();
-			        ExecutorService pool = Executors.newFixedThreadPool(10);
-			        
-			        for (String url:httpsURLs) {
-			          Callable<Set<String>> callable = new ThreadCertInfo(url,domainlike);
-			          Future<Set<String>> future = pool.submit(callable);
-			          //set.add(future);
-			          urlResultmap.put(url, future);
-			        }
-			        
-			        Set<String> tmpRelatedDomainSet = new HashSet<String>();
-			        for(String url:urlResultmap.keySet()) {
-			        	Future<Set<String>> future = urlResultmap.get(url);
-			        //for (Future<Set<String>> future : set) {
-			          try {
-			        	  stdout.println("founded related-domains :"+future.get() +" from "+url);
-			        	  if (future.get()!=null) {
-			        		  tmpRelatedDomainSet.addAll(future.get());
-			        	  }
-			        	  
-					} catch (Exception e) {
-						//e.printStackTrace(stderr);
-						stderr.println(e.getMessage());
-			        }
-			        }
-				    
-			        /* 单线程获取方式
-				    Set<String> tmpRelatedDomainSet = new HashSet<String>();
-				    //begin get related domains
-				    for(String url:httpsURLs) {
-				    	try {
-				    		tmpRelatedDomainSet.addAll(CertInfo.getSANs(url));
-						}catch(UnknownHostException e) {
-							stderr.println("UnknownHost "+ url);
-							continue;
-						}catch(ConnectException e) {
-							stderr.println("Connect Failed "+ url);
-							continue;
-						}
-				    	catch (Exception e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace(stderr);
-							continue;
-						}
-				    }
-				    */
-				    
-				    //对 SANs的结果再做一次分类。
-				    for (String item:tmpRelatedDomainSet) {
-				    	if (item.contains(".")&&!item.endsWith(".")&&!item.startsWith(".")) {
-					    	if (item.endsWith("."+rootdomain) || item.equalsIgnoreCase(rootdomain)){
-								subdomainofset.add(item);
-							}else if (!domainlike.equals("") && item.contains(domainlike)){
-								domainlikeset.add(item);
-							}else {
-								relatedDomainSet.add(item);
-							}
-				    	}
-				    }
-				}
+			callbacks.printOutput(rootdomains.toString());
+			callbacks.printOutput(keywords.toString());
+			int type = domainType(Host,rootdomains,keywords);
+			//callbacks.printOutput(Host+":"+type);
+			if (type == BurpExtender.SUB_DOMAIN)
+			{
+				subDomainSet.add(Host);
+			}else if (type == BurpExtender.SIMILAR_DOMAIN) {
+				similarDomainSet.add(Host);
 			}
 			
+			if (type !=BurpExtender.USELESS && protocol.equalsIgnoreCase("https")){
+				httpsURLs.add(shortURL);
+			}
+	    }
+			    
+	    stdout.println("sub-domains and similar-domains search finished,starting get related-domains");
+	    //stdout.println(httpsURLs);
+			    
+	    //多线程获取
+	    //Set<Future<Set<String>>> set = new HashSet<Future<Set<String>>>();
+    	Map<String,Future<Set<String>>> urlResultmap = new HashMap<String,Future<Set<String>>>();
+        ExecutorService pool = Executors.newFixedThreadPool(10);
+        
+        for (String url:httpsURLs) {
+          Callable<Set<String>> callable = new ThreadCertInfo(url,similarDomainSet);
+          Future<Set<String>> future = pool.submit(callable);
+          //set.add(future);
+          urlResultmap.put(url, future);
+        }
+        
+        Set<String> tmpRelatedDomainSet = new HashSet<String>();
+        for(String url:urlResultmap.keySet()) {
+        	Future<Set<String>> future = urlResultmap.get(url);
+        //for (Future<Set<String>> future : set) {
+          try {
+        	  stdout.println("founded related-domains :"+future.get() +" from "+url);
+        	  if (future.get()!=null) {
+        		  tmpRelatedDomainSet.addAll(future.get());
+        	  }
+        	  
+		} catch (Exception e) {
+			//e.printStackTrace(stderr);
+			stderr.println(e.getMessage());
+        }
+        }
+	    
+        /* 单线程获取方式
+	    Set<String> tmpRelatedDomainSet = new HashSet<String>();
+	    //begin get related domains
+	    for(String url:httpsURLs) {
+	    	try {
+	    		tmpRelatedDomainSet.addAll(CertInfo.getSANs(url));
+			}catch(UnknownHostException e) {
+				stderr.println("UnknownHost "+ url);
+				continue;
+			}catch(ConnectException e) {
+				stderr.println("Connect Failed "+ url);
+				continue;
+			}
+	    	catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace(stderr);
+				continue;
+			}
+	    }
+	    */
+        
+        //对 SANs的结果再做一次分类。
+        if (autoAddRelatedDomainToRootDomain == true) {
+	        for (String item:tmpRelatedDomainSet) {
+	        	String rootDomain =InternetDomainName.from(item).topPrivateDomain().toString();
+				rootDomainSet.add(rootDomain);
+				subDomainSet.add(item);
+			}
+	        relatedDomainSet.clear();
+        	
+        }else {
+        	relatedDomainSet =tmpRelatedDomainSet;
+        }
+
+		
+	    
+	    Map<String, Set<String>> result = new HashMap<String, Set<String>>();
+	    result.put("rootDomainSet", rootDomainSet);
+	    result.put("subDomainSet", subDomainSet);
+	    result.put("similarDomainSet", similarDomainSet);
+	    result.put("relatedDomainSet", relatedDomainSet);
+	    
+	    resultJson = JSON.toJSONString(result);
 		    
-		    Map<String, Set<String>> result = new HashMap<String, Set<String>>();
-		    result.put("subdomainofset", subdomainofset);
-		    result.put("domainlikeset", domainlikeset);
-		    result.put("relatedDomainSet", relatedDomainSet);
-		    
-		    resultJson = JSON.toJSONString(result);
-		    
-		    return result;
-		    
-	}
+	    return result;
+    }
 	
 	@Override
 	public Map<String, Set<String>> spiderall (Set<String> rootdomains, Set<String> keywords) {
@@ -186,14 +169,7 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab {
 				    	IRequestInfo  analyzeRequest = helpers.analyzeRequest(x); //前面的操作可能已经修改了请求包，所以做后续的更改前，都需要从新获取。
 						
 						String Host = analyzeRequest.getUrl().getHost();
-						
 						URL shortUrl=analyzeRequest.getUrl();
-						try {
-							String urlstring = x.getHttpService().toString();
-							shortUrl = new URL(urlstring);
-						} catch (MalformedURLException e) {
-							e.printStackTrace(stdout);
-						}
 
 						if (Host.endsWith("."+rootdomain) && Commons.isResponseNull(x)) {
 							// to reduce memory usage, use isResponseNull() method to adjust whether the item crawled.
@@ -269,7 +245,48 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab {
 	}
 	
 	
-
+	static int domainType(String domain,Set<String> rootDomains,Set<String> keywords) {
+		for (String rootdomain:rootDomains) {
+			if (rootdomain.contains(".")&&!rootdomain.endsWith(".")&&!rootdomain.startsWith("."))
+			{
+				if (domain.endsWith("."+rootdomain)||domain.equalsIgnoreCase(rootdomain)){
+					return BurpExtender.SUB_DOMAIN;
+				}
+			}
+		}
+		
+		for (String keyword:keywords) {
+			if (!keyword.equals("") && domain.contains(keyword)){
+				return BurpExtender.SIMILAR_DOMAIN;
+			}
+		}
+			
+		if (Commons.validIP(domain)) {//https://202.77.129.30
+			return BurpExtender.IP_ADDRESS;
+		}
+		return BurpExtender.USELESS;
+	}
+	
+	/**
+	 * @return IHttpService set to void duplicate IHttpRequestResponse handling
+	 * 
+	 */
+	Set<IHttpService> getHttpServiceFromSiteMap(){
+		IHttpRequestResponse[] requestResponses = callbacks.getSiteMap(null);
+		Set<IHttpService> HttpServiceSet = new HashSet<IHttpService>();
+	    for (IHttpRequestResponse x:requestResponses){
+	    	
+	    	IHttpService httpservice = x.getHttpService();
+	    	HttpServiceSet.add(httpservice);
+/*	    	String shortURL = httpservice.toString();
+	    	String protocol =  httpservice.getProtocol();
+			String Host = httpservice.getHost();*/
+	    }
+	    return HttpServiceSet;
+		
+	}
+	
+	
 	
 //以下是各种burp必须的方法 --start
     
@@ -289,13 +306,10 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab {
     //ITab必须实现的两个方法
 	@Override
 	public String getTabCaption() {
-		// TODO Auto-generated method stub
 		return ("Domain Hunter");
 	}
 	@Override
 	public Component getUiComponent() {
-		//return this.contentPane;
-		callbacks.printOutput(this.getContentPane()+"");
 		return this.getContentPane();
 	}
 	//ITab必须实现的两个方法
@@ -303,10 +317,19 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab {
 	
 	
 	
-/*	public static void main(String args[]) {
-		System.out.println("aaa".contains(""));
-	}*/
-	public static void main(String[] args) {
+	public static void main(String args[]) {
+		String Host ="www.baidu.com";
+		Set<String> rootdomains = new HashSet<String>();
+		rootdomains.add("baidu.com");
+		Set<String> keywords = new HashSet<String>();
+		keywords.add("baidu");
+		
+		int type = domainType(Host,rootdomains,keywords);
+		System.out.println(type);
+	}
+	
+	
+/*	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
@@ -317,5 +340,5 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab {
 				}
 			}
 		});
-	}
+	}*/
 }

@@ -41,16 +41,16 @@ public class ThreadCertInfo implements Callable<Set<String>>{
 	*/
     
 	private String url;
-	private String domainKeyword;
-    public ThreadCertInfo(String url,String domainKeyword) {
+	private Set<String> domainKeywords;
+    public ThreadCertInfo(String url,Set<String> domainKeywords) {
     	this.url = url;
-    	this.domainKeyword = domainKeyword;
+    	this.domainKeywords = domainKeywords;
     }
     
     
     @Override
     public Set<String> call() throws Exception{
-		Set<String> tmpDomains = CertInfo.getSANs(url,domainKeyword);
+		Set<String> tmpDomains = CertInfo.getSANs(url,domainKeywords);
 		return tmpDomains;
     }
 	
@@ -77,9 +77,14 @@ public class ThreadCertInfo implements Callable<Set<String>>{
     	Map<String,Future<Set<String>>> urlResultmap = new HashMap<String,Future<Set<String>>>();
         ExecutorService pool = Executors.newFixedThreadPool(3);
         
+		Set<String> set1 = new HashSet<>();
+		set1.add("alibaba");
+		set1.add("taobao");
+		set1.add("alipay");
+		
         for (String word: urls) {
 
-          Callable<Set<String>> callable = new ThreadCertInfo(word,"alipay.com");
+          Callable<Set<String>> callable = new ThreadCertInfo(word,set1);
           Future<Set<String>> future = pool.submit(callable);
           set.add(future);
           urlResultmap.put(word, future);
@@ -107,20 +112,6 @@ public class ThreadCertInfo implements Callable<Set<String>>{
 		}
         }
         
-        System.out.println(set2string(Domains));
+        System.out.println(Commons.set2string(Domains));
       }
-
-    
-    
-	public static String set2string(Set set){
-	    Iterator<?> iter = set.iterator();
-	    String result = "";
-	    while(iter.hasNext())
-	    {
-	        //System.out.println(iter.next());  	
-	    	result +=iter.next();
-	    	result +="\n";
-	    }
-	    return result;
-	}
 }

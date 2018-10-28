@@ -12,7 +12,11 @@ public class DomainResult {
 	private Set<String> subDomains;
 	private Set<String> similarDomains;
 	
-	
+    private static int SUB_DOMAIN=0;
+    private static int SIMILAR_DOMAIN=1;
+    private static int IP_ADDRESS=2;
+    private static int USELESS =-1;
+    
 	DomainResult(String objectName){
 		this.objectName = objectName;
 	}

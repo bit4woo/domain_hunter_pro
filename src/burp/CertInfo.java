@@ -37,7 +37,7 @@ public class CertInfo {
     };
     
 
-	public static Set<String> getSANs(String aURL,String domainKeyword) throws Exception{//only when domain key word in the Principal,return SANs
+	public static Set<String> getSANs(String aURL,Set<String> domainKeywords) throws Exception{//only when domain key word in the Principal,return SANs
 	    HostnameVerifier allHostsValid = new HostnameVerifier() {
 	        public boolean verify(String hostname, SSLSession session) {
 	            return true;
@@ -71,25 +71,29 @@ public class CertInfo {
                     //java.lang.NullPointerException. why??? need to confirm collection is not null
                     
                     String Principal = cer.getSubjectX500Principal().getName();
-                    if (Principal.toLowerCase().contains(domainKeyword)) {
-                    	//this may lead to miss some related domains, eg. https://www.YouTube.com ,it's principal is *.google.com
-                    	//but our target is to get useful message, so we need to do this to void CDN provider,I think it's worth~, or any good idea?
-                        Collection<List<?>> alterDomains = cer.getSubjectAlternativeNames();
-                        if (alterDomains!=null) {
-                        	Iterator<List<?>> item = alterDomains.iterator();
-                            while (item.hasNext()) {
-                            	List<?> domainList =  item.next();
-                            	if(domainList.get(1).toString().startsWith("*."))
-                            	{	
-                            		String relateddomain = domainList.get(1).toString().replace("*.","");
-                            		tmpSet.add(relateddomain);
-                            	}
-                            	else {
-                            		tmpSet.add(domainList.get(1).toString());
-                            	}
-                            }
-                            //System.out.println(tmpSet);
-                        }
+                    
+                    for (String domainKeyword:domainKeywords) {
+                    
+	                    if (Principal.toLowerCase().contains(domainKeyword)) {
+	                    	//this may lead to miss some related domains, eg. https://www.YouTube.com ,it's principal is *.google.com
+	                    	//but our target is to get useful message, so we need to do this to void CDN provider,I think it's worth~, or any good idea?
+	                        Collection<List<?>> alterDomains = cer.getSubjectAlternativeNames();
+	                        if (alterDomains!=null) {
+	                        	Iterator<List<?>> item = alterDomains.iterator();
+	                            while (item.hasNext()) {
+	                            	List<?> domainList =  item.next();
+	                            	if(domainList.get(1).toString().startsWith("*."))
+	                            	{	
+	                            		String relateddomain = domainList.get(1).toString().replace("*.","");
+	                            		tmpSet.add(relateddomain);
+	                            	}
+	                            	else {
+	                            		tmpSet.add(domainList.get(1).toString());
+	                            	}
+	                            }
+	                            //System.out.println(tmpSet);
+	                        }
+	                    }
                     }
 
                 }
@@ -161,10 +165,13 @@ public class CertInfo {
 	
 	
 	public static void main(String[] args) {
+		Set<String> set = new HashSet<>();
+		set.add("alibaba");
+		set.add("taobao");
 		try {
 			//certInformation("https://jd.hk");
 			//System.out.println(getSANs("https://202.77.129.10","jd"));
-			System.out.println(getSANs("https://m.hemaos.com/","alibaba"));
+			System.out.println(getSANs("https://m.hemaos.com/",set));
 			//System.out.println(getSANs("https://open.163.com","163.com"));
 			//System.out.println(getSANs("https://open.163.com"));
 		} catch (Exception e) {

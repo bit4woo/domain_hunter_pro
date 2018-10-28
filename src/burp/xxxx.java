@@ -40,19 +40,27 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import javax.swing.border.LineBorder;
 import javax.swing.ListSelectionModel;
+import javax.swing.JRadioButton;
 
 public class xxxx extends JFrame {
 	
-    public String ExtenderName = "Domain Hunter v1.1 by bit4";
+    public String ExtenderName = "Domain Hunter v1.2 by bit4";
     public String github = "https://github.com/bit4woo/domain_hunter";
-    private String summary = "      Sub-domain:%s  Similar-domain:%s  Related-domain:%s  ^_^";
-    public Set<String> subdomainofset = new HashSet<String>();
-    public Set<String> domainlikeset = new HashSet<String>();
+    private String summary = "      Related-domain:%s  Sub-domain:%s  Similar-domain:%s  ^_^";
+    public Set<String> rootDomainSet = new HashSet<String>();
+    public Set<String> subDomainSet = new HashSet<String>();
+    public Set<String> similarDomainSet = new HashSet<String>();
     public Set<String> relatedDomainSet = new HashSet<String>();
+    
+    public static int SUB_DOMAIN=0;
+    public static int SIMILAR_DOMAIN=1;
+    public static int IP_ADDRESS=2;
+    public static int USELESS =-1;
+    
     public String resultJson;
     
-    private PrintWriter stdout;
-    private PrintWriter stderr;
+    public PrintWriter stdout;
+    public PrintWriter stderr;
     
 	private JPanel contentPane;
 	private JTextField textFieldUploadURL;
@@ -68,15 +76,16 @@ public class xxxx extends JFrame {
 	
 	
 	
-	public String secretKey = null;
+	public boolean autoAddRelatedDomainToRootDomain = true;
 	public int sortedColumn;
 	public SortOrder sortedMethod;
 	private JTable table;
 	private JPanel panel;
 	private JButton RemoveButton;
 	private JButton AddButton;
-	private JLabel lblRootdomain;
-	private JTextField textField;
+	private JSplitPane TargetSplitPane;
+	private JTextArea textAreaRelatedDomains;
+	private JRadioButton rdbtnNewRadioButton;
 
 
 	/**
@@ -129,7 +138,9 @@ public class xxxx extends JFrame {
 			        @Override
 			        protected Map doInBackground() throws Exception {
 						Set<String> rootDomains = getRootDomains();
+						stderr.print(rootDomains.size());
 						Set<String> keywords= getKeywords();
+						stderr.print(rootDomains.size());
 						btnSearch.setEnabled(false);
 						return search(rootDomains,keywords);
 			        }
@@ -137,16 +148,16 @@ public class xxxx extends JFrame {
 			        protected void done() {
 			            try {
 				        	Map result = get();
-				        	subdomainofset = (Set) result.get("subdomainofset"); //之前的set变成了object
-				        	domainlikeset = (Set) result.get("domainlikeset");
+				        	subDomainSet = (Set) result.get("subDomainSet"); //之前的set变成了object
+				        	similarDomainSet = (Set) result.get("similarDomainSet");
 				        	relatedDomainSet = (Set) result.get("relatedDomainSet");
-							textAreaSubdomains.setText(Commons.set2string(subdomainofset));
-							textAreaSimilarDomains.setText(Commons.set2string(domainlikeset));
+							textAreaSubdomains.setText(Commons.set2string(subDomainSet));
+							textAreaSimilarDomains.setText(Commons.set2string(similarDomainSet));
 							btnSearch.setEnabled(true);
-							lblSummary.setText(String.format(summary, subdomainofset.size(),domainlikeset.size(),relatedDomainSet.size()));
+							lblSummary.setText(String.format(summary, subDomainSet.size(),similarDomainSet.size(),relatedDomainSet.size()));
 			            } catch (Exception e) {
 			            	btnSearch.setEnabled(true);
-			                e.printStackTrace(stderr);
+			                //e.printStackTrace(stderr);
 			            }
 			        }
 			    };      
@@ -178,10 +189,10 @@ public class xxxx extends JFrame {
 			        protected void done() {
 			            try {
 				        	Map result = get();
-				        	subdomainofset = (Set<String>) result.get("subdomainofset"); //之前的set变成了object
-				        	domainlikeset = (Set<String>) result.get("domainlikeset");
-							textAreaSubdomains.setText(Commons.set2string(subdomainofset));
-							textAreaSimilarDomains.setText(Commons.set2string(domainlikeset));
+				        	subDomainSet = (Set<String>) result.get("subDomainSet"); //之前的set变成了object
+				        	similarDomainSet = (Set<String>) result.get("domainlikeset");
+							textAreaSubdomains.setText(Commons.set2string(subDomainSet));
+							textAreaSimilarDomains.setText(Commons.set2string(similarDomainSet));
 							btnSpiderAll.setEnabled(true);
 			            } catch (Exception e) {
 			                e.printStackTrace(stderr);
@@ -219,7 +230,7 @@ public class xxxx extends JFrame {
 		
 		TargetPanel = new JScrollPane();
 		TargetPanel.setViewportBorder(new LineBorder(new Color(0, 0, 0)));
-		contentPane.add(TargetPanel, BorderLayout.WEST);
+		//contentPane.add(TargetPanel, BorderLayout.WEST);
 		
 		table = new JTable();
 		table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
@@ -265,8 +276,15 @@ public class xxxx extends JFrame {
 		table.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
 		TargetPanel.setViewportView(table);
 		
+		TargetSplitPane = new JSplitPane();
+		TargetSplitPane.setResizeWeight(0.5);
+		TargetSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
+		contentPane.add(TargetSplitPane, BorderLayout.WEST);
+		
+		TargetSplitPane.setLeftComponent(TargetPanel);
+		
 		panel = new JPanel();
-		contentPane.add(panel, BorderLayout.CENTER);
+		TargetSplitPane.setRightComponent(panel);
 		panel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 		
 		
@@ -284,6 +302,9 @@ public class xxxx extends JFrame {
 		
 		RemoveButton = new JButton("Remove");
 		panel.add(RemoveButton);
+		
+		rdbtnNewRadioButton = new JRadioButton("Auto Add Related Domain To Root Domain");
+		panel.add(rdbtnNewRadioButton);
 		RemoveButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				int[] rowindexs = table.getSelectedRows();
@@ -361,6 +382,9 @@ public class xxxx extends JFrame {
 			}
 		});
 		FooterPanel.add(lblNewLabel_2);
+		
+		textAreaRelatedDomains = new JTextArea();
+		contentPane.add(textAreaRelatedDomains, BorderLayout.CENTER);
 	}
 	
 	public Map<String, Set<String>> spiderall (Set<String> rootdomains, Set<String> keywords) {
@@ -381,7 +405,7 @@ public class xxxx extends JFrame {
 	
 	public Set<String> getRootDomains() {
 		
-		Set<String> result = null;
+		Set<String> result = new HashSet<String>();
 		int index=0;
 		for (int i=0;i<table.getColumnCount();i++) {
 			if (table.getColumnName(i).equals("Root Domain"));
@@ -400,10 +424,10 @@ public class xxxx extends JFrame {
 	
 	public Set<String> getKeywords() {
 		
-		Set<String> result = null;
+		Set<String> result = new HashSet<String>();
 		int index=0;
 		for (int i=0;i<table.getColumnCount();i++) {
-			if (table.getColumnName(i).equals("keyword"));
+			if (table.getColumnName(i).equals("Keyword"));
 				index = i;
 		}
     	

@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.bit4woo.burp</groupId>
   <artifactId>domain_hunter</artifactId>
-  <version>1.1</version>
+  <version>1.2</version>
   <build>
     <sourceDirectory>src</sourceDirectory>
     <plugins>
@@ -14,6 +14,25 @@
           <target>1.8</target>
         </configuration>
       </plugin>
+      
+      <plugin>
+	    <artifactId>maven-assembly-plugin</artifactId>
+	    <configuration>
+	        <descriptorRefs>
+	            <descriptorRef>jar-with-dependencies</descriptorRef>
+	        </descriptorRefs>
+	    </configuration>
+	    <executions>
+	        <execution>
+	            <id>make-assembly</id>
+	            <phase>package</phase>
+	            <goals>
+	                <goal>single</goal>
+	            </goals>
+	        </execution>
+	    </executions>
+	</plugin>
+      
     </plugins>
   </build>
   <dependencies>
@@ -30,5 +49,13 @@
 	    <artifactId>fastjson</artifactId>
 	    <version>1.2.49</version>
 	</dependency>
+	
+	<!-- to get root domain -->
+	<dependency>
+     <groupId>com.google.guava</groupId>
+     <artifactId>guava</artifactId>
+     <version>19.0</version>
+	</dependency>
+
 	</dependencies>
 </project>
