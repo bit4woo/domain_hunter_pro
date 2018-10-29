@@ -14,8 +14,12 @@ import javax.swing.SwingWorker;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JTextArea;
 import java.awt.Font;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.FlowLayout;
 import javax.swing.JSplitPane;
 import java.awt.Cursor;
@@ -23,6 +27,7 @@ import java.awt.Desktop;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.io.PrintWriter;
 import java.awt.event.ActionEvent;
 import javax.swing.JScrollPane;
@@ -30,6 +35,7 @@ import javax.swing.JScrollPane;
 
 import java.net.URI;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -38,16 +44,26 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
+
+import com.google.common.net.InternetDomainName;
+
 import javax.swing.border.LineBorder;
+import javax.swing.event.TableModelEvent;
 import javax.swing.ListSelectionModel;
 import javax.swing.JRadioButton;
+import java.awt.Component;
+import javax.swing.Box;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 
 public class GUI extends JFrame {
 	
     public String ExtenderName = "Domain Hunter v1.2 by bit4";
     public String github = "https://github.com/bit4woo/domain_hunter";
-    private String summary = "      Related-domain:%s  Sub-domain:%s  Similar-domain:%s  ^_^";
-    public Set<String> rootDomainSet = new HashSet<String>();
+    
+    public DomainObject domainResult = new DomainObject("");
+    
+/*    public Set<String> rootDomainSet = new HashSet<String>();
     public Set<String> subDomainSet = new HashSet<String>();
     public Set<String> similarDomainSet = new HashSet<String>();
     public Set<String> relatedDomainSet = new HashSet<String>();
@@ -57,16 +73,19 @@ public class GUI extends JFrame {
     public static int IP_ADDRESS=2;
     public static int USELESS =-1;
     
-    public String resultJson;
+    public String resultJson;*/
     
     public PrintWriter stdout;
     public PrintWriter stderr;
+    
+	public JRadioButton rdbtnAddRelatedToRoot;
+	public DefaultTableModel tableModel; 
     
 	private JPanel contentPane;
 	private JTextField textFieldUploadURL;
 	private JButton btnSearch;
 	private JButton btnUpload;
-	private JButton btnSpiderAll;
+	private JButton btnCrawl;
 	private JLabel lblSummary;
 	private JPanel FooterPanel;
 	private JLabel lblNewLabel_2;
@@ -74,7 +93,6 @@ public class GUI extends JFrame {
 	private JTextArea textAreaSubdomains;
 	private JTextArea textAreaSimilarDomains;
 	
-	public boolean autoAddRelatedDomainToRootDomain = true;
 	public int sortedColumn;
 	public SortOrder sortedMethod;
 	private JTable table;
@@ -83,7 +101,11 @@ public class GUI extends JFrame {
 	private JButton AddButton;
 	private JSplitPane TargetSplitPane;
 	private JTextArea textAreaRelatedDomains;
-	private JRadioButton rdbtnNewRadioButton;
+	private JButton btnSave;
+	private JButton btnOpen;
+	private Component verticalStrut;
+	private Component verticalStrut_1;
+	private JButton btnCopy;
 
 
 	/**
@@ -114,17 +136,43 @@ public class GUI extends JFrame {
 		setContentPane(contentPane);
 
 		
+		///////////////////////HeaderPanel//////////////
+		
+		
 		JPanel HeaderPanel = new JPanel();
 		FlowLayout fl_HeaderPanel = (FlowLayout) HeaderPanel.getLayout();
 		fl_HeaderPanel.setAlignment(FlowLayout.LEFT);
 		contentPane.add(HeaderPanel, BorderLayout.NORTH);
 		
-		JLabel lblUploadURL = new JLabel("Upload URL ");
-		HeaderPanel.add(lblUploadURL);
 		
-		textFieldUploadURL = new JTextField("http://");
-		HeaderPanel.add(textFieldUploadURL);
-		textFieldUploadURL.setColumns(20);
+		btnOpen = new JButton("Open");
+		btnOpen.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				JFileChooser fc=new JFileChooser();
+				fc.setDialogTitle("Chose Domain Hunter Project File");
+				fc.setDialogType(JFileChooser.CUSTOM_DIALOG);
+				if(fc.showOpenDialog(null)==JFileChooser.APPROVE_OPTION){
+
+				}
+			}
+		});
+		btnOpen.setToolTipText("Open Domain Hunter Project File");
+		HeaderPanel.add(btnOpen);
+		
+		
+		btnSave = new JButton("Save");
+		btnSave.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				JFileChooser fc=new JFileChooser();
+				fc.setDialogTitle("Save Domain Hunter file:");
+				fc.setDialogType(JFileChooser.SAVE_DIALOG);
+				if(fc.showSaveDialog(null)==JFileChooser.APPROVE_OPTION){
+					File file=fc.getSelectedFile();
+				}
+			}
+		});
+		btnSave.setToolTipText("Save Domain Hunter Project File");
+		HeaderPanel.add(btnSave);
 		
 		btnSearch = new JButton("Search");
 		btnSearch.setToolTipText("Do a single search from site map");
@@ -135,9 +183,11 @@ public class GUI extends JFrame {
 
 			        @Override
 			        protected Map doInBackground() throws Exception {
-						Set<String> rootDomains = getColumnValues("Root Domain");
-						//stderr.print(rootDomains.size());
-						Set<String> keywords= getColumnValues("Keyword");
+			        	
+			        	domainResult.rootDomainMap =getTableMap();
+			        	Set<String> rootDomains = domainResult.getRootDomainSet();
+			        	Set<String> keywords= domainResult.getKeywordSet();					
+						
 						//stderr.print(keywords.size());
 						//System.out.println(rootDomains.toString());
 						//System.out.println("xxx"+keywords.toString());
@@ -148,13 +198,23 @@ public class GUI extends JFrame {
 			        protected void done() {
 			            try {
 				        	Map result = get();
-				        	subDomainSet = (Set) result.get("subDomainSet"); //之前的set变成了object
-				        	similarDomainSet = (Set) result.get("similarDomainSet");
-				        	relatedDomainSet = (Set) result.get("relatedDomainSet");
-							textAreaSubdomains.setText(Commons.set2string(subDomainSet));
-							textAreaSimilarDomains.setText(Commons.set2string(similarDomainSet));
+				        	
+							if (rdbtnAddRelatedToRoot.isSelected()==true) {
+								domainResult.relatedToRoot();
+								Set<String> tableRootDomains = getColumnValues("Root Domain");
+								for (String key:domainResult.rootDomainMap.keySet()) {
+									if (!tableRootDomains.contains(key)) {
+										tableModel.addRow(new Object[]{key,domainResult.rootDomainMap.get(key)});
+									}
+								}
+							}
+							
+							textAreaSubdomains.setText(domainResult.getSubDomains());
+							textAreaSimilarDomains.setText(domainResult.getSimilarDomains());
+							textAreaRelatedDomains.setText(domainResult.getRelatedDomains());
+							lblSummary.setText(domainResult.getSummary());
+							
 							btnSearch.setEnabled(true);
-							lblSummary.setText(String.format(summary, subDomainSet.size(),similarDomainSet.size(),relatedDomainSet.size()));
 			            } catch (Exception e) {
 			            	btnSearch.setEnabled(true);
 			                e.printStackTrace(stderr);
@@ -165,10 +225,13 @@ public class GUI extends JFrame {
 				
 			}
 		});
+		
+		verticalStrut = Box.createVerticalStrut(20);
+		HeaderPanel.add(verticalStrut);
 		HeaderPanel.add(btnSearch);
 		
-		btnSpiderAll = new JButton("Spider All");
-		btnSpiderAll.addActionListener(new ActionListener() {
+		btnCrawl = new JButton("Crawl");
+		btnCrawl.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				
 			    SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
@@ -177,23 +240,36 @@ public class GUI extends JFrame {
 			    	//https://stackoverflow.com/questions/19708646/how-to-update-swing-ui-while-actionlistener-is-in-progress
 			        @Override
 			        protected Map doInBackground() throws Exception {                
-						Set<String> rootDomains = getColumnValues("Root Domain");
-						Set<String> keywords= getColumnValues("Keyword");
-						//stdout.println(subdomain);
-						//stdout.println(domainlike);
-						btnSpiderAll.setEnabled(false);
-						return spiderall(rootDomains,keywords);
+			        	domainResult.rootDomainMap =getTableMap();
+			        	Set<String> rootDomains = domainResult.getRootDomainSet();
+			        	Set<String> keywords= domainResult.getKeywordSet();
+						
+						btnCrawl.setEnabled(false);
+						return crawl(rootDomains,keywords);
 					
 			        }
 			        @Override
 			        protected void done() {
 			            try {
 				        	Map result = get();
-				        	subDomainSet = (Set<String>) result.get("subDomainSet"); //之前的set变成了object
-				        	similarDomainSet = (Set<String>) result.get("domainlikeset");
-							textAreaSubdomains.setText(Commons.set2string(subDomainSet));
-							textAreaSimilarDomains.setText(Commons.set2string(similarDomainSet));
-							btnSpiderAll.setEnabled(true);
+
+							if (rdbtnAddRelatedToRoot.isSelected()==true) {
+								domainResult.relatedToRoot();
+								Set<String> tableRootDomains = getColumnValues("Root Domain");
+								for (String key:domainResult.rootDomainMap.keySet()) {
+									if (!tableRootDomains.contains(key)) {
+										tableModel.addRow(new Object[]{key,domainResult.rootDomainMap.get(key)});
+									}
+								}
+							}
+							
+							textAreaSubdomains.setText(domainResult.getSubDomains());
+							textAreaSimilarDomains.setText(domainResult.getSimilarDomains());
+							textAreaRelatedDomains.setText(domainResult.getRelatedDomains());
+							lblSummary.setText(domainResult.getSummary());
+							
+							btnCrawl.setEnabled(true);
+							
 			            } catch (Exception e) {
 			                e.printStackTrace(stderr);
 			            }
@@ -202,8 +278,30 @@ public class GUI extends JFrame {
 			    worker.execute();
 			}
 		});
-		btnSpiderAll.setToolTipText("Spider all subdomains recursively,This may take a long time!!!");
-		HeaderPanel.add(btnSpiderAll);
+		btnCrawl.setToolTipText("Crawl all subdomains recursively,This may take a long time and large Memory Usage!!!");
+		HeaderPanel.add(btnCrawl);
+		
+		verticalStrut_1 = Box.createVerticalStrut(20);
+		HeaderPanel.add(verticalStrut_1);
+		
+		textFieldUploadURL = new JTextField("Input Upload URL Here");
+		textFieldUploadURL.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusGained(FocusEvent e) {
+				if (textFieldUploadURL.getText().equals("Input Upload URL Here")) {
+					textFieldUploadURL.setText("");
+				}
+			}
+			@Override
+			public void focusLost(FocusEvent e) {
+				if (textFieldUploadURL.getText().equals("")) {
+					textFieldUploadURL.setText("Input Upload URL Here");
+				}
+				
+			}
+		});
+		HeaderPanel.add(textFieldUploadURL);
+		textFieldUploadURL.setColumns(30);
 		
 		
 		btnUpload = new JButton("Upload");
@@ -228,6 +326,10 @@ public class GUI extends JFrame {
 		lblSummary = new JLabel("      ^_^");
 		HeaderPanel.add(lblSummary);
 		
+		
+		////////////////////////////////////target area///////////////////////////////////////////////////////
+		
+		
 		TargetPanel = new JScrollPane();
 		TargetPanel.setViewportBorder(new LineBorder(new Color(0, 0, 0)));
 		//contentPane.add(TargetPanel, BorderLayout.WEST);
@@ -235,6 +337,8 @@ public class GUI extends JFrame {
 		table = new JTable();
 		table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		table.setBorder(new LineBorder(new Color(0, 0, 0)));
+		//TODO change listener ,update DomainObject instance.
+		//not necessary, search and crawl action will update it.  save action also need to do this.
 		
 
 		
@@ -254,16 +358,17 @@ public class GUI extends JFrame {
 			}
 		});
 		
-		DefaultTableModel tableModel =new DefaultTableModel(
+		tableModel = new DefaultTableModel(
 			new Object[][] {
 				//{"1", "1","1"},
 			},
 			new String[] {
-				"Root Domain", "Keyword", "Source"
+				"Root Domain", "Keyword"//, "Source"
 			}
 		);
 		table.setModel(tableModel);
 		//table.setTableHeader(tableHeader);
+		
 		
 		
 		RowSorter<TableModel> sorter = new TableRowSorter<TableModel>(tableModel);
@@ -283,7 +388,12 @@ public class GUI extends JFrame {
 		
 		TargetSplitPane.setLeftComponent(TargetPanel);
 		
+		
+		///////////////////////////////Target Operations and Config//////////////////////
+		
+		
 		panel = new JPanel();
+		panel.setBorder(new LineBorder(new Color(0, 0, 0)));
 		TargetSplitPane.setRightComponent(panel);
 		panel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 		
@@ -293,8 +403,9 @@ public class GUI extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
 				enteredRootDomain = enteredRootDomain.trim();
-				String keyword = enteredRootDomain.substring(0,enteredRootDomain.lastIndexOf("."));
-				tableModel.addRow(new Object[]{enteredRootDomain,keyword,"manual added"});
+				enteredRootDomain =InternetDomainName.from(enteredRootDomain).topPrivateDomain().toString();
+				String keyword = enteredRootDomain.substring(0,enteredRootDomain.indexOf("."));
+				tableModel.addRow(new Object[]{enteredRootDomain,keyword});
 			}
 		});
 		panel.add(AddButton);
@@ -302,9 +413,6 @@ public class GUI extends JFrame {
 		
 		RemoveButton = new JButton("Remove");
 		panel.add(RemoveButton);
-		
-		rdbtnNewRadioButton = new JRadioButton("Auto Add Related Domain To Root Domain");
-		panel.add(rdbtnNewRadioButton);
 		RemoveButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				int[] rowindexs = table.getSelectedRows();
@@ -313,7 +421,7 @@ public class GUI extends JFrame {
 				}
 				Arrays.sort(rowindexs);
 				
-				DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
+				tableModel = (DefaultTableModel) table.getModel();
 				for(int i=rowindexs.length-1;i>=0;i--){
 					tableModel.removeRow(rowindexs[i]);
 				}
@@ -321,13 +429,50 @@ public class GUI extends JFrame {
 		});
 
 		
+		rdbtnAddRelatedToRoot = new JRadioButton("Auto Add Related Domain To Root Domain");
+		rdbtnAddRelatedToRoot.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (rdbtnAddRelatedToRoot.isSelected()==true) {
+					domainResult.relatedToRoot();
+					Set<String> tableRootDomains = getColumnValues("Root Domain");
+					for (String key:domainResult.rootDomainMap.keySet()) {
+						if (!tableRootDomains.contains(key)) {
+							tableModel.addRow(new Object[]{key,domainResult.rootDomainMap.get(key)});
+						}
+					}
+				}
+			}
+		});
 		
+		btnCopy = new JButton("Copy");
+		btnCopy.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+		        	
+		        	Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+		        	StringSelection selection = new StringSelection(domainResult.getRootDomains());
+		        	clipboard.setContents(selection, null);
+		
+			}
+		});
+		btnCopy.setToolTipText("Copy Root Domains To ClipBoard");
+		panel.add(btnCopy);
+		rdbtnAddRelatedToRoot.setSelected(true);
+		panel.add(rdbtnAddRelatedToRoot);
+
+		
+		///////////////////////////////textAreas///////////////////////////////////////////////////////
+		
+		
+		textAreaRelatedDomains = new JTextArea();
+		textAreaRelatedDomains.setEditable(false);
+		contentPane.add(textAreaRelatedDomains, BorderLayout.CENTER);
 		
 		JSplitPane ResultSplitPane = new JSplitPane();
 
 		contentPane.add(ResultSplitPane, BorderLayout.EAST);
 		
 		textAreaSubdomains = new JTextArea();
+		textAreaSubdomains.setEditable(false);
 		ResultSplitPane.setLeftComponent(textAreaSubdomains);
 		textAreaSubdomains.addMouseListener(new MouseAdapter() {
 			@Override
@@ -348,8 +493,14 @@ public class GUI extends JFrame {
 		textAreaSubdomains.setColumns(30);
 		
 		textAreaSimilarDomains = new JTextArea();
+		textAreaSimilarDomains.setEditable(false);
 		ResultSplitPane.setRightComponent(textAreaSimilarDomains);
 		textAreaSimilarDomains.setColumns(30);
+		
+		
+		
+		///////////////////////////FooterPanel//////////////////
+		
 		
 		FooterPanel = new JPanel();
 		FlowLayout fl_FooterPanel = (FlowLayout) FooterPanel.getLayout();
@@ -382,12 +533,10 @@ public class GUI extends JFrame {
 			}
 		});
 		FooterPanel.add(lblNewLabel_2);
-		
-		textAreaRelatedDomains = new JTextArea();
-		contentPane.add(textAreaRelatedDomains, BorderLayout.CENTER);
+
 	}
 	
-	public Map<String, Set<String>> spiderall (Set<String> rootdomains, Set<String> keywords) {
+	public Map<String, Set<String>> crawl (Set<String> rootdomains, Set<String> keywords) {
 	    System.out.println("spiderall testing... you need to over write this function!");
 	    return null;
 	}
@@ -427,5 +576,16 @@ public class GUI extends JFrame {
 		  }
 		}
 		return result;
+	}
+	
+	public Map<String, String> getTableMap() {
+		Map<String,String> tableMap= new HashMap<String,String>();
+		for(int x=0;x<table.getRowCount();x++){
+			String key =(String) table.getValueAt(x, 0);
+			String value = (String) table.getValueAt(x, 1);
+			tableMap.put(key,value);
+		}
+		return tableMap;
+		
 	}
 }

@@ -14,6 +14,7 @@ import javax.swing.SwingWorker;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JTextArea;
 import java.awt.Font;
 import java.awt.FlowLayout;
@@ -23,6 +24,7 @@ import java.awt.Desktop;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.io.PrintWriter;
 import java.awt.event.ActionEvent;
 import javax.swing.JScrollPane;
@@ -74,8 +76,6 @@ public class xxxx extends JFrame {
 	private JTextArea textAreaSubdomains;
 	private JTextArea textAreaSimilarDomains;
 	
-	
-	
 	public boolean autoAddRelatedDomainToRootDomain = true;
 	public int sortedColumn;
 	public SortOrder sortedMethod;
@@ -86,6 +86,7 @@ public class xxxx extends JFrame {
 	private JSplitPane TargetSplitPane;
 	private JTextArea textAreaRelatedDomains;
 	private JRadioButton rdbtnNewRadioButton;
+	private JButton btnSave;
 
 
 	/**
@@ -137,10 +138,12 @@ public class xxxx extends JFrame {
 
 			        @Override
 			        protected Map doInBackground() throws Exception {
-						Set<String> rootDomains = getRootDomains();
-						stderr.print(rootDomains.size());
-						Set<String> keywords= getKeywords();
-						stderr.print(rootDomains.size());
+						Set<String> rootDomains = getColumnValues("Root Domain");
+						//stderr.print(rootDomains.size());
+						Set<String> keywords= getColumnValues("Keyword");
+						//stderr.print(keywords.size());
+						//System.out.println(rootDomains.toString());
+						//System.out.println("xxx"+keywords.toString());
 						btnSearch.setEnabled(false);
 						return search(rootDomains,keywords);
 			        }
@@ -157,7 +160,7 @@ public class xxxx extends JFrame {
 							lblSummary.setText(String.format(summary, subDomainSet.size(),similarDomainSet.size(),relatedDomainSet.size()));
 			            } catch (Exception e) {
 			            	btnSearch.setEnabled(true);
-			                //e.printStackTrace(stderr);
+			                e.printStackTrace(stderr);
 			            }
 			        }
 			    };      
@@ -177,8 +180,8 @@ public class xxxx extends JFrame {
 			    	//https://stackoverflow.com/questions/19708646/how-to-update-swing-ui-while-actionlistener-is-in-progress
 			        @Override
 			        protected Map doInBackground() throws Exception {                
-						Set<String> rootDomains = getRootDomains();
-						Set<String> keywords= getKeywords();
+						Set<String> rootDomains = getColumnValues("Root Domain");
+						Set<String> keywords= getColumnValues("Keyword");
 						//stdout.println(subdomain);
 						//stdout.println(domainlike);
 						btnSpiderAll.setEnabled(false);
@@ -224,6 +227,19 @@ public class xxxx extends JFrame {
 			}
 		});
 		HeaderPanel.add(btnUpload);
+		btnSave = new JButton("Save");
+		btnSave.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				JFileChooser fc=new JFileChooser();
+				fc.setDialogTitle("Save Domain Hunter file:");
+				fc.setDialogType(JFileChooser.SAVE_DIALOG);
+				if(fc.showSaveDialog(null)==JFileChooser.APPROVE_OPTION){
+					File file=fc.getSelectedFile();
+				}
+			}
+		});
+		btnSave.setToolTipText("Do a single search from site map");
+		HeaderPanel.add(btnSave);
 		
 		lblSummary = new JLabel("      ^_^");
 		HeaderPanel.add(lblSummary);
@@ -403,36 +419,25 @@ public class xxxx extends JFrame {
 	}
 	
 	
-	public Set<String> getRootDomains() {
+	public Set<String> getColumnValues(String ColumnName) {
 		
 		Set<String> result = new HashSet<String>();
-		int index=0;
+		int index=-1;
 		for (int i=0;i<table.getColumnCount();i++) {
-			if (table.getColumnName(i).equals("Root Domain"));
+			if (table.getColumnName(i).equals(ColumnName)) {
 				index = i;
+				break;
+			}
 		}
     	
 		for(int j=0;j<table.getRowCount();j++){
-		  String onecell= (String)table.getValueAt(j,index);
-		  if (!onecell.equals("") && !onecell.equals(null)) {
-			  result.add(onecell);
+		  String onecell ="";
+		  try {
+			  onecell= (String)table.getValueAt(j,index);
+		  }catch(Exception e) {
+			  
 		  }
-		}
-		return result;
-	}
-	
-	
-	public Set<String> getKeywords() {
-		
-		Set<String> result = new HashSet<String>();
-		int index=0;
-		for (int i=0;i<table.getColumnCount();i++) {
-			if (table.getColumnName(i).equals("Keyword"));
-				index = i;
-		}
-    	
-		for(int j=0;j<table.getRowCount();j++){
-		  String onecell= (String)table.getValueAt(j,index);
+		  
 		  if (!onecell.equals("") && !onecell.equals(null)) {
 			  result.add(onecell);
 		  }

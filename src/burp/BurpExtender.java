@@ -10,11 +10,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import javax.swing.SwingUtilities;
-import com.alibaba.fastjson.JSON;
 import com.google.common.net.InternetDomainName;
 
 import java.awt.Component;
-import java.awt.EventQueue;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
@@ -43,10 +41,6 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab {
     
     @Override
 	public Map<String, Set<String>> search(Set<String> rootdomains, Set<String> keywords){
-
-    	subDomainSet.clear();
-		similarDomainSet.clear();
-		relatedDomainSet.clear();
 		
 		Set<String> httpsURLs = new HashSet<String>();
 		
@@ -58,18 +52,18 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab {
 	    	String protocol =  httpservice.getProtocol();
 			String Host = httpservice.getHost();
 			
-			callbacks.printOutput(rootdomains.toString());
-			callbacks.printOutput(keywords.toString());
-			int type = domainType(Host,rootdomains,keywords);
+			//callbacks.printOutput(rootdomains.toString());
+			//callbacks.printOutput(keywords.toString());
+			int type = domainResult.domainType(Host);
 			//callbacks.printOutput(Host+":"+type);
-			if (type == BurpExtender.SUB_DOMAIN)
+			if (type == DomainObject.SUB_DOMAIN)
 			{
-				subDomainSet.add(Host);
-			}else if (type == BurpExtender.SIMILAR_DOMAIN) {
-				similarDomainSet.add(Host);
+				domainResult.subDomainSet.add(Host);
+			}else if (type == DomainObject.SIMILAR_DOMAIN) {
+				domainResult.similarDomainSet.add(Host);
 			}
 			
-			if (type !=BurpExtender.USELESS && protocol.equalsIgnoreCase("https")){
+			if (type !=DomainObject.USELESS && protocol.equalsIgnoreCase("https")){
 				httpsURLs.add(shortURL);
 			}
 	    }
@@ -83,7 +77,7 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab {
         ExecutorService pool = Executors.newFixedThreadPool(10);
         
         for (String url:httpsURLs) {
-          Callable<Set<String>> callable = new ThreadCertInfo(url,similarDomainSet);
+          Callable<Set<String>> callable = new ThreadCertInfo(url,keywords);
           Future<Set<String>> future = pool.submit(callable);
           //set.add(future);
           urlResultmap.put(url, future);
@@ -127,33 +121,25 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab {
 	    */
         
         //对 SANs的结果再做一次分类。
-        if (autoAddRelatedDomainToRootDomain == true) {
+        
+        if (rdbtnAddRelatedToRoot.isSelected() == true) {
 	        for (String item:tmpRelatedDomainSet) {
 	        	String rootDomain =InternetDomainName.from(item).topPrivateDomain().toString();
-				rootDomainSet.add(rootDomain);
-				subDomainSet.add(item);
+				String keyword = rootDomain.substring(0,rootDomain.indexOf("."));
+	        	domainResult.rootDomainMap.put(rootDomain,keyword);
+	        	domainResult.subDomainSet.add(item);
 			}
-	        relatedDomainSet.clear();
-        	
+	        //relatedDomainSet.clear();
+	        domainResult.relatedDomainSet =tmpRelatedDomainSet;
         }else {
-        	relatedDomainSet =tmpRelatedDomainSet;
+        	domainResult.relatedDomainSet =tmpRelatedDomainSet;
         }
 
-		
-	    
-	    Map<String, Set<String>> result = new HashMap<String, Set<String>>();
-	    result.put("rootDomainSet", rootDomainSet);
-	    result.put("subDomainSet", subDomainSet);
-	    result.put("similarDomainSet", similarDomainSet);
-	    result.put("relatedDomainSet", relatedDomainSet);
-	    
-	    resultJson = JSON.toJSONString(result);
-		    
-	    return result;
+	    return null;
     }
 	
 	@Override
-	public Map<String, Set<String>> spiderall (Set<String> rootdomains, Set<String> keywords) {
+	public Map<String, Set<String>> crawl (Set<String> rootdomains, Set<String> keywords) {
 	    int i = 0;
 	    while(i<=2) {
 			for (String rootdomain: rootdomains) {
@@ -166,17 +152,23 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab {
 			    	//stdout.println("item number: "+len);
 			    	Set<URL> NeedToCrawl = new HashSet<URL>();
 				    for (IHttpRequestResponse x:items){// 经过验证每次都需要从头开始遍历，按一定offset获取的数据每次都可能不同
-				    	IRequestInfo  analyzeRequest = helpers.analyzeRequest(x); //前面的操作可能已经修改了请求包，所以做后续的更改前，都需要从新获取。
 						
-						String Host = analyzeRequest.getUrl().getHost();
-						URL shortUrl=analyzeRequest.getUrl();
-
-						if (Host.endsWith("."+rootdomain) && Commons.isResponseNull(x)) {
-							// to reduce memory usage, use isResponseNull() method to adjust whether the item crawled.
-							NeedToCrawl.add(shortUrl);
-							// to reduce memory usage, use shortUrl. base on my test, spider will crawl entire site when send short URL to it.
-							// this may miss some single page, but the single page often useless for domain collection
-							// see spideralltest() function.
+				    	IHttpService httpservice = x.getHttpService();
+				    	String shortUrlString = httpservice.toString();
+						String Host = httpservice.getHost();
+				    	
+						try {
+							URL shortUrl = new URL(shortUrlString);
+							
+							if (Host.endsWith("."+rootdomain) && Commons.isResponseNull(x)) {
+								// to reduce memory usage, use isResponseNull() method to adjust whether the item crawled.
+								NeedToCrawl.add(shortUrl);
+								// to reduce memory usage, use shortUrl. base on my test, spider will crawl entire site when send short URL to it.
+								// this may miss some single page, but the single page often useless for domain collection
+								// see spideralltest() function.
+							}
+						} catch (MalformedURLException e) {
+							e.printStackTrace(stderr);
 						}
 					}
 				    
@@ -245,28 +237,6 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab {
 	}
 	
 	
-	static int domainType(String domain,Set<String> rootDomains,Set<String> keywords) {
-		for (String rootdomain:rootDomains) {
-			if (rootdomain.contains(".")&&!rootdomain.endsWith(".")&&!rootdomain.startsWith("."))
-			{
-				if (domain.endsWith("."+rootdomain)||domain.equalsIgnoreCase(rootdomain)){
-					return BurpExtender.SUB_DOMAIN;
-				}
-			}
-		}
-		
-		for (String keyword:keywords) {
-			if (!keyword.equals("") && domain.contains(keyword)){
-				return BurpExtender.SIMILAR_DOMAIN;
-			}
-		}
-			
-		if (Commons.validIP(domain)) {//https://202.77.129.30
-			return BurpExtender.IP_ADDRESS;
-		}
-		return BurpExtender.USELESS;
-	}
-	
 	/**
 	 * @return IHttpService set to void duplicate IHttpRequestResponse handling
 	 * 
@@ -315,18 +285,6 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab {
 	//ITab必须实现的两个方法
 	//各种burp必须的方法 --end
 	
-	
-	
-	public static void main(String args[]) {
-		String Host ="www.baidu.com";
-		Set<String> rootdomains = new HashSet<String>();
-		rootdomains.add("baidu.com");
-		Set<String> keywords = new HashSet<String>();
-		keywords.add("baidu");
-		
-		int type = domainType(Host,rootdomains,keywords);
-		System.out.println(type);
-	}
 	
 	
 /*	public static void main(String[] args) {

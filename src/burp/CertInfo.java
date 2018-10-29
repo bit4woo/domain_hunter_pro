@@ -172,6 +172,7 @@ public class CertInfo {
 			//certInformation("https://jd.hk");
 			//System.out.println(getSANs("https://202.77.129.10","jd"));
 			System.out.println(getSANs("https://m.hemaos.com/",set));
+			System.out.println(getSANs("https://browser.taobao.com/",set));
 			//System.out.println(getSANs("https://open.163.com","163.com"));
 			//System.out.println(getSANs("https://open.163.com"));
 		} catch (Exception e) {

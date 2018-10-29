@@ -6,16 +6,15 @@ import java.util.Set;
 
 public class Commons {
 	
-	public static String set2string(Set set){
+	public static String set2string(Set<?> set){
 	    Iterator iter = set.iterator();
-	    String result = "";
+	    StringBuilder result = new StringBuilder();
 	    while(iter.hasNext())
 	    {
 	        //System.out.println(iter.next());  	
-	    	result +=iter.next();
-	    	result +="\n";
+	    	result.append(iter.next()).append("\n");
 	    }
-	    return result;
+	    return result.toString();
 	}
 	
 	public static boolean isResponseNull(IHttpRequestResponse message){
