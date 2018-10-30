@@ -121,19 +121,11 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab {
 	    */
         
         //对 SANs的结果再做一次分类。
-        
-        if (rdbtnAddRelatedToRoot.isSelected() == true) {
-	        for (String item:tmpRelatedDomainSet) {
-	        	String rootDomain =InternetDomainName.from(item).topPrivateDomain().toString();
-				String keyword = rootDomain.substring(0,rootDomain.indexOf("."));
-	        	domainResult.rootDomainMap.put(rootDomain,keyword);
-	        	domainResult.subDomainSet.add(item);
-			}
-	        //relatedDomainSet.clear();
-	        domainResult.relatedDomainSet =tmpRelatedDomainSet;
-        }else {
-        	domainResult.relatedDomainSet =tmpRelatedDomainSet;
-        }
+        domainResult.relatedDomainSet =tmpRelatedDomainSet;
+		if (rdbtnAddRelatedToRoot.isSelected()==true) {
+			domainResult.relatedToRoot();
+			ShowDomainObjects(domainResult);
+		}
 
 	    return null;
     }
@@ -200,7 +192,7 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab {
 	}
 	
 	
-	public Map<String, Set<String>> spideralltest (String subdomainof, String domainlike) {
+/*	public Map<String, Set<String>> spideralltest (String subdomainof, String domainlike) {
 		
 		int i = 0;
 		while (i<=10) {
@@ -218,23 +210,8 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab {
 		
 		Map<String, Set<String>> result = new HashMap<String, Set<String>>();
 		return result;
-	}
-	
-	@Override
-	public Boolean upload(String url,String resultJson) {
-		if ((url.toLowerCase().contains("http://") ||url.toLowerCase().contains("https://"))
-				&& !resultJson.equals("")){
-			try {
-				HTTPPost.httpPostRequest(url,resultJson);
-				return true;
-			} catch (IOException e) {
-				e.printStackTrace(stderr);
-				return false;
-			}
-		}
-		return false;
-		
-	}
+	}*/
+
 	
 	
 	/**

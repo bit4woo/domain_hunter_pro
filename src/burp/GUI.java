@@ -28,6 +28,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.awt.event.ActionEvent;
 import javax.swing.JScrollPane;
@@ -45,10 +46,12 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
 import com.google.common.net.InternetDomainName;
 
 import javax.swing.border.LineBorder;
-import javax.swing.event.TableModelEvent;
+import javax.swing.filechooser.FileFilter;
 import javax.swing.ListSelectionModel;
 import javax.swing.JRadioButton;
 import java.awt.Component;
@@ -62,18 +65,6 @@ public class GUI extends JFrame {
     public String github = "https://github.com/bit4woo/domain_hunter";
     
     public DomainObject domainResult = new DomainObject("");
-    
-/*    public Set<String> rootDomainSet = new HashSet<String>();
-    public Set<String> subDomainSet = new HashSet<String>();
-    public Set<String> similarDomainSet = new HashSet<String>();
-    public Set<String> relatedDomainSet = new HashSet<String>();
-    
-    public static int SUB_DOMAIN=0;
-    public static int SIMILAR_DOMAIN=1;
-    public static int IP_ADDRESS=2;
-    public static int USELESS =-1;
-    
-    public String resultJson;*/
     
     public PrintWriter stdout;
     public PrintWriter stderr;
@@ -106,6 +97,7 @@ public class GUI extends JFrame {
 	private Component verticalStrut;
 	private Component verticalStrut_1;
 	private JButton btnCopy;
+	private JButton btnNew;
 
 
 	/**
@@ -135,7 +127,9 @@ public class GUI extends JFrame {
 		contentPane.setLayout(new BorderLayout(0, 0));
 		setContentPane(contentPane);
 
-		
+	    
+		stdout = new PrintWriter(System.out, true);
+		stderr = new PrintWriter(System.out, true);
 		///////////////////////HeaderPanel//////////////
 		
 		
@@ -145,29 +139,104 @@ public class GUI extends JFrame {
 		contentPane.add(HeaderPanel, BorderLayout.NORTH);
 		
 		
+		btnNew = new JButton("New");
+		btnNew.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+                int result = JOptionPane.showConfirmDialog(null,"Save Current Project?");
+                
+                /*     是:   JOptionPane.YES_OPTION
+                *     否:   JOptionPane.NO_OPTION
+                *     取消: JOptionPane.CANCEL_OPTION
+                *     关闭: JOptionPane.CLOSED_OPTION*/
+                if (result == JOptionPane.CANCEL_OPTION || result == JOptionPane.CLOSED_OPTION) {
+                	return;
+                }else if (result == JOptionPane.YES_OPTION) {
+    				JFileChooser fc=new JFileChooser();
+    				fc.setDialogTitle("Save Domain Hunter file:");
+    				fc.setDialogType(JFileChooser.SAVE_DIALOG);
+    				if(fc.showSaveDialog(null)==JFileChooser.APPROVE_OPTION){
+    					File file=fc.getSelectedFile();
+    				}
+                }else if (result == JOptionPane.NO_OPTION) {
+                	// nothing to do
+                }
+                
+                String projectName = JOptionPane.showInputDialog("Enter Project Name", null);
+                domainResult = new DomainObject(projectName);
+                ShowDomainObjects(domainResult);
+
+			}
+		});
+		btnNew.setToolTipText("Create A New Project");
+		HeaderPanel.add(btnNew);
+
+		
+		
 		btnOpen = new JButton("Open");
 		btnOpen.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				JFileChooser fc=new JFileChooser();
+				JsonFileFilter jsonFilter = new JsonFileFilter(); //excel过滤器  
+			    fc.addChoosableFileFilter(jsonFilter);
+			    fc.setFileFilter(jsonFilter);
 				fc.setDialogTitle("Chose Domain Hunter Project File");
 				fc.setDialogType(JFileChooser.CUSTOM_DIALOG);
 				if(fc.showOpenDialog(null)==JFileChooser.APPROVE_OPTION){
 
+					try {
+						File file=fc.getSelectedFile();
+						String contents = Files.toString(file, Charsets.UTF_8);
+						domainResult.Open(contents);
+						//List<String> lines = Files.readLines(file, Charsets.UTF_8);
+						ShowDomainObjects(domainResult);
+						
+					} catch (IOException e1) {
+						e1.printStackTrace(stderr);
+					}
 				}
 			}
 		});
 		btnOpen.setToolTipText("Open Domain Hunter Project File");
 		HeaderPanel.add(btnOpen);
 		
-		
 		btnSave = new JButton("Save");
 		btnSave.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				JFileChooser fc=new JFileChooser();
+				JsonFileFilter jsonFilter = new JsonFileFilter(); //excel过滤器  
+			    fc.addChoosableFileFilter(jsonFilter);
+			    fc.setFileFilter(jsonFilter);
 				fc.setDialogTitle("Save Domain Hunter file:");
 				fc.setDialogType(JFileChooser.SAVE_DIALOG);
 				if(fc.showSaveDialog(null)==JFileChooser.APPROVE_OPTION){
 					File file=fc.getSelectedFile();
+					
+					if(!(file.getName().toLowerCase().endsWith(".json"))){
+						file=new File(fc.getCurrentDirectory(),file.getName()+".json");
+					}
+					
+					if (domainResult.projectName == "") {
+						domainResult.projectName = file.getName();
+					}
+					
+					
+				    String content= domainResult.Save();
+			        try{
+			            if(file.exists()){
+			            	int result = JOptionPane.showConfirmDialog(null,"Are you sure to overwrite this file ?");
+			            	if (result == JOptionPane.YES_OPTION) {
+			            		file.createNewFile();
+			            	}else {
+			            		return;
+			            	}
+			            }else {
+			            	file.createNewFile();
+			            }
+			            
+						Files.write(content.getBytes(), file);
+			        }catch(Exception e1){
+			           e1.printStackTrace(stderr);
+			        }
 				}
 			}
 		});
@@ -199,20 +268,7 @@ public class GUI extends JFrame {
 			            try {
 				        	Map result = get();
 				        	
-							if (rdbtnAddRelatedToRoot.isSelected()==true) {
-								domainResult.relatedToRoot();
-								Set<String> tableRootDomains = getColumnValues("Root Domain");
-								for (String key:domainResult.rootDomainMap.keySet()) {
-									if (!tableRootDomains.contains(key)) {
-										tableModel.addRow(new Object[]{key,domainResult.rootDomainMap.get(key)});
-									}
-								}
-							}
-							
-							textAreaSubdomains.setText(domainResult.getSubDomains());
-							textAreaSimilarDomains.setText(domainResult.getSimilarDomains());
-							textAreaRelatedDomains.setText(domainResult.getRelatedDomains());
-							lblSummary.setText(domainResult.getSummary());
+				        	ShowDomainObjects(domainResult);
 							
 							btnSearch.setEnabled(true);
 			            } catch (Exception e) {
@@ -252,24 +308,8 @@ public class GUI extends JFrame {
 			        protected void done() {
 			            try {
 				        	Map result = get();
-
-							if (rdbtnAddRelatedToRoot.isSelected()==true) {
-								domainResult.relatedToRoot();
-								Set<String> tableRootDomains = getColumnValues("Root Domain");
-								for (String key:domainResult.rootDomainMap.keySet()) {
-									if (!tableRootDomains.contains(key)) {
-										tableModel.addRow(new Object[]{key,domainResult.rootDomainMap.get(key)});
-									}
-								}
-							}
-							
-							textAreaSubdomains.setText(domainResult.getSubDomains());
-							textAreaSimilarDomains.setText(domainResult.getSimilarDomains());
-							textAreaRelatedDomains.setText(domainResult.getRelatedDomains());
-							lblSummary.setText(domainResult.getSummary());
-							
+				        	ShowDomainObjects(domainResult);
 							btnCrawl.setEnabled(true);
-							
 			            } catch (Exception e) {
 			                e.printStackTrace(stderr);
 			            }
@@ -310,11 +350,13 @@ public class GUI extends JFrame {
 			public void actionPerformed(ActionEvent arg0) {
 				SwingWorker<Boolean, Boolean> worker = new SwingWorker<Boolean, Boolean>() {
 			        @Override
-			        protected Boolean doInBackground() throws Exception {                
-			        	return upload("","");
+			        protected Boolean doInBackground() throws Exception {
+			        	
+			        	return upload(domainResult.uploadURL,domainResult.Save());
 			        }
 			        @Override
 			        protected void done() {
+			        	//TODO
 			        }
 			    };  
 			    worker.execute();
@@ -405,6 +447,7 @@ public class GUI extends JFrame {
 				enteredRootDomain = enteredRootDomain.trim();
 				enteredRootDomain =InternetDomainName.from(enteredRootDomain).topPrivateDomain().toString();
 				String keyword = enteredRootDomain.substring(0,enteredRootDomain.indexOf("."));
+				domainResult.rootDomainMap.put(enteredRootDomain,keyword);
 				tableModel.addRow(new Object[]{enteredRootDomain,keyword});
 			}
 		});
@@ -415,9 +458,19 @@ public class GUI extends JFrame {
 		panel.add(RemoveButton);
 		RemoveButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				
+				int columnindex =-1;
+				for (int i=0;i<table.getColumnCount();i++) {
+					if (table.getColumnName(i).equals("Root Domain")) {
+						columnindex = i;
+						break;
+					}
+				}
+				
 				int[] rowindexs = table.getSelectedRows();
 				for (int i=0; i < rowindexs.length; i++){
 					rowindexs[i] = table.convertRowIndexToModel(rowindexs[i]);//转换为Model的索引，否则排序后索引不对应。
+					domainResult.rootDomainMap.remove(tableModel.getValueAt(rowindexs[i], columnindex));
 				}
 				Arrays.sort(rowindexs);
 				
@@ -429,25 +482,10 @@ public class GUI extends JFrame {
 		});
 
 		
-		rdbtnAddRelatedToRoot = new JRadioButton("Auto Add Related Domain To Root Domain");
-		rdbtnAddRelatedToRoot.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if (rdbtnAddRelatedToRoot.isSelected()==true) {
-					domainResult.relatedToRoot();
-					Set<String> tableRootDomains = getColumnValues("Root Domain");
-					for (String key:domainResult.rootDomainMap.keySet()) {
-						if (!tableRootDomains.contains(key)) {
-							tableModel.addRow(new Object[]{key,domainResult.rootDomainMap.get(key)});
-						}
-					}
-				}
-			}
-		});
-		
 		btnCopy = new JButton("Copy");
 		btnCopy.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-		        	
+				
 		        	Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 		        	StringSelection selection = new StringSelection(domainResult.getRootDomains());
 		        	clipboard.setContents(selection, null);
@@ -456,9 +494,20 @@ public class GUI extends JFrame {
 		});
 		btnCopy.setToolTipText("Copy Root Domains To ClipBoard");
 		panel.add(btnCopy);
-		rdbtnAddRelatedToRoot.setSelected(true);
+		
+		
+		rdbtnAddRelatedToRoot = new JRadioButton("Auto Add Related Domain To Root Domain");
+		rdbtnAddRelatedToRoot.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (rdbtnAddRelatedToRoot.isSelected()==true) {
+					domainResult.relatedToRoot();
+					ShowDomainObjects(domainResult);
+				}
+			}
+		});
+		rdbtnAddRelatedToRoot.setSelected(false);
 		panel.add(rdbtnAddRelatedToRoot);
-
+		
 		
 		///////////////////////////////textAreas///////////////////////////////////////////////////////
 		
@@ -536,6 +585,8 @@ public class GUI extends JFrame {
 
 	}
 	
+	
+	//////////////////////////////methods//////////////////////////////////////
 	public Map<String, Set<String>> crawl (Set<String> rootdomains, Set<String> keywords) {
 	    System.out.println("spiderall testing... you need to over write this function!");
 	    return null;
@@ -546,9 +597,19 @@ public class GUI extends JFrame {
 		System.out.println("search testing... you need to over write this function!");
 		return null;
 	}
-	public Boolean upload(String url,String resultJson) {
-		System.out.println("upload testing... you need to over write this function!");
-		return null;
+	
+	public Boolean upload(String url,String content) {
+		if ((url.toLowerCase().contains("http://") ||url.toLowerCase().contains("https://"))
+				&& content != null){
+			try {
+				HTTPPost.httpPostRequest(url,content);
+				return true;
+			} catch (IOException e) {
+				e.printStackTrace(stderr);
+				return false;
+			}
+		}
+		return false;
 	}
 	
 	
@@ -588,4 +649,37 @@ public class GUI extends JFrame {
 		return tableMap;
 		
 	}
+	
+	public void ClearTable() {
+		DefaultTableModel model = (DefaultTableModel) table.getModel();
+		model.setRowCount(0);
+	}
+	
+	public void ShowDomainObjects(DomainObject domainResult) {
+		
+		ClearTable();
+		for (String key:domainResult.rootDomainMap.keySet()) {
+			tableModel.addRow(new Object[]{key,domainResult.rootDomainMap.get(key)});
+		}
+		
+		textFieldUploadURL.setText(domainResult.uploadURL);
+		textAreaSubdomains.setText(domainResult.getSubDomains());
+		textAreaSimilarDomains.setText(domainResult.getSimilarDomains());
+		textAreaRelatedDomains.setText(domainResult.getRelatedDomains());
+		lblSummary.setText(domainResult.getSummary());
+	}
+	
+
+	
+	class JsonFileFilter extends FileFilter {  
+	    public String getDescription() {  
+	        return "*.json";  
+	    }  
+	  
+	    public boolean accept(File file) {  
+	        String name = file.getName();  
+	        return file.isDirectory() || name.toLowerCase().endsWith(".json");  // 仅显示目录和json文件
+	    }  
+	}  
+
 }

@@ -1,6 +1,5 @@
 package burp;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -11,7 +10,7 @@ import com.alibaba.fastjson.JSON;
 import com.google.common.net.InternetDomainName;
 
 public class DomainObject {
-	private String objectName;
+	public String projectName = "";
 	
 	public Map<String,String> rootDomainMap = new HashMap<String,String>();
 	public Set<String> subDomainSet = new HashSet<String>();
@@ -23,58 +22,27 @@ public class DomainObject {
     public static int IP_ADDRESS=2;
     public static int USELESS =-1;
     
-    public String resultJson;
+    public String uploadURL = "Input Upload URL Here";
 	
     
-    DomainObject(String objectName){
-		this.objectName = objectName;
+    DomainObject(String projectName){
+		this.projectName = projectName;
 	}
 
-
-
-	public String getResultJson() {//to save this object
-	    Map<String, Object> result = new HashMap<String, Object>();
-	    result.put("objectName", objectName);
-	    result.put("rootDomainMap", rootDomainMap);
-	    result.put("subDomainSet", subDomainSet);
-	    result.put("similarDomainSet", similarDomainSet);
-	    result.put("relatedDomainSet", relatedDomainSet);
-	    
-	    resultJson = JSON.toJSONString(result);
-		
-		return resultJson;
-	}
-
-
-
-	public void setResultJson(String resultJson) {
-		this.resultJson = resultJson;
-		
-		try {
-			Map<String,Object> Json = (Map<String,Object>)JSON.parse(resultJson);
-			for (String key:Json.keySet()) {
-				if (key.equals("objectName"))
-					this.objectName = (String) Json.get(key);
-				if (key.equals("rootDomainMap"))
-					this.rootDomainMap = (Map<String, String>) Json.get(key);
-				if (key.equals("subDomainSet"))
-					this.subDomainSet = (Set<String>) Json.get(key);
-				if (key.equals("similarDomainSet"))
-					this.similarDomainSet = (Set<String>) Json.get(key);
-				if (key.equals("relatedDomainSet"))
-					this.relatedDomainSet = (Set<String>) Json.get(key);
-				
-			}
-		}catch(Exception e) {
-			e.printStackTrace();
-		}
-
-	}
+    public String Save() {
+    	return JSON.toJSONString(this);
+    }
+    
+    
+    
+    public  DomainObject Open(String instanceString) {
+    	return JSON.parseObject(instanceString, DomainObject.class);
+    }
 
 	/////////////self implement/////////////////////
 	
 	public void relatedToRoot() {
-		for(String relatedDomain:relatedDomainSet) {
+		for(String relatedDomain:this.relatedDomainSet) {
         	String rootDomain =InternetDomainName.from(relatedDomain).topPrivateDomain().toString();
 			String keyword = rootDomain.substring(0,rootDomain.indexOf("."));
 			if (!rootDomainMap.keySet().contains(rootDomain)) {
@@ -82,7 +50,15 @@ public class DomainObject {
 			}
 		}
 		relatedDomainSet.clear();
-			
+		
+		for (String similarDomain:this.similarDomainSet) {
+			String rootDomain =InternetDomainName.from(similarDomain).topPrivateDomain().toString();
+			String keyword = rootDomain.substring(0,rootDomain.indexOf("."));
+			if (rootDomainMap.keySet().contains(rootDomain)) {
+				subDomainSet.add(similarDomain);
+				similarDomainSet.remove(similarDomain);
+			}
+		}
 	}
 	
 	
@@ -161,14 +137,21 @@ public class DomainObject {
 	
 	
 	public static void main(String args[]) {
-		String Host ="www.baidu.com";
+/*		String Host ="www.baidu.com";
 		Set<String> rootdomains = new HashSet<String>();
 		rootdomains.add("baidu.com");
 		Set<String> keywords = new HashSet<String>();
 		keywords.add("baidu");
 		
 		int type = new DomainObject("").domainType(Host);
-		System.out.println(type);
+		System.out.println(type);*/
+		
+		DomainObject xx = new DomainObject("");
+		xx.rootDomainMap.put("baidu.com", "baidu");
+		xx.relatedDomainSet.add("xxx.baidu.com");
+		xx.relatedToRoot();
+		System.out.println(xx.rootDomainMap.keySet());
+		
 	}
 	
 }
