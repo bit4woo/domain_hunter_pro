@@ -3,7 +3,6 @@ package burp;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Set;
 import com.alibaba.fastjson.JSON;
 import com.google.common.net.InternetDomainName;
