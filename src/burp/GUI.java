@@ -38,7 +38,9 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.swing.JTable;
@@ -51,6 +53,8 @@ import com.google.common.io.Files;
 import com.google.common.net.InternetDomainName;
 
 import javax.swing.border.LineBorder;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.ListSelectionModel;
 import javax.swing.JRadioButton;
@@ -69,8 +73,9 @@ public class GUI extends JFrame {
     public PrintWriter stdout;
     public PrintWriter stderr;
     
-	public JRadioButton rdbtnAddRelatedToRoot;
-	public DefaultTableModel tableModel; 
+    
+    private JRadioButton rdbtnAddRelatedToRoot;
+    private DefaultTableModel tableModel; 
     
 	private JPanel contentPane;
 	private JTextField textFieldUploadURL;
@@ -84,8 +89,8 @@ public class GUI extends JFrame {
 	private JTextArea textAreaSubdomains;
 	private JTextArea textAreaSimilarDomains;
 	
-	public int sortedColumn;
-	public SortOrder sortedMethod;
+	private int sortedColumn;
+	private SortOrder sortedMethod;
 	private JTable table;
 	private JPanel panel;
 	private JButton RemoveButton;
@@ -151,19 +156,14 @@ public class GUI extends JFrame {
                 if (result == JOptionPane.CANCEL_OPTION || result == JOptionPane.CLOSED_OPTION) {
                 	return;
                 }else if (result == JOptionPane.YES_OPTION) {
-    				JFileChooser fc=new JFileChooser();
-    				fc.setDialogTitle("Save Domain Hunter file:");
-    				fc.setDialogType(JFileChooser.SAVE_DIALOG);
-    				if(fc.showSaveDialog(null)==JFileChooser.APPROVE_OPTION){
-    					File file=fc.getSelectedFile();
-    				}
+                	saveDialog();
                 }else if (result == JOptionPane.NO_OPTION) {
                 	// nothing to do
                 }
                 
-                String projectName = JOptionPane.showInputDialog("Enter Project Name", null);
+                String projectName = JOptionPane.showInputDialog("Enter Name For New Project", null);
                 domainResult = new DomainObject(projectName);
-                ShowDomainObjects(domainResult);
+                showToUI(domainResult);
 
 			}
 		});
@@ -182,13 +182,13 @@ public class GUI extends JFrame {
 				fc.setDialogTitle("Chose Domain Hunter Project File");
 				fc.setDialogType(JFileChooser.CUSTOM_DIALOG);
 				if(fc.showOpenDialog(null)==JFileChooser.APPROVE_OPTION){
-
 					try {
 						File file=fc.getSelectedFile();
 						String contents = Files.toString(file, Charsets.UTF_8);
-						domainResult.Open(contents);
+						domainResult = domainResult.Open(contents);
+						stdout.println("open project ["+domainResult.projectName+"] in "+ file.getName());
 						//List<String> lines = Files.readLines(file, Charsets.UTF_8);
-						ShowDomainObjects(domainResult);
+						showToUI(domainResult);
 						
 					} catch (IOException e1) {
 						e1.printStackTrace(stderr);
@@ -202,46 +202,11 @@ public class GUI extends JFrame {
 		btnSave = new JButton("Save");
 		btnSave.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				JFileChooser fc=new JFileChooser();
-				JsonFileFilter jsonFilter = new JsonFileFilter(); //excel过滤器  
-			    fc.addChoosableFileFilter(jsonFilter);
-			    fc.setFileFilter(jsonFilter);
-				fc.setDialogTitle("Save Domain Hunter file:");
-				fc.setDialogType(JFileChooser.SAVE_DIALOG);
-				if(fc.showSaveDialog(null)==JFileChooser.APPROVE_OPTION){
-					File file=fc.getSelectedFile();
-					
-					if(!(file.getName().toLowerCase().endsWith(".json"))){
-						file=new File(fc.getCurrentDirectory(),file.getName()+".json");
-					}
-					
-					if (domainResult.projectName == "") {
-						domainResult.projectName = file.getName();
-					}
-					
-					
-				    String content= domainResult.Save();
-			        try{
-			            if(file.exists()){
-			            	int result = JOptionPane.showConfirmDialog(null,"Are you sure to overwrite this file ?");
-			            	if (result == JOptionPane.YES_OPTION) {
-			            		file.createNewFile();
-			            	}else {
-			            		return;
-			            	}
-			            }else {
-			            	file.createNewFile();
-			            }
-			            
-						Files.write(content.getBytes(), file);
-			        }catch(Exception e1){
-			           e1.printStackTrace(stderr);
-			        }
-				}
-			}
-		});
+				saveDialog();
+			}});
 		btnSave.setToolTipText("Save Domain Hunter Project File");
 		HeaderPanel.add(btnSave);
+		
 		
 		btnSearch = new JButton("Search");
 		btnSearch.setToolTipText("Do a single search from site map");
@@ -253,9 +218,8 @@ public class GUI extends JFrame {
 			        @Override
 			        protected Map doInBackground() throws Exception {
 			        	
-			        	domainResult.rootDomainMap =getTableMap();
-			        	Set<String> rootDomains = domainResult.getRootDomainSet();
-			        	Set<String> keywords= domainResult.getKeywordSet();					
+			        	Set<String> rootDomains = domainResult.fetchRootDomainSet();
+			        	Set<String> keywords= domainResult.fetchKeywordSet();
 						
 						//stderr.print(keywords.size());
 						//System.out.println(rootDomains.toString());
@@ -266,10 +230,8 @@ public class GUI extends JFrame {
 			        @Override
 			        protected void done() {
 			            try {
-				        	Map result = get();
-				        	
-				        	ShowDomainObjects(domainResult);
-							
+				        	Map result = get();				        	
+				        	showToUI(domainResult);
 							btnSearch.setEnabled(true);
 			            } catch (Exception e) {
 			            	btnSearch.setEnabled(true);
@@ -297,8 +259,8 @@ public class GUI extends JFrame {
 			        @Override
 			        protected Map doInBackground() throws Exception {                
 			        	domainResult.rootDomainMap =getTableMap();
-			        	Set<String> rootDomains = domainResult.getRootDomainSet();
-			        	Set<String> keywords= domainResult.getKeywordSet();
+			        	Set<String> rootDomains = domainResult.fetchRootDomainSet();
+			        	Set<String> keywords= domainResult.fetchKeywordSet();
 						
 						btnCrawl.setEnabled(false);
 						return crawl(rootDomains,keywords);
@@ -308,7 +270,7 @@ public class GUI extends JFrame {
 			        protected void done() {
 			            try {
 				        	Map result = get();
-				        	ShowDomainObjects(domainResult);
+				        	showToUI(domainResult);
 							btnCrawl.setEnabled(true);
 			            } catch (Exception e) {
 			                e.printStackTrace(stderr);
@@ -351,7 +313,6 @@ public class GUI extends JFrame {
 				SwingWorker<Boolean, Boolean> worker = new SwingWorker<Boolean, Boolean>() {
 			        @Override
 			        protected Boolean doInBackground() throws Exception {
-			        	
 			        	return upload(domainResult.uploadURL,domainResult.Save());
 			        }
 			        @Override
@@ -360,7 +321,6 @@ public class GUI extends JFrame {
 			        }
 			    };  
 			    worker.execute();
-				
 			}
 		});
 		HeaderPanel.add(btnUpload);
@@ -379,10 +339,6 @@ public class GUI extends JFrame {
 		table = new JTable();
 		table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		table.setBorder(new LineBorder(new Color(0, 0, 0)));
-		//TODO change listener ,update DomainObject instance.
-		//not necessary, search and crawl action will update it.  save action also need to do this.
-		
-
 		
 		table.getTableHeader().addMouseListener(new MouseAdapter() {
 			@Override
@@ -409,7 +365,12 @@ public class GUI extends JFrame {
 			}
 		);
 		table.setModel(tableModel);
-		//table.setTableHeader(tableHeader);
+		tableModel.addTableModelListener(new TableModelListener(){
+			@Override
+			public void tableChanged(TableModelEvent e) {
+				domainResult.rootDomainMap = getTableMap();
+			}
+		});
 		
 		
 		
@@ -447,8 +408,17 @@ public class GUI extends JFrame {
 				enteredRootDomain = enteredRootDomain.trim();
 				enteredRootDomain =InternetDomainName.from(enteredRootDomain).topPrivateDomain().toString();
 				String keyword = enteredRootDomain.substring(0,enteredRootDomain.indexOf("."));
-				domainResult.rootDomainMap.put(enteredRootDomain,keyword);
-				tableModel.addRow(new Object[]{enteredRootDomain,keyword});
+		    	
+				domainResult.AddToRootDomainMap(enteredRootDomain, keyword);
+				showToUI(domainResult);
+			
+				
+/*				if (domainResult.rootDomainMap.containsKey(enteredRootDomain) && domainResult.rootDomainMap.containsValue(keyword)) {
+					//do nothing
+				}else {
+					domainResult.rootDomainMap.put(enteredRootDomain,keyword);
+					showToUI(domainResult);
+				}*/
 			}
 		});
 		panel.add(AddButton);
@@ -459,18 +429,9 @@ public class GUI extends JFrame {
 		RemoveButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				
-				int columnindex =-1;
-				for (int i=0;i<table.getColumnCount();i++) {
-					if (table.getColumnName(i).equals("Root Domain")) {
-						columnindex = i;
-						break;
-					}
-				}
-				
 				int[] rowindexs = table.getSelectedRows();
 				for (int i=0; i < rowindexs.length; i++){
 					rowindexs[i] = table.convertRowIndexToModel(rowindexs[i]);//转换为Model的索引，否则排序后索引不对应。
-					domainResult.rootDomainMap.remove(tableModel.getValueAt(rowindexs[i], columnindex));
 				}
 				Arrays.sort(rowindexs);
 				
@@ -478,6 +439,10 @@ public class GUI extends JFrame {
 				for(int i=rowindexs.length-1;i>=0;i--){
 					tableModel.removeRow(rowindexs[i]);
 				}
+				// will trigger tableModel listener
+				
+				domainResult.rootDomainMap = getTableMap();
+				showToUI(domainResult);
 			}
 		});
 
@@ -486,12 +451,13 @@ public class GUI extends JFrame {
 		btnCopy.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				
-		        	Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-		        	StringSelection selection = new StringSelection(domainResult.getRootDomains());
-		        	clipboard.setContents(selection, null);
+	        	Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+	        	StringSelection selection = new StringSelection(domainResult.fetchRootDomains());
+	        	clipboard.setContents(selection, null);
 		
 			}
 		});
+		
 		btnCopy.setToolTipText("Copy Root Domains To ClipBoard");
 		panel.add(btnCopy);
 		
@@ -499,9 +465,27 @@ public class GUI extends JFrame {
 		rdbtnAddRelatedToRoot = new JRadioButton("Auto Add Related Domain To Root Domain");
 		rdbtnAddRelatedToRoot.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if (rdbtnAddRelatedToRoot.isSelected()==true) {
+				domainResult.autoAddRelatedToRoot = rdbtnAddRelatedToRoot.isSelected();
+				if (domainResult.autoAddRelatedToRoot==true) {
 					domainResult.relatedToRoot();
-					ShowDomainObjects(domainResult);
+					showToUI(domainResult);/*
+					Set<String> tableRootDomains = getColumnValues("Root Domain");
+					for(String relatedDomain:domainResult.relatedDomainSet) {
+			        	String rootDomain =InternetDomainName.from(relatedDomain).topPrivateDomain().toString();
+						String keyword = rootDomain.substring(0,rootDomain.indexOf("."));
+						if (!tableRootDomains.contains(rootDomain)) {
+							tableModel.addRow(new Object[]{rootDomain,keyword});
+						}
+						//after this, tableModelListener will auto update rootDomainMap.
+					}
+					
+					for (String similarDomain:domainResult.similarDomainSet) {
+						String rootDomain =InternetDomainName.from(similarDomain).topPrivateDomain().toString();
+						if (domainResult.rootDomainMap.keySet().contains(rootDomain)) {
+							domainResult.subDomainSet.add(similarDomain);
+							domainResult.similarDomainSet.remove(similarDomain);
+						}
+					}*/
 				}
 			}
 		});
@@ -639,39 +623,84 @@ public class GUI extends JFrame {
 		return result;
 	}
 	
-	public Map<String, String> getTableMap() {
-		Map<String,String> tableMap= new HashMap<String,String>();
+	public LinkedHashMap<String, String> getTableMap() {
+		LinkedHashMap<String,String> tableMap= new LinkedHashMap<String,String>();
 		for(int x=0;x<table.getRowCount();x++){
 			String key =(String) table.getValueAt(x, 0);
 			String value = (String) table.getValueAt(x, 1);
 			tableMap.put(key,value);
 		}
 		return tableMap;
-		
 	}
 	
 	public void ClearTable() {
+		LinkedHashMap<String, String> tmp = domainResult.rootDomainMap;
+		
 		DefaultTableModel model = (DefaultTableModel) table.getModel();
 		model.setRowCount(0);
+		//this also trigger tableModel listener. lead to rootDomainMap to empty!!
+		//so need to backup rootDomainMap and restore!
+		domainResult.rootDomainMap = tmp;
 	}
 	
-	public void ShowDomainObjects(DomainObject domainResult) {
-		
+	public void showToUI(DomainObject domainResult) {
+
+		domainResult.relatedToRoot();
 		ClearTable();
-		for (String key:domainResult.rootDomainMap.keySet()) {
-			tableModel.addRow(new Object[]{key,domainResult.rootDomainMap.get(key)});
+    	
+		for (Entry<String, String> entry:domainResult.rootDomainMap.entrySet()) {
+			tableModel.addRow(new Object[]{entry.getKey(),entry.getValue()});
 		}
 		
 		textFieldUploadURL.setText(domainResult.uploadURL);
-		textAreaSubdomains.setText(domainResult.getSubDomains());
-		textAreaSimilarDomains.setText(domainResult.getSimilarDomains());
-		textAreaRelatedDomains.setText(domainResult.getRelatedDomains());
+		textAreaSubdomains.setText(domainResult.fetchSubDomains());
+		textAreaSimilarDomains.setText(domainResult.fetchSimilarDomains());
+		textAreaRelatedDomains.setText(domainResult.fetchRelatedDomains());
 		lblSummary.setText(domainResult.getSummary());
+		rdbtnAddRelatedToRoot.setSelected(domainResult.autoAddRelatedToRoot);
 	}
 	
+	public void saveDialog() {
+		JFileChooser fc=new JFileChooser();
+		JsonFileFilter jsonFilter = new JsonFileFilter(); //excel过滤器  
+	    fc.addChoosableFileFilter(jsonFilter);
+	    fc.setFileFilter(jsonFilter);
+		fc.setDialogTitle("Save Domain Hunter file:");
+		fc.setDialogType(JFileChooser.SAVE_DIALOG);
+		if(fc.showSaveDialog(null)==JFileChooser.APPROVE_OPTION){
+			File file=fc.getSelectedFile();
+			
+			if(!(file.getName().toLowerCase().endsWith(".json"))){
+				file=new File(fc.getCurrentDirectory(),file.getName()+".json");
+			}
+			
+			if (domainResult.projectName == "") {
+				domainResult.projectName = file.getName();
+			}
+			
+			
+		    String content= domainResult.Save();
+	        try{
+	            if(file.exists()){
+	            	int result = JOptionPane.showConfirmDialog(null,"Are you sure to overwrite this file ?");
+	            	if (result == JOptionPane.YES_OPTION) {
+	            		file.createNewFile();
+	            	}else {
+	            		return;
+	            	}
+	            }else {
+	            	file.createNewFile();
+	            }
+	            
+				Files.write(content.getBytes(), file);
+	        }catch(Exception e1){
+	           e1.printStackTrace(stderr);
+	        }
+		}
+	}
 
 	
-	class JsonFileFilter extends FileFilter {  
+	class JsonFileFilter extends FileFilter {
 	    public String getDescription() {  
 	        return "*.json";  
 	    }  
@@ -679,7 +708,7 @@ public class GUI extends JFrame {
 	    public boolean accept(File file) {  
 	        String name = file.getName();  
 	        return file.isDirectory() || name.toLowerCase().endsWith(".json");  // 仅显示目录和json文件
-	    }  
-	}  
+	    }
+	}
 
 }

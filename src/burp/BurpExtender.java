@@ -19,7 +19,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 
-public class BurpExtender extends GUI implements IBurpExtender, ITab {
+public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtensionStateListener {
 	private IBurpExtenderCallbacks callbacks;
     private IExtensionHelpers helpers;
     
@@ -35,17 +35,21 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab {
         this.callbacks = callbacks;
         helpers = callbacks.getHelpers();
         callbacks.setExtensionName(ExtenderName); //插件名称
+        callbacks.registerExtensionStateListener(this);
         addMenuTab();
         
     }
+    
+    public void extensionUnloaded() {
+    	//TODO to cancel SwingWorker in search and crawl function
+    	//this.getContentPane().removeAll();
+	}
     
     @Override
 	public Map<String, Set<String>> search(Set<String> rootdomains, Set<String> keywords){
 		
 		Set<String> httpsURLs = new HashSet<String>();
-		
 		Set<IHttpService> httpServiceSet = getHttpServiceFromSiteMap();
-		
 	    for (IHttpService httpservice:httpServiceSet){
 	    	
 	    	String shortURL = httpservice.toString();
@@ -92,13 +96,12 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab {
         	  if (future.get()!=null) {
         		  tmpRelatedDomainSet.addAll(future.get());
         	  }
-        	  
 		} catch (Exception e) {
 			//e.printStackTrace(stderr);
 			stderr.println(e.getMessage());
         }
         }
-	    
+        domainResult.relatedDomainSet =tmpRelatedDomainSet;
         /* 单线程获取方式
 	    Set<String> tmpRelatedDomainSet = new HashSet<String>();
 	    //begin get related domains
@@ -113,20 +116,12 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab {
 				continue;
 			}
 	    	catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace(stderr);
 				continue;
 			}
 	    }
 	    */
         
-        //对 SANs的结果再做一次分类。
-        domainResult.relatedDomainSet =tmpRelatedDomainSet;
-		if (rdbtnAddRelatedToRoot.isSelected()==true) {
-			domainResult.relatedToRoot();
-			ShowDomainObjects(domainResult);
-		}
-
 	    return null;
     }
 	
@@ -185,10 +180,7 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab {
 	    	i++;
 		}
 		
-		
-		
 	    return search(rootdomains,keywords);
-	    //search(subdomainof,domainlike);
 	}
 	
 	
@@ -201,7 +193,6 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab {
 				Thread.sleep(1*60*1000);//单位毫秒，60000毫秒=一分钟
 				stdout.println("sleep 1 min");
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			i++;

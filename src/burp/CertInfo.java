@@ -176,7 +176,6 @@ public class CertInfo {
 			//System.out.println(getSANs("https://open.163.com","163.com"));
 			//System.out.println(getSANs("https://open.163.com"));
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

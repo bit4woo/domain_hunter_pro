@@ -45,10 +45,8 @@ public class swingworkersample extends SwingWorker<Integer,Integer>{
         try {
             System.out.println("任务结束了，done（），结果为"+get());
         } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         } catch (ExecutionException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }

@@ -14,7 +14,6 @@ public class test {
 			System.out.println(uselessExtension(urlpath));
 			System.out.println("xxx");
 		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

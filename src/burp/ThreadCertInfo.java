@@ -31,7 +31,6 @@ public class ThreadCertInfo implements Callable<Set<String>>{
         	try {
 				tmpDomains = CertInfo.getSANs(urls.iterator().next());
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
         }
