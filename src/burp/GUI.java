@@ -41,6 +41,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Vector;
 
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
@@ -624,12 +625,24 @@ public class GUI extends JFrame {
 	
 	public LinkedHashMap<String, String> getTableMap() {
 		LinkedHashMap<String,String> tableMap= new LinkedHashMap<String,String>();
-		for(int x=0;x<table.getRowCount();x++){
+		
+/*		for(int x=0;x<table.getRowCount();x++){
 			String key =(String) table.getValueAt(x, 0);
-			String value = (String) table.getValueAt(x, 1);
+			String value = (String) table.getValueAt(x, 1); //encountered a "ArrayIndexOutOfBoundsException" error here~~ strange!
 			tableMap.put(key,value);
 		}
-		return tableMap;
+		return tableMap;*/
+		
+		Vector data = tableModel.getDataVector();
+		for (Object o : data) {
+	        Vector v = (Vector) o;
+	        String key = (String) v.elementAt(0);
+	        String value = (String) v.elementAt(1);
+	        if (key != null && value != null) {
+	        	tableMap.put(key, value);
+	        }
+	    }
+	    return tableMap;
 	}
 	
 	public void ClearTable() {

@@ -153,9 +153,7 @@ public class CertInfo {
 	                }
 	            }
 	        }
-        } catch (Exception e) {
-        	throw e;
-        }finally {
+        }finally {// remove catch to throw the full error stack to caller
         	if (conn!=null) {
         		conn.disconnect();
         	}
