@@ -1,7 +1,9 @@
 package burp;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -9,14 +11,18 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.Component;
+
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 
 
-public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtensionStateListener {
+public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtensionStateListener,IContextMenuFactory{
 	private IBurpExtenderCallbacks callbacks;
     private IExtensionHelpers helpers;
     
@@ -33,6 +39,7 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
         helpers = callbacks.getHelpers();
         callbacks.setExtensionName(ExtenderName); //插件名称
         callbacks.registerExtensionStateListener(this);
+        callbacks.registerContextMenuFactory(this);
         addMenuTab();
         
     }
@@ -249,6 +256,50 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 	}
 	//ITab必须实现的两个方法
 	//各种burp必须的方法 --end
+
+	@Override
+	public List<JMenuItem> createMenuItems(IContextMenuInvocation invocation) {
+		List<JMenuItem> list = new ArrayList<JMenuItem>();
+	    
+		byte context = invocation.getInvocationContext();
+		if (context == IContextMenuInvocation.CONTEXT_TARGET_SITE_MAP_TREE) {
+		    JMenuItem menuItemUpdateCookie = new JMenuItem("^_^ Add To Domain Hunter");
+			menuItemUpdateCookie.addActionListener(new addHostToRootDomain(invocation));	
+			list.add(menuItemUpdateCookie);
+		}
+
+    	return list;
+	}
+	
+	public class addHostToRootDomain implements ActionListener{
+		private IContextMenuInvocation invocation;
+		public addHostToRootDomain(IContextMenuInvocation invocation) {
+			this.invocation  = invocation;
+		}
+		@Override
+		public void actionPerformed(ActionEvent e)
+	    {
+	       try{
+	        	IHttpRequestResponse[] messages = invocation.getSelectedMessages();
+	        	Set<String> domains = new HashSet<String>();
+	        	for(IHttpRequestResponse message:messages) {
+	        		String host = message.getHttpService().getHost();
+	        		domains.add(host);
+	        	}
+	        	
+	        	domainResult.relatedDomainSet.addAll(domains);
+	        	if (domainResult.autoAddRelatedToRoot == true) {
+	        		domainResult.relatedToRoot();
+	        		domainResult.subDomainSet.addAll(domains);
+	        	}
+	        	showToUI(domainResult);
+	        }
+	        catch (Exception e1)
+	        {
+	            e1.printStackTrace(stderr);
+	        }
+	    }
+	}
 	
 	
 	

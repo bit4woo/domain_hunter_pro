@@ -158,7 +158,10 @@ public class DomainObject {
     		this.rootDomainMap.put(key,value);
     	}
     }
-
+    
+    public void clearWhenRemove() {
+    	// TODO
+    }
 	
 	public void relatedToRoot() {
 		if (this.autoAddRelatedToRoot == true) {
@@ -169,7 +172,7 @@ public class DomainObject {
 					rootDomainMap.put(rootDomain,keyword);
 				}
 			}
-			//relatedDomainSet.clear();
+			relatedDomainSet.clear();
 		}
 		System.out.println(similarDomainSet);
 		
