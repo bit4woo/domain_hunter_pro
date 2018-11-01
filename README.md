@@ -42,6 +42,8 @@ Some times similar domain and related domains give you surprise^_^. that's why I
 
 2018-10-30: Big Change: try to find sub-domains, similar domains , related domains of an organization(enterprise), not only a domain.
 
+2018-11-01: Add "Add to domain hunter"  menu  in site map tree.
+
 **xmind of domain collection**
 
 ![xmind](doc/xmind.png)
