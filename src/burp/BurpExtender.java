@@ -263,11 +263,10 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 	    
 		byte context = invocation.getInvocationContext();
 		if (context == IContextMenuInvocation.CONTEXT_TARGET_SITE_MAP_TREE) {
-		    JMenuItem menuItemUpdateCookie = new JMenuItem("^_^ Add To Domain Hunter");
-			menuItemUpdateCookie.addActionListener(new addHostToRootDomain(invocation));	
-			list.add(menuItemUpdateCookie);
+		    JMenuItem addToDomainHunter = new JMenuItem("^_^ Add To Domain Hunter");
+		    addToDomainHunter.addActionListener(new addHostToRootDomain(invocation));	
+			list.add(addToDomainHunter);
 		}
-
     	return list;
 	}
 	
@@ -300,7 +299,6 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 	        }
 	    }
 	}
-	
 	
 	
 /*	public static void main(String[] args) {

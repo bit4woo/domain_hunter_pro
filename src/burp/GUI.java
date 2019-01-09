@@ -497,7 +497,6 @@ public class GUI extends JFrame {
 		
 		
 		textAreaRelatedDomains = new JTextArea();
-		textAreaRelatedDomains.setEditable(false);
 		contentPane.add(textAreaRelatedDomains, BorderLayout.CENTER);
 		
 		JSplitPane ResultSplitPane = new JSplitPane();
