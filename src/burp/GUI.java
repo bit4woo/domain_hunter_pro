@@ -65,7 +65,7 @@ import java.awt.event.FocusEvent;
 
 public class GUI extends JFrame {
 	
-    public String ExtenderName = "Domain Hunter v1.2 by bit4";
+    public String ExtenderName = "Domain Hunter v1.3 by bit4";
     public String github = "https://github.com/bit4woo/domain_hunter";
     
     public DomainObject domainResult = new DomainObject("");

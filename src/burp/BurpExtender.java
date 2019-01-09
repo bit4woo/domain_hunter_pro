@@ -42,6 +42,13 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
         callbacks.registerContextMenuFactory(this);
         addMenuTab();
         
+        //recovery save domain results from extensionSetting
+        String content = callbacks.loadExtensionSetting("content");
+        if (content!=null) {
+    		domainResult = domainResult.Open(content);
+    		showToUI(domainResult);
+        }
+        
     }
     
     public void extensionUnloaded() {
@@ -125,6 +132,9 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 			}
 	    }
 	    */
+        //to save domain result to extensionSetting
+        String content= domainResult.Save();
+        callbacks.saveExtensionSetting("content", content);
         
 	    return null;
     }
