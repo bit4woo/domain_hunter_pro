@@ -22,6 +22,8 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.FlowLayout;
 import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
+
 import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.event.ActionListener;
@@ -37,6 +39,7 @@ import javax.swing.JScrollPane;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -51,6 +54,8 @@ import javax.swing.table.TableRowSorter;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import com.google.common.net.InternetDomainName;
+
+import title.RequestsTable;
 
 import javax.swing.border.LineBorder;
 import javax.swing.event.TableModelEvent;
@@ -77,6 +82,8 @@ public class GUI extends JFrame {
     private JRadioButton rdbtnAddRelatedToRoot;
     private DefaultTableModel tableModel; 
     
+    private JTabbedPane tabbedWrapper;
+    private JPanel TopCotentPane;
 	private JPanel contentPane;
 	private JTextField textFieldUploadURL;
 	private JButton btnSearch;
@@ -103,6 +110,14 @@ public class GUI extends JFrame {
 	private Component verticalStrut_1;
 	private JButton btnCopy;
 	private JButton btnNew;
+	private JPanel buttonPanel;
+	private JSplitPane splitPane;
+	private JSplitPane RequestDetailPanel;
+	public JTabbedPane RequestPanel;
+	public JTabbedPane ResponsePanel;
+	private JButton btnGettitle;
+	private JScrollPane scrollPaneRequests;
+	private JTable table_1;
 
 
 	/**
@@ -125,12 +140,25 @@ public class GUI extends JFrame {
 	 * Create the frame.
 	 */
 	public GUI() {
+		tabbedWrapper = new JTabbedPane();
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setBounds(100, 100, 1174, 497);
+		setContentPane(tabbedWrapper);
+		
+		DomainPanel();
+		tabbedWrapper.addTab("Domains", null, contentPane, null);
+		tabbedWrapper.addTab("Titles", null, TitlePanel(), null);
+
+	}
+
+	
+	public void DomainPanel() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 1174, 497);
 		contentPane =  new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		contentPane.setLayout(new BorderLayout(0, 0));
-		setContentPane(contentPane);
+		
 
 	    
 		stdout = new PrintWriter(System.out, true);
@@ -569,6 +597,64 @@ public class GUI extends JFrame {
 	}
 	
 	
+	public JPanel TitlePanel() {
+		//
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setBounds(100, 100, 1174, 497);
+		JPanel TitlePanel = new JPanel();
+		TitlePanel.setBorder(new EmptyBorder(5, 5, 5, 5));
+		TitlePanel.setLayout(new BorderLayout(0, 0));
+		
+		buttonPanel = new JPanel();
+		TitlePanel.add(buttonPanel, BorderLayout.NORTH);
+		buttonPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
+		
+		btnGettitle = new JButton("GetTitle");
+		btnGettitle.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				getAllTitle();
+			}
+		});
+		buttonPanel.add(btnGettitle);
+		
+		splitPane = new JSplitPane();
+		splitPane.setResizeWeight(0.5);
+		splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
+		TitlePanel.add(splitPane, BorderLayout.CENTER);
+		
+		RequestDetailPanel = new JSplitPane();
+		RequestDetailPanel.setResizeWeight(0.5);
+		splitPane.setRightComponent(RequestDetailPanel);
+		
+		RequestPanel = new JTabbedPane();
+		RequestDetailPanel.setLeftComponent(RequestPanel);
+		
+		ResponsePanel = new JTabbedPane();
+		RequestDetailPanel.setRightComponent(ResponsePanel);
+		
+		scrollPaneRequests = new JScrollPane();
+		splitPane.setLeftComponent(scrollPaneRequests);
+		
+		
+		DefaultTableModel tableModel = new DefaultTableModel(
+				new Object[][] {
+				},
+				new String[] {
+					"#", "Host", "URL", "Status", "Length", "MIME Type", "Title", "IP", "Time", "New column", "New column", "New column", "New column", "New column", "New column", "New column", "New column"
+				}
+			);
+		
+		table_1 = new RequestsTable(tableModel);
+		scrollPaneRequests.setViewportView(table_1);
+		
+		return TitlePanel;
+	}
+	
+	
+	public void initMessageEditor() {
+		//sub class should rewrite this function to add IMessageEditor to the panel
+	}
+	
 	//////////////////////////////methods//////////////////////////////////////
 	public Map<String, Set<String>> crawl (Set<String> rootdomains, Set<String> keywords) {
 	    System.out.println("spiderall testing... you need to over write this function!");
@@ -720,6 +806,15 @@ public class GUI extends JFrame {
 	        String name = file.getName();  
 	        return file.isDirectory() || name.toLowerCase().endsWith(".json");  // 仅显示目录和json文件
 	    }
+	}
+	
+	public void getAllTitle(){
+		Iterator it = domainResult.getSubDomainSet().iterator();
+		while (it.hasNext()) {
+			String domain = (String) it.next();
+			
+		}
+		//sub class should over write this function
 	}
 
 }

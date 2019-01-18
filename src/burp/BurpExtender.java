@@ -10,20 +10,36 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import javax.swing.JFrame;
 import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
+import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
+
+import title.RequestsTable;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.BorderLayout;
 import java.awt.Component;
-
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 
 
-public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtensionStateListener,IContextMenuFactory{
-	private IBurpExtenderCallbacks callbacks;
+public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtensionStateListener,IContextMenuFactory, IMessageEditorController{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	public IBurpExtenderCallbacks callbacks;
     private IExtensionHelpers helpers;
     
     
@@ -310,6 +326,75 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 	    }
 	}
 	
+	@Override
+	public void initMessageEditor() {
+        IMessageEditor requestViewer = callbacks.createMessageEditor(this, false);
+        IMessageEditor responseViewer = callbacks.createMessageEditor(this, false);
+        RequestPanel.addTab("Request", requestViewer.getComponent());
+        ResponsePanel.addTab("Response", responseViewer.getComponent());
+
+	}
+	
+	//method of IMessageEditorController
+	@Override
+	public IHttpService getHttpService() {
+		return null;
+	}
+
+	//method of IMessageEditorController
+	@Override
+	public byte[] getRequest() {
+		return null;
+	}
+
+	//method of IMessageEditorController
+	@Override
+	public byte[] getResponse() {
+		return null;
+	}
+	
+	
+	public void getTitle(String host) {
+		List<IHttpService> HttpServiceList = new ArrayList();
+		HttpServiceList.add(helpers.buildHttpService(host,80,"http"));
+		HttpServiceList.add(helpers.buildHttpService(host,443,"https"));
+		Getter getter = new Getter(helpers);
+		
+		for (IHttpService item:HttpServiceList) {
+			try {
+				byte[] request = helpers.buildHttpRequest(new URL(item.toString()));
+				IHttpRequestResponse messageinfo = callbacks.makeHttpRequest(item, request);
+
+				IResponseInfo responseInfo = helpers.analyzeResponse(messageinfo.getResponse());
+				
+				int code = responseInfo.getStatusCode();
+				String MIME = responseInfo.getStatedMimeType();
+				if(MIME == null) {
+					responseInfo.getInferredMimeType();
+				}
+				String length = getter.getHeaderValueOf(false, messageinfo, "Content-Length");
+				String body = new String(getter.getBody(false, messageinfo));
+				String title = "Null";
+				
+				
+				Pattern p = Pattern.compile("<title>(.*?)<title>");
+				Matcher m  = p.matcher(body);
+
+				while ( m.find() ) {
+					title = m.group(0);
+				}
+				
+			} catch (MalformedURLException e) {
+				e.printStackTrace();
+			}
+
+			
+		}
+
+		
+
+		
+	}
 	
 /*	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
