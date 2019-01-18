@@ -3,9 +3,11 @@ package burp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -23,6 +25,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 
+import com.alibaba.fastjson.JSON;
+
+import title.LineObject;
 import title.RequestsTable;
 
 import java.awt.event.ActionEvent;
@@ -53,7 +58,7 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
     	stdout.println(github);
         this.callbacks = callbacks;
         helpers = callbacks.getHelpers();
-        callbacks.setExtensionName(ExtenderName); //²å¼şÃû³Æ
+        callbacks.setExtensionName(ExtenderName); //æ’ä»¶åç§°
         callbacks.registerExtensionStateListener(this);
         callbacks.registerContextMenuFactory(this);
         addMenuTab();
@@ -102,7 +107,7 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 	    stdout.println("sub-domains and similar-domains search finished,starting get related-domains");
 	    //stdout.println(httpsURLs);
 			    
-	    //¶àÏß³Ì»ñÈ¡
+	    //å¤šçº¿ç¨‹è·å–
 	    //Set<Future<Set<String>>> set = new HashSet<Future<Set<String>>>();
     	Map<String,Future<Set<String>>> urlResultmap = new HashMap<String,Future<Set<String>>>();
         ExecutorService pool = Executors.newFixedThreadPool(10);
@@ -129,7 +134,7 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
         }
         }
         domainResult.relatedDomainSet =tmpRelatedDomainSet;
-        /* µ¥Ïß³Ì»ñÈ¡·½Ê½
+        /* å•çº¿ç¨‹è·å–æ–¹å¼
 	    Set<String> tmpRelatedDomainSet = new HashSet<String>();
 	    //begin get related domains
 	    for(String url:httpsURLs) {
@@ -161,14 +166,14 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 	    while(i<=2) {
 			for (String rootdomain: rootdomains) {
 				if (!rootdomain.contains(".")||rootdomain.endsWith(".")||rootdomain.equals("")){
-					//Èç¹ûÓòÃûÎª¿Õ£¬»òÕß£¨²»°üº¬.ºÅ£¬»òÕßµãºÅÔÚÄ©Î²µÄ£©
+					//å¦‚æœåŸŸåä¸ºç©ºï¼Œæˆ–è€…ï¼ˆä¸åŒ…å«.å·ï¼Œæˆ–è€…ç‚¹å·åœ¨æœ«å°¾çš„ï¼‰
 				}
 				else {
 			    	IHttpRequestResponse[] items = callbacks.getSiteMap(null); //null to return entire sitemap
 			    	//int len = items.length;
 			    	//stdout.println("item number: "+len);
 			    	Set<URL> NeedToCrawl = new HashSet<URL>();
-				    for (IHttpRequestResponse x:items){// ¾­¹ıÑéÖ¤Ã¿´Î¶¼ĞèÒª´ÓÍ·¿ªÊ¼±éÀú£¬°´Ò»¶¨offset»ñÈ¡µÄÊı¾İÃ¿´Î¶¼¿ÉÄÜ²»Í¬
+				    for (IHttpRequestResponse x:items){// ç»è¿‡éªŒè¯æ¯æ¬¡éƒ½éœ€è¦ä»å¤´å¼€å§‹éå†ï¼ŒæŒ‰ä¸€å®šoffsetè·å–çš„æ•°æ®æ¯æ¬¡éƒ½å¯èƒ½ä¸åŒ
 						
 				    	IHttpService httpservice = x.getHttpService();
 				    	String shortUrlString = httpservice.toString();
@@ -201,7 +206,7 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 			
 			
 			try {
-				Thread.sleep(5*60*1000);//µ¥Î»ºÁÃë£¬60000ºÁÃë=Ò»·ÖÖÓ
+				Thread.sleep(5*60*1000);//å•ä½æ¯«ç§’ï¼Œ60000æ¯«ç§’=ä¸€åˆ†é’Ÿ
 				stdout.println("sleep 5 minutes to wait spider");
 				//to wait spider
 			} catch (InterruptedException e) {
@@ -220,7 +225,7 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		while (i<=10) {
 			try {
 				callbacks.sendToSpider(new URL("http://www.baidu.com/"));
-				Thread.sleep(1*60*1000);//µ¥Î»ºÁÃë£¬60000ºÁÃë=Ò»·ÖÖÓ
+				Thread.sleep(1*60*1000);//å•ä½æ¯«ç§’ï¼Œ60000æ¯«ç§’=ä¸€åˆ†é’Ÿ
 				stdout.println("sleep 1 min");
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -256,7 +261,7 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 	
 	
 	
-//ÒÔÏÂÊÇ¸÷ÖÖburp±ØĞëµÄ·½·¨ --start
+//ä»¥ä¸‹æ˜¯å„ç§burpå¿…é¡»çš„æ–¹æ³• --start
     
     public void addMenuTab()
     {
@@ -264,14 +269,14 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
       {
         public void run()
         {
-        	BurpExtender.this.callbacks.addSuiteTab(BurpExtender.this); //ÕâÀïµÄBurpExtender.thisÊµÖÊÊÇÖ¸ITab¶ÔÏó£¬Ò²¾ÍÊÇgetUiComponent()ÖĞµÄcontentPane.Õâ¸ö²ÎÊıÓÉCGUI()º¯Êı³õÊ¼»¯¡£
-        	//Èç¹ûÕâÀï±¨java.lang.NullPointerException: Component cannot be null ´íÎó£¬ĞèÒªÅÅ²écontentPaneµÄ³õÊ¼»¯ÊÇ·ñÕıÈ·¡£
+        	BurpExtender.this.callbacks.addSuiteTab(BurpExtender.this); //è¿™é‡Œçš„BurpExtender.thiså®è´¨æ˜¯æŒ‡ITabå¯¹è±¡ï¼Œä¹Ÿå°±æ˜¯getUiComponent()ä¸­çš„contentPane.è¿™ä¸ªå‚æ•°ç”±CGUI()å‡½æ•°åˆå§‹åŒ–ã€‚
+        	//å¦‚æœè¿™é‡ŒæŠ¥java.lang.NullPointerException: Component cannot be null é”™è¯¯ï¼Œéœ€è¦æ’æŸ¥contentPaneçš„åˆå§‹åŒ–æ˜¯å¦æ­£ç¡®ã€‚
         }
       });
     }
     
     
-    //ITab±ØĞëÊµÏÖµÄÁ½¸ö·½·¨
+    //ITabå¿…é¡»å®ç°çš„ä¸¤ä¸ªæ–¹æ³•
 	@Override
 	public String getTabCaption() {
 		return ("Domain Hunter");
@@ -280,8 +285,8 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 	public Component getUiComponent() {
 		return this.getContentPane();
 	}
-	//ITab±ØĞëÊµÏÖµÄÁ½¸ö·½·¨
-	//¸÷ÖÖburp±ØĞëµÄ·½·¨ --end
+	//ITabå¿…é¡»å®ç°çš„ä¸¤ä¸ªæ–¹æ³•
+	//å„ç§burpå¿…é¡»çš„æ–¹æ³• --end
 
 	@Override
 	public List<JMenuItem> createMenuItems(IContextMenuInvocation invocation) {
@@ -353,48 +358,25 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		return null;
 	}
 	
-	
-	public void getTitle(String host) {
-		List<IHttpService> HttpServiceList = new ArrayList();
-		HttpServiceList.add(helpers.buildHttpService(host,80,"http"));
-		HttpServiceList.add(helpers.buildHttpService(host,443,"https"));
-		Getter getter = new Getter(helpers);
-		
-		for (IHttpService item:HttpServiceList) {
-			try {
-				byte[] request = helpers.buildHttpRequest(new URL(item.toString()));
-				IHttpRequestResponse messageinfo = callbacks.makeHttpRequest(item, request);
-
-				IResponseInfo responseInfo = helpers.analyzeResponse(messageinfo.getResponse());
-				
-				int code = responseInfo.getStatusCode();
-				String MIME = responseInfo.getStatedMimeType();
-				if(MIME == null) {
-					responseInfo.getInferredMimeType();
-				}
-				String length = getter.getHeaderValueOf(false, messageinfo, "Content-Length");
-				String body = new String(getter.getBody(false, messageinfo));
-				String title = "Null";
-				
-				
-				Pattern p = Pattern.compile("<title>(.*?)<title>");
-				Matcher m  = p.matcher(body);
-
-				while ( m.find() ) {
-					title = m.group(0);
-				}
-				
-			} catch (MalformedURLException e) {
-				e.printStackTrace();
-			}
-
-			
-		}
-
-		
-
-		
+	public void getAllTitle(){
+		Set<String> domains = domainResult.getSubDomainSet();
+		new ThreadGetTitle(domains,this).Do();
 	}
+	
+	
+	public void addTitleRow(IHttpRequestResponse messageinfo) {
+/*		new String[] {
+				"#", "URL", "Status", "Length", "MIME Type", "Title", "IP", "Time", "New column", "New column", "New column", "New column", "New column", "New column", "New column", "New column"
+			}*/
+		LineObject line = new LineObject(messageinfo,this);
+		line.parse();
+		TitletableModel.addRow(new Object[]{"",line.url,line.statuscode,line.contentLength,line.MIMEtype,line.title,"IP",line.time,"11","22"});
+		stdout.println("add: "+line.getLineJson());
+	}
+	
+	
+	
+
 	
 /*	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {

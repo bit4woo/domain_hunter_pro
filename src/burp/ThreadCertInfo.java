@@ -22,9 +22,9 @@ public class ThreadCertInfo implements Callable<Set<String>>{
     @Override
     public Set<String> call(){
     	Set<String> tmpDomains = new HashSet<String>();
-      for (int i=0;i<=urls.size()/10+1;i++) {//Ò»°ã¸ù¾Ý   ¡¾×ÊÔ´ÊýÁ¿%Ïß³ÌÊýÁ¿+1¡¿ À´È·¶¨£¬±£Ö¤×ÊÔ´µÃµ½´¦Àí
+      for (int i=0;i<=urls.size()/10+1;i++) {//ä¸€èˆ¬æ ¹æ®   ã€èµ„æºæ•°é‡%çº¿ç¨‹æ•°é‡+1ã€‘ æ¥ç¡®å®šï¼Œä¿è¯èµ„æºå¾—åˆ°å¤„ç†
         
-    	//Èç¹ûÏß³ÌÀàÊµÏÖ runnable ½Ó¿Ú»ñÈ¡µ±Ç°µÄÏß³Ì£¬Ö»ÄÜÓÃ Thread.currentThread() »ñÈ¡µ±Ç°µÄÏß³ÌÃû
+    	//å¦‚æžœçº¿ç¨‹ç±»å®žçŽ° runnable æŽ¥å£èŽ·å–å½“å‰çš„çº¿ç¨‹ï¼Œåªèƒ½ç”¨ Thread.currentThread() èŽ·å–å½“å‰çš„çº¿ç¨‹å
         Thread.currentThread().getName();
         
         if(urls.iterator().hasNext()){
