@@ -29,7 +29,7 @@ public class swingworkersample extends SwingWorker<Integer,Integer>{
     @Override
     protected Integer doInBackground() throws Exception {
         if(SwingUtilities.isEventDispatchThread())
-            System.out.println("doInBackground()在EDT");
+            System.out.println("doInBackground()鍦‥DT");
         int i=0;
         while(i!=100){
             Thread.sleep(100);
@@ -41,9 +41,9 @@ public class swingworkersample extends SwingWorker<Integer,Integer>{
     @Override
     protected void done() {
         if(SwingUtilities.isEventDispatchThread())
-            System.out.println("done()在EDT");
+            System.out.println("done()鍦‥DT");
         try {
-            System.out.println("任务结束了，done（），结果为"+get());
+            System.out.println("浠诲姟缁撴潫浜嗭紝done锛堬級锛岀粨鏋滀负"+get());
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
@@ -54,7 +54,7 @@ public class swingworkersample extends SwingWorker<Integer,Integer>{
     @Override
     protected void process(List<Integer> chunks) {
         if(SwingUtilities.isEventDispatchThread())
-            System.out.println("process()在EDT");
+            System.out.println("process()鍦‥DT");
         for(int i:chunks){
             text.setText(String.valueOf(i));
         }

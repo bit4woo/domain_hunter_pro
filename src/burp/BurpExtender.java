@@ -12,27 +12,12 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.swing.JFrame;
+import java.util.concurrent.LinkedBlockingQueue;
 import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
-import javax.swing.border.EmptyBorder;
-import javax.swing.table.DefaultTableModel;
-
-import com.alibaba.fastjson.JSON;
-
 import title.LineObject;
-import title.RequestsTable;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
@@ -45,49 +30,49 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 	 */
 	private static final long serialVersionUID = 1L;
 	public IBurpExtenderCallbacks callbacks;
-    private IExtensionHelpers helpers;
-    
-    
-    @Override
-    public void registerExtenderCallbacks(IBurpExtenderCallbacks callbacks)
-    {
-    	
-    	stdout = new PrintWriter(callbacks.getStdout(), true);
-    	stderr = new PrintWriter(callbacks.getStderr(), true);
-    	stdout.println(ExtenderName);
-    	stdout.println(github);
-        this.callbacks = callbacks;
-        helpers = callbacks.getHelpers();
-        callbacks.setExtensionName(ExtenderName); //插件名称
-        callbacks.registerExtensionStateListener(this);
-        callbacks.registerContextMenuFactory(this);
-        addMenuTab();
-        
-        //recovery save domain results from extensionSetting
-        String content = callbacks.loadExtensionSetting("content");
-        if (content!=null) {
-    		domainResult = domainResult.Open(content);
-    		showToUI(domainResult);
-        }
-        
-    }
-    
-    public void extensionUnloaded() {
-    	//TODO to cancel SwingWorker in search and crawl function
-    	//this.getContentPane().removeAll();
+	private IExtensionHelpers helpers;
+
+
+	@Override
+	public void registerExtenderCallbacks(IBurpExtenderCallbacks callbacks)
+	{
+
+		stdout = new PrintWriter(callbacks.getStdout(), true);
+		stderr = new PrintWriter(callbacks.getStderr(), true);
+		stdout.println(ExtenderName);
+		stdout.println(github);
+		this.callbacks = callbacks;
+		helpers = callbacks.getHelpers();
+		callbacks.setExtensionName(ExtenderName); //插件名称
+		callbacks.registerExtensionStateListener(this);
+		callbacks.registerContextMenuFactory(this);
+		addMenuTab();
+
+		//recovery save domain results from extensionSetting
+		String content = callbacks.loadExtensionSetting("content");
+		if (content!=null) {
+			domainResult = domainResult.Open(content);
+			showToUI(domainResult);
+		}
+
 	}
-    
-    @Override
+
+	public void extensionUnloaded() {
+		//TODO to cancel SwingWorker in search and crawl function
+		//this.getContentPane().removeAll();
+	}
+
+	@Override
 	public Map<String, Set<String>> search(Set<String> rootdomains, Set<String> keywords){
-		
+
 		Set<String> httpsURLs = new HashSet<String>();
 		Set<IHttpService> httpServiceSet = getHttpServiceFromSiteMap();
-	    for (IHttpService httpservice:httpServiceSet){
-	    	
-	    	String shortURL = httpservice.toString();
-	    	String protocol =  httpservice.getProtocol();
+		for (IHttpService httpservice:httpServiceSet){
+
+			String shortURL = httpservice.toString();
+			String protocol =  httpservice.getProtocol();
 			String Host = httpservice.getHost();
-			
+
 			//callbacks.printOutput(rootdomains.toString());
 			//callbacks.printOutput(keywords.toString());
 			int type = domainResult.domainType(Host);
@@ -98,43 +83,43 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 			}else if (type == DomainObject.SIMILAR_DOMAIN) {
 				domainResult.similarDomainSet.add(Host);
 			}
-			
+
 			if (type !=DomainObject.USELESS && protocol.equalsIgnoreCase("https")){
 				httpsURLs.add(shortURL);
 			}
-	    }
-			    
-	    stdout.println("sub-domains and similar-domains search finished,starting get related-domains");
-	    //stdout.println(httpsURLs);
-			    
-	    //多线程获取
-	    //Set<Future<Set<String>>> set = new HashSet<Future<Set<String>>>();
-    	Map<String,Future<Set<String>>> urlResultmap = new HashMap<String,Future<Set<String>>>();
-        ExecutorService pool = Executors.newFixedThreadPool(10);
-        
-        for (String url:httpsURLs) {
-          Callable<Set<String>> callable = new ThreadCertInfo(url,keywords);
-          Future<Set<String>> future = pool.submit(callable);
-          //set.add(future);
-          urlResultmap.put(url, future);
-        }
-        
-        Set<String> tmpRelatedDomainSet = new HashSet<String>();
-        for(String url:urlResultmap.keySet()) {
-        	Future<Set<String>> future = urlResultmap.get(url);
-        //for (Future<Set<String>> future : set) {
-          try {
-        	  stdout.println("founded related-domains :"+future.get() +" from "+url);
-        	  if (future.get()!=null) {
-        		  tmpRelatedDomainSet.addAll(future.get());
-        	  }
-		} catch (Exception e) {
-			//e.printStackTrace(stderr);
-			stderr.println(e.getMessage());
-        }
-        }
-        domainResult.relatedDomainSet =tmpRelatedDomainSet;
-        /* 单线程获取方式
+		}
+
+		stdout.println("sub-domains and similar-domains search finished,starting get related-domains");
+		//stdout.println(httpsURLs);
+
+		//多线程获取
+		//Set<Future<Set<String>>> set = new HashSet<Future<Set<String>>>();
+		Map<String,Future<Set<String>>> urlResultmap = new HashMap<String,Future<Set<String>>>();
+		ExecutorService pool = Executors.newFixedThreadPool(10);
+
+		for (String url:httpsURLs) {
+			Callable<Set<String>> callable = new ThreadCertInfo(url,keywords);
+			Future<Set<String>> future = pool.submit(callable);
+			//set.add(future);
+			urlResultmap.put(url, future);
+		}
+
+		Set<String> tmpRelatedDomainSet = new HashSet<String>();
+		for(String url:urlResultmap.keySet()) {
+			Future<Set<String>> future = urlResultmap.get(url);
+			//for (Future<Set<String>> future : set) {
+			try {
+				stdout.println("founded related-domains :"+future.get() +" from "+url);
+				if (future.get()!=null) {
+					tmpRelatedDomainSet.addAll(future.get());
+				}
+			} catch (Exception e) {
+				//e.printStackTrace(stderr);
+				stderr.println(e.getMessage());
+			}
+		}
+		domainResult.relatedDomainSet =tmpRelatedDomainSet;
+		/* 单线程获取方式
 	    Set<String> tmpRelatedDomainSet = new HashSet<String>();
 	    //begin get related domains
 	    for(String url:httpsURLs) {
@@ -152,36 +137,36 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 				continue;
 			}
 	    }
-	    */
-        //to save domain result to extensionSetting
-        String content= domainResult.Save();
-        callbacks.saveExtensionSetting("content", content);
-        
-	    return null;
-    }
-	
+		 */
+		//to save domain result to extensionSetting
+		String content= domainResult.Save();
+		callbacks.saveExtensionSetting("content", content);
+
+		return null;
+	}
+
 	@Override
 	public Map<String, Set<String>> crawl (Set<String> rootdomains, Set<String> keywords) {
-	    int i = 0;
-	    while(i<=2) {
+		int i = 0;
+		while(i<=2) {
 			for (String rootdomain: rootdomains) {
 				if (!rootdomain.contains(".")||rootdomain.endsWith(".")||rootdomain.equals("")){
 					//如果域名为空，或者（不包含.号，或者点号在末尾的）
 				}
 				else {
-			    	IHttpRequestResponse[] items = callbacks.getSiteMap(null); //null to return entire sitemap
-			    	//int len = items.length;
-			    	//stdout.println("item number: "+len);
-			    	Set<URL> NeedToCrawl = new HashSet<URL>();
-				    for (IHttpRequestResponse x:items){// 经过验证每次都需要从头开始遍历，按一定offset获取的数据每次都可能不同
-						
-				    	IHttpService httpservice = x.getHttpService();
-				    	String shortUrlString = httpservice.toString();
+					IHttpRequestResponse[] items = callbacks.getSiteMap(null); //null to return entire sitemap
+					//int len = items.length;
+					//stdout.println("item number: "+len);
+					Set<URL> NeedToCrawl = new HashSet<URL>();
+					for (IHttpRequestResponse x:items){// 经过验证每次都需要从头开始遍历，按一定offset获取的数据每次都可能不同
+
+						IHttpService httpservice = x.getHttpService();
+						String shortUrlString = httpservice.toString();
 						String Host = httpservice.getHost();
-				    	
+
 						try {
 							URL shortUrl = new URL(shortUrlString);
-							
+
 							if (Host.endsWith("."+rootdomain) && Commons.isResponseNull(x)) {
 								// to reduce memory usage, use isResponseNull() method to adjust whether the item crawled.
 								NeedToCrawl.add(shortUrl);
@@ -193,8 +178,8 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 							e.printStackTrace(stderr);
 						}
 					}
-				    
-				    
+
+
 					for (URL shortUrl:NeedToCrawl) {
 						if (!callbacks.isInScope(shortUrl)) { //reduce add scope action, to reduce the burp UI action.
 							callbacks.includeInScope(shortUrl);//if not, will always show confirm message box.
@@ -203,8 +188,8 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 					}
 				}
 			}
-			
-			
+
+
 			try {
 				Thread.sleep(5*60*1000);//单位毫秒，60000毫秒=一分钟
 				stdout.println("sleep 5 minutes to wait spider");
@@ -212,15 +197,15 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 			} catch (InterruptedException e) {
 				e.printStackTrace(stdout);
 			}
-	    	i++;
+			i++;
 		}
-		
-	    return search(rootdomains,keywords);
+
+		return search(rootdomains,keywords);
 	}
-	
-	
-/*	public Map<String, Set<String>> spideralltest (String subdomainof, String domainlike) {
-		
+
+
+	/*	public Map<String, Set<String>> spideralltest (String subdomainof, String domainlike) {
+
 		int i = 0;
 		while (i<=10) {
 			try {
@@ -233,13 +218,13 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 			i++;
 			// to reduce memory usage, use isResponseNull() method to adjust whether the item crawled.
 		}
-		
+
 		Map<String, Set<String>> result = new HashMap<String, Set<String>>();
 		return result;
 	}*/
 
-	
-	
+
+
 	/**
 	 * @return IHttpService set to void duplicate IHttpRequestResponse handling
 	 * 
@@ -247,36 +232,36 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 	Set<IHttpService> getHttpServiceFromSiteMap(){
 		IHttpRequestResponse[] requestResponses = callbacks.getSiteMap(null);
 		Set<IHttpService> HttpServiceSet = new HashSet<IHttpService>();
-	    for (IHttpRequestResponse x:requestResponses){
-	    	
-	    	IHttpService httpservice = x.getHttpService();
-	    	HttpServiceSet.add(httpservice);
-/*	    	String shortURL = httpservice.toString();
+		for (IHttpRequestResponse x:requestResponses){
+
+			IHttpService httpservice = x.getHttpService();
+			HttpServiceSet.add(httpservice);
+			/*	    	String shortURL = httpservice.toString();
 	    	String protocol =  httpservice.getProtocol();
 			String Host = httpservice.getHost();*/
-	    }
-	    return HttpServiceSet;
-		
+		}
+		return HttpServiceSet;
+
 	}
-	
-	
-	
-//以下是各种burp必须的方法 --start
-    
-    public void addMenuTab()
-    {
-      SwingUtilities.invokeLater(new Runnable()
-      {
-        public void run()
-        {
-        	BurpExtender.this.callbacks.addSuiteTab(BurpExtender.this); //这里的BurpExtender.this实质是指ITab对象，也就是getUiComponent()中的contentPane.这个参数由CGUI()函数初始化。
-        	//如果这里报java.lang.NullPointerException: Component cannot be null 错误，需要排查contentPane的初始化是否正确。
-        }
-      });
-    }
-    
-    
-    //ITab必须实现的两个方法
+
+
+
+	//以下是各种burp必须的方法 --start
+
+	public void addMenuTab()
+	{
+		SwingUtilities.invokeLater(new Runnable()
+		{
+			public void run()
+			{
+				BurpExtender.this.callbacks.addSuiteTab(BurpExtender.this); //这里的BurpExtender.this实质是指ITab对象，也就是getUiComponent()中的contentPane.这个参数由CGUI()函数初始化。
+				//如果这里报java.lang.NullPointerException: Component cannot be null 错误，需要排查contentPane的初始化是否正确。
+			}
+		});
+	}
+
+
+	//ITab必须实现的两个方法
 	@Override
 	public String getTabCaption() {
 		return ("Domain Hunter");
@@ -291,16 +276,16 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 	@Override
 	public List<JMenuItem> createMenuItems(IContextMenuInvocation invocation) {
 		List<JMenuItem> list = new ArrayList<JMenuItem>();
-	    
+
 		byte context = invocation.getInvocationContext();
 		if (context == IContextMenuInvocation.CONTEXT_TARGET_SITE_MAP_TREE) {
-		    JMenuItem addToDomainHunter = new JMenuItem("^_^ Add To Domain Hunter");
-		    addToDomainHunter.addActionListener(new addHostToRootDomain(invocation));	
+			JMenuItem addToDomainHunter = new JMenuItem("^_^ Add To Domain Hunter");
+			addToDomainHunter.addActionListener(new addHostToRootDomain(invocation));	
 			list.add(addToDomainHunter);
 		}
-    	return list;
+		return list;
 	}
-	
+
 	public class addHostToRootDomain implements ActionListener{
 		private IContextMenuInvocation invocation;
 		public addHostToRootDomain(IContextMenuInvocation invocation) {
@@ -308,38 +293,38 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		}
 		@Override
 		public void actionPerformed(ActionEvent e)
-	    {
-	       try{
-	        	IHttpRequestResponse[] messages = invocation.getSelectedMessages();
-	        	Set<String> domains = new HashSet<String>();
-	        	for(IHttpRequestResponse message:messages) {
-	        		String host = message.getHttpService().getHost();
-	        		domains.add(host);
-	        	}
-	        	
-	        	domainResult.relatedDomainSet.addAll(domains);
-	        	if (domainResult.autoAddRelatedToRoot == true) {
-	        		domainResult.relatedToRoot();
-	        		domainResult.subDomainSet.addAll(domains);
-	        	}
-	        	showToUI(domainResult);
-	        }
-	        catch (Exception e1)
-	        {
-	            e1.printStackTrace(stderr);
-	        }
-	    }
+		{
+			try{
+				IHttpRequestResponse[] messages = invocation.getSelectedMessages();
+				Set<String> domains = new HashSet<String>();
+				for(IHttpRequestResponse message:messages) {
+					String host = message.getHttpService().getHost();
+					domains.add(host);
+				}
+
+				domainResult.relatedDomainSet.addAll(domains);
+				if (domainResult.autoAddRelatedToRoot == true) {
+					domainResult.relatedToRoot();
+					domainResult.subDomainSet.addAll(domains);
+				}
+				showToUI(domainResult);
+			}
+			catch (Exception e1)
+			{
+				e1.printStackTrace(stderr);
+			}
+		}
 	}
-	
+
 	@Override
 	public void initMessageEditor() {
-        IMessageEditor requestViewer = callbacks.createMessageEditor(this, false);
-        IMessageEditor responseViewer = callbacks.createMessageEditor(this, false);
-        RequestPanel.addTab("Request", requestViewer.getComponent());
-        ResponsePanel.addTab("Response", responseViewer.getComponent());
+		IMessageEditor requestViewer = callbacks.createMessageEditor(this, false);
+		IMessageEditor responseViewer = callbacks.createMessageEditor(this, false);
+		RequestPanel.addTab("Request", requestViewer.getComponent());
+		ResponsePanel.addTab("Response", responseViewer.getComponent());
 
 	}
-	
+
 	//method of IMessageEditorController
 	@Override
 	public IHttpService getHttpService() {
@@ -357,15 +342,21 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 	public byte[] getResponse() {
 		return null;
 	}
-	
+
 	public void getAllTitle(){
+		stderr.println("ddddddddddddddddddddddddd print out in burpExtender.java");
 		Set<String> domains = domainResult.getSubDomainSet();
-		new ThreadGetTitle(domains,this).Do();
+		try {
+			ThreadGetTitle xx =new ThreadGetTitle(domains);
+			xx.Do();
+		} catch (Exception e) {
+			e.printStackTrace(stderr);
+		}
 	}
-	
-	
+
+
 	public void addTitleRow(IHttpRequestResponse messageinfo) {
-/*		new String[] {
+		/*		new String[] {
 				"#", "URL", "Status", "Length", "MIME Type", "Title", "IP", "Time", "New column", "New column", "New column", "New column", "New column", "New column", "New column", "New column"
 			}*/
 		LineObject line = new LineObject(messageinfo,this);
@@ -373,12 +364,140 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		TitletableModel.addRow(new Object[]{"",line.url,line.statuscode,line.contentLength,line.MIMEtype,line.title,"IP",line.time,"11","22"});
 		stdout.println("add: "+line.getLineJson());
 	}
-	
-	
-	
 
-	
-/*	public static void main(String[] args) {
+
+	//////////////////ThreadGetTitle block/////////////
+	//no need to pass BurpExtender object to these class, IBurpExtenderCallbacks object is enough 
+	class ThreadGetTitle{
+		Set<String> domains;
+		public ThreadGetTitle(Set<String> domains) {
+			this.domains = domains;
+			stderr.println("ThreadGetTitle construtor");
+		}
+		public void test() {
+			stderr.println("test");
+		}
+
+		public void Do() throws Exception{
+			stderr.println("doingdoing~~~~~~~~~~~~~~");
+			BlockingQueue<String> domainQueue = new LinkedBlockingQueue<String>();//use to store domains
+			BlockingQueue<IHttpRequestResponse> sharedQueue = new LinkedBlockingQueue<IHttpRequestResponse>();
+			BlockingQueue<String> lineQueue = new LinkedBlockingQueue<String>();//use to store output---line
+			
+			Iterator<String> it = domains.iterator();
+			while(it.hasNext()) {
+				String domain = it.next();
+				domainQueue.add(domain);
+			}
+			
+			ExecutorService pes = Executors.newFixedThreadPool(10);
+			ExecutorService ces = Executors.newFixedThreadPool(10);
+			for (int i=0;i<=10;i++) {
+				pes.submit(new Producer(domainQueue,sharedQueue,i));
+				stderr.println("pes  submit~~~~~~~~~~~~~");
+			}
+
+			for (int i=0;i<=10;i++) {
+				ces.submit(new Consumer(sharedQueue,lineQueue,i));
+				stderr.println("ces  submit~~~~~~~~~~~~~");
+			}
+
+			// shutdown should happen somewhere along with awaitTermination
+			/* https://stackoverflow.com/questions/36644043/how-to-properly-shutdown-java-executorservice/36644320#36644320 */
+			//pes.shutdown();
+			//ces.shutdown();
+		}
+
+
+	}
+
+	/*
+	 * do request use method of burp
+	 * return IResponseInfo object Set
+	 *
+	 */
+
+	class Producer implements Runnable {//Producer do
+		private final BlockingQueue<String> domainQueue;//use to store domains
+		private final BlockingQueue<IHttpRequestResponse> sharedQueue;
+		private int threadNo;
+
+		public Producer(BlockingQueue<String> domainQueue,BlockingQueue<IHttpRequestResponse> sharedQueue,int threadNo) {
+			this.threadNo = threadNo;
+			this.domainQueue = domainQueue;
+			this.sharedQueue = sharedQueue;
+		}
+
+		@Override
+		public void run() {
+			while(true){
+				try {
+					if (domainQueue.isEmpty()) {
+						stderr.println("Producer break");
+						break;
+					}
+					
+					String host = domainQueue.take();
+					stderr.println(host);
+					List<IHttpService> HttpServiceList = new ArrayList();
+					HttpServiceList.add(helpers.buildHttpService(host,80,"http"));
+					HttpServiceList.add(helpers.buildHttpService(host,443,"https"));
+
+
+					for (IHttpService item:HttpServiceList) {
+						try {
+							byte[] request = helpers.buildHttpRequest(new URL(item.toString()));
+							IHttpRequestResponse messageinfo = callbacks.makeHttpRequest(item, request);
+							sharedQueue.add(messageinfo);
+						} catch (Exception err) {
+							err.printStackTrace();
+						}
+					}
+				} catch (InterruptedException e) {
+					e.printStackTrace(stderr);
+				}
+			}
+		}
+	}
+
+	/*
+	 * parse IResponseInfo object to line object
+	 * 
+	 */
+
+	class Consumer implements Runnable{// Consumer
+		private final BlockingQueue<IHttpRequestResponse> sharedQueue;
+		private final BlockingQueue<String> lineQueue;//use to store output---line
+		private int threadNo;
+
+		public Consumer (BlockingQueue<IHttpRequestResponse> sharedQueue,BlockingQueue<String> lineQueue,int threadNo) {
+			this.sharedQueue = sharedQueue;
+			this.lineQueue = lineQueue;
+			this.threadNo = threadNo;
+		}
+
+		@Override
+		public void run() {
+			while(true){
+//				if (sharedQueue.isEmpty()) {
+//					stderr.println("Consumer break");
+//					break;
+//				}
+				try {
+					IHttpRequestResponse messageinfo = sharedQueue.take();
+					stderr.println(messageinfo.getHttpService().toString()+"----Consumer");
+					addTitleRow(messageinfo);
+				} catch (Exception err) {
+					err.printStackTrace(stderr);
+				}
+			}
+		}
+	}
+
+
+	//////////////////ThreadGetTitle block/////////////
+
+	/*	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {

@@ -8,37 +8,37 @@ public class rightclick extends JFrame implements ActionListener
 {
 	JButton btnTest=new JButton("Test");
 	JTextArea textArea=new JTextArea();
-	PopupMenu pMenu=new PopupMenu();    //´´½¨µ¯³öÊ½²Ëµ¥£¬ÏÂÃæÈıÏîÊÇ²Ëµ¥Ïî
-	MenuItem mItemCopy=new MenuItem("¸´ÖÆ");
-	MenuItem mItemPaste=new MenuItem("Õ³Ìù");
-	MenuItem mItemCut=new MenuItem("¼ôÇĞ");
-	MouseAdapter mouseAdapter=new MouseAdapter()//¼àÌıÊó±êÊÂ¼ş
+	PopupMenu pMenu=new PopupMenu();    //åˆ›å»ºå¼¹å‡ºå¼èœå•ï¼Œä¸‹é¢ä¸‰é¡¹æ˜¯èœå•é¡¹
+	MenuItem mItemCopy=new MenuItem("å¤åˆ¶");
+	MenuItem mItemPaste=new MenuItem("ç²˜è´´");
+	MenuItem mItemCut=new MenuItem("å‰ªåˆ‡");
+	MouseAdapter mouseAdapter=new MouseAdapter()//ç›‘å¬é¼ æ ‡äº‹ä»¶
 	{
 		public void mouseClicked(MouseEvent event)
 		{
-			if(event.getButton()==MouseEvent.BUTTON3)//Ö»ÏìÓ¦Êó±êÓÒ¼üµ¥»÷ÊÂ¼ş
+			if(event.getButton()==MouseEvent.BUTTON3)//åªå“åº”é¼ æ ‡å³é”®å•å‡»äº‹ä»¶
 			{
-				pMenu.show(textArea,event.getX(),event.getY());//ÔÚÊó±êÎ»ÖÃÏÔÊ¾µ¯³öÊ½²Ëµ¥
+				pMenu.show(textArea,event.getX(),event.getY());//åœ¨é¼ æ ‡ä½ç½®æ˜¾ç¤ºå¼¹å‡ºå¼èœå•
 			}
 		}
 	};
-	ActionListener menuAction=new ActionListener()//ÏìÓ¦µ¥»÷²Ëµ¥ÏîµÄÊÂ¼ş£¬Ö»ÊÇÊ¾Àı£¬
-	{//¾ßÌåÄÚÈİ¿É×Ô¼º±àĞ´
+	ActionListener menuAction=new ActionListener()//å“åº”å•å‡»èœå•é¡¹çš„äº‹ä»¶ï¼Œåªæ˜¯ç¤ºä¾‹ï¼Œ
+	{//å…·ä½“å†…å®¹å¯è‡ªå·±ç¼–å†™
 		public void actionPerformed(ActionEvent e)
 		{
 			MenuItem item=(MenuItem)e.getSource();
-			if(item==mItemCopy) //µ¥»÷ÁË¡°¸´ÖÆ¡±²Ëµ¥Ïî
+			if(item==mItemCopy) //å•å‡»äº†â€œå¤åˆ¶â€èœå•é¡¹
 			{
-				JOptionPane.showMessageDialog(null,"¸´ÖÆ");
+				JOptionPane.showMessageDialog(null,"å¤åˆ¶");
 			}
-			else if(item==mItemPaste)  //¡°Õ³Ìù¡±²Ëµ¥Ïî
+			else if(item==mItemPaste)  //â€œç²˜è´´â€èœå•é¡¹
 			{
-				JOptionPane.showMessageDialog(null,"Õ³Ìù");
+				JOptionPane.showMessageDialog(null,"ç²˜è´´");
 				
 			}
 			else
 			{
-				JOptionPane.showMessageDialog(null,"¼ôÇĞ");    //¡°¼ôÇĞ¡±²Ëµ¥Ïî
+				JOptionPane.showMessageDialog(null,"å‰ªåˆ‡");    //â€œå‰ªåˆ‡â€èœå•é¡¹
 			}
 		}
 	};
@@ -51,9 +51,9 @@ public class rightclick extends JFrame implements ActionListener
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		add(btnTest,BorderLayout.NORTH);
 		add(textArea,BorderLayout.CENTER);
-		textArea.add(pMenu);    //µ¯³öÊ½²Ëµ¥¼ÓÈëµ½ÎÄ±¾¿òÖĞ£¬·ñÔò²»ÄÜÏÔÊ¾
-		textArea.addMouseListener(mouseAdapter);  //ÎÄ±¾¿ò¼ÓÈëÊó±ê¼àÌıÆ÷
-		pMenu.add(mItemCopy);  //²Ëµ¥ÏîµÄµ¥»÷ÊÂ¼ş¼àÌıÆ÷
+		textArea.add(pMenu);    //å¼¹å‡ºå¼èœå•åŠ å…¥åˆ°æ–‡æœ¬æ¡†ä¸­ï¼Œå¦åˆ™ä¸èƒ½æ˜¾ç¤º
+		textArea.addMouseListener(mouseAdapter);  //æ–‡æœ¬æ¡†åŠ å…¥é¼ æ ‡ç›‘å¬å™¨
+		pMenu.add(mItemCopy);  //èœå•é¡¹çš„å•å‡»äº‹ä»¶ç›‘å¬å™¨
 		mItemCopy.addActionListener(menuAction);
 		pMenu.add(mItemPaste);
 		mItemPaste.addActionListener(menuAction);
@@ -68,7 +68,7 @@ public class rightclick extends JFrame implements ActionListener
 	}
 	public void actionPerformed(ActionEvent e)
 	{
-		JOptionPane.showMessageDialog(null,"²âÊÔ¹¦ÄÜ");
+		JOptionPane.showMessageDialog(null,"æµ‹è¯•åŠŸèƒ½");
 	}
 	
 }

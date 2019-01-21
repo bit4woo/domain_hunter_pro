@@ -10,21 +10,26 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import title.LineObject;
 
-
+//no need to pass BurpExtender object to these class, IBurpExtenderCallbacks object is enough 
 public class ThreadGetTitle{
 	private BurpExtender burp;
 	Set<String> domains;
 	public ThreadGetTitle(Set<String> domains,BurpExtender burp) {
 		this.domains = domains;
 		this.burp = burp;
+		burp.stderr.println("ThreadGetTitle construtor");
 	}
 	
 	public static void main(String args[]){
 		
 		
 	}
+	public void test() {
+		burp.stderr.print("test");
+	}
 	
-	public void Do() {
+	public void Do() throws Exception{
+		burp.stderr.print("doingdoing~~~~~~~~~~~~~~");
 		BlockingQueue<String> domainQueue = new LinkedBlockingQueue<String>();//use to store domains
 		BlockingQueue<IHttpRequestResponse> sharedQueue = new LinkedBlockingQueue<IHttpRequestResponse>();
 		BlockingQueue<String> lineQueue = new LinkedBlockingQueue<String>();//use to store output---line
@@ -96,7 +101,7 @@ class Producer implements Runnable {//Producer do
 					}
 				}
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				e.printStackTrace(burp.stderr);
 			}
 		}
 	}
@@ -131,7 +136,7 @@ class Consumer implements Runnable{// Consumer
 				IHttpRequestResponse messageinfo = sharedQueue.take();
 				burp.addTitleRow(messageinfo);
 			} catch (Exception err) {
-				err.printStackTrace();
+				err.printStackTrace(burp.stderr);
 			}
 		}
 	}

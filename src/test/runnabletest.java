@@ -2,19 +2,19 @@ package test;
 public class runnabletest implements Runnable{
  
     private int j;
-    private int tickets;//×ÊÔ´£¬¶ÔËùÓĞÏß³ÌÀ´ËµÊÇ¹²ÏíµÄ¡£
+    private int tickets;//èµ„æºï¼Œå¯¹æ‰€æœ‰çº¿ç¨‹æ¥è¯´æ˜¯å…±äº«çš„ã€‚
     public runnabletest(int ticketNum) {
     	tickets = ticketNum;
     }
     @Override
     public void run() {
-      for (int i=0;i<=20;i++) {//Ò»°ã¸ù¾İ   ¡¾×ÊÔ´ÊıÁ¿%Ïß³ÌÊıÁ¿+1¡¿ À´È·¶¨£¬±£Ö¤×ÊÔ´µÃµ½´¦Àí
+      for (int i=0;i<=20;i++) {//ä¸€èˆ¬æ ¹æ®   ã€èµ„æºæ•°é‡%çº¿ç¨‹æ•°é‡+1ã€‘ æ¥ç¡®å®šï¼Œä¿è¯èµ„æºå¾—åˆ°å¤„ç†
         
-    	//Èç¹ûÏß³ÌÀàÊµÏÖ runnable ½Ó¿Ú»ñÈ¡µ±Ç°µÄÏß³Ì£¬Ö»ÄÜÓÃ Thread.currentThread() »ñÈ¡µ±Ç°µÄÏß³ÌÃû
+    	//å¦‚æœçº¿ç¨‹ç±»å®ç° runnable æ¥å£è·å–å½“å‰çš„çº¿ç¨‹ï¼Œåªèƒ½ç”¨ Thread.currentThread() è·å–å½“å‰çš„çº¿ç¨‹å
         Thread.currentThread().getName();
         
         if(tickets>0){
-        	System.out.println(Thread.currentThread().getName()+"--Âô³öÆ±£º" + tickets--+"ºÅÆ±");
+        	System.out.println(Thread.currentThread().getName()+"--å–å‡ºç¥¨ï¼š" + tickets--+"å·ç¥¨");
         	System.out.println(j++);
         }
       }
@@ -24,10 +24,10 @@ public class runnabletest implements Runnable{
      
         runnabletest xxx = new runnabletest(10);
      
-        //Í¨¹ınew Thread(target,name)´´½¨ĞÂµÄÏß³Ì
-        new Thread(xxx,"ÂòÆ±ÈË1").start();
-        new Thread(xxx,"ÂòÆ±ÈË2").start();
-        new Thread(xxx,"ÂòÆ±ÈË3").start();
+        //é€šè¿‡new Thread(target,name)åˆ›å»ºæ–°çš„çº¿ç¨‹
+        new Thread(xxx,"ä¹°ç¥¨äºº1").start();
+        new Thread(xxx,"ä¹°ç¥¨äºº2").start();
+        new Thread(xxx,"ä¹°ç¥¨äºº3").start();
         
         System.out.println(xxx.j);
       }

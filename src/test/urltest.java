@@ -10,16 +10,16 @@ public class urltest
       try
       {
          URL url = new URL("http://www.runoob.com/index.html?language=cn#j2se");
-         System.out.println("URL Îª£º" + url.toString());
-         System.out.println("Ğ­ÒéÎª£º" + url.getProtocol());
-         System.out.println("ÑéÖ¤ĞÅÏ¢£º" + url.getAuthority());
-         System.out.println("ÎÄ¼şÃû¼°ÇëÇó²ÎÊı£º" + url.getFile());
-         System.out.println("Ö÷»úÃû£º" + url.getHost());
-         System.out.println("Â·¾¶£º" + url.getPath());
-         System.out.println("¶Ë¿Ú£º" + url.getPort());
-         System.out.println("Ä¬ÈÏ¶Ë¿Ú£º" + url.getDefaultPort());
-         System.out.println("ÇëÇó²ÎÊı£º" + url.getQuery());
-         System.out.println("¶¨Î»Î»ÖÃ£º" + url.getRef());
+         System.out.println("URL ä¸ºï¼š" + url.toString());
+         System.out.println("åè®®ä¸ºï¼š" + url.getProtocol());
+         System.out.println("éªŒè¯ä¿¡æ¯ï¼š" + url.getAuthority());
+         System.out.println("æ–‡ä»¶ååŠè¯·æ±‚å‚æ•°ï¼š" + url.getFile());
+         System.out.println("ä¸»æœºåï¼š" + url.getHost());
+         System.out.println("è·¯å¾„ï¼š" + url.getPath());
+         System.out.println("ç«¯å£ï¼š" + url.getPort());
+         System.out.println("é»˜è®¤ç«¯å£ï¼š" + url.getDefaultPort());
+         System.out.println("è¯·æ±‚å‚æ•°ï¼š" + url.getQuery());
+         System.out.println("å®šä½ä½ç½®ï¼š" + url.getRef());
       }catch(IOException e)
       {
          e.printStackTrace();
