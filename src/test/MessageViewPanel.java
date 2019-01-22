@@ -1,6 +1,12 @@
-package burp;
+package test;
 
 import javax.swing.JSplitPane;
+
+import burp.BurpExtender;
+import burp.IHttpRequestResponse;
+import burp.IHttpService;
+import burp.IMessageEditor;
+import burp.IMessageEditorController;
 
 public class MessageViewPanel extends JSplitPane implements IMessageEditorController {
 

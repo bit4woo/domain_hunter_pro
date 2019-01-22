@@ -1,4 +1,4 @@
-package burp;
+package test;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -8,13 +8,18 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
-import title.LineObject;
+
+import burp.BurpExtender;
+import burp.IBurpExtenderCallbacks;
+import burp.IExtensionHelpers;
+import burp.IHttpRequestResponse;
+import burp.IHttpService;
 
 //no need to pass BurpExtender object to these class, IBurpExtenderCallbacks object is enough 
-public class ThreadGetTitle{
+public class ThreadGetTitle_backup{
 	private BurpExtender burp;
 	Set<String> domains;
-	public ThreadGetTitle(Set<String> domains,BurpExtender burp) {
+	public ThreadGetTitle_backup(Set<String> domains,BurpExtender burp) {
 		this.domains = domains;
 		this.burp = burp;
 		burp.stderr.println("ThreadGetTitle construtor");
@@ -134,7 +139,6 @@ class Consumer implements Runnable{// Consumer
 			}
 			try {
 				IHttpRequestResponse messageinfo = sharedQueue.take();
-				burp.addTitleRow(messageinfo);
 			} catch (Exception err) {
 				err.printStackTrace(burp.stderr);
 			}

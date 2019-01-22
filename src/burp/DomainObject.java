@@ -1,8 +1,10 @@
 package burp;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Set;
 import com.alibaba.fastjson.JSON;
 import com.google.common.net.InternetDomainName;
@@ -19,7 +21,7 @@ public class DomainObject {
 	public Set<String> similarDomainSet = new HashSet<String>();
 	public Set<String> relatedDomainSet = new HashSet<String>();
 	
-	
+	private List<LineEntry> lineEntries = new ArrayList<LineEntry>();
 	
     public static int SUB_DOMAIN=0;
     public static int SIMILAR_DOMAIN=1;
@@ -92,6 +94,14 @@ public class DomainObject {
 		this.relatedDomainSet = relatedDomainSet;
 	}
 	
+
+	public List<LineEntry> getLineEntries() {
+		return lineEntries;
+	}
+
+	public void setLineEntries(List<LineEntry> lineEntries) {
+		this.lineEntries = lineEntries;
+	}
 
 	public String getSummary() {
 		summary = String.format("      Related-domain:%s  Sub-domain:%s  Similar-domain:%s  ^_^", relatedDomainSet.size(),subDomainSet.size(),similarDomainSet.size());

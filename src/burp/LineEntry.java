@@ -1,4 +1,4 @@
-package title;
+package burp;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -6,15 +6,8 @@ import java.util.regex.Pattern;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.annotation.JSONField;
 
-import burp.BurpExtender;
-import burp.Getter;
-import burp.IBurpExtenderCallbacks;
-import burp.IExtensionHelpers;
-import burp.IHttpRequestResponse;
-import burp.IResponseInfo;
+public class LineEntry {
 
-public class LineObject {
-	
 	public int id = 0;
 	public String url = "";
 	public int statuscode = -1;
@@ -32,14 +25,14 @@ public class LineObject {
 	@JSONField(serialize=false)
 	private IBurpExtenderCallbacks callbacks;
 
-	LineObject(){
+	LineEntry(){
 
 	}
 
-	public LineObject(IHttpRequestResponse messageinfo,BurpExtender burp) {
+	public LineEntry(IHttpRequestResponse messageinfo) {
 		this.messageinfo = messageinfo;
-		this.helpers = burp.callbacks.getHelpers();
-		this.callbacks = burp.callbacks;
+		this.callbacks = BurpExtender.getCallbacks();
+		this.helpers = this.callbacks.getHelpers();
 	}
 
 	public String getLineJson(){
@@ -48,38 +41,36 @@ public class LineObject {
 	}
 
 	public void parse() {
+		try {
+			IResponseInfo responseInfo = helpers.analyzeResponse(messageinfo.getResponse());
+			int code = responseInfo.getStatusCode();
+			String MIME = responseInfo.getStatedMimeType();
+			if(MIME == null) {
+				responseInfo.getInferredMimeType();
+			}
+			this.statuscode = code;
+			this.MIMEtype = MIME;
+			
+			Getter getter = new Getter(helpers);
+			String url = this.messageinfo.getHttpService().toString();
+			String length = getter.getHeaderValueOf(false, messageinfo, "Content-Length");
+			String webContainer = getter.getHeaderValueOf(false, messageinfo, "Server");
+			String body = new String(getter.getBody(false, messageinfo));
 
-		Getter getter = new Getter(helpers);
-		IResponseInfo responseInfo = helpers.analyzeResponse(messageinfo.getResponse());
-		
-		String url = this.messageinfo.getHttpService().toString();
+			String title = "Null";
+			Pattern p = Pattern.compile("<title>(.*?)<title>");
+			Matcher m  = p.matcher(body);
+			while ( m.find() ) {
+				title = m.group(0);
+			}
 
-		int code = responseInfo.getStatusCode();
+			this.url = url;
+			this.contentLength = length;
+			this.title = title;
+			this.webcontainer = webContainer;
+		}catch(Exception e) {
 
-		String MIME = responseInfo.getStatedMimeType();
-		if(MIME == null) {
-			responseInfo.getInferredMimeType();
 		}
-
-		String length = getter.getHeaderValueOf(false, messageinfo, "Content-Length");
-
-		String webContainer = getter.getHeaderValueOf(false, messageinfo, "Server");
-
-		String body = new String(getter.getBody(false, messageinfo));
-
-		String title = "Null";
-		Pattern p = Pattern.compile("<title>(.*?)<title>");
-		Matcher m  = p.matcher(body);
-		while ( m.find() ) {
-			title = m.group(0);
-		}
-
-		this.url = url;
-		this.statuscode = code;
-		this.MIMEtype = MIME;
-		this.contentLength = length;
-		this.title = title;
-		this.webcontainer = webContainer;
 	}
 
 	public void DoDirBrute() {
@@ -148,5 +139,10 @@ public class LineObject {
 
 	public void setTime(String time) {
 		this.time = time;
+	}
+
+	public Object getValue(int columnIndex) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

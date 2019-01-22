@@ -1,4 +1,4 @@
-package title;
+package test;
 
 import java.util.concurrent.*;
 
@@ -9,20 +9,20 @@ public class threadExample {
          ExecutorService pes = Executors.newFixedThreadPool(2);
          ExecutorService ces = Executors.newFixedThreadPool(2);
 
-         pes.submit(new Producer(sharedQueue,1));
-         pes.submit(new Producer(sharedQueue,2));
-         ces.submit(new Consumer(sharedQueue,1));
-         ces.submit(new Consumer(sharedQueue,2));
+         pes.submit(new ProducerExample(sharedQueue,1));
+         pes.submit(new ProducerExample(sharedQueue,2));
+         ces.submit(new ConsumerExample(sharedQueue,1));
+         ces.submit(new ConsumerExample(sharedQueue,2));
          // shutdown should happen somewhere along with awaitTermination
          /* https://stackoverflow.com/questions/36644043/how-to-properly-shutdown-java-executorservice/36644320#36644320 */
          pes.shutdown();
          ces.shutdown();
     }
 }
-class Producer implements Runnable {
+class ProducerExample implements Runnable {
     private final BlockingQueue<Integer> sharedQueue;
     private int threadNo;
-    public Producer(BlockingQueue<Integer> sharedQueue,int threadNo) {
+    public ProducerExample(BlockingQueue<Integer> sharedQueue,int threadNo) {
         this.threadNo = threadNo;
         this.sharedQueue = sharedQueue;
     }
@@ -40,10 +40,10 @@ class Producer implements Runnable {
     }
 }
 
-class Consumer implements Runnable{
+class ConsumerExample implements Runnable{
     private final BlockingQueue<Integer> sharedQueue;
     private int threadNo;
-    public Consumer (BlockingQueue<Integer> sharedQueue,int threadNo) {
+    public ConsumerExample (BlockingQueue<Integer> sharedQueue,int threadNo) {
         this.sharedQueue = sharedQueue;
         this.threadNo = threadNo;
     }

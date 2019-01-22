@@ -1,5 +1,11 @@
 package burp;
 
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.PrintWriter;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,25 +19,18 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
+
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
-import title.LineObject;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.Component;
-import java.io.PrintWriter;
-import java.net.MalformedURLException;
-import java.net.URL;
-
 
 public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtensionStateListener,IContextMenuFactory, IMessageEditorController{
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	public IBurpExtenderCallbacks callbacks;
+	public static IBurpExtenderCallbacks callbacks;
 	private IExtensionHelpers helpers;
-
+	LineTableModel TitletableModel;
 
 	@Override
 	public void registerExtenderCallbacks(IBurpExtenderCallbacks callbacks)
@@ -41,27 +40,44 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		stderr = new PrintWriter(callbacks.getStderr(), true);
 		stdout.println(ExtenderName);
 		stdout.println(github);
-		this.callbacks = callbacks;
+		BurpExtender.callbacks = callbacks;
 		helpers = callbacks.getHelpers();
 		callbacks.setExtensionName(ExtenderName); //插件名称
 		callbacks.registerExtensionStateListener(this);
 		callbacks.registerContextMenuFactory(this);
 		addMenuTab();
-
+		
+		//add table and tablemodel to GUI
+		TitletableModel = new LineTableModel(this);
+		table_1 = new LineTable(TitletableModel,this);
+		scrollPaneRequests.setViewportView(table_1);
+		
 		//recovery save domain results from extensionSetting
-		String content = callbacks.loadExtensionSetting("content");
+		String content = loadConfig();
 		if (content!=null) {
 			domainResult = domainResult.Open(content);
 			showToUI(domainResult);
+			TitletableModel.setLineEntries(domainResult.getLineEntries());//recovery lineEntries
 		}
 
 	}
 
+	@Override
 	public void extensionUnloaded() {
 		//TODO to cancel SwingWorker in search and crawl function
 		//this.getContentPane().removeAll();
 	}
+	
+	public void saveConfig() {
+		//to save domain result to extensionSetting
+		String content= domainResult.Save();
+		callbacks.saveExtensionSetting("domainHunter", content);
+	}
 
+	public String loadConfig() {
+		return callbacks.loadExtensionSetting("domainHunter");
+	}
+	
 	@Override
 	public Map<String, Set<String>> search(Set<String> rootdomains, Set<String> keywords){
 
@@ -138,9 +154,7 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 			}
 	    }
 		 */
-		//to save domain result to extensionSetting
-		String content= domainResult.Save();
-		callbacks.saveExtensionSetting("content", content);
+
 
 		return null;
 	}
@@ -256,6 +270,7 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 			{
 				BurpExtender.this.callbacks.addSuiteTab(BurpExtender.this); //这里的BurpExtender.this实质是指ITab对象，也就是getUiComponent()中的contentPane.这个参数由CGUI()函数初始化。
 				//如果这里报java.lang.NullPointerException: Component cannot be null 错误，需要排查contentPane的初始化是否正确。
+				
 			}
 		});
 	}
@@ -316,14 +331,6 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		}
 	}
 
-	@Override
-	public void initMessageEditor() {
-		IMessageEditor requestViewer = callbacks.createMessageEditor(this, false);
-		IMessageEditor responseViewer = callbacks.createMessageEditor(this, false);
-		RequestPanel.addTab("Request", requestViewer.getComponent());
-		ResponsePanel.addTab("Response", responseViewer.getComponent());
-
-	}
 
 	//method of IMessageEditorController
 	@Override
@@ -342,29 +349,14 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 	public byte[] getResponse() {
 		return null;
 	}
+	
+	
 
 	public void getAllTitle(){
-		stderr.println("ddddddddddddddddddddddddd print out in burpExtender.java");
 		Set<String> domains = domainResult.getSubDomainSet();
-		try {
-			ThreadGetTitle xx =new ThreadGetTitle(domains);
-			xx.Do();
-		} catch (Exception e) {
-			e.printStackTrace(stderr);
-		}
+		new ThreadGetTitle(domains).Do();
+		saveConfig();
 	}
-
-
-	public void addTitleRow(IHttpRequestResponse messageinfo) {
-		/*		new String[] {
-				"#", "URL", "Status", "Length", "MIME Type", "Title", "IP", "Time", "New column", "New column", "New column", "New column", "New column", "New column", "New column", "New column"
-			}*/
-		LineObject line = new LineObject(messageinfo,this);
-		line.parse();
-		TitletableModel.addRow(new Object[]{"",line.url,line.statuscode,line.contentLength,line.MIMEtype,line.title,"IP",line.time,"11","22"});
-		stdout.println("add: "+line.getLineJson());
-	}
-
 
 	//////////////////ThreadGetTitle block/////////////
 	//no need to pass BurpExtender object to these class, IBurpExtenderCallbacks object is enough 
@@ -372,14 +364,10 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		Set<String> domains;
 		public ThreadGetTitle(Set<String> domains) {
 			this.domains = domains;
-			stderr.println("ThreadGetTitle construtor");
-		}
-		public void test() {
-			stderr.println("test");
 		}
 
-		public void Do() throws Exception{
-			stderr.println("doingdoing~~~~~~~~~~~~~~");
+		public void Do(){
+			stdout.println("~~~~~~~~~~~starting Thread Get Title~~~~~~~~~~~~~~");
 			BlockingQueue<String> domainQueue = new LinkedBlockingQueue<String>();//use to store domains
 			BlockingQueue<IHttpRequestResponse> sharedQueue = new LinkedBlockingQueue<IHttpRequestResponse>();
 			BlockingQueue<String> lineQueue = new LinkedBlockingQueue<String>();//use to store output---line
@@ -394,18 +382,21 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 			ExecutorService ces = Executors.newFixedThreadPool(10);
 			for (int i=0;i<=10;i++) {
 				pes.submit(new Producer(domainQueue,sharedQueue,i));
-				stderr.println("pes  submit~~~~~~~~~~~~~");
+				stdout.println("~~~~~~~~~~~~~pes  submit~~~~~~~~~~~~~");
 			}
 
 			for (int i=0;i<=10;i++) {
 				ces.submit(new Consumer(sharedQueue,lineQueue,i));
-				stderr.println("ces  submit~~~~~~~~~~~~~");
+				stdout.println("~~~~~~~~~~~~~ces  submit~~~~~~~~~~~~~");
 			}
 
 			// shutdown should happen somewhere along with awaitTermination
 			/* https://stackoverflow.com/questions/36644043/how-to-properly-shutdown-java-executorservice/36644320#36644320 */
-			//pes.shutdown();
-			//ces.shutdown();
+			pes.shutdown();
+			ces.shutdown();//will wait already submitted task to finish
+			
+			//to save lineEntries
+			domainResult.setLineEntries(TitletableModel.getLineEntries());
 		}
 
 
@@ -433,12 +424,12 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 			while(true){
 				try {
 					if (domainQueue.isEmpty()) {
-						stderr.println("Producer break");
+						stdout.println("Producer break");
 						break;
 					}
 					
 					String host = domainQueue.take();
-					stderr.println(host);
+					stdout.println(host);
 					List<IHttpService> HttpServiceList = new ArrayList();
 					HttpServiceList.add(helpers.buildHttpService(host,80,"http"));
 					HttpServiceList.add(helpers.buildHttpService(host,443,"https"));
@@ -474,6 +465,9 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 			this.sharedQueue = sharedQueue;
 			this.lineQueue = lineQueue;
 			this.threadNo = threadNo;
+			
+			List<LineEntry> lineEntries = new ArrayList<LineEntry>();
+			TitletableModel.setLineEntries(lineEntries );//to clear history
 		}
 
 		@Override
@@ -485,8 +479,14 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 //				}
 				try {
 					IHttpRequestResponse messageinfo = sharedQueue.take();
-					stderr.println(messageinfo.getHttpService().toString()+"----Consumer");
-					addTitleRow(messageinfo);
+					
+					if (messageinfo.getResponse() ==null) {
+						stdout.println("--- skip "+messageinfo.getHttpService().toString()+" due to no response.");
+					}else {
+						TitletableModel.addNewLineEntry(new LineEntry(messageinfo));
+						stdout.println("+++ "+messageinfo.getHttpService().toString()+" get title done");
+					}
+					//we don't need to add row to table manually,just call fireTableRowsInserted in TableModel
 				} catch (Exception err) {
 					err.printStackTrace(stderr);
 				}
@@ -494,6 +494,9 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		}
 	}
 
+	public static IBurpExtenderCallbacks getCallbacks() {
+		return callbacks;
+	}
 
 	//////////////////ThreadGetTitle block/////////////
 

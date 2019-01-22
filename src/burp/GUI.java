@@ -2,72 +2,66 @@ package burp;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Desktop;
 import java.awt.EventQueue;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.border.EmptyBorder;
-import javax.swing.JTextField;
-import javax.swing.RowSorter;
-import javax.swing.SortOrder;
-import javax.swing.SwingWorker;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JButton;
-import javax.swing.JFileChooser;
-import javax.swing.JTextArea;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
-import java.awt.FlowLayout;
-import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
-
-import java.awt.Cursor;
-import java.awt.Desktop;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.awt.event.ActionEvent;
-import javax.swing.JScrollPane;
-
-
 import java.net.URI;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Vector;
 
+import javax.swing.Box;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTable;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
-
-import com.alibaba.fastjson.JSON;
-import com.google.common.base.Charsets;
-import com.google.common.io.Files;
-import com.google.common.net.InternetDomainName;
-
-import title.RequestsTable;
-
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.RowSorter;
+import javax.swing.SortOrder;
+import javax.swing.SwingWorker;
+import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.filechooser.FileFilter;
-import javax.swing.ListSelectionModel;
-import javax.swing.JRadioButton;
-import java.awt.Component;
-import javax.swing.Box;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
+
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
+import com.google.common.net.InternetDomainName;
+
+import test.HTTPPost;
 
 public class GUI extends JFrame {
 	
@@ -84,8 +78,7 @@ public class GUI extends JFrame {
     private DefaultTableModel tableModel; 
     
     private JTabbedPane tabbedWrapper;
-    private JPanel TopCotentPane;
-	private JPanel contentPane;
+    private JPanel contentPane;
 	private JTextField textFieldUploadURL;
 	private JButton btnSearch;
 	private JButton btnUpload;
@@ -116,10 +109,11 @@ public class GUI extends JFrame {
 	private JSplitPane RequestDetailPanel;
 	public JTabbedPane RequestPanel;
 	public JTabbedPane ResponsePanel;
-	public DefaultTableModel TitletableModel;
 	private JButton btnGettitle;
-	private JScrollPane scrollPaneRequests;
-	private JTable table_1;
+	public JScrollPane scrollPaneRequests;
+	public JTable table_1;
+	private JButton btnNewButton;
+
 
 
 	/**
@@ -260,7 +254,7 @@ public class GUI extends JFrame {
 			        @Override
 			        protected void done() {
 			            try {
-				        	Map result = get();				        	
+				        	get();				        	
 				        	showToUI(domainResult);
 							btnSearch.setEnabled(true);
 			            } catch (Exception e) {
@@ -299,7 +293,7 @@ public class GUI extends JFrame {
 			        @Override
 			        protected void done() {
 			            try {
-				        	Map result = get();
+				        	get();
 				        	showToUI(domainResult);
 							btnCrawl.setEnabled(true);
 			            } catch (Exception e) {
@@ -619,6 +613,9 @@ public class GUI extends JFrame {
 		});
 		buttonPanel.add(btnGettitle);
 		
+		btnNewButton = new JButton("Remove");
+		buttonPanel.add(btnNewButton);
+		
 		splitPane = new JSplitPane();
 		splitPane.setResizeWeight(0.5);
 		splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
@@ -637,24 +634,13 @@ public class GUI extends JFrame {
 		scrollPaneRequests = new JScrollPane();
 		splitPane.setLeftComponent(scrollPaneRequests);
 		
-		
-		TitletableModel = new DefaultTableModel(
-				new Object[][] {
-				},
-				new String[] {
-					"#", "URL", "Status", "Length", "MIME Type", "Title", "IP", "Time", "New column", "New column"
-				}
-			);
-		
-		table_1 = new RequestsTable(TitletableModel);
+		///need to replace this part with LineTableModel and LineTable
+		table_1 = new JTable();
 		scrollPaneRequests.setViewportView(table_1);
+		//LineTableModel will replace this table
 		
+
 		return TitlePanel;
-	}
-	
-	
-	public void initMessageEditor() {
-		//sub class should rewrite this function to add IMessageEditor to the panel
 	}
 	
 	//////////////////////////////methods//////////////////////////////////////
@@ -813,11 +799,4 @@ public class GUI extends JFrame {
 	public void getAllTitle(){
 		//sub class should over write this function
 	}
-	
-	public void addTitleRow(IHttpRequestResponse messageinfo) {
-		//sub class should over write this function
-	}
-	
-	
-
 }
