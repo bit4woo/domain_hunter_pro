@@ -30,8 +30,8 @@ public class LineTableModel_backup extends DefaultTableModel implements IMessage
     public LineTableModel_backup(final BurpExtender burp, LineManager lineManager){
         this.lineManager = lineManager;
         this.burp = burp;
-        requestViewer = BurpExtender.callbacks.createMessageEditor(LineTableModel_backup.this, false);
-        responseViewer = BurpExtender.callbacks.createMessageEditor(LineTableModel_backup.this, false);
+        requestViewer = burp.callbacks.createMessageEditor(LineTableModel_backup.this, false);
+        responseViewer = burp.callbacks.createMessageEditor(LineTableModel_backup.this, false);
         burp.RequestPanel.addTab("Request", requestViewer.getComponent());
         burp.ResponsePanel.addTab("Response", responseViewer.getComponent());
 		

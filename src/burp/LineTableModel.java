@@ -49,9 +49,11 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
     {	switch(columnIndex) 
     	{
     	case 0: 
-    		return int.class;
+    		return Integer.class;//id
     	case 2: 
-    		return int.class;
+    		return Integer.class;//Status
+    	case 3: 
+    		return Integer.class;//Length
     	default:
     		return String.class;
     	}

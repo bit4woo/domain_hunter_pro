@@ -4,19 +4,23 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.annotation.JSONField;
 
 public class LineEntry {
-
-	public int id = 0;
+	
+	//int has some different from Integer
+	public Integer id = 0;
 	public String url = "";
-	public int statuscode = -1;
-	public String contentLength = "";
+	public Integer statuscode = -1;
+	public Integer contentLength = -1;
 	public String MIMEtype = "";
 	public String title = "";
 	public String IP = "";
 	public String webcontainer = "";
 	public String time = "";
+	
+	@JSONField(serialize=false)//表明不序列号该字段,messageinfo对象不能被fastjson成功序列化
 	public IHttpRequestResponse messageinfo;
 	@JSONField(serialize=false)//表明不序列号该字段
 	private BurpExtender burp;
@@ -37,7 +41,7 @@ public class LineEntry {
 
 	public String getLineJson(){
 		parse();
-		return JSON.toJSONString(this);
+		return JSONObject.toJSONString(this);
 	}
 
 	public void parse() {
@@ -48,7 +52,7 @@ public class LineEntry {
 			if(MIME == null) {
 				responseInfo.getInferredMimeType();
 			}
-			this.statuscode = code;
+			this.statuscode = new Integer(code);
 			this.MIMEtype = MIME;
 			
 			Getter getter = new Getter(helpers);
@@ -65,7 +69,7 @@ public class LineEntry {
 			}
 
 			this.url = url;
-			this.contentLength = length;
+			this.contentLength = Integer.parseInt(length);
 			this.title = title;
 			this.webcontainer = webContainer;
 		}catch(Exception e) {
@@ -85,19 +89,19 @@ public class LineEntry {
 		this.url = url;
 	}
 
-	public int getStatuscode() {
+	public Integer getStatuscode() {
 		return statuscode;
 	}
 
-	public void setStatuscode(int statuscode) {
+	public void setStatuscode(Integer statuscode) {
 		this.statuscode = statuscode;
 	}
 
-	public String getContentLength() {
+	public Integer getContentLength() {
 		return contentLength;
 	}
 
-	public void setContentLength(String contentLength) {
+	public void setContentLength(Integer contentLength) {
 		this.contentLength = contentLength;
 	}
 
@@ -141,8 +145,12 @@ public class LineEntry {
 		this.time = time;
 	}
 
-	public Object getValue(int columnIndex) {
+	public Object getValue(Integer columnIndex) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	public static void main(String args[]) {
+		
 	}
 }

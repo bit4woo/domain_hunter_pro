@@ -24,6 +24,7 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -47,6 +48,7 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowSorter;
 import javax.swing.SortOrder;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
@@ -109,7 +111,7 @@ public class GUI extends JFrame {
 	private JSplitPane RequestDetailPanel;
 	public JTabbedPane RequestPanel;
 	public JTabbedPane ResponsePanel;
-	private JButton btnGettitle;
+	public JButton btnGettitle;
 	public JScrollPane scrollPaneRequests;
 	public JTable table_1;
 	private JButton btnNewButton;
@@ -608,7 +610,39 @@ public class GUI extends JFrame {
 		btnGettitle = new JButton("GetTitle");
 		btnGettitle.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				getAllTitle();
+				
+				//method one: // don't need to wait threads in getAllTitle to exits
+				//but hard to know the finish time of task
+			    SwingUtilities.invokeLater(new Runnable() {
+			        public void run() {// don't need to wait threads in getAllTitle to exits
+			        	btnGettitle.setEnabled(false);
+			        	getAllTitle();
+			        	btnGettitle.setEnabled(true);
+			        	domainResult.setLineEntries(TitletableModel.getLineEntries());
+			        }
+			    });
+			    
+				//method two: //DO need to wait threads in getAllTitle to exits!!!
+				/*SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+			    	//可以在一个类中实现另一个类，直接实现原始类，没有变量处理的困扰；
+			    	//之前的想法是先单独实现一个worker类，在它里面处理各种，就多了一层实现，然后在这里调用，变量调用会是一个大问题。
+			    	//https://stackoverflow.com/questions/19708646/how-to-update-swing-ui-while-actionlistener-is-in-progress
+			        @Override
+			        protected Map doInBackground() throws Exception {//DO need to wait threads in getAllTitle to exits!!!
+			        	btnGettitle.setEnabled(false);
+			        	getAllTitle();
+			        	return null;
+			        }
+			        @Override
+			        protected void done() {
+			            try {
+			            	btnGettitle.setEnabled(true);
+			            } catch (Exception e) {
+			                e.printStackTrace(stderr);
+			            }
+			        }
+			    };
+			    worker.execute();*/
 			}
 		});
 		buttonPanel.add(btnGettitle);

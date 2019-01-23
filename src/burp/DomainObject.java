@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.net.InternetDomainName;
 
 public class DomainObject {
@@ -117,7 +118,9 @@ public class DomainObject {
 	////////////////ser and deser///////////
 	
 	public String Save() {
-    	return JSON.toJSONString(this);
+    	//return JSON.toJSONString(this);
+		//https://blog.csdn.net/qq_27093465/article/details/73277291
+    	return JSONObject.toJSONString(this);
     }
     
     

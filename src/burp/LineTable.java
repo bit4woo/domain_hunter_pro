@@ -32,8 +32,8 @@ public class LineTable extends JTable
         this.lineTableModel = lineTableModel;
         this.burp = burp;
         
-        requestViewer = BurpExtender.callbacks.createMessageEditor(lineTableModel, false);
-        responseViewer = BurpExtender.callbacks.createMessageEditor(lineTableModel, false);
+        requestViewer = burp.callbacks.createMessageEditor(lineTableModel, false);
+        responseViewer = burp.callbacks.createMessageEditor(lineTableModel, false);
         burp.RequestPanel.addTab("Request", requestViewer.getComponent());
         burp.ResponsePanel.addTab("Response", responseViewer.getComponent());
         addClickSort();
