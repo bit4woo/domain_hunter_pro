@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -610,28 +611,28 @@ public class GUI extends JFrame {
 		btnGettitle = new JButton("GetTitle");
 		btnGettitle.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				//https://stackabuse.com/how-to-use-threads-in-java-swing/
 				
 				//method one: // don't need to wait threads in getAllTitle to exits
 				//but hard to know the finish time of task
-			    SwingUtilities.invokeLater(new Runnable() {
+				//// Runs inside of the Swing UI thread
+/*			    SwingUtilities.invokeLater(new Runnable() {
 			        public void run() {// don't need to wait threads in getAllTitle to exits
 			        	btnGettitle.setEnabled(false);
 			        	getAllTitle();
 			        	btnGettitle.setEnabled(true);
-			        	domainResult.setLineEntries(TitletableModel.getLineEntries());
+			        	//domainResult.setLineEntries(TitletableModel.getLineEntries());
 			        }
-			    });
+			    });*/
 			    
-				//method two: //DO need to wait threads in getAllTitle to exits!!!
-				/*SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-			    	//可以在一个类中实现另一个类，直接实现原始类，没有变量处理的困扰；
-			    	//之前的想法是先单独实现一个worker类，在它里面处理各种，就多了一层实现，然后在这里调用，变量调用会是一个大问题。
-			    	//https://stackoverflow.com/questions/19708646/how-to-update-swing-ui-while-actionlistener-is-in-progress
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
 			        @Override
-			        protected Map doInBackground() throws Exception {//DO need to wait threads in getAllTitle to exits!!!
+			        protected Map doInBackground() throws Exception {
 			        	btnGettitle.setEnabled(false);
-			        	getAllTitle();
-			        	return null;
+			        	List<String> result = getAllTitle();
+			        	btnGettitle.setEnabled(true);
+			        	return (Map) new HashMap<String, List<String>>().put("result",result);
+			        	//no use ,the return.
 			        }
 			        @Override
 			        protected void done() {
@@ -642,7 +643,7 @@ public class GUI extends JFrame {
 			            }
 			        }
 			    };
-			    worker.execute();*/
+			    worker.execute();
 			}
 		});
 		buttonPanel.add(btnGettitle);
@@ -830,7 +831,8 @@ public class GUI extends JFrame {
 	    }
 	}
 	
-	public void getAllTitle(){
+	public List<String> getAllTitle(){
+		return null;
 		//sub class should over write this function
 	}
 }

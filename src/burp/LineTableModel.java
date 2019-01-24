@@ -5,22 +5,27 @@ import burp.IHttpService;
 import burp.IMessageEditorController;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
+
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 
-public class LineTableModel extends AbstractTableModel implements IMessageEditorController {
+public class LineTableModel extends AbstractTableModel implements IMessageEditorController,Serializable {
 	//https://stackoverflow.com/questions/11553426/error-in-getrowcount-on-defaulttablemodel
 	//when use DefaultTableModel, getRowCount encounter NullPointerException. why?
     /**
-	 * 
+	 * LineTableModel中数据如果类型不匹配，或者有其他问题，可能导致图形界面加载异常！
 	 */
 	private static final long serialVersionUID = 1L;
 	private IHttpRequestResponse currentlyDisplayedItem;
     private List<LineEntry> lineEntries =new ArrayList<LineEntry>();
     private IBurpExtender burp;
+    private static final String[] titles = new String[] {
+    		"#", "URL", "Status", "Length", "MIME Type", "Title", "IP", "Time","isNew"
+    	};
 
     public LineTableModel(final BurpExtender burp){
         this.burp = burp;
@@ -34,6 +39,15 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	public void setLineEntries(List<LineEntry> lineEntries) {
 		this.lineEntries = lineEntries;
 	}
+	
+	public List<String> getbodyTexts(){
+		List<String> result = new ArrayList<String>();
+		for(LineEntry line:lineEntries) {
+			String linetext = line.getBodyText();
+			result.add(linetext);
+		}
+		return result;
+	}
     
     
     ////////////////////// extend AbstractTableModel////////////////////////////////
@@ -41,7 +55,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
     @Override
     public int getColumnCount()
     {
-        return 11;
+        return titles.length;
     }
 
     @Override
@@ -54,6 +68,8 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
     		return Integer.class;//Status
     	case 3: 
     		return Integer.class;//Length
+    	case 8:
+    		return boolean.class;
     	default:
     		return String.class;
     	}
@@ -69,9 +85,6 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
     //define header of table???
     @Override
     public String getColumnName(int columnIndex) {
-		String[] titles = new String[] {
-		"#", "URL", "Status", "Length", "MIME Type", "Title", "IP", "Time", "New column", "New column", "New column", "New column", "New column", "New column", "New column", "New column"
-	};
 		if (columnIndex >= 0 && columnIndex <= titles.length) {
 			return titles[columnIndex];
 		}else {
@@ -121,14 +134,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
             case 7:
                 return entry.getTime();
             case 8:
-                return entry.url;
-            case 9:
-                return entry.url;
-            case 10:
-                return entry.url;
-            case 11:
-                return entry.url;
-                
+            	return entry.isNew();
             default:
                 return "";
         }

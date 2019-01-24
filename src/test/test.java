@@ -9,7 +9,7 @@ import java.util.Set;
 public class test {
 	public static void main(String[] args){
 		try {
-			int a = Integer.parseInt("1211");
+			Integer a = new Integer(Integer.parseInt("1211"));
 			System.out.println(a);
 			
 			URL url = new URL("http://www.runoob.com/index.html?language=cn#j2se");

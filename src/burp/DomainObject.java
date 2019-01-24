@@ -22,7 +22,8 @@ public class DomainObject {
 	public Set<String> similarDomainSet = new HashSet<String>();
 	public Set<String> relatedDomainSet = new HashSet<String>();
 	
-	private List<LineEntry> lineEntries = new ArrayList<LineEntry>();
+	private List<String> BodyTexts = new ArrayList<String>();
+	private List<String> historyBodyTexts = new ArrayList<String>();
 	
     public static int SUB_DOMAIN=0;
     public static int SIMILAR_DOMAIN=1;
@@ -94,14 +95,21 @@ public class DomainObject {
 	public void setRelatedDomainSet(Set<String> relatedDomainSet) {
 		this.relatedDomainSet = relatedDomainSet;
 	}
-	
 
-	public List<LineEntry> getLineEntries() {
-		return lineEntries;
+	public List<String> getBodyTexts() {
+		return BodyTexts;
 	}
 
-	public void setLineEntries(List<LineEntry> lineEntries) {
-		this.lineEntries = lineEntries;
+	public void setBodyTexts(List<String> bodyTexts) {
+		BodyTexts = bodyTexts;
+	}
+
+	public List<String> getHistoryBodyTexts() {
+		return historyBodyTexts;
+	}
+
+	public void setHistoryBodyTexts(List<String> historyBodyTexts) {
+		this.historyBodyTexts = historyBodyTexts;
 	}
 
 	public String getSummary() {

@@ -176,9 +176,9 @@ public class LineTableModel_backup extends DefaultTableModel implements IMessage
             // show the log entry for the selected row
     
         	LineEntry Entry = getData().get(super.convertRowIndexToModel(row));
-            requestViewer.setMessage(Entry.messageinfo.getRequest(), true);
-            responseViewer.setMessage(Entry.messageinfo.getResponse(), false);
-            currentlyDisplayedItem = Entry.messageinfo;
+            requestViewer.setMessage(Entry.getMessageinfo().getRequest(), true);
+            responseViewer.setMessage(Entry.getMessageinfo().getResponse(), false);
+            currentlyDisplayedItem = Entry.getMessageinfo();
             super.changeSelection(row, col, toggle, extend);
         }
     }

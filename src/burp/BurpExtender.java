@@ -3,6 +3,10 @@ package burp;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -19,12 +23,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.util.IOUtils;
+import com.google.gson.Gson;
 
 public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtensionStateListener,IContextMenuFactory, IMessageEditorController{
 	/**
@@ -57,34 +65,37 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		scrollPaneRequests.setViewportView(table_1);
 
 		//recovery save domain results from extensionSetting
-		String content = loadConfig();
-		if (content!=null) {
-			domainResult = domainResult.Open(content);
-			showToUI(domainResult);
+		loadConfig();
 
-			////recovery lineEntries
-			for (LineEntry entry:domainResult.getLineEntries()) {
-				TitletableModel.addNewLineEntry(entry);
-			}
-			//TitletableModel.setLineEntries();//recovery lineEntries
-		}
 	}
 
 	@Override
 	public void extensionUnloaded() {
-		//TODO to cancel SwingWorker in search and crawl function
-		threadGetTitle.ces.shutdownNow();
-		threadGetTitle.pes.shutdownNow();
+		for (Producer p:threadGetTitle.plist) {
+			p.stopThread();
+		}
+		for (Consumer c:threadGetTitle.clist) {
+			c.stopThread();
+		}
 	}
-
+	
 	public void saveConfig() {
 		//to save domain result to extensionSetting
 		String content= domainResult.Save();
 		callbacks.saveExtensionSetting("domainHunter", content);
 	}
 
-	public String loadConfig() {
-		return callbacks.loadExtensionSetting("domainHunter");
+	public void loadConfig() {
+		String content = callbacks.loadExtensionSetting("domainHunter");
+		if (content!=null) {
+			domainResult = domainResult.Open(content);
+			showToUI(domainResult);
+
+			////recovery lineEntries--store to HistoryLineTexts
+			domainResult.setHistoryBodyTexts(domainResult.getBodyTexts());
+			//clear LineTexts
+			domainResult.setBodyTexts(new ArrayList<String>());
+		}
 	}
 
 	@Override
@@ -359,26 +370,32 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		return null;
 	}
 
-	public void getAllTitle(){
+	public List<String> getAllTitle(){
 		Set<String> domains = domainResult.getSubDomainSet();
+		
+		////recovery lineEntries--store to HistoryLineTexts
+		domainResult.setHistoryBodyTexts(domainResult.getBodyTexts());
+		//clear LineTexts
+		domainResult.setBodyTexts(new ArrayList<String>());
+		
 		threadGetTitle = new ThreadGetTitle(domains);
-		threadGetTitle.Do();
-
-
+		List<String> result = threadGetTitle.Do();
 		saveConfig();
+		return result;
 	}
 
 	//////////////////ThreadGetTitle block/////////////
 	//no need to pass BurpExtender object to these class, IBurpExtenderCallbacks object is enough 
 	class ThreadGetTitle{
 		Set<String> domains;
-		ExecutorService pes;
-		ExecutorService ces;
+		public List<Producer> plist;
+		public List<Consumer> clist;
 		public ThreadGetTitle(Set<String> domains) {
 			this.domains = domains;
 		}
 
-		public void Do(){
+		public List<String> Do(){
+			stdout.println("~~~~~~~~~~~~~Start threading Get Title~~~~~~~~~~~~~");
 			BlockingQueue<String> domainQueue = new LinkedBlockingQueue<String>();//use to store domains
 			BlockingQueue<IHttpRequestResponse> sharedQueue = new LinkedBlockingQueue<IHttpRequestResponse>();
 			BlockingQueue<String> lineQueue = new LinkedBlockingQueue<String>();//use to store output---line
@@ -388,34 +405,51 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 				String domain = it.next();
 				domainQueue.add(domain);
 			}
-
-			pes = Executors.newFixedThreadPool(10);
-			ces = Executors.newFixedThreadPool(10);
-			for (int i=0;i<=10;i++) {
-				pes.submit(new Producer(domainQueue,sharedQueue,i));
-				//stdout.println("~~~~~~~~~~~~~pes  submit~~~~~~~~~~~~~");
-			}
-
-			for (int i=0;i<=10;i++) {
-				ces.submit(new Consumer(sharedQueue,lineQueue,i));
-				//stdout.println("~~~~~~~~~~~~~ces  submit~~~~~~~~~~~~~");
-			}
-
-			// shutdown should happen somewhere along with awaitTermination
-			/* https://stackoverflow.com/questions/36644043/how-to-properly-shutdown-java-executorservice/36644320#36644320 */
-			pes.shutdown();
-			ces.shutdown();//will wait already submitted task to finish
 			
-/*			while(!ces.isTerminated()) {//to wait all threads exit.
-				try {
-					Thread.sleep(10*1000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}//单位毫秒，60000毫秒=一分钟
-			}*/
+			plist = new ArrayList();
+			clist = new ArrayList();
 
-			//to save lineEntries
-			domainResult.setLineEntries(TitletableModel.getLineEntries());
+			for (int i=0;i<=10;i++) {
+				Producer p = new Producer(domainQueue,sharedQueue,i);
+				p.start();
+				plist.add(p);
+			}
+			
+
+			for (int i=0;i<=10;i++) {
+				Consumer c = new Consumer(sharedQueue,lineQueue,i);
+				c.start();
+				clist.add(c);
+			}
+			
+			while(true) {//to wait all threads exit.
+				if (domainQueue.isEmpty() && isAllProductorFinished()) {
+					for (Consumer c:clist) {
+						c.stopThread();
+					}
+					stdout.println("~~~~~~~~~~~~~Get Title Done~~~~~~~~~~~~~");
+					break;
+				}else {
+					try {
+						Thread.sleep(1*1000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					continue;
+				}
+			}
+			//save line body text to compare, know it's new or not
+			domainResult.setBodyTexts(TitletableModel.getbodyTexts());
+			return TitletableModel.getbodyTexts();
+		}
+		
+		boolean isAllProductorFinished(){
+			for (Producer p:plist) {
+				if(p.isAlive()) {
+					return false;
+				}
+			}
+			return true;
 		}
 	}
 
@@ -425,22 +459,28 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 	 *
 	 */
 
-	class Producer implements Runnable {//Producer do
+	class Producer extends Thread {//Producer do
 		private final BlockingQueue<String> domainQueue;//use to store domains
 		private final BlockingQueue<IHttpRequestResponse> sharedQueue;
 		private int threadNo;
+		private boolean stopflag = false;
 
 		public Producer(BlockingQueue<String> domainQueue,BlockingQueue<IHttpRequestResponse> sharedQueue,int threadNo) {
 			this.threadNo = threadNo;
 			this.domainQueue = domainQueue;
 			this.sharedQueue = sharedQueue;
+			stopflag= false;
+		}
+		
+		public void stopThread() {
+			stopflag = true;
 		}
 
 		@Override
 		public void run() {
 			while(true){
 				try {
-					if (domainQueue.isEmpty()) {
+					if (domainQueue.isEmpty() || stopflag) {
 						//stdout.println("Producer break");
 						break;
 					}
@@ -473,36 +513,64 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 	 * 
 	 */
 
-	class Consumer implements Runnable{// Consumer
+	class Consumer extends Thread{// Consumer
 		private final BlockingQueue<IHttpRequestResponse> sharedQueue;
 		private final BlockingQueue<String> lineQueue;//use to store output---line
 		private int threadNo;
+		private boolean stopflag = false;
 
 		public Consumer (BlockingQueue<IHttpRequestResponse> sharedQueue,BlockingQueue<String> lineQueue,int threadNo) {
 			this.sharedQueue = sharedQueue;
 			this.lineQueue = lineQueue;
 			this.threadNo = threadNo;
+			stopflag = false;
 
 			List<LineEntry> lineEntries = new ArrayList<LineEntry>();
 			TitletableModel.setLineEntries(lineEntries );//to clear history
+		}
+		
+		public void stopThread() {
+			stopflag = true;
 		}
 
 		@Override
 		public void run() {
 			while(true){
-				//				if (sharedQueue.isEmpty()) {
-				//					stderr.println("Consumer break");
-				//					break;
-				//				}
+				
+				if (stopflag) {//消费者需要的时间更短，不能使用sharedQueue是否为空作为进程是否结束的依据。
+					break;
+				}
+				
 				try {
 					IHttpRequestResponse messageinfo = sharedQueue.take();
 
 					if (messageinfo.getResponse() ==null) {
-						stdout.println("--- skip "+messageinfo.getHttpService().toString()+" due to no response.");
+						stdout.println("--- ["+messageinfo.getHttpService().toString()+"] --- has no response.");
 					}else {
-						TitletableModel.addNewLineEntry(new LineEntry(messageinfo));
-						//stdout.println(new LineEntry(messageinfo).getLineJson());
-						stdout.println("+++ "+messageinfo.getHttpService().toString()+" get title done");
+						Getter getter = new Getter(helpers);
+						String body = new String(getter.getBody(false, messageinfo));
+						String bodyText = messageinfo.getHttpService().toString()+body;
+					
+						if (domainResult.getHistoryBodyTexts().contains(bodyText)) {
+							TitletableModel.addNewLineEntry(new LineEntry(messageinfo,false));//old
+						}else {
+							TitletableModel.addNewLineEntry(new LineEntry(messageinfo,true));//new
+						}
+						
+						
+
+						///any method to save Object to json??
+						try {
+							Gson gson = new Gson();
+							LineEntry x= new LineEntry(messageinfo);
+							// 1. Java object to JSON, and save into a file
+							gson.toJson(x, new FileWriter("D:\\file.json"));
+							String str=JSONObject.toJSONString(x);
+							new FileWriter("D:\\file.fastjson").write(str);
+						}catch (Exception e) {
+							
+						}
+						stdout.println("+++ ["+messageinfo.getHttpService().toString()+"] +++ get title done.");
 					}
 					//we don't need to add row to table manually,just call fireTableRowsInserted in TableModel
 				} catch (Exception err) {
