@@ -103,26 +103,32 @@ public class LineEntry {
 			
 			url = this.messageinfo.getHttpService().toString();
 			
-			contentLength = Integer.parseInt(getter.getHeaderValueOf(false, messageinfo, "Content-Length").trim());
-			
+
 			webcontainer = getter.getHeaderValueOf(false, messageinfo, "Server");
 			
-			String body = new String(getter.getBody(false, messageinfo));
+			bodyText = new String(getter.getBody(false, messageinfo));
 			
-			bodyText = body;
+			contentLength = Integer.parseInt(getter.getHeaderValueOf(false, messageinfo, "Content-Length").trim());
+			if (contentLength==-1) {
+				contentLength = bodyText.length();
+			}
 
-			Pattern p = Pattern.compile(">(.*?)</title>");
+			Pattern p = Pattern.compile("<title(.*?)</title>");
 			//<title ng-bind="service.title">The Evolution of the Producer-Consumer Problem in Java - DZone Java</title>
-			Matcher m  = p.matcher(body);
+			Matcher m  = p.matcher(bodyText);
 			while ( m.find() ) {
 				title = m.group(0);
 			}
-			if (title != "") {
-				title = title.replace("</title>", "").replaceAll(">", "");
+			if (title == "") {
+				Pattern ph = Pattern.compile("<title [.*?]>(.*?)</title>");
+				Matcher mh  = ph.matcher(bodyText);
+				while ( mh.find() ) {
+					title = mh.group(0);
+				}
 			}
 			if (title == "") {
-				Pattern ph = Pattern.compile(">(.*?)</h[1-6]>");
-				Matcher mh  = ph.matcher(body);
+				Pattern ph = Pattern.compile("<h[1-6]>(.*?)</h[1-6]>");
+				Matcher mh  = ph.matcher(bodyText);
 				while ( mh.find() ) {
 					title = mh.group(0);
 				}

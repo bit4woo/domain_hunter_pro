@@ -49,7 +49,6 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowSorter;
 import javax.swing.SortOrder;
-import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
@@ -116,6 +115,9 @@ public class GUI extends JFrame {
 	public JScrollPane scrollPaneRequests;
 	public JTable table_1;
 	private JButton btnNewButton;
+	private JButton btnImportDomain;
+	private JButton btnSaveState;
+	private JButton btnSaveStateTo;
 
 
 
@@ -190,7 +192,7 @@ public class GUI extends JFrame {
                 
                 String projectName = JOptionPane.showInputDialog("Enter Name For New Project", null);
                 domainResult = new DomainObject(projectName);
-                showToUI(domainResult);
+                showToDomainUI(domainResult);
 
 			}
 		});
@@ -212,10 +214,10 @@ public class GUI extends JFrame {
 					try {
 						File file=fc.getSelectedFile();
 						String contents = Files.toString(file, Charsets.UTF_8);
-						domainResult = domainResult.Open(contents);
+
+						loadConfigAndShow(contents);
 						stdout.println("open project ["+domainResult.projectName+"] in "+ file.getName());
 						//List<String> lines = Files.readLines(file, Charsets.UTF_8);
-						showToUI(domainResult);
 						
 					} catch (IOException e1) {
 						e1.printStackTrace(stderr);
@@ -258,7 +260,7 @@ public class GUI extends JFrame {
 			        protected void done() {
 			            try {
 				        	get();				        	
-				        	showToUI(domainResult);
+				        	showToDomainUI(domainResult);
 							btnSearch.setEnabled(true);
 			            } catch (Exception e) {
 			            	btnSearch.setEnabled(true);
@@ -297,7 +299,7 @@ public class GUI extends JFrame {
 			        protected void done() {
 			            try {
 				        	get();
-				        	showToUI(domainResult);
+				        	showToDomainUI(domainResult);
 							btnCrawl.setEnabled(true);
 			            } catch (Exception e) {
 			                e.printStackTrace(stderr);
@@ -309,6 +311,39 @@ public class GUI extends JFrame {
 		});
 		btnCrawl.setToolTipText("Crawl all subdomains recursively,This may take a long time and large Memory Usage!!!");
 		HeaderPanel.add(btnCrawl);
+		
+		btnImportDomain = new JButton("Import Domain");
+		btnImportDomain.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				JFileChooser fc=new JFileChooser();
+				fc.setDialogTitle("Chose Domain File");
+				fc.setDialogType(JFileChooser.CUSTOM_DIALOG);
+				if(fc.showOpenDialog(null)==JFileChooser.APPROVE_OPTION){
+					try {
+						File file=fc.getSelectedFile();
+						List<String> lines = Files.readLines(file, Charsets.UTF_8);
+						for (String line:lines) {
+							line = line.trim();
+							
+							if (domainResult.domainType(line) == DomainObject.SUB_DOMAIN) {
+								domainResult.subDomainSet.add(line);
+							}else if(domainResult.domainType(line) == DomainObject.SIMILAR_DOMAIN) {
+								domainResult.similarDomainSet.add(line);
+							}else {
+								stdout.println("import skip "+line);
+							}
+						}
+						loadConfigAndShow(getConfig());//保存配置并更新图形显示
+						stdout.println("Import domains finished from "+ file.getName());
+						//List<String> lines = Files.readLines(file, Charsets.UTF_8);
+						
+					} catch (IOException e1) {
+						e1.printStackTrace(stderr);
+					}
+				}
+			}
+		});
+		HeaderPanel.add(btnImportDomain);
 		
 		verticalStrut_1 = Box.createVerticalStrut(20);
 		HeaderPanel.add(verticalStrut_1);
@@ -437,7 +472,7 @@ public class GUI extends JFrame {
 				String keyword = enteredRootDomain.substring(0,enteredRootDomain.indexOf("."));
 		    	
 				domainResult.AddToRootDomainMap(enteredRootDomain, keyword);
-				showToUI(domainResult);
+				showToDomainUI(domainResult);
 			
 				
 /*				if (domainResult.rootDomainMap.containsKey(enteredRootDomain) && domainResult.rootDomainMap.containsValue(keyword)) {
@@ -469,7 +504,7 @@ public class GUI extends JFrame {
 				// will trigger tableModel listener
 				
 				domainResult.rootDomainMap = getTableMap();
-				showToUI(domainResult);
+				showToDomainUI(domainResult);
 			}
 		});
 
@@ -495,7 +530,7 @@ public class GUI extends JFrame {
 				domainResult.autoAddRelatedToRoot = rdbtnAddRelatedToRoot.isSelected();
 				if (domainResult.autoAddRelatedToRoot==true) {
 					domainResult.relatedToRoot();
-					showToUI(domainResult);/*
+					showToDomainUI(domainResult);/*
 					Set<String> tableRootDomains = getColumnValues("Root Domain");
 					for(String relatedDomain:domainResult.relatedDomainSet) {
 			        	String rootDomain =InternetDomainName.from(relatedDomain).topPrivateDomain().toString();
@@ -596,6 +631,8 @@ public class GUI extends JFrame {
 	}
 	
 	
+
+
 	public JPanel TitlePanel() {
 		//
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -608,7 +645,8 @@ public class GUI extends JFrame {
 		TitlePanel.add(buttonPanel, BorderLayout.NORTH);
 		buttonPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
 		
-		btnGettitle = new JButton("GetTitle");
+		btnGettitle = new JButton("Get Title");
+		btnGettitle.setToolTipText("A fresh start");
 		btnGettitle.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				//https://stackabuse.com/how-to-use-threads-in-java-swing/
@@ -648,8 +686,24 @@ public class GUI extends JFrame {
 		});
 		buttonPanel.add(btnGettitle);
 		
-		btnNewButton = new JButton("Remove");
-		buttonPanel.add(btnNewButton);
+		btnSaveState = new JButton("Save State");
+		btnSaveState.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				saveConfigToExtension();
+			}
+		});
+		btnSaveState.setToolTipText("Save state to extension setting.");
+		buttonPanel.add(btnSaveState);
+		
+		btnSaveStateTo = new JButton("Save State To File");
+		btnSaveStateTo.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				saveDialog();
+			}
+		});
+		btnSaveStateTo.setToolTipText("Same as save button in domain tab.");
+		buttonPanel.add(btnSaveStateTo);
+		
 		
 		splitPane = new JSplitPane();
 		splitPane.setResizeWeight(0.5);
@@ -678,6 +732,8 @@ public class GUI extends JFrame {
 		return TitlePanel;
 	}
 	
+
+
 	//////////////////////////////methods//////////////////////////////////////
 	public Map<String, Set<String>> crawl (Set<String> rootdomains, Set<String> keywords) {
 	    System.out.println("spiderall testing... you need to over write this function!");
@@ -689,6 +745,22 @@ public class GUI extends JFrame {
 		System.out.println("search testing... you need to over write this function!");
 		return null;
 	}
+	
+	public String getConfig() {
+		// BurpExtender need to override this function
+		return null;
+	}
+
+	protected DomainObject loadConfigAndShow(String contents) {
+		// // BurpExtender need to override this function
+		return null;
+	}
+	
+	protected void saveConfigToExtension() {
+		// TODO Auto-generated method stub
+		// BurpExtender need to override this function
+	}
+	
 	
 	public Boolean upload(String url,String content) {
 		if ((url.toLowerCase().contains("http://") ||url.toLowerCase().contains("https://"))
@@ -763,7 +835,7 @@ public class GUI extends JFrame {
 		domainResult.rootDomainMap = tmp;
 	}
 	
-	public void showToUI(DomainObject domainResult) {
+	public void showToDomainUI(DomainObject domainResult) {
 
 		domainResult.relatedToRoot();
 		ClearTable();
@@ -799,7 +871,7 @@ public class GUI extends JFrame {
 			}
 			
 			
-		    String content= domainResult.Save();
+		    String content= getConfig();
 	        try{
 	            if(file.exists()){
 	            	int result = JOptionPane.showConfirmDialog(null,"Are you sure to overwrite this file ?");
@@ -820,6 +892,8 @@ public class GUI extends JFrame {
 	}
 
 	
+
+
 	class JsonFileFilter extends FileFilter {
 	    public String getDescription() {  
 	        return "*.json";  

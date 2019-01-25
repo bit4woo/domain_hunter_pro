@@ -118,7 +118,6 @@ public class LineTable extends JTable
         				}
         				Arrays.sort(rows);//升序
         				
-                    	LineTable.this.burp.stdout.println(rows.length+" items deleted");
                     	new LineEntryMenu(_this, rows).show(e.getComponent(), e.getX(), e.getY());
                     }
                 }

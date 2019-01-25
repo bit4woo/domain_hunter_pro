@@ -3,10 +3,6 @@ package burp;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -23,16 +19,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
-
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.util.IOUtils;
-import com.google.gson.Gson;
 
 public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtensionStateListener,IContextMenuFactory, IMessageEditorController{
 	/**
@@ -65,7 +53,7 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		scrollPaneRequests.setViewportView(table_1);
 
 		//recovery save domain results from extensionSetting
-		loadConfig();
+		loadConfigFromExtension();
 
 	}
 
@@ -84,28 +72,45 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		return callbacks;
 	}
 	
-	
-	public void saveConfig() {
-		//to save domain result to extensionSetting
-		stdout.println("config saved to extension setting");
+	//重写GUI中的方法，以确保能获取到title面板中的配置
+	@Override
+	public String getConfig() {
 		domainResult.setLineJsons(TitletableModel.getLineJsons());
 		String content= domainResult.Save();
-		callbacks.saveExtensionSetting("domainHunter", content);
-		
+		return content;
+	}
+	
+	//重写GUI中的方法，以确保能获取到title面板中的配置
+	@Override
+	public DomainObject loadConfigAndShow(String config) {
+		if (config!=null) {
+			domainResult = domainResult.Open(config);
+			showToDomainUI(domainResult);
+			showToTitleUI();
+		}
+		return domainResult;
+	}
+	
+	@Override
+	public void saveConfigToExtension() {
+		//to save domain result to extensionSetting
+		stdout.println("config saved to extension setting");
+		callbacks.saveExtensionSetting("domainHunter", getConfig());
 	}
 
-	public void loadConfig() {
-		
+	public void loadConfigFromExtension() {
 		stdout.println("config Loaded from extension setting");
 		String content = callbacks.loadExtensionSetting("domainHunter");
-		if (content!=null) {
-			domainResult = domainResult.Open(content);
-			showToUI(domainResult);
-
-			//backup to history
-			domainResult.setHistoryLineJsons(domainResult.getLineJsons());
-			//clear LineJsons
-			domainResult.setLineJsons(new ArrayList<String>());
+		loadConfigAndShow(content);
+	}
+	
+	public void showToTitleUI() {
+		TitletableModel.setLineEntries(new ArrayList<LineEntry>());//clear
+		
+		List<String> lineJsons = domainResult.getLineJsons();
+		for (String line:lineJsons) {
+			LineEntry lineObject = new LineEntry().FromJson(line);
+			TitletableModel.addNewLineEntry(lineObject);
 		}
 	}
 
@@ -353,7 +358,7 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 					domainResult.relatedToRoot();
 					domainResult.subDomainSet.addAll(domains);
 				}
-				showToUI(domainResult);
+				showToDomainUI(domainResult);
 			}
 			catch (Exception e1)
 			{
@@ -393,10 +398,13 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		domainResult.setHistoryLineJsons(domainResult.getLineJsons());
 		//clear LineJsons
 		domainResult.setLineJsons(new ArrayList<String>());
+		//clear tableModel
+		TitletableModel.setLineEntries(new ArrayList<LineEntry>());//clear
+		
 		
 		threadGetTitle = new ThreadGetTitle(domains);
 		List<String> result = threadGetTitle.Do();
-		saveConfig();
+		saveConfigToExtension();
 		return result;
 	}
 
@@ -604,6 +612,8 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		}
 		return null;
 	}
+	
+	
 	
 	
 

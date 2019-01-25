@@ -1,8 +1,12 @@
 package burp;
 
+import java.awt.Window.Type;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+
+import org.xbill.DNS.Lookup;
+import org.xbill.DNS.Record;
 
 public class Commons {
 	
@@ -69,5 +73,27 @@ public class Commons {
 	    } catch (NumberFormatException nfe) {
 	        return false;
 	    }
+	}
+	
+	
+	public void dnsquery(String domain) {
+		try{
+			Record [] records =null;
+			Lookup lookup = new Lookup("csdn.com", org.xbill.DNS.Type.A);
+			lookup.run();
+			
+			if(lookup.getResult() == Lookup.SUCCESSFUL){
+				records=lookup.getAnswers();
+			}else{
+				System.out.println("未查询到结果!");
+				return;
+			}
+			for (int i = 0; i < records.length; i++) {
+				MXRecord mx = (MXRecord) records[i];
+				System.out.println("Host " + mx.getTarget() + " has preference "+ mx.getPriority());
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
 	}
 }

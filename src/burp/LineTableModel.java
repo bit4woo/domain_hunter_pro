@@ -102,7 +102,9 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
         	//list length and index changed after every remove.the origin index not point to right item any more.
         	Arrays.sort(rows); //升序
         	for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
+        		String url = lineEntries.get(rows[i]).getUrl();
             	lineEntries.remove(rows[i]);
+            	this.burp.stdout.println("!!! "+url+" deleted");
                 this.fireTableRowsDeleted(rows[i], rows[i]);
         	}
         }
@@ -118,6 +120,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
         		checked.setChecked(true);
             	lineEntries.remove(rows[i]);
             	lineEntries.add(rows[i], checked);
+            	this.burp.stdout.println("$$$ "+checked.getUrl()+" updated");
         	}
         	this.fireTableRowsUpdated(rows[0], rows[rows.length-1]);
         }
@@ -131,7 +134,9 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
         	for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
         		String Host = lineEntries.get(rows[i]).getHost();
         		this.burp.domainResult.blackDomainSet.add(Host);
+        		String url = lineEntries.get(rows[i]).getUrl();
             	lineEntries.remove(rows[i]);
+            	this.burp.stdout.println("### "+url+" added to black list and deleted");
             	this.fireTableRowsDeleted(rows[i], rows[i]);
         	}
         }
