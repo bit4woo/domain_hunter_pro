@@ -1,15 +1,12 @@
 package burp;
 
-import burp.IHttpRequestResponse;
 import burp.IHttpService;
 import burp.IMessageEditorController;
-import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 
@@ -20,11 +17,11 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	 * LineTableModel中数据如果类型不匹配，或者有其他问题，可能导致图形界面加载异常！
 	 */
 	private static final long serialVersionUID = 1L;
-	private IHttpRequestResponse currentlyDisplayedItem;
+	private LineEntry currentlyDisplayedItem;
     private List<LineEntry> lineEntries =new ArrayList<LineEntry>();
-    private IBurpExtender burp;
+    private BurpExtender burp;
     private static final String[] titles = new String[] {
-    		"#", "URL", "Status", "Length", "MIME Type", "Title", "IP", "Time","isNew"
+    		"#", "URL", "Status", "Length", "MIME Type", "Title", "IP", "Time","isNew","isChecked"
     	};
 
     public LineTableModel(final BurpExtender burp){
@@ -40,10 +37,10 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		this.lineEntries = lineEntries;
 	}
 	
-	public List<String> getbodyTexts(){
+	public List<String> getLineJsons(){
 		List<String> result = new ArrayList<String>();
 		for(LineEntry line:lineEntries) {
-			String linetext = line.getBodyText();
+			String linetext = line.ToJson();
 			result.add(linetext);
 		}
 		return result;
@@ -69,7 +66,9 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
     	case 3: 
     		return Integer.class;//Length
     	case 8:
-    		return boolean.class;
+    		return boolean.class;//isNew
+    	case 9:
+    		return boolean.class;//isChecked
     	default:
     		return String.class;
     	}
@@ -109,6 +108,36 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
         }
     }
     
+    public void updateRows(int[] rows) {
+        synchronized (lineEntries) {
+        	//because thread let the delete action not in order, so we must loop in here.
+        	//list length and index changed after every remove.the origin index not point to right item any more.
+        	Arrays.sort(rows); //升序
+        	for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
+        		LineEntry checked = lineEntries.get(rows[i]);
+        		checked.setChecked(true);
+            	lineEntries.remove(rows[i]);
+            	lineEntries.add(rows[i], checked);
+        	}
+        	this.fireTableRowsUpdated(rows[0], rows[rows.length-1]);
+        }
+    }
+    
+    public void addBlackList(int[] rows) {
+        synchronized (lineEntries) {
+        	//because thread let the delete action not in order, so we must loop in here.
+        	//list length and index changed after every remove.the origin index not point to right item any more.
+        	Arrays.sort(rows); //升序
+        	for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
+        		String Host = lineEntries.get(rows[i]).getHost();
+        		this.burp.domainResult.blackDomainSet.add(Host);
+            	lineEntries.remove(rows[i]);
+            	this.fireTableRowsDeleted(rows[i], rows[i]);
+        	}
+        }
+    }
+    
+    
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex)
@@ -135,6 +164,8 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
                 return entry.getTime();
             case 8:
             	return entry.isNew();
+            case 9:
+            	return entry.isChecked();
             default:
                 return "";
         }
@@ -158,11 +189,11 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
     }
     
     
-    public IHttpRequestResponse getCurrentlyDisplayedItem() {
+    public LineEntry getCurrentlyDisplayedItem() {
         return this.currentlyDisplayedItem;
     }
 
-    public void setCurrentlyDisplayedItem(IHttpRequestResponse currentlyDisplayedItem) {
+    public void setCurrentlyDisplayedItem(LineEntry currentlyDisplayedItem) {
         this.currentlyDisplayedItem = currentlyDisplayedItem;
     }
     
@@ -174,28 +205,34 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
     @Override
     public byte[] getRequest()
     {
-        if(getCurrentlyDisplayedItem()==null) {
+    	LineEntry item = getCurrentlyDisplayedItem();
+        if(item==null) {
         	return "".getBytes();
         }
-        return getCurrentlyDisplayedItem().getRequest();
+        return item.getRequest();
     }
 
     @Override
     public byte[] getResponse()
     {
-        if(getCurrentlyDisplayedItem()==null) {
+    	LineEntry item = getCurrentlyDisplayedItem();
+        if(item==null) {
         	return "".getBytes();
         }
-        return getCurrentlyDisplayedItem().getResponse();
+        return item.getResponse();
     }
 
     @Override
     public IHttpService getHttpService()
     {
-        if(getCurrentlyDisplayedItem()==null) {
+    	LineEntry item = getCurrentlyDisplayedItem();
+        if(item==null) {
         	return null;
         }
-        return getCurrentlyDisplayedItem().getHttpService();
+        IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
+        IHttpService service = helpers.buildHttpService(item.getHost(), 
+        		item.getPort(), item.getProtocol());
+        return service;
     }
     
     

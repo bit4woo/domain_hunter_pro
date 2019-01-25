@@ -9,7 +9,16 @@ import com.alibaba.fastjson.annotation.JSONField;
 
 public class LineEntry {
 	
-	//int has some different from int
+	private int port =-1;
+	private String host = "";
+	private String protocol ="";
+	//these three == IHttpService, helpers.buildHttpService to build. 
+	
+	private byte[] request = {};
+	private byte[] response = {};
+	// request+response+httpService == IHttpRequestResponse
+	
+	//used in UI,the fields to show
 	private String url = "";
 	private int statuscode = -1;
 	private int contentLength = -1;
@@ -18,12 +27,20 @@ public class LineEntry {
 	private String IP = "";
 	private String webcontainer = "";
 	private String time = "";
+	
 	private String messageText = "";//use to search
 	private String bodyText = "";//use to adjust the response changed or not
+	
+	//field for user 
 	private boolean isNew =true;
+	private boolean isChecked =true;
+	private String comment ="";
 	
 	@JSONField(serialize=false)//表明不序列号该字段,messageinfo对象不能被fastjson成功序列化
 	private IHttpRequestResponse messageinfo;
+	
+	//remove IHttpRequestResponse field ,replace with request+response+httpService(host port protocol). for convert to json.
+	
 	@JSONField(serialize=false)//表明不序列号该字段
 	private BurpExtender burp;
 	@JSONField(serialize=false)
@@ -39,22 +56,40 @@ public class LineEntry {
 		this.messageinfo = messageinfo;
 		this.callbacks = BurpExtender.getCallbacks();
 		this.helpers = this.callbacks.getHelpers();
+		parse();
 	}
 	
-	public LineEntry(IHttpRequestResponse messageinfo,boolean isNew) {
+	public LineEntry(IHttpRequestResponse messageinfo,boolean isNew,boolean Checked,String comment) {
 		this.messageinfo = messageinfo;
 		this.callbacks = BurpExtender.getCallbacks();
 		this.helpers = this.callbacks.getHelpers();
+		parse();
+		
+		this.isNew = isNew;
+		this.isChecked = Checked;
+		this.comment = comment;
 	}
 
-	public String getLineJson(){
-		parse();
+	@JSONField(serialize=false)//表明不序列号该字段
+	public String ToJson(){//注意函数名称，如果是get set开头，会被认为是Getter和Setter函数，会在序列化过程中被调用。
 		return JSONObject.toJSONString(this);
+	}
+	
+	public LineEntry FromJson(String json){//注意函数名称，如果是get set开头，会被认为是Getter和Setter函数，会在序列化过程中被调用。
+		return JSON.parseObject(json, LineEntry.class);
 	}
 
 	public void parse() {
 		try {
 			IResponseInfo responseInfo = helpers.analyzeResponse(messageinfo.getResponse());
+			IHttpService service = this.messageinfo.getHttpService();
+			port = service.getPort();
+			host = service.getHost();
+			protocol = service.getProtocol();
+			
+			request = messageinfo.getRequest();
+			response = messageinfo.getResponse();
+			
 			Getter getter = new Getter(helpers);
 			
 			messageText = new String(messageinfo.getRequest())+new String(messageinfo.getResponse());
@@ -74,7 +109,7 @@ public class LineEntry {
 			
 			String body = new String(getter.getBody(false, messageinfo));
 			
-			bodyText = messageinfo.getHttpService().toString()+body;
+			bodyText = body;
 
 			Pattern p = Pattern.compile(">(.*?)</title>");
 			//<title ng-bind="service.title">The Evolution of the Producer-Consumer Problem in Java - DZone Java</title>
@@ -199,12 +234,74 @@ public class LineEntry {
 		this.bodyText = bodyText;
 	}
 
+	public int getPort() {
+		return port;
+	}
+
+	public void setPort(int port) {
+		this.port = port;
+	}
+
+	public String getHost() {
+		return host;
+	}
+
+	public void setHost(String host) {
+		this.host = host;
+	}
+
+	public String getProtocol() {
+		return protocol;
+	}
+
+	public void setProtocol(String protocol) {
+		this.protocol = protocol;
+	}
+
+	public byte[] getRequest() {
+		return request;
+	}
+
+	public void setRequest(byte[] request) {
+		this.request = request;
+	}
+
+	public byte[] getResponse() {
+		return response;
+	}
+
+	public void setResponse(byte[] response) {
+		this.response = response;
+	}
+
+	public boolean isChecked() {
+		return isChecked;
+	}
+
+	public void setChecked(boolean isChecked) {
+		this.isChecked = isChecked;
+	}
+
+	public String getComment() {
+		return comment;
+	}
+
+	public void setComment(String comment) {
+		this.comment = comment;
+	}
+
 	public Object getValue(int columnIndex) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 	
 	public static void main(String args[]) {
-		
+		LineEntry x = new LineEntry();
+		x.setRequest("xxxxxx".getBytes());
+		System.out.println(JSON.toJSON(x));
+
+		System.out.println(JSON.toJSONString(x));
+		System.out.println(JSONObject.toJSONString(x));
+		System.out.println(JSONObject.toJSON(x));
 	}
 }

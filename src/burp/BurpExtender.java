@@ -78,23 +78,34 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 			c.stopThread();
 		}
 	}
+
+	public static IBurpExtenderCallbacks getCallbacks() {
+		// TODO Auto-generated method stub
+		return callbacks;
+	}
+	
 	
 	public void saveConfig() {
 		//to save domain result to extensionSetting
+		stdout.println("config saved to extension setting");
+		domainResult.setLineJsons(TitletableModel.getLineJsons());
 		String content= domainResult.Save();
 		callbacks.saveExtensionSetting("domainHunter", content);
+		
 	}
 
 	public void loadConfig() {
+		
+		stdout.println("config Loaded from extension setting");
 		String content = callbacks.loadExtensionSetting("domainHunter");
 		if (content!=null) {
 			domainResult = domainResult.Open(content);
 			showToUI(domainResult);
 
-			////recovery lineEntries--store to HistoryLineTexts
-			domainResult.setHistoryBodyTexts(domainResult.getBodyTexts());
-			//clear LineTexts
-			domainResult.setBodyTexts(new ArrayList<String>());
+			//backup to history
+			domainResult.setHistoryLineJsons(domainResult.getLineJsons());
+			//clear LineJsons
+			domainResult.setLineJsons(new ArrayList<String>());
 		}
 	}
 
@@ -373,10 +384,15 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 	public List<String> getAllTitle(){
 		Set<String> domains = domainResult.getSubDomainSet();
 		
-		////recovery lineEntries--store to HistoryLineTexts
-		domainResult.setHistoryBodyTexts(domainResult.getBodyTexts());
-		//clear LineTexts
-		domainResult.setBodyTexts(new ArrayList<String>());
+		//remove domains in black list
+		domains.removeAll(domainResult.getBlackDomainSet());
+		
+		//same with loadConfig()
+		
+		//backup to history
+		domainResult.setHistoryLineJsons(domainResult.getLineJsons());
+		//clear LineJsons
+		domainResult.setLineJsons(new ArrayList<String>());
 		
 		threadGetTitle = new ThreadGetTitle(domains);
 		List<String> result = threadGetTitle.Do();
@@ -438,9 +454,9 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 					continue;
 				}
 			}
-			//save line body text to compare, know it's new or not
-			domainResult.setBodyTexts(TitletableModel.getbodyTexts());
-			return TitletableModel.getbodyTexts();
+			//save line as json
+			domainResult.setLineJsons(TitletableModel.getLineJsons());
+			return TitletableModel.getLineJsons();
 		}
 		
 		boolean isAllProductorFinished(){
@@ -527,6 +543,7 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 
 			List<LineEntry> lineEntries = new ArrayList<LineEntry>();
 			TitletableModel.setLineEntries(lineEntries );//to clear history
+			
 		}
 		
 		public void stopThread() {
@@ -536,11 +553,9 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		@Override
 		public void run() {
 			while(true){
-				
 				if (stopflag) {//消费者需要的时间更短，不能使用sharedQueue是否为空作为进程是否结束的依据。
 					break;
 				}
-				
 				try {
 					IHttpRequestResponse messageinfo = sharedQueue.take();
 
@@ -549,27 +564,26 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 					}else {
 						Getter getter = new Getter(helpers);
 						String body = new String(getter.getBody(false, messageinfo));
+						String url = messageinfo.getHttpService().toString();
 						String bodyText = messageinfo.getHttpService().toString()+body;
-					
-						if (domainResult.getHistoryBodyTexts().contains(bodyText)) {
-							TitletableModel.addNewLineEntry(new LineEntry(messageinfo,false));//old
-						}else {
-							TitletableModel.addNewLineEntry(new LineEntry(messageinfo,true));//new
-						}
 						
 						
-
-						///any method to save Object to json??
-						try {
-							Gson gson = new Gson();
-							LineEntry x= new LineEntry(messageinfo);
-							// 1. Java object to JSON, and save into a file
-							gson.toJson(x, new FileWriter("D:\\file.json"));
-							String str=JSONObject.toJSONString(x);
-							new FileWriter("D:\\file.fastjson").write(str);
-						}catch (Exception e) {
-							
+						LineEntry linefound = findHistory(url);
+						boolean isChecked = false;
+						String comment = "";
+						boolean isNew = true;
+						
+						if (null != linefound) {
+							isChecked = linefound.isChecked();
+							comment = linefound.getComment();
+							if (linefound.getBodyText().equalsIgnoreCase(bodyText) && isChecked) {
+								isNew = false;
+							}
 						}
+		
+						TitletableModel.addNewLineEntry(new LineEntry(messageinfo,isNew,isChecked,comment));
+						
+						//stdout.println(new LineEntry(messageinfo,true).ToJson());
 						stdout.println("+++ ["+messageinfo.getHttpService().toString()+"] +++ get title done.");
 					}
 					//we don't need to add row to table manually,just call fireTableRowsInserted in TableModel
@@ -580,11 +594,18 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		}
 	}
 
-
-	public static IBurpExtenderCallbacks getCallbacks() {
-		// TODO Auto-generated method stub
-		return callbacks;
+	public LineEntry findHistory(String url) {
+		List<String> HistoryLines = domainResult.getHistoryLineJsons();
+		for (String his:HistoryLines) {
+			LineEntry line = new LineEntry().FromJson(his);
+			if (url.equalsIgnoreCase(line.getUrl())) {
+				return line;
+			}
+		}
+		return null;
 	}
+	
+	
 
 	//////////////////ThreadGetTitle block/////////////
 

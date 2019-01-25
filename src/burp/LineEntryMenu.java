@@ -13,5 +13,23 @@ public class LineEntryMenu extends JPopupMenu {
             }
         });
         this.add(removeItem);
+        
+        JMenuItem checkedItem = new JMenuItem(new AbstractAction("Mark as checked") {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+            	lineTable.getModel().updateRows(rows);
+            }
+        });
+        this.add(checkedItem);
+        
+        
+        JMenuItem blackListItem = new JMenuItem(new AbstractAction("Add to black List") {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+            	lineTable.getModel().addBlackList(rows);
+            }
+        });
+        blackListItem.setToolTipText("will not get title from next time");
+        this.add(blackListItem);
     }
 }

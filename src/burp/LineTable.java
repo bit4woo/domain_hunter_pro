@@ -45,9 +45,9 @@ public class LineTable extends JTable
     {
         // show the log entry for the selected row
     	LineEntry Entry = this.lineTableModel.getLineEntries().get(super.convertRowIndexToModel(row));
-        requestViewer.setMessage(Entry.getMessageinfo().getRequest(), true);
-        responseViewer.setMessage(Entry.getMessageinfo().getResponse(), false);
-        this.lineTableModel.setCurrentlyDisplayedItem(Entry.getMessageinfo());
+        requestViewer.setMessage(Entry.getRequest(), true);
+        responseViewer.setMessage(Entry.getResponse(), false);
+        this.lineTableModel.setCurrentlyDisplayedItem(Entry);
         super.changeSelection(row, col, toggle, extend);
     }
     

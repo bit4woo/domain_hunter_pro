@@ -21,9 +21,11 @@ public class DomainObject {
 	public Set<String> subDomainSet = new HashSet<String>();
 	public Set<String> similarDomainSet = new HashSet<String>();
 	public Set<String> relatedDomainSet = new HashSet<String>();
+	public Set<String> blackDomainSet = new HashSet<String>();
 	
-	private List<String> BodyTexts = new ArrayList<String>();
-	private List<String> historyBodyTexts = new ArrayList<String>();
+	private List<String> lineJsons = new ArrayList<String>();
+	//backup lineJsons to compare with newer.
+	private List<String> historyLineJsons = new ArrayList<String>();
 	
     public static int SUB_DOMAIN=0;
     public static int SIMILAR_DOMAIN=1;
@@ -96,20 +98,30 @@ public class DomainObject {
 		this.relatedDomainSet = relatedDomainSet;
 	}
 
-	public List<String> getBodyTexts() {
-		return BodyTexts;
+
+
+	public Set<String> getBlackDomainSet() {
+		return blackDomainSet;
 	}
 
-	public void setBodyTexts(List<String> bodyTexts) {
-		BodyTexts = bodyTexts;
+	public void setBlackDomainSet(Set<String> blackDomainSet) {
+		this.blackDomainSet = blackDomainSet;
 	}
 
-	public List<String> getHistoryBodyTexts() {
-		return historyBodyTexts;
+	public List<String> getLineJsons() {
+		return lineJsons;
 	}
 
-	public void setHistoryBodyTexts(List<String> historyBodyTexts) {
-		this.historyBodyTexts = historyBodyTexts;
+	public void setLineJsons(List<String> lineJsons) {
+		this.lineJsons = lineJsons;
+	}
+
+	public List<String> getHistoryLineJsons() {
+		return historyLineJsons;
+	}
+
+	public void setHistoryLineJsons(List<String> historyLineJsons) {
+		this.historyLineJsons = historyLineJsons;
 	}
 
 	public String getSummary() {
