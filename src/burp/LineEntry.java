@@ -1,5 +1,6 @@
 package burp;
 
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,6 +26,7 @@ public class LineEntry {
 	private String MIMEtype = "";
 	private String title = "";
 	private String IP = "";
+	private String CDN = "";
 	private String webcontainer = "";
 	private String time = "";
 	
@@ -68,6 +70,18 @@ public class LineEntry {
 		this.isNew = isNew;
 		this.isChecked = Checked;
 		this.comment = comment;
+	}
+	
+	public LineEntry(IHttpRequestResponse messageinfo,boolean isNew,boolean Checked,String comment,Set<String> IPset,Set<String> CDNset) {
+		this.messageinfo = messageinfo;
+		this.callbacks = BurpExtender.getCallbacks();
+		this.helpers = this.callbacks.getHelpers();
+		parse();
+		
+		this.isNew = isNew;
+		this.isChecked = Checked;
+		this.comment = comment;
+		this.IP = IPset.toString();
 	}
 
 	@JSONField(serialize=false)//表明不序列号该字段

@@ -588,6 +588,8 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 								isNew = false;
 							}
 						}
+						
+						HashMap<String,Set<String>> result = Commons.dnsquery(messageinfo.getHttpService().getHost());
 		
 						TitletableModel.addNewLineEntry(new LineEntry(messageinfo,isNew,isChecked,comment));
 						
