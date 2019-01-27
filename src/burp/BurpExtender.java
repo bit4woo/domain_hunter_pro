@@ -74,8 +74,14 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 	
 	//重写GUI中的方法，以确保能获取到title面板中的配置
 	@Override
-	public String getConfig() {
-		domainResult.setLineJsons(TitletableModel.getLineJsons());
+	public String getConfig(boolean includeTitle) {
+		if(includeTitle) {
+			domainResult.setLineJsons(TitletableModel.getLineJsons());
+		}else {
+			domainResult.setLineJsons(new ArrayList<String>());
+			domainResult.setHistoryLineJsons(new ArrayList<String>());
+		}
+		
 		String content= domainResult.Save();
 		return content;
 	}
@@ -95,7 +101,7 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 	public void saveConfigToExtension() {
 		//to save domain result to extensionSetting
 		stdout.println("config saved to extension setting");
-		callbacks.saveExtensionSetting("domainHunter", getConfig());
+		callbacks.saveExtensionSetting("domainHunter", getConfig(true));
 	}
 
 	public void loadConfigFromExtension() {

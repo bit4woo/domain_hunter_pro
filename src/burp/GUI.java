@@ -186,7 +186,7 @@ public class GUI extends JFrame {
                 if (result == JOptionPane.CANCEL_OPTION || result == JOptionPane.CLOSED_OPTION) {
                 	return;
                 }else if (result == JOptionPane.YES_OPTION) {
-                	saveDialog();
+                	saveDialog(false);
                 }else if (result == JOptionPane.NO_OPTION) {
                 	// nothing to do
                 }
@@ -232,9 +232,9 @@ public class GUI extends JFrame {
 		btnSave = new JButton("Save");
 		btnSave.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				saveDialog();
+				saveDialog(false);
 			}});
-		btnSave.setToolTipText("Save Domain Hunter Project File");
+		btnSave.setToolTipText("Save Domain Hunter Project File, not include title");
 		HeaderPanel.add(btnSave);
 		
 		
@@ -334,7 +334,7 @@ public class GUI extends JFrame {
 								stdout.println("import skip "+line);
 							}
 						}
-						loadConfigAndShow(getConfig());//保存配置并更新图形显示
+						loadConfigAndShow(getConfig(false));//保存配置并更新图形显示
 						stdout.println("Import domains finished from "+ file.getName());
 						//List<String> lines = Files.readLines(file, Charsets.UTF_8);
 						
@@ -728,7 +728,7 @@ public class GUI extends JFrame {
 		btnSaveStateTo = new JButton("Save State To File");
 		btnSaveStateTo.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				saveDialog();
+				saveDialog(true);
 			}
 		});
 		btnSaveStateTo.setToolTipText("Same as save button in domain tab.");
@@ -776,7 +776,7 @@ public class GUI extends JFrame {
 		return null;
 	}
 	
-	public String getConfig() {
+	public String getConfig(boolean includeTitle) {
 		// BurpExtender need to override this function
 		return null;
 	}
@@ -888,7 +888,7 @@ public class GUI extends JFrame {
 		rdbtnAddRelatedToRoot.setSelected(domainResult.autoAddRelatedToRoot);
 	}
 	
-	public void saveDialog() {
+	public void saveDialog(boolean includeTitle) {
 		JFileChooser fc=new JFileChooser();
 		JsonFileFilter jsonFilter = new JsonFileFilter(); //excel过滤器  
 	    fc.addChoosableFileFilter(jsonFilter);
@@ -907,7 +907,7 @@ public class GUI extends JFrame {
 			}
 			
 			
-		    String content= getConfig();
+		    String content= getConfig(includeTitle);
 	        try{
 	            if(file.exists()){
 	            	int result = JOptionPane.showConfirmDialog(null,"Are you sure to overwrite this file ?");
