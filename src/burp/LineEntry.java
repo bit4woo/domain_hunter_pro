@@ -1,6 +1,7 @@
 package burp;
 
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -32,8 +33,12 @@ public class LineEntry {
 	private String webcontainer = "";
 	private String time = "";
 	
+	
+	@JSONField(serialize=false)
 	private String messageText = "";//use to search
+	@JSONField(serialize=false)
 	private String bodyText = "";//use to adjust the response changed or not
+	//don't store these two field to reduce config file size.
 	
 	//field for user 
 	private boolean isNew =true;
@@ -237,13 +242,12 @@ public class LineEntry {
 		this.time = time;
 	}
 
-	public String getMessageText() {
-		return messageText;
-	}
-
-	public void setMessageText(String messageText) {
-		this.messageText = messageText;
-	}
+	/*
+	 * public String getMessageText() { return messageText; }
+	 * 
+	 * public void setMessageText(String messageText) { this.messageText =
+	 * messageText; }
+	 */
 
 	
 	public boolean isNew() {
@@ -263,7 +267,10 @@ public class LineEntry {
 	}
 	
 	public String getBodyText() {
-		return bodyText;
+		IResponseInfo analyzeResponse = helpers.analyzeResponse(this.response);
+		int bodyOffset = analyzeResponse.getBodyOffset();
+		byte[] byte_body = Arrays.copyOfRange(this.response, bodyOffset, this.response.length);//not length-1
+		return new String(byte_body);
 	}
 
 	public void setBodyText(String bodyText) {

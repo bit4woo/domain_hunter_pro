@@ -65,6 +65,7 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		for (Consumer c:threadGetTitle.clist) {
 			c.stopThread();
 		}
+		stdout.println("threads stopped!");
 	}
 
 	public static IBurpExtenderCallbacks getCallbacks() {
