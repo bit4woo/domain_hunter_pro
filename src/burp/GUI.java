@@ -670,13 +670,13 @@ public class GUI extends JFrame {
 			        	btnGettitle.setEnabled(false);
 			        	List<String> result = getAllTitle();
 			        	btnGettitle.setEnabled(true);
-			        	btnGetExtendtitle.setEnabled(true);
 			        	return (Map) new HashMap<String, List<String>>().put("result",result);
 			        	//no use ,the return.
 			        }
 			        @Override
 			        protected void done() {
 			            try {
+			            	saveConfigToExtension();
 			            	btnGettitle.setEnabled(true);
 			            } catch (Exception e) {
 			                e.printStackTrace(stderr);
@@ -689,8 +689,8 @@ public class GUI extends JFrame {
 		buttonPanel.add(btnGettitle);
 		
 		btnGetExtendtitle = new JButton("Get Extend Title");
-		btnGetExtendtitle.setToolTipText("Get title of the host that in same C subnet");
-		btnGetExtendtitle.setEnabled(false);//default is false,only true after "get title" is done.
+		btnGetExtendtitle.setToolTipText("Get title of the host that in same subnet,you should do this after get domain title done!");
+		btnGetExtendtitle.setEnabled(true);//default is false,only true after "get title" is done.
 		btnGetExtendtitle.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {			    
 				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
@@ -705,6 +705,7 @@ public class GUI extends JFrame {
 			        @Override
 			        protected void done() {
 			            try {
+			            	saveConfigToExtension();
 			            	btnGetExtendtitle.setEnabled(true);
 			            } catch (Exception e) {
 			                e.printStackTrace(stderr);

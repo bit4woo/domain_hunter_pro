@@ -409,7 +409,6 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		
 		threadGetTitle = new ThreadGetTitle(domains);
 		List<String> result = threadGetTitle.Do();
-		saveConfigToExtension();
 		return result;
 	}
 	
@@ -418,7 +417,6 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		Set<String> extendIPSet = TitletableModel.GetExtendIPSet();
 		threadGetTitle = new ThreadGetTitle(extendIPSet);
 		List<String> result = threadGetTitle.Do();
-		saveConfigToExtension();
 		return result;
 	}
 
