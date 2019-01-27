@@ -401,8 +401,16 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		//clear tableModel
 		TitletableModel.setLineEntries(new ArrayList<LineEntry>());//clear
 		
-		
 		threadGetTitle = new ThreadGetTitle(domains);
+		List<String> result = threadGetTitle.Do();
+		saveConfigToExtension();
+		return result;
+	}
+	
+	@Override
+	public List<String> getExtendTitle(){
+		Set<String> extendIPSet = TitletableModel.GetExtendIPSet();
+		threadGetTitle = new ThreadGetTitle(extendIPSet);
 		List<String> result = threadGetTitle.Do();
 		saveConfigToExtension();
 		return result;
@@ -423,6 +431,7 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 			BlockingQueue<String> domainQueue = new LinkedBlockingQueue<String>();//use to store domains
 			BlockingQueue<IHttpRequestResponse> sharedQueue = new LinkedBlockingQueue<IHttpRequestResponse>();
 			BlockingQueue<String> lineQueue = new LinkedBlockingQueue<String>();//use to store output---line
+			BlockingQueue<HashMap<String,Set<String>>> domainAndIPQueue = new LinkedBlockingQueue();
 
 			Iterator<String> it = domains.iterator();
 			while(it.hasNext()) {
@@ -462,6 +471,7 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 					continue;
 				}
 			}
+			
 			//save line as json
 			domainResult.setLineJsons(TitletableModel.getLineJsons());
 			return TitletableModel.getLineJsons();
@@ -548,9 +558,6 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 			this.lineQueue = lineQueue;
 			this.threadNo = threadNo;
 			stopflag = false;
-
-			List<LineEntry> lineEntries = new ArrayList<LineEntry>();
-			TitletableModel.setLineEntries(lineEntries );//to clear history
 			
 		}
 		
@@ -566,9 +573,23 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 				}
 				try {
 					IHttpRequestResponse messageinfo = sharedQueue.take();
-
+					String host = messageinfo.getHttpService().getHost();
+					Set<String> IPSet;
+					Set<String> CDNSet;
+					if (Commons.isValidIP(host)) {
+						IPSet = new HashSet<>();
+						IPSet.add(host);
+						CDNSet = new HashSet<>();
+						CDNSet.add("");
+					}else {
+						HashMap<String,Set<String>> result = Commons.dnsquery(host);
+						IPSet = result.get("IP");
+						CDNSet = result.get("CDN");
+					}
+					
 					if (messageinfo.getResponse() ==null) {
 						stdout.println("--- ["+messageinfo.getHttpService().toString()+"] --- has no response.");
+						TitletableModel.addNewNoResponseDomain(host, IPSet);
 					}else {
 						Getter getter = new Getter(helpers);
 						String body = new String(getter.getBody(false, messageinfo));
@@ -588,10 +609,8 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 								isNew = false;
 							}
 						}
-						
-						HashMap<String,Set<String>> result = Commons.dnsquery(messageinfo.getHttpService().getHost());
 		
-						TitletableModel.addNewLineEntry(new LineEntry(messageinfo,isNew,isChecked,comment));
+						TitletableModel.addNewLineEntry(new LineEntry(messageinfo,isNew,isChecked,comment,IPSet,CDNSet));
 						
 						//stdout.println(new LineEntry(messageinfo,true).ToJson());
 						stdout.println("+++ ["+messageinfo.getHttpService().toString()+"] +++ get title done.");

@@ -1,5 +1,7 @@
 package burp;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -81,7 +83,8 @@ public class LineEntry {
 		this.isNew = isNew;
 		this.isChecked = Checked;
 		this.comment = comment;
-		this.IP = IPset.toString();
+		this.IP = IPset.toString().replace("[", "").replace("]", "");
+		this.CDN = CDNset.toString().replace("[", "").replace("]", "");
 	}
 
 	@JSONField(serialize=false)//表明不序列号该字段
@@ -148,6 +151,11 @@ public class LineEntry {
 				}
 			}
 			
+	        SimpleDateFormat simpleDateFormat = 
+                    new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
+    
+	        time = simpleDateFormat.format(new Date());
+			
 		}catch(Exception e) {
 			//e.printStackTrace(burp.stderr);
 		}
@@ -203,6 +211,14 @@ public class LineEntry {
 
 	public void setIP(String iP) {
 		IP = iP;
+	}
+
+	public String getCDN() {
+		return CDN;
+	}
+
+	public void setCDN(String cDN) {
+		CDN = cDN;
 	}
 
 	public String getWebcontainer() {

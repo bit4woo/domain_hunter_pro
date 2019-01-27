@@ -7,7 +7,11 @@ import javax.swing.table.AbstractTableModel;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 
 public class LineTableModel extends AbstractTableModel implements IMessageEditorController,Serializable {
@@ -19,9 +23,10 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	private static final long serialVersionUID = 1L;
 	private LineEntry currentlyDisplayedItem;
     private List<LineEntry> lineEntries =new ArrayList<LineEntry>();
+    private HashMap<String,Set<String>> noResponseDomain =new HashMap<String,Set<String>>();
     private BurpExtender burp;
     private static final String[] titles = new String[] {
-    		"#", "URL", "Status", "Length", "MIME Type", "Title", "IP", "Time","isNew","isChecked"
+    		"#", "URL", "Status", "Length", "MIME Type", "Title", "IP", "CDN", "Time","isNew","isChecked"
     	};
 
     public LineTableModel(final BurpExtender burp){
@@ -44,6 +49,41 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			result.add(linetext);
 		}
 		return result;
+	}
+	
+	//no usage.
+	private HashMap<String, Set<String>> getDomainIPSet() {
+		HashMap<String, Set<String>> result = noResponseDomain;
+		for(LineEntry line:lineEntries) {
+			String[] linetext = line.getIP().split(", ");
+			String domain = line.getHost();
+			HashSet<String> ipset = new HashSet<String>(Arrays.asList(linetext));
+			
+			result.put(domain, ipset);
+		}
+		return result;
+	}
+	
+	private Set<String> getIPSet() {
+		Set<String> result = new HashSet<String>();
+		for(LineEntry line:lineEntries) {
+			String[] linetext = line.getIP().split(", ");
+			result.addAll(Arrays.asList(linetext));
+		}
+		
+		for(Set<String> IPSet:noResponseDomain.values()) {
+			result.addAll(IPSet);
+		}
+		
+		return result;
+	}
+	
+	public Set<String> GetExtendIPSet() {
+		Set<String> IPsOfDomain = getIPSet();
+		Set<String> CSubNetIPs = Commons.subNetsToIPSet(Commons.toSubNets(IPsOfDomain));
+		CSubNetIPs.removeAll(getIPSet());
+		
+		return CSubNetIPs;
 	}
     
     
@@ -166,10 +206,12 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
             case 6:
                 return entry.getIP();
             case 7:
-                return entry.getTime();
+                return entry.getCDN();
             case 8:
-            	return entry.isNew();
+                return entry.getTime();
             case 9:
+            	return entry.isNew();
+            case 10:
             	return entry.isChecked();
             default:
                 return "";
@@ -190,6 +232,12 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
             //need to use row-1 when add setRowSorter to table. why??
             //https://stackoverflow.com/questions/6165060/after-adding-a-tablerowsorter-adding-values-to-model-cause-java-lang-indexoutofb
             fireTableRowsInserted(row-1, row-1);
+        }
+    }
+    
+    public void addNewNoResponseDomain(String domain,Set<String> IPSet){
+        synchronized (noResponseDomain) {
+        	noResponseDomain.put(domain,IPSet);
         }
     }
     

@@ -40,7 +40,7 @@
 
 		</plugins>
 	</build>
-	
+
 	<dependencies>
 		<!-- https://mvnrepository.com/artifact/net.portswigger.burp.extender/burp-extender-api -->
 		<dependency>
@@ -77,6 +77,14 @@
 			<artifactId>dnsjava</artifactId>
 			<version>2.1.8</version>
 		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/commons-net/commons-net -->
+		<dependency>
+			<groupId>commons-net</groupId>
+			<artifactId>commons-net</artifactId>
+			<version>3.6</version>
+		</dependency>
+
 
 
 	</dependencies>

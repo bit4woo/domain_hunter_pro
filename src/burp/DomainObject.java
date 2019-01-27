@@ -256,7 +256,7 @@ public class DomainObject {
 			}
 		}
 			
-		if (Commons.validIP(domain)) {//https://202.77.129.30
+		if (Commons.isValidIP(domain)) {//https://202.77.129.30
 			return DomainObject.IP_ADDRESS;
 		}
 		return DomainObject.USELESS;

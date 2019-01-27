@@ -1,11 +1,13 @@
 package burp;
 
 import java.awt.Window.Type;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.apache.commons.net.util.SubnetUtils;
 import org.xbill.DNS.ARecord;
 import org.xbill.DNS.Lookup;
 import org.xbill.DNS.Record;
@@ -50,7 +52,7 @@ public class Commons {
 	
 	
 
-	public static boolean validIP (String ip) {
+	public static boolean isValidIP (String ip) {
 	    try {
 	        if ( ip == null || ip.isEmpty() ) {
 	            return false;
@@ -116,47 +118,29 @@ public class Commons {
 	}
 	
 	
-	public static HashMap<String,String> dnsQueryString(String domain) {
-		HashMap<String,String> result = new HashMap<String,String>();
-		try{
-			Lookup lookup = new Lookup(domain, org.xbill.DNS.Type.A);
-			lookup.run();
-			
-			StringBuilder IP = new StringBuilder();
-			StringBuilder CDN = new StringBuilder();
-			if(lookup.getResult() == Lookup.SUCCESSFUL){
-				Record[] records=lookup.getAnswers();
-				for (int i = 0; i < records.length; i++) {
-					ARecord a = (ARecord) records[i];
-					String ip = a.getAddress().getHostAddress();
-					String CName = a.getAddress().getHostName();
-					if (ip!=null) {
-						IP.append(","+ip);
-					}
-					if (CName!=null) {
-						CDN.append(","+CDN);
-					}
-//					System.out.println("getAddress "+ a.getAddress().getHostAddress());
-//					System.out.println("getAddress "+ a.getAddress().getHostName());
-//					System.out.println("getName "+ a.getName());
-//					System.out.println(a);
-				}
-				result.put("IP", IPset);
-				result.put("CDN", CDNSet);
-				//System.out.println(records);
-			}
-			return result;
+	public static Set<SubnetUtils> toSubNets(Set<String> IPSet) {
+		Set<SubnetUtils> subNets= new HashSet<SubnetUtils>();
+		for (String ip:IPSet) {
+			 String subnet = ip.trim()+"/24";
 
-		}catch(Exception e){
-			e.printStackTrace();
-			return result;
+		     SubnetUtils utils = new SubnetUtils(subnet);
+		     subNets.add(utils);
 		}
+		return subNets;
+	}
+	
+	public static Set<String> subNetsToIPSet (Set<SubnetUtils> subNets) {
+		Set<String> IPSet = new HashSet<String>();
+		for (SubnetUtils net:subNets) {
+			 String[] ips = net.getInfo().getAllAddresses();
+			 IPSet.addAll(Arrays.asList(ips));
+		}
+		return IPSet;
 	}
 	
 	public static void main(String args[]) {
 		HashMap<String, Set<String>> result = dnsquery("www.baidu.com");
 		System.out.print(result.get("IP").toString());
-		System.out.print(result.get("IP").());
 		System.out.print(dnsquery("www.baidu.com"));
 	}
 }

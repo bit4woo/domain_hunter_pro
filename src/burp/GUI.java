@@ -118,6 +118,7 @@ public class GUI extends JFrame {
 	private JButton btnImportDomain;
 	private JButton btnSaveState;
 	private JButton btnSaveStateTo;
+	private JButton btnGetExtendtitle;
 
 
 
@@ -669,6 +670,7 @@ public class GUI extends JFrame {
 			        	btnGettitle.setEnabled(false);
 			        	List<String> result = getAllTitle();
 			        	btnGettitle.setEnabled(true);
+			        	btnGetExtendtitle.setEnabled(true);
 			        	return (Map) new HashMap<String, List<String>>().put("result",result);
 			        	//no use ,the return.
 			        }
@@ -685,6 +687,34 @@ public class GUI extends JFrame {
 			}
 		});
 		buttonPanel.add(btnGettitle);
+		
+		btnGetExtendtitle = new JButton("Get Extend Title");
+		btnGetExtendtitle.setToolTipText("Get title of the host that in same C subnet");
+		btnGetExtendtitle.setEnabled(false);//default is false,only true after "get title" is done.
+		btnGetExtendtitle.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {			    
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+			        @Override
+			        protected Map doInBackground() throws Exception {
+			        	btnGetExtendtitle.setEnabled(false);
+			        	List<String> result = getExtendTitle();
+			        	btnGetExtendtitle.setEnabled(true);
+			        	return (Map) new HashMap<String, List<String>>().put("result",result);
+			        	//no use ,the return.
+			        }
+			        @Override
+			        protected void done() {
+			            try {
+			            	btnGetExtendtitle.setEnabled(true);
+			            } catch (Exception e) {
+			                e.printStackTrace(stderr);
+			            }
+			        }
+			    };
+			    worker.execute();
+			}
+		});
+		buttonPanel.add(btnGetExtendtitle);
 		
 		btnSaveState = new JButton("Save State");
 		btnSaveState.addActionListener(new ActionListener() {
@@ -759,6 +789,12 @@ public class GUI extends JFrame {
 	protected void saveConfigToExtension() {
 		// TODO Auto-generated method stub
 		// BurpExtender need to override this function
+	}
+	
+	protected List<String> getExtendTitle() {
+		// TODO Auto-generated method stub
+		// BurpExtender need to override this function
+		return null;
 	}
 	
 	
