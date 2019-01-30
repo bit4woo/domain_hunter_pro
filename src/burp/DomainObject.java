@@ -23,7 +23,7 @@ public class DomainObject {
 	public Set<String> relatedDomainSet = new HashSet<String>();
 	public Set<String> blackDomainSet = new HashSet<String>();
 	
-	private List<String> lineJsons = new ArrayList<String>();
+	private List<String> lineJsons = new ArrayList<String>();//store title lines
 	//backup lineJsons to compare with newer.
 	private List<String> historyLineJsons = new ArrayList<String>();
 	

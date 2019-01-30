@@ -59,13 +59,16 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 
 	@Override
 	public void extensionUnloaded() {
-		for (Producer p:threadGetTitle.plist) {
-			p.stopThread();
+		if (threadGetTitle!=null) {
+			for (Producer p:threadGetTitle.plist) {
+				p.stopThread();
+			}
+			for (Consumer c:threadGetTitle.clist) {
+				c.stopThread();
+			}
+			stdout.println("threads stopped!");
 		}
-		for (Consumer c:threadGetTitle.clist) {
-			c.stopThread();
-		}
-		stdout.println("threads stopped!");
+		saveConfigToExtension();
 	}
 
 	public static IBurpExtenderCallbacks getCallbacks() {
@@ -101,14 +104,16 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 	@Override
 	public void saveConfigToExtension() {
 		//to save domain result to extensionSetting
-		stdout.println("config saved to extension setting");
+		stdout.println("saving config to extension setting");
 		callbacks.saveExtensionSetting("domainHunter", getConfig(true));
+		stdout.println("config saved to extension setting");
 	}
 
-	public void loadConfigFromExtension() {
-		stdout.println("config Loaded from extension setting");
+	public void loadConfigFromExtension() {//the most important thing is to recovery the domainResult Object 
+		stdout.println("Loading config from extension setting");
 		String content = callbacks.loadExtensionSetting("domainHunter");
 		loadConfigAndShow(content);
+		stdout.println("config Loaded from extension setting");
 	}
 	
 	public void showToTitleUI() {
@@ -449,6 +454,7 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 
 			for (int i=0;i<=10;i++) {
 				Producer p = new Producer(domainQueue,sharedQueue,i);
+				//Producer p = new Producer(callbacks,domainQueue,sharedQueue,i);
 				p.start();
 				plist.add(p);
 			}
@@ -534,15 +540,18 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 						byte[] request = helpers.buildHttpRequest(new URL(item.toString()));
 						IHttpRequestResponse messageinfo = callbacks.makeHttpRequest(item, request);
 						//stdout.println("messageinfo"+JSONObject.toJSONString(messageinfo));
-						//messageinfo can't convert to json by fastjson
 						sharedQueue.add(messageinfo);
 					}
-				} catch (RuntimeException err) {
+				} catch (Throwable error) {
+					////catch failed, why???
+				}
+					
+/*				} catch (RuntimeException err) {//catch failed, why???
 					//err.printStackTrace();
 					//stdout.println("request failed");
 				} catch (Exception e) {
 					//e.printStackTrace(stderr);
-				}
+				}*/
 			}
 		}
 	}

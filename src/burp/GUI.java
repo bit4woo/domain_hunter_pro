@@ -92,7 +92,6 @@ public class GUI extends JFrame {
 	private JTextArea textAreaSubdomains;
 	private JTextArea textAreaSimilarDomains;
 	
-	private int sortedColumn;
 	private SortOrder sortedMethod;
 	private JTable table;
 	private JPanel panel;
@@ -114,7 +113,6 @@ public class GUI extends JFrame {
 	public JButton btnGettitle;
 	public JScrollPane scrollPaneRequests;
 	public JTable table_1;
-	private JButton btnNewButton;
 	private JButton btnImportDomain;
 	private JButton btnSaveState;
 	private JButton btnSaveStateTo;
@@ -407,12 +405,11 @@ public class GUI extends JFrame {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				try {
-					sortedColumn = table.getRowSorter().getSortKeys().get(0).getColumn();
+					table.getRowSorter().getSortKeys().get(0).getColumn();
 					//System.out.println(sortedColumn);
 					sortedMethod = table.getRowSorter().getSortKeys().get(0).getSortOrder();
 					System.out.println(sortedMethod); //ASCENDING   DESCENDING
 				} catch (Exception e1) {
-					sortedColumn = -1;
 					sortedMethod = null;
 					e1.printStackTrace(stderr);
 				}
@@ -732,7 +729,7 @@ public class GUI extends JFrame {
 				saveDialog(true);
 			}
 		});
-		btnSaveStateTo.setToolTipText("Same as save button in domain tab.");
+		btnSaveStateTo.setToolTipText("save domains and getted title lines to a file.");
 		buttonPanel.add(btnSaveStateTo);
 		
 		
