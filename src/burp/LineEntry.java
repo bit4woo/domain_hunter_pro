@@ -131,7 +131,7 @@ public class LineEntry {
 			bodyText = new String(getter.getBody(false, messageinfo));
 			
 			contentLength = Integer.parseInt(getter.getHeaderValueOf(false, messageinfo, "Content-Length").trim());
-			if (contentLength==-1) {
+			if (contentLength==-1 && bodyText!=null) {
 				contentLength = bodyText.length();
 			}
 
@@ -267,7 +267,8 @@ public class LineEntry {
 	}
 	
 	public String getBodyText() {
-		IResponseInfo analyzeResponse = helpers.analyzeResponse(this.response);
+		IResponseInfo analyzeResponse = helpers.analyzeResponse(this.response);//java.lang.NullPointerException why????
+		//IResponseInfo analyzeResponse = helpers.analyzeResponse(this.getResponse()); 
 		int bodyOffset = analyzeResponse.getBodyOffset();
 		byte[] byte_body = Arrays.copyOfRange(this.response, bodyOffset, this.response.length);//not length-1
 		return new String(byte_body);

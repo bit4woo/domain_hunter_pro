@@ -67,8 +67,8 @@ import test.HTTPPost;
 
 public class GUI extends JFrame {
 	
-    public String ExtenderName = "Domain Hunter v1.3 by bit4";
-    public String github = "https://github.com/bit4woo/domain_hunter";
+    public String ExtenderName = "Domain Hunter Pro v1.3 by bit4";
+    public String github = "https://github.com/bit4woo/bug_hunter";
     
     public DomainObject domainResult = new DomainObject("");
     

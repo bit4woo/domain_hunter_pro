@@ -26,7 +26,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
     private HashMap<String,Set<String>> noResponseDomain =new HashMap<String,Set<String>>();
     private BurpExtender burp;
     private static final String[] titles = new String[] {
-    		"#", "URL", "Status", "Length", "MIME Type", "Title", "IP", "CDN", "Time","isNew","isChecked"
+    		"#", "URL", "Status", "Length", "MIME Type", "Server","Title", "IP", "CDN", "Time","isNew","isChecked"
     	};
 
     public LineTableModel(final BurpExtender burp){
@@ -203,16 +203,18 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
             case 4:
                 return entry.getMIMEtype();
             case 5:
-                return entry.getTitle();
+                return entry.getWebcontainer();  
             case 6:
-                return entry.getIP();
+                return entry.getTitle();
             case 7:
-                return entry.getCDN();
+                return entry.getIP();
             case 8:
-                return entry.getTime();
+                return entry.getCDN();
             case 9:
-            	return entry.isNew();
+                return entry.getTime();
             case 10:
+            	return entry.isNew();
+            case 11:
             	return entry.isChecked();
             default:
                 return "";

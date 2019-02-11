@@ -6,7 +6,7 @@
 	</properties>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.bit4woo.burp</groupId>
-	<artifactId>domain_hunter</artifactId>
+	<artifactId>domain_hunter_pro</artifactId>
 	<version>1.3</version>
 	<build>
 		<sourceDirectory>src</sourceDirectory>

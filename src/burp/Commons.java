@@ -1,6 +1,5 @@
 package burp;
 
-import java.awt.Window.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
