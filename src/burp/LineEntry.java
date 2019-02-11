@@ -267,7 +267,8 @@ public class LineEntry {
 	}
 	
 	public String getBodyText() {
-		IResponseInfo analyzeResponse = helpers.analyzeResponse(this.response);//java.lang.NullPointerException why????
+		IResponseInfo analyzeResponse = helpers.analyzeResponse(this.response);//java.lang.NullPointerException why???? 
+		// helpers will be null if this object is recovered from json.
 		//IResponseInfo analyzeResponse = helpers.analyzeResponse(this.getResponse()); 
 		int bodyOffset = analyzeResponse.getBodyOffset();
 		byte[] byte_body = Arrays.copyOfRange(this.response, bodyOffset, this.response.length);//not length-1
@@ -332,6 +333,14 @@ public class LineEntry {
 
 	public void setComment(String comment) {
 		this.comment = comment;
+	}
+
+	public IExtensionHelpers getHelpers() {
+		return helpers;
+	}
+
+	public void setHelpers(IExtensionHelpers helpers) {
+		this.helpers = helpers;
 	}
 
 	public Object getValue(int columnIndex) {

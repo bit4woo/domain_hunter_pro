@@ -635,8 +635,12 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 							isChecked = linefound.isChecked();
 							comment = linefound.getComment();
 							//stderr.println(new String(linefound.getResponse()));
-							if (linefound.getBodyText().equalsIgnoreCase(bodyText) && isChecked) {
-								isNew = false;
+							try {
+								if (linefound.getBodyText().equalsIgnoreCase(bodyText) && isChecked) {
+									isNew = false;
+								}
+							}catch(Exception err) {
+								err.printStackTrace(stderr);
 							}
 						}
 
@@ -657,6 +661,7 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		List<String> HistoryLines = domainResult.getHistoryLineJsons();
 		for (String his:HistoryLines) {
 			LineEntry line = new LineEntry().FromJson(his);
+			line.setHelpers(helpers);
 			if (url.equalsIgnoreCase(line.getUrl())) {
 				return line;
 			}
