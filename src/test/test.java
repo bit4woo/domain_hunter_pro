@@ -2,12 +2,17 @@ package test;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
 public class test {
 	public static void main(String[] args){
+		byte[] abc = null;
+		byte[] xyz = null;
+		System.out.println(Arrays.equals(abc, xyz));
+		System.out.println(new String(abc));
 		try {
 			Integer a = new Integer(Integer.parseInt("1211"));
 			System.out.println(a);

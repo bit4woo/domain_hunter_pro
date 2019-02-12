@@ -2,9 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="906a8346-8347-4b37-9c3b-e1b6bb541a75" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/src/burp/BurpExtender.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/burp/BurpExtender.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/burp/Commons.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/burp/Commons.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/burp/Getter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/burp/Getter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/test/test.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/test.java" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/target/" />
@@ -25,8 +22,8 @@
       <file leaf-file-name="BurpExtender.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/burp/BurpExtender.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="25">
-              <caret line="422" selection-start-line="422" selection-end-line="422" />
+            <state relative-caret-position="675">
+              <caret line="423" selection-start-line="423" selection-end-line="423" />
             </state>
           </provider>
         </entry>
@@ -79,7 +76,7 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectFrameBounds" extendedState="7">
+  <component name="ProjectFrameBounds" extendedState="6">
     <option name="x" value="715" />
     <option name="y" value="247" />
     <option name="width" value="1080" />
@@ -191,7 +188,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1936" height="1056" extended-state="7" />
+    <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info anchor="right" id="Palette" order="3" />
@@ -212,7 +209,7 @@
       <window_info id="UI Designer" order="2" />
       <window_info anchor="right" id="Theme Preview" order="3" />
       <window_info id="Favorites" order="2" side_tool="true" />
-      <window_info active="true" anchor="bottom" id="Debug" order="3" sideWeight="0.45729166" visible="true" weight="0.3995749" />
+      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.45729166" weight="0.3995749" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
@@ -339,8 +336,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/burp/BurpExtender.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="25">
-          <caret line="422" selection-start-line="422" selection-end-line="422" />
+        <state relative-caret-position="675">
+          <caret line="423" selection-start-line="423" selection-end-line="423" />
         </state>
       </provider>
     </entry>

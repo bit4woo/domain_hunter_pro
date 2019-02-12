@@ -405,8 +405,6 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		//remove domains in black list
 		domains.removeAll(domainResult.getBlackDomainSet());
 
-		//same with loadConfig()
-
 		//backup to history
 		domainResult.setHistoryLineJsons(domainResult.getLineJsons());
 		//clear LineJsons
