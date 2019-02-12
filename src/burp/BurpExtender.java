@@ -7,6 +7,7 @@ import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -421,6 +422,7 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 	@Override
 	public List<String> getExtendTitle(){
 		Set<String> extendIPSet = TitletableModel.GetExtendIPSet();
+		stdout.println(extendIPSet.size()+" extend IP Address founded"+extendIPSet);
 		threadGetTitle = new ThreadGetTitle(extendIPSet);
 		List<String> result = threadGetTitle.Do();
 		return result;
@@ -531,42 +533,30 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 					}
 
 					String host = domainQueue.take();
+					Getter getter = new Getter(helpers);
 					//stdout.print(host+" ");
 					IHttpService http = helpers.buildHttpService(host,80,"http");
 					IHttpService https = helpers.buildHttpService(host,443,"https");
 
-					Set<String> bodys = new HashSet<String>();
-
 					byte[] httpRequest = helpers.buildHttpRequest(new URL(http.toString()));
 					IHttpRequestResponse httpMessageinfo = callbacks.makeHttpRequest(http, httpRequest);
 					//stdout.println("messageinfo"+JSONObject.toJSONString(messageinfo));
+					byte[] httpBody = getter.getBody(false, httpMessageinfo);
 
-					byte[] httpsRequest = helpers.buildHttpRequest(new URL(http.toString()));
-					IHttpRequestResponse httpsMessageinfo = callbacks.makeHttpRequest(http, httpsRequest);
-
-					if (httpMessageinfo.getResponse() == null && httpsMessageinfo.getResponse() == null) {
-						//both is null
-					}else if(httpsMessageinfo.getResponse() == null ){
-						sharedQueue.add(httpMessageinfo);
-					}else if(httpMessageinfo.getResponse() == null ){
-						sharedQueue.add(httpsMessageinfo);
-					}else if ((new String(httpMessageinfo.getResponse())).equals(new String(httpsMessageinfo.getResponse()))) {
+					byte[] httpsRequest = helpers.buildHttpRequest(new URL(https.toString()));
+					IHttpRequestResponse httpsMessageinfo = callbacks.makeHttpRequest(https, httpsRequest);
+					byte[] httpsBody = getter.getBody(false, httpsMessageinfo);
+//					sharedQueue.add(httpMessageinfo);
+//					sharedQueue.add(httpsMessageinfo);
+					
+					if (Arrays.equals(httpBody,httpsBody)) {//parameters can be null,great
 						sharedQueue.add(httpMessageinfo);
 					}else {
 						sharedQueue.add(httpMessageinfo);
 						sharedQueue.add(httpsMessageinfo);
 					}
-
-				} catch (Throwable error) {
-					////catch failed, why???
+				} catch (Throwable error) {//java.lang.RuntimeException can't been catched, why?
 				}
-
-				/*				} catch (RuntimeException err) {//catch failed, why???
-					//err.printStackTrace();
-					//stdout.println("request failed");
-				} catch (Exception e) {
-					//e.printStackTrace(stderr);
-				}*/
 			}
 		}
 	}

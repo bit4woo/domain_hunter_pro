@@ -123,28 +123,28 @@ public class Commons {
 	 * IP集合，转多个CIDR
 	 */
 	public static Set<String> toSubNets(Set<String> IPSet) {
-		Set<SubnetUtils> subNets= new HashSet<SubnetUtils>();
+		Set<String> subNets= new HashSet<String>();
 		Set<String> smallSubNets= new HashSet<String>();
 		for (String ip:IPSet) {
-			String subnet = ip.trim()+"/24";
-
-			SubnetUtils utils = new SubnetUtils(subnet);
-			subNets.add(utils);
+			String subnet = ip.trim().substring(0,ip.lastIndexOf("."))+".0/24";
+			subNets.add(subnet);
 		}
-		for(SubnetUtils CNet:subNets) {
+		for(String CNet:subNets) {//把所有IP按照C段进行分类
+			SubnetUtils net = new SubnetUtils(CNet);
 			Set<String> tmpIPSet = new HashSet<String>();
 			for (String ip:IPSet) {
-				if (CNet.getInfo().isInRange(ip)){
+				if (net.getInfo().isInRange(ip) || net.getInfo().getBroadcastAddress().equals(ip.trim()) || net.getInfo().getNetworkAddress().equals(ip.trim())){
+					//52.74.179.0 ---sometimes .0 address is a real address.
 					tmpIPSet.add(ip);
 				}
 			}//每个tmpIPSet就是一个C段的IP集合
-			smallSubNets.add(ipset2cidr(tmpIPSet));
+			smallSubNets.add(ipset2cidr(tmpIPSet));//把一个C段中的多个IP计算出其CIDR，即更小的网段
 		}
 		return smallSubNets;
 	}
 
 	/*
-	 * 多个网段转IP集合
+	 * 多个网段转IP集合，变更表现形式，变成一个个的IP
 	 */
 	public static Set<String> toIPSet (Set<String> subNets) {
 		Set<String> IPSet = new HashSet<String>();
