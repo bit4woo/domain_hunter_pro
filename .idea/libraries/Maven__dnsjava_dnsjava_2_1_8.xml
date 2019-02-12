@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: dnsjava:dnsjava:2.1.8">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/dnsjava/dnsjava/2.1.8/dnsjava-2.1.8.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/dnsjava/dnsjava/2.1.8/dnsjava-2.1.8-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/dnsjava/dnsjava/2.1.8/dnsjava-2.1.8-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
