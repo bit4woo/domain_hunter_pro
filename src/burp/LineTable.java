@@ -1,10 +1,16 @@
 package burp;
 
+import java.awt.Desktop;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.swing.JTable;
 import javax.swing.RowFilter;
@@ -37,7 +43,31 @@ public class LineTable extends JTable
         burp.RequestPanel.addTab("Request", requestViewer.getComponent());
         burp.ResponsePanel.addTab("Response", responseViewer.getComponent());
         addClickSort();
-        registerListeners(); 
+        registerListeners();
+        tableinit();
+    }
+    
+    public void tableinit(){
+    	//Font f = new Font("Arial", Font.PLAIN, 12);
+    	Font f = this.getFont();
+    	FontMetrics fm = this.getFontMetrics(f);
+    	int width = fm.stringWidth("A");//一个字符的宽度
+    	
+    	this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("#")).setPreferredWidth(width*5);
+    	this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("#")).setMaxWidth(width*8);
+    	this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Status")).setPreferredWidth(width*"Status".length());
+    	this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Status")).setMaxWidth(width*("Status".length()+3));
+    	this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("isNew")).setPreferredWidth(width*"isNew".length());
+    	this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("isNew")).setMaxWidth(width*("isNew".length()+3));
+    	this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("isChecked")).setPreferredWidth(width*"isChecked".length());
+    	this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("isChecked")).setMaxWidth(width*("isChecked".length()+3));
+    	this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Length")).setPreferredWidth(width*10);
+    	this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Length")).setMaxWidth(width*15);
+    	this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("MIME Type")).setPreferredWidth(width*"MIME Type".length());
+    	this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("MIME Type")).setMaxWidth(width*("MIME Type".length()+3));
+    	this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Time")).setPreferredWidth(width*22);
+    	this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Time")).setMaxWidth(width*25);
+    	this.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
     }
     
     @Override
@@ -94,20 +124,30 @@ public class LineTable extends JTable
         {
             @Override
             public void mouseClicked(MouseEvent e) {
-                onMouseEvent(e);
+                if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2){//左键双击
+                	int[] rows = getSelectedRows();
+                	
+    				for (int i=0; i < rows.length; i++){
+    					rows[i] = convertRowIndexToModel(rows[i]);//转换为Model的索引，否则排序后索引不对应〿
+    				}
+    				Arrays.sort(rows);//升序
+    				
+    				String host = LineTable.this.lineTableModel.getLineEntries().get(rows[0]).getHost();
+    				String url= "https://www.google.com/search?q=site%3A"+host;
+    				try {
+    					URI uri = new URI(url);
+    					Desktop desktop = Desktop.getDesktop();
+    					if(Desktop.isDesktopSupported()&&desktop.isSupported(Desktop.Action.BROWSE)){
+    						desktop.browse(uri);
+    					}
+    				} catch (Exception e2) {
+    					e2.printStackTrace();
+    				}
+                }
             }
 
             @Override
             public void mouseReleased( MouseEvent e ){
-                onMouseEvent(e);
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-                onMouseEvent(e);
-            }
-
-            private void onMouseEvent(MouseEvent e){
                 if ( SwingUtilities.isRightMouseButton( e )){
                     if (e.isPopupTrigger() && e.getComponent() instanceof JTable ) {
                         //getSelectionModel().setSelectionInterval(rows[0], rows[1]);
@@ -122,6 +162,12 @@ public class LineTable extends JTable
                     }
                 }
             }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                //no need
+            }
+          
         });
     }
 }
