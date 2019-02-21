@@ -1,7 +1,5 @@
 package burp;
 
-import burp.IHttpService;
-import burp.IMessageEditorController;
 import javax.swing.table.AbstractTableModel;
 
 import java.io.Serializable;
@@ -9,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -26,7 +23,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
     private HashMap<String,Set<String>> noResponseDomain =new HashMap<String,Set<String>>();
     private BurpExtender burp;
     private static final String[] titles = new String[] {
-    		"#", "URL", "Status", "Length", "MIME Type", "Server","Title", "IP", "CDN", "Time","isNew","isChecked"
+    		"#", "URL", "Status", "Length", "MIME Type", "Server","Title", "IP", "CDN", "Time","isNew","isChecked","Comments"
     	};
 
     public LineTableModel(final BurpExtender burp){
@@ -151,6 +148,18 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
         	}
         }
     }
+
+    public List<String> getURLs(int[] rows) {
+        synchronized (lineEntries) {
+            Arrays.sort(rows); //升序
+            List<String> urls = new ArrayList<>();
+            for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
+                String url = lineEntries.get(rows[i]).getUrl();
+                urls.add(url);
+            }
+            return urls;
+        }
+    }
     
     public void updateRows(int[] rows) {
         synchronized (lineEntries) {
@@ -183,8 +192,6 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
         	}
         }
     }
-    
-    
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex)
@@ -217,6 +224,8 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
             	return entry.isNew();
             case 11:
             	return entry.isChecked();
+            case 12:
+            	return entry.getComment();
             default:
                 return "";
         }

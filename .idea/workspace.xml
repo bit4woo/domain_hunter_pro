@@ -2,12 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="906a8346-8347-4b37-9c3b-e1b6bb541a75" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/burp/BurpExtender.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/burp/BurpExtender.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/burp/Commons.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/burp/Commons.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/burp/GUI.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/burp/GUI.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/burp/LineEntry.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/burp/LineEntry.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/burp/LineEntryMenu.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/burp/LineEntryMenu.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/burp/LineTable.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/burp/LineTable.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/burp/LineTableModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/burp/LineTableModel.java" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/target/" />
@@ -20,25 +16,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="pom.xml" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/pom.xml">
-          <provider selected="true" editor-type-id="text-editor" />
-        </entry>
-      </file>
       <file leaf-file-name="BurpExtender.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/burp/BurpExtender.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="248">
-              <caret line="83" column="61" lean-forward="true" selection-start-line="83" selection-start-column="61" selection-end-line="83" selection-end-column="61" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="IBurpExtenderCallbacks.java" pinned="false" current-in-tab="false">
-        <entry file="jar://$MAVEN_REPOSITORY$/net/portswigger/burp/extender/burp-extender-api/1.7.22/burp-extender-api-1.7.22-sources.jar!/burp/IBurpExtenderCallbacks.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="202">
-              <caret line="539" column="9" selection-start-line="539" selection-start-column="9" selection-end-line="539" selection-end-column="9" />
+            <state relative-caret-position="243">
+              <caret line="30" column="41" selection-start-line="30" selection-start-column="19" selection-end-line="30" selection-end-column="41" />
             </state>
           </provider>
         </entry>
@@ -56,13 +38,58 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="LineTableModel.java" pinned="false" current-in-tab="true">
+      <file leaf-file-name="LineTableModel.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/burp/LineTableModel.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="248">
-              <caret line="46" column="34" lean-forward="true" selection-start-line="46" selection-start-column="34" selection-end-line="46" selection-end-column="34" />
+            <state relative-caret-position="243">
+              <caret line="9" column="22" lean-forward="true" selection-start-line="9" selection-start-column="22" selection-end-line="9" selection-end-column="22" />
               <folding>
                 <element signature="e#820#831#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="List.java" pinned="false" current-in-tab="false">
+        <entry file="jar://C:/Program Files/Java/jdk1.8.0_161/src.zip!/java/util/List.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="203">
+              <caret line="110" column="17" selection-start-line="110" selection-start-column="17" selection-end-line="110" selection-end-column="17" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="LineTable.java" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/burp/LineTable.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="243">
+              <caret line="100" column="21" lean-forward="true" selection-start-line="100" selection-start-column="21" selection-end-line="100" selection-end-column="21" />
+              <folding>
+                <element signature="e#1451#1452#0" expanded="true" />
+                <element signature="e#1469#1470#0" expanded="true" />
+                <element signature="e#3957#3958#0" expanded="true" />
+                <element signature="e#4013#4014#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="GUI.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/burp/GUI.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="270">
+              <caret line="440" column="44" lean-forward="true" selection-start-line="440" selection-start-column="44" selection-end-line="440" selection-end-column="44" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="LineEntryMenu.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/burp/LineEntryMenu.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="153">
+              <caret line="75" column="41" lean-forward="true" selection-start-line="75" selection-start-column="41" selection-end-line="75" selection-end-column="41" />
+              <folding>
+                <element signature="imports" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -71,8 +98,8 @@
       <file leaf-file-name="Commons.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/burp/Commons.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="455">
-              <caret line="210" column="21" lean-forward="true" selection-start-line="210" selection-start-column="21" selection-end-line="210" selection-end-column="21" />
+            <state relative-caret-position="185">
+              <caret line="155" selection-start-line="155" selection-end-line="155" />
               <folding>
                 <element signature="e#1019#1027#0" expanded="true" />
                 <element signature="e#2003#2023#0" expanded="true" />
@@ -115,25 +142,12 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Arrays.java" pinned="false" current-in-tab="false">
-        <entry file="jar://C:/Program Files/Java/jdk1.8.0_161/src.zip!/java/util/Arrays.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="102546">
-              <caret line="3798" column="26" selection-start-line="3798" selection-start-column="22" selection-end-line="3798" selection-end-column="26" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="subnettest.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/test/subnettest.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="729">
-              <caret line="27" column="4" selection-start-line="27" selection-start-column="4" selection-end-line="30" selection-end-column="94" />
-            </state>
-          </provider>
-        </entry>
-      </file>
     </leaf>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>LineEntryMenu</find>
+    </findStrings>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -142,8 +156,10 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/src/test/subnettest.java" />
-        <option value="$PROJECT_DIR$/src/burp/LineTableModel.java" />
         <option value="$PROJECT_DIR$/src/burp/Commons.java" />
+        <option value="$PROJECT_DIR$/src/burp/LineEntryMenu.java" />
+        <option value="$PROJECT_DIR$/src/burp/LineTable.java" />
+        <option value="$PROJECT_DIR$/src/burp/LineTableModel.java" />
       </list>
     </option>
   </component>
@@ -166,6 +182,17 @@
             <path>
               <item name="bug_hunter" type="b2602c69:ProjectViewProjectNode" />
               <item name="bug_hunter" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="bug_hunter" type="b2602c69:ProjectViewProjectNode" />
+              <item name="bug_hunter" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="bug_hunter" type="b2602c69:ProjectViewProjectNode" />
+              <item name="bug_hunter" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="burp" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -301,7 +328,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1936" height="1056" extended-state="7" />
+    <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info anchor="right" id="Palette" order="3" />
@@ -313,17 +340,17 @@
       <window_info anchor="bottom" id="Event Log" order="7" sideWeight="0.54270834" side_tool="true" weight="0.3995749" />
       <window_info anchor="right" id="Maven Projects" order="3" />
       <window_info anchor="bottom" id="Version Control" order="7" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.3284055" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.3284055" />
       <window_info anchor="bottom" id="Terminal" order="7" />
       <window_info id="Capture Tool" order="2" />
       <window_info id="Designer" order="2" />
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.18541667" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.18541667" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info id="UI Designer" order="2" />
       <window_info anchor="right" id="Theme Preview" order="3" />
       <window_info id="Favorites" order="2" side_tool="true" />
-      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.45729166" weight="0.32629356" />
+      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.45729166" visible="true" weight="0.32629356" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
@@ -338,12 +365,6 @@
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/burp/LineTableModel.java</url>
-          <line>83</line>
-          <properties />
-          <option name="timeStamp" value="48" />
-        </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/burp/Commons.java</url>
           <line>155</line>
@@ -374,8 +395,14 @@
           <properties />
           <option name="timeStamp" value="58" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/burp/BurpExtender.java</url>
+          <line>83</line>
+          <properties />
+          <option name="timeStamp" value="59" />
+        </line-breakpoint>
       </breakpoints>
-      <option name="time" value="59" />
+      <option name="time" value="60" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
@@ -737,10 +764,56 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/burp/DomainObject.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="194">
+          <caret line="114" column="42" selection-start-line="114" selection-start-column="42" selection-end-line="114" selection-end-column="42" />
+          <folding>
+            <element signature="e#2906#2907#0" expanded="true" />
+            <element signature="e#2939#2940#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/burp/GUI.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="270">
+          <caret line="440" column="44" lean-forward="true" selection-start-line="440" selection-start-column="44" selection-end-line="440" selection-end-column="44" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/net/portswigger/burp/extender/burp-extender-api/1.7.22/burp-extender-api-1.7.22-sources.jar!/burp/IBurpExtenderCallbacks.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="202">
+          <caret line="539" column="9" selection-start-line="539" selection-start-column="9" selection-end-line="539" selection-end-column="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/burp/BurpExtender.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="243">
+          <caret line="30" column="41" selection-start-line="30" selection-start-column="19" selection-end-line="30" selection-end-column="41" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://C:/Program Files/Java/jdk1.8.0_161/src.zip!/java/awt/List.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="203">
+          <caret line="108" column="13" selection-start-line="108" selection-start-column="13" selection-end-line="108" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://C:/Program Files/Java/jdk1.8.0_161/src.zip!/java/util/List.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="203">
+          <caret line="110" column="17" selection-start-line="110" selection-start-column="17" selection-end-line="110" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/burp/Commons.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="455">
-          <caret line="210" column="21" lean-forward="true" selection-start-line="210" selection-start-column="21" selection-end-line="210" selection-end-column="21" />
+        <state relative-caret-position="185">
+          <caret line="155" selection-start-line="155" selection-end-line="155" />
           <folding>
             <element signature="e#1019#1027#0" expanded="true" />
             <element signature="e#2003#2023#0" expanded="true" />
@@ -758,37 +831,35 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/burp/DomainObject.java">
+    <entry file="file://$PROJECT_DIR$/src/burp/LineEntryMenu.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="194">
-          <caret line="114" column="42" selection-start-line="114" selection-start-column="42" selection-end-line="114" selection-end-column="42" />
+        <state relative-caret-position="153">
+          <caret line="75" column="41" lean-forward="true" selection-start-line="75" selection-start-column="41" selection-end-line="75" selection-end-column="41" />
           <folding>
-            <element signature="e#2906#2907#0" expanded="true" />
-            <element signature="e#2939#2940#0" expanded="true" />
+            <element signature="imports" expanded="true" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$MAVEN_REPOSITORY$/net/portswigger/burp/extender/burp-extender-api/1.7.22/burp-extender-api-1.7.22-sources.jar!/burp/IBurpExtenderCallbacks.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="202">
-          <caret line="539" column="9" selection-start-line="539" selection-start-column="9" selection-end-line="539" selection-end-column="9" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/burp/BurpExtender.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="248">
-          <caret line="83" column="61" lean-forward="true" selection-start-line="83" selection-start-column="61" selection-end-line="83" selection-end-column="61" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/burp/LineTableModel.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="248">
-          <caret line="46" column="34" lean-forward="true" selection-start-line="46" selection-start-column="34" selection-end-line="46" selection-end-column="34" />
+        <state relative-caret-position="243">
+          <caret line="9" column="22" lean-forward="true" selection-start-line="9" selection-start-column="22" selection-end-line="9" selection-end-column="22" />
           <folding>
             <element signature="e#820#831#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/burp/LineTable.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="243">
+          <caret line="100" column="21" lean-forward="true" selection-start-line="100" selection-start-column="21" selection-end-line="100" selection-end-column="21" />
+          <folding>
+            <element signature="e#1451#1452#0" expanded="true" />
+            <element signature="e#1469#1470#0" expanded="true" />
+            <element signature="e#3957#3958#0" expanded="true" />
+            <element signature="e#4013#4014#0" expanded="true" />
           </folding>
         </state>
       </provider>

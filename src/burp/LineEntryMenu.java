@@ -1,10 +1,12 @@
 package burp;
 
 import javax.swing.*;
-
-import java.awt.Desktop;
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.net.URI;
+import java.net.URL;
 
 public class LineEntryMenu extends JPopupMenu {
 
@@ -27,6 +29,46 @@ public class LineEntryMenu extends JPopupMenu {
             }
         });
         this.add(googleSearchItem);
+
+        JMenuItem copyURLItem = new JMenuItem(new AbstractAction("Copy URL(s)") {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                try{
+                    java.util.List<String> urls = lineTable.getModel().getURLs(rows);
+                    String textUrls = String.join("\n", urls);
+
+                    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                    StringSelection selection = new StringSelection(textUrls);
+                    clipboard.setContents(selection, null);
+                }
+                catch (Exception e1)
+                {
+                    e1.printStackTrace(lineTable.getBurp().stderr);
+                }
+            }
+        });
+        this.add(copyURLItem);
+
+
+        JMenuItem addHostsToScope = new JMenuItem(new AbstractAction("Add To Scope") {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                try{
+                    java.util.List<String> urls = lineTable.getModel().getURLs(rows);
+                    IBurpExtenderCallbacks callbacks = lineTable.getBurp().callbacks;
+                    for(String url:urls) {
+                        URL shortUrl = new URL(url);
+                        callbacks.includeInScope(shortUrl);
+                    }
+                }
+                catch (Exception e1)
+                {
+                    e1.printStackTrace(lineTable.getBurp().stderr);
+                }
+            }
+        });
+        this.add(addHostsToScope);
+
         
         JMenuItem removeItem = new JMenuItem(new AbstractAction("Remove Item") {
             @Override

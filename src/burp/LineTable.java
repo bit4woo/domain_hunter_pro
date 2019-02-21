@@ -28,7 +28,7 @@ public class LineTable extends JTable
 	private LineTableModel lineTableModel;
 	private IMessageEditor requestViewer;
     private IMessageEditor responseViewer;
-    private BurpExtender burp;
+	private BurpExtender burp;
 	private RowSorter<LineTableModel> sorter;
     
     
@@ -46,7 +46,11 @@ public class LineTable extends JTable
         registerListeners();
         tableinit();
     }
-    
+
+	public BurpExtender getBurp() {
+		return burp;
+	}
+
     public void tableinit(){
     	//Font f = new Font("Arial", Font.PLAIN, 12);
     	Font f = this.getFont();
