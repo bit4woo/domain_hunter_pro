@@ -81,7 +81,8 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	public Set<String> GetExtendIPSet() {
 		Set<String> IPsOfDomain = getIPSet();
 		//Set<String> CSubNetIPs = Commons.subNetsToIPSet(Commons.toSubNets(IPsOfDomain));
-		Set<String> CSubNetIPs = Commons.toIPSet(Commons.toSubNets(IPsOfDomain));
+        Set<String> subnets = Commons.toSmallerSubNets(IPsOfDomain);
+		Set<String> CSubNetIPs = Commons.toIPSet(subnets);
 		CSubNetIPs.removeAll(getIPSet());
 		
 		return CSubNetIPs;

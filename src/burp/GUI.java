@@ -830,7 +830,7 @@ public class GUI extends JFrame {
 			  
 		  }
 		  
-		  if (!onecell.equals("") && !onecell.equals(null)) {
+		  if (!onecell.equals("") && onecell != null) {
 			  result.add(onecell);
 		  }
 		}
@@ -900,7 +900,7 @@ public class GUI extends JFrame {
 				file=new File(fc.getCurrentDirectory(),file.getName()+".json");
 			}
 			
-			if (domainResult.projectName == "") {
+			if (domainResult.projectName.equals("")) {
 				domainResult.projectName = file.getName();
 			}
 			

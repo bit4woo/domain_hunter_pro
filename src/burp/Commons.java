@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.net.util.SubnetUtils;
+import org.apache.commons.net.util.SubnetUtils.SubnetInfo;
 import org.xbill.DNS.ARecord;
 import org.xbill.DNS.Lookup;
 import org.xbill.DNS.Record;
@@ -118,17 +119,30 @@ public class Commons {
 			return result;
 		}
 	}
-	
+
+
+
+	//////////////////////////////////////////IP  subnet  CIDR/////////////////////////////////
 	/*
-	 * IP集合，转多个CIDR
+	To Class C Network
 	 */
-	public static Set<String> toSubNets(Set<String> IPSet) {
+	private static Set<String> toClassCSubNets(Set<String> IPSet) {
 		Set<String> subNets= new HashSet<String>();
 		Set<String> smallSubNets= new HashSet<String>();
 		for (String ip:IPSet) {
 			String subnet = ip.trim().substring(0,ip.lastIndexOf("."))+".0/24";
 			subNets.add(subnet);
 		}
+		return subNets;
+	}
+
+	/*
+	 * IP集合，转多个CIDR,smaller newtworks than Class C Networks
+	 */
+	public static Set<String> toSmallerSubNets(Set<String> IPSet) {
+		Set<String> subNets= toClassCSubNets(IPSet);
+		Set<String> smallSubNets= new HashSet<String>();
+
 		for(String CNet:subNets) {//把所有IP按照C段进行分类
 			SubnetUtils net = new SubnetUtils(CNet);
 			Set<String> tmpIPSet = new HashSet<String>();
@@ -142,6 +156,38 @@ public class Commons {
 		}
 		return smallSubNets;
 	}
+	/*
+	To get a smaller network with a set of IP addresses
+	 */
+	private static String ipset2cidr(Set<String> IPSet) {
+		if (IPSet == null || IPSet.size() <=0){
+			return null;
+		}
+		if (IPSet.size() ==1){
+			return IPSet.toArray(new String[0])[0];
+		}
+		Set<Long> tmp = new HashSet<Long>();
+		List<String> list = new ArrayList<String>(IPSet);
+		SubnetUtils oldsamllerNetwork =new SubnetUtils(list.get(0).trim()+"/24");
+		for (int mask=24;mask<=32;mask++){
+			//System.out.println(mask);
+			SubnetUtils samllerNetwork = new SubnetUtils(list.get(0).trim()+"/"+mask);
+			for (String ip:IPSet) {
+				if (samllerNetwork.getInfo().isInRange(ip) || samllerNetwork.getInfo().getBroadcastAddress().equals(ip.trim()) || samllerNetwork.getInfo().getNetworkAddress().equals(ip.trim())){
+					//52.74.179.0 ---sometimes .0 address is a real address.
+					continue;
+				}
+				else {
+					String networkaddress = oldsamllerNetwork.getInfo().getNetworkAddress();
+					String tmpmask = oldsamllerNetwork.getInfo().getNetmask();
+					return new SubnetUtils(networkaddress,tmpmask).getInfo().getCidrSignature();
+				}
+			}
+			oldsamllerNetwork = samllerNetwork;
+		}
+		return null;
+	}
+
 
 	/*
 	 * 多个网段转IP集合，变更表现形式，变成一个个的IP
@@ -149,115 +195,43 @@ public class Commons {
 	public static Set<String> toIPSet (Set<String> subNets) {
 		Set<String> IPSet = new HashSet<String>();
 		for (String subnet:subNets) {
-			SubnetUtils net = new SubnetUtils(subnet);
-			String[] ips = net.getInfo().getAllAddresses();
-			IPSet.addAll(Arrays.asList(ips));
+			if (subnet.contains("/")){
+				SubnetUtils net = new SubnetUtils(subnet);
+				SubnetInfo xx = net.getInfo();
+				String[] ips = xx.getAllAddresses();
+				Set<String> resultIPs = new HashSet<>(Arrays.asList(ips));
+				resultIPs.add(xx.getNetworkAddress());
+				resultIPs.add(xx.getBroadcastAddress());
+				IPSet.addAll(resultIPs);
+			}else { //单IP
+				IPSet.add(subnet);
+			}
+
 		}
 		return IPSet;
-	}
-	
-	/*
-	 * 将一个IP集合转为CIDR格式
-	 */
-	private static String ipset2cidr(Set<String> IPSet) {
-		Set<Long> tmp = new HashSet<Long>();
-		for (String ip:IPSet) {
-			long ipLong = ip2long(ip);
-			tmp.add(ipLong);
-		}
-		long max = (long) Collections.max(tmp);
-		long min = (long) Collections.min(tmp);
-		return iprange2cidr(long2ip(min),long2ip(max));
-	}
-
-	
-	private static String iprange2cidr( String startIp, String endIp ) {
-        // check parameters
-        if (startIp == null || startIp.length() < 8 ||
-            endIp == null || endIp.length() < 8) return null;
-        long start = ip2long(startIp);
-        long end = ip2long(endIp);
-	    return iprange2cidr(start,end);
-	}
-	
-	
-	
-	//https://stackoverflow.com/questions/33443914/how-to-convert-ip-address-range-to-cidr-in-java
-	private static String iprange2cidr( long start, long end ) {
-        // check parameters
-        if (start > end) return null;
-
-        List<String> result = new ArrayList<String>();
-        while (start <= end) {
-            // identify the location of first 1's from lower bit to higher bit of start IP
-            // e.g. 00000001.00000001.00000001.01101100, return 4 (100)
-            long locOfFirstOne = start & (-start);
-            int maxMask = 32 - (int) (Math.log(locOfFirstOne) / Math.log(2));
-            String ip = long2ip(start);
-            return (ip + "/" + maxMask);
-/*            // calculate how many IP addresses between the start and end
-            // e.g. between 1.1.1.111 and 1.1.1.120, there are 10 IP address
-            // 3 bits to represent 8 IPs, from 1.1.1.112 to 1.1.1.119 (119 - 112 + 1 = 8)
-            double curRange = Math.log(end - start + 1) / Math.log(2);
-            int maxDiff = 32 - (int) Math.floor(curRange);
-
-            // why max?
-            // if the maxDiff is larger than maxMask
-            // which means the numbers of IPs from start to end is smaller than mask range
-            // so we can't use as many as bits we want to mask the start IP to avoid exceed the end IP
-            // Otherwise, if maxDiff is smaller than maxMask, which means number of IPs is larger than mask range
-            // in this case we can use maxMask to mask as many as IPs from start we want.
-            maxMask = Math.max(maxDiff, maxMask);
-
-            // Add to results
-            String ip = long2ip(start);
-            result.add(ip + "/" + maxMask);
-            // We have already included 2^(32 - maxMask) numbers of IP into result
-            // So the next round start must add that number
-            start += Math.pow(2, (32 - maxMask));*/
-        }
-        return null;
-    }
-	 
-	private static long ip2long(String ipstring) {
-	    String[] ipAddressInArray = ipstring.split("\\.");
-	    long num = 0;
-	    long ip = 0;
-	    for (int x = 3; x >= 0; x--) {
-	        ip = Long.parseLong(ipAddressInArray[3 - x]);
-	        num |= ip << (x << 3);
-	    }
-	    return num;
-	}
-	 
-	private static String long2ip(long longIP) {
-	    StringBuffer sbIP = new StringBuffer("");
-	    sbIP.append(String.valueOf(longIP >>> 24));
-	    sbIP.append(".");
-	    sbIP.append(String.valueOf((longIP & 0x00FFFFFF) >>> 16));
-	    sbIP.append(".");
-	    sbIP.append(String.valueOf((longIP & 0x0000FFFF) >>> 8));
-	    sbIP.append(".");
-	    sbIP.append(String.valueOf(longIP & 0x000000FF));
-	 
-	    return sbIP.toString();
 	}
 
 	public static void main(String args[]) {
 		
-		HashMap<String, Set<String>> result = dnsquery("www.baidu.com");
+/*		HashMap<String, Set<String>> result = dnsquery("www.baidu.com");
 		System.out.println(result.get("IP").toString());
-		System.out.println(dnsquery("www.baidu.com"));
+		System.out.println(dnsquery("www.baidu.com"));*/
 		 
-/*		System.out.print(new SubnetUtils("192.168.1.1/23").getInfo().getCidrSignature());
+		//System.out.println(new SubnetUtils("192.168.1.1/23").getInfo().getCidrSignature());
 		
 		Set<String> IPSet = new HashSet<String>();
 		IPSet.add("192.168.1.225");
-		IPSet.add("192.168.1.128");
+/*		IPSet.add("192.168.1.128");
 		IPSet.add("192.168.1.129");
 		IPSet.add("192.168.1.155");
 		IPSet.add("192.168.1.224");
-		String subnets = ipset2cidr(IPSet);
-		System.out.println(subnets);*/
+		IPSet.add("192.168.1.130");*/
+		Set<String> subnets = toSmallerSubNets(IPSet);
+
+		System.out.println(toIPSet(subnets));
+		
+		Set<String>  a= new HashSet();
+		a.add("218.213.102.6/31");
+		System.out.println(toIPSet(a));
 	}
 }

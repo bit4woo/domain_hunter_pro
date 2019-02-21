@@ -141,7 +141,7 @@ public class LineEntry {
 			while ( m.find() ) {
 				title = m.group(0);
 			}
-			if (title == "") {
+			if (title.equals("")) {
 				Pattern ph = Pattern.compile("<title [.*?]>(.*?)</title>");
 				Matcher mh  = ph.matcher(bodyText);
 				while ( mh.find() ) {

@@ -441,8 +441,6 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 			BlockingQueue<String> domainQueue = new LinkedBlockingQueue<String>();//use to store domains
 			BlockingQueue<IHttpRequestResponse> sharedQueue = new LinkedBlockingQueue<IHttpRequestResponse>();
 			BlockingQueue<String> lineQueue = new LinkedBlockingQueue<String>();//use to store output---line
-			BlockingQueue<HashMap<String,Set<String>>> domainAndIPQueue = new LinkedBlockingQueue();
-
 			Iterator<String> it = domains.iterator();
 			while(it.hasNext()) {
 				String domain = it.next();
