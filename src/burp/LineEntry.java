@@ -129,10 +129,12 @@ public class LineEntry {
 			webcontainer = getter.getHeaderValueOf(false, messageinfo, "Server");
 			
 			bodyText = new String(getter.getBody(false, messageinfo));
-			
-			contentLength = Integer.parseInt(getter.getHeaderValueOf(false, messageinfo, "Content-Length").trim());
-			if (contentLength==-1 && bodyText!=null) {
-				contentLength = bodyText.length();
+			try{
+				contentLength = Integer.parseInt(getter.getHeaderValueOf(false, messageinfo, "Content-Length").trim());
+			}catch (Exception e){
+				if (contentLength==-1 && bodyText!=null) {
+					contentLength = bodyText.length();
+				}
 			}
 
 			Pattern p = Pattern.compile("<title(.*?)</title>");
@@ -148,7 +150,7 @@ public class LineEntry {
 					title = mh.group(0);
 				}
 			}
-			if (title == "") {
+			if (title.equals("")) {
 				Pattern ph = Pattern.compile("<h[1-6]>(.*?)</h[1-6]>");
 				Matcher mh  = ph.matcher(bodyText);
 				while ( mh.find() ) {
