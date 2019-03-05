@@ -37,6 +37,8 @@ public class LineTable extends JTable
         super(lineTableModel);
         this.lineTableModel = lineTableModel;
         this.burp = burp;
+        this.setFillsViewportHeight(true);//在table的空白区域显示右键菜单
+        //https://stackoverflow.com/questions/8903040/right-click-mouselistener-on-whole-jtable-component
         
         requestViewer = burp.callbacks.createMessageEditor(lineTableModel, false);
         responseViewer = burp.callbacks.createMessageEditor(lineTableModel, false);
@@ -156,13 +158,17 @@ public class LineTable extends JTable
                     if (e.isPopupTrigger() && e.getComponent() instanceof JTable ) {
                         //getSelectionModel().setSelectionInterval(rows[0], rows[1]);
                     	int[] rows = getSelectedRows();
-                    	
-        				for (int i=0; i < rows.length; i++){
-        					rows[i] = convertRowIndexToModel(rows[i]);//转换为Model的索引，否则排序后索引不对应〿
-        				}
-        				Arrays.sort(rows);//升序
-        				
-                    	new LineEntryMenu(_this, rows).show(e.getComponent(), e.getX(), e.getY());
+                    	if (rows.length>0){
+							for (int i=0; i < rows.length; i++){
+								rows[i] = convertRowIndexToModel(rows[i]);//转换为Model的索引，否则排序后索引不对应〿
+							}
+							Arrays.sort(rows);//升序
+
+							new LineEntryMenu(_this, rows).show(e.getComponent(), e.getX(), e.getY());
+						}else{//在table的空白处显示右键菜单
+                    		//https://stackoverflow.com/questions/8903040/right-click-mouselistener-on-whole-jtable-component
+							new LineEntryMenu(_this).show(e.getComponent(), e.getX(), e.getY());
+						}
                     }
                 }
             }

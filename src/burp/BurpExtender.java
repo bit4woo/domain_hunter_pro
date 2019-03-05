@@ -23,6 +23,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 
+import com.google.common.collect.Sets;
+
 public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtensionStateListener,IContextMenuFactory, IMessageEditorController{
 	/**
 	 * 
@@ -81,7 +83,8 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 	@Override
 	public String getConfig(boolean includeTitle) {
 		if(includeTitle) {
-			domainResult.setLineJsons(TitletableModel.getLineJsons());
+			List<String> LineJsons = TitletableModel.getLineJsons();
+			domainResult.setLineJsons(LineJsons);
 		}else {
 			domainResult.setLineJsons(new ArrayList<String>());
 			domainResult.setHistoryLineJsons(new ArrayList<String>());
@@ -121,7 +124,8 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		TitletableModel.setLineEntries(new ArrayList<LineEntry>());//clear
 
 		List<String> lineJsons = domainResult.getLineJsons();
-		for (String line:lineJsons) {
+		Set<String> lineJsonSet = new HashSet<>(lineJsons);
+		for (String line:lineJsonSet) {
 			LineEntry lineObject = new LineEntry().FromJson(line);
 			TitletableModel.addNewLineEntry(lineObject);
 		}
@@ -609,7 +613,7 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 						Getter getter = new Getter(helpers);
 						String body = new String(getter.getBody(false, messageinfo));
 						String url = messageinfo.getHttpService().toString();
-						String bodyText = messageinfo.getHttpService().toString()+body;
+						String URLAndbodyText = messageinfo.getHttpService().toString()+body;
 
 
 						LineEntry linefound = findHistory(url);
@@ -622,7 +626,8 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 							comment = linefound.getComment();
 							//stderr.println(new String(linefound.getResponse()));
 							try {
-								if (linefound.getBodyText().equalsIgnoreCase(bodyText) && isChecked) {
+								String text = linefound.getUrl()+linefound.getBodyText();
+								if (text.equalsIgnoreCase(URLAndbodyText) && isChecked) {
 									isNew = false;
 								}
 							}catch(Exception err) {

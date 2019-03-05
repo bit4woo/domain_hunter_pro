@@ -26,7 +26,7 @@ public class DomainObject {
 	private List<String> lineJsons = new ArrayList<String>();//store title lines
 	//backup lineJsons to compare with newer.
 	private List<String> historyLineJsons = new ArrayList<String>();
-	
+
     public static int SUB_DOMAIN=0;
     public static int SIMILAR_DOMAIN=1;
     public static int IP_ADDRESS=2;

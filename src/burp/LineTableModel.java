@@ -3,12 +3,7 @@ package burp;
 import javax.swing.table.AbstractTableModel;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 
 public class LineTableModel extends AbstractTableModel implements IMessageEditorController,Serializable {
@@ -20,6 +15,8 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	private static final long serialVersionUID = 1L;
 	private LineEntry currentlyDisplayedItem;
     private List<LineEntry> lineEntries =new ArrayList<LineEntry>();
+    private List<LineEntry> hidenLineEntries =new ArrayList<LineEntry>();
+    //是否隐藏只在LineTableModel中区分，其他地方获取都是合并了的。
     private HashMap<String,Set<String>> noResponseDomain =new HashMap<String,Set<String>>();
     private BurpExtender burp;
     private static final String[] titles = new String[] {
@@ -41,6 +38,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	
 	public List<String> getLineJsons(){
 		List<String> result = new ArrayList<String>();
+		lineEntries.addAll(hidenLineEntries);
 		for(LineEntry line:lineEntries) {
 			String linetext = line.ToJson();
 			result.add(linetext);
@@ -51,6 +49,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	//no usage.
 	private HashMap<String, Set<String>> getDomainIPSet() {
 		HashMap<String, Set<String>> result = noResponseDomain;
+		lineEntries.addAll(hidenLineEntries);
 		for(LineEntry line:lineEntries) {
 			String[] linetext = line.getIP().split(", ");
 			String domain = line.getHost();
@@ -63,6 +62,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	
 	private Set<String> getIPSet() {
 		Set<String> result = new HashSet<String>();
+		lineEntries.addAll(hidenLineEntries);
 		for(LineEntry line:lineEntries) {
 			String[] linetext = line.getIP().split(", ");
 			result.addAll(Arrays.asList(linetext));
@@ -190,6 +190,45 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
             	this.burp.stdout.println("### "+url+" added to black list and deleted");
             	this.fireTableRowsDeleted(rows[i], rows[i]);
         	}
+        }
+    }
+    
+    
+    public void hideLines() {
+        synchronized (lineEntries) {
+        	//because thread let the delete action not in order, so we must loop in here.
+        	//list length and index changed after every remove.the origin index not point to right item any more.
+        	ArrayList<Integer> tmprows= new ArrayList<Integer>();
+        	for (LineEntry lineEntrie:lineEntries) {
+        		if (lineEntrie.isChecked()) {
+            		int index = lineEntries.indexOf(lineEntrie);
+            		tmprows.add(index);
+        		}
+        	}
+
+        	Integer[] rows = (Integer[])tmprows.toArray(new Integer[tmprows.size()]);
+        	Arrays.sort(rows); //升序
+        	for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
+                LineEntry entry = lineEntries.get(rows[i]);
+            	//lineEntries.remove((int)rows[i]);//当没有转换为int前，删除是失败的！
+                lineEntries.remove(entry);
+            	hidenLineEntries.add(entry);
+            	
+            	String url = entry.getUrl();
+            	this.burp.stdout.println("### "+url+" hidded");
+            	this.fireTableRowsDeleted(rows[i], rows[i]);
+        	}
+        }
+    }
+    
+    public void unHideLines() {
+        synchronized (lineEntries) { ;
+            Iterator<LineEntry> it = hidenLineEntries.iterator();
+            while (it.hasNext()){
+                LineEntry item = it.next();
+                addNewLineEntry(item);
+                it.remove();
+            }
         }
     }
 

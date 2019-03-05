@@ -88,8 +88,13 @@ public class LineEntry {
 		this.isNew = isNew;
 		this.isChecked = Checked;
 		this.comment = comment;
-		this.IP = IPset.toString().replace("[", "").replace("]", "");
-		this.CDN = CDNset.toString().replace("[", "").replace("]", "");
+		if (this.IP != null) {
+			this.IP = IPset.toString().replace("[", "").replace("]", "");
+		}
+		
+		if (this.CDN != null) {
+			this.CDN = CDNset.toString().replace("[", "").replace("]", "");
+		}	
 	}
 
 	@JSONField(serialize=false)//表明不序列号该字段
@@ -161,7 +166,8 @@ public class LineEntry {
 	        SimpleDateFormat simpleDateFormat = 
                     new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
     
-	        time = simpleDateFormat.format(new Date());
+	        time = simpleDateFormat.format(new Date())+"";//这是动态的，会跟随系统时间自动变化
+	        
 			
 		}catch(Exception e) {
 			//e.printStackTrace(burp.stderr);
