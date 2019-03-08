@@ -117,6 +117,7 @@ public class GUI extends JFrame {
 	private JButton btnSaveState;
 	private JButton btnSaveStateTo;
 	private JButton btnGetExtendtitle;
+	public JFileChooser fc = new JFileChooser();
 
 
 
@@ -887,7 +888,13 @@ public class GUI extends JFrame {
 	}
 	
 	public void saveDialog(boolean includeTitle) {
-		JFileChooser fc=new JFileChooser();
+		if (fc.getCurrentDirectory() != null) {
+			File xxx = fc.getCurrentDirectory();
+			fc = new JFileChooser(fc.getCurrentDirectory());
+		}else {
+			fc = new JFileChooser();
+		}
+		
 		JsonFileFilter jsonFilter = new JsonFileFilter(); //excel过滤器  
 	    fc.addChoosableFileFilter(jsonFilter);
 	    fc.setFileFilter(jsonFilter);
@@ -919,6 +926,7 @@ public class GUI extends JFrame {
 	            }
 	            
 				Files.write(content.getBytes(), file);
+				fc.setCurrentDirectory(new File(file.getParent()));//save latest used dir.
 	        }catch(Exception e1){
 	           e1.printStackTrace(stderr);
 	        }
