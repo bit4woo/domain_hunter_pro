@@ -204,7 +204,13 @@ public class GUI extends JFrame {
 		btnOpen = new JButton("Open");
 		btnOpen.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				JFileChooser fc=new JFileChooser();
+				//JFileChooser fc=new JFileChooser(); //use global fc to use remembered path
+				if (fc.getCurrentDirectory() != null) {
+					File xxx = fc.getCurrentDirectory();
+					fc = new JFileChooser(fc.getCurrentDirectory());
+				}else {
+					fc = new JFileChooser();
+				}
 				JsonFileFilter jsonFilter = new JsonFileFilter(); //excel过滤器  
 			    fc.addChoosableFileFilter(jsonFilter);
 			    fc.setFileFilter(jsonFilter);
