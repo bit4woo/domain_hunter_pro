@@ -222,12 +222,14 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
     }
     
     public void unHideLines() {
-        synchronized (lineEntries) { ;
+        synchronized (lineEntries) {
             Iterator<LineEntry> it = hidenLineEntries.iterator();
             while (it.hasNext()){
                 LineEntry item = it.next();
                 addNewLineEntry(item);
                 it.remove();
+                String url = item.getUrl();
+                this.burp.stdout.println("### show "+url);
             }
         }
     }

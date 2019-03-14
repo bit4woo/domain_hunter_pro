@@ -69,6 +69,35 @@ public class LineEntryMenu extends JPopupMenu {
             }
         });
         this.add(addHostsToScope);
+        
+        JMenuItem doActiveScan = new JMenuItem(new AbstractAction("Do Active Scan") {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                try{
+                    java.util.List<LineEntry> entries = lineTable.getModel().getLineEntries();
+                    IBurpExtenderCallbacks callbacks = lineTable.getBurp().callbacks;
+                    for (int i=rows.length-1;i>=0 ;i-- ) {
+                    	LineEntry entry = entries.get(rows[i]);
+                    	
+                        String host = entry.getHost();
+                        int port = entry.getPort();
+                        boolean useHttps;
+						if (entry.getProtocol().equalsIgnoreCase("https")){
+                        	useHttps = true;
+                        }else {
+							useHttps = false;
+						}
+                        byte[] request = entry.getRequest();
+                        callbacks.doActiveScan(host, port, useHttps, request);
+                    }
+                }
+                catch (Exception e1)
+                {
+                    e1.printStackTrace(lineTable.getBurp().stderr);
+                }
+            }
+        });
+        this.add(doActiveScan);
 
         
         JMenuItem removeItem = new JMenuItem(new AbstractAction("Delete") {
