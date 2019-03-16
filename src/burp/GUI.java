@@ -118,6 +118,7 @@ public class GUI extends JFrame {
 	private JButton btnSaveStateTo;
 	private JButton btnGetExtendtitle;
 	public JFileChooser fc = new JFileChooser();
+	private JLabel lblSummaryOfTitle;
 
 
 
@@ -739,6 +740,20 @@ public class GUI extends JFrame {
 		btnSaveStateTo.setToolTipText("save domains and getted title lines to a file.");
 		buttonPanel.add(btnSaveStateTo);
 		
+		btnSaveStateTo = new JButton("status");
+		btnSaveStateTo.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String status = digStatus();
+				lblSummaryOfTitle.setText(status);
+			}
+		});
+		btnSaveStateTo.setToolTipText("show Status of digging.");
+		buttonPanel.add(btnSaveStateTo);
+		
+		
+		lblSummaryOfTitle = new JLabel("      ^_^");
+		buttonPanel.add(lblSummaryOfTitle);
+		
 		
 		splitPane = new JSplitPane();
 		splitPane.setResizeWeight(0.5);
@@ -937,6 +952,11 @@ public class GUI extends JFrame {
 	           e1.printStackTrace(stderr);
 	        }
 		}
+	}
+	
+	public String digStatus() {
+		// need to override
+		return null;
 	}
 
 	

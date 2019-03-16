@@ -38,8 +38,12 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	
 	public List<String> getLineJsons(){
 		List<String> result = new ArrayList<String>();
-		lineEntries.addAll(hidenLineEntries);
+		//lineEntries.addAll(hidenLineEntries);
 		for(LineEntry line:lineEntries) {
+			String linetext = line.ToJson();
+			result.add(linetext);
+		}
+		for(LineEntry line:hidenLineEntries) {
 			String linetext = line.ToJson();
 			result.add(linetext);
 		}
@@ -49,8 +53,16 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	//no usage.
 	private HashMap<String, Set<String>> getDomainIPSet() {
 		HashMap<String, Set<String>> result = noResponseDomain;
-		lineEntries.addAll(hidenLineEntries);
+		//lineEntries.addAll(hidenLineEntries);
 		for(LineEntry line:lineEntries) {
+			String[] linetext = line.getIP().split(", ");
+			String domain = line.getHost();
+			HashSet<String> ipset = new HashSet<String>(Arrays.asList(linetext));
+			
+			result.put(domain, ipset);
+		}
+		
+		for(LineEntry line:hidenLineEntries) {
 			String[] linetext = line.getIP().split(", ");
 			String domain = line.getHost();
 			HashSet<String> ipset = new HashSet<String>(Arrays.asList(linetext));
@@ -62,8 +74,13 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	
 	private Set<String> getIPSet() {
 		Set<String> result = new HashSet<String>();
-		lineEntries.addAll(hidenLineEntries);
+		//lineEntries.addAll(hidenLineEntries);
 		for(LineEntry line:lineEntries) {
+			String[] linetext = line.getIP().split(", ");
+			result.addAll(Arrays.asList(linetext));
+		}
+		
+		for(LineEntry line:hidenLineEntries) {
 			String[] linetext = line.getIP().split(", ");
 			result.addAll(Arrays.asList(linetext));
 		}
@@ -85,6 +102,17 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		return CSubNetIPs;
 	}
     
+	
+	public String getStatusSummary() {
+		int all = lineEntries.size()+hidenLineEntries.size();
+		int checked = hidenLineEntries.size();
+    	for (LineEntry lineEntrie:lineEntries) {
+    		if (lineEntrie.isChecked()) {
+    			checked ++;
+    		}
+    	}
+    	return "     ALL: "+all+"     Checked: "+checked+"     unchecked: "+(all-checked);
+	}
     
     ////////////////////// extend AbstractTableModel////////////////////////////////
 

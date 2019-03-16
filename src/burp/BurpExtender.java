@@ -124,7 +124,7 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		TitletableModel.setLineEntries(new ArrayList<LineEntry>());//clear
 
 		List<String> lineJsons = domainResult.getLineJsons();
-		Set<String> lineJsonSet = new HashSet<>(lineJsons);
+		Set<String> lineJsonSet = new HashSet<>(lineJsons);//去重
 		for (String line:lineJsonSet) {
 			LineEntry lineObject = new LineEntry().FromJson(line);
 			TitletableModel.addNewLineEntry(lineObject);
@@ -660,9 +660,9 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		return null;
 	}
 
-
-
-
+	public String digStatus() {
+		return TitletableModel.getStatusSummary();
+	}
 
 	//////////////////ThreadGetTitle block/////////////
 
