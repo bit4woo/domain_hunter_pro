@@ -9,9 +9,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
-
 import javax.swing.JTable;
 import javax.swing.RowFilter;
 import javax.swing.RowSorter;
@@ -138,16 +135,22 @@ public class LineTable extends JTable
     				}
     				Arrays.sort(rows);//升序
     				
-    				String host = LineTable.this.lineTableModel.getLineEntries().get(rows[0]).getHost();
-    				String url= "https://www.google.com/search?q=site%3A"+host;
-    				try {
-    					URI uri = new URI(url);
-    					Desktop desktop = Desktop.getDesktop();
-    					if(Desktop.isDesktopSupported()&&desktop.isSupported(Desktop.Action.BROWSE)){
-    						desktop.browse(uri);
-    					}
-    				} catch (Exception e2) {
-    					e2.printStackTrace();
+					//int row = ((LineTable) e.getSource()).rowAtPoint(e.getPoint()); // 获得行位置
+					int col = ((LineTable) e.getSource()).columnAtPoint(e.getPoint()); // 获得列位置
+					
+    				
+    				if ((col < LineTableModel.getTitles().length-1)) {//last column----comments
+        				String host = LineTable.this.lineTableModel.getLineEntries().get(rows[0]).getHost();
+        				String url= "https://www.google.com/search?q=site%3A"+host;
+        				try {
+        					URI uri = new URI(url);
+        					Desktop desktop = Desktop.getDesktop();
+        					if(Desktop.isDesktopSupported()&&desktop.isSupported(Desktop.Action.BROWSE)){
+        						desktop.browse(uri);
+        					}
+        				} catch (Exception e2) {
+        					e2.printStackTrace();
+        				}
     				}
                 }
             }

@@ -2,6 +2,8 @@ package burp;
 
 import javax.swing.table.AbstractTableModel;
 
+import config.ConfigEntry;
+
 import java.io.Serializable;
 import java.util.*;
 
@@ -23,7 +25,11 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
     		"#", "URL", "Status", "Length", "MIME Type", "Server","Title", "IP", "CDN", "Time","isNew","isChecked","Comments"
     	};
 
-    public LineTableModel(final BurpExtender burp){
+    public static String[] getTitles() {
+		return titles;
+	}
+
+	public LineTableModel(final BurpExtender burp){
         this.burp = burp;
 
     }
@@ -160,7 +166,11 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 
     @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {
-        return false;
+    	if (columnIndex < titles.length-1) {//可以编辑comment
+    		return false;
+    	}else {
+    		return true;
+    	}
     }
     
     public void removeRows(int[] rows) {
@@ -300,6 +310,20 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
         }
     }
     
+    
+    @Override
+    public void setValueAt(Object value, int row, int col) {
+    	LineEntry entry = lineEntries.get(row);
+		switch (col)
+		{
+		case 12://comment
+			entry.setComment((String) value);
+			break;
+		default:
+			break;
+		}
+        fireTableCellUpdated(row, col);
+    }
     //////////////////////extend AbstractTableModel////////////////////////////////
 
     public void addNewLineEntry(LineEntry lineEntry){
