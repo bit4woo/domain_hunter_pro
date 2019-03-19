@@ -2,8 +2,6 @@ package burp;
 
 import javax.swing.table.AbstractTableModel;
 
-import config.ConfigEntry;
-
 import java.io.Serializable;
 import java.util.*;
 
