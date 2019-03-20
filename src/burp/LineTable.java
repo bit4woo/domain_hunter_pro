@@ -9,6 +9,8 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import javax.swing.DefaultRowSorter;
 import javax.swing.JTable;
 import javax.swing.RowFilter;
 import javax.swing.RowSorter;
@@ -26,7 +28,7 @@ public class LineTable extends JTable
 	private IMessageEditor requestViewer;
     private IMessageEditor responseViewer;
 	private BurpExtender burp;
-	private RowSorter<LineTableModel> sorter;
+	private RowSorter<LineTableModel> rowSorter;
     
     
     public LineTable(LineTableModel lineTableModel,BurpExtender burp)
@@ -41,9 +43,10 @@ public class LineTable extends JTable
         responseViewer = burp.callbacks.createMessageEditor(lineTableModel, false);
         burp.RequestPanel.addTab("Request", requestViewer.getComponent());
         burp.ResponsePanel.addTab("Response", responseViewer.getComponent());
+        tableinit();
         addClickSort();
         registerListeners();
-        tableinit();
+
     }
 
 	public BurpExtender getBurp() {
@@ -71,6 +74,10 @@ public class LineTable extends JTable
     	this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Time")).setPreferredWidth(width*22);
     	this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Time")).setMaxWidth(width*25);
     	this.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
+    	
+    	
+    	rowSorter = new TableRowSorter<LineTableModel>(lineTableModel);//排序和搜索
+		LineTable.this.setRowSorter(rowSorter);
     }
     
     @Override
@@ -90,8 +97,8 @@ public class LineTable extends JTable
     }
     
     private void addClickSort() {
-    	sorter = new TableRowSorter<LineTableModel>(lineTableModel);
-		LineTable.this.setRowSorter(sorter);
+//    	rowSorter = new TableRowSorter<LineTableModel>(lineTableModel);
+//		LineTable.this.setRowSorter(rowSorter); // tableinit()
 		
     	JTableHeader header = this.getTableHeader();
     	header.addMouseListener(new MouseAdapter() {
@@ -107,18 +114,12 @@ public class LineTable extends JTable
     	});
     }
     
-    private void addContentFilter() {
-        
-        List<RowFilter<LineTableModel,Object>> filters = new ArrayList<RowFilter<LineTableModel,Object>>();
-        
-        filters.add(RowFilter.regexFilter("TD001"));
-        filters.add(RowFilter.regexFilter("TD002"));
-
-/*        RowFilter<LineTableModel,Object> arregloFiltros = RowFilter.orFilter(filters);      
-        sorter.setRowFilter(arregloFiltros);  */
-     
-        setSize(200, 150);
-        setVisible(true);
+    public void search(String keywork) {
+        if (keywork.trim().length() == 0) {
+            ((DefaultRowSorter<LineTableModel, Integer>) rowSorter).setRowFilter(null);
+        } else {
+            ((DefaultRowSorter<LineTableModel, Integer>) rowSorter).setRowFilter(RowFilter.regexFilter("(?i)" + keywork));
+        }
     }
     
     private void registerListeners(){

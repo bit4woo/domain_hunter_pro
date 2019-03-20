@@ -22,6 +22,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
+import javax.xml.soap.Text;
 
 import com.google.common.collect.Sets;
 
@@ -662,6 +663,13 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 
 	public String digStatus() {
 		return TitletableModel.getStatusSummary();
+	}
+	
+	public void showSearchResult(String keyword) {
+		//sub class should over write this function
+		String searchkeyword = textFieldSearch.getText();
+		stdout.print("Searching ... keyword is "+searchkeyword);
+		((LineTable) table_1).search(searchkeyword);
 	}
 
 	//////////////////ThreadGetTitle block/////////////

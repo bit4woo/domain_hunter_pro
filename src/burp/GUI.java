@@ -47,6 +47,7 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.RowFilter;
 import javax.swing.RowSorter;
 import javax.swing.SortOrder;
 import javax.swing.SwingWorker;
@@ -119,6 +120,8 @@ public class GUI extends JFrame {
 	private JButton btnGetExtendtitle;
 	public JFileChooser fc = new JFileChooser();
 	private JLabel lblSummaryOfTitle;
+	protected JTextField textFieldSearch;
+	protected JButton buttonSearch;
 
 
 
@@ -740,6 +743,36 @@ public class GUI extends JFrame {
 		btnSaveStateTo.setToolTipText("save domains and getted title lines to a file.");
 		buttonPanel.add(btnSaveStateTo);
 		
+		
+		textFieldSearch = new JTextField("Input text to search");
+		textFieldSearch.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusGained(FocusEvent e) {
+				if (textFieldSearch.getText().equals("Input text to search")) {
+					textFieldSearch.setText("");
+				}
+			}
+			@Override
+			public void focusLost(FocusEvent e) {
+				if (textFieldSearch.getText().equals("")) {
+					textFieldSearch.setText("Input text to search");
+				}
+				
+			}
+		});
+		textFieldSearch.setColumns(30);
+		buttonPanel.add(textFieldSearch);
+		
+		buttonSearch = new JButton("Search");
+		buttonSearch.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				showSearchResult();
+			}
+		});
+		buttonSearch.setToolTipText("Search");
+		buttonPanel.add(buttonSearch);
+		
+		
 		btnSaveStateTo = new JButton("status");
 		btnSaveStateTo.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -976,5 +1009,10 @@ public class GUI extends JFrame {
 	public List<String> getAllTitle(){
 		return null;
 		//sub class should over write this function
+	}
+	
+	public void showSearchResult() {
+		//sub class should over write this function
+
 	}
 }
