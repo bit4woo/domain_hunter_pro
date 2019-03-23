@@ -430,6 +430,12 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		List<String> result = threadGetTitle.Do();
 		return result;
 	}
+	
+	@Override
+	public String getSubnet(){
+		Set<String> subnets = TitletableModel.GetSubnets();
+		return String.join(System.lineSeparator(), subnets);
+	}
 
 	//////////////////ThreadGetTitle block/////////////
 	//no need to pass BurpExtender object to these class, IBurpExtenderCallbacks object is enough 
@@ -665,11 +671,12 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		return TitletableModel.getStatusSummary();
 	}
 	
+	@Override
 	public void showSearchResult(String keyword) {
 		//sub class should over write this function
 		String searchkeyword = textFieldSearch.getText();
 		stdout.print("Searching ... keyword is "+searchkeyword);
-		((LineTable) table_1).search(searchkeyword);
+		table_1.search(searchkeyword);
 	}
 
 	//////////////////ThreadGetTitle block/////////////

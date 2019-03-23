@@ -15,8 +15,12 @@ import javax.swing.JTable;
 import javax.swing.RowFilter;
 import javax.swing.RowSorter;
 import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
+import javax.swing.table.TableStringConverter;
 
 public class LineTable extends JTable
 {	
@@ -28,7 +32,7 @@ public class LineTable extends JTable
 	private IMessageEditor requestViewer;
     private IMessageEditor responseViewer;
 	private BurpExtender burp;
-	private RowSorter<LineTableModel> rowSorter;
+	private TableRowSorter<LineTableModel> rowSorter;//TableRowSorter vs. RowSorter
     
     
     public LineTable(LineTableModel lineTableModel,BurpExtender burp)
@@ -73,6 +77,8 @@ public class LineTable extends JTable
     	this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("MIME Type")).setMaxWidth(width*("MIME Type".length()+3));
     	this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Time")).setPreferredWidth(width*22);
     	this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Time")).setMaxWidth(width*25);
+    	this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Text")).setPreferredWidth(width*0);//response text,for search
+    	this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Text")).setMaxWidth(width*0);//response text,for search
     	this.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
     	
     	
@@ -116,11 +122,12 @@ public class LineTable extends JTable
     
     public void search(String keywork) {
         if (keywork.trim().length() == 0) {
-            ((DefaultRowSorter<LineTableModel, Integer>) rowSorter).setRowFilter(null);
+            rowSorter.setRowFilter(null);
         } else {
-            ((DefaultRowSorter<LineTableModel, Integer>) rowSorter).setRowFilter(RowFilter.regexFilter("(?i)" + keywork));
+            rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + keywork));
         }
     }
+    
     
     private void registerListeners(){
         final LineTable _this = this;
@@ -140,7 +147,7 @@ public class LineTable extends JTable
 					int col = ((LineTable) e.getSource()).columnAtPoint(e.getPoint()); // 获得列位置
 					
     				
-    				if ((col < LineTableModel.getTitles().length-1)) {//last column----comments
+    				if ((col < LineTable.this.getColumnModel().getColumnIndex("Comments"))) {//last column----comments
         				String host = LineTable.this.lineTableModel.getLineEntries().get(rows[0]).getHost();
         				String url= "https://www.google.com/search?q=site%3A"+host;
         				try {

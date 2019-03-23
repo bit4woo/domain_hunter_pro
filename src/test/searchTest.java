@@ -22,13 +22,13 @@ public class searchTest extends JPanel {
             = {"Country", "Capital", "Population in Millions", "Democracy"};
 
     private Object[][] data = {
-        {"USA", "Washington DC", 280, true},
-        {"Canada", "Ottawa", 32, true},
-        {"United Kingdom", "London", 60, true},
-        {"Germany", "Berlin", 83, true},
-        {"France", "Paris", 60, true},
-        {"Norway", "Oslo", 4.5, true},
-        {"India", "New Delhi", 1046, true}
+        {"USA", "Washington DC", 280, true,"aaaa"},
+        {"Canada", "Ottawa", 32, true,"aaaa"},
+        {"United Kingdom", "London", 60, true,"aaaa"},
+        {"Germany", "Berlin", 83, true,"aaaa"},
+        {"France", "Paris", 60, true,"aaaa"},
+        {"Norway", "Oslo", 4.5, true,"aaaa"},
+        {"India", "New Delhi", 1046, true,"aaaa"}
     };
 
     private DefaultTableModel model = new DefaultTableModel(data, columnNames);

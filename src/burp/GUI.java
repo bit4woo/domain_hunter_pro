@@ -113,7 +113,7 @@ public class GUI extends JFrame {
 	public JTabbedPane ResponsePanel;
 	public JButton btnGettitle;
 	public JScrollPane scrollPaneRequests;
-	public JTable table_1;
+	public LineTable table_1;
 	private JButton btnImportDomain;
 	private JButton btnSaveState;
 	private JButton btnSaveStateTo;
@@ -121,7 +121,6 @@ public class GUI extends JFrame {
 	public JFileChooser fc = new JFileChooser();
 	private JLabel lblSummaryOfTitle;
 	protected JTextField textFieldSearch;
-	protected JButton buttonSearch;
 
 
 
@@ -725,6 +724,19 @@ public class GUI extends JFrame {
 		});
 		buttonPanel.add(btnGetExtendtitle);
 		
+		JButton btnGetSubnet = new JButton("Get Subnet");
+		btnGetSubnet.setEnabled(true);
+		btnGetSubnet.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {	
+				String result = getSubnet();
+                Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                StringSelection selection = new StringSelection(result);
+                clipboard.setContents(selection, null);
+			}
+		});
+		buttonPanel.add(btnGetSubnet);
+		
+		
 		btnSaveState = new JButton("Save State");
 		btnSaveState.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -733,6 +745,7 @@ public class GUI extends JFrame {
 		});
 		btnSaveState.setToolTipText("Save state to extension setting.");
 		buttonPanel.add(btnSaveState);
+		
 		
 		btnSaveStateTo = new JButton("Save State To File");
 		btnSaveStateTo.addActionListener(new ActionListener() {
@@ -760,18 +773,25 @@ public class GUI extends JFrame {
 				
 			}
 		});
+		
+		textFieldSearch.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String keyword = textFieldSearch.getText().trim();
+				showSearchResult(keyword);
+			}
+		});
 		textFieldSearch.setColumns(30);
 		buttonPanel.add(textFieldSearch);
 		
-		buttonSearch = new JButton("Search");
+		
+		JButton buttonSearch = new JButton("Search");
 		buttonSearch.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				showSearchResult();
+				String keyword = textFieldSearch.getText().trim();
+				showSearchResult(keyword);
 			}
 		});
-		buttonSearch.setToolTipText("Search");
 		buttonPanel.add(buttonSearch);
-		
 		
 		btnSaveStateTo = new JButton("status");
 		btnSaveStateTo.addActionListener(new ActionListener() {
@@ -807,8 +827,8 @@ public class GUI extends JFrame {
 		splitPane.setLeftComponent(scrollPaneRequests);
 		
 		///need to replace this part with LineTableModel and LineTable
-		table_1 = new JTable();
-		scrollPaneRequests.setViewportView(table_1);
+//		table_1 = new JTable();
+//		scrollPaneRequests.setViewportView(table_1);
 		//LineTableModel will replace this table
 		
 
@@ -840,12 +860,10 @@ public class GUI extends JFrame {
 	}
 	
 	protected void saveConfigToExtension() {
-		// TODO Auto-generated method stub
 		// BurpExtender need to override this function
 	}
 	
 	protected List<String> getExtendTitle() {
-		// TODO Auto-generated method stub
 		// BurpExtender need to override this function
 		return null;
 	}
@@ -1010,9 +1028,14 @@ public class GUI extends JFrame {
 		return null;
 		//sub class should over write this function
 	}
-	
-	public void showSearchResult() {
-		//sub class should over write this function
 
+	public void showSearchResult(String keyword) {
+		//sub class should over write this function
+		
+	}
+
+	public String getSubnet() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

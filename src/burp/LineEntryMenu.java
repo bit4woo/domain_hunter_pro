@@ -36,7 +36,7 @@ public class LineEntryMenu extends JPopupMenu {
             public void actionPerformed(ActionEvent actionEvent) {
                 try{
                     java.util.List<String> urls = lineTable.getModel().getURLs(rows);
-                    String textUrls = String.join("\n", urls);
+                    String textUrls = String.join(System.lineSeparator(), urls);
 
                     Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
                     StringSelection selection = new StringSelection(textUrls);

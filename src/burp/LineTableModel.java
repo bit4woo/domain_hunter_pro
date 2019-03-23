@@ -20,7 +20,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
     private HashMap<String,Set<String>> noResponseDomain =new HashMap<String,Set<String>>();
     private BurpExtender burp;
     private static final String[] titles = new String[] {
-    		"#", "URL", "Status", "Length", "MIME Type", "Server","Title", "IP", "CDN", "Time","isNew","isChecked","Comments"
+    		"#", "URL", "Status", "Length", "MIME Type", "Server","Title", "IP", "CDN", "Time","isNew","isChecked","Comments","Text"
     	};
 
     public static String[] getTitles() {
@@ -106,6 +106,12 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		return CSubNetIPs;
 	}
     
+	public Set<String> GetSubnets() {
+		Set<String> IPsOfDomain = getIPSet();
+		//Set<String> CSubNetIPs = Commons.subNetsToIPSet(Commons.toSubNets(IPsOfDomain));
+        Set<String> subnets = Commons.toSmallerSubNets(IPsOfDomain);	
+		return subnets;
+	}
 	
 	public String getStatusSummary() {
 		int all = lineEntries.size()+hidenLineEntries.size();
@@ -123,7 +129,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
     @Override
     public int getColumnCount()
     {
-        return titles.length;
+        return titles.length;//the one is the request String + response String,for search
     }
 
     @Override
@@ -164,7 +170,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 
     @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {
-    	if (columnIndex < titles.length-1) {//可以编辑comment
+    	if (columnIndex < titles.length-2) {//可以编辑comment
     		return false;
     	}else {
     		return true;
@@ -303,6 +309,8 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
             	return entry.isChecked();
             case 12:
             	return entry.getComment();
+            case 13:
+            	return new String(entry.getResponse());// response text for search
             default:
                 return "";
         }
