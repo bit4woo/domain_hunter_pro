@@ -549,15 +549,20 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 					IHttpRequestResponse httpMessageinfo = callbacks.makeHttpRequest(http, httpRequest);
 					//stdout.println("messageinfo"+JSONObject.toJSONString(messageinfo));
 					byte[] httpBody = getter.getBody(false, httpMessageinfo);
+					int httpStatus = getter.getStatusCode(httpMessageinfo);
+					String location = getter.getHeaderValueOf(false, httpMessageinfo, "Location");
 
 					byte[] httpsRequest = helpers.buildHttpRequest(new URL(https.toString()));
 					IHttpRequestResponse httpsMessageinfo = callbacks.makeHttpRequest(https, httpsRequest);
 					byte[] httpsBody = getter.getBody(false, httpsMessageinfo);
+					int httpsStatus = getter.getStatusCode(httpsMessageinfo);
 //					sharedQueue.add(httpMessageinfo);
 //					sharedQueue.add(httpsMessageinfo);
 					
-					if (Arrays.equals(httpBody,httpsBody)) {//parameters can be null,great
+					if (httpStatus == httpsStatus && Arrays.equals(httpBody,httpsBody)) {//parameters can be null,great
 						sharedQueue.add(httpMessageinfo);
+					}else if( 300 <= httpStatus && httpStatus <400 && location.equals(https.toString()) ) {//redirect to https
+						sharedQueue.add(httpsMessageinfo);
 					}else {
 						sharedQueue.add(httpMessageinfo);
 						sharedQueue.add(httpsMessageinfo);

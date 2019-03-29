@@ -237,7 +237,7 @@ public class GUI extends JFrame {
 		btnOpen.setToolTipText("Open Domain Hunter Project File");
 		HeaderPanel.add(btnOpen);
 		
-		btnSave = new JButton("Save");
+		btnSave = new JButton("Save Domain");
 		btnSave.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				saveDialog(false);
@@ -271,6 +271,7 @@ public class GUI extends JFrame {
 				        	get();				        	
 				        	showToDomainUI(domainResult);
 							btnSearch.setEnabled(true);
+							stdout.println("~~~~~~~~~~~~~Search Done~~~~~~~~~~~~~");
 			            } catch (Exception e) {
 			            	btnSearch.setEnabled(true);
 			                e.printStackTrace(stderr);
@@ -747,7 +748,7 @@ public class GUI extends JFrame {
 		buttonPanel.add(btnSaveState);
 		
 		
-		btnSaveStateTo = new JButton("Save State To File");
+		btnSaveStateTo = new JButton("Save Title State To File");
 		btnSaveStateTo.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				saveDialog(true);
