@@ -768,9 +768,10 @@ public class GUI extends JFrame {
 			}
 			@Override
 			public void focusLost(FocusEvent e) {
-				if (textFieldSearch.getText().equals("")) {
-					textFieldSearch.setText("Input text to search");
-				}
+				/*
+				 * if (textFieldSearch.getText().equals("")) {
+				 * textFieldSearch.setText("Input text to search"); }
+				 */
 				
 			}
 		});

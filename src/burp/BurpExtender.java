@@ -678,9 +678,7 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 	
 	@Override
 	public void showSearchResult(String keyword) {
-		//sub class should over write this function
 		String searchkeyword = textFieldSearch.getText();
-		stdout.print("Searching ... keyword is "+searchkeyword);
 		table_1.search(searchkeyword);
 	}
 
