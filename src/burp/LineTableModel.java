@@ -314,11 +314,14 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		case 13:
 			//return new String(entry.getResponse());// response text for search
 			//it takes too many memories
+			/*
 			if (EnableSearch) {
 				return new String(entry.getResponse());
 			}else {
 				return "";
-			}
+			}*/
+			//this is no need after override filter.
+			return "";
 		default:
 			return "";
 		}

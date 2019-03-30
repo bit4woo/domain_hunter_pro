@@ -124,7 +124,26 @@ public class LineTable extends JTable
         if (keywork.trim().length() == 0) {
             rowSorter.setRowFilter(null);
         } else {
-            rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + keywork));
+            //rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + keywork));
+        	
+        	final RowFilter filter = new RowFilter() {
+
+				@Override
+				public boolean include(Entry entry) {
+					//entry --- a non-null object that wraps the underlying object from the model
+					int row = (int) entry.getIdentifier();
+					LineEntry line = rowSorter.getModel().getLineEntries().get(row);
+					if (new String(line.getRequest()).toLowerCase().contains(keywork.toLowerCase())) {
+						return true;
+					}
+					if (new String(line.getResponse()).toLowerCase().contains(keywork.toLowerCase())) {
+						return true;
+					}
+					return false;
+				}
+
+        	};
+            rowSorter.setRowFilter(filter);
         }
     }
     
