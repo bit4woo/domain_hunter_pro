@@ -12,7 +12,7 @@ public class LineEntryMenu extends JPopupMenu {
 
     LineEntryMenu(final LineTable lineTable, final int[] rows){
     	
-        JMenuItem googleSearchItem = new JMenuItem(new AbstractAction("Google it (double click)") {
+        JMenuItem googleSearchItem = new JMenuItem(new AbstractAction("Google It (double click)") {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
 				String host = lineTable.getModel().getLineEntries().get(rows[0]).getHost();
@@ -31,7 +31,7 @@ public class LineEntryMenu extends JPopupMenu {
         
         this.add(googleSearchItem);
 
-        JMenuItem copyURLItem = new JMenuItem(new AbstractAction("Copy URL(s)") {
+        JMenuItem copyURLItem = new JMenuItem(new AbstractAction("Copy URL") {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 try{
@@ -88,6 +88,8 @@ public class LineEntryMenu extends JPopupMenu {
 							useHttps = false;
 						}
                         byte[] request = entry.getRequest();
+
+                        callbacks.includeInScope(new URL(entry.getUrl()));
                         callbacks.doActiveScan(host, port, useHttps, request);
                     }
                 }
@@ -100,29 +102,42 @@ public class LineEntryMenu extends JPopupMenu {
         this.add(doActiveScan);
 
         
-        JMenuItem removeItem = new JMenuItem(new AbstractAction("Delete") {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-            	lineTable.getModel().removeRows(rows);
-            }
-        });
-        this.add(removeItem);
-        
-        JMenuItem checkedItem = new JMenuItem(new AbstractAction("Mark as checked") {
+        JMenuItem checkedItem = new JMenuItem(new AbstractAction("Mark As Checked") {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
             	lineTable.getModel().updateRows(rows);
+            	BurpExtender.getTitleTableModel().updateRows(rows);
+//            	if (lineTable.getName().equalsIgnoreCase("runnerTable")) {//it trigger this action in runner. need to update titleTableModel
+//            		BurpExtender.getTitleTableModel().updateRows(rows);
+//            	}
             }
         });
         this.add(checkedItem);
         
-
+        this.addSeparator();
         
-        
-        JMenuItem blackListItem = new JMenuItem(new AbstractAction("Add to black List") {
+        JMenuItem removeItem = new JMenuItem(new AbstractAction("Delete") {//need to show dialog to confirm
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-            	lineTable.getModel().addBlackList(rows);
+            	int result = JOptionPane.showConfirmDialog(null,"Are you sure to DELETE these items ?");
+            	if (result == JOptionPane.YES_OPTION) {
+            		lineTable.getModel().removeRows(rows);
+            	}else {
+            		return;
+            	}
+            }
+        });
+        this.add(removeItem);
+        
+        JMenuItem blackListItem = new JMenuItem(new AbstractAction("Add To Black List") {//need to show dialog to confirm
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+            	int result = JOptionPane.showConfirmDialog(null,"Are you sure to DELETE these items and Add To BLACK LIST ?");
+            	if (result == JOptionPane.YES_OPTION) {
+            		lineTable.getModel().addBlackList(rows);
+            	}else {
+            		return;
+            	}
             }
         });
         blackListItem.setToolTipText("will not get title from next time");
@@ -131,7 +146,7 @@ public class LineEntryMenu extends JPopupMenu {
         this.addSeparator();//添加一个分割线，上面的需要选中，下面的无需
         
         //this(lineTable);
-        JMenuItem hideCheckedItem = new JMenuItem(new AbstractAction("Hide All Checked items") {
+        JMenuItem hideCheckedItem = new JMenuItem(new AbstractAction("Hide All Checked Items") {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
             	lineTable.getModel().hideLines();
@@ -139,7 +154,7 @@ public class LineEntryMenu extends JPopupMenu {
         });
         this.add(hideCheckedItem);
         
-        JMenuItem unhideAllItem = new JMenuItem(new AbstractAction("Show All items") {
+        JMenuItem unhideAllItem = new JMenuItem(new AbstractAction("Show All Items") {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
             	lineTable.getModel().unHideLines();
@@ -149,10 +164,10 @@ public class LineEntryMenu extends JPopupMenu {
     }
     
     
-    
+    //同名方法，在table中没有可显示内容时使用
     LineEntryMenu(final LineTable lineTable){
     	
-        JMenuItem hideCheckedItem = new JMenuItem(new AbstractAction("Hide All Checked items") {
+        JMenuItem hideCheckedItem = new JMenuItem(new AbstractAction("Hide All Checked Items") {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
             	lineTable.getModel().hideLines();
@@ -160,7 +175,7 @@ public class LineEntryMenu extends JPopupMenu {
         });
         this.add(hideCheckedItem);
     	
-        JMenuItem unhideAllItem = new JMenuItem(new AbstractAction("Show All items") {
+        JMenuItem unhideAllItem = new JMenuItem(new AbstractAction("Show All Items") {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
             	lineTable.getModel().unHideLines();

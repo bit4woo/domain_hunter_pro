@@ -1,5 +1,6 @@
 package burp;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -7,24 +8,20 @@ import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
-import javax.swing.JMenuItem;
-import javax.swing.SwingUtilities;
-import javax.xml.soap.Text;
 
-import com.google.common.collect.Sets;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 
 public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtensionStateListener,IContextMenuFactory, IMessageEditorController{
 	/**
@@ -33,8 +30,8 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 	private static final long serialVersionUID = 1L;
 	public static  IBurpExtenderCallbacks callbacks;
 	private IExtensionHelpers helpers;
-	LineTableModel TitletableModel;
 	private ThreadGetTitle threadGetTitle;
+	private static List<LineEntry> backupLineEntries;
 
 	@Override
 	public void registerExtenderCallbacks(IBurpExtenderCallbacks callbacks)
@@ -44,7 +41,7 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		stderr = new PrintWriter(callbacks.getStderr(), true);
 		stdout.println(ExtenderName);
 		stdout.println(github);
-		this.callbacks = callbacks;
+		BurpExtender.callbacks = callbacks;
 		helpers = callbacks.getHelpers();
 		callbacks.setExtensionName(ExtenderName); //插件名称
 		callbacks.registerExtensionStateListener(this);
@@ -52,9 +49,9 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		addMenuTab();
 
 		//add table and tablemodel to GUI
-		TitletableModel = new LineTableModel(this);
-		table_1 = new LineTable(TitletableModel,this);
-		scrollPaneRequests.setViewportView(table_1);
+		titleTableModel = new LineTableModel(this);
+		titleTable = new LineTable(titleTableModel,this);
+		TitlePanel.add(titleTable.getSplitPane(), BorderLayout.CENTER);
 
 		//recovery save domain results from extensionSetting
 		loadConfigFromExtension();
@@ -63,20 +60,11 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 
 	@Override
 	public void extensionUnloaded() {
-		if (threadGetTitle!=null) {
-			for (Producer p:threadGetTitle.plist) {
-				p.stopThread();
-			}
-			for (Consumer c:threadGetTitle.clist) {
-				c.stopThread();
-			}
-			stdout.println("threads stopped!");
-		}
+		threadGetTitle.stopThreads();
 		saveConfigToExtension();
 	}
 
 	public static IBurpExtenderCallbacks getCallbacks() {
-		// TODO Auto-generated method stub
 		return callbacks;
 	}
 
@@ -84,7 +72,7 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 	@Override
 	public String getConfig(boolean includeTitle) {
 		if(includeTitle) {
-			List<String> LineJsons = TitletableModel.getLineJsons();
+			List<String> LineJsons = titleTableModel.getLineJsons();
 			domainResult.setLineJsons(LineJsons);
 		}else {
 			domainResult.setLineJsons(new ArrayList<String>());
@@ -122,13 +110,13 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 	}
 
 	public void showToTitleUI() {
-		TitletableModel.setLineEntries(new ArrayList<LineEntry>());//clear
+		titleTableModel.setLineEntries(new ArrayList<LineEntry>());//clear
 
 		List<String> lineJsons = domainResult.getLineJsons();
 		Set<String> lineJsonSet = new HashSet<>(lineJsons);//去重
 		for (String line:lineJsonSet) {
 			LineEntry lineObject = new LineEntry().FromJson(line);
-			TitletableModel.addNewLineEntry(lineObject);
+			titleTableModel.addNewLineEntry(lineObject);
 		}
 	}
 
@@ -322,7 +310,7 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		{
 			public void run()
 			{
-				BurpExtender.this.callbacks.addSuiteTab(BurpExtender.this); //这里的BurpExtender.this实质是指ITab对象，也就是getUiComponent()中的contentPane.这个参数由CGUI()函数初始化。
+				BurpExtender.callbacks.addSuiteTab(BurpExtender.this); //这里的BurpExtender.this实质是指ITab对象，也就是getUiComponent()中的contentPane.这个参数由CGUI()函数初始化。
 				//如果这里报java.lang.NullPointerException: Component cannot be null 错误，需要排查contentPane的初始化是否正确。
 
 			}
@@ -352,6 +340,10 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 			addToDomainHunter.addActionListener(new addHostToRootDomain(invocation));	
 			list.add(addToDomainHunter);
 		}
+		
+		JMenuItem runWithSamePathItem = new JMenuItem("^_^ Run Targets with this path");
+		runWithSamePathItem.addActionListener(new runWithSamePath(invocation));
+		list.add(runWithSamePathItem);
 		return list;
 	}
 
@@ -385,6 +377,68 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		}
 	}
 
+	
+	public class runWithSamePath implements ActionListener{
+		private IContextMenuInvocation invocation;
+		public runWithSamePath(IContextMenuInvocation invocation) {
+			this.invocation  = invocation;
+		}
+		@Override
+		public void actionPerformed(ActionEvent e)
+		{
+			
+	        String responseKeyword = JOptionPane.showInputDialog("Response Keyword", null);
+	        while(responseKeyword.trim().equals("")){
+	        	responseKeyword = JOptionPane.showInputDialog("Response Keyword", null);
+	        }
+	        responseKeyword = responseKeyword.trim();
+			final String keyword = responseKeyword;
+			
+			
+			RunnerGUI frame = new RunnerGUI();
+			frame.setVisible(true);
+			frame.setTitle("Runner");
+
+			LineTableModel runnerTableModel = new LineTableModel(BurpExtender.this);
+			LineTable runnerTable = new LineTable(runnerTableModel,BurpExtender.this);
+			frame.getRunnerPanel().add(runnerTable.getSplitPane(), BorderLayout.CENTER);
+			//frame.getRootPane().add(runnerTable.getSplitPane(), BorderLayout.CENTER);
+			
+			
+			SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+		    	//using SwingWorker to prevent blocking burp main UI.
+
+		        @Override
+		        protected Map doInBackground() throws Exception {
+		        	
+		        	IHttpRequestResponse[] messages = invocation.getSelectedMessages();
+					IHttpRequestResponse currentmessage =messages[0];
+					byte[] request = currentmessage.getRequest();
+
+					for(LineEntry line:titleTableModel.getLineEntries()) {
+						String protocol = line.getProtocol();
+						boolean useHttps =false;
+						if (protocol.equalsIgnoreCase("https")) {
+							useHttps =true;
+						}
+						IHttpService httpService = helpers.buildHttpService(line.getHost(), line.getPort(), useHttps);
+						IHttpRequestResponse messageinfo = callbacks.makeHttpRequest(httpService, request);
+						Getter getter = new Getter(helpers);
+						String body = new String(getter.getBody(false, messageinfo));
+
+						if (body != null && body.toLowerCase().contains(keyword)) {
+							runnerTableModel.addNewLineEntry(new LineEntry(messageinfo,false,false,"Runner"));
+						}
+					}
+					return null;
+		        }
+		        @Override
+		        protected void done() {
+		        }
+		    };      
+		    worker.execute();
+		}
+	}
 
 	//method of IMessageEditorController
 	@Override
@@ -415,7 +469,7 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		//clear LineJsons
 		domainResult.setLineJsons(new ArrayList<String>());
 		//clear tableModel
-		TitletableModel.setLineEntries(new ArrayList<LineEntry>());//clear
+		titleTableModel.setLineEntries(new ArrayList<LineEntry>());//clear
 
 		threadGetTitle = new ThreadGetTitle(domains);
 		List<String> result = threadGetTitle.Do();
@@ -424,7 +478,7 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 
 	@Override
 	public List<String> getExtendTitle(){
-		Set<String> extendIPSet = TitletableModel.GetExtendIPSet();
+		Set<String> extendIPSet = titleTableModel.GetExtendIPSet();
 		stdout.println(extendIPSet.size()+" extend IP Address founded"+extendIPSet);
 		threadGetTitle = new ThreadGetTitle(extendIPSet);
 		List<String> result = threadGetTitle.Do();
@@ -433,253 +487,26 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 	
 	@Override
 	public String getSubnet(){
-		Set<String> subnets = TitletableModel.GetSubnets();
+		Set<String> subnets = titleTableModel.GetSubnets();
 		return String.join(System.lineSeparator(), subnets);
 	}
 
-	//////////////////ThreadGetTitle block/////////////
-	//no need to pass BurpExtender object to these class, IBurpExtenderCallbacks object is enough 
-	class ThreadGetTitle{
-		Set<String> domains;
-		public List<Producer> plist;
-		public List<Consumer> clist;
-		public ThreadGetTitle(Set<String> domains) {
-			this.domains = domains;
-		}
-
-		public List<String> Do(){
-			stdout.println("~~~~~~~~~~~~~Start threading Get Title~~~~~~~~~~~~~");
-			BlockingQueue<String> domainQueue = new LinkedBlockingQueue<String>();//use to store domains
-			BlockingQueue<IHttpRequestResponse> sharedQueue = new LinkedBlockingQueue<IHttpRequestResponse>();
-			BlockingQueue<String> lineQueue = new LinkedBlockingQueue<String>();//use to store output---line
-			Iterator<String> it = domains.iterator();
-			while(it.hasNext()) {
-				String domain = it.next();
-				domainQueue.add(domain);
-			}
-
-			plist = new ArrayList();
-			clist = new ArrayList();
-
-			for (int i=0;i<=10;i++) {
-				Producer p = new Producer(domainQueue,sharedQueue,i);
-				//Producer p = new Producer(callbacks,domainQueue,sharedQueue,i);
-				p.start();
-				plist.add(p);
-			}
-
-
-			for (int i=0;i<=10;i++) {
-				Consumer c = new Consumer(sharedQueue,lineQueue,i);
-				c.start();
-				clist.add(c);
-			}
-
-			while(true) {//to wait all threads exit.
-				if (domainQueue.isEmpty() && isAllProductorFinished()) {
-					for (Consumer c:clist) {
-						c.stopThread();
-					}
-					stdout.println("~~~~~~~~~~~~~Get Title Done~~~~~~~~~~~~~");
-					break;
-				}else {
-					try {
-						Thread.sleep(1*1000);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-					continue;
-				}
-			}
-
-			//save line as json
-			domainResult.setLineJsons(TitletableModel.getLineJsons());
-			return TitletableModel.getLineJsons();
-		}
-
-		boolean isAllProductorFinished(){
-			for (Producer p:plist) {
-				if(p.isAlive()) {
-					return false;
-				}
-			}
-			return true;
-		}
-	}
-
-	/*
-	 * do request use method of burp
-	 * return IResponseInfo object Set
-	 *
-	 */
-
-	class Producer extends Thread {//Producer do
-		private final BlockingQueue<String> domainQueue;//use to store domains
-		private final BlockingQueue<IHttpRequestResponse> sharedQueue;
-		private int threadNo;
-		private boolean stopflag = false;
-
-		public Producer(BlockingQueue<String> domainQueue,BlockingQueue<IHttpRequestResponse> sharedQueue,int threadNo) {
-			this.threadNo = threadNo;
-			this.domainQueue = domainQueue;
-			this.sharedQueue = sharedQueue;
-			stopflag= false;
-		}
-
-		public void stopThread() {
-			stopflag = true;
-		}
-
-		@Override
-		public void run() {
-			while(true){
-				try {
-					if (domainQueue.isEmpty() || stopflag) {
-						//stdout.println("Producer break");
-						break;
-					}
-
-					String host = domainQueue.take();
-					Getter getter = new Getter(helpers);
-					//stdout.print(host+" ");
-					IHttpService http = helpers.buildHttpService(host,80,"http");
-					IHttpService https = helpers.buildHttpService(host,443,"https");
-
-					byte[] httpRequest = helpers.buildHttpRequest(new URL(http.toString()));
-					IHttpRequestResponse httpMessageinfo = callbacks.makeHttpRequest(http, httpRequest);
-					//stdout.println("messageinfo"+JSONObject.toJSONString(messageinfo));
-					byte[] httpBody = getter.getBody(false, httpMessageinfo);
-					int httpStatus = getter.getStatusCode(httpMessageinfo);
-					String location = getter.getHeaderValueOf(false, httpMessageinfo, "Location");
-
-					byte[] httpsRequest = helpers.buildHttpRequest(new URL(https.toString()));
-					IHttpRequestResponse httpsMessageinfo = callbacks.makeHttpRequest(https, httpsRequest);
-					byte[] httpsBody = getter.getBody(false, httpsMessageinfo);
-					int httpsStatus = getter.getStatusCode(httpsMessageinfo);
-//					sharedQueue.add(httpMessageinfo);
-//					sharedQueue.add(httpsMessageinfo);
-					
-					if (httpStatus == httpsStatus && Arrays.equals(httpBody,httpsBody)) {//parameters can be null,great
-						sharedQueue.add(httpMessageinfo);
-					}else if( 300 <= httpStatus && httpStatus <400 && location.equals(https.toString()) ) {//redirect to https
-						sharedQueue.add(httpsMessageinfo);
-					}else {
-						sharedQueue.add(httpMessageinfo);
-						sharedQueue.add(httpsMessageinfo);
-					}
-				} catch (Throwable error) {//java.lang.RuntimeException can't been catched, why?
-				}
-			}
-		}
-	}
-
-	/*
-	 * parse IResponseInfo object to line object
-	 * 
-	 */
-
-	class Consumer extends Thread{// Consumer
-		private final BlockingQueue<IHttpRequestResponse> sharedQueue;
-		private final BlockingQueue<String> lineQueue;//use to store output---line
-		private int threadNo;
-		private boolean stopflag = false;
-
-		public Consumer (BlockingQueue<IHttpRequestResponse> sharedQueue,BlockingQueue<String> lineQueue,int threadNo) {
-			this.sharedQueue = sharedQueue;
-			this.lineQueue = lineQueue;
-			this.threadNo = threadNo;
-			stopflag = false;
-
-		}
-
-		public void stopThread() {
-			stopflag = true;
-		}
-
-		@Override
-		public void run() {
-			while(true){
-				if (stopflag) {//消费者需要的时间更短，不能使用sharedQueue是否为空作为进程是否结束的依据。
-					break;
-				}
-				try {
-					IHttpRequestResponse messageinfo = sharedQueue.take();
-					String host = messageinfo.getHttpService().getHost();
-					Set<String> IPSet;
-					Set<String> CDNSet;
-					if (Commons.isValidIP(host)) {
-						IPSet = new HashSet<>();
-						IPSet.add(host);
-						CDNSet = new HashSet<>();
-						CDNSet.add("");
-					}else {
-						HashMap<String,Set<String>> result = Commons.dnsquery(host);
-						IPSet = result.get("IP");
-						CDNSet = result.get("CDN");
-					}
-
-					if (messageinfo.getResponse() ==null) {
-						stdout.println("--- ["+messageinfo.getHttpService().toString()+"] --- has no response.");
-						TitletableModel.addNewNoResponseDomain(host, IPSet);
-					}else {
-						Getter getter = new Getter(helpers);
-						String body = new String(getter.getBody(false, messageinfo));
-						String url = messageinfo.getHttpService().toString();
-						String URLAndbodyText = messageinfo.getHttpService().toString()+body;
-
-
-						LineEntry linefound = findHistory(url);
-						boolean isChecked = false;
-						String comment = "";
-						boolean isNew = true;
-
-						if (null != linefound) {
-							isChecked = linefound.isChecked();
-							comment = linefound.getComment();
-							//stderr.println(new String(linefound.getResponse()));
-							try {
-								String text = linefound.getUrl()+linefound.getBodyText();
-								if (text.equalsIgnoreCase(URLAndbodyText) && isChecked) {
-									isNew = false;
-								}
-							}catch(Exception err) {
-								err.printStackTrace(stderr);
-							}
-						}
-
-						TitletableModel.addNewLineEntry(new LineEntry(messageinfo,isNew,isChecked,comment,IPSet,CDNSet));
-
-						//stdout.println(new LineEntry(messageinfo,true).ToJson());
-						stdout.println("+++ ["+messageinfo.getHttpService().toString()+"] +++ get title done.");
-					}
-					//we don't need to add row to table manually,just call fireTableRowsInserted in TableModel
-				} catch (Exception err) {
-					err.printStackTrace(stderr);
-				}
-			}
-		}
-	}
-
-	public LineEntry findHistory(String url) {
-		List<String> HistoryLines = domainResult.getHistoryLineJsons();
-		for (String his:HistoryLines) {
-			LineEntry line = new LineEntry().FromJson(his);
-			line.setHelpers(helpers);
-			if (url.equalsIgnoreCase(line.getUrl())) {
-				return line;
-			}
-		}
-		return null;
-	}
-
 	public String digStatus() {
-		return TitletableModel.getStatusSummary();
+		return titleTableModel.getStatusSummary();
 	}
 	
 	@Override
 	public void showSearchResult(String keyword) {
 		String searchkeyword = textFieldSearch.getText();
-		table_1.search(searchkeyword);
+		titleTable.search(searchkeyword);
+	}
+
+	public static List<LineEntry> getBackupLineEntries() {
+		return backupLineEntries;
+	}
+
+	public void setBackupLineEntries(List<LineEntry> backupLineEntries) {
+		BurpExtender.backupLineEntries = backupLineEntries;
 	}
 
 	//////////////////ThreadGetTitle block/////////////

@@ -1,5 +1,7 @@
 package burp;
 
+import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -11,6 +13,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.DefaultRowSorter;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.RowFilter;
 import javax.swing.RowSorter;
@@ -33,9 +38,20 @@ public class LineTable extends JTable
     private IMessageEditor responseViewer;
 	private BurpExtender burp;
 	private TableRowSorter<LineTableModel> rowSorter;//TableRowSorter vs. RowSorter
+	public JTabbedPane RequestPanel;
+	public JTabbedPane ResponsePanel;
+	private JSplitPane splitPane;//table area + detail area
     
     
-    public LineTable(LineTableModel lineTableModel,BurpExtender burp)
+    public JSplitPane getSplitPane() {
+		return splitPane;
+	}
+
+	public void setSplitPane(JSplitPane splitPane) {
+		this.splitPane = splitPane;
+	}
+
+	public LineTable(LineTableModel lineTableModel,BurpExtender burp)
     {
         super(lineTableModel);
         this.lineTableModel = lineTableModel;
@@ -43,10 +59,29 @@ public class LineTable extends JTable
         this.setFillsViewportHeight(true);//在table的空白区域显示右键菜单
         //https://stackoverflow.com/questions/8903040/right-click-mouselistener-on-whole-jtable-component
         
+		splitPane = new JSplitPane();//table area + detail area
+		splitPane.setResizeWeight(0.5);
+		splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
+		//TitlePanel.add(splitPane, BorderLayout.CENTER); // getTitlePanel to get it
+		
+		JScrollPane scrollPaneRequests = new JScrollPane();//table area
+		splitPane.setLeftComponent(scrollPaneRequests);
+		scrollPaneRequests.setViewportView(this);
+		
+		JSplitPane RequestDetailPanel = new JSplitPane();//request and response
+		RequestDetailPanel.setResizeWeight(0.5);
+		splitPane.setRightComponent(RequestDetailPanel);
+		
+		RequestPanel = new JTabbedPane();
+		RequestDetailPanel.setLeftComponent(RequestPanel);
+		
+		ResponsePanel = new JTabbedPane();
+		RequestDetailPanel.setRightComponent(ResponsePanel);
+        
         requestViewer = burp.callbacks.createMessageEditor(lineTableModel, false);
         responseViewer = burp.callbacks.createMessageEditor(lineTableModel, false);
-        burp.RequestPanel.addTab("Request", requestViewer.getComponent());
-        burp.ResponsePanel.addTab("Response", responseViewer.getComponent());
+        RequestPanel.addTab("Request", requestViewer.getComponent());
+        ResponsePanel.addTab("Response", responseViewer.getComponent());
         tableinit();
         addClickSort();
         registerListeners();

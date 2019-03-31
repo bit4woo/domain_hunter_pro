@@ -47,7 +47,6 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
-import javax.swing.RowFilter;
 import javax.swing.RowSorter;
 import javax.swing.SortOrder;
 import javax.swing.SwingWorker;
@@ -71,15 +70,14 @@ public class GUI extends JFrame {
     public String ExtenderName = "Domain Hunter Pro v1.3 by bit4";
     public String github = "https://github.com/bit4woo/bug_hunter";
     
-    public DomainObject domainResult = new DomainObject("");
+    protected static DomainObject domainResult = new DomainObject("");//getter setter
+    protected static LineTableModel titleTableModel; //getter setter
+    protected static DefaultTableModel domainTableModel;
     
     public PrintWriter stdout;
     public PrintWriter stderr;
     
-    
     private JRadioButton rdbtnAddRelatedToRoot;
-    private DefaultTableModel tableModel; 
-    
     private JTabbedPane tabbedWrapper;
     private JPanel contentPane;
 	private JTextField textFieldUploadURL;
@@ -92,7 +90,6 @@ public class GUI extends JFrame {
 	private JScrollPane TargetPanel;
 	private JTextArea textAreaSubdomains;
 	private JTextArea textAreaSimilarDomains;
-	
 	private SortOrder sortedMethod;
 	private JTable table;
 	private JPanel panel;
@@ -107,22 +104,36 @@ public class GUI extends JFrame {
 	private JButton btnCopy;
 	private JButton btnNew;
 	private JPanel buttonPanel;
-	private JSplitPane splitPane;
-	private JSplitPane RequestDetailPanel;
-	public JTabbedPane RequestPanel;
-	public JTabbedPane ResponsePanel;
 	public JButton btnGettitle;
 	public JScrollPane scrollPaneRequests;
-	public LineTable table_1;
+	public LineTable titleTable;
 	private JButton btnImportDomain;
 	private JButton btnSaveState;
 	private JButton btnSaveStateTo;
 	private JButton btnGetExtendtitle;
-	public JFileChooser fc = new JFileChooser();
+	private JFileChooser fc = new JFileChooser();
 	private JLabel lblSummaryOfTitle;
 	protected JTextField textFieldSearch;
+	protected JPanel TitlePanel;
 
 
+
+	public static DomainObject getDomainResult() {
+		return domainResult;
+	}
+
+	public void setDomainResult(DomainObject domainResult) {
+		GUI.domainResult = domainResult;
+	}
+
+
+	public static LineTableModel getTitleTableModel() {
+		return titleTableModel;
+	}
+
+	public static void setTitleTableModel(LineTableModel titleTableModel) {
+		GUI.titleTableModel = titleTableModel;
+	}
 
 	/**
 	 * Launch the application.
@@ -427,7 +438,7 @@ public class GUI extends JFrame {
 			}
 		});
 		
-		tableModel = new DefaultTableModel(
+		domainTableModel = new DefaultTableModel(
 			new Object[][] {
 				//{"1", "1","1"},
 			},
@@ -435,8 +446,8 @@ public class GUI extends JFrame {
 				"Root Domain", "Keyword"//, "Source"
 			}
 		);
-		table.setModel(tableModel);
-		tableModel.addTableModelListener(new TableModelListener(){
+		table.setModel(domainTableModel);
+		domainTableModel.addTableModelListener(new TableModelListener(){
 			@Override
 			public void tableChanged(TableModelEvent e) {
 				domainResult.rootDomainMap = getTableMap();
@@ -445,7 +456,7 @@ public class GUI extends JFrame {
 		
 		
 		
-		RowSorter<TableModel> sorter = new TableRowSorter<TableModel>(tableModel);
+		RowSorter<TableModel> sorter = new TableRowSorter<TableModel>(domainTableModel);
 		table.setRowSorter(sorter);
 		
 		table.setColumnSelectionAllowed(true);
@@ -506,9 +517,9 @@ public class GUI extends JFrame {
 				}
 				Arrays.sort(rowindexs);
 				
-				tableModel = (DefaultTableModel) table.getModel();
+				domainTableModel = (DefaultTableModel) table.getModel();
 				for(int i=rowindexs.length-1;i>=0;i--){
-					tableModel.removeRow(rowindexs[i]);
+					domainTableModel.removeRow(rowindexs[i]);
 				}
 				// will trigger tableModel listener
 				
@@ -646,7 +657,7 @@ public class GUI extends JFrame {
 		//
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 1174, 497);
-		JPanel TitlePanel = new JPanel();
+		TitlePanel = new JPanel();
 		TitlePanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		TitlePanel.setLayout(new BorderLayout(0, 0));
 		
@@ -795,6 +806,18 @@ public class GUI extends JFrame {
 		});
 		buttonPanel.add(buttonSearch);
 		
+//		JButton btnRestoreTable = new JButton("restore");
+//		btnRestoreTable.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				table_1.getModel().setLineEntries(new ArrayList<LineEntry>());//clean runner data
+//				for(LineEntry line:BurpExtender.getBackupLineEntries()) {
+//					table_1.getModel().addNewLineEntry(line);
+//				}
+//			}
+//		});
+//		btnRestoreTable.setToolTipText("restore table data");
+//		buttonPanel.add(btnRestoreTable);
+		
 		btnSaveStateTo = new JButton("status");
 		btnSaveStateTo.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -810,23 +833,7 @@ public class GUI extends JFrame {
 		buttonPanel.add(lblSummaryOfTitle);
 		
 		
-		splitPane = new JSplitPane();
-		splitPane.setResizeWeight(0.5);
-		splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
-		TitlePanel.add(splitPane, BorderLayout.CENTER);
 		
-		RequestDetailPanel = new JSplitPane();
-		RequestDetailPanel.setResizeWeight(0.5);
-		splitPane.setRightComponent(RequestDetailPanel);
-		
-		RequestPanel = new JTabbedPane();
-		RequestDetailPanel.setLeftComponent(RequestPanel);
-		
-		ResponsePanel = new JTabbedPane();
-		RequestDetailPanel.setRightComponent(ResponsePanel);
-		
-		scrollPaneRequests = new JScrollPane();
-		splitPane.setLeftComponent(scrollPaneRequests);
 		
 		///need to replace this part with LineTableModel and LineTable
 //		table_1 = new JTable();
@@ -836,8 +843,6 @@ public class GUI extends JFrame {
 
 		return TitlePanel;
 	}
-	
-
 
 	//////////////////////////////methods//////////////////////////////////////
 	public Map<String, Set<String>> crawl (Set<String> rootdomains, Set<String> keywords) {
@@ -922,7 +927,7 @@ public class GUI extends JFrame {
 		}
 		return tableMap;*/
 		
-		Vector data = tableModel.getDataVector();
+		Vector data = domainTableModel.getDataVector();
 		for (Object o : data) {
 	        Vector v = (Vector) o;
 	        String key = (String) v.elementAt(0);
@@ -950,7 +955,7 @@ public class GUI extends JFrame {
 		ClearTable();
     	
 		for (Entry<String, String> entry:domainResult.rootDomainMap.entrySet()) {
-			tableModel.addRow(new Object[]{entry.getKey(),entry.getValue()});
+			domainTableModel.addRow(new Object[]{entry.getKey(),entry.getValue()});
 		}
 		
 		textFieldUploadURL.setText(domainResult.uploadURL);
