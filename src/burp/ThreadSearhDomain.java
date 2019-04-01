@@ -143,6 +143,8 @@ class DomainProducer extends Thread {//Producer do
 				IHttpRequestResponse messageinfo = inputQueue.take();
 				
 				IHttpService httpservice = messageinfo.getHttpService();
+				String urlString = helpers.analyzeRequest(messageinfo).getUrl().toString();
+			
 				String shortURL = httpservice.toString();
 				String protocol =  httpservice.getProtocol();
 				String Host = httpservice.getHost();
@@ -175,7 +177,13 @@ class DomainProducer extends Thread {//Producer do
 				}
 				
 				if (type != DomainObject.USELESS) {//grep domains from response and classify
-					classifyDomains(messageinfo);
+					if (urlString.endsWith(".gif") ||urlString.endsWith(".jpg")
+							|| urlString.endsWith(".png") ||urlString.endsWith(".css")) {
+						
+					}else {
+						classifyDomains(messageinfo);
+					}
+					
 				}
 				
 			} catch (Throwable error) {//java.lang.RuntimeException can't been catched, why?
