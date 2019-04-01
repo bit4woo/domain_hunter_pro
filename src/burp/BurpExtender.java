@@ -8,6 +8,7 @@ import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -122,82 +123,8 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 
 	@Override
 	public Map<String, Set<String>> search(Set<String> rootdomains, Set<String> keywords){
-
-		Set<String> httpsURLs = new HashSet<String>();
-		Set<IHttpService> httpServiceSet = getHttpServiceFromSiteMap();
-		for (IHttpService httpservice:httpServiceSet){
-
-			String shortURL = httpservice.toString();
-			String protocol =  httpservice.getProtocol();
-			String Host = httpservice.getHost();
-
-			//callbacks.printOutput(rootdomains.toString());
-			//callbacks.printOutput(keywords.toString());
-			int type = domainResult.domainType(Host);
-			//callbacks.printOutput(Host+":"+type);
-			if (type == DomainObject.SUB_DOMAIN)
-			{
-				domainResult.subDomainSet.add(Host);
-			}else if (type == DomainObject.SIMILAR_DOMAIN) {
-				domainResult.similarDomainSet.add(Host);
-			}
-
-			if (type !=DomainObject.USELESS && protocol.equalsIgnoreCase("https")){
-				httpsURLs.add(shortURL);
-			}
-		}
-
-		stdout.println("sub-domains and similar-domains search finished,starting get related-domains");
-		//stdout.println(httpsURLs);
-
-		//多线程获取
-		//Set<Future<Set<String>>> set = new HashSet<Future<Set<String>>>();
-		Map<String,Future<Set<String>>> urlResultmap = new HashMap<String,Future<Set<String>>>();
-		ExecutorService pool = Executors.newFixedThreadPool(10);
-
-		for (String url:httpsURLs) {
-			Callable<Set<String>> callable = new ThreadCertInfo(url,keywords);
-			Future<Set<String>> future = pool.submit(callable);
-			//set.add(future);
-			urlResultmap.put(url, future);
-		}
-
-		Set<String> tmpRelatedDomainSet = new HashSet<String>();
-		for(String url:urlResultmap.keySet()) {
-			Future<Set<String>> future = urlResultmap.get(url);
-			//for (Future<Set<String>> future : set) {
-			try {
-				stdout.println("founded related-domains :"+future.get() +" from "+url);
-				if (future.get()!=null) {
-					tmpRelatedDomainSet.addAll(future.get());
-				}
-			} catch (Exception e) {
-				//e.printStackTrace(stderr);
-				stderr.println(e.getMessage());
-			}
-		}
-		domainResult.relatedDomainSet =tmpRelatedDomainSet;
-		/* 单线程获取方式
-	    Set<String> tmpRelatedDomainSet = new HashSet<String>();
-	    //begin get related domains
-	    for(String url:httpsURLs) {
-	    	try {
-	    		tmpRelatedDomainSet.addAll(CertInfo.getSANs(url));
-			}catch(UnknownHostException e) {
-				stderr.println("UnknownHost "+ url);
-				continue;
-			}catch(ConnectException e) {
-				stderr.println("Connect Failed "+ url);
-				continue;
-			}
-	    	catch (Exception e) {
-				e.printStackTrace(stderr);
-				continue;
-			}
-	    }
-		 */
-
-
+		IHttpRequestResponse[] messages = callbacks.getSiteMap(null);
+		new ThreadSearhDomain(Arrays.asList(messages)).Do();
 		return null;
 	}
 

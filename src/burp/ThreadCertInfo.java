@@ -11,6 +11,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+//不再需要这个类了
+@Deprecated
 public class ThreadCertInfo implements Callable<Set<String>>{
 	/*
     private Set<String> urls;
