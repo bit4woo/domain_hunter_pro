@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -52,6 +53,8 @@ import javax.swing.SortOrder;
 import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.filechooser.FileFilter;
@@ -587,19 +590,87 @@ public class GUI extends JFrame {
 		
 		
 		///////////////////////////////textAreas///////////////////////////////////////////////////////
+
+		JScrollPane ScrollPaneRelatedDomains = new JScrollPane();
+		JScrollPane ScrollPaneSubdomains = new JScrollPane();
+		JScrollPane ScrollPaneSimilarDomains = new JScrollPane();
 		
+		
+		leftOfCenterSplitPane.setRightComponent(ScrollPaneRelatedDomains);
+		rightOfCenterSplitPane.setLeftComponent(ScrollPaneSubdomains);
+		rightOfCenterSplitPane.setRightComponent(ScrollPaneSimilarDomains);
 		
 		textAreaRelatedDomains = new JTextArea();
 		textAreaSubdomains = new JTextArea();
-		textAreaSubdomains.setEditable(false);
-		
 		textAreaSimilarDomains = new JTextArea();
-		textAreaSimilarDomains.setEditable(false);
-		textAreaSimilarDomains.setColumns(30);
 		
-		leftOfCenterSplitPane.setRightComponent(textAreaRelatedDomains);
-		rightOfCenterSplitPane.setLeftComponent(textAreaSubdomains);
-		rightOfCenterSplitPane.setRightComponent(textAreaSimilarDomains);
+		ScrollPaneRelatedDomains.setViewportView(textAreaRelatedDomains);
+		ScrollPaneSubdomains.setViewportView(textAreaSubdomains);
+		ScrollPaneSimilarDomains.setViewportView(textAreaSimilarDomains);
+
+		
+		textAreaRelatedDomains.getDocument().addDocumentListener(new DocumentListener() {
+
+	        @Override
+	        public void removeUpdate(DocumentEvent e) {
+	        	Set<String> domainList = new HashSet<>(Arrays.asList(textAreaRelatedDomains.getText().split(System.lineSeparator())));
+	        	domainResult.setRelatedDomainSet(domainList);
+	        }
+
+	        @Override
+	        public void insertUpdate(DocumentEvent e) {
+	        	Set<String> domainList = new HashSet<>(Arrays.asList(textAreaRelatedDomains.getText().split(System.lineSeparator())));
+	        	domainResult.setRelatedDomainSet(domainList);
+	        }
+
+	        @Override
+	        public void changedUpdate(DocumentEvent arg0) {
+	        	Set<String> domainList = new HashSet<>(Arrays.asList(textAreaRelatedDomains.getText().split(System.lineSeparator())));
+	        	domainResult.setRelatedDomainSet(domainList);
+	        }
+	    });
+		
+		textAreaSubdomains.getDocument().addDocumentListener(new DocumentListener() {
+
+	        @Override
+	        public void removeUpdate(DocumentEvent e) {
+	        	Set<String> domainList = new HashSet<>(Arrays.asList(textAreaSubdomains.getText().split(System.lineSeparator())));
+	        	domainResult.setSubDomainSet(domainList);
+	        }
+
+	        @Override
+	        public void insertUpdate(DocumentEvent e) {
+	        	Set<String> domainList = new HashSet<>(Arrays.asList(textAreaSubdomains.getText().split(System.lineSeparator())));
+	        	domainResult.setSubDomainSet(domainList);
+	        }
+
+	        @Override
+	        public void changedUpdate(DocumentEvent arg0) {
+	        	Set<String> domainList = new HashSet<>(Arrays.asList(textAreaSubdomains.getText().split(System.lineSeparator())));
+	        	domainResult.setSubDomainSet(domainList);
+	        }
+	    });
+		
+		textAreaSimilarDomains.getDocument().addDocumentListener(new DocumentListener() {
+
+	        @Override
+	        public void removeUpdate(DocumentEvent e) {
+	        	Set<String> domainList = new HashSet<>(Arrays.asList(textAreaSimilarDomains.getText().split(System.lineSeparator())));
+	        	domainResult.setSimilarDomainSet(domainList);
+	        }
+
+	        @Override
+	        public void insertUpdate(DocumentEvent e) {
+	        	Set<String> domainList = new HashSet<>(Arrays.asList(textAreaSimilarDomains.getText().split(System.lineSeparator())));
+	        	domainResult.setSimilarDomainSet(domainList);
+	        }
+
+	        @Override
+	        public void changedUpdate(DocumentEvent arg0) {
+	        	Set<String> domainList = new HashSet<>(Arrays.asList(textAreaSimilarDomains.getText().split(System.lineSeparator())));
+	        	domainResult.setSimilarDomainSet(domainList);
+	        }
+	    });
 		
 		textAreaSubdomains.addMouseListener(new MouseAdapter() {
 			@Override

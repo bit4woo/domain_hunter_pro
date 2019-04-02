@@ -61,8 +61,10 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 
 	@Override
 	public void extensionUnloaded() {
-		threadGetTitle.stopThreads();
 		saveConfigToExtension();
+		if (threadGetTitle != null) {
+			threadGetTitle.stopThreads();//maybe null
+		}
 	}
 
 	public static IBurpExtenderCallbacks getCallbacks() {

@@ -153,19 +153,19 @@ public class DomainObject {
     
 
     public String fetchRelatedDomains() {
-    	return set2string(relatedDomainSet);
+    	return String.join(System.lineSeparator(), relatedDomainSet);
     }
 	
     public String fetchSimilarDomains() {
-    	return set2string(similarDomainSet);
+    	return String.join(System.lineSeparator(), similarDomainSet);
     }
     
     public String fetchSubDomains() {
-    	return set2string(subDomainSet);
+    	return String.join(System.lineSeparator(), subDomainSet);
     }
     
 	public String fetchRootDomains() {
-		return set2string(rootDomainMap.keySet());
+		return String.join(System.lineSeparator(), rootDomainMap.keySet());
 	}
 	
 	
@@ -181,6 +181,22 @@ public class DomainObject {
 		return result;
 	}
     
+	//没有使用过，主要想考虑oml.jd.local等，非公共域名结尾的情况。暂时先不考虑
+	@Deprecated
+	public Set<String> fetchSuffixSet(){
+		Set<String> result = new HashSet<String>();
+		for (String key:rootDomainMap.keySet()) {
+			String suffix;
+			try {
+				//InternetDomainName.from(key).publicSuffix() //当不是com、cn等公共的域名结尾时，将返回空。
+				suffix = InternetDomainName.from(key).publicSuffix().toString();
+			} catch (Exception e) {
+				suffix = key.split(".",2)[1];//分割成2份
+			}
+			result.add(suffix);
+		}
+		return result;
+	}
     
     
 	
@@ -237,6 +253,7 @@ public class DomainObject {
 			return rootDomain;
 		}catch(Exception e) {
 			return null;
+			//InternetDomainName.from("www.jd.local").topPrivateDomain()//Not under a public suffix: www.jd.local
 		}
 	}
     
@@ -251,7 +268,8 @@ public class DomainObject {
 		}
 		
 		for (String keyword:fetchKeywordSet()) {
-			if (!keyword.equals("") && domain.contains(keyword)){
+			if (!keyword.equals("") && domain.contains(keyword)
+					&& InternetDomainName.from(domain).hasPublicSuffix()){//是否是以公开的 .com .cn等结尾的域名。//如果是以比如local结尾的域名，就不会被认可
 				return DomainObject.SIMILAR_DOMAIN;
 			}
 		}
@@ -263,16 +281,7 @@ public class DomainObject {
 	}
 	
 	
-	public static String set2string(Set<?> set){
-	    Iterator iter = set.iterator();
-	    StringBuilder result = new StringBuilder();
-	    while(iter.hasNext())
-	    {
-	        //System.out.println(iter.next());  	
-	    	result.append(iter.next()).append("\n");
-	    }
-	    return result.toString();
-	}
+
 	
 	
 	
@@ -286,12 +295,15 @@ public class DomainObject {
 		int type = new DomainObject("").domainType(Host);
 		System.out.println(type);*/
 		
-		DomainObject xx = new DomainObject("");
-		xx.rootDomainMap.put("baidu.com", "baidu");
-		xx.relatedDomainSet.add("xxx.baidu.com");
-		xx.relatedToRoot();
-		System.out.println(xx.rootDomainMap.keySet());
+//		DomainObject xx = new DomainObject("");
+//		xx.rootDomainMap.put("baidu.com", "baidu");
+//		xx.relatedDomainSet.add("xxx.baidu.com");
+//		xx.relatedToRoot();
+//		System.out.println(xx.rootDomainMap.keySet());
 		
+		
+		System.out.println(InternetDomainName.from("www.jd.local").publicSuffix());
+		System.out.println(InternetDomainName.from("www.jd.local").topPrivateDomain());
 	}
 	
 }

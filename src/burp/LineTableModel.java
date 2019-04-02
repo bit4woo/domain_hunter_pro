@@ -57,6 +57,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	}
 
 	//no usage.
+	@Deprecated
 	private HashMap<String, Set<String>> getDomainIPSet() {
 		HashMap<String, Set<String>> result = noResponseDomain;
 		//lineEntries.addAll(hidenLineEntries);
