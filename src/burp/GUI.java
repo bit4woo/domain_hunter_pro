@@ -614,18 +614,21 @@ public class GUI extends JFrame {
 	        @Override
 	        public void removeUpdate(DocumentEvent e) {
 	        	Set<String> domainList = new HashSet<>(Arrays.asList(textAreaRelatedDomains.getText().split(System.lineSeparator())));
+	        	domainList.remove("");
 	        	domainResult.setRelatedDomainSet(domainList);
 	        }
 
 	        @Override
 	        public void insertUpdate(DocumentEvent e) {
 	        	Set<String> domainList = new HashSet<>(Arrays.asList(textAreaRelatedDomains.getText().split(System.lineSeparator())));
+	        	domainList.remove("");
 	        	domainResult.setRelatedDomainSet(domainList);
 	        }
 
 	        @Override
 	        public void changedUpdate(DocumentEvent arg0) {
 	        	Set<String> domainList = new HashSet<>(Arrays.asList(textAreaRelatedDomains.getText().split(System.lineSeparator())));
+	        	domainList.remove("");
 	        	domainResult.setRelatedDomainSet(domainList);
 	        }
 	    });
@@ -635,18 +638,21 @@ public class GUI extends JFrame {
 	        @Override
 	        public void removeUpdate(DocumentEvent e) {
 	        	Set<String> domainList = new HashSet<>(Arrays.asList(textAreaSubdomains.getText().split(System.lineSeparator())));
+	        	domainList.remove("");
 	        	domainResult.setSubDomainSet(domainList);
 	        }
 
 	        @Override
 	        public void insertUpdate(DocumentEvent e) {
 	        	Set<String> domainList = new HashSet<>(Arrays.asList(textAreaSubdomains.getText().split(System.lineSeparator())));
+	        	domainList.remove("");
 	        	domainResult.setSubDomainSet(domainList);
 	        }
 
 	        @Override
 	        public void changedUpdate(DocumentEvent arg0) {
 	        	Set<String> domainList = new HashSet<>(Arrays.asList(textAreaSubdomains.getText().split(System.lineSeparator())));
+	        	domainList.remove("");
 	        	domainResult.setSubDomainSet(domainList);
 	        }
 	    });
@@ -656,18 +662,21 @@ public class GUI extends JFrame {
 	        @Override
 	        public void removeUpdate(DocumentEvent e) {
 	        	Set<String> domainList = new HashSet<>(Arrays.asList(textAreaSimilarDomains.getText().split(System.lineSeparator())));
+	        	domainList.remove("");
 	        	domainResult.setSimilarDomainSet(domainList);
 	        }
 
 	        @Override
 	        public void insertUpdate(DocumentEvent e) {
 	        	Set<String> domainList = new HashSet<>(Arrays.asList(textAreaSimilarDomains.getText().split(System.lineSeparator())));
+	        	domainList.remove("");
 	        	domainResult.setSimilarDomainSet(domainList);
 	        }
 
 	        @Override
 	        public void changedUpdate(DocumentEvent arg0) {
 	        	Set<String> domainList = new HashSet<>(Arrays.asList(textAreaSimilarDomains.getText().split(System.lineSeparator())));
+	        	domainList.remove("");
 	        	domainResult.setSimilarDomainSet(domainList);
 	        }
 	    });

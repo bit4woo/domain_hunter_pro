@@ -215,10 +215,14 @@ public class DomainObject {
 	public void relatedToRoot() {
 		if (this.autoAddRelatedToRoot == true) {
 			for(String relatedDomain:this.relatedDomainSet) {
-	        	String rootDomain =getRootDomain(relatedDomain);
-				String keyword = rootDomain.substring(0,rootDomain.indexOf("."));
-				if (!rootDomainMap.keySet().contains(rootDomain) && rootDomain != null) {
-					rootDomainMap.put(rootDomain,keyword);
+				if (relatedDomain!=null && relatedDomain.contains(".")) {
+		        	String rootDomain =getRootDomain(relatedDomain);
+					String keyword = rootDomain.substring(0,rootDomain.indexOf("."));
+					if (!rootDomainMap.keySet().contains(rootDomain) && rootDomain != null) {
+						rootDomainMap.put(rootDomain,keyword);
+					}
+				}else {
+					System.out.println("error related domain : "+relatedDomain);
 				}
 			}
 			relatedDomainSet.clear();
