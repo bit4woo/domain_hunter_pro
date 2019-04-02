@@ -1,5 +1,7 @@
 package test;
 
+import burp.BurpExtender;
+import burp.IExtensionHelpers;
 import burp.IHttpService;
 
 public class myHttpService implements IHttpService {
@@ -44,4 +46,11 @@ public class myHttpService implements IHttpService {
 		return protocol;
 	}
 
+	public static void main(String args[]) {
+		IExtensionHelpers helpers = BurpExtender.callbacks.getHelpers();
+		IHttpService http = helpers.buildHttpService("www.jd.com",80,"http");
+		IHttpService https = helpers.buildHttpService("www.jd.com",443,"https");
+		System.out.println(http);
+		System.out.println(https);
+	}
 }

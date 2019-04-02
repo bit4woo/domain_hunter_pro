@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 
 public class Getter {
     private static IExtensionHelpers helpers;
+    private final static String Header_Spliter = ": ";
     public Getter(IExtensionHelpers helpers) {
     	this.helpers = helpers;
     }
@@ -66,10 +67,10 @@ public class Getter {
 		}
 		
         for (String header : headers) {
-        	if(header.contains(": ")) {//to void trigger the Exception
+        	if(header.contains(Header_Spliter)) {//to void trigger the Exception
             	try {
-    				String headerName = header.split(": ", 0)[0];
-    				String headerValue = header.split(": ", 0)[1];
+    				String headerName = header.split(Header_Spliter, 0)[0];
+    				String headerValue = header.split(Header_Spliter, 0)[1];
     				//POST /login.pub HTTP/1.1  the first line of header will tirgger error here
     				result.put(headerName, headerValue);
     			} catch (Exception e) {
@@ -83,7 +84,7 @@ public class Getter {
 	public List<String> MapToList(HashMap<String,String> Headers){
 		List<String> result = new ArrayList<String>();
 		for (Entry<String,String> header:Headers.entrySet()) {
-			String item = header.getKey()+": "+header.getValue();
+			String item = header.getKey()+Header_Spliter+header.getValue();
 			result.add(item);
 		} 
 		return result;
@@ -95,9 +96,15 @@ public class Getter {
 	public String getHeaderValueOf(boolean messageIsRequest,IHttpRequestResponse messageInfo, String headerName) {
 		List<String> headers=null;
 		if(messageIsRequest) {
+			if (messageInfo.getRequest() == null) {
+				return null;
+			}
 			IRequestInfo analyzeRequest = helpers.analyzeRequest(messageInfo);
 			headers = analyzeRequest.getHeaders();
 		}else {
+			if (messageInfo.getResponse() == null) {
+				return null;
+			}
 			IResponseInfo analyzeResponse = helpers.analyzeResponse(messageInfo.getResponse());
 			headers = analyzeResponse.getHeaders();
 		}
@@ -106,7 +113,7 @@ public class Getter {
         headerName = headerName.toLowerCase().replace(":", "");
         for (String header : headers) {
             if (header.toLowerCase().startsWith(headerName)) {
-                return header.split(":", 0)[1];
+                return header.split(Header_Spliter, 2)[1];//分成2部分，Location: https://www.jd.com 
             }
         }
         return null;
@@ -157,9 +164,13 @@ public class Getter {
 	}
 	
 	public short getStatusCode(IHttpRequestResponse messageInfo) {
+		if (messageInfo == null || messageInfo.getResponse() == null) {
+			return -1;
+		}
 		IResponseInfo analyzedResponse = helpers.analyzeResponse(messageInfo.getResponse());
 		return analyzedResponse.getStatusCode();
 	}
+	
 	public List<IParameter> getParas(IHttpRequestResponse messageInfo){
 		IRequestInfo analyzeRequest = helpers.analyzeRequest(messageInfo);
 		return analyzeRequest.getParameters();

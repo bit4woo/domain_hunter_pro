@@ -145,8 +145,10 @@ class Producer extends Thread {//Producer do
 				byte[] httpRequest = helpers.buildHttpRequest(new URL(http.toString()));
 				IHttpRequestResponse httpMessageinfo = callbacks.makeHttpRequest(http, httpRequest);
 				//stdout.println("messageinfo"+JSONObject.toJSONString(messageinfo));
+				//这里有2种异常情况：1.请求失败（连IP都解析不了）；2.请求成功但是响应包为空（可以解析IP，比如内网域名）。
+				//第一种请求在这里就结束了，第二种情况的请求信息会传递到consumer中进行IP获取的操作。
 				byte[] httpBody = getter.getBody(false, httpMessageinfo);
-				int httpStatus = getter.getStatusCode(httpMessageinfo);
+				int httpStatus = getter.getStatusCode(httpMessageinfo);//当为第二种异常时，httpStatus == -1
 				String location = getter.getHeaderValueOf(false, httpMessageinfo, "Location");
 
 				byte[] httpsRequest = helpers.buildHttpRequest(new URL(https.toString()));
@@ -155,10 +157,10 @@ class Producer extends Thread {//Producer do
 				int httpsStatus = getter.getStatusCode(httpsMessageinfo);
 				//	sharedQueue.add(httpMessageinfo);
 				//	sharedQueue.add(httpsMessageinfo);
-
+				
 				if (httpStatus == httpsStatus && Arrays.equals(httpBody,httpsBody)) {//parameters can be null,great
 					sharedQueue.add(httpMessageinfo);
-				}else if( 300 <= httpStatus && httpStatus <400 && location.equals(https.toString()) ) {//redirect to https
+				}else if( 300 <= httpStatus && httpStatus <400 && location.equalsIgnoreCase(https.toString()+"/") ) {//redirect to https
 					sharedQueue.add(httpsMessageinfo);
 				}else {
 					sharedQueue.add(httpMessageinfo);

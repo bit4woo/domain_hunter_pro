@@ -61,10 +61,10 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 
 	@Override
 	public void extensionUnloaded() {
-		saveConfigToExtension();
 		if (threadGetTitle != null) {
 			threadGetTitle.stopThreads();//maybe null
-		}
+		}//必须要先结束线程，否则获取数据的操作根本无法结束，因为线程一直通过sync占用资源
+		saveConfigToExtension();
 	}
 
 	public static IBurpExtenderCallbacks getCallbacks() {
