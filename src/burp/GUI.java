@@ -21,7 +21,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -826,10 +825,16 @@ public class GUI extends JFrame {
 		JButton btnGetSubnet = new JButton("Get Subnet");
 		btnGetSubnet.setEnabled(true);
 		btnGetSubnet.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {	
-				String result = getSubnet();
+			public void actionPerformed(ActionEvent e) {
+				int result = JOptionPane.showConfirmDialog(null,"Just get IP Subnets of [Current] lines ?");
+				String subnetsString;
+            	if (result == JOptionPane.YES_OPTION) {
+            		subnetsString = getSubnet(true);
+            	}else {
+            		subnetsString = getSubnet(false);
+            	}
                 Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-                StringSelection selection = new StringSelection(result);
+                StringSelection selection = new StringSelection(subnetsString);
                 clipboard.setContents(selection, null);
 			}
 		});
@@ -1051,6 +1056,8 @@ public class GUI extends JFrame {
 		textAreaRelatedDomains.setText(domainResult.fetchRelatedDomains());
 		lblSummary.setText(domainResult.getSummary());
 		rdbtnAddRelatedToRoot.setSelected(domainResult.autoAddRelatedToRoot);
+		
+		stdout.println("Load Domain Panel Data Done");
 	}
 	
 	public void saveDialog(boolean includeTitle) {
@@ -1128,7 +1135,7 @@ public class GUI extends JFrame {
 		
 	}
 
-	public String getSubnet() {
+	public String getSubnet(boolean isCurrent) {
 		// TODO Auto-generated method stub
 		return null;
 	}

@@ -2,7 +2,6 @@ package burp;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -108,10 +107,12 @@ public class Commons {
 					//					System.out.println("getName "+ a.getName());
 					//					System.out.println(a);
 				}
-				result.put("IP", IPset);
-				result.put("CDN", CDNSet);
+//				result.put("IP", IPset);
+//				result.put("CDN", CDNSet);
 				//System.out.println(records);
 			}
+			result.put("IP", IPset);
+			result.put("CDN", CDNSet);
 			return result;
 
 		}catch(Exception e){
@@ -213,25 +214,25 @@ public class Commons {
 
 	public static void main(String args[]) {
 		
-/*		HashMap<String, Set<String>> result = dnsquery("www.baidu.com");
-		System.out.println(result.get("IP").toString());
-		System.out.println(dnsquery("www.baidu.com"));*/
+//		HashMap<String, Set<String>> result = dnsquery("www.baidu.com");
+//		System.out.println(result.get("IP").toString());
+		System.out.println(dnsquery("www.baidu111.com"));
 		 
-		//System.out.println(new SubnetUtils("192.168.1.1/23").getInfo().getCidrSignature());
-		
-		Set<String> IPSet = new HashSet<String>();
-		IPSet.add("192.168.1.225");
-/*		IPSet.add("192.168.1.128");
-		IPSet.add("192.168.1.129");
-		IPSet.add("192.168.1.155");
-		IPSet.add("192.168.1.224");
-		IPSet.add("192.168.1.130");*/
-		Set<String> subnets = toSmallerSubNets(IPSet);
-
-		System.out.println(toIPSet(subnets));
-		
-		Set<String>  a= new HashSet();
-		a.add("218.213.102.6/31");
-		System.out.println(toIPSet(a));
+//		//System.out.println(new SubnetUtils("192.168.1.1/23").getInfo().getCidrSignature());
+//		
+//		Set<String> IPSet = new HashSet<String>();
+//		IPSet.add("192.168.1.225");
+///*		IPSet.add("192.168.1.128");
+//		IPSet.add("192.168.1.129");
+//		IPSet.add("192.168.1.155");
+//		IPSet.add("192.168.1.224");
+//		IPSet.add("192.168.1.130");*/
+//		Set<String> subnets = toSmallerSubNets(IPSet);
+//
+//		System.out.println(toIPSet(subnets));
+//		
+//		Set<String>  a= new HashSet();
+//		a.add("218.213.102.6/31");
+//		System.out.println(toIPSet(a));
 	}
 }

@@ -9,16 +9,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -55,7 +49,10 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		TitlePanel.add(titleTable.getSplitPane(), BorderLayout.CENTER);
 
 		//recovery save domain results from extensionSetting
-		loadConfigFromExtension();
+		stdout.println("Loading config from extension setting");
+		String content = callbacks.loadExtensionSetting("domainHunter");
+		loadConfigAndShow(content);
+		stdout.println("config Loaded from extension setting");
 
 	}
 
@@ -105,13 +102,6 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		stdout.println("config saved to extension setting");
 	}
 
-	public void loadConfigFromExtension() {//the most important thing is to recovery the domainResult Object 
-		stdout.println("Loading config from extension setting");
-		String content = callbacks.loadExtensionSetting("domainHunter");
-		loadConfigAndShow(content);
-		stdout.println("config Loaded from extension setting");
-	}
-
 	public void showToTitleUI() {
 		titleTableModel.setLineEntries(new ArrayList<LineEntry>());//clear
 
@@ -121,6 +111,7 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 			LineEntry lineObject = new LineEntry().FromJson(line);
 			titleTableModel.addNewLineEntry(lineObject);
 		}
+		stdout.println("Load Title Panel Data Done");
 	}
 
 	@Override
@@ -415,8 +406,15 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 	}
 	
 	@Override
-	public String getSubnet(){
-		Set<String> subnets = titleTableModel.GetSubnets();
+	public String getSubnet(boolean isCurrent){
+		Set<String> subnets;
+		if (isCurrent) {//获取的是现有可成功连接的IP集合
+			subnets = titleTableModel.GetSubnets();
+		}else {//重新解析所有域名的IP
+			Set<String> IPsOfDomain = new ThreadGetSubnet(domainResult.getSubDomainSet()).Do();
+			//Set<String> CSubNetIPs = Commons.subNetsToIPSet(Commons.toSubNets(IPsOfDomain));
+			subnets = Commons.toSmallerSubNets(IPsOfDomain);
+		}
 		return String.join(System.lineSeparator(), subnets);
 	}
 

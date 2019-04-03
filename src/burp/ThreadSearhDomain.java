@@ -1,20 +1,14 @@
 package burp;
 
 import java.io.PrintWriter;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.xml.ws.Response;
 
 //////////////////ThreadGetTitle block/////////////
 //no need to pass BurpExtender object to these class, IBurpExtenderCallbacks object is enough 
@@ -39,11 +33,7 @@ class ThreadSearhDomain{
 		BlockingQueue<String> similarDomainQueue = new LinkedBlockingQueue<String>();
 		BlockingQueue<String> relatedDomainQueue = new LinkedBlockingQueue<String>();
 		
-		Iterator<IHttpRequestResponse> it = messages.iterator();
-		while(it.hasNext()) {
-			IHttpRequestResponse message = it.next();
-			inputQueue.add(message);
-		}
+		inputQueue.addAll(messages);
 
 		plist = new ArrayList<DomainProducer>();
 

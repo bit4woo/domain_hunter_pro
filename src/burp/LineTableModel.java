@@ -45,13 +45,17 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	public List<String> getLineJsons(){
 		List<String> result = new ArrayList<String>();
 		//lineEntries.addAll(hidenLineEntries);
-		for(LineEntry line:lineEntries) {
-			String linetext = line.ToJson();
-			result.add(linetext);
+		synchronized (lineEntries) {
+			for(LineEntry line:lineEntries) {
+				String linetext = line.ToJson();
+				result.add(linetext);
+			}
 		}
-		for(LineEntry line:hidenLineEntries) {
-			String linetext = line.ToJson();
-			result.add(linetext);
+		synchronized (hidenLineEntries) {
+			for(LineEntry line:hidenLineEntries) {
+				String linetext = line.ToJson();
+				result.add(linetext);
+			}
 		}
 		return result;
 	}
