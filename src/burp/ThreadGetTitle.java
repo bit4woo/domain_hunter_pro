@@ -36,7 +36,7 @@ class ThreadGetTitle{
 
 		plist = new ArrayList<Producer>();
 
-		for (int i=0;i<=10;i++) {
+		for (int i=0;i<=20;i++) {
 			Producer p = new Producer(domainQueue,i);
 			//Producer p = new Producer(callbacks,domainQueue,sharedQueue,i);
 			p.start();
@@ -143,31 +143,31 @@ class Producer extends Thread {//Producer do
 				IHttpService http = helpers.buildHttpService(host,80,"http");
 				IHttpService https = helpers.buildHttpService(host,443,"https");
 
-				byte[] httpRequest = helpers.buildHttpRequest(new URL(http.toString()));
-				IHttpRequestResponse httpMessageinfo = callbacks.makeHttpRequest(http, httpRequest);
+				byte[] http_Request = helpers.buildHttpRequest(new URL(http.toString()));
+				IHttpRequestResponse http_Messageinfo = callbacks.makeHttpRequest(http, http_Request);
 				//stdout.println("messageinfo"+JSONObject.toJSONString(messageinfo));
 				//这里有2种异常情况：1.请求失败（连IP都解析不了,已经通过第一步过滤了）；2.请求成功但是响应包为空（可以解析IP，比如内网域名）。
 				//第一种请求在这里就结束了，第二种情况的请求信息会传递到consumer中进行IP获取的操作。
-				byte[] httpBody = getter.getBody(false, httpMessageinfo);
-				int httpStatus = getter.getStatusCode(httpMessageinfo);//当为第二种异常时，httpStatus == -1
-				String location = getter.getHeaderValueOf(false, httpMessageinfo, "Location");
+				byte[] http_Body = getter.getBody(false, http_Messageinfo);
+				int http_Status = getter.getStatusCode(http_Messageinfo);//当为第二种异常时，httpStatus == -1
+				String location = getter.getHeaderValueOf(false, http_Messageinfo, "Location");
 
-				byte[] httpsRequest = helpers.buildHttpRequest(new URL(https.toString()));
-				IHttpRequestResponse httpsMessageinfo = callbacks.makeHttpRequest(https, httpsRequest);
-				byte[] httpsBody = getter.getBody(false, httpMessageinfo);
-				int httpsStatus = getter.getStatusCode(httpMessageinfo);//当为第二种异常时，httpStatus == -1
+				byte[] https_Request = helpers.buildHttpRequest(new URL(https.toString()));
+				IHttpRequestResponse https_Messageinfo = callbacks.makeHttpRequest(https, https_Request);
+				byte[] https_Body = getter.getBody(false, https_Messageinfo);
+				int https_Status = getter.getStatusCode(https_Messageinfo);//当为第二种异常时，httpStatus == -1
 
 				Set<IHttpRequestResponse> tmpSet = new HashSet<IHttpRequestResponse>();
 
 
 				//去重
-				if (httpStatus == httpsStatus && Arrays.equals(httpBody,httpsBody)) {//parameters can be null,great
-					tmpSet.add(httpMessageinfo);
-				}else if( 300 <= httpStatus && httpStatus <400 && location.equalsIgnoreCase(https.toString()+"/") ) {//redirect to https
-					tmpSet.add(httpsMessageinfo);
+				if (http_Status == https_Status && Arrays.equals(http_Body,https_Body)) {//parameters can be null,great
+					tmpSet.add(http_Messageinfo);
+				}else if( 300 <= http_Status && http_Status <400 && location.equalsIgnoreCase(https.toString()+"/") ) {//redirect to https
+					tmpSet.add(https_Messageinfo);
 				}else {
-					tmpSet.add(httpMessageinfo);
-					tmpSet.add(httpsMessageinfo);
+					tmpSet.add(http_Messageinfo);
+					tmpSet.add(https_Messageinfo);
 				}
 
 				//根据请求有效性分类处理
@@ -176,11 +176,12 @@ class Producer extends Thread {//Producer do
 					IHttpRequestResponse item = it.next();
 
 					String url = item.getHttpService().toString();
+					int status = getter.getStatusCode(item);
 					
 					if (item.getResponse() == null) {
 						stdout.println("--- ["+url+"] --- has no response.");
 						BurpExtender.getTitleTableModel().addNewNoResponseDomain(host, IPSet);
-					}else if(httpStatus >= 500){
+					}else if(status >= 500){
 						stdout.println("--- ["+url+"] --- status code >= 500.");
 						BurpExtender.getTitleTableModel().addNewNoResponseDomain(host, IPSet);
 					}else {
