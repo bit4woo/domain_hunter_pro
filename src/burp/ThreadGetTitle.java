@@ -12,6 +12,8 @@ import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import test.iteratortest;
+
 //////////////////ThreadGetTitle block/////////////
 //no need to pass BurpExtender object to these class, IBurpExtenderCallbacks object is enough 
 class ThreadGetTitle{
@@ -127,7 +129,14 @@ class Producer extends Thread {//Producer do
 
 				if (IPSet.size() <= 0) {
 					continue;
+				}else {//默认过滤私有IP
+					String ip = new ArrayList<>(IPSet).get(0);
+					if (IPAddress.isPrivateIPv4(ip)) {
+						continue;
+					}
 				}
+				
+				
 
 				//第二步：对成功解析的host进行HTTP请求。
 				Getter getter = new Getter(helpers);
