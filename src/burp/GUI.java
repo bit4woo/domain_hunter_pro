@@ -843,6 +843,24 @@ public class GUI extends JFrame {
 		btnSaveState = new JButton("Save State");
 		btnSaveState.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+					@Override
+					protected Map doInBackground() throws Exception {
+						btnSaveStateTo.setEnabled(false);
+						btnSaveState.setEnabled(false);
+						saveConfigToExtension();
+						btnSaveStateTo.setEnabled(true);
+						btnSaveState.setEnabled(true);
+						return new HashMap<String, String>();
+						//no use ,the return.
+					}
+					@Override
+					protected void done() {
+						btnSaveStateTo.setEnabled(true);
+						btnSaveState.setEnabled(true);
+					}
+				};
+				worker.execute();
 				saveConfigToExtension();
 			}
 		});
@@ -853,7 +871,21 @@ public class GUI extends JFrame {
 		btnSaveStateTo = new JButton("Save Title State To File");
 		btnSaveStateTo.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				saveDialog(true);
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+					@Override
+					protected Map doInBackground() throws Exception {
+						btnSaveStateTo.setEnabled(false);
+						saveDialog(true);
+						btnSaveStateTo.setEnabled(true);
+						return new HashMap<String, String>();
+						//no use ,the return.
+					}
+					@Override
+					protected void done() {
+						btnSaveStateTo.setEnabled(true);
+					}
+				};
+				worker.execute();
 			}
 		});
 		btnSaveStateTo.setToolTipText("save domains and getted title lines to a file.");
@@ -964,7 +996,7 @@ public class GUI extends JFrame {
 	public void saveConfigToExtension() {
 		//to save domain result to extensionSetting
 		//仅仅存储sqllite数据库的名称,也就是domainResult的项目名称
-		SaveData();
+		//SaveData();耗时太长，就不自动保存了，完全手动吧
 		BurpExtender.callbacks.saveExtensionSetting("domainHunterpro", domainResult.projectName);
 	}
 
@@ -1082,7 +1114,9 @@ public class GUI extends JFrame {
 
 				DBHelper dbHelper = new DBHelper(file.toString());
 				dbHelper.saveDomainObject(domainResult);
-				//dbHelper.saveTitles(titleTableModel.getLineEntries());
+				if (includeTitle){
+					dbHelper.saveTitles(titleTableModel.getLineEntries());
+				}
 
 				fc.setCurrentDirectory(new File(file.getParent()));//save latest used dir.
 			}catch(Exception e1){
