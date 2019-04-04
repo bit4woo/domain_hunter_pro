@@ -42,6 +42,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		this.lineEntries = lineEntries;
 	}
 
+	@Deprecated//不存储到DomainObject,就不需要这个方法了
 	public List<String> getLineJsons(){
 		List<String> result = new ArrayList<String>();
 		//lineEntries.addAll(hidenLineEntries);

@@ -21,15 +21,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URI;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.Vector;
 
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -61,6 +54,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
+import com.alibaba.fastjson.JSON;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import com.google.common.net.InternetDomainName;
@@ -68,20 +62,20 @@ import com.google.common.net.InternetDomainName;
 import test.HTTPPost;
 
 public class GUI extends JFrame {
-	
-    public String ExtenderName = "Domain Hunter Pro v1.3 by bit4";
-    public String github = "https://github.com/bit4woo/bug_hunter";
-    
-    protected static DomainObject domainResult = new DomainObject("");//getter setter
-    protected static LineTableModel titleTableModel; //getter setter
-    protected static DefaultTableModel domainTableModel;
-    
-    public PrintWriter stdout;
-    public PrintWriter stderr;
-    
-    private JRadioButton rdbtnAddRelatedToRoot;
-    private JTabbedPane tabbedWrapper;
-    private JPanel contentPane;
+
+	public String ExtenderName = "Domain Hunter Pro v1.4 by bit4";
+	public String github = "https://github.com/bit4woo/bug_hunter";
+
+	protected static DomainObject domainResult = new DomainObject("");//getter setter
+	protected static LineTableModel titleTableModel; //getter setter
+	protected static DefaultTableModel domainTableModel;
+
+	public PrintWriter stdout;
+	public PrintWriter stderr;
+
+	private JRadioButton rdbtnAddRelatedToRoot;
+	private JTabbedPane tabbedWrapper;
+	private JPanel contentPane;
 	private JTextField textFieldUploadURL;
 	private JButton btnSearch;
 	private JButton btnUpload;
@@ -158,62 +152,62 @@ public class GUI extends JFrame {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 1174, 497);
 		setContentPane(tabbedWrapper);
-		
+
 		DomainPanel();
 		tabbedWrapper.addTab("Domains", null, contentPane, null);
 		tabbedWrapper.addTab("Titles", null, TitlePanel(), null);
 
 	}
 
-	
+
 	public void DomainPanel() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 1174, 497);
 		contentPane =  new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		contentPane.setLayout(new BorderLayout(0, 0));
-		
 
-	    
+
+
 		stdout = new PrintWriter(System.out, true);
 		stderr = new PrintWriter(System.out, true);
 		///////////////////////HeaderPanel//////////////
-		
-		
+
+
 		JPanel HeaderPanel = new JPanel();
 		FlowLayout fl_HeaderPanel = (FlowLayout) HeaderPanel.getLayout();
 		fl_HeaderPanel.setAlignment(FlowLayout.LEFT);
 		contentPane.add(HeaderPanel, BorderLayout.NORTH);
-		
-		
+
+
 		btnNew = new JButton("New");
 		btnNew.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-                int result = JOptionPane.showConfirmDialog(null,"Save Current Project?");
-                
-                /*     是:   JOptionPane.YES_OPTION
-                *     否:   JOptionPane.NO_OPTION
-                *     取消: JOptionPane.CANCEL_OPTION
-                *     关闭: JOptionPane.CLOSED_OPTION*/
-                if (result == JOptionPane.CANCEL_OPTION || result == JOptionPane.CLOSED_OPTION) {
-                	return;
-                }else if (result == JOptionPane.YES_OPTION) {
-                	saveDialog(false);
-                }else if (result == JOptionPane.NO_OPTION) {
-                	// nothing to do
-                }
-                
-                String projectName = JOptionPane.showInputDialog("Enter Name For New Project", null);
-                domainResult = new DomainObject(projectName);
-                showToDomainUI(domainResult);
+				int result = JOptionPane.showConfirmDialog(null,"Save Current Project?");
+
+				/*     是:   JOptionPane.YES_OPTION
+				 *     否:   JOptionPane.NO_OPTION
+				 *     取消: JOptionPane.CANCEL_OPTION
+				 *     关闭: JOptionPane.CLOSED_OPTION*/
+				if (result == JOptionPane.CANCEL_OPTION || result == JOptionPane.CLOSED_OPTION) {
+					return;
+				}else if (result == JOptionPane.YES_OPTION) {
+					saveDialog(false);
+				}else if (result == JOptionPane.NO_OPTION) {
+					// nothing to do
+				}
+
+				String projectName = JOptionPane.showInputDialog("Enter Name For New Project", null);
+				domainResult = new DomainObject(projectName);
+				showToDomainUI(domainResult);
 
 			}
 		});
 		btnNew.setToolTipText("Create A New Project");
 		HeaderPanel.add(btnNew);
 
-		
-		
+
+
 		btnOpen = new JButton("Open");
 		btnOpen.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -225,20 +219,26 @@ public class GUI extends JFrame {
 					fc = new JFileChooser();
 				}
 				JsonFileFilter jsonFilter = new JsonFileFilter(); //excel过滤器  
-			    fc.addChoosableFileFilter(jsonFilter);
-			    fc.setFileFilter(jsonFilter);
+				fc.addChoosableFileFilter(jsonFilter);
+				fc.setFileFilter(jsonFilter);
 				fc.setDialogTitle("Chose Domain Hunter Project File");
 				fc.setDialogType(JFileChooser.CUSTOM_DIALOG);
 				if(fc.showOpenDialog(null)==JFileChooser.APPROVE_OPTION){
 					try {
 						File file=fc.getSelectedFile();
-						String contents = Files.toString(file, Charsets.UTF_8);
+						if (file.getName().endsWith(".json")){//兼容旧文件
+							String contents = Files.toString(file, Charsets.UTF_8);//读取json文件的方式
+							domainResult = JSON.parseObject(contents,DomainObject.class);
+							showToDomainUI(domainResult);
+						}else {
+							DBHelper dbhelper = new DBHelper(file.toString());
+							domainResult = dbhelper.getDomainObj();
+							showToDomainUI(domainResult);
+							showToTitleUI(dbhelper.getTitles());
+						}
 
-						loadConfigAndShow(contents);
 						stdout.println("open project ["+domainResult.projectName+"] in "+ file.getName());
-						//List<String> lines = Files.readLines(file, Charsets.UTF_8);
-						
-					} catch (IOException e1) {
+					} catch (Exception e1) {
 						e1.printStackTrace(stderr);
 					}
 				}
@@ -246,7 +246,7 @@ public class GUI extends JFrame {
 		});
 		btnOpen.setToolTipText("Open Domain Hunter Project File");
 		HeaderPanel.add(btnOpen);
-		
+
 		btnSave = new JButton("Save Domain");
 		btnSave.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -254,84 +254,84 @@ public class GUI extends JFrame {
 			}});
 		btnSave.setToolTipText("Save Domain Hunter Project File, not include title");
 		HeaderPanel.add(btnSave);
-		
-		
+
+
 		btnSearch = new JButton("Search");
 		btnSearch.setToolTipText("Do a single search from site map");
 		btnSearch.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-			    	//using SwingWorker to prevent blocking burp main UI.
+					//using SwingWorker to prevent blocking burp main UI.
 
-			        @Override
-			        protected Map doInBackground() throws Exception {
-			        	
-			        	Set<String> rootDomains = domainResult.fetchRootDomainSet();
-			        	Set<String> keywords= domainResult.fetchKeywordSet();
-						
+					@Override
+					protected Map doInBackground() throws Exception {
+
+						Set<String> rootDomains = domainResult.fetchRootDomainSet();
+						Set<String> keywords= domainResult.fetchKeywordSet();
+
 						//stderr.print(keywords.size());
 						//System.out.println(rootDomains.toString());
 						//System.out.println("xxx"+keywords.toString());
 						btnSearch.setEnabled(false);
 						return search(rootDomains,keywords);
-			        }
-			        @Override
-			        protected void done() {
-			            try {
-				        	get();				        	
-				        	showToDomainUI(domainResult);
+					}
+					@Override
+					protected void done() {
+						try {
+							get();
+							showToDomainUI(domainResult);
 							btnSearch.setEnabled(true);
 							stdout.println("~~~~~~~~~~~~~Search Done~~~~~~~~~~~~~");
-			            } catch (Exception e) {
-			            	btnSearch.setEnabled(true);
-			                e.printStackTrace(stderr);
-			            }
-			        }
-			    };      
-			    worker.execute();
-				
+						} catch (Exception e) {
+							btnSearch.setEnabled(true);
+							e.printStackTrace(stderr);
+						}
+					}
+				};
+				worker.execute();
+
 			}
 		});
-		
+
 		verticalStrut = Box.createVerticalStrut(20);
 		HeaderPanel.add(verticalStrut);
 		HeaderPanel.add(btnSearch);
-		
+
 		btnCrawl = new JButton("Crawl");
 		btnCrawl.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				
-			    SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-			    	//可以在一个类中实现另一个类，直接实现原始类，没有变量处理的困扰；
-			    	//之前的想法是先单独实现一个worker类，在它里面处理各种，就多了一层实现，然后在这里调用，变量调用会是一个大问题。
-			    	//https://stackoverflow.com/questions/19708646/how-to-update-swing-ui-while-actionlistener-is-in-progress
-			        @Override
-			        protected Map doInBackground() throws Exception {                
-			        	domainResult.rootDomainMap =getTableMap();
-			        	Set<String> rootDomains = domainResult.fetchRootDomainSet();
-			        	Set<String> keywords= domainResult.fetchKeywordSet();
-						
+
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+					//可以在一个类中实现另一个类，直接实现原始类，没有变量处理的困扰；
+					//之前的想法是先单独实现一个worker类，在它里面处理各种，就多了一层实现，然后在这里调用，变量调用会是一个大问题。
+					//https://stackoverflow.com/questions/19708646/how-to-update-swing-ui-while-actionlistener-is-in-progress
+					@Override
+					protected Map doInBackground() throws Exception {
+						domainResult.rootDomainMap =getTableMap();
+						Set<String> rootDomains = domainResult.fetchRootDomainSet();
+						Set<String> keywords= domainResult.fetchKeywordSet();
+
 						btnCrawl.setEnabled(false);
 						return crawl(rootDomains,keywords);
-					
-			        }
-			        @Override
-			        protected void done() {
-			            try {
-				        	get();
-				        	showToDomainUI(domainResult);
+
+					}
+					@Override
+					protected void done() {
+						try {
+							get();
+							showToDomainUI(domainResult);
 							btnCrawl.setEnabled(true);
-			            } catch (Exception e) {
-			                e.printStackTrace(stderr);
-			            }
-			        }
-			    };
-			    worker.execute();
+						} catch (Exception e) {
+							e.printStackTrace(stderr);
+						}
+					}
+				};
+				worker.execute();
 			}
 		});
 		btnCrawl.setToolTipText("Crawl all subdomains recursively,This may take a long time and large Memory Usage!!!");
 		HeaderPanel.add(btnCrawl);
-		
+
 		btnImportDomain = new JButton("Import Domain");
 		btnImportDomain.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -344,7 +344,7 @@ public class GUI extends JFrame {
 						List<String> lines = Files.readLines(file, Charsets.UTF_8);
 						for (String line:lines) {
 							line = line.trim();
-							
+
 							if (domainResult.domainType(line) == DomainObject.SUB_DOMAIN) {
 								domainResult.subDomainSet.add(line);
 							}else if(domainResult.domainType(line) == DomainObject.SIMILAR_DOMAIN) {
@@ -353,10 +353,10 @@ public class GUI extends JFrame {
 								stdout.println("import skip "+line);
 							}
 						}
-						loadConfigAndShow(getConfig(false));//保存配置并更新图形显示
+						showToDomainUI(domainResult);//保存配置并更新图形显示
 						stdout.println("Import domains finished from "+ file.getName());
 						//List<String> lines = Files.readLines(file, Charsets.UTF_8);
-						
+
 					} catch (IOException e1) {
 						e1.printStackTrace(stderr);
 					}
@@ -364,10 +364,10 @@ public class GUI extends JFrame {
 			}
 		});
 		HeaderPanel.add(btnImportDomain);
-		
+
 		verticalStrut_1 = Box.createVerticalStrut(20);
 		HeaderPanel.add(verticalStrut_1);
-		
+
 		textFieldUploadURL = new JTextField("Input Upload URL Here");
 		textFieldUploadURL.addFocusListener(new FocusAdapter() {
 			@Override
@@ -381,47 +381,47 @@ public class GUI extends JFrame {
 				if (textFieldUploadURL.getText().equals("")) {
 					textFieldUploadURL.setText("Input Upload URL Here");
 				}
-				
+
 			}
 		});
 		HeaderPanel.add(textFieldUploadURL);
 		textFieldUploadURL.setColumns(30);
-		
-		
+
+
 		btnUpload = new JButton("Upload");
 		btnUpload.setToolTipText("Do a single search from site map");
 		btnUpload.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				SwingWorker<Boolean, Boolean> worker = new SwingWorker<Boolean, Boolean>() {
-			        @Override
-			        protected Boolean doInBackground() throws Exception {
-			        	return upload(domainResult.uploadURL,domainResult.Save());
-			        }
-			        @Override
-			        protected void done() {
-			        	//TODO
-			        }
-			    };  
-			    worker.execute();
+					@Override
+					protected Boolean doInBackground() throws Exception {
+						return upload(domainResult.uploadURL,domainResult.Save());
+					}
+					@Override
+					protected void done() {
+						//TODO
+					}
+				};
+				worker.execute();
 			}
 		});
 		HeaderPanel.add(btnUpload);
-		
+
 		lblSummary = new JLabel("      ^_^");
 		HeaderPanel.add(lblSummary);
-		
-		
+
+
 		////////////////////////////////////target area///////////////////////////////////////////////////////
-		
-		
+
+
 		JScrollPane TargetPanel = new JScrollPane();//存放目标域名
 		TargetPanel.setViewportBorder(new LineBorder(new Color(0, 0, 0)));
 		//contentPane.add(TargetPanel, BorderLayout.WEST);
-		
+
 		table = new JTable();
 		table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		table.setBorder(new LineBorder(new Color(0, 0, 0)));
-		
+
 		table.getTableHeader().addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -436,14 +436,14 @@ public class GUI extends JFrame {
 				}
 			}
 		});
-		
+
 		domainTableModel = new DefaultTableModel(
-			new Object[][] {
-				//{"1", "1","1"},
-			},
-			new String[] {
-				"Root Domain", "Keyword"//, "Source"
-			}
+				new Object[][] {
+						//{"1", "1","1"},
+				},
+				new String[] {
+						"Root Domain", "Keyword"//, "Source"
+				}
 		);
 		table.setModel(domainTableModel);
 		domainTableModel.addTableModelListener(new TableModelListener(){
@@ -452,50 +452,50 @@ public class GUI extends JFrame {
 				domainResult.rootDomainMap = getTableMap();
 			}
 		});
-		
-		
-		
+
+
+
 		RowSorter<TableModel> sorter = new TableRowSorter<TableModel>(domainTableModel);
 		table.setRowSorter(sorter);
-		
+
 		table.setColumnSelectionAllowed(true);
 		table.setCellSelectionEnabled(true);
 		table.setSurrendersFocusOnKeystroke(true);
 		table.setFillsViewportHeight(true);
 		table.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
 		TargetPanel.setViewportView(table);
-		
+
 		JSplitPane CenterSplitPane = new JSplitPane();
 		CenterSplitPane.setResizeWeight(0.5);
 		contentPane.add(CenterSplitPane, BorderLayout.CENTER);
-		
-		
+
+
 		JSplitPane leftOfCenterSplitPane = new JSplitPane();
 		leftOfCenterSplitPane.setResizeWeight(0.5);
 		CenterSplitPane.setLeftComponent(leftOfCenterSplitPane);
-		
-		
+
+
 		JSplitPane rightOfCenterSplitPane = new JSplitPane();//右半部分
 		rightOfCenterSplitPane.setResizeWeight(0.5);
 		CenterSplitPane.setRightComponent(rightOfCenterSplitPane);
-		
+
 		JSplitPane TargetSplitPane = new JSplitPane();//1/4
 		TargetSplitPane.setResizeWeight(0.5);
 		TargetSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
 		leftOfCenterSplitPane.setLeftComponent(TargetSplitPane);
-		
+
 		TargetSplitPane.setLeftComponent(TargetPanel);
-		
-		
+
+
 		///////////////////////////////Target Operations and Config//////////////////////
-		
-		
+
+
 		JPanel panel = new JPanel();
 		panel.setBorder(new LineBorder(new Color(0, 0, 0)));
 		TargetSplitPane.setRightComponent(panel);
 		panel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-		
-		
+
+
 		AddButton = new JButton("Add");
 		AddButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -503,7 +503,7 @@ public class GUI extends JFrame {
 				enteredRootDomain = enteredRootDomain.trim();
 				enteredRootDomain =InternetDomainName.from(enteredRootDomain).topPrivateDomain().toString();
 				String keyword = enteredRootDomain.substring(0,enteredRootDomain.indexOf("."));
-		    	
+
 				domainResult.AddToRootDomainMap(enteredRootDomain, keyword);
 				showToDomainUI(domainResult);
 			
@@ -517,46 +517,46 @@ public class GUI extends JFrame {
 			}
 		});
 		panel.add(AddButton);
-		
-		
+
+
 		RemoveButton = new JButton("Remove");
 		panel.add(RemoveButton);
 		RemoveButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				
+
 				int[] rowindexs = table.getSelectedRows();
 				for (int i=0; i < rowindexs.length; i++){
 					rowindexs[i] = table.convertRowIndexToModel(rowindexs[i]);//转换为Model的索引，否则排序后索引不对应。
 				}
 				Arrays.sort(rowindexs);
-				
+
 				domainTableModel = (DefaultTableModel) table.getModel();
 				for(int i=rowindexs.length-1;i>=0;i--){
 					domainTableModel.removeRow(rowindexs[i]);
 				}
 				// will trigger tableModel listener
-				
+
 				domainResult.rootDomainMap = getTableMap();
 				showToDomainUI(domainResult);
 			}
 		});
 
-		
+
 		btnCopy = new JButton("Copy");
 		btnCopy.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				
-	        	Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-	        	StringSelection selection = new StringSelection(domainResult.fetchRootDomains());
-	        	clipboard.setContents(selection, null);
-		
+
+				Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+				StringSelection selection = new StringSelection(domainResult.fetchRootDomains());
+				clipboard.setContents(selection, null);
+
 			}
 		});
-		
+
 		btnCopy.setToolTipText("Copy Root Domains To ClipBoard");
 		panel.add(btnCopy);
-		
-		
+
+
 		rdbtnAddRelatedToRoot = new JRadioButton("Auto Add Related Domain To Root Domain");
 		rdbtnAddRelatedToRoot.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -586,127 +586,127 @@ public class GUI extends JFrame {
 		});
 		rdbtnAddRelatedToRoot.setSelected(false);
 		panel.add(rdbtnAddRelatedToRoot);
-		
-		
+
+
 		///////////////////////////////textAreas///////////////////////////////////////////////////////
 
 		JScrollPane ScrollPaneRelatedDomains = new JScrollPane();
 		JScrollPane ScrollPaneSubdomains = new JScrollPane();
 		JScrollPane ScrollPaneSimilarDomains = new JScrollPane();
-		
-		
+
+
 		leftOfCenterSplitPane.setRightComponent(ScrollPaneRelatedDomains);
 		rightOfCenterSplitPane.setLeftComponent(ScrollPaneSubdomains);
 		rightOfCenterSplitPane.setRightComponent(ScrollPaneSimilarDomains);
-		
+
 		textAreaRelatedDomains = new JTextArea();
 		textAreaSubdomains = new JTextArea();
 		textAreaSimilarDomains = new JTextArea();
-		
+
 		ScrollPaneRelatedDomains.setViewportView(textAreaRelatedDomains);
 		ScrollPaneSubdomains.setViewportView(textAreaSubdomains);
 		ScrollPaneSimilarDomains.setViewportView(textAreaSimilarDomains);
 
-		
+
 		textAreaRelatedDomains.getDocument().addDocumentListener(new DocumentListener() {
 
-	        @Override
-	        public void removeUpdate(DocumentEvent e) {
-	        	Set<String> domainList = new HashSet<>(Arrays.asList(textAreaRelatedDomains.getText().split(System.lineSeparator())));
-	        	domainList.remove("");
-	        	domainResult.setRelatedDomainSet(domainList);
-	        }
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				Set<String> domainList = new HashSet<>(Arrays.asList(textAreaRelatedDomains.getText().split(System.lineSeparator())));
+				domainList.remove("");
+				domainResult.setRelatedDomainSet(domainList);
+			}
 
-	        @Override
-	        public void insertUpdate(DocumentEvent e) {
-	        	Set<String> domainList = new HashSet<>(Arrays.asList(textAreaRelatedDomains.getText().split(System.lineSeparator())));
-	        	domainList.remove("");
-	        	domainResult.setRelatedDomainSet(domainList);
-	        }
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				Set<String> domainList = new HashSet<>(Arrays.asList(textAreaRelatedDomains.getText().split(System.lineSeparator())));
+				domainList.remove("");
+				domainResult.setRelatedDomainSet(domainList);
+			}
 
-	        @Override
-	        public void changedUpdate(DocumentEvent arg0) {
-	        	Set<String> domainList = new HashSet<>(Arrays.asList(textAreaRelatedDomains.getText().split(System.lineSeparator())));
-	        	domainList.remove("");
-	        	domainResult.setRelatedDomainSet(domainList);
-	        }
-	    });
-		
+			@Override
+			public void changedUpdate(DocumentEvent arg0) {
+				Set<String> domainList = new HashSet<>(Arrays.asList(textAreaRelatedDomains.getText().split(System.lineSeparator())));
+				domainList.remove("");
+				domainResult.setRelatedDomainSet(domainList);
+			}
+		});
+
 		textAreaSubdomains.getDocument().addDocumentListener(new DocumentListener() {
 
-	        @Override
-	        public void removeUpdate(DocumentEvent e) {
-	        	Set<String> domainList = new HashSet<>(Arrays.asList(textAreaSubdomains.getText().split(System.lineSeparator())));
-	        	domainList.remove("");
-	        	domainResult.setSubDomainSet(domainList);
-	        }
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				Set<String> domainList = new HashSet<>(Arrays.asList(textAreaSubdomains.getText().split(System.lineSeparator())));
+				domainList.remove("");
+				domainResult.setSubDomainSet(domainList);
+			}
 
-	        @Override
-	        public void insertUpdate(DocumentEvent e) {
-	        	Set<String> domainList = new HashSet<>(Arrays.asList(textAreaSubdomains.getText().split(System.lineSeparator())));
-	        	domainList.remove("");
-	        	domainResult.setSubDomainSet(domainList);
-	        }
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				Set<String> domainList = new HashSet<>(Arrays.asList(textAreaSubdomains.getText().split(System.lineSeparator())));
+				domainList.remove("");
+				domainResult.setSubDomainSet(domainList);
+			}
 
-	        @Override
-	        public void changedUpdate(DocumentEvent arg0) {
-	        	Set<String> domainList = new HashSet<>(Arrays.asList(textAreaSubdomains.getText().split(System.lineSeparator())));
-	        	domainList.remove("");
-	        	domainResult.setSubDomainSet(domainList);
-	        }
-	    });
-		
+			@Override
+			public void changedUpdate(DocumentEvent arg0) {
+				Set<String> domainList = new HashSet<>(Arrays.asList(textAreaSubdomains.getText().split(System.lineSeparator())));
+				domainList.remove("");
+				domainResult.setSubDomainSet(domainList);
+			}
+		});
+
 		textAreaSimilarDomains.getDocument().addDocumentListener(new DocumentListener() {
 
-	        @Override
-	        public void removeUpdate(DocumentEvent e) {
-	        	Set<String> domainList = new HashSet<>(Arrays.asList(textAreaSimilarDomains.getText().split(System.lineSeparator())));
-	        	domainList.remove("");
-	        	domainResult.setSimilarDomainSet(domainList);
-	        }
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				Set<String> domainList = new HashSet<>(Arrays.asList(textAreaSimilarDomains.getText().split(System.lineSeparator())));
+				domainList.remove("");
+				domainResult.setSimilarDomainSet(domainList);
+			}
 
-	        @Override
-	        public void insertUpdate(DocumentEvent e) {
-	        	Set<String> domainList = new HashSet<>(Arrays.asList(textAreaSimilarDomains.getText().split(System.lineSeparator())));
-	        	domainList.remove("");
-	        	domainResult.setSimilarDomainSet(domainList);
-	        }
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				Set<String> domainList = new HashSet<>(Arrays.asList(textAreaSimilarDomains.getText().split(System.lineSeparator())));
+				domainList.remove("");
+				domainResult.setSimilarDomainSet(domainList);
+			}
 
-	        @Override
-	        public void changedUpdate(DocumentEvent arg0) {
-	        	Set<String> domainList = new HashSet<>(Arrays.asList(textAreaSimilarDomains.getText().split(System.lineSeparator())));
-	        	domainList.remove("");
-	        	domainResult.setSimilarDomainSet(domainList);
-	        }
-	    });
-		
+			@Override
+			public void changedUpdate(DocumentEvent arg0) {
+				Set<String> domainList = new HashSet<>(Arrays.asList(textAreaSimilarDomains.getText().split(System.lineSeparator())));
+				domainList.remove("");
+				domainResult.setSimilarDomainSet(domainList);
+			}
+		});
+
 		textAreaSubdomains.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
 				final JPopupMenu jp = new JPopupMenu();
-		        jp.add("^_^");
-		        textAreaSubdomains.addMouseListener(new MouseAdapter() {
-		            @Override
-		            public void mouseClicked(MouseEvent e) {
-		                if (e.getButton() == MouseEvent.BUTTON3) {
-		                    // 弹出菜单
-		                    jp.show(textAreaSubdomains, e.getX(), e.getY());
-		                }
-		            }
-		        });
+				jp.add("^_^");
+				textAreaSubdomains.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						if (e.getButton() == MouseEvent.BUTTON3) {
+							// 弹出菜单
+							jp.show(textAreaSubdomains, e.getX(), e.getY());
+						}
+					}
+				});
 			}
 		});
 		textAreaSubdomains.setColumns(30);
-		
-		
+
+
 		///////////////////////////FooterPanel//////////////////
-		
-		
+
+
 		FooterPanel = new JPanel();
 		FlowLayout fl_FooterPanel = (FlowLayout) FooterPanel.getLayout();
 		fl_FooterPanel.setAlignment(FlowLayout.LEFT);
 		contentPane.add(FooterPanel, BorderLayout.SOUTH);
-		
+
 		lblNewLabel_2 = new JLabel(ExtenderName+"    "+github);
 		lblNewLabel_2.setFont(new Font("宋体", Font.BOLD, 12));
 		lblNewLabel_2.addMouseListener(new MouseAdapter() {
@@ -721,7 +721,7 @@ public class GUI extends JFrame {
 				} catch (Exception e2) {
 					e2.printStackTrace(stderr);
 				}
-				
+
 			}
 			@Override
 			public void mouseEntered(MouseEvent e) {
@@ -735,8 +735,8 @@ public class GUI extends JFrame {
 		FooterPanel.add(lblNewLabel_2);
 
 	}
-	
-	
+
+
 
 
 	public JPanel TitlePanel() {
@@ -746,17 +746,17 @@ public class GUI extends JFrame {
 		TitlePanel = new JPanel();
 		TitlePanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		TitlePanel.setLayout(new BorderLayout(0, 0));
-		
+
 		buttonPanel = new JPanel();
 		TitlePanel.add(buttonPanel, BorderLayout.NORTH);
 		buttonPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
-		
+
 		btnGettitle = new JButton("Get Title");
 		btnGettitle.setToolTipText("A fresh start");
 		btnGettitle.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				//https://stackabuse.com/how-to-use-threads-in-java-swing/
-				
+
 				//method one: // don't need to wait threads in getAllTitle to exits
 				//but hard to know the finish time of task
 				//// Runs inside of the Swing UI thread
@@ -768,79 +768,79 @@ public class GUI extends JFrame {
 			        	//domainResult.setLineEntries(TitletableModel.getLineEntries());
 			        }
 			    });*/
-			    
+
 				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-			        @Override
-			        protected Map doInBackground() throws Exception {
-			        	btnGettitle.setEnabled(false);
-			        	List<String> result = getAllTitle();
-			        	btnGettitle.setEnabled(true);
-			        	return (Map) new HashMap<String, List<String>>().put("result",result);
-			        	//no use ,the return.
-			        }
-			        @Override
-			        protected void done() {
-			            try {
-			            	saveConfigToExtension();
-			            	btnGettitle.setEnabled(true);
-			            } catch (Exception e) {
-			                e.printStackTrace(stderr);
-			            }
-			        }
-			    };
-			    worker.execute();
+					@Override
+					protected Map doInBackground() throws Exception {
+						btnGettitle.setEnabled(false);
+						getAllTitle();
+						btnGettitle.setEnabled(true);
+						return new HashMap<String, String>();
+						//no use ,the return.
+					}
+					@Override
+					protected void done() {
+						try {
+							saveConfigToExtension();
+							btnGettitle.setEnabled(true);
+						} catch (Exception e) {
+							e.printStackTrace(stderr);
+						}
+					}
+				};
+				worker.execute();
 			}
 		});
 		buttonPanel.add(btnGettitle);
-		
+
 		btnGetExtendtitle = new JButton("Get Extend Title");
 		btnGetExtendtitle.setToolTipText("Get title of the host that in same subnet,you should do this after get domain title done!");
 		btnGetExtendtitle.setEnabled(true);//default is false,only true after "get title" is done.
 		btnGetExtendtitle.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {			    
+			public void actionPerformed(ActionEvent e) {
 				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-			        @Override
-			        protected Map doInBackground() throws Exception {
-			        	btnGetExtendtitle.setEnabled(false);
-			        	List<String> result = getExtendTitle();
-			        	btnGetExtendtitle.setEnabled(true);
-			        	return (Map) new HashMap<String, List<String>>().put("result",result);
-			        	//no use ,the return.
-			        }
-			        @Override
-			        protected void done() {
-			            try {
-			            	saveConfigToExtension();
-			            	btnGetExtendtitle.setEnabled(true);
-			            } catch (Exception e) {
-			                e.printStackTrace(stderr);
-			            }
-			        }
-			    };
-			    worker.execute();
+					@Override
+					protected Map doInBackground() throws Exception {
+						btnGetExtendtitle.setEnabled(false);
+						getExtendTitle();
+						btnGetExtendtitle.setEnabled(true);
+						return new HashMap<String, String>();
+						//no use ,the return.
+					}
+					@Override
+					protected void done() {
+						try {
+							saveConfigToExtension();
+							btnGetExtendtitle.setEnabled(true);
+						} catch (Exception e) {
+							e.printStackTrace(stderr);
+						}
+					}
+				};
+				worker.execute();
 			}
 		});
 		buttonPanel.add(btnGetExtendtitle);
-		
+
 		JButton btnGetSubnet = new JButton("Get Subnet");
 		btnGetSubnet.setEnabled(true);
 		btnGetSubnet.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				int result = JOptionPane.showConfirmDialog(null,"Just get IP Subnets of [Current] lines ?");
 				String subnetsString;
-            	if (result == JOptionPane.YES_OPTION) {
-            		subnetsString = getSubnet(true);
-            	}else {
-            		subnetsString = getSubnet(false);
-            	}
-                Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-                StringSelection selection = new StringSelection(subnetsString);
-                clipboard.setContents(selection, null);
+				if (result == JOptionPane.YES_OPTION) {
+					subnetsString = getSubnet(true);
+				}else {
+					subnetsString = getSubnet(false);
+				}
+				Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+				StringSelection selection = new StringSelection(subnetsString);
+				clipboard.setContents(selection, null);
 			}
 		});
 		buttonPanel.add(btnGetSubnet);
-		
-		
+
+
 		btnSaveState = new JButton("Save State");
 		btnSaveState.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -849,8 +849,8 @@ public class GUI extends JFrame {
 		});
 		btnSaveState.setToolTipText("Save state to extension setting.");
 		buttonPanel.add(btnSaveState);
-		
-		
+
+
 		btnSaveStateTo = new JButton("Save Title State To File");
 		btnSaveStateTo.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -859,8 +859,8 @@ public class GUI extends JFrame {
 		});
 		btnSaveStateTo.setToolTipText("save domains and getted title lines to a file.");
 		buttonPanel.add(btnSaveStateTo);
-		
-		
+
+
 		textFieldSearch = new JTextField("Input text to search");
 		textFieldSearch.addFocusListener(new FocusAdapter() {
 			@Override
@@ -875,10 +875,10 @@ public class GUI extends JFrame {
 				 * if (textFieldSearch.getText().equals("")) {
 				 * textFieldSearch.setText("Input text to search"); }
 				 */
-				
+
 			}
 		});
-		
+
 		textFieldSearch.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String keyword = textFieldSearch.getText().trim();
@@ -887,8 +887,8 @@ public class GUI extends JFrame {
 		});
 		textFieldSearch.setColumns(30);
 		buttonPanel.add(textFieldSearch);
-		
-		
+
+
 		JButton buttonSearch = new JButton("Search");
 		buttonSearch.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -897,7 +897,7 @@ public class GUI extends JFrame {
 			}
 		});
 		buttonPanel.add(buttonSearch);
-		
+
 //		JButton btnRestoreTable = new JButton("restore");
 //		btnRestoreTable.addActionListener(new ActionListener() {
 //			public void actionPerformed(ActionEvent e) {
@@ -909,7 +909,7 @@ public class GUI extends JFrame {
 //		});
 //		btnRestoreTable.setToolTipText("restore table data");
 //		buttonPanel.add(btnRestoreTable);
-		
+
 		btnSaveStateTo = new JButton("status");
 		btnSaveStateTo.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -919,55 +919,49 @@ public class GUI extends JFrame {
 		});
 		btnSaveStateTo.setToolTipText("show Status of digging.");
 		buttonPanel.add(btnSaveStateTo);
-		
-		
+
+
 		lblSummaryOfTitle = new JLabel("      ^_^");
 		buttonPanel.add(lblSummaryOfTitle);
-		
-		
-		
-		
+
+
+
+
 		///need to replace this part with LineTableModel and LineTable
 //		table_1 = new JTable();
 //		scrollPaneRequests.setViewportView(table_1);
 		//LineTableModel will replace this table
-		
+
 
 		return TitlePanel;
 	}
 
 	//////////////////////////////methods//////////////////////////////////////
 	public Map<String, Set<String>> crawl (Set<String> rootdomains, Set<String> keywords) {
-	    System.out.println("spiderall testing... you need to over write this function!");
-	    return null;
+		System.out.println("spiderall testing... you need to over write this function!");
+		return null;
 	}
-	
-	
+
+
 	public Map<String, Set<String>> search(Set<String> rootdomains, Set<String> keywords){
 		System.out.println("search testing... you need to over write this function!");
 		return null;
 	}
-	
-	public String getConfig(boolean includeTitle) {
-		// BurpExtender need to override this function
-		return null;
-	}
 
-	protected DomainObject loadConfigAndShow(String contents) {
-		// // BurpExtender need to override this function
-		return null;
-	}
-	
 	protected void saveConfigToExtension() {
 		// BurpExtender need to override this function
 	}
-	
-	protected List<String> getExtendTitle() {
-		// BurpExtender need to override this function
-		return null;
+
+	public void getAllTitle(){
+		return;
+		//sub class should over write this function
 	}
-	
-	
+	protected void getExtendTitle() {
+		// BurpExtender need to override this function
+		return;
+	}
+
+
 	public Boolean upload(String url,String content) {
 		if ((url.toLowerCase().contains("http://") ||url.toLowerCase().contains("https://"))
 				&& content != null){
@@ -981,10 +975,10 @@ public class GUI extends JFrame {
 		}
 		return false;
 	}
-	
-	
+
+
 	public Set<String> getColumnValues(String ColumnName) {
-		
+
 		Set<String> result = new HashSet<String>();
 		int index=-1;
 		for (int i=0;i<table.getColumnCount();i++) {
@@ -993,22 +987,22 @@ public class GUI extends JFrame {
 				break;
 			}
 		}
-    	
+
 		for(int j=0;j<table.getRowCount();j++){
-		  String onecell ="";
-		  try {
-			  onecell= (String)table.getValueAt(j,index);
-		  }catch(Exception e) {
-			  
-		  }
-		  
-		  if (!onecell.equals("") && onecell != null) {
-			  result.add(onecell);
-		  }
+			String onecell ="";
+			try {
+				onecell= (String)table.getValueAt(j,index);
+			}catch(Exception e) {
+
+			}
+
+			if (!onecell.equals("") && onecell != null) {
+				result.add(onecell);
+			}
 		}
 		return result;
 	}
-	
+
 	public LinkedHashMap<String, String> getTableMap() {
 		LinkedHashMap<String,String> tableMap= new LinkedHashMap<String,String>();
 		
@@ -1018,48 +1012,56 @@ public class GUI extends JFrame {
 			tableMap.put(key,value);
 		}
 		return tableMap;*/
-		
+
 		Vector data = domainTableModel.getDataVector();
 		for (Object o : data) {
-	        Vector v = (Vector) o;
-	        String key = (String) v.elementAt(0);
-	        String value = (String) v.elementAt(1);
-	        if (key != null && value != null) {
-	        	tableMap.put(key, value);
-	        }
-	    }
-	    return tableMap;
+			Vector v = (Vector) o;
+			String key = (String) v.elementAt(0);
+			String value = (String) v.elementAt(1);
+			if (key != null && value != null) {
+				tableMap.put(key, value);
+			}
+		}
+		return tableMap;
 	}
-	
+
 	public void ClearTable() {
 		LinkedHashMap<String, String> tmp = domainResult.rootDomainMap;
-		
+
 		DefaultTableModel model = (DefaultTableModel) table.getModel();
 		model.setRowCount(0);
 		//this also trigger tableModel listener. lead to rootDomainMap to empty!!
 		//so need to backup rootDomainMap and restore!
 		domainResult.rootDomainMap = tmp;
 	}
-	
+
 	public void showToDomainUI(DomainObject domainResult) {
 
 		domainResult.relatedToRoot();
 		ClearTable();
-    	
+
 		for (Entry<String, String> entry:domainResult.rootDomainMap.entrySet()) {
 			domainTableModel.addRow(new Object[]{entry.getKey(),entry.getValue()});
 		}
-		
+
 		textFieldUploadURL.setText(domainResult.uploadURL);
 		textAreaSubdomains.setText(domainResult.fetchSubDomains());
 		textAreaSimilarDomains.setText(domainResult.fetchSimilarDomains());
 		textAreaRelatedDomains.setText(domainResult.fetchRelatedDomains());
 		lblSummary.setText(domainResult.getSummary());
 		rdbtnAddRelatedToRoot.setSelected(domainResult.autoAddRelatedToRoot);
-		
+
 		stdout.println("Load Domain Panel Data Done");
 	}
-	
+
+	public void showToTitleUI(List<LineEntry> lineEntries) {
+		titleTableModel.setLineEntries(new ArrayList<LineEntry>());//clear
+		for (LineEntry line:lineEntries) {
+			titleTableModel.addNewLineEntry(line);
+		}
+		stdout.println("Load Title Panel Data Done");
+	}
+
 	public void saveDialog(boolean includeTitle) {
 		if (fc.getCurrentDirectory() != null) {
 			File xxx = fc.getCurrentDirectory();
@@ -1067,72 +1069,72 @@ public class GUI extends JFrame {
 		}else {
 			fc = new JFileChooser();
 		}
-		
+
 		JsonFileFilter jsonFilter = new JsonFileFilter(); //excel过滤器  
-	    fc.addChoosableFileFilter(jsonFilter);
-	    fc.setFileFilter(jsonFilter);
+		fc.addChoosableFileFilter(jsonFilter);
+		fc.setFileFilter(jsonFilter);
 		fc.setDialogTitle("Save Domain Hunter file:");
 		fc.setDialogType(JFileChooser.SAVE_DIALOG);
 		if(fc.showSaveDialog(null)==JFileChooser.APPROVE_OPTION){
 			File file=fc.getSelectedFile();
-			
-			if(!(file.getName().toLowerCase().endsWith(".json"))){
-				file=new File(fc.getCurrentDirectory(),file.getName()+".json");
+
+			if(!(file.getName().toLowerCase().endsWith(".db"))){
+				file=new File(fc.getCurrentDirectory(),file.getName()+".db");
 			}
-			
+
 			if (domainResult.projectName.equals("")) {
 				domainResult.projectName = file.getName();
 			}
-			
-			
-		    String content= getConfig(includeTitle);
-	        try{
-	            if(file.exists()){
-	            	int result = JOptionPane.showConfirmDialog(null,"Are you sure to overwrite this file ?");
-	            	if (result == JOptionPane.YES_OPTION) {
-	            		file.createNewFile();
-	            	}else {
-	            		return;
-	            	}
-	            }else {
-	            	file.createNewFile();
-	            }
-	            
-				Files.write(content.getBytes(), file);
+
+
+
+			try{
+				if(file.exists()){
+					int result = JOptionPane.showConfirmDialog(null,"Are you sure to overwrite this file ?");
+					if (result == JOptionPane.YES_OPTION) {
+						file.createNewFile();
+					}else {
+						return;
+					}
+				}else {
+					file.createNewFile();
+				}
+
+				DBHelper dbHelper = new DBHelper(file.toString());
+				dbHelper.saveDomainObject(domainResult);
+				dbHelper.saveTitles(titleTableModel.getLineEntries());
+
 				fc.setCurrentDirectory(new File(file.getParent()));//save latest used dir.
-	        }catch(Exception e1){
-	           e1.printStackTrace(stderr);
-	        }
+			}catch(Exception e1){
+				e1.printStackTrace(stderr);
+			}
 		}
 	}
-	
+
 	public String digStatus() {
 		// need to override
 		return null;
 	}
 
-	
+
 
 
 	class JsonFileFilter extends FileFilter {
-	    public String getDescription() {  
-	        return "*.json";  
-	    }  
-	  
-	    public boolean accept(File file) {  
-	        String name = file.getName();  
-	        return file.isDirectory() || name.toLowerCase().endsWith(".json");  // 仅显示目录和json文件
-	    }
+		public String getDescription() {
+			return "*.db";
+		}//sqlite
+
+		public boolean accept(File file) {
+			String name = file.getName();
+			return file.isDirectory() || name.toLowerCase().endsWith(".db");  // 仅显示目录和json文件
+		}
 	}
-	
-	public List<String> getAllTitle(){
-		return null;
-		//sub class should over write this function
-	}
+
+
 
 	public void showSearchResult(String keyword) {
 		//sub class should over write this function
-		
+
 	}
 
 	public String getSubnet(boolean isCurrent) {

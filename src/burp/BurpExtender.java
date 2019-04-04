@@ -20,7 +20,7 @@ import javax.swing.SwingWorker;
 
 public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtensionStateListener,IContextMenuFactory, IMessageEditorController{
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 1L;
 	public static  IBurpExtenderCallbacks callbacks;
@@ -31,7 +31,6 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 	@Override
 	public void registerExtenderCallbacks(IBurpExtenderCallbacks callbacks)
 	{
-
 		stdout = new PrintWriter(callbacks.getStdout(), true);
 		stderr = new PrintWriter(callbacks.getStderr(), true);
 		stdout.println(ExtenderName);
@@ -50,8 +49,8 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 
 		//recovery save domain results from extensionSetting
 		stdout.println("Loading config from extension setting");
-		String content = callbacks.loadExtensionSetting("domainHunter");
-		loadConfigAndShow(content);
+		String content = callbacks.loadExtensionSetting("domainHunter");//file name of db file
+		if (content != null) LoadData(content);
 		stdout.println("config Loaded from extension setting");
 
 	}
@@ -64,54 +63,32 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		saveConfigToExtension();
 	}
 
-	public static IBurpExtenderCallbacks getCallbacks() {
-		return callbacks;
+	public void LoadData(String dbFilePath){
+		DBHelper dbhelper = new DBHelper(dbFilePath);
+		domainResult = dbhelper.getDomainObj();
+		showToDomainUI(domainResult);
+		showToTitleUI(dbhelper.getTitles());
 	}
 
-	//重写GUI中的方法，以确保能获取到title面板中的配置
-	@Override
-	public String getConfig(boolean includeTitle) {
-		if(includeTitle) {
-			List<String> LineJsons = titleTableModel.getLineJsons();
-			domainResult.setLineJsons(LineJsons);
-		}else {
-			domainResult.setLineJsons(new ArrayList<String>());
-			domainResult.setHistoryLineJsons(new ArrayList<String>());
-		}
-
-		String content= domainResult.Save();
-		return content;
+	public void SaveData(){
+		DBHelper dbhelper = new DBHelper(domainResult.getProjectName());
+		dbhelper.saveDomainObject(domainResult);
+		dbhelper.saveTitles(titleTableModel.getLineEntries());
 	}
 
-	//重写GUI中的方法，以确保能获取到title面板中的配置
-	@Override
-	public DomainObject loadConfigAndShow(String config) {
-		if (config!=null) {
-			domainResult = domainResult.Open(config);
-			showToDomainUI(domainResult);
-			showToTitleUI();
-		}
-		return domainResult;
-	}
-
-	@Override
+	@Override //GUI
 	public void saveConfigToExtension() {
 		//to save domain result to extensionSetting
-		stdout.println("saving config to extension setting");
-		callbacks.saveExtensionSetting("domainHunter", getConfig(true));
-		stdout.println("config saved to extension setting");
+		//仅仅存储sqllite数据库的名称,也就是domainResult的项目名称
+		SaveData();
+		callbacks.saveExtensionSetting("domainHunterpro", domainResult.projectName);
 	}
 
-	public void showToTitleUI() {
-		titleTableModel.setLineEntries(new ArrayList<LineEntry>());//clear
 
-		List<String> lineJsons = domainResult.getLineJsons();
-		Set<String> lineJsonSet = new HashSet<>(lineJsons);//去重
-		for (String line:lineJsonSet) {
-			LineEntry lineObject = new LineEntry().FromJson(line);
-			titleTableModel.addNewLineEntry(lineObject);
-		}
-		stdout.println("Load Title Panel Data Done");
+
+
+	public static IBurpExtenderCallbacks getCallbacks() {
+		return callbacks;
 	}
 
 	@Override
@@ -203,7 +180,7 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 
 	/**
 	 * @return IHttpService set to void duplicate IHttpRequestResponse handling
-	 * 
+	 *
 	 */
 	Set<IHttpService> getHttpServiceFromSiteMap(){
 		IHttpRequestResponse[] requestResponses = callbacks.getSiteMap(null);
@@ -257,10 +234,10 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		byte context = invocation.getInvocationContext();
 		if (context == IContextMenuInvocation.CONTEXT_TARGET_SITE_MAP_TREE) {
 			JMenuItem addToDomainHunter = new JMenuItem("^_^ Add To Domain Hunter");
-			addToDomainHunter.addActionListener(new addHostToRootDomain(invocation));	
+			addToDomainHunter.addActionListener(new addHostToRootDomain(invocation));
 			list.add(addToDomainHunter);
 		}
-		
+
 		JMenuItem runWithSamePathItem = new JMenuItem("^_^ Run Targets with this path");
 		runWithSamePathItem.addActionListener(new runWithSamePath(invocation));
 		list.add(runWithSamePathItem);
@@ -297,7 +274,7 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		}
 	}
 
-	
+
 	public class runWithSamePath implements ActionListener{
 		private IContextMenuInvocation invocation;
 		public runWithSamePath(IContextMenuInvocation invocation) {
@@ -306,15 +283,15 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		@Override
 		public void actionPerformed(ActionEvent e)
 		{
-			
-	        String responseKeyword = JOptionPane.showInputDialog("Response Keyword", null);
-	        while(responseKeyword.trim().equals("")){
-	        	responseKeyword = JOptionPane.showInputDialog("Response Keyword", null);
-	        }
-	        responseKeyword = responseKeyword.trim();
+
+			String responseKeyword = JOptionPane.showInputDialog("Response Keyword", null);
+			while(responseKeyword.trim().equals("")){
+				responseKeyword = JOptionPane.showInputDialog("Response Keyword", null);
+			}
+			responseKeyword = responseKeyword.trim();
 			final String keyword = responseKeyword;
-			
-			
+
+
 			RunnerGUI frame = new RunnerGUI();
 			frame.setVisible(true);
 			frame.setTitle("Runner");
@@ -323,15 +300,15 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 			LineTable runnerTable = new LineTable(runnerTableModel,BurpExtender.this);
 			frame.getRunnerPanel().add(runnerTable.getSplitPane(), BorderLayout.CENTER);
 			//frame.getRootPane().add(runnerTable.getSplitPane(), BorderLayout.CENTER);
-			
-			
-			SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-		    	//using SwingWorker to prevent blocking burp main UI.
 
-		        @Override
-		        protected Map doInBackground() throws Exception {
-		        	
-		        	IHttpRequestResponse[] messages = invocation.getSelectedMessages();
+
+			SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+				//using SwingWorker to prevent blocking burp main UI.
+
+				@Override
+				protected Map doInBackground() throws Exception {
+
+					IHttpRequestResponse[] messages = invocation.getSelectedMessages();
 					IHttpRequestResponse currentmessage =messages[0];
 					byte[] request = currentmessage.getRequest();
 
@@ -351,12 +328,12 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 						}
 					}
 					return null;
-		        }
-		        @Override
-		        protected void done() {
-		        }
-		    };      
-		    worker.execute();
+				}
+				@Override
+				protected void done() {
+				}
+			};
+			worker.execute();
 		}
 	}
 
@@ -378,33 +355,31 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		return null;
 	}
 
-	public List<String> getAllTitle(){
+	public void getAllTitle(){
 		Set<String> domains = domainResult.getSubDomainSet();
 
 		//remove domains in black list
 		domains.removeAll(domainResult.getBlackDomainSet());
 
 		//backup to history
-		domainResult.setHistoryLineJsons(domainResult.getLineJsons());
-		//clear LineJsons
-		domainResult.setLineJsons(new ArrayList<String>());
+		this.setBackupLineEntries(titleTableModel.getLineEntries());
 		//clear tableModel
 		titleTableModel.setLineEntries(new ArrayList<LineEntry>());//clear
 
 		threadGetTitle = new ThreadGetTitle(domains);
-		List<String> result = threadGetTitle.Do();
-		return result;
+		threadGetTitle.Do();
+		return;
 	}
 
 	@Override
-	public List<String> getExtendTitle(){
+	public void getExtendTitle(){
 		Set<String> extendIPSet = titleTableModel.GetExtendIPSet();
 		stdout.println(extendIPSet.size()+" extend IP Address founded"+extendIPSet);
 		threadGetTitle = new ThreadGetTitle(extendIPSet);
-		List<String> result = threadGetTitle.Do();
-		return result;
+		threadGetTitle.Do();
+		return;
 	}
-	
+
 	@Override
 	public String getSubnet(boolean isCurrent){
 		Set<String> subnets;
@@ -421,7 +396,7 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 	public String digStatus() {
 		return titleTableModel.getStatusSummary();
 	}
-	
+
 	@Override
 	public void showSearchResult(String keyword) {
 		String searchkeyword = textFieldSearch.getText();

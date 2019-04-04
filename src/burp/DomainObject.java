@@ -22,10 +22,6 @@ public class DomainObject {
 	public Set<String> similarDomainSet = new HashSet<String>();
 	public Set<String> relatedDomainSet = new HashSet<String>();
 	public Set<String> blackDomainSet = new HashSet<String>();
-	
-	private List<String> lineJsons = new ArrayList<String>();//store title lines
-	//backup lineJsons to compare with newer.
-	private List<String> historyLineJsons = new ArrayList<String>();
 
     public static int SUB_DOMAIN=0;
     public static int SIMILAR_DOMAIN=1;
@@ -108,21 +104,6 @@ public class DomainObject {
 		this.blackDomainSet = blackDomainSet;
 	}
 
-	public List<String> getLineJsons() {
-		return lineJsons;
-	}
-
-	public void setLineJsons(List<String> lineJsons) {
-		this.lineJsons = lineJsons;
-	}
-
-	public List<String> getHistoryLineJsons() {
-		return historyLineJsons;
-	}
-
-	public void setHistoryLineJsons(List<String> historyLineJsons) {
-		this.historyLineJsons = historyLineJsons;
-	}
 
 	public String getSummary() {
 		summary = String.format("      Related-domain:%s  Sub-domain:%s  Similar-domain:%s  ^_^", relatedDomainSet.size(),subDomainSet.size(),similarDomainSet.size());
@@ -227,7 +208,7 @@ public class DomainObject {
 			}
 			relatedDomainSet.clear();
 		}
-		System.out.println(similarDomainSet);
+		//System.out.println(similarDomainSet);
 		
 
         Iterator<String> iterator = similarDomainSet.iterator();

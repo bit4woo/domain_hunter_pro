@@ -29,8 +29,8 @@ class ThreadGetTitle{
 		this.domains = domains;
 	}
 
-	public List<String> Do(){
-		stdout.println("~~~~~~~~~~~~~Start threading Get Title~~~~~~~~~~~~~");
+	public void Do(){
+		stdout.println("~~~~~~~~~~~~~Start threading Get Title~~~~~~~~~~~~~ total task number: "+domains.size());
 		BlockingQueue<String> domainQueue = new LinkedBlockingQueue<String>();//use to store domains
 		domainQueue.addAll(domains);
 
@@ -49,33 +49,38 @@ class ThreadGetTitle{
 				break;
 			}else {
 				try {
-					Thread.sleep(1*1000);
+					Thread.sleep(60*1000);//1分钟
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
-				continue;
+				continue;//unnecessary
 			}
 		}
 
-		//save line as json
-		BurpExtender.getDomainResult().setLineJsons(BurpExtender.getTitleTableModel().getLineJsons());
-		return BurpExtender.getTitleTableModel().getLineJsons();
+		return;
 	}
 
 	boolean isAllProductorFinished(){
+		int i = 0;
 		for (Producer p:plist) {
 			if(p.isAlive()) {
-				return false;
+				i = i+1;
 			}
 		}
-		return true;
+		if (i>0){
+			stdout.println( "~~~~~~~~~~~~~"+i +" productors are still alive~~~~~~~~~~~~~");
+			return false;
+		}else{
+			stdout.println( "~~~~~~~~~~~~~All productor threads exited ~~~~~~~~~~~~~");
+			return true;
+		}
 	}
 
 	public void stopThreads() {
 		for (Producer p:plist) {
 			p.stopThread();
 		}
-		stdout.println("threads stopped!");
+		stdout.println("~~~~~~~~~~~~~All stop message sent! wait them to exit~~~~~~~~~~~~~");
 	}
 }
 
@@ -110,10 +115,11 @@ class Producer extends Thread {//Producer do
 		while(true){
 			try {
 				if (domainQueue.isEmpty() || stopflag) {
-					//stdout.println("Producer break");
+					//stdout.println(threadNo+" Producer exited");
 					break;
 				}
 				String host = domainQueue.take();
+				int leftTaskNum = domainQueue.size();
 
 				//第一步：IP解析
 				Set<String> IPSet = new HashSet<>();
@@ -135,8 +141,8 @@ class Producer extends Thread {//Producer do
 						continue;
 					}
 				}
-				
-				
+
+
 
 				//第二步：对成功解析的host进行HTTP请求。
 				Getter getter = new Getter(helpers);
@@ -177,19 +183,19 @@ class Producer extends Thread {//Producer do
 
 					String url = item.getHttpService().toString();
 					int status = getter.getStatusCode(item);
-					
+
 					if (item.getResponse() == null) {
-						stdout.println("--- ["+url+"] --- has no response.");
+						stdout.println(String.format("%s tasks left || --- [%s] --- has no response",leftTaskNum,url));
 						BurpExtender.getTitleTableModel().addNewNoResponseDomain(host, IPSet);
 					}else if(status >= 500){
-						stdout.println("--- ["+url+"] --- status code >= 500.");
+						stdout.println(String.format("%s tasks left || --- [%s] --- status code >= 500",leftTaskNum,url));
 						BurpExtender.getTitleTableModel().addNewNoResponseDomain(host, IPSet);
 					}else {
 						byte[] byteBody = getter.getBody(false, item);
 						String body = new String(byteBody);
-						
+
 						String URLAndbodyText = item.getHttpService().toString()+body;
-						
+
 						LineEntry linefound = findHistory(url);
 						boolean isChecked = false;
 						String comment = "";
@@ -211,21 +217,21 @@ class Producer extends Thread {//Producer do
 						BurpExtender.getTitleTableModel().addNewLineEntry(new LineEntry(item,isNew,isChecked,comment,IPSet,CDNSet));
 
 						//stdout.println(new LineEntry(messageinfo,true).ToJson());
-						stdout.println("+++ ["+url+"] +++ get title done.");
+
+						stdout.println(String.format("%s tasks left || +++ [%s] +++ get title done",leftTaskNum,url));
 					}
 				}
 			} catch (Exception error) {
 				error.printStackTrace(stderr);
-				continue;
+				continue;//unnecessary
 				//java.lang.RuntimeException can't been catched, why?
 			}
 		}
 	}
 
 	public LineEntry findHistory(String url) {
-		List<String> HistoryLines = BurpExtender.getDomainResult().getHistoryLineJsons();
-		for (String his:HistoryLines) {
-			LineEntry line = new LineEntry().FromJson(his);
+		List<LineEntry> HistoryLines = BurpExtender.getBackupLineEntries();
+		for (LineEntry line:HistoryLines) {
 			line.setHelpers(helpers);
 			if (url.equalsIgnoreCase(line.getUrl())) {
 				return line;
