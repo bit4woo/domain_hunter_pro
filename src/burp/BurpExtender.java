@@ -18,7 +18,7 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
-public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtensionStateListener,IContextMenuFactory, IMessageEditorController{
+public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtensionStateListener,IContextMenuFactory{
 	/**
 	 *
 	 */
@@ -49,7 +49,7 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 
 		//recovery save domain results from extensionSetting
 		stdout.println("Loading config from extension setting");
-		String content = callbacks.loadExtensionSetting("domainHunter");//file name of db file
+		String content = callbacks.loadExtensionSetting("domainHunterpro");//file name of db file
 		if (content != null) LoadData(content);
 		stdout.println("config Loaded from extension setting");
 
@@ -62,30 +62,6 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		}//必须要先结束线程，否则获取数据的操作根本无法结束，因为线程一直通过sync占用资源
 		saveConfigToExtension();
 	}
-
-	public void LoadData(String dbFilePath){
-		DBHelper dbhelper = new DBHelper(dbFilePath);
-		domainResult = dbhelper.getDomainObj();
-		showToDomainUI(domainResult);
-		showToTitleUI(dbhelper.getTitles());
-	}
-
-	public void SaveData(){
-		DBHelper dbhelper = new DBHelper(domainResult.getProjectName());
-		dbhelper.saveDomainObject(domainResult);
-		dbhelper.saveTitles(titleTableModel.getLineEntries());
-	}
-
-	@Override //GUI
-	public void saveConfigToExtension() {
-		//to save domain result to extensionSetting
-		//仅仅存储sqllite数据库的名称,也就是domainResult的项目名称
-		SaveData();
-		callbacks.saveExtensionSetting("domainHunterpro", domainResult.projectName);
-	}
-
-
-
 
 	public static IBurpExtenderCallbacks getCallbacks() {
 		return callbacks;
@@ -337,24 +313,6 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		}
 	}
 
-	//method of IMessageEditorController
-	@Override
-	public IHttpService getHttpService() {
-		return null;
-	}
-
-	//method of IMessageEditorController
-	@Override
-	public byte[] getRequest() {
-		return null;
-	}
-
-	//method of IMessageEditorController
-	@Override
-	public byte[] getResponse() {
-		return null;
-	}
-
 	public void getAllTitle(){
 		Set<String> domains = domainResult.getSubDomainSet();
 
@@ -391,10 +349,6 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 			subnets = Commons.toSmallerSubNets(IPsOfDomain);
 		}
 		return String.join(System.lineSeparator(), subnets);
-	}
-
-	public String digStatus() {
-		return titleTableModel.getStatusSummary();
 	}
 
 	@Override

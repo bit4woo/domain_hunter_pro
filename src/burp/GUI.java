@@ -738,7 +738,6 @@ public class GUI extends JFrame {
 
 
 
-
 	public JPanel TitlePanel() {
 		//
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -948,17 +947,25 @@ public class GUI extends JFrame {
 		return null;
 	}
 
-	protected void saveConfigToExtension() {
-		// BurpExtender need to override this function
+
+	public void LoadData(String dbFilePath){
+		DBHelper dbhelper = new DBHelper(dbFilePath);
+		domainResult = dbhelper.getDomainObj();
+		showToDomainUI(domainResult);
+		showToTitleUI(dbhelper.getTitles());
 	}
 
-	public void getAllTitle(){
-		return;
-		//sub class should over write this function
+	public void SaveData(){
+		DBHelper dbhelper = new DBHelper(domainResult.getProjectName());
+		dbhelper.saveDomainObject(domainResult);
+		dbhelper.saveTitles(titleTableModel.getLineEntries());
 	}
-	protected void getExtendTitle() {
-		// BurpExtender need to override this function
-		return;
+
+	public void saveConfigToExtension() {
+		//to save domain result to extensionSetting
+		//仅仅存储sqllite数据库的名称,也就是domainResult的项目名称
+		SaveData();
+		BurpExtender.callbacks.saveExtensionSetting("domainHunterpro", domainResult.projectName);
 	}
 
 
@@ -974,33 +981,6 @@ public class GUI extends JFrame {
 			}
 		}
 		return false;
-	}
-
-
-	public Set<String> getColumnValues(String ColumnName) {
-
-		Set<String> result = new HashSet<String>();
-		int index=-1;
-		for (int i=0;i<table.getColumnCount();i++) {
-			if (table.getColumnName(i).equals(ColumnName)) {
-				index = i;
-				break;
-			}
-		}
-
-		for(int j=0;j<table.getRowCount();j++){
-			String onecell ="";
-			try {
-				onecell= (String)table.getValueAt(j,index);
-			}catch(Exception e) {
-
-			}
-
-			if (!onecell.equals("") && onecell != null) {
-				result.add(onecell);
-			}
-		}
-		return result;
 	}
 
 	public LinkedHashMap<String, String> getTableMap() {
@@ -1102,7 +1082,7 @@ public class GUI extends JFrame {
 
 				DBHelper dbHelper = new DBHelper(file.toString());
 				dbHelper.saveDomainObject(domainResult);
-				dbHelper.saveTitles(titleTableModel.getLineEntries());
+				//dbHelper.saveTitles(titleTableModel.getLineEntries());
 
 				fc.setCurrentDirectory(new File(file.getParent()));//save latest used dir.
 			}catch(Exception e1){
@@ -1112,25 +1092,18 @@ public class GUI extends JFrame {
 	}
 
 	public String digStatus() {
-		// need to override
-		return null;
+		return titleTableModel.getStatusSummary();
 	}
-
-
-
 
 	class JsonFileFilter extends FileFilter {
 		public String getDescription() {
 			return "*.db";
 		}//sqlite
-
 		public boolean accept(File file) {
 			String name = file.getName();
 			return file.isDirectory() || name.toLowerCase().endsWith(".db");  // 仅显示目录和json文件
 		}
 	}
-
-
 
 	public void showSearchResult(String keyword) {
 		//sub class should over write this function
@@ -1138,7 +1111,16 @@ public class GUI extends JFrame {
 	}
 
 	public String getSubnet(boolean isCurrent) {
-		// TODO Auto-generated method stub
+		//sub class should over write this function
 		return null;
+	}
+
+	public void getAllTitle(){
+		return;
+		//sub class should over write this function
+	}
+	protected void getExtendTitle() {
+		// BurpExtender need to override this function
+		return;
 	}
 }
