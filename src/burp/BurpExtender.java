@@ -342,18 +342,7 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		return;
 	}
 
-	@Override
-	public String getSubnet(boolean isCurrent){
-		Set<String> subnets;
-		if (isCurrent) {//获取的是现有可成功连接的IP集合
-			subnets = titleTableModel.GetSubnets();
-		}else {//重新解析所有域名的IP
-			Set<String> IPsOfDomain = new ThreadGetSubnet(domainResult.getSubDomainSet()).Do();
-			//Set<String> CSubNetIPs = Commons.subNetsToIPSet(Commons.toSubNets(IPsOfDomain));
-			subnets = Commons.toSmallerSubNets(IPsOfDomain);
-		}
-		return String.join(System.lineSeparator(), subnets);
-	}
+
 
 	@Override
 	public void showSearchResult(String keyword) {
