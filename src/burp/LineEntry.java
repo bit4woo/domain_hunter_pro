@@ -1,8 +1,6 @@
 package burp;
 
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -102,7 +100,7 @@ public class LineEntry {
 		return JSONObject.toJSONString(this);
 	}
 	
-	public LineEntry FromJson(String json){//注意函数名称，如果是get set开头，会被认为是Getter和Setter函数，会在序列化过程中被调用。
+	public static LineEntry FromJson(String json){//注意函数名称，如果是get set开头，会被认为是Getter和Setter函数，会在序列化过程中被调用。
 		return JSON.parseObject(json, LineEntry.class);
 	}
 
@@ -163,10 +161,8 @@ public class LineEntry {
 				}
 			}
 			
-	        SimpleDateFormat simpleDateFormat = 
-                    new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
     
-	        time = simpleDateFormat.format(new Date())+"";//这是动态的，会跟随系统时间自动变化
+	        time = Commons.getNowTimeString();//这是动态的，会跟随系统时间自动变化
 	        
 			
 		}catch(Exception e) {

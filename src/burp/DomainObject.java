@@ -1,10 +1,8 @@
 package burp;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Set;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -106,7 +104,7 @@ public class DomainObject {
 
 
 	public String getSummary() {
-		summary = String.format("      Related-domain:%s  Sub-domain:%s  Similar-domain:%s  ^_^", relatedDomainSet.size(),subDomainSet.size(),similarDomainSet.size());
+		summary = String.format("     Project:%s  Related-domain:%s  Sub-domain:%s  Similar-domain:%s  ^_^", projectName, relatedDomainSet.size(),subDomainSet.size(),similarDomainSet.size());
 		return summary;
     }
 	
@@ -118,14 +116,14 @@ public class DomainObject {
 
 	////////////////ser and deser///////////
 	
-	public String Save() {
+	public String ToJson() {
     	//return JSON.toJSONString(this);
 		//https://blog.csdn.net/qq_27093465/article/details/73277291
     	return JSONObject.toJSONString(this);
     }
     
     
-    public  DomainObject Open(String instanceString) {// throws Exception {
+    public  static DomainObject FromJson(String instanceString) {// throws Exception {
     	return JSON.parseObject(instanceString, DomainObject.class);
     }
 	

@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -50,6 +51,7 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		//recovery save domain results from extensionSetting
 		stdout.println("Loading config from extension setting");
 		String content = callbacks.loadExtensionSetting("domainHunterpro");//file name of db file
+		currentDBFile = new File(content);
 		System.out.println(content);
 		if (content != null && content.endsWith(".db")) LoadData(content);
 		stdout.println("config Loaded from extension setting");

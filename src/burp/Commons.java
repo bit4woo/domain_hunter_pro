@@ -1,7 +1,9 @@
 package burp;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -210,6 +212,12 @@ public class Commons {
 
 		}
 		return IPSet;
+	}
+	
+	public static String getNowTimeString() {
+		SimpleDateFormat simpleDateFormat = 
+                new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
+		return simpleDateFormat.format(new Date());
 	}
 
 	public static void main(String args[]) {
