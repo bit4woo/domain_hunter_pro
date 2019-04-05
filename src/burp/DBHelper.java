@@ -23,15 +23,17 @@ public class DBHelper {
         try {
             Class.forName("org.sqlite.JDBC");
             conn = DriverManager.getConnection("jdbc:sqlite:"+dbFilePath);
+            
+
+            if (!tableExists("DOMAINObject")){
+                createTable();
+            }
         } catch ( Exception e ) {
             System.err.println( e.getClass().getName() + ": " + e.getMessage() );
             System.exit(0);
         }
         System.out.println("Opened database successfully");
 
-        if (!tableExists("DOMAINObject")){
-            createTable();
-        }
     }
 
     public void createTable(){
@@ -101,7 +103,7 @@ public class DBHelper {
             } else {
                 return false;
             }
-        } catch (SQLException ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
         return false;
@@ -110,6 +112,7 @@ public class DBHelper {
     public void saveDomainObject(DomainObject domainResult){
         try {
             //clear table
+        	conn = getConnection();
             Statement  stmt = conn.createStatement();
             String sqlclear = "Delete From DOMAINObject";
             stmt.executeUpdate(sqlclear);
@@ -124,8 +127,19 @@ public class DBHelper {
             pres.execute();
             if(pres!=null)
                 pres.close();
-        } catch (SQLException e) {
+            stmt.close();
+            conn.close();
+        } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+        	try {
+                if(pres!=null)
+                    pres.close();
+				conn.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
         }
     }
 
@@ -138,6 +152,7 @@ public class DBHelper {
         String sql="select * from DOMAINObject";
 
         try {
+        	conn = getConnection();
             pres=conn.prepareStatement(sql);
             ResultSet res=pres.executeQuery();
             while(res.next()){
@@ -146,6 +161,14 @@ public class DBHelper {
             }
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+        	try {
+				pres.close();
+				conn.close();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
         }
 
         return null;
@@ -158,6 +181,7 @@ public class DBHelper {
 
         try {
             //clear table
+        	conn = getConnection();
             Statement  stmt = conn.createStatement();
             String sqlclear = "Delete From Title";
             stmt.executeUpdate(sqlclear);
@@ -173,9 +197,19 @@ public class DBHelper {
 
             if(pres!=null)
                 pres.close();
-
-        } catch (SQLException e) {
+			pres.close();
+			conn.close();
+        } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+        	try {
+                if(pres!=null)
+                    pres.close();
+				conn.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
         }
     }
 
@@ -185,6 +219,7 @@ public class DBHelper {
         String sql="select * from Title";
 
         try {
+        	conn = getConnection();
             pres=conn.prepareStatement(sql);
 
             ResultSet res=pres.executeQuery();
@@ -195,13 +230,17 @@ public class DBHelper {
             }
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+        	try {
+                if(pres!=null)
+                    pres.close();
+				conn.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
         }
         return list;
-    }
-
-
-    public void saveConfig(List<LineEntry> lineEntries){
-        saveTitles(lineEntries);
     }
 
     public static void main(String args[]){

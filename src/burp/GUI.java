@@ -15,6 +15,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -24,8 +25,11 @@ import java.net.URI;
 import java.util.*;
 import java.util.Map.Entry;
 
+import javax.swing.AbstractAction;
 import javax.swing.Box;
+import javax.swing.InputMap;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -39,12 +43,15 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowSorter;
 import javax.swing.SortOrder;
 import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.TableModelEvent;
@@ -69,6 +76,7 @@ public class GUI extends JFrame {
 	protected static DomainObject domainResult = new DomainObject("");//getter setter
 	protected static LineTableModel titleTableModel; //getter setter
 	protected static DefaultTableModel domainTableModel;
+	protected static File currentDBFile;
 
 	public PrintWriter stdout;
 	public PrintWriter stderr;
@@ -196,9 +204,11 @@ public class GUI extends JFrame {
 				}else if (result == JOptionPane.NO_OPTION) {
 					// nothing to do
 				}
-
-				String projectName = JOptionPane.showInputDialog("Enter Name For New Project", null);
-				domainResult = new DomainObject(projectName);
+				
+				
+				domainResult = new DomainObject("");
+				currentDBFile = saveDialog(false);
+				saveDBfilepathToExtension();   //Save filename to extension Config
 				showToDomainUI(domainResult);
 
 			}
@@ -211,47 +221,41 @@ public class GUI extends JFrame {
 		btnOpen = new JButton("Open");
 		btnOpen.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				//JFileChooser fc=new JFileChooser(); //use global fc to use remembered path
-				if (fc.getCurrentDirectory() != null) {
-					File xxx = fc.getCurrentDirectory();
-					fc = new JFileChooser(fc.getCurrentDirectory());
-				}else {
-					fc = new JFileChooser();
-				}
-				JsonFileFilter jsonFilter = new JsonFileFilter(); //excel过滤器  
-				fc.addChoosableFileFilter(jsonFilter);
-				fc.setFileFilter(jsonFilter);
-				fc.setDialogTitle("Chose Domain Hunter Project File");
-				fc.setDialogType(JFileChooser.CUSTOM_DIALOG);
-				if(fc.showOpenDialog(null)==JFileChooser.APPROVE_OPTION){
-					try {
-						File file=fc.getSelectedFile();
-						if (file.getName().endsWith(".json")){//兼容旧文件
-							String contents = Files.toString(file, Charsets.UTF_8);//读取json文件的方式
-							domainResult = JSON.parseObject(contents,DomainObject.class);
-							showToDomainUI(domainResult);
-						}else {
-							DBHelper dbhelper = new DBHelper(file.toString());
-							domainResult = dbhelper.getDomainObj();
-							showToDomainUI(domainResult);
-							showToTitleUI(dbhelper.getTitles());
-						}
-
-						stdout.println("open project ["+domainResult.projectName+"] in "+ file.getName());
-					} catch (Exception e1) {
-						e1.printStackTrace(stderr);
-					}
-				}
+				currentDBFile = openDialog();
+				saveDBfilepathToExtension();
 			}
 		});
 		btnOpen.setToolTipText("Open Domain Hunter Project File");
 		HeaderPanel.add(btnOpen);
 
-		btnSave = new JButton("Save Domain");
+		btnSave = new JButton("Save");
 		btnSave.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				saveDialog(false);
+				try {
+					//SaveData();//title and domain save to same db file,but here only update domain table
+					DBHelper dbhelper = new DBHelper(currentDBFile.getAbsolutePath());
+					dbhelper.saveDomainObject(domainResult);
+				} catch (Exception e1) {
+					e1.printStackTrace(stderr);
+				}
 			}});
+
+		InputMap inputMap = btnSave.getInputMap(JButton.WHEN_IN_FOCUSED_WINDOW);
+		KeyStroke sav = KeyStroke.getKeyStroke(KeyEvent.VK_S, 2); //2 --ctrl;  Ctrl+S
+		inputMap.put(sav, "Save");
+
+		btnSave.getActionMap().put("Save", new AbstractAction() {
+			public void actionPerformed(ActionEvent evt) {  
+				try {
+					//System.out.println("xxx");
+					DBHelper dbhelper = new DBHelper(currentDBFile.getAbsolutePath());
+					dbhelper.saveDomainObject(domainResult);
+				} catch (Exception e) {
+					e.printStackTrace(stderr);
+				}
+			}
+		});
+
 		btnSave.setToolTipText("Save Domain Hunter Project File, not include title");
 		HeaderPanel.add(btnSave);
 
@@ -384,7 +388,7 @@ public class GUI extends JFrame {
 
 			}
 		});
-		HeaderPanel.add(textFieldUploadURL);
+		//HeaderPanel.add(textFieldUploadURL);
 		textFieldUploadURL.setColumns(30);
 
 
@@ -405,7 +409,7 @@ public class GUI extends JFrame {
 				worker.execute();
 			}
 		});
-		HeaderPanel.add(btnUpload);
+		//HeaderPanel.add(btnUpload);
 
 		lblSummary = new JLabel("      ^_^");
 		HeaderPanel.add(lblSummary);
@@ -439,12 +443,12 @@ public class GUI extends JFrame {
 
 		domainTableModel = new DefaultTableModel(
 				new Object[][] {
-						//{"1", "1","1"},
+					//{"1", "1","1"},
 				},
 				new String[] {
 						"Root Domain", "Keyword"//, "Source"
 				}
-		);
+				);
 		table.setModel(domainTableModel);
 		domainTableModel.addTableModelListener(new TableModelListener(){
 			@Override
@@ -506,9 +510,9 @@ public class GUI extends JFrame {
 
 				domainResult.AddToRootDomainMap(enteredRootDomain, keyword);
 				showToDomainUI(domainResult);
-			
-				
-/*				if (domainResult.rootDomainMap.containsKey(enteredRootDomain) && domainResult.rootDomainMap.containsValue(keyword)) {
+
+
+				/*				if (domainResult.rootDomainMap.containsKey(enteredRootDomain) && domainResult.rootDomainMap.containsValue(keyword)) {
 					//do nothing
 				}else {
 					domainResult.rootDomainMap.put(enteredRootDomain,keyword);
@@ -573,7 +577,7 @@ public class GUI extends JFrame {
 						}
 						//after this, tableModelListener will auto update rootDomainMap.
 					}
-					
+
 					for (String similarDomain:domainResult.similarDomainSet) {
 						String rootDomain =InternetDomainName.from(similarDomain).topPrivateDomain().toString();
 						if (domainResult.rootDomainMap.keySet().contains(rootDomain)) {
@@ -759,7 +763,7 @@ public class GUI extends JFrame {
 				//method one: // don't need to wait threads in getAllTitle to exits
 				//but hard to know the finish time of task
 				//// Runs inside of the Swing UI thread
-/*			    SwingUtilities.invokeLater(new Runnable() {
+				/*			    SwingUtilities.invokeLater(new Runnable() {
 			        public void run() {// don't need to wait threads in getAllTitle to exits
 			        	btnGettitle.setEnabled(false);
 			        	getAllTitle();
@@ -780,7 +784,7 @@ public class GUI extends JFrame {
 					@Override
 					protected void done() {
 						try {
-							saveConfigToExtension();
+							saveDBfilepathToExtension();
 							btnGettitle.setEnabled(true);
 						} catch (Exception e) {
 							e.printStackTrace(stderr);
@@ -809,7 +813,7 @@ public class GUI extends JFrame {
 					@Override
 					protected void done() {
 						try {
-							saveConfigToExtension();
+							saveDBfilepathToExtension();
 							btnGetExtendtitle.setEnabled(true);
 						} catch (Exception e) {
 							e.printStackTrace(stderr);
@@ -840,15 +844,17 @@ public class GUI extends JFrame {
 		buttonPanel.add(btnGetSubnet);
 
 
-		btnSaveState = new JButton("Save State");
+		btnSaveState = new JButton("Save");
 		btnSaveState.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
 					@Override
 					protected Map doInBackground() throws Exception {
+						
 						btnSaveStateTo.setEnabled(false);
 						btnSaveState.setEnabled(false);
-						saveConfigToExtension();
+						SaveData();//both tilte and domain
+						//saveDBfileToExtension();
 						btnSaveStateTo.setEnabled(true);
 						btnSaveState.setEnabled(true);
 						return new HashMap<String, String>();
@@ -861,21 +867,51 @@ public class GUI extends JFrame {
 					}
 				};
 				worker.execute();
-				saveConfigToExtension();
 			}
 		});
-		btnSaveState.setToolTipText("Save state to extension setting.");
+		btnSaveState.setToolTipText("Save state");
 		buttonPanel.add(btnSaveState);
 
 
-		btnSaveStateTo = new JButton("Save Title State To File");
+		InputMap inputMap1 = btnSaveState.getInputMap(JButton.WHEN_IN_FOCUSED_WINDOW);
+		KeyStroke Save = KeyStroke.getKeyStroke(KeyEvent.VK_S,ActionEvent.CTRL_MASK); //Ctrl+S
+		inputMap1.put(Save, "Save");
+
+		btnSaveState.getActionMap().put("Save", new AbstractAction() {
+			public void actionPerformed(ActionEvent evt) {  
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+					@Override
+					protected Map doInBackground() throws Exception {
+						btnSaveStateTo.setEnabled(false);
+						btnSaveState.setEnabled(false);
+						SaveData();
+						//saveDBfileToExtension();
+						btnSaveStateTo.setEnabled(true);
+						btnSaveState.setEnabled(true);
+						return new HashMap<String, String>();
+						//no use ,the return.
+					}
+					@Override
+					protected void done() {
+						btnSaveStateTo.setEnabled(true);
+						btnSaveState.setEnabled(true);
+					}
+				};
+				worker.execute();
+			}
+		});
+
+
+
+		btnSaveStateTo = new JButton("Save As");
 		btnSaveStateTo.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
 					@Override
 					protected Map doInBackground() throws Exception {
 						btnSaveStateTo.setEnabled(false);
-						saveDialog(true);
+						currentDBFile = saveDialog(true);
+						saveDBfilepathToExtension();
 						btnSaveStateTo.setEnabled(true);
 						return new HashMap<String, String>();
 						//no use ,the return.
@@ -890,6 +926,31 @@ public class GUI extends JFrame {
 		});
 		btnSaveStateTo.setToolTipText("save domains and getted title lines to a file.");
 		buttonPanel.add(btnSaveStateTo);
+
+		InputMap inputMap = btnSaveStateTo.getInputMap(JButton.WHEN_IN_FOCUSED_WINDOW);
+		KeyStroke SaveAs = KeyStroke.getKeyStroke(KeyEvent.VK_S,ActionEvent.CTRL_MASK+ActionEvent.ALT_MASK); //Ctrl+Shift+S
+		inputMap.put(SaveAs, "SaveAs");
+
+		btnSaveStateTo.getActionMap().put("SaveAs", new AbstractAction() {
+			public void actionPerformed(ActionEvent evt) {  
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+					@Override
+					protected Map doInBackground() throws Exception {
+						btnSaveStateTo.setEnabled(false);
+						currentDBFile = saveDialog(true);
+						saveDBfilepathToExtension();
+						btnSaveStateTo.setEnabled(true);
+						return new HashMap<String, String>();
+						//no use ,the return.
+					}
+					@Override
+					protected void done() {
+						btnSaveStateTo.setEnabled(true);
+					}
+				};
+				worker.execute();
+			}
+		});
 
 
 		textFieldSearch = new JTextField("Input text to search");
@@ -929,17 +990,17 @@ public class GUI extends JFrame {
 		});
 		buttonPanel.add(buttonSearch);
 
-//		JButton btnRestoreTable = new JButton("restore");
-//		btnRestoreTable.addActionListener(new ActionListener() {
-//			public void actionPerformed(ActionEvent e) {
-//				table_1.getModel().setLineEntries(new ArrayList<LineEntry>());//clean runner data
-//				for(LineEntry line:BurpExtender.getBackupLineEntries()) {
-//					table_1.getModel().addNewLineEntry(line);
-//				}
-//			}
-//		});
-//		btnRestoreTable.setToolTipText("restore table data");
-//		buttonPanel.add(btnRestoreTable);
+		//		JButton btnRestoreTable = new JButton("restore");
+		//		btnRestoreTable.addActionListener(new ActionListener() {
+		//			public void actionPerformed(ActionEvent e) {
+		//				table_1.getModel().setLineEntries(new ArrayList<LineEntry>());//clean runner data
+		//				for(LineEntry line:BurpExtender.getBackupLineEntries()) {
+		//					table_1.getModel().addNewLineEntry(line);
+		//				}
+		//			}
+		//		});
+		//		btnRestoreTable.setToolTipText("restore table data");
+		//		buttonPanel.add(btnRestoreTable);
 
 		btnSaveStateTo = new JButton("status");
 		btnSaveStateTo.addActionListener(new ActionListener() {
@@ -959,8 +1020,8 @@ public class GUI extends JFrame {
 
 
 		///need to replace this part with LineTableModel and LineTable
-//		table_1 = new JTable();
-//		scrollPaneRequests.setViewportView(table_1);
+		//		table_1 = new JTable();
+		//		scrollPaneRequests.setViewportView(table_1);
 		//LineTableModel will replace this table
 
 
@@ -980,24 +1041,39 @@ public class GUI extends JFrame {
 	}
 
 
-	public void LoadData(String dbFilePath){
-		DBHelper dbhelper = new DBHelper(dbFilePath);
-		domainResult = dbhelper.getDomainObj();
-		showToDomainUI(domainResult);
-		showToTitleUI(dbhelper.getTitles());
+	public boolean LoadData(String dbFilePath){
+		try {//这其中的异常会导致burp退出
+			DBHelper dbhelper = new DBHelper(dbFilePath);
+			domainResult = dbhelper.getDomainObj();
+			showToDomainUI(domainResult);
+			showToTitleUI(dbhelper.getTitles());
+			return true;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace(stderr);
+			return false;
+		}
 	}
 
-	public void SaveData(){
-		DBHelper dbhelper = new DBHelper(domainResult.getProjectName());
-		dbhelper.saveDomainObject(domainResult);
-		dbhelper.saveTitles(titleTableModel.getLineEntries());
+	public boolean SaveData(){
+		try {
+			DBHelper dbhelper = new DBHelper(currentDBFile.getAbsolutePath());
+			dbhelper.saveDomainObject(domainResult);
+			dbhelper.saveTitles(titleTableModel.getLineEntries());
+			return true;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace(stderr);
+			return false;
+		}
 	}
 
-	public void saveConfigToExtension() {
+	public void saveDBfilepathToExtension() {
 		//to save domain result to extensionSetting
 		//仅仅存储sqllite数据库的名称,也就是domainResult的项目名称
-		//SaveData();耗时太长，就不自动保存了，完全手动吧
-		BurpExtender.callbacks.saveExtensionSetting("domainHunterpro", domainResult.projectName);
+		//SaveData();//耗时太长，就不自动保存了，完全手动吧
+		if (currentDBFile != null)
+		BurpExtender.callbacks.saveExtensionSetting("domainHunterpro", currentDBFile.getAbsolutePath());
 	}
 
 
@@ -1017,8 +1093,8 @@ public class GUI extends JFrame {
 
 	public LinkedHashMap<String, String> getTableMap() {
 		LinkedHashMap<String,String> tableMap= new LinkedHashMap<String,String>();
-		
-/*		for(int x=0;x<table.getRowCount();x++){
+
+		/*		for(int x=0;x<table.getRowCount();x++){
 			String key =(String) table.getValueAt(x, 0);
 			String value = (String) table.getValueAt(x, 1); //encountered a "ArrayIndexOutOfBoundsException" error here~~ strange!
 			tableMap.put(key,value);
@@ -1074,7 +1150,67 @@ public class GUI extends JFrame {
 		stdout.println("Load Title Panel Data Done");
 	}
 
-	public void saveDialog(boolean includeTitle) {
+	public File saveDialog(boolean includeTitle) {
+		File file = dialog(false);
+
+		if(!(file.getName().toLowerCase().endsWith(".db"))){
+			file=new File(fc.getCurrentDirectory(),file.getName()+".db");
+		}
+
+		if (domainResult.projectName.equals("")) {
+			domainResult.projectName = file.getName();
+		}
+
+		try{
+			if(file.exists()){
+				int result = JOptionPane.showConfirmDialog(null,"Are you sure to overwrite this file ?");
+				if (result == JOptionPane.YES_OPTION) {
+					file.createNewFile();
+				}else {
+					return null;
+				}
+			}else {
+				file.createNewFile();
+			}
+
+			DBHelper dbHelper = new DBHelper(file.toString());
+			dbHelper.saveDomainObject(domainResult);
+			if (includeTitle){
+				dbHelper.saveTitles(titleTableModel.getLineEntries());
+			}
+			return file;
+		}catch(Exception e1){
+			e1.printStackTrace(stderr);
+			return null;
+		}
+	}
+	
+	public File openDialog() {
+		try {
+			File file = dialog(true);
+			if (file == null) {
+				return null;
+			}
+			if (file.getName().endsWith(".json")){//兼容旧文件
+				String contents = Files.toString(file, Charsets.UTF_8);//读取json文件的方式
+				domainResult = JSON.parseObject(contents,DomainObject.class);
+				if (domainResult != null) showToDomainUI(domainResult);
+			}else {
+				DBHelper dbhelper = new DBHelper(file.toString());
+				domainResult = dbhelper.getDomainObj();
+				if (domainResult != null) showToDomainUI(domainResult);
+				showToTitleUI(dbhelper.getTitles());
+			}
+
+			stdout.println("open project ["+domainResult.projectName+"] in "+ file.getName());
+			return file;
+		} catch (Exception e1) {
+			e1.printStackTrace(stderr);
+			return null;
+		}
+	}
+
+	public File dialog(boolean isOpen) {
 		if (fc.getCurrentDirectory() != null) {
 			File xxx = fc.getCurrentDirectory();
 			fc = new JFileChooser(fc.getCurrentDirectory());
@@ -1082,47 +1218,25 @@ public class GUI extends JFrame {
 			fc = new JFileChooser();
 		}
 
-		JsonFileFilter jsonFilter = new JsonFileFilter(); //excel过滤器  
+		JsonFileFilter jsonFilter = new JsonFileFilter(); //文件扩展名过滤器  
 		fc.addChoosableFileFilter(jsonFilter);
 		fc.setFileFilter(jsonFilter);
-		fc.setDialogTitle("Save Domain Hunter file:");
-		fc.setDialogType(JFileChooser.SAVE_DIALOG);
-		if(fc.showSaveDialog(null)==JFileChooser.APPROVE_OPTION){
-			File file=fc.getSelectedFile();
-
-			if(!(file.getName().toLowerCase().endsWith(".db"))){
-				file=new File(fc.getCurrentDirectory(),file.getName()+".db");
-			}
-
-			if (domainResult.projectName.equals("")) {
-				domainResult.projectName = file.getName();
-			}
-
-
-
-			try{
-				if(file.exists()){
-					int result = JOptionPane.showConfirmDialog(null,"Are you sure to overwrite this file ?");
-					if (result == JOptionPane.YES_OPTION) {
-						file.createNewFile();
-					}else {
-						return;
-					}
-				}else {
-					file.createNewFile();
-				}
-
-				DBHelper dbHelper = new DBHelper(file.toString());
-				dbHelper.saveDomainObject(domainResult);
-				if (includeTitle){
-					dbHelper.saveTitles(titleTableModel.getLineEntries());
-				}
-
-				fc.setCurrentDirectory(new File(file.getParent()));//save latest used dir.
-			}catch(Exception e1){
-				e1.printStackTrace(stderr);
-			}
+		fc.setDialogTitle("Chose file:");
+		fc.setDialogType(JFileChooser.CUSTOM_DIALOG);
+		
+		int action;
+		if (isOpen) {
+			action = fc.showOpenDialog(null);
+		}else {
+			action = fc.showSaveDialog(null);
 		}
+		
+		if(action==JFileChooser.APPROVE_OPTION){
+			File file=fc.getSelectedFile();
+			fc.setCurrentDirectory(new File(file.getParent()));//save latest used dir.
+			return file;
+		}
+		return null;
 	}
 
 	public String digStatus() {
