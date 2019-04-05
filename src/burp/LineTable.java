@@ -163,6 +163,18 @@ public class LineTable extends JTable
 					if (new String(line.getResponse()).toLowerCase().contains(keywork.toLowerCase())) {
 						return true;
 					}
+					if (new String(line.getUrl()).toLowerCase().contains(keywork.toLowerCase())) {
+						return true;
+					}
+					if (new String(line.getIP()).toLowerCase().contains(keywork.toLowerCase())) {
+						return true;
+					}
+					if (new String(line.getCDN()).toLowerCase().contains(keywork.toLowerCase())) {
+						return true;
+					}
+					if (new String(line.getComment()).toLowerCase().contains(keywork.toLowerCase())) {
+						return true;
+					}
 					return false;
 				}
 
