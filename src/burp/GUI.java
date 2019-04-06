@@ -108,7 +108,6 @@ public class GUI extends JFrame {
 	public LineTable titleTable;
 	private JButton btnImportDomain;
 	private JButton btnSaveState;
-	private JButton btnSaveStateTo;
 	private JButton btnGetExtendtitle;
 	private JFileChooser fc = new JFileChooser();
 	private JLabel lblSummaryOfTitle;
@@ -844,26 +843,22 @@ public class GUI extends JFrame {
 				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
 					@Override
 					protected Map doInBackground() throws Exception {
-
-						btnSaveStateTo.setEnabled(false);
 						btnSaveState.setEnabled(false);
 						saveDialog(true);;//both tilte and domain
 						//saveDBfileToExtension();
-						btnSaveStateTo.setEnabled(true);
 						btnSaveState.setEnabled(true);
 						return new HashMap<String, String>();
 						//no use ,the return.
 					}
 					@Override
 					protected void done() {
-						btnSaveStateTo.setEnabled(true);
 						btnSaveState.setEnabled(true);
 					}
 				};
 				worker.execute();
 			}
 		});
-		btnSaveState.setToolTipText("Save state");
+		btnSaveState.setToolTipText("Save Data To DataBase");
 		buttonPanel.add(btnSaveState);
 
 
@@ -876,18 +871,15 @@ public class GUI extends JFrame {
 				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
 					@Override
 					protected Map doInBackground() throws Exception {
-						btnSaveStateTo.setEnabled(false);
 						btnSaveState.setEnabled(false);
 						saveDialog(true);
 						//saveDBfileToExtension();
-						btnSaveStateTo.setEnabled(true);
 						btnSaveState.setEnabled(true);
 						return new HashMap<String, String>();
 						//no use ,the return.
 					}
 					@Override
 					protected void done() {
-						btnSaveStateTo.setEnabled(true);
 						btnSaveState.setEnabled(true);
 					}
 				};
@@ -932,27 +924,15 @@ public class GUI extends JFrame {
 		});
 		buttonPanel.add(buttonSearch);
 
-		//		JButton btnRestoreTable = new JButton("restore");
-		//		btnRestoreTable.addActionListener(new ActionListener() {
-		//			public void actionPerformed(ActionEvent e) {
-		//				table_1.getModel().setLineEntries(new ArrayList<LineEntry>());//clean runner data
-		//				for(LineEntry line:BurpExtender.getBackupLineEntries()) {
-		//					table_1.getModel().addNewLineEntry(line);
-		//				}
-		//			}
-		//		});
-		//		btnRestoreTable.setToolTipText("restore table data");
-		//		buttonPanel.add(btnRestoreTable);
-
-		btnSaveStateTo = new JButton("status");
-		btnSaveStateTo.addActionListener(new ActionListener() {
+		JButton btnStatus = new JButton("status");
+		btnStatus.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String status = digStatus();
 				lblSummaryOfTitle.setText(status);
 			}
 		});
-		btnSaveStateTo.setToolTipText("show Status of digging.");
-		buttonPanel.add(btnSaveStateTo);
+		btnStatus.setToolTipText("Show Status Of Digging.");
+		buttonPanel.add(btnStatus);
 
 
 		lblSummaryOfTitle = new JLabel("      ^_^");
