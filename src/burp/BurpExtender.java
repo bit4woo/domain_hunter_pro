@@ -49,14 +49,10 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		TitlePanel.add(titleTable.getSplitPane(), BorderLayout.CENTER);
 
 		//recovery save domain results from extensionSetting
-		stdout.println("Loading config from extension setting");
 		String content = callbacks.loadExtensionSetting("domainHunterpro");//file name of db file
 		currentDBFile = new File(content);
 		System.out.println(content);
-		if (content != null && content.endsWith(".db")) LoadData(content);
-		stdout.println("config Loaded from extension setting");
-
-
+		if (currentDBFile != null && currentDBFile.getName().endsWith(".db")) LoadData(content);
 	}
 
 	@Override
@@ -65,6 +61,8 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 			threadGetTitle.stopThreads();//maybe null
 		}//必须要先结束线程，否则获取数据的操作根本无法结束，因为线程一直通过sync占用资源
 		saveDBfilepathToExtension();
+		DBHelper dbHelper = new DBHelper(currentDBFile.toString());//单独保存一下域名信息，容易忘记保存
+		dbHelper.saveDomainObject(domainResult);
 	}
 
 	public static IBurpExtenderCallbacks getCallbacks() {

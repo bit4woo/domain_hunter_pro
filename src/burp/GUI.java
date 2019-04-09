@@ -201,8 +201,9 @@ public class GUI extends JFrame {
 //				}else if (result == JOptionPane.NO_OPTION) {
 //					// nothing to do
 //				}
-				
-				saveDialog(true);//save old project
+				if (domainResult != null){
+					saveDialog(true);//save old project
+				}
 
 				domainResult = new DomainObject("");
 				titleTableModel.setLineEntries(new ArrayList<LineEntry>());
@@ -237,7 +238,7 @@ public class GUI extends JFrame {
 		inputMap.put(sav, "Save");
 
 		btnSave.getActionMap().put("Save", new AbstractAction() {
-			public void actionPerformed(ActionEvent evt) {  
+			public void actionPerformed(ActionEvent evt) {
 				saveDialog(false);
 			}
 		});
@@ -438,12 +439,12 @@ public class GUI extends JFrame {
 
 		domainTableModel = new DefaultTableModel(
 				new Object[][] {
-					//{"1", "1","1"},
+						//{"1", "1","1"},
 				},
 				new String[] {
 						"Root Domain", "Keyword"//, "Source"
 				}
-				);
+		);
 		table.setModel(domainTableModel);
 		domainTableModel.addTableModelListener(new TableModelListener(){
 			@Override
@@ -867,7 +868,7 @@ public class GUI extends JFrame {
 		inputMap1.put(Save, "Save");
 
 		btnSaveState.getActionMap().put("Save", new AbstractAction() {
-			public void actionPerformed(ActionEvent evt) {  
+			public void actionPerformed(ActionEvent evt) {
 				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
 					@Override
 					protected Map doInBackground() throws Exception {
@@ -965,13 +966,15 @@ public class GUI extends JFrame {
 
 	public boolean LoadData(String dbFilePath){
 		try {//这其中的异常会导致burp退出
+			stdout.println("Loading Data From: "+dbFilePath);
 			DBHelper dbhelper = new DBHelper(dbFilePath);
 			domainResult = dbhelper.getDomainObj();
 			showToDomainUI(domainResult);
 			showToTitleUI(dbhelper.getTitles());
+			stdout.println("Loading Finished!");
 			return true;
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
+			stdout.println("Loading Failed!");
 			e.printStackTrace(stderr);
 			return false;
 		}
@@ -1157,7 +1160,7 @@ public class GUI extends JFrame {
 			}
 			currentDBFile = file;//就是应该在对话框完成后就更新
 			saveDBfilepathToExtension();
-			stdout.println("open project ["+domainResult.projectName+"] in "+ file.getName());
+			stdout.println("open Project ["+domainResult.projectName+"] From File "+ file.getName());
 			return file;
 		} catch (Exception e1) {
 			e1.printStackTrace(stderr);
@@ -1176,7 +1179,6 @@ public class GUI extends JFrame {
 		JsonFileFilter jsonFilter = new JsonFileFilter(); //文件扩展名过滤器  
 		fc.addChoosableFileFilter(jsonFilter);
 		fc.setFileFilter(jsonFilter);
-		fc.setDialogTitle(String.format("Chose file to store data of project: [%s]",domainResult.projectName));
 		fc.setDialogType(JFileChooser.CUSTOM_DIALOG);
 
 		int action;
@@ -1213,7 +1215,7 @@ public class GUI extends JFrame {
 
 	}
 
-	
+
 	public String getSubnet(boolean isCurrent){
 		Set<String> subnets;
 		if (isCurrent) {//获取的是现有可成功连接的IP集合

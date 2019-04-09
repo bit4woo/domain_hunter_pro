@@ -2,6 +2,7 @@ package burp;
 
 import com.alibaba.fastjson.JSON;
 
+import java.io.PrintWriter;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +14,11 @@ public class DBHelper {
 	private PreparedStatement pres;                                      //PreparedStatement对象
 	private String dbFilePath;
 
+
+	private static IBurpExtenderCallbacks callbacks = BurpExtender.callbacks;//静态变量，burp插件的逻辑中，是可以保证它被初始化的。;
+    public PrintWriter stdout = new PrintWriter(callbacks.getStdout(), true);
+    public PrintWriter stderr = new PrintWriter(callbacks.getStderr(), true);
+    public IExtensionHelpers helpers = callbacks.getHelpers();
 	/**
 	 * 构造函数
 	 * @param dbFilePath sqlite db 文件路径
@@ -50,7 +56,7 @@ public class DBHelper {
 			stmt.close();
 			conn.close();
 		} catch ( Exception e ) {
-			e.printStackTrace();
+			e.printStackTrace(stderr);
 			//System.exit(0);
 		}
 		System.out.println("Table created successfully");
@@ -100,7 +106,7 @@ public class DBHelper {
 				return false;
 			}
 		} catch (Exception ex) {
-			ex.printStackTrace();
+			ex.printStackTrace(stderr);
 		}
 		destroy();
 		return false;
@@ -124,7 +130,7 @@ public class DBHelper {
 			pres.execute();
 			destroy();
 		} catch (Exception e) {
-			e.printStackTrace();
+			e.printStackTrace(stderr);
 		}
 	}
 
@@ -146,9 +152,8 @@ public class DBHelper {
 			}
 			destroy();
 		} catch (Exception e) {
-			e.printStackTrace();
+			e.printStackTrace(stderr);
 		}
-
 		return null;
 	}
 
@@ -174,7 +179,7 @@ public class DBHelper {
 			pres.executeBatch();                                      //批量插入到数据库中
 			destroy();
 		} catch (Exception e) {
-			e.printStackTrace();
+			e.printStackTrace(stderr);
 		}
 	}
 
@@ -195,7 +200,7 @@ public class DBHelper {
 			}
 			destroy();
 		} catch (Exception e) {
-			e.printStackTrace();
+			e.printStackTrace(stderr);
 		}
 		return list;
 	}
