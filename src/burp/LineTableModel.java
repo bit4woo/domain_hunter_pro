@@ -1,5 +1,7 @@
 package burp;
 
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 
 import java.io.Serializable;
@@ -30,6 +32,23 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	public LineTableModel(final BurpExtender burp){
 		this.burp = burp;
 
+		this.addTableModelListener(new TableModelListener() {//表格模型监听
+			@Override
+			public void tableChanged(TableModelEvent e) {
+				int type = e.getType();//获取事件类型(增、删、改等)
+				int row = e.getFirstRow();//获取触发事件的行索引
+				int column = e.getColumn();//获取触发事件的列索引
+				if (type == TableModelEvent.INSERT) {//如果是"插入"事件
+					System.out.println("此事件是由\"插入\"触发,在" + row + "行" + column + "列");
+				} else if (type == TableModelEvent.UPDATE) {
+					System.out.println("此事件是由\"修改\"触发,在" + row + "行" + column + "列");
+				} else if (type == TableModelEvent.DELETE) {
+					System.out.println("此事件是由\"删除\"触发,在" + row + "行" + column + "列");
+				} else {
+					System.out.println("此事件是由其他原因触发");
+				}
+			}
+		});
 	}
 
 	public List<LineEntry> getLineEntries() {
@@ -354,6 +373,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 				item.getPort(), item.getProtocol());
 		return service;
 	}
+
 
 
 	/*    public class LineTable extends JTable

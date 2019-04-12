@@ -4,6 +4,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Set;
+
+import org.apache.commons.net.whois.WhoisClient;
+
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.net.InternetDomainName;
@@ -262,11 +265,23 @@ public class DomainObject {
 		}
 		return DomainObject.USELESS;
 	}
-	
-	
+    
+    @Deprecated
+    public static String whois(String domainName) {
+    	StringBuilder result = new StringBuilder("");
 
-	
-	
+		WhoisClient whois = new WhoisClient();
+		try {
+			//default is internic.net
+			whois.connect(WhoisClient.DEFAULT_HOST);
+			String whoisData1 = whois.query("=" + domainName);
+			result.append(whoisData1);
+			whois.disconnect();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return result.toString();
+	}
 	
 	public static void main(String args[]) {
 /*		String Host ="www.baidu.com";
@@ -285,8 +300,9 @@ public class DomainObject {
 //		System.out.println(xx.rootDomainMap.keySet());
 		
 		
-		System.out.println(InternetDomainName.from("www.jd.local").publicSuffix());
-		System.out.println(InternetDomainName.from("www.jd.local").topPrivateDomain());
+//		System.out.println(InternetDomainName.from("www.jd.local").publicSuffix());
+//		System.out.println(InternetDomainName.from("www.jd.local").topPrivateDomain());
+		System.out.println(whois("jd.ru"));
 	}
 	
 }

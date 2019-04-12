@@ -32,7 +32,7 @@ public class LineTable extends JTable
 	private JSplitPane splitPane;//table area + detail area
 
 	private int selectedRow = this.getSelectedRow();//to identify the selected row after search or hide lines
-	
+
 	public JSplitPane getSplitPane() {
 		return splitPane;
 	}
@@ -68,8 +68,8 @@ public class LineTable extends JTable
 		ResponsePanel = new JTabbedPane();
 		RequestDetailPanel.setRightComponent(ResponsePanel);
 
-		requestViewer = burp.callbacks.createMessageEditor(lineTableModel, false);
-		responseViewer = burp.callbacks.createMessageEditor(lineTableModel, false);
+		requestViewer = BurpExtender.callbacks.createMessageEditor(lineTableModel, false);
+		responseViewer = BurpExtender.callbacks.createMessageEditor(lineTableModel, false);
 		RequestPanel.addTab("Request", requestViewer.getComponent());
 		ResponsePanel.addTab("Response", responseViewer.getComponent());
 		tableinit();
@@ -191,13 +191,13 @@ public class LineTable extends JTable
 			}
 		};
 		rowSorter.setRowFilter(filter);
-		
+
 		try {
 			this.setRowSelectionInterval(selectedRow,selectedRow);
 		} catch (Exception e) {
 			// TODO: handle exception
 		}
-		
+
 	}
 
 	private void registerListeners(){
@@ -261,5 +261,6 @@ public class LineTable extends JTable
 			}
 
 		});
+
 	}
 }
