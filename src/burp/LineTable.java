@@ -31,7 +31,8 @@ public class LineTable extends JTable
 	public JTabbedPane ResponsePanel;
 	private JSplitPane splitPane;//table area + detail area
 
-
+	private int selectedRow = this.getSelectedRow();//to identify the selected row after search or hide lines
+	
 	public JSplitPane getSplitPane() {
 		return splitPane;
 	}
@@ -146,6 +147,7 @@ public class LineTable extends JTable
 
 	public void search(String keywork) {
 		//rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + keywork));
+
 		final RowFilter filter = new RowFilter() {
 			@Override
 			public boolean include(Entry entry) {
@@ -154,6 +156,9 @@ public class LineTable extends JTable
 				LineEntry line = rowSorter.getModel().getLineEntries().get(row);
 
 				if (BurpExtender.rdbtnHideCheckedItems.isSelected()&& line.isChecked()) {//to hide checked lines
+					if (selectedRow == row) {
+						selectedRow = row+1;
+					}
 					return false;
 				}
 
@@ -178,11 +183,21 @@ public class LineTable extends JTable
 					if (new String(line.getComment()).toLowerCase().contains(keywork.toLowerCase())) {
 						return true;
 					}
+					if (selectedRow== row) {
+						selectedRow = row+1;
+					}
 					return false;
 				}
 			}
 		};
 		rowSorter.setRowFilter(filter);
+		
+		try {
+			this.setRowSelectionInterval(selectedRow,selectedRow);
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+		
 	}
 
 	private void registerListeners(){

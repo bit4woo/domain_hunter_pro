@@ -937,6 +937,15 @@ public class GUI extends JFrame {
 			}
 		});
 		buttonPanel.add(rdbtnHideCheckedItems);
+		
+		JButton btnRefresh = new JButton("Refresh");//主要目的是隐藏新标注的条目，代替自动隐藏
+		btnRefresh.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String keyword = BurpExtender.textFieldSearch.getText().trim();
+				titleTable.search(keyword);
+			}
+		});
+		buttonPanel.add(btnRefresh);
 
 		JButton btnStatus = new JButton("status");
 		btnStatus.addActionListener(new ActionListener() {
