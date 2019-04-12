@@ -153,7 +153,7 @@ public class LineTable extends JTable
 				int row = (int) entry.getIdentifier();
 				LineEntry line = rowSorter.getModel().getLineEntries().get(row);
 
-				if (BurpExtender.isHideCheckedLines() && line.isChecked()) {//to hide checked lines
+				if (BurpExtender.rdbtnHideCheckedItems.isSelected()&& line.isChecked()) {//to hide checked lines
 					return false;
 				}
 

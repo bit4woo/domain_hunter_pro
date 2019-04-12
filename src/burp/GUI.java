@@ -113,6 +113,7 @@ public class GUI extends JFrame {
 	private JLabel lblSummaryOfTitle;
 	public static JTextField textFieldSearch;
 	protected JPanel TitlePanel;
+	public static JRadioButton rdbtnHideCheckedItems;
 
 
 
@@ -927,10 +928,9 @@ public class GUI extends JFrame {
 		});
 		buttonPanel.add(buttonSearch);
 
-		JRadioButton rdbtnHideCheckedItems = new JRadioButton("Hide Checked");
+		rdbtnHideCheckedItems = new JRadioButton("Hide Checked");
 		rdbtnHideCheckedItems.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				BurpExtender.setHideCheckedLines(rdbtnHideCheckedItems.isSelected());
 				String keyword = BurpExtender.textFieldSearch.getText().trim();
 				titleTable.search(keyword);
 				//lineTable.getModel().unHideLines();

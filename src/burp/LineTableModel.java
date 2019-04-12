@@ -15,8 +15,6 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	private static final long serialVersionUID = 1L;
 	private LineEntry currentlyDisplayedItem;
 	private List<LineEntry> lineEntries =new ArrayList<LineEntry>();
-	private List<LineEntry> hidenLineEntries =new ArrayList<LineEntry>();
-	//是否隐藏只在LineTableModel中区分，其他地方获取都是合并了的。
 	private HashMap<String,Set<String>> noResponseDomain =new HashMap<String,Set<String>>();
 	private BurpExtender burp;
 	private boolean EnableSearch = Runtime.getRuntime().totalMemory()/1024/1024/1024 > 16;//if memory >16GB enable Search. else disable.
@@ -52,12 +50,6 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 				result.add(linetext);
 			}
 		}
-		synchronized (hidenLineEntries) {
-			for(LineEntry line:hidenLineEntries) {
-				String linetext = line.ToJson();
-				result.add(linetext);
-			}
-		}
 		return result;
 	}
 
@@ -73,14 +65,6 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 
 			result.put(domain, ipset);
 		}
-
-		for(LineEntry line:hidenLineEntries) {
-			String[] linetext = line.getIP().split(", ");
-			String domain = line.getHost();
-			HashSet<String> ipset = new HashSet<String>(Arrays.asList(linetext));
-
-			result.put(domain, ipset);
-		}
 		return result;
 	}
 
@@ -88,11 +72,6 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		Set<String> result = new HashSet<String>();
 		//lineEntries.addAll(hidenLineEntries);
 		for(LineEntry line:lineEntries) {
-			String[] linetext = line.getIP().split(", ");
-			result.addAll(Arrays.asList(linetext));
-		}
-
-		for(LineEntry line:hidenLineEntries) {
 			String[] linetext = line.getIP().split(", ");
 			result.addAll(Arrays.asList(linetext));
 		}
@@ -122,8 +101,8 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	}
 
 	public String getStatusSummary() {
-		int all = lineEntries.size()+hidenLineEntries.size();
-		int checked = hidenLineEntries.size();
+		int all = lineEntries.size();
+		int checked = 0;
 		for (LineEntry lineEntrie:lineEntries) {
 			if (lineEntrie.isChecked()) {
 				checked ++;
@@ -239,49 +218,6 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 				lineEntries.remove(rows[i]);
 				this.burp.stdout.println("### "+url+" added to black list and deleted");
 				this.fireTableRowsDeleted(rows[i], rows[i]);
-			}
-		}
-	}
-
-	@Deprecated
-	public void hideLines() {
-		synchronized (lineEntries) {
-			//because thread let the delete action not in order, so we must loop in here.
-			//list length and index changed after every remove.the origin index not point to right item any more.
-			ArrayList<Integer> tmprows= new ArrayList<Integer>();
-			for (LineEntry lineEntrie:lineEntries) {
-				if (lineEntrie.isChecked()) {
-					int index = lineEntries.indexOf(lineEntrie);
-					tmprows.add(index);
-				}
-			}
-
-			Integer[] rows = (Integer[])tmprows.toArray(new Integer[tmprows.size()]);
-			Arrays.sort(rows); //升序
-			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
-				LineEntry entry = lineEntries.get(rows[i]);
-				//lineEntries.remove((int)rows[i]);//当没有转换为int前，删除是失败的！
-				lineEntries.remove(entry);
-				hidenLineEntries.add(entry);
-
-				String url = entry.getUrl();
-				this.burp.stdout.println("### "+url+" hidded");
-				this.fireTableRowsDeleted(rows[i], rows[i]);
-			}
-		}
-		
-	}
-	
-	@Deprecated
-	public void unHideLines() {
-		synchronized (lineEntries) {
-			Iterator<LineEntry> it = hidenLineEntries.iterator();
-			while (it.hasNext()){
-				LineEntry item = it.next();
-				addNewLineEntry(item);
-				it.remove();
-				String url = item.getUrl();
-				this.burp.stdout.println("### show "+url);
 			}
 		}
 	}

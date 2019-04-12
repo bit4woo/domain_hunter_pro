@@ -28,7 +28,6 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 	private IExtensionHelpers helpers;
 	private ThreadGetTitle threadGetTitle;
 	private static List<LineEntry> backupLineEntries;
-	private static boolean hideCheckedLines;
 
 	@Override
 	public void registerExtenderCallbacks(IBurpExtenderCallbacks callbacks)
@@ -68,14 +67,6 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 
 	public static IBurpExtenderCallbacks getCallbacks() {
 		return callbacks;
-	}
-
-	public static boolean isHideCheckedLines() {
-		return hideCheckedLines;
-	}
-
-	public static void setHideCheckedLines(boolean hideCheckedLines) {
-		BurpExtender.hideCheckedLines = hideCheckedLines;
 	}
 
 	@Override
