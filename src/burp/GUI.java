@@ -110,7 +110,7 @@ public class GUI extends JFrame {
 	private JButton btnSaveState;
 	private JButton btnGetExtendtitle;
 	private JFileChooser fc = new JFileChooser();
-	private JLabel lblSummaryOfTitle;
+	public static JLabel lblSummaryOfTitle;
 	public static JTextField textFieldSearch;
 	protected JPanel TitlePanel;
 	public static JRadioButton rdbtnHideCheckedItems;
@@ -941,8 +941,7 @@ public class GUI extends JFrame {
 		JButton btnStatus = new JButton("status");
 		btnStatus.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				String status = digStatus();
-				lblSummaryOfTitle.setText(status);
+				digStatus();
 			}
 		});
 		btnStatus.setToolTipText("Show Status Of Digging.");
@@ -1070,6 +1069,7 @@ public class GUI extends JFrame {
 		for (LineEntry line:lineEntries) {
 			titleTableModel.addNewLineEntry(line);
 		}
+		digStatus();
 		stdout.println("Load Title Panel Data Done");
 	}
 
@@ -1208,8 +1208,9 @@ public class GUI extends JFrame {
 		return null;
 	}
 
-	public String digStatus() {
-		return titleTableModel.getStatusSummary();
+	public static void digStatus() {
+		String status = titleTableModel.getStatusSummary();
+		lblSummaryOfTitle.setText(status);
 	}
 
 	class JsonFileFilter extends FileFilter {

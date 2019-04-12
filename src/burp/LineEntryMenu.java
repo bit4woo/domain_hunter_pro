@@ -115,9 +115,11 @@ public class LineEntryMenu extends JPopupMenu {
 			public void actionPerformed(ActionEvent actionEvent) {
 				lineTable.getModel().updateRows(rows);
 				BurpExtender.getTitleTableModel().updateRows(rows);
-				//            	if (lineTable.getName().equalsIgnoreCase("runnerTable")) {//it trigger this action in runner. need to update titleTableModel
-				//            		BurpExtender.getTitleTableModel().updateRows(rows);
-				//            	}
+//				if (BurpExtender.rdbtnHideCheckedItems.isSelected()) {//实现自动隐藏，为了避免误操作，不启用
+//					String keyword = BurpExtender.textFieldSearch.getText().trim();
+//					lineTable.search(keyword);
+//				}
+				BurpExtender.digStatus();
 			}
 		});
 		this.add(checkedItem);
@@ -133,6 +135,7 @@ public class LineEntryMenu extends JPopupMenu {
 				}else {
 					return;
 				}
+				BurpExtender.digStatus();
 			}
 		});
 		this.add(removeItem);
@@ -146,6 +149,7 @@ public class LineEntryMenu extends JPopupMenu {
 				}else {
 					return;
 				}
+				BurpExtender.digStatus();
 			}
 		});
 		blackListItem.setToolTipText("will not get title from next time");
