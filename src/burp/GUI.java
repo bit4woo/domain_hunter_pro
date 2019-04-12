@@ -111,7 +111,7 @@ public class GUI extends JFrame {
 	private JButton btnGetExtendtitle;
 	private JFileChooser fc = new JFileChooser();
 	private JLabel lblSummaryOfTitle;
-	protected JTextField textFieldSearch;
+	public static JTextField textFieldSearch;
 	protected JPanel TitlePanel;
 
 
@@ -188,21 +188,22 @@ public class GUI extends JFrame {
 		btnNew = new JButton("New");
 		btnNew.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-//				int result = JOptionPane.showConfirmDialog(null,"Save Current Project?");
-//
-//				/*     是:   JOptionPane.YES_OPTION
-//				 *     否:   JOptionPane.NO_OPTION
-//				 *     取消: JOptionPane.CANCEL_OPTION
-//				 *     关闭: JOptionPane.CLOSED_OPTION*/
-//				if (result == JOptionPane.CANCEL_OPTION || result == JOptionPane.CLOSED_OPTION) {
-//					return;
-//				}else if (result == JOptionPane.YES_OPTION) {
-//					saveDialog(true);
-//				}else if (result == JOptionPane.NO_OPTION) {
-//					// nothing to do
-//				}
+
 				if (domainResult != null){
-					saveDialog(true);//save old project
+					//saveDialog(true);//save old project
+					int result = JOptionPane.showConfirmDialog(null,"Save Current Project?");
+
+					/*     是:   JOptionPane.YES_OPTION
+					 *     否:   JOptionPane.NO_OPTION
+					 *     取消: JOptionPane.CANCEL_OPTION
+					 *     关闭: JOptionPane.CLOSED_OPTION*/
+					if (result == JOptionPane.CANCEL_OPTION || result == JOptionPane.CLOSED_OPTION) {
+						return;
+					}else if (result == JOptionPane.YES_OPTION) {
+						saveDialog(true);
+					}else if (result == JOptionPane.NO_OPTION) {
+						// nothing to do
+					}
 				}
 
 				domainResult = new DomainObject("");
@@ -439,12 +440,12 @@ public class GUI extends JFrame {
 
 		domainTableModel = new DefaultTableModel(
 				new Object[][] {
-						//{"1", "1","1"},
+					//{"1", "1","1"},
 				},
 				new String[] {
 						"Root Domain", "Keyword"//, "Source"
 				}
-		);
+				);
 		table.setModel(domainTableModel);
 		domainTableModel.addTableModelListener(new TableModelListener(){
 			@Override
@@ -888,7 +889,7 @@ public class GUI extends JFrame {
 			}
 		});
 
-		textFieldSearch = new JTextField("Input text to search");
+		textFieldSearch = new JTextField("");
 		textFieldSearch.addFocusListener(new FocusAdapter() {
 			@Override
 			public void focusGained(FocusEvent e) {
@@ -909,7 +910,8 @@ public class GUI extends JFrame {
 		textFieldSearch.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String keyword = textFieldSearch.getText().trim();
-				showSearchResult(keyword);
+				titleTable.search(keyword);
+
 			}
 		});
 		textFieldSearch.setColumns(30);
@@ -920,10 +922,21 @@ public class GUI extends JFrame {
 		buttonSearch.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String keyword = textFieldSearch.getText().trim();
-				showSearchResult(keyword);
+				titleTable.search(keyword);
 			}
 		});
 		buttonPanel.add(buttonSearch);
+
+		JRadioButton rdbtnHideCheckedItems = new JRadioButton("Hide Checked");
+		rdbtnHideCheckedItems.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				BurpExtender.setHideCheckedLines(rdbtnHideCheckedItems.isSelected());
+				String keyword = BurpExtender.textFieldSearch.getText().trim();
+				titleTable.search(keyword);
+				//lineTable.getModel().unHideLines();
+			}
+		});
+		buttonPanel.add(rdbtnHideCheckedItems);
 
 		JButton btnStatus = new JButton("status");
 		btnStatus.addActionListener(new ActionListener() {
@@ -934,7 +947,6 @@ public class GUI extends JFrame {
 		});
 		btnStatus.setToolTipText("Show Status Of Digging.");
 		buttonPanel.add(btnStatus);
-
 
 		lblSummaryOfTitle = new JLabel("      ^_^");
 		buttonPanel.add(lblSummaryOfTitle);
@@ -1208,11 +1220,6 @@ public class GUI extends JFrame {
 			String name = file.getName();
 			return file.isDirectory() || name.toLowerCase().endsWith(".db");  // 仅显示目录和json文件
 		}
-	}
-
-	public void showSearchResult(String keyword) {
-		//sub class should over write this function
-
 	}
 
 

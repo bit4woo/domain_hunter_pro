@@ -243,7 +243,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		}
 	}
 
-
+	@Deprecated
 	public void hideLines() {
 		synchronized (lineEntries) {
 			//because thread let the delete action not in order, so we must loop in here.
@@ -269,8 +269,10 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 				this.fireTableRowsDeleted(rows[i], rows[i]);
 			}
 		}
+		
 	}
-
+	
+	@Deprecated
 	public void unHideLines() {
 		synchronized (lineEntries) {
 			Iterator<LineEntry> it = hidenLineEntries.iterator();
