@@ -451,7 +451,24 @@ public class GUI extends JFrame {
 		domainTableModel.addTableModelListener(new TableModelListener(){
 			@Override
 			public void tableChanged(TableModelEvent e) {
-				domainResult.rootDomainMap = getTableMap();
+				domainResult.setRootDomainMap(getTableMap());
+				if (e.getType() == TableModelEvent.DELETE) {
+					Set<String> tmpDomains = domainResult.getSubDomainSet();
+					Set<String> newSubDomainSet = new HashSet<>();
+					Set<String> newSimilarDomainSet = new HashSet<String>();
+					tmpDomains.addAll(domainResult.getSimilarDomainSet());
+					for (String domain:tmpDomains) {
+						int type = BurpExtender.domainResult.domainType(domain);
+						if (type == DomainObject.SUB_DOMAIN)
+						{	
+							newSubDomainSet.add(domain);
+						}else if (type == DomainObject.SIMILAR_DOMAIN) {
+							newSimilarDomainSet.add(domain);
+						}
+					}
+					domainResult.setSubDomainSet(newSubDomainSet);
+					domainResult.setSimilarDomainSet(newSimilarDomainSet);
+				}
 			}
 		});
 
