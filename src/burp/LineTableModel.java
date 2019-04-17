@@ -232,7 +232,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			Arrays.sort(rows); //升序
 			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
 				String Host = lineEntries.get(rows[i]).getHost();
-				this.burp.domainResult.blackDomainSet.add(Host);
+				this.burp.domainResult.getBlackDomainSet().add(Host);
 				String url = lineEntries.get(rows[i]).getUrl();
 				lineEntries.remove(rows[i]);
 				this.burp.stdout.println("### "+url+" added to black list and deleted");

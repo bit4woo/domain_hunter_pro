@@ -309,7 +309,7 @@ public class GUI extends JFrame {
 					//https://stackoverflow.com/questions/19708646/how-to-update-swing-ui-while-actionlistener-is-in-progress
 					@Override
 					protected Map doInBackground() throws Exception {
-						domainResult.rootDomainMap =getTableMap();
+						domainResult.setRootDomainMap(getTableMap());
 						Set<String> rootDomains = domainResult.fetchRootDomainSet();
 						Set<String> keywords= domainResult.fetchKeywordSet();
 
@@ -348,9 +348,9 @@ public class GUI extends JFrame {
 							line = line.trim();
 
 							if (domainResult.domainType(line) == DomainObject.SUB_DOMAIN) {
-								domainResult.subDomainSet.add(line);
+								domainResult.getSubDomainSet().add(line);
 							}else if(domainResult.domainType(line) == DomainObject.SIMILAR_DOMAIN) {
-								domainResult.similarDomainSet.add(line);
+								domainResult.getSimilarDomainSet().add(line);
 							}else {
 								stdout.println("import skip "+line);
 							}
@@ -452,23 +452,23 @@ public class GUI extends JFrame {
 			@Override
 			public void tableChanged(TableModelEvent e) {
 				domainResult.setRootDomainMap(getTableMap());
-				if (e.getType() == TableModelEvent.DELETE) {
-					Set<String> tmpDomains = domainResult.getSubDomainSet();
-					Set<String> newSubDomainSet = new HashSet<>();
-					Set<String> newSimilarDomainSet = new HashSet<String>();
-					tmpDomains.addAll(domainResult.getSimilarDomainSet());
-					for (String domain:tmpDomains) {
-						int type = BurpExtender.domainResult.domainType(domain);
-						if (type == DomainObject.SUB_DOMAIN)
-						{	
-							newSubDomainSet.add(domain);
-						}else if (type == DomainObject.SIMILAR_DOMAIN) {
-							newSimilarDomainSet.add(domain);
-						}
-					}
-					domainResult.setSubDomainSet(newSubDomainSet);
-					domainResult.setSimilarDomainSet(newSimilarDomainSet);
-				}
+//				if (e.getType() == TableModelEvent.DELETE) {
+//					Set<String> tmpDomains = domainResult.getSubDomainSet();
+//					Set<String> newSubDomainSet = new HashSet<>();
+//					Set<String> newSimilarDomainSet = new HashSet<String>();
+//					tmpDomains.addAll(domainResult.getSimilarDomainSet());
+//					for (String domain:tmpDomains) {
+//						int type = BurpExtender.domainResult.domainType(domain);
+//						if (type == DomainObject.SUB_DOMAIN)
+//						{	
+//							newSubDomainSet.add(domain);
+//						}else if (type == DomainObject.SIMILAR_DOMAIN) {
+//							newSimilarDomainSet.add(domain);
+//						}
+//					}
+//					domainResult.setSubDomainSet(newSubDomainSet);
+//					domainResult.setSimilarDomainSet(newSimilarDomainSet);
+//				}
 			}
 		});
 
@@ -555,7 +555,7 @@ public class GUI extends JFrame {
 				}
 				// will trigger tableModel listener
 
-				domainResult.rootDomainMap = getTableMap();
+				domainResult.setRootDomainMap(getTableMap());
 				showToDomainUI(domainResult);
 			}
 		});
@@ -1062,13 +1062,13 @@ public class GUI extends JFrame {
 	}
 
 	public void ClearTable() {
-		LinkedHashMap<String, String> tmp = domainResult.rootDomainMap;
+		LinkedHashMap<String, String> tmp = domainResult.getRootDomainMap();
 
 		DefaultTableModel model = (DefaultTableModel) table.getModel();
 		model.setRowCount(0);
 		//this also trigger tableModel listener. lead to rootDomainMap to empty!!
 		//so need to backup rootDomainMap and restore!
-		domainResult.rootDomainMap = tmp;
+		domainResult.setRootDomainMap(tmp);
 	}
 
 	public void showToDomainUI(DomainObject domainResult) {
@@ -1076,7 +1076,7 @@ public class GUI extends JFrame {
 		domainResult.relatedToRoot();
 		ClearTable();
 
-		for (Entry<String, String> entry:domainResult.rootDomainMap.entrySet()) {
+		for (Entry<String, String> entry:domainResult.getRootDomainMap().entrySet()) {
 			domainTableModel.addRow(new Object[]{entry.getKey(),entry.getValue()});
 		}
 

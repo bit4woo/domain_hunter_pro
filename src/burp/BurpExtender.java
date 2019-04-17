@@ -238,10 +238,10 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 					domains.add(host);
 				}
 
-				domainResult.relatedDomainSet.addAll(domains);
+				domainResult.getRelatedDomainSet().addAll(domains);
 				if (domainResult.autoAddRelatedToRoot == true) {
 					domainResult.relatedToRoot();
-					domainResult.subDomainSet.addAll(domains);
+					domainResult.getSubDomainSet().addAll(domains);
 				}
 				showToDomainUI(domainResult);
 			}

@@ -17,12 +17,12 @@ public class DomainObject {
 	public String summary = "";
 	public boolean autoAddRelatedToRoot = false; 
 	
-	public LinkedHashMap<String,String> rootDomainMap = new LinkedHashMap<String,String>();
+	private LinkedHashMap<String,String> rootDomainMap = new LinkedHashMap<String,String>();
 	// LinkedHashMap to keep the insert order 
-	public Set<String> subDomainSet = new HashSet<String>();
-	public Set<String> similarDomainSet = new HashSet<String>();
-	public Set<String> relatedDomainSet = new HashSet<String>();
-	public Set<String> blackDomainSet = new HashSet<String>();
+	private Set<String> subDomainSet = new HashSet<String>();
+	private Set<String> similarDomainSet = new HashSet<String>();
+	private Set<String> relatedDomainSet = new HashSet<String>();
+	private Set<String> blackDomainSet = new HashSet<String>();
 
     public static int SUB_DOMAIN=0;
     public static int SIMILAR_DOMAIN=1;
@@ -293,16 +293,14 @@ public class DomainObject {
 		int type = new DomainObject("").domainType(Host);
 		System.out.println(type);*/
 		
-//		DomainObject xx = new DomainObject("");
-//		xx.rootDomainMap.put("baidu.com", "baidu");
-//		xx.relatedDomainSet.add("xxx.baidu.com");
-//		xx.relatedToRoot();
-//		System.out.println(xx.rootDomainMap.keySet());
+		DomainObject xx = new DomainObject("");
+		xx.getRelatedDomainSet().add("xxx.baidu.com");
+		System.out.println(xx.getRelatedDomainSet());
 		
 		
 //		System.out.println(InternetDomainName.from("www.jd.local").publicSuffix());
 //		System.out.println(InternetDomainName.from("www.jd.local").topPrivateDomain());
-		System.out.println(whois("jd.ru"));
+//		System.out.println(whois("jd.ru"));
 	}
 	
 }

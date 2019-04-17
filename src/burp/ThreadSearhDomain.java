@@ -58,9 +58,9 @@ class ThreadSearhDomain{
 			}
 		}
 		
-		BurpExtender.getDomainResult().subDomainSet.addAll(subDomainQueue);
-		BurpExtender.getDomainResult().similarDomainSet.addAll(similarDomainQueue);
-		BurpExtender.getDomainResult().relatedDomainSet.addAll(relatedDomainQueue);
+		BurpExtender.getDomainResult().getSubDomainSet().addAll(subDomainQueue);
+		BurpExtender.getDomainResult().getSimilarDomainSet().addAll(similarDomainQueue);
+		BurpExtender.getDomainResult().getRelatedDomainSet().addAll(relatedDomainQueue);
 		return;
 	}
 
