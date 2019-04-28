@@ -844,16 +844,36 @@ public class GUI extends JFrame {
 		btnGetSubnet.setEnabled(true);
 		btnGetSubnet.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				int result = JOptionPane.showConfirmDialog(null,"Just get IP Subnets of [Current] lines ?");
-				String subnetsString;
-				if (result == JOptionPane.YES_OPTION) {
-					subnetsString = getSubnet(true);
-				}else {
-					subnetsString = getSubnet(false);
-				}
-				Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-				StringSelection selection = new StringSelection(subnetsString);
-				clipboard.setContents(selection, null);
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+					@Override
+					protected Map doInBackground() throws Exception {
+
+						btnGetSubnet.setEnabled(false);
+						int result = JOptionPane.showConfirmDialog(null,"Just get IP Subnets of [Current] lines ?");
+						String subnetsString;
+						if (result == JOptionPane.YES_OPTION) {
+							subnetsString = getSubnet(true);
+						}else {
+							subnetsString = getSubnet(false);
+						}
+						Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+						StringSelection selection = new StringSelection(subnetsString);
+						clipboard.setContents(selection, null);
+						stdout.print(selection);
+						btnGetSubnet.setEnabled(true);
+						return new HashMap<String, String>();
+						//no use ,the return.
+					}
+					@Override
+					protected void done() {
+						try {
+							btnGetSubnet.setEnabled(true);
+						} catch (Exception e) {
+							e.printStackTrace(stderr);
+						}
+					}
+				};
+				worker.execute();
 			}
 		});
 		buttonPanel.add(btnGetSubnet);

@@ -37,7 +37,7 @@ class ThreadSearhDomain{
 
 		plist = new ArrayList<DomainProducer>();
 
-		for (int i=0;i<=20;i++) {
+		for (int i=0;i<=50;i++) {
 			DomainProducer p = new DomainProducer(inputQueue,subDomainQueue,
 					similarDomainQueue,relatedDomainQueue,i);
 			p.start();
