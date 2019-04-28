@@ -859,7 +859,7 @@ public class GUI extends JFrame {
 						Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 						StringSelection selection = new StringSelection(subnetsString);
 						clipboard.setContents(selection, null);
-						stdout.print(selection);
+						stdout.print(subnetsString);
 						btnGetSubnet.setEnabled(true);
 						return new HashMap<String, String>();
 						//no use ,the return.
