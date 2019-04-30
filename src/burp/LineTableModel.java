@@ -1,5 +1,6 @@
 package burp;
 
+import javax.sql.RowSet;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
@@ -31,21 +32,27 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 
 	public LineTableModel(final BurpExtender burp){
 		this.burp = burp;
-
 		this.addTableModelListener(new TableModelListener() {//表格模型监听
 			@Override
 			public void tableChanged(TableModelEvent e) {
 				int type = e.getType();//获取事件类型(增、删、改等)
-				int row = e.getFirstRow();//获取触发事件的行索引
+				int rowstart = e.getFirstRow();//获取触发事件的行索引
+				int rowend = e.getLastRow();
 				int column = e.getColumn();//获取触发事件的列索引
 				if (type == TableModelEvent.INSERT) {//如果是"插入"事件
-					System.out.println("此事件是由\"插入\"触发,在" + row + "行" + column + "列");
+					//System.out.println("此事件是由\"插入\"触发,在" + row + "行" + column + "列");
 				} else if (type == TableModelEvent.UPDATE) {
-					System.out.println("此事件是由\"修改\"触发,在" + row + "行" + column + "列");
+					DBHelper dbHelper = new DBHelper(GUI.currentDBFile.toString());
+					for (int i = rowstart; i <= rowend; i++) {
+						dbHelper.updateTitle(lineEntries.get(i));
+					}
 				} else if (type == TableModelEvent.DELETE) {
-					System.out.println("此事件是由\"删除\"触发,在" + row + "行" + column + "列");
+					DBHelper dbHelper = new DBHelper(GUI.currentDBFile.toString());
+					for (int i = rowstart; i <= rowend; i++) {
+						dbHelper.deleteTitle(lineEntries.get(i));
+					}
 				} else {
-					System.out.println("此事件是由其他原因触发");
+					//System.out.println("此事件是由其他原因触发");
 				}
 			}
 		});
@@ -201,6 +208,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		synchronized (lineEntries) {
 			Arrays.sort(rows); //升序
 			List<String> urls = new ArrayList<>();
+
 			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
 				String url = lineEntries.get(rows[i]).getUrl();
 				urls.add(url);
@@ -217,8 +225,10 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
 				LineEntry checked = lineEntries.get(rows[i]);
 				checked.setChecked(true);
-				lineEntries.remove(rows[i]);
-				lineEntries.add(rows[i], checked);
+//				lineEntries.remove(rows[i]);
+//				lineEntries.add(rows[i], checked);
+//				//https://stackoverflow.com/questions/4352885/how-do-i-update-the-element-at-a-certain-position-in-an-arraylist
+				lineEntries.set(rows[i], checked);
 				this.burp.stdout.println("$$$ "+checked.getUrl()+" updated");
 			}
 			this.fireTableRowsUpdated(rows[0], rows[rows.length-1]);

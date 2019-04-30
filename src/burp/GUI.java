@@ -788,6 +788,7 @@ public class GUI extends JFrame {
 					protected Map doInBackground() throws Exception {
 						btnGettitle.setEnabled(false);
 						getAllTitle();
+						saveDialog(true);
 						btnGettitle.setEnabled(true);
 						return new HashMap<String, String>();
 						//no use ,the return.
@@ -816,6 +817,7 @@ public class GUI extends JFrame {
 					protected Map doInBackground() throws Exception {
 						btnGetExtendtitle.setEnabled(false);
 						getExtendTitle();
+						saveDialog(true);
 						btnGetExtendtitle.setEnabled(true);
 						return new HashMap<String, String>();
 						//no use ,the return.
@@ -880,7 +882,7 @@ public class GUI extends JFrame {
 					@Override
 					protected Map doInBackground() throws Exception {
 						btnSaveState.setEnabled(false);
-						saveDialog(true);;//both tilte and domain
+						saveDialog(true);//both tilte and domain
 						//saveDBfileToExtension();
 						btnSaveState.setEnabled(true);
 						return new HashMap<String, String>();

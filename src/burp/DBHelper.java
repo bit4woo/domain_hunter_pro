@@ -182,7 +182,7 @@ public class DBHelper {
 			e.printStackTrace(stderr);
 		}
 	}
-
+	
 
 	public List<LineEntry> getTitles(){
 		List<LineEntry> list=new ArrayList<LineEntry>();
@@ -203,6 +203,43 @@ public class DBHelper {
 			e.printStackTrace(stderr);
 		}
 		return list;
+	}
+	
+	
+	public void updateTitle(LineEntry entry){
+		String sql="update Title SET Content=? where NAME=?";
+		//UPDATE Person SET FirstName = 'Fred' WHERE LastName = 'Wilson' 
+
+		try {
+			conn = getConnection();
+			pres=conn.prepareStatement(sql);
+			pres.setString(1, entry.ToJson());
+			pres.setString(2, entry.getUrl());
+			pres.executeUpdate();
+		} catch (Exception e) {
+			e.printStackTrace(stderr);
+		}finally {
+			destroy();
+		}
+	}
+	
+	
+	public void deleteTitle(LineEntry entry){
+		String sql="DELETE FROM Title where NAME= ?";
+		//DELETE FROM Person WHERE LastName = 'Wilson'  
+
+		try {
+			conn = getConnection();
+			pres=conn.prepareStatement(sql);
+			pres.setString(1, entry.getUrl());
+			pres.executeUpdate();
+			//Statement.execute(String sql) method which is mainly intended to perform database queries.
+			//To execute INSERT/UPDATE/DELETE statements it's recommended the use of Statement.executeUpdate() method instead.
+		} catch (Exception e) {
+			e.printStackTrace(stderr);
+		} finally {
+			destroy();
+		}
 	}
 
 	public static void main(String args[]){
