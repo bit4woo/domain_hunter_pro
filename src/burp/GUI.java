@@ -59,6 +59,8 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
+import org.omg.CORBA.PUBLIC_MEMBER;
+
 import com.alibaba.fastjson.JSON;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
@@ -627,29 +629,27 @@ public class GUI extends JFrame {
 		ScrollPaneRelatedDomains.setViewportView(textAreaRelatedDomains);
 		ScrollPaneSubdomains.setViewportView(textAreaSubdomains);
 		ScrollPaneSimilarDomains.setViewportView(textAreaSimilarDomains);
+		
 
 
 		textAreaRelatedDomains.getDocument().addDocumentListener(new DocumentListener() {
 
 			@Override
 			public void removeUpdate(DocumentEvent e) {
-				Set<String> domainList = new HashSet<>(Arrays.asList(textAreaRelatedDomains.getText().split(System.lineSeparator())));
-				domainList.remove("");
-				domainResult.setRelatedDomainSet(domainList);
+				domainResult.setRelatedDomainSet(getSetFromTextArea(textAreaRelatedDomains));
+				lblSummary.setText(domainResult.getSummary());
 			}
 
 			@Override
 			public void insertUpdate(DocumentEvent e) {
-				Set<String> domainList = new HashSet<>(Arrays.asList(textAreaRelatedDomains.getText().split(System.lineSeparator())));
-				domainList.remove("");
-				domainResult.setRelatedDomainSet(domainList);
+				domainResult.setRelatedDomainSet(getSetFromTextArea(textAreaRelatedDomains));
+				lblSummary.setText(domainResult.getSummary());
 			}
 
 			@Override
 			public void changedUpdate(DocumentEvent arg0) {
-				Set<String> domainList = new HashSet<>(Arrays.asList(textAreaRelatedDomains.getText().split(System.lineSeparator())));
-				domainList.remove("");
-				domainResult.setRelatedDomainSet(domainList);
+				domainResult.setRelatedDomainSet(getSetFromTextArea(textAreaRelatedDomains));
+				lblSummary.setText(domainResult.getSummary());
 			}
 		});
 
@@ -657,47 +657,41 @@ public class GUI extends JFrame {
 
 			@Override
 			public void removeUpdate(DocumentEvent e) {
-				Set<String> domainList = new HashSet<>(Arrays.asList(textAreaSubdomains.getText().split(System.lineSeparator())));
-				domainList.remove("");
-				domainResult.setSubDomainSet(domainList);
+				domainResult.setSubDomainSet(getSetFromTextArea(textAreaSubdomains));
+				lblSummary.setText(domainResult.getSummary());
 			}
 
 			@Override
 			public void insertUpdate(DocumentEvent e) {
-				Set<String> domainList = new HashSet<>(Arrays.asList(textAreaSubdomains.getText().split(System.lineSeparator())));
-				domainList.remove("");
-				domainResult.setSubDomainSet(domainList);
+				domainResult.setSubDomainSet(getSetFromTextArea(textAreaSubdomains));
+				lblSummary.setText(domainResult.getSummary());
 			}
 
 			@Override
 			public void changedUpdate(DocumentEvent arg0) {
-				Set<String> domainList = new HashSet<>(Arrays.asList(textAreaSubdomains.getText().split(System.lineSeparator())));
-				domainList.remove("");
-				domainResult.setSubDomainSet(domainList);
+				domainResult.setSubDomainSet(getSetFromTextArea(textAreaSubdomains));
+				lblSummary.setText(domainResult.getSummary());
 			}
 		});
 
 		textAreaSimilarDomains.getDocument().addDocumentListener(new DocumentListener() {
 
 			@Override
-			public void removeUpdate(DocumentEvent e) {
-				Set<String> domainList = new HashSet<>(Arrays.asList(textAreaSimilarDomains.getText().split(System.lineSeparator())));
-				domainList.remove("");
-				domainResult.setSimilarDomainSet(domainList);
+			public void removeUpdate(DocumentEvent e) {				
+				domainResult.setSimilarDomainSet(getSetFromTextArea(textAreaSimilarDomains));
+				lblSummary.setText(domainResult.getSummary());
 			}
 
 			@Override
 			public void insertUpdate(DocumentEvent e) {
-				Set<String> domainList = new HashSet<>(Arrays.asList(textAreaSimilarDomains.getText().split(System.lineSeparator())));
-				domainList.remove("");
-				domainResult.setSimilarDomainSet(domainList);
+				domainResult.setSimilarDomainSet(getSetFromTextArea(textAreaSimilarDomains));
+				lblSummary.setText(domainResult.getSummary());
 			}
 
 			@Override
 			public void changedUpdate(DocumentEvent arg0) {
-				Set<String> domainList = new HashSet<>(Arrays.asList(textAreaSimilarDomains.getText().split(System.lineSeparator())));
-				domainList.remove("");
-				domainResult.setSimilarDomainSet(domainList);
+				domainResult.setSimilarDomainSet(getSetFromTextArea(textAreaSimilarDomains));
+				lblSummary.setText(domainResult.getSummary());
 			}
 		});
 
@@ -1081,6 +1075,13 @@ public class GUI extends JFrame {
 			}
 		}
 		return tableMap;
+	}
+	
+	public static Set<String> getSetFromTextArea(JTextArea textarea){
+		//user input maybe use "\n" in windows, so the System.lineSeparator() not always works fine!
+		Set<String> domainList = new HashSet<>(Arrays.asList(textarea.getText().replaceAll("\r\n", "\n").split("\n")));
+		domainList.remove("");
+		return domainList;
 	}
 
 	public void ClearTable() {

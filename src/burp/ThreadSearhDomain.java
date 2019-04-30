@@ -11,6 +11,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.plaf.basic.BasicInternalFrameTitlePane.IconifyAction;
+
 import org.apache.commons.text.StringEscapeUtils;
 
 //////////////////ThreadGetTitle block/////////////
@@ -60,8 +62,10 @@ class ThreadSearhDomain{
 				continue;
 			}
 		}
-		
+		int oldnumber = BurpExtender.getDomainResult().getSubDomainSet().size();
 		BurpExtender.getDomainResult().getSubDomainSet().addAll(subDomainQueue);
+		int newnumber = BurpExtender.getDomainResult().getSubDomainSet().size();
+		stdout.println(String.format("~~~~~~~~~~~~~%s subdomains added!~~~~~~~~~~~~~",newnumber-oldnumber));
 		BurpExtender.getDomainResult().getSimilarDomainSet().addAll(similarDomainQueue);
 		BurpExtender.getDomainResult().getRelatedDomainSet().addAll(relatedDomainQueue);
 		return;
@@ -211,7 +215,8 @@ class DomainProducer extends Thread {//Producer do
 			counter = counter+1;
 		}
 		
-		while (httpResponse.contains("%25")) {// %对应的URL编码
+		counter = 0;
+		while (httpResponse.contains("%") && counter<3) {// %对应的URL编码
 			httpResponse = URLDecoder.decode(httpResponse);
 		}
 		
