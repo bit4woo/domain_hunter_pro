@@ -1,6 +1,7 @@
 package burp;
 
 import java.io.PrintWriter;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -9,6 +10,8 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.commons.text.StringEscapeUtils;
 
 //////////////////ThreadGetTitle block/////////////
 //no need to pass BurpExtender object to these class, IBurpExtenderCallbacks object is enough 
@@ -202,6 +205,20 @@ class DomainProducer extends Thread {//Producer do
 		Set<String> domains = new HashSet<>();
 		//"^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$"
 		final String DOMAIN_NAME_PATTERN = "([A-Za-z0-9-]{1,63}(?<!-)\\.)+[A-Za-z]{2,6}";
+		int counter =0;
+		while (httpResponse.contains("&#x") && counter<3) {// &#x html编码的特征
+			httpResponse = StringEscapeUtils.unescapeHtml4(httpResponse);
+			counter = counter+1;
+		}
+		
+		while (httpResponse.contains("%25")) {// %对应的URL编码
+			httpResponse = URLDecoder.decode(httpResponse);
+		}
+		
+		counter = 0;
+		while (httpResponse.contains("\\u00") && counter<3) {//unicode解码
+			httpResponse = StringEscapeUtils.unescapeJava(httpResponse);
+		}
 		
 		Pattern pDomainNameOnly = Pattern.compile(DOMAIN_NAME_PATTERN);
 		Matcher matcher = pDomainNameOnly.matcher(httpResponse);

@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="4ff4f881-baa6-4a5a-8ddc-b188e0767a25" name="Default" comment="" />
+    <list default="true" id="4ff4f881-baa6-4a5a-8ddc-b188e0767a25" name="Default" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <ignored path="$PROJECT_DIR$/target/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -41,7 +43,7 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/burp/LineTable.java">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="195">
@@ -86,11 +88,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/burp/GUI.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="23254">
-              <caret line="1226" column="9" selection-start-line="1226" selection-start-column="9" selection-end-line="1226" selection-end-column="9" />
+            <state relative-caret-position="609">
+              <caret line="861" column="52" lean-forward="true" selection-start-line="861" selection-start-column="52" selection-end-line="861" selection-end-column="52" />
             </state>
           </provider>
         </entry>
@@ -98,7 +100,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/burp/DomainObject.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="4048">
+            <state relative-caret-position="3080">
               <caret line="193" column="15" selection-start-line="193" selection-start-column="15" selection-end-line="193" selection-end-column="15" />
             </state>
           </provider>
@@ -175,16 +177,37 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="ProjectPane" />
       <pane id="Scope" />
       <pane id="PackagesPane" />
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="domain_hunter_pro" type="b2602c69:ProjectViewProjectNode" />
+              <item name="bug_hunter" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="domain_hunter_pro" type="b2602c69:ProjectViewProjectNode" />
+              <item name="bug_hunter" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="domain_hunter_pro" type="b2602c69:ProjectViewProjectNode" />
+              <item name="bug_hunter" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="burp" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
     <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1555042827233" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../fastjsonDeser" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="Errors" />
   </component>
   <component name="RunDashboard">
@@ -273,16 +296,17 @@
       <workItem from="1554772490989" duration="3936000" />
       <workItem from="1555033991306" duration="3444000" />
       <workItem from="1556005591150" duration="313000" />
+      <workItem from="1556430854152" duration="1298000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="39074000" />
+    <option name="totallyTimeSpent" value="40372000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.18923241" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.1913646" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Image Layers" order="2" />
       <window_info id="Designer" order="3" />
@@ -337,6 +361,18 @@
           <line>157</line>
           <properties />
           <option name="timeStamp" value="54" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/burp/GUI.java</url>
+          <line>861</line>
+          <properties />
+          <option name="timeStamp" value="55" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/burp/GUI.java</url>
+          <line>862</line>
+          <properties />
+          <option name="timeStamp" value="56" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -420,16 +456,9 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/burp/GUI.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="23254">
-          <caret line="1226" column="9" selection-start-line="1226" selection-start-column="9" selection-end-line="1226" selection-end-column="9" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/burp/DomainObject.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="4048">
+        <state relative-caret-position="3080">
           <caret line="193" column="15" selection-start-line="193" selection-start-column="15" selection-end-line="193" selection-end-column="15" />
         </state>
       </provider>
@@ -438,20 +467,13 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="195">
           <caret line="33" column="16" selection-start-line="33" selection-start-column="16" selection-end-line="33" selection-end-column="16" />
-          <folding>
-            <element signature="e#1077#1078#0" expanded="true" />
-            <element signature="e#1100#1101#0" expanded="true" />
-            <element signature="e#1151#1152#0" expanded="true" />
-            <element signature="e#1184#1185#0" expanded="true" />
-            <element signature="e#2617#2618#0" expanded="true" />
-            <element signature="e#2635#2636#0" expanded="true" />
-            <element signature="e#5428#5429#0" expanded="true" />
-            <element signature="e#5475#5476#0" expanded="true" />
-            <element signature="e#5717#6018#0" expanded="true" />
-            <element signature="e#6017#6018#0" expanded="true" />
-            <element signature="e#6160#7458#0" expanded="true" />
-            <element signature="e#7457#7458#0" expanded="true" />
-          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/burp/GUI.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="609">
+          <caret line="861" column="52" lean-forward="true" selection-start-line="861" selection-start-column="52" selection-end-line="861" selection-end-column="52" />
         </state>
       </provider>
     </entry>
