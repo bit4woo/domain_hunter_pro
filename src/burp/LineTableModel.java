@@ -5,6 +5,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 
+import java.io.PrintWriter;
 import java.io.Serializable;
 import java.util.*;
 
@@ -21,6 +22,8 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	private HashMap<String,Set<String>> noResponseDomain =new HashMap<String,Set<String>>();
 	private BurpExtender burp;
 	private boolean EnableSearch = Runtime.getRuntime().totalMemory()/1024/1024/1024 > 16;//if memory >16GB enable Search. else disable.
+	private boolean ListenerIsOn = true;
+	//private PrintWriter stderr = new PrintWriter(BurpExtender.callbacks.getStderr(), true);
 
 	private static final String[] titles = new String[] {
 			"#", "URL", "Status", "Length", "MIME Type", "Server","Title", "IP", "CDN", "Time","isNew","isChecked","Comments","Text"
@@ -35,24 +38,26 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		this.addTableModelListener(new TableModelListener() {//表格模型监听
 			@Override
 			public void tableChanged(TableModelEvent e) {
-				int type = e.getType();//获取事件类型(增、删、改等)
-				int rowstart = e.getFirstRow();//获取触发事件的行索引
-				int rowend = e.getLastRow();
-				int column = e.getColumn();//获取触发事件的列索引
-				if (type == TableModelEvent.INSERT) {//如果是"插入"事件
-					//System.out.println("此事件是由\"插入\"触发,在" + row + "行" + column + "列");
-				} else if (type == TableModelEvent.UPDATE) {
-					DBHelper dbHelper = new DBHelper(GUI.currentDBFile.toString());
-					for (int i = rowstart; i <= rowend; i++) {
-						dbHelper.updateTitle(lineEntries.get(i));
+				if (ListenerIsOn) {//开关，记载数据文件的过程中，要清空之前的数据包，这时关闭这个监听
+					int type = e.getType();//获取事件类型(增、删、改等)
+					int rowstart = e.getFirstRow();//获取触发事件的行索引
+					int rowend = e.getLastRow();
+					int column = e.getColumn();//获取触发事件的列索引
+					if (type == TableModelEvent.INSERT) {//如果是"插入"事件
+						//System.out.println("此事件是由\"插入\"触发,在" + row + "行" + column + "列");
+					} else if (type == TableModelEvent.UPDATE) {
+						DBHelper dbHelper = new DBHelper(GUI.currentDBFile.toString());
+						for (int i = rowstart; i <= rowend; i++) {
+							dbHelper.updateTitle(lineEntries.get(i));
+						}
+					} else if (type == TableModelEvent.DELETE) {
+						DBHelper dbHelper = new DBHelper(GUI.currentDBFile.toString());
+						for (int i = rowstart; i <= rowend; i++) {
+							dbHelper.deleteTitle(lineEntries.get(i));
+						}
+					} else {
+						//System.out.println("此事件是由其他原因触发");
 					}
-				} else if (type == TableModelEvent.DELETE) {
-					DBHelper dbHelper = new DBHelper(GUI.currentDBFile.toString());
-					for (int i = rowstart; i <= rowend; i++) {
-						dbHelper.deleteTitle(lineEntries.get(i));
-					}
-				} else {
-					//System.out.println("此事件是由其他原因触发");
 				}
 			}
 		});
@@ -64,6 +69,25 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 
 	public void setLineEntries(List<LineEntry> lineEntries) {
 		this.lineEntries = lineEntries;
+	}
+
+	public boolean isListenerIsOn() {
+		return ListenerIsOn;
+	}
+
+	public void setListenerIsOn(boolean listenerIsOn) {
+		ListenerIsOn = listenerIsOn;
+	}
+
+	public void clear() {
+		this.setListenerIsOn(false);
+		int rows = this.getRowCount();
+		PrintWriter stderr = new PrintWriter(BurpExtender.callbacks.getStderr(), true);
+		stderr.print("rows:"+rows);
+		this.setLineEntries(new ArrayList<LineEntry>());
+		System.out.println(rows);
+		if (rows-1 >=0)	fireTableRowsDeleted(0, rows-1);
+		this.setListenerIsOn(true);
 	}
 
 	@Deprecated//不存储到DomainObject,就不需要这个方法了
@@ -225,9 +249,9 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
 				LineEntry checked = lineEntries.get(rows[i]);
 				checked.setChecked(true);
-//				lineEntries.remove(rows[i]);
-//				lineEntries.add(rows[i], checked);
-//				//https://stackoverflow.com/questions/4352885/how-do-i-update-the-element-at-a-certain-position-in-an-arraylist
+				//				lineEntries.remove(rows[i]);
+				//				lineEntries.add(rows[i], checked);
+				//				//https://stackoverflow.com/questions/4352885/how-do-i-update-the-element-at-a-certain-position-in-an-arraylist
 				lineEntries.set(rows[i], checked);
 				this.burp.stdout.println("$$$ "+checked.getUrl()+" updated");
 			}

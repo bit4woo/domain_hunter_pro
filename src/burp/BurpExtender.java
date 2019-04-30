@@ -324,7 +324,7 @@ public class BurpExtender extends GUI implements IBurpExtender, ITab, IExtension
 		//backup to history
 		this.setBackupLineEntries(titleTableModel.getLineEntries());
 		//clear tableModel
-		titleTableModel.setLineEntries(new ArrayList<LineEntry>());//clear
+		titleTableModel.clear();//clear
 
 		threadGetTitle = new ThreadGetTitle(domains);
 		threadGetTitle.Do();

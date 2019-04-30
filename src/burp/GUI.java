@@ -210,7 +210,7 @@ public class GUI extends JFrame {
 				}
 
 				domainResult = new DomainObject("");
-				titleTableModel.setLineEntries(new ArrayList<LineEntry>());
+				titleTableModel.clear();
 				currentDBFile = null;
 				saveDialog(false);
 				showToDomainUI(domainResult);
@@ -1116,7 +1116,9 @@ public class GUI extends JFrame {
 	}
 
 	public void showToTitleUI(List<LineEntry> lineEntries) {
-		titleTableModel.setLineEntries(new ArrayList<LineEntry>());//clear
+		//titleTableModel.setLineEntries(new ArrayList<LineEntry>());//clear
+		//这里没有fire delete事件，会导致排序号加载文件出错，但是如果fire了又会触发tableModel的删除事件，导致数据库删除。改用clear()
+		titleTableModel.clear();
 		for (LineEntry line:lineEntries) {
 			titleTableModel.addNewLineEntry(line);
 		}
