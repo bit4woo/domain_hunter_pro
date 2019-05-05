@@ -229,6 +229,7 @@ class Producer extends Thread {//Producer do
 
 	public LineEntry findHistory(String url) {
 		List<LineEntry> HistoryLines = BurpExtender.getBackupLineEntries();
+		if (HistoryLines == null) return null;
 		for (LineEntry line:HistoryLines) {
 			line.setHelpers(helpers);
 			if (url.equalsIgnoreCase(line.getUrl())) {
