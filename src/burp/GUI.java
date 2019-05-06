@@ -348,10 +348,10 @@ public class GUI extends JFrame {
 						List<String> lines = Files.readLines(file, Charsets.UTF_8);
 						for (String line:lines) {
 							line = line.trim();
-
-							if (domainResult.domainType(line) == DomainObject.SUB_DOMAIN) {
+							int type =  domainResult.domainType(line);
+							if (type == DomainObject.SUB_DOMAIN) {
 								domainResult.getSubDomainSet().add(line);
-							}else if(domainResult.domainType(line) == DomainObject.SIMILAR_DOMAIN) {
+							}else if(type == DomainObject.SIMILAR_DOMAIN) {
 								domainResult.getSimilarDomainSet().add(line);
 							}else {
 								stdout.println("import skip "+line);
@@ -540,8 +540,18 @@ public class GUI extends JFrame {
 				}
 				// will trigger tableModel listener
 
-				domainResult.setRootDomainMap(getTableMap());
+				//domainResult.setRootDomainMap(getTableMap()); //no need any more because tableModel Listener
 
+				
+			}
+		});
+		
+		JButton btnFresh = new JButton("Fresh");
+		panel.add(btnFresh);
+		btnFresh.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
 				//to clear sub and similar domains
 				Set<String> tmpDomains = domainResult.getSubDomainSet();
 				Set<String> newSubDomainSet = new HashSet<>();
@@ -564,7 +574,6 @@ public class GUI extends JFrame {
 			}
 		});
 
-
 		btnCopy = new JButton("Copy");
 		btnCopy.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -575,7 +584,6 @@ public class GUI extends JFrame {
 
 			}
 		});
-
 		btnCopy.setToolTipText("Copy Root Domains To ClipBoard");
 		panel.add(btnCopy);
 
@@ -1073,7 +1081,7 @@ public class GUI extends JFrame {
 			String key = (String) v.elementAt(0);
 			String value = (String) v.elementAt(1);
 			if (key != null && value != null) {
-				tableMap.put(key, value);
+				tableMap.put(key.trim(), value.trim());
 			}
 		}
 		return tableMap;
