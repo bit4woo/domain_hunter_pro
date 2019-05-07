@@ -284,6 +284,7 @@ public class GUI extends JFrame {
 						try {
 							get();
 							showToDomainUI(domainResult);
+							saveDialog(false);
 							btnSearch.setEnabled(true);
 							stdout.println("~~~~~~~~~~~~~Search Done~~~~~~~~~~~~~");
 						} catch (Exception e) {
