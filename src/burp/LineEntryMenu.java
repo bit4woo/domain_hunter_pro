@@ -7,6 +7,8 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 public class LineEntryMenu extends JPopupMenu {
 
@@ -122,6 +124,26 @@ public class LineEntryMenu extends JPopupMenu {
 			}
 		});
 		this.add(checkedItem);
+		
+		JMenuItem copyLocationURLItem = new JMenuItem(new AbstractAction("Copy Location URL") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				try{
+					List<String> urls = lineTable.getModel().getLocationUrls(rows);
+					String textUrls = String.join(System.lineSeparator(), urls);
+
+					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+					StringSelection selection = new StringSelection(textUrls);
+					clipboard.setContents(selection, null);
+				}
+				catch (Exception e1)
+				{
+					e1.printStackTrace(lineTable.getBurp().stderr);
+				}
+			}
+		});
+		this.add(copyLocationURLItem);
+		
 
 		this.addSeparator();
 

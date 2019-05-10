@@ -1,6 +1,7 @@
 package burp;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -10,16 +11,16 @@ import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.annotation.JSONField;
 
 public class LineEntry {
-	
+
 	private int port =-1;
 	private String host = "";
 	private String protocol ="";
 	//these three == IHttpService, helpers.buildHttpService to build. 
-	
+
 	private byte[] request = {};
 	private byte[] response = {};
 	// request+response+httpService == IHttpRequestResponse
-	
+
 	//used in UI,the fields to show
 	private String url = "";
 	private int statuscode = -1;
@@ -30,24 +31,24 @@ public class LineEntry {
 	private String CDN = "";
 	private String webcontainer = "";
 	private String time = "";
-	
-	
+
+
 	@JSONField(serialize=false)
 	private String messageText = "";//use to search
 	@JSONField(serialize=false)
 	private String bodyText = "";//use to adjust the response changed or not
 	//don't store these two field to reduce config file size.
-	
+
 	//field for user 
 	private boolean isNew =true;
 	private boolean isChecked =true;
 	private String comment ="";
-	
+
 	@JSONField(serialize=false)//表明不序列号该字段,messageinfo对象不能被fastjson成功序列化
 	private IHttpRequestResponse messageinfo;
-	
+
 	//remove IHttpRequestResponse field ,replace with request+response+httpService(host port protocol). for convert to json.
-	
+
 	@JSONField(serialize=false)//表明不序列号该字段
 	private BurpExtender burp;
 	@JSONField(serialize=false)
@@ -65,41 +66,41 @@ public class LineEntry {
 		this.helpers = this.callbacks.getHelpers();
 		parse();
 	}
-	
+
 	public LineEntry(IHttpRequestResponse messageinfo,boolean isNew,boolean Checked,String comment) {
 		this.messageinfo = messageinfo;
 		this.callbacks = BurpExtender.getCallbacks();
 		this.helpers = this.callbacks.getHelpers();
 		parse();
-		
+
 		this.isNew = isNew;
 		this.isChecked = Checked;
 		this.comment = comment;
 	}
-	
+
 	public LineEntry(IHttpRequestResponse messageinfo,boolean isNew,boolean Checked,String comment,Set<String> IPset,Set<String> CDNset) {
 		this.messageinfo = messageinfo;
 		this.callbacks = BurpExtender.getCallbacks();
 		this.helpers = this.callbacks.getHelpers();
 		parse();
-		
+
 		this.isNew = isNew;
 		this.isChecked = Checked;
 		this.comment = comment;
 		if (this.IP != null) {
 			this.IP = IPset.toString().replace("[", "").replace("]", "");
 		}
-		
+
 		if (this.CDN != null) {
 			this.CDN = CDNset.toString().replace("[", "").replace("]", "");
-		}	
+		}
 	}
 
 	@JSONField(serialize=false)//表明不序列号该字段
 	public String ToJson(){//注意函数名称，如果是get set开头，会被认为是Getter和Setter函数，会在序列化过程中被调用。
 		return JSONObject.toJSONString(this);
 	}
-	
+
 	public static LineEntry FromJson(String json){//注意函数名称，如果是get set开头，会被认为是Getter和Setter函数，会在序列化过程中被调用。
 		return JSON.parseObject(json, LineEntry.class);
 	}
@@ -111,26 +112,26 @@ public class LineEntry {
 			port = service.getPort();
 			host = service.getHost();
 			protocol = service.getProtocol();
-			
+
 			request = messageinfo.getRequest();
 			response = messageinfo.getResponse();
-			
+
 			Getter getter = new Getter(helpers);
-			
+
 			messageText = new String(messageinfo.getRequest())+new String(messageinfo.getResponse());
-			
+
 			statuscode = responseInfo.getStatusCode();
-			
+
 			MIMEtype = responseInfo.getStatedMimeType();
 			if(MIMEtype == null) {
 				MIMEtype = responseInfo.getInferredMimeType();
 			}
-			
+
 			url = this.messageinfo.getHttpService().toString();
-			
+
 
 			webcontainer = getter.getHeaderValueOf(false, messageinfo, "Server");
-			
+
 			bodyText = new String(getter.getBody(false, messageinfo));
 			try{
 				contentLength = Integer.parseInt(getter.getHeaderValueOf(false, messageinfo, "Content-Length").trim());
@@ -160,11 +161,11 @@ public class LineEntry {
 					title = mh.group(0);
 				}
 			}
-			
-    
-	        time = Commons.getNowTimeString();//这是动态的，会跟随系统时间自动变化
-	        
-			
+
+
+			time = Commons.getNowTimeString();//这是动态的，会跟随系统时间自动变化
+
+
 		}catch(Exception e) {
 			//e.printStackTrace(burp.stderr);
 		}
@@ -248,12 +249,12 @@ public class LineEntry {
 
 	/*
 	 * public String getMessageText() { return messageText; }
-	 * 
+	 *
 	 * public void setMessageText(String messageText) { this.messageText =
 	 * messageText; }
 	 */
 
-	
+
 	public boolean isNew() {
 		return isNew;
 	}
@@ -261,15 +262,27 @@ public class LineEntry {
 	public void setNew(boolean isNew) {
 		this.isNew = isNew;
 	}
-	
+
 	public IHttpRequestResponse getMessageinfo() {
+		//		if (messageinfo == null){
+		//			try{
+		//				messageinfo = callbacks.getHelpers().buildHttpMessage()
+		//				IHttpRequestResponse messageinfo = new IHttpRequestResponse();
+		//				messageinfo.setRequest(this.request);//始终为空，why??? because messageinfo is null ,no object to set content.
+		//				messageinfo.setRequest(this.response);
+		//				IHttpService service = callbacks.getHelpers().buildHttpService(this.host,this.port,this.protocol);
+		//				messageinfo.setHttpService(service);
+		//			}catch (Exception e){
+		//				System.out.println("error "+url);
+		//			}
+		//		}
 		return messageinfo;
 	}
 
 	public void setMessageinfo(IHttpRequestResponse messageinfo) {
 		this.messageinfo = messageinfo;
 	}
-	
+
 	public String getBodyText() {
 		IResponseInfo analyzeResponse = helpers.analyzeResponse(this.response);//java.lang.NullPointerException why???? 
 		// helpers will be null if this object is recovered from json.
@@ -277,6 +290,34 @@ public class LineEntry {
 		int bodyOffset = analyzeResponse.getBodyOffset();
 		byte[] byte_body = Arrays.copyOfRange(this.response, bodyOffset, this.response.length);//not length-1
 		return new String(byte_body);
+	}
+
+	public String getHeaderValueOf(boolean messageIsRequest,String headerName) {
+		helpers = BurpExtender.getCallbacks().getHelpers();
+		List<String> headers=null;
+		if(messageIsRequest) {
+			if (this.request == null) {
+				return null;
+			}
+			IRequestInfo analyzeRequest = helpers.analyzeRequest(this.request);
+			headers = analyzeRequest.getHeaders();
+		}else {
+			if (this.response == null) {
+				return null;
+			}
+			IResponseInfo analyzeResponse = helpers.analyzeResponse(this.response);
+			headers = analyzeResponse.getHeaders();
+		}
+
+
+		headerName = headerName.toLowerCase().replace(":", "");
+		String Header_Spliter = ": ";
+		for (String header : headers) {
+			if (header.toLowerCase().startsWith(headerName)) {
+				return header.split(Header_Spliter, 2)[1];//分成2部分，Location: https://www.jd.com
+			}
+		}
+		return null;
 	}
 
 	public void setBodyText(String bodyText) {
@@ -351,7 +392,7 @@ public class LineEntry {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
+
 	public static void main(String args[]) {
 		LineEntry x = new LineEntry();
 		x.setRequest("xxxxxx".getBytes());

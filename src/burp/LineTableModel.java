@@ -241,6 +241,35 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		}
 	}
 
+	@Deprecated //getMessageinfo方法有问题
+	public List<IHttpRequestResponse> getMessages(int[] rows) {
+		synchronized (lineEntries) {
+			Arrays.sort(rows); //升序
+			List<IHttpRequestResponse> messages = new ArrayList<>();
+
+			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
+				IHttpRequestResponse url = lineEntries.get(rows[i]).getMessageinfo();
+				messages.add(url);
+			}
+			return messages;
+		}
+	}
+
+	public List<String> getLocationUrls(int[] rows) {
+		synchronized (lineEntries) {
+			Arrays.sort(rows); //升序
+			List<String> urls = new ArrayList<>();
+
+			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
+				String url = lineEntries.get(rows[i]).getHeaderValueOf(false,"Location");
+				if (url !=null){
+					urls.add(url);
+				}
+			}
+			return urls;
+		}
+	}
+
 	public void updateRows(int[] rows) {
 		synchronized (lineEntries) {
 			//because thread let the delete action not in order, so we must loop in here.

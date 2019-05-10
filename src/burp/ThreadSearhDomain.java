@@ -212,17 +212,19 @@ class DomainProducer extends Thread {//Producer do
 		int counter =0;
 		while (httpResponse.contains("&#x") && counter<3) {// &#x html编码的特征
 			httpResponse = StringEscapeUtils.unescapeHtml4(httpResponse);
-			counter = counter+1;
+			counter++;
 		}
 		
 		counter = 0;
 		while (httpResponse.contains("%") && counter<3) {// %对应的URL编码
 			httpResponse = URLDecoder.decode(httpResponse);
+			counter++;
 		}
 		
 		counter = 0;
 		while (httpResponse.contains("\\u00") && counter<3) {//unicode解码
 			httpResponse = StringEscapeUtils.unescapeJava(httpResponse);
+			counter++;
 		}
 		
 		Pattern pDomainNameOnly = Pattern.compile(DOMAIN_NAME_PATTERN);
