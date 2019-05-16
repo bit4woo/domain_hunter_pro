@@ -8,7 +8,9 @@ import java.awt.event.ActionEvent;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 public class LineEntryMenu extends JPopupMenu {
 
@@ -124,7 +126,7 @@ public class LineEntryMenu extends JPopupMenu {
 			}
 		});
 		this.add(checkedItem);
-		
+
 		JMenuItem copyLocationURLItem = new JMenuItem(new AbstractAction("Copy Location URL") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -143,7 +145,56 @@ public class LineEntryMenu extends JPopupMenu {
 			}
 		});
 		this.add(copyLocationURLItem);
-		
+
+		JMenuItem SendToRepeaterWithCookieItem = new JMenuItem(new AbstractAction("Send to repeater With Cookie") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+					//using SwingWorker to prevent blocking burp main UI.
+
+					@Override
+					protected Map doInBackground() throws Exception {
+						String cookieValue = JOptionPane.showInputDialog("cookie value", null).trim();
+						while(cookieValue.trim().equals("")){
+							cookieValue = JOptionPane.showInputDialog("cookie value", null).trim();
+						}
+						IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
+						for (int row: rows){
+							LineEntry entry = lineTable.getModel().getLineEntries().get(row);
+							String host =entry.getHost();
+							int port = entry.getPort();
+							String protocol = entry.getProtocol();
+							boolean useHttps =false;
+							if (protocol.equalsIgnoreCase("https")) {
+								useHttps =true;
+							}
+
+							byte[] request = entry.getRequest();
+							Getter getter = new Getter(callbacks.getHelpers());
+							List<String> headers = getter.getHeaderList(true,request);
+							headers.add("Cookie: "+cookieValue);
+							byte[] body = getter.getBody(true,request);
+							request = callbacks.getHelpers().buildHttpMessage(headers,body);
+
+							String tabCaption = row+"DH";
+							callbacks.sendToRepeater(
+									host,
+									port,
+									useHttps,
+									request,
+									tabCaption);
+						}
+						return null;
+					}
+					@Override
+					protected void done() {
+					}
+				};
+				worker.execute();
+			}
+		});
+		this.add(SendToRepeaterWithCookieItem);
+
 
 		this.addSeparator();
 

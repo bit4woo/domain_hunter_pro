@@ -261,9 +261,10 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			List<String> urls = new ArrayList<>();
 
 			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
-				String url = lineEntries.get(rows[i]).getHeaderValueOf(false,"Location");
+				String url = lineEntries.get(rows[i]).getUrl();
+				String Locationurl = lineEntries.get(rows[i]).getHeaderValueOf(false,"Location");
 				if (url !=null){
-					urls.add(url);
+					urls.add(url+" "+Locationurl);
 				}
 			}
 			return urls;

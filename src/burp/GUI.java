@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URI;
+import java.net.URL;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -505,7 +506,15 @@ public class GUI extends JFrame {
 		AddButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
-				enteredRootDomain = enteredRootDomain.trim();
+				enteredRootDomain = enteredRootDomain.trim().toLowerCase();
+				if (enteredRootDomain.startsWith("http://") || enteredRootDomain.startsWith("https://")){
+					try {
+						URL url = new URL(enteredRootDomain);
+						enteredRootDomain = url.getHost();
+					} catch (Exception e2) {
+						
+					}
+				}
 				enteredRootDomain =InternetDomainName.from(enteredRootDomain).topPrivateDomain().toString();
 				String keyword = enteredRootDomain.substring(0,enteredRootDomain.indexOf("."));
 
