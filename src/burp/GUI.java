@@ -81,13 +81,7 @@ public class GUI extends JFrame {
 	}
 
 	public File saveDialog(boolean includeTitle) {
-		PrintWriter stdout;
-		PrintWriter stderr;
-
-		stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
-		stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
 		try{
-
 			File file;
 			if (null != currentDBFile && currentDBFile.getAbsolutePath().endsWith(".db")) {
 				file = currentDBFile;

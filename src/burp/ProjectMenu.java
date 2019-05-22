@@ -28,6 +28,17 @@ public class ProjectMenu{
 
         }
     }
+
+    public void remove(){
+            JMenuBar menuBar = getBurpFrame().getJMenuBar();
+            int num = menuBar.getMenuCount();
+            for (int n=0 ; n < num; n++){
+                if (menuBar.getMenu(n).getAction().equals("Domainhunter")){
+                    menuBar.remove(menuBar.getMenu(n));
+                }
+            }
+    }
+
     static JFrame getBurpFrame()
     {
         for(Frame f : Frame.getFrames())
@@ -41,7 +52,7 @@ public class ProjectMenu{
     }
 
     public JMenu Menu() {
-        JMenu menuButton = new JMenu("hunter");
+        JMenu menuButton = new JMenu("Domainhunter");
 
         JMenuItem newMenu = new JMenuItem(new AbstractAction("New")
         {
@@ -49,7 +60,7 @@ public class ProjectMenu{
             public void actionPerformed(ActionEvent actionEvent) {
                 DomainObject domainResult = DomainPanel.getDomainResult();
                 if (domainResult != null){
-                    //saveDialog(true);//save old project
+                    gui.saveDialog(true);//save old project
                     int result = JOptionPane.showConfirmDialog(null,"Save Current Project?");
 
                     /*     是:   JOptionPane.YES_OPTION
@@ -79,7 +90,7 @@ public class ProjectMenu{
         JMenuItem openMenu = new JMenuItem(new AbstractAction("Open") {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                //openDialog();
+                gui.openDialog();
             }
         });
         openMenu.setToolTipText("Open Domain Hunter Project File");
@@ -89,7 +100,7 @@ public class ProjectMenu{
         JMenuItem saveMenu = new JMenuItem(new AbstractAction("Save") {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                //saveDialog();
+                gui.saveDialog(true);
             }
         });
         openMenu.setToolTipText("Save Domain Hunter Project File");

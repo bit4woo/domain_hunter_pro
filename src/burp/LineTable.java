@@ -1,22 +1,14 @@
 package burp;
 
-import java.awt.Desktop;
-import java.awt.Font;
-import java.awt.FontMetrics;
+import javax.swing.*;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableRowSorter;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.util.Arrays;
-
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.RowFilter;
-import javax.swing.SwingUtilities;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableRowSorter;
 
 public class LineTable extends JTable
 {
@@ -25,31 +17,16 @@ public class LineTable extends JTable
 	 */
 	private static final long serialVersionUID = 1L;
 	private LineTableModel lineTableModel;
-	private IMessageEditor requestViewer;
-	private IMessageEditor responseViewer;
-	private IBurpExtenderCallbacks callbacks;
 	private TableRowSorter<LineTableModel> rowSorter;//TableRowSorter vs. RowSorter
-	public JTabbedPane RequestPanel;
-	public JTabbedPane ResponsePanel;
-	private JSplitPane splitPane;//table area + detail area
-
-
 
 	PrintWriter stdout;
 	PrintWriter stderr;
 
 	private int selectedRow = this.getSelectedRow();//to identify the selected row after search or hide lines
 
-	public JSplitPane getSplitPane() {
-		return splitPane;
-	}
-
-	public void setSplitPane(JSplitPane splitPane) {
-		this.splitPane = splitPane;
-	}
-
 	public LineTable(LineTableModel lineTableModel)
 	{
+		//super(lineTableModel);//有了它反而出错？
         try{
             stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
             stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
@@ -57,34 +34,11 @@ public class LineTable extends JTable
             stdout = new PrintWriter(System.out, true);
             stderr = new PrintWriter(System.out, true);
         }
-		//super(lineTableModel);
+
 		this.lineTableModel = lineTableModel;
 		this.setFillsViewportHeight(true);//在table的空白区域显示右键菜单
 		//https://stackoverflow.com/questions/8903040/right-click-mouselistener-on-whole-jtable-component
-
-		splitPane = new JSplitPane();//table area + detail area
-		splitPane.setResizeWeight(0.5);
-		splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
-		//TitlePanel.add(splitPane, BorderLayout.CENTER); // getTitlePanel to get it
-
-		JScrollPane scrollPaneRequests = new JScrollPane();//table area
-		splitPane.setLeftComponent(scrollPaneRequests);
-		scrollPaneRequests.setViewportView(this);
-
-		JSplitPane RequestDetailPanel = new JSplitPane();//request and response
-		RequestDetailPanel.setResizeWeight(0.5);
-		splitPane.setRightComponent(RequestDetailPanel);
-
-		RequestPanel = new JTabbedPane();
-		RequestDetailPanel.setLeftComponent(RequestPanel);
-
-		ResponsePanel = new JTabbedPane();
-		RequestDetailPanel.setRightComponent(ResponsePanel);
-
-		requestViewer = BurpExtender.getCallbacks().createMessageEditor(lineTableModel, false);
-		responseViewer = BurpExtender.getCallbacks().createMessageEditor(lineTableModel, false);
-		RequestPanel.addTab("Request", requestViewer.getComponent());
-		ResponsePanel.addTab("Response", responseViewer.getComponent());
+		this.setModel(lineTableModel);//没有这个就没有table header
 		tableinit();
 		addClickSort();
 		registerListeners();
@@ -97,23 +51,23 @@ public class LineTable extends JTable
 		FontMetrics fm = this.getFontMetrics(f);
 		int width = fm.stringWidth("A");//一个字符的宽度
 
-//		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("#")).setPreferredWidth(width*5);
-//		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("#")).setMaxWidth(width*8);
-//		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Status")).setPreferredWidth(width*"Status".length());
-//		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Status")).setMaxWidth(width*("Status".length()+3));
-//		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("isNew")).setPreferredWidth(width*"isNew".length());
-//		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("isNew")).setMaxWidth(width*("isNew".length()+3));
-//		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("isChecked")).setPreferredWidth(width*"isChecked".length());
-//		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("isChecked")).setMaxWidth(width*("isChecked".length()+3));
-//		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Length")).setPreferredWidth(width*10);
-//		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Length")).setMaxWidth(width*15);
-//		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("MIME Type")).setPreferredWidth(width*"MIME Type".length());
-//		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("MIME Type")).setMaxWidth(width*("MIME Type".length()+3));
-//		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Time")).setPreferredWidth(width*22);
-//		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Time")).setMaxWidth(width*25);
-//		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Text")).setPreferredWidth(width*0);//response text,for search
-//		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Text")).setMaxWidth(width*0);//response text,for search
-//		this.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
+		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("#")).setPreferredWidth(width*5);
+		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("#")).setMaxWidth(width*8);
+		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Status")).setPreferredWidth(width*"Status".length());
+		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Status")).setMaxWidth(width*("Status".length()+3));
+		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("isNew")).setPreferredWidth(width*"isNew".length());
+		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("isNew")).setMaxWidth(width*("isNew".length()+3));
+		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("isChecked")).setPreferredWidth(width*"isChecked".length());
+		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("isChecked")).setMaxWidth(width*("isChecked".length()+3));
+		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Length")).setPreferredWidth(width*10);
+		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Length")).setMaxWidth(width*15);
+		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("MIME Type")).setPreferredWidth(width*"MIME Type".length());
+		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("MIME Type")).setMaxWidth(width*("MIME Type".length()+3));
+		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Time")).setPreferredWidth(width*22);
+		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Time")).setMaxWidth(width*25);
+		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Text")).setPreferredWidth(width*0);//response text,for search
+		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Text")).setMaxWidth(width*0);//response text,for search
+		this.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
 
 
 		rowSorter = new TableRowSorter<LineTableModel>(lineTableModel);//排序和搜索
@@ -125,8 +79,8 @@ public class LineTable extends JTable
 	{
 		// show the log entry for the selected row
 		LineEntry Entry = this.lineTableModel.getLineEntries().get(super.convertRowIndexToModel(row));
-		requestViewer.setMessage(Entry.getRequest(), true);
-		responseViewer.setMessage(Entry.getResponse(), false);
+		TitlePanel.getRequestViewer().setMessage(Entry.getRequest(), true);
+		TitlePanel.getResponseViewer().setMessage(Entry.getResponse(), false);
 		this.lineTableModel.setCurrentlyDisplayedItem(Entry);
 		super.changeSelection(row, col, toggle, extend);
 	}

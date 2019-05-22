@@ -3,6 +3,7 @@ package burp;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -88,7 +89,9 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		//recovery save domain results from extensionSetting
 		String content = callbacks.loadExtensionSetting("domainHunterpro");//file name of db file
 		System.out.println(content);
-		if (gui.currentDBFile != null && gui.currentDBFile.getName().endsWith(".db")) gui.LoadData(content);
+		if (content != null && content.endsWith(".db")) {
+			gui.LoadData(content);
+		}
 	}
 
 	@Override
@@ -97,7 +100,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 			gui.getTitlePanel().getThreadGetTitle().stopThreads();//maybe null
 		}//必须要先结束线程，否则获取数据的操作根本无法结束，因为线程一直通过sync占用资源
 		gui.saveDBfilepathToExtension();
-		gui.getDomainPanel().saveDomainOnly();
+		gui.saveDialog(false);
 	}
 
 
