@@ -6,25 +6,56 @@ import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
+import java.io.PrintWriter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class TitlePanel extends JPanel {
 
-    private JPanel titlePanel;//this
+	private JPanel buttonPanel;
+	private LineTable titleTable;
+	private JLabel lblSummaryOfTitle;
+	public JRadioButton rdbtnHideCheckedItems;
+	//add table and tablemodel to GUI
+	private static LineTableModel titleTableModel = new LineTableModel();
+	PrintWriter stdout;
+	PrintWriter stderr;
+	private ThreadGetTitle threadGetTitle;
+	private List<LineEntry> BackupLineEntries;
 
-    private JPanel buttonPanel;
 
-    public TitlePanel() {
-		titlePanel = new JPanel();
-		titlePanel.setBorder(new EmptyBorder(5, 5, 5, 5));
-		titlePanel.setLayout(new BorderLayout(0, 0));
+	public static LineTableModel getTitleTableModel() {
+		return titleTableModel;
+	}
+
+	public ThreadGetTitle getThreadGetTitle() {
+		return threadGetTitle;
+	}
+
+	public List<LineEntry> getBackupLineEntries() {
+		return BackupLineEntries;
+	}
+
+	public TitlePanel() {//构造函数
+
+		try{
+			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
+			stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
+		}catch (Exception e){
+			stdout = new PrintWriter(System.out, true);
+			stderr = new PrintWriter(System.out, true);
+		}
+
+		this.setBorder(new EmptyBorder(5, 5, 5, 5));
+		this.setLayout(new BorderLayout(0, 0));
 
 		buttonPanel = new JPanel();
-		titlePanel.add(buttonPanel, BorderLayout.NORTH);
+		this.add(buttonPanel, BorderLayout.NORTH);
 		buttonPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
 
-        JButton btnGettitle = new JButton("Get Title");
+		JButton btnGettitle = new JButton("Get Title");
 		btnGettitle.setToolTipText("A fresh start");
 		btnGettitle.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -47,7 +78,6 @@ public class TitlePanel extends JPanel {
 					protected Map doInBackground() throws Exception {
 						btnGettitle.setEnabled(false);
 						getAllTitle();
-						saveDialog(true);
 						btnGettitle.setEnabled(true);
 						return new HashMap<String, String>();
 						//no use ,the return.
@@ -66,7 +96,7 @@ public class TitlePanel extends JPanel {
 		});
 		buttonPanel.add(btnGettitle);
 
-		btnGetExtendtitle = new JButton("Get Extend Title");
+		JButton btnGetExtendtitle = new JButton("Get Extend Title");
 		btnGetExtendtitle.setToolTipText("Get title of the host that in same subnet,you should do this after get domain title done!");
 		btnGetExtendtitle.setEnabled(true);//default is false,only true after "get title" is done.
 		btnGetExtendtitle.addActionListener(new ActionListener() {
@@ -76,7 +106,6 @@ public class TitlePanel extends JPanel {
 					protected Map doInBackground() throws Exception {
 						btnGetExtendtitle.setEnabled(false);
 						getExtendTitle();
-						saveDialog(true);
 						btnGetExtendtitle.setEnabled(true);
 						return new HashMap<String, String>();
 						//no use ,the return.
@@ -134,15 +163,13 @@ public class TitlePanel extends JPanel {
 		buttonPanel.add(btnGetSubnet);
 
 
-		btnSaveState = new JButton("Save");
+		JButton btnSaveState = new JButton("Save");
 		btnSaveState.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
 					@Override
 					protected Map doInBackground() throws Exception {
 						btnSaveState.setEnabled(false);
-						saveDialog(true);//both tilte and domain
-						//saveDBfileToExtension();
 						btnSaveState.setEnabled(true);
 						return new HashMap<String, String>();
 						//no use ,the return.
@@ -169,7 +196,6 @@ public class TitlePanel extends JPanel {
 					@Override
 					protected Map doInBackground() throws Exception {
 						btnSaveState.setEnabled(false);
-						saveDialog(true);
 						//saveDBfileToExtension();
 						btnSaveState.setEnabled(true);
 						return new HashMap<String, String>();
@@ -184,7 +210,7 @@ public class TitlePanel extends JPanel {
 			}
 		});
 
-		textFieldSearch = new JTextField("");
+		JTextField textFieldSearch = new JTextField("");
 		textFieldSearch.addFocusListener(new FocusAdapter() {
 			@Override
 			public void focusGained(FocusEvent e) {
@@ -222,10 +248,10 @@ public class TitlePanel extends JPanel {
 		});
 		buttonPanel.add(buttonSearch);
 
-		rdbtnHideCheckedItems = new JRadioButton("Hide Checked");
+		JRadioButton rdbtnHideCheckedItems = new JRadioButton("Hide Checked");
 		rdbtnHideCheckedItems.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				String keyword = BurpExtender.textFieldSearch.getText().trim();
+				String keyword = textFieldSearch.getText().trim();
 				titleTable.search(keyword);
 				//lineTable.getModel().unHideLines();
 			}
@@ -235,7 +261,7 @@ public class TitlePanel extends JPanel {
 		JButton btnRefresh = new JButton("Refresh");//主要目的是隐藏新标注的条目，代替自动隐藏
 		btnRefresh.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				String keyword = BurpExtender.textFieldSearch.getText().trim();
+				String keyword = textFieldSearch.getText().trim();
 				titleTable.search(keyword);
 			}
 		});
@@ -255,14 +281,63 @@ public class TitlePanel extends JPanel {
 
 
 
-
-		///need to replace this part with LineTableModel and LineTable
-		//		table_1 = new JTable();
-		//		scrollPaneRequests.setViewportView(table_1);
-		//LineTableModel will replace this table
-
-
-		return TitlePanel;
+		titleTable = new LineTable(titleTableModel);
+		this.add(titleTable.getSplitPane(), BorderLayout.CENTER);
 	}
 
+
+	public void getAllTitle(){
+		Set<String> domains = BurpExtender.getGui().getDomainPanel().getDomainResult().getSubDomainSet();
+
+		//remove domains in black list
+		domains.removeAll(BurpExtender.getGui().getDomainPanel().getDomainResult().getBlackDomainSet());
+
+		//backup to history
+		BackupLineEntries = titleTableModel.getLineEntries();
+		//clear tableModel
+		titleTableModel.clear();//clear
+
+		threadGetTitle = new ThreadGetTitle(domains);
+		threadGetTitle.Do();
+	}
+
+
+	public void getExtendTitle(){
+		Set<String> extendIPSet = titleTableModel.GetExtendIPSet();
+		stdout.println(extendIPSet.size()+" extend IP Address founded"+extendIPSet);
+		threadGetTitle = new ThreadGetTitle(extendIPSet);
+		threadGetTitle.Do();
+	}
+
+
+	public String getSubnet(boolean isCurrent){
+		Set<String> subnets;
+		if (isCurrent) {//获取的是现有可成功连接的IP集合
+			subnets = titleTableModel.GetSubnets();
+		}else {//重新解析所有域名的IP
+			Set<String> IPsOfDomain = new ThreadGetSubnet(BurpExtender.getGui().getDomainPanel().getDomainResult().getSubDomainSet()).Do();
+			//Set<String> CSubNetIPs = Commons.subNetsToIPSet(Commons.toSubNets(IPsOfDomain));
+			subnets = Commons.toSmallerSubNets(IPsOfDomain);
+		}
+		return String.join(System.lineSeparator(), subnets);
+	}
+
+	public void showToTitleUI(List<LineEntry> lineEntries) {
+		//titleTableModel.setLineEntries(new ArrayList<LineEntry>());//clear
+		//这里没有fire delete事件，会导致排序号加载文件出错，但是如果fire了又会触发tableModel的删除事件，导致数据库删除。改用clear()
+		titleTableModel.clear();
+		for (LineEntry line:lineEntries) {
+			titleTableModel.addNewLineEntry(line);
+		}
+		digStatus();
+		stdout.println("Load Title Panel Data Done");
+	}
+
+
+
+
+	public void digStatus() {
+		String status = titleTableModel.getStatusSummary();
+		lblSummaryOfTitle.setText(status);
+	}
 }

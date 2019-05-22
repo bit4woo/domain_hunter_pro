@@ -3,6 +3,7 @@ package burp;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import com.google.common.net.InternetDomainName;
+import test.HTTPPost;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -11,6 +12,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
@@ -21,6 +23,7 @@ import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.*;
@@ -64,16 +67,33 @@ public class DomainPanel extends JPanel {
     protected JPanel TitlePanel;
     public static JRadioButton rdbtnHideCheckedItems;
 
+    public static DomainObject getDomainResult() {
+        return domainResult;
+    }
+
+    public static void setDomainResult(DomainObject domainResult) {
+        DomainPanel.domainResult = domainResult;
+    }
+
     protected static DomainObject domainResult = null;//getter setter
+    protected static DefaultTableModel domainTableModel;
+    PrintWriter stdout;
+    PrintWriter stderr;
 
     public DomainPanel() {//构造函数
         domainContentPane =  new JPanel();
         domainContentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
         domainContentPane.setLayout(new BorderLayout(0, 0));
 
+        try{
+            stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
+            stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
+        }catch (Exception e){
+            stdout = new PrintWriter(System.out, true);
+            stderr = new PrintWriter(System.out, true);
+        }
 
-        PrintWriter stdout = new PrintWriter(System.out, true);
-        PrintWriter stderr = new PrintWriter(System.out, true);
+
         ///////////////////////HeaderPanel//////////////
 
 
@@ -83,19 +103,12 @@ public class DomainPanel extends JPanel {
         domainContentPane.add(HeaderPanel, BorderLayout.NORTH);
 
 
-
-
-        btnSave.setToolTipText("Save Domain Hunter Project File, not include title");
-        HeaderPanel.add(btnSave);
-
-
         JButton btnSaveDomainOnly = new JButton("Save Domain Only");
         btnSaveDomainOnly.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 saveDomainOnly();
             }});
         HeaderPanel.add(btnSaveDomainOnly);
-
 
 
         btnSearch = new JButton("Search");
@@ -121,8 +134,8 @@ public class DomainPanel extends JPanel {
                     protected void done() {
                         try {
                             get();
-                            showToDomainUI(domainResult);
-                            saveDialog(false);
+                            showToDomainUI();
+                            //saveDialog(false);
                             btnSearch.setEnabled(true);
                             stdout.println("~~~~~~~~~~~~~Search Done~~~~~~~~~~~~~");
                         } catch (Exception e) {
@@ -162,7 +175,7 @@ public class DomainPanel extends JPanel {
                     protected void done() {
                         try {
                             get();
-                            showToDomainUI(domainResult);
+                            showToDomainUI();
                             btnCrawl.setEnabled(true);
                         } catch (Exception e) {
                             e.printStackTrace(stderr);
@@ -196,7 +209,7 @@ public class DomainPanel extends JPanel {
                                 stdout.println("import skip "+line);
                             }
                         }
-                        showToDomainUI(domainResult);//保存配置并更新图形显示
+                        showToDomainUI();//保存配置并更新图形显示
                         stdout.println("Import domains finished from "+ file.getName());
                         //List<String> lines = Files.readLines(file, Charsets.UTF_8);
 
@@ -326,7 +339,7 @@ public class DomainPanel extends JPanel {
 
         JSplitPane CenterSplitPane = new JSplitPane();
         CenterSplitPane.setResizeWeight(0.5);
-        contentPane.add(CenterSplitPane, BorderLayout.CENTER);
+        domainContentPane.add(CenterSplitPane, BorderLayout.CENTER);
 
 
         JSplitPane leftOfCenterSplitPane = new JSplitPane();
@@ -372,7 +385,7 @@ public class DomainPanel extends JPanel {
                 String keyword = enteredRootDomain.substring(0,enteredRootDomain.indexOf("."));
 
                 domainResult.AddToRootDomainMap(enteredRootDomain, keyword);
-                showToDomainUI(domainResult);
+                showToDomainUI();
 
 
 				/*				if (domainResult.rootDomainMap.containsKey(enteredRootDomain) && domainResult.rootDomainMap.containsValue(keyword)) {
@@ -421,7 +434,7 @@ public class DomainPanel extends JPanel {
                 Set<String> newSimilarDomainSet = new HashSet<String>();
                 tmpDomains.addAll(domainResult.getSimilarDomainSet());
                 for (String domain:tmpDomains) {
-                    int type = BurpExtender.domainResult.domainType(domain);
+                    int type = domainResult.domainType(domain);
                     if (type == DomainObject.SUB_DOMAIN)
                     {
                         newSubDomainSet.add(domain);
@@ -433,7 +446,7 @@ public class DomainPanel extends JPanel {
                 domainResult.setSubDomainSet(newSubDomainSet);
                 domainResult.setSimilarDomainSet(newSimilarDomainSet);
 
-                showToDomainUI(domainResult);
+                showToDomainUI();
             }
         });
 
@@ -455,9 +468,9 @@ public class DomainPanel extends JPanel {
         rdbtnAddRelatedToRoot.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 domainResult.autoAddRelatedToRoot = rdbtnAddRelatedToRoot.isSelected();
-                if (domainResult.autoAddRelatedToRoot==true) {
+                if (domainResult.autoAddRelatedToRoot) {
                     domainResult.relatedToRoot();
-                    showToDomainUI(domainResult);/*
+                    showToDomainUI();/*
 					Set<String> tableRootDomains = getColumnValues("Root Domain");
 					for(String relatedDomain:domainResult.relatedDomainSet) {
 			        	String rootDomain =InternetDomainName.from(relatedDomain).topPrivateDomain().toString();
@@ -591,15 +604,15 @@ public class DomainPanel extends JPanel {
         FooterPanel = new JPanel();
         FlowLayout fl_FooterPanel = (FlowLayout) FooterPanel.getLayout();
         fl_FooterPanel.setAlignment(FlowLayout.LEFT);
-        contentPane.add(FooterPanel, BorderLayout.SOUTH);
+        domainContentPane.add(FooterPanel, BorderLayout.SOUTH);
 
-        lblNewLabel_2 = new JLabel(ExtenderName+"    "+github);
+        lblNewLabel_2 = new JLabel(BurpExtender.getExtenderName()+"    "+BurpExtender.getGithub());
         lblNewLabel_2.setFont(new Font("宋体", Font.BOLD, 12));
         lblNewLabel_2.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 try {
-                    URI uri = new URI(github);
+                    URI uri = new URI(BurpExtender.getGithub());
                     Desktop desktop = Desktop.getDesktop();
                     if(Desktop.isDesktopSupported()&&desktop.isSupported(Desktop.Action.BROWSE)){
                         desktop.browse(uri);
@@ -622,7 +635,7 @@ public class DomainPanel extends JPanel {
 
     }
 
-    public void showToDomainUI(DomainObject domainResult) {
+    public void showToDomainUI() {
 
         domainResult.relatedToRoot();
         ClearTable();
@@ -643,13 +656,162 @@ public class DomainPanel extends JPanel {
 
 
     //////////////////////////////methods//////////////////////////////////////
-    public Map<String, Set<String>> crawl (Set<String> rootdomains, Set<String> keywords) {
-        System.out.println("spiderall testing... you need to over write this function!");
+
+    public Map<String, Set<String>> search(Set<String> rootdomains, Set<String> keywords){
+        IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
+        IHttpRequestResponse[] messages = callbacks.getSiteMap(null);
+        new ThreadSearhDomain(Arrays.asList(messages)).Do();
         return null;
     }
 
-    public Map<String, Set<String>> search(Set<String> rootdomains, Set<String> keywords){
-        System.out.println("search testing... you need to over write this function!");
+
+    public Map<String, Set<String>> crawl (Set<String> rootdomains, Set<String> keywords) {
+        int i = 0;
+        while(i<=2) {
+            for (String rootdomain: rootdomains) {
+                if (!rootdomain.contains(".")||rootdomain.endsWith(".")||rootdomain.equals("")){
+                    //如果域名为空，或者（不包含.号，或者点号在末尾的）
+                }
+                else {
+                    IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
+                    IHttpRequestResponse[] items = callbacks.getSiteMap(null); //null to return entire sitemap
+                    //int len = items.length;
+                    //stdout.println("item number: "+len);
+                    Set<URL> NeedToCrawl = new HashSet<URL>();
+                    for (IHttpRequestResponse x:items){// 经过验证每次都需要从头开始遍历，按一定offset获取的数据每次都可能不同
+
+                        IHttpService httpservice = x.getHttpService();
+                        String shortUrlString = httpservice.toString();
+                        String Host = httpservice.getHost();
+
+                        try {
+                            URL shortUrl = new URL(shortUrlString);
+
+                            if (Host.endsWith("."+rootdomain) && Commons.isResponseNull(x)) {
+                                // to reduce memory usage, use isResponseNull() method to adjust whether the item crawled.
+                                NeedToCrawl.add(shortUrl);
+                                // to reduce memory usage, use shortUrl. base on my test, spider will crawl entire site when send short URL to it.
+                                // this may miss some single page, but the single page often useless for domain collection
+                                // see spideralltest() function.
+                            }
+                        } catch (MalformedURLException e) {
+                            e.printStackTrace(stderr);
+                        }
+                    }
+
+
+                    for (URL shortUrl:NeedToCrawl) {
+                        if (!callbacks.isInScope(shortUrl)) { //reduce add scope action, to reduce the burp UI action.
+                            callbacks.includeInScope(shortUrl);//if not, will always show confirm message box.
+                        }
+                        callbacks.sendToSpider(shortUrl);
+                    }
+                }
+            }
+
+
+            try {
+                Thread.sleep(5*60*1000);//单位毫秒，60000毫秒=一分钟
+                stdout.println("sleep 5 minutes to wait spider");
+                //to wait spider
+            } catch (InterruptedException e) {
+                e.printStackTrace(stdout);
+            }
+            i++;
+        }
+
+        return search(rootdomains,keywords);
+    }
+
+    public LinkedHashMap<String, String> getTableMap() {
+        LinkedHashMap<String,String> tableMap= new LinkedHashMap<String,String>();
+
+		/*		for(int x=0;x<table.getRowCount();x++){
+			String key =(String) table.getValueAt(x, 0);
+			String value = (String) table.getValueAt(x, 1); //encountered a "ArrayIndexOutOfBoundsException" error here~~ strange!
+			tableMap.put(key,value);
+		}
+		return tableMap;*/
+
+        Vector data = domainTableModel.getDataVector();
+        for (Object o : data) {
+            Vector v = (Vector) o;
+            String key = (String) v.elementAt(0);
+            String value = (String) v.elementAt(1);
+            if (key != null && value != null) {
+                tableMap.put(key.trim(), value.trim());
+            }
+        }
+        return tableMap;
+    }
+
+    public void ClearTable() {
+        LinkedHashMap<String, String> tmp = domainResult.getRootDomainMap();
+
+        DefaultTableModel model = (DefaultTableModel) table.getModel();
+        model.setRowCount(0);
+        //this also trigger tableModel listener. lead to rootDomainMap to empty!!
+        //so need to backup rootDomainMap and restore!
+        domainResult.setRootDomainMap(tmp);
+    }
+
+
+    public static Set<String> getSetFromTextArea(JTextArea textarea){
+        //user input maybe use "\n" in windows, so the System.lineSeparator() not always works fine!
+        Set<String> domainList = new HashSet<>(Arrays.asList(textarea.getText().replaceAll("\r\n", "\n").split("\n")));
+        domainList.remove("");
+        return domainList;
+    }
+
+    public Boolean upload(String url,String content) {
+        if ((url.toLowerCase().contains("http://") ||url.toLowerCase().contains("https://"))
+                && content != null){
+            try {
+                HTTPPost.httpPostRequest(url,content);
+                return true;
+            } catch (IOException e) {
+                e.printStackTrace(stderr);
+                return false;
+            }
+        }
+        return false;
+    }
+
+    public File saveDomainOnly() {
+        try {
+            File file = new dbFileChooser().dialog(false);
+            if(!(file.getName().toLowerCase().endsWith(".db"))){
+                file=new File(fc.getCurrentDirectory(),file.getName()+".db");
+            }
+
+            if (domainResult.projectName.equals("")) {
+                domainResult.projectName = file.getName();
+            }
+
+            if(file.exists()){
+                int result = JOptionPane.showConfirmDialog(null,"Are you sure to overwrite this file ?");
+                if (result == JOptionPane.YES_OPTION) {
+                    file.createNewFile();
+                }else {
+                    return null;
+                }
+            }else {
+                file.createNewFile();
+            }
+
+            DBHelper dbHelper = new DBHelper(file.toString());
+            dbHelper.addDomainObject(domainResult);
+            stdout.println("Save Domain Only Success! "+ Commons.getNowTimeString());
+            return file;
+        } catch (HeadlessException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        stdout.println("Save Domain Only failed! "+ Commons.getNowTimeString());
         return null;
     }
 }

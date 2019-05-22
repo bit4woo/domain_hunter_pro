@@ -5,14 +5,10 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.PrintWriter;
 import java.net.URI;
 import java.util.Arrays;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.RowFilter;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableRowSorter;
 
@@ -25,11 +21,16 @@ public class LineTable extends JTable
 	private LineTableModel lineTableModel;
 	private IMessageEditor requestViewer;
 	private IMessageEditor responseViewer;
-	private BurpExtender burp;
+	private IBurpExtenderCallbacks callbacks;
 	private TableRowSorter<LineTableModel> rowSorter;//TableRowSorter vs. RowSorter
 	public JTabbedPane RequestPanel;
 	public JTabbedPane ResponsePanel;
 	private JSplitPane splitPane;//table area + detail area
+
+
+
+	PrintWriter stdout;
+	PrintWriter stderr;
 
 	private int selectedRow = this.getSelectedRow();//to identify the selected row after search or hide lines
 
@@ -41,11 +42,17 @@ public class LineTable extends JTable
 		this.splitPane = splitPane;
 	}
 
-	public LineTable(LineTableModel lineTableModel,BurpExtender burp)
+	public LineTable(LineTableModel lineTableModel)
 	{
-		super(lineTableModel);
+        try{
+            stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
+            stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
+        }catch (Exception e){
+            stdout = new PrintWriter(System.out, true);
+            stderr = new PrintWriter(System.out, true);
+        }
+		//super(lineTableModel);
 		this.lineTableModel = lineTableModel;
-		this.burp = burp;
 		this.setFillsViewportHeight(true);//在table的空白区域显示右键菜单
 		//https://stackoverflow.com/questions/8903040/right-click-mouselistener-on-whole-jtable-component
 
@@ -68,18 +75,14 @@ public class LineTable extends JTable
 		ResponsePanel = new JTabbedPane();
 		RequestDetailPanel.setRightComponent(ResponsePanel);
 
-		requestViewer = BurpExtender.callbacks.createMessageEditor(lineTableModel, false);
-		responseViewer = BurpExtender.callbacks.createMessageEditor(lineTableModel, false);
+		requestViewer = BurpExtender.getCallbacks().createMessageEditor(lineTableModel, false);
+		responseViewer = BurpExtender.getCallbacks().createMessageEditor(lineTableModel, false);
 		RequestPanel.addTab("Request", requestViewer.getComponent());
 		ResponsePanel.addTab("Response", responseViewer.getComponent());
 		tableinit();
 		addClickSort();
 		registerListeners();
 
-	}
-
-	public BurpExtender getBurp() {
-		return burp;
 	}
 
 	public void tableinit(){
@@ -124,7 +127,8 @@ public class LineTable extends JTable
 
 	@Override
 	public LineTableModel getModel(){
-		return (LineTableModel) super.getModel();
+		//return (LineTableModel) super.getModel();
+		return lineTableModel;
 	}
 
 	private void addClickSort() {
@@ -139,7 +143,7 @@ public class LineTable extends JTable
 					LineTable.this.getRowSorter().getSortKeys().get(0).getColumn();
 					////当Jtable中无数据时，jtable.getRowSorter()是nul
 				} catch (Exception e1) {
-					e1.printStackTrace(LineTable.this.burp.stderr);
+					e1.printStackTrace(stderr);
 				}
 			}
 		});
@@ -155,7 +159,7 @@ public class LineTable extends JTable
 				int row = (int) entry.getIdentifier();
 				LineEntry line = rowSorter.getModel().getLineEntries().get(row);
 
-				if (BurpExtender.rdbtnHideCheckedItems.isSelected()&& line.isChecked()) {//to hide checked lines
+				if (BurpExtender.getGui().getTitlePanel().rdbtnHideCheckedItems.isSelected()&& line.isChecked()) {//to hide checked lines
 					if (selectedRow == row) {
 						selectedRow = row+1;
 					}

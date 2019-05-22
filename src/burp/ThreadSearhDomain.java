@@ -21,7 +21,7 @@ class ThreadSearhDomain{
 	private List<IHttpRequestResponse> messages;
 	private List<DomainProducer> plist;
 	
-	private static IBurpExtenderCallbacks callbacks = BurpExtender.callbacks;//静态变量，burp插件的逻辑中，是可以保证它被初始化的。;
+	private static IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();//静态变量，burp插件的逻辑中，是可以保证它被初始化的。;
     public PrintWriter stdout = new PrintWriter(callbacks.getStdout(), true);
     public PrintWriter stderr = new PrintWriter(callbacks.getStderr(), true);
     public IExtensionHelpers helpers = callbacks.getHelpers();
@@ -62,12 +62,12 @@ class ThreadSearhDomain{
 				continue;
 			}
 		}
-		int oldnumber = BurpExtender.getDomainResult().getSubDomainSet().size();
-		BurpExtender.getDomainResult().getSubDomainSet().addAll(subDomainQueue);
-		int newnumber = BurpExtender.getDomainResult().getSubDomainSet().size();
+		int oldnumber = DomainPanel.getDomainResult().getSubDomainSet().size();
+		DomainPanel.getDomainResult().getSubDomainSet().addAll(subDomainQueue);
+		int newnumber = DomainPanel.getDomainResult().getSubDomainSet().size();
 		stdout.println(String.format("~~~~~~~~~~~~~%s subdomains added!~~~~~~~~~~~~~",newnumber-oldnumber));
-		BurpExtender.getDomainResult().getSimilarDomainSet().addAll(similarDomainQueue);
-		BurpExtender.getDomainResult().getRelatedDomainSet().addAll(relatedDomainQueue);
+		DomainPanel.getDomainResult().getSimilarDomainSet().addAll(similarDomainQueue);
+		DomainPanel.getDomainResult().getRelatedDomainSet().addAll(relatedDomainQueue);
 		return;
 	}
 
@@ -108,7 +108,7 @@ class DomainProducer extends Thread {//Producer do
 	private int threadNo;
 	private boolean stopflag = false;
 	
-	private static IBurpExtenderCallbacks callbacks = BurpExtender.callbacks;//静态变量，burp插件的逻辑中，是可以保证它被初始化的。;
+	private static IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();//静态变量，burp插件的逻辑中，是可以保证它被初始化的。;
     public PrintWriter stdout = new PrintWriter(callbacks.getStdout(), true);
     public PrintWriter stderr = new PrintWriter(callbacks.getStderr(), true);
     public IExtensionHelpers helpers = callbacks.getHelpers();
@@ -148,7 +148,7 @@ class DomainProducer extends Thread {//Producer do
 
 				//callbacks.printOutput(rootdomains.toString());
 				//callbacks.printOutput(keywords.toString());
-				int type = BurpExtender.domainResult.domainType(Host);
+				int type = DomainPanel.domainResult.domainType(Host);
 				//callbacks.printOutput(Host+":"+type);
 				if (type == DomainObject.SUB_DOMAIN)
 				{	
@@ -163,7 +163,7 @@ class DomainProducer extends Thread {//Producer do
 
 				if (type !=DomainObject.USELESS && protocol.equalsIgnoreCase("https")){//get related domains
 					if (!httpsQueue.contains(shortURL)) {//httpService checked or not
-						Set<String> tmpDomains = CertInfo.getSANs(shortURL,BurpExtender.domainResult.fetchKeywordSet());
+						Set<String> tmpDomains = CertInfo.getSANs(shortURL,DomainPanel.domainResult.fetchKeywordSet());
 						for (String domain:tmpDomains) {
 							if (!relatedDomainQueue.contains(domain)) {
 								relatedDomainQueue.add(domain);
@@ -193,7 +193,7 @@ class DomainProducer extends Thread {//Producer do
 		if (response != null) {
 			Set<String> domains = DomainProducer.grepDomain(new String(response));
 			for (String domain:domains) {
-				int type = BurpExtender.domainResult.domainType(domain);
+				int type = DomainPanel.domainResult.domainType(domain);
 				if (type == DomainObject.SUB_DOMAIN)
 				{
 					subDomainQueue.add(domain);

@@ -20,10 +20,12 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	private LineEntry currentlyDisplayedItem;
 	private List<LineEntry> lineEntries =new ArrayList<LineEntry>();
 	private HashMap<String,Set<String>> noResponseDomain =new HashMap<String,Set<String>>();
-	private BurpExtender burp;
 	private boolean EnableSearch = Runtime.getRuntime().totalMemory()/1024/1024/1024 > 16;//if memory >16GB enable Search. else disable.
 	private boolean ListenerIsOn = true;
 	//private PrintWriter stderr = new PrintWriter(BurpExtender.callbacks.getStderr(), true);
+
+	PrintWriter stdout;
+	PrintWriter stderr;
 
 	private static final String[] titles = new String[] {
 			"#", "URL", "Status", "Length", "MIME Type", "Server","Title", "IP", "CDN", "Time","isNew","isChecked","Comments","Text"
@@ -33,8 +35,14 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		return titles;
 	}
 
-	public LineTableModel(final BurpExtender burp){
-		this.burp = burp;
+	public LineTableModel(){
+        try{
+            stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
+            stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
+        }catch (Exception e){
+            stdout = new PrintWriter(System.out, true);
+            stderr = new PrintWriter(System.out, true);
+        }
 		this.addTableModelListener(new TableModelListener() {//表格模型监听
 			@Override
 			public void tableChanged(TableModelEvent e) {
@@ -82,7 +90,6 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	public void clear() {
 		this.setListenerIsOn(false);
 		int rows = this.getRowCount();
-		PrintWriter stderr = new PrintWriter(BurpExtender.callbacks.getStderr(), true);
 		stderr.print("rows:"+rows);
 		this.setLineEntries(new ArrayList<LineEntry>());
 		System.out.println(rows);
@@ -146,7 +153,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	public Set<String> GetSubnets() {
 		Set<String> IPsOfDomain = getIPSet();
 		//Set<String> CSubNetIPs = Commons.subNetsToIPSet(Commons.toSubNets(IPsOfDomain));
-		Set<String> subnets = Commons.toSmallerSubNets(IPsOfDomain);	
+		Set<String> subnets = Commons.toSmallerSubNets(IPsOfDomain);
 		return subnets;
 	}
 
@@ -171,13 +178,13 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 
 	@Override
 	public Class<?> getColumnClass(int columnIndex)
-	{	switch(columnIndex) 
-		{
-		case 0: 
+	{	switch(columnIndex)
+	{
+		case 0:
 			return Integer.class;//id
-		case 2: 
+		case 2:
 			return Integer.class;//Status
-		case 3: 
+		case 3:
 			return Integer.class;//Length
 		case 8:
 			return boolean.class;//isNew
@@ -185,7 +192,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			return boolean.class;//isChecked
 		default:
 			return String.class;
-		}
+	}
 
 	}
 
@@ -222,7 +229,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
 				String url = lineEntries.get(rows[i]).getUrl();
 				lineEntries.remove(rows[i]);
-				this.burp.stdout.println("!!! "+url+" deleted");
+				stdout.println("!!! "+url+" deleted");
 				this.fireTableRowsDeleted(rows[i], rows[i]);
 			}
 		}
@@ -283,7 +290,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 				//				lineEntries.add(rows[i], checked);
 				//				//https://stackoverflow.com/questions/4352885/how-do-i-update-the-element-at-a-certain-position-in-an-arraylist
 				//lineEntries.set(rows[i], checked);
-				this.burp.stdout.println("$$$ "+checked.getUrl()+" updated");
+				stdout.println("$$$ "+checked.getUrl()+" updated");
 			}
 			this.fireTableRowsUpdated(rows[0], rows[rows.length-1]);
 		}
@@ -301,7 +308,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 				//				lineEntries.remove(rows[i]);
 				//				lineEntries.add(rows[i], checked);
 				//				//https://stackoverflow.com/questions/4352885/how-do-i-update-the-element-at-a-certain-position-in-an-arraylist
-				this.burp.stdout.println("$$$ "+checked.getUrl()+" updated");
+				stdout.println("$$$ "+checked.getUrl()+" updated");
 			}
 			this.fireTableRowsUpdated(rows[0], rows[rows.length-1]);
 		}
@@ -314,10 +321,10 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			Arrays.sort(rows); //升序
 			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
 				String Host = lineEntries.get(rows[i]).getHost();
-				this.burp.domainResult.getBlackDomainSet().add(Host);
+				DomainPanel.getDomainResult().getBlackDomainSet().add(Host);
 				String url = lineEntries.get(rows[i]).getUrl();
 				lineEntries.remove(rows[i]);
-				this.burp.stdout.println("### "+url+" added to black list and deleted");
+				stdout.println("### "+url+" added to black list and deleted");
 				this.fireTableRowsDeleted(rows[i], rows[i]);
 			}
 		}
@@ -330,45 +337,45 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		entry.parse();
 		switch (columnIndex)
 		{
-		case 0:
-			return rowIndex;
-		case 1:
-			return entry.getUrl();
-		case 2:
-			return entry.getStatuscode();
-		case 3:
-			return entry.getContentLength();
-		case 4:
-			return entry.getMIMEtype();
-		case 5:
-			return entry.getWebcontainer();  
-		case 6:
-			return entry.getTitle();
-		case 7:
-			return entry.getIP();
-		case 8:
-			return entry.getCDN();
-		case 9:
-			return entry.getTime();
-		case 10:
-			return entry.isNew();
-		case 11:
-			return entry.isChecked();
-		case 12:
-			return entry.getComment();
-		case 13:
-			//return new String(entry.getResponse());// response text for search
-			//it takes too many memories
+			case 0:
+				return rowIndex;
+			case 1:
+				return entry.getUrl();
+			case 2:
+				return entry.getStatuscode();
+			case 3:
+				return entry.getContentLength();
+			case 4:
+				return entry.getMIMEtype();
+			case 5:
+				return entry.getWebcontainer();
+			case 6:
+				return entry.getTitle();
+			case 7:
+				return entry.getIP();
+			case 8:
+				return entry.getCDN();
+			case 9:
+				return entry.getTime();
+			case 10:
+				return entry.isNew();
+			case 11:
+				return entry.isChecked();
+			case 12:
+				return entry.getComment();
+			case 13:
+				//return new String(entry.getResponse());// response text for search
+				//it takes too many memories
 			/*
 			if (EnableSearch) {
 				return new String(entry.getResponse());
 			}else {
 				return "";
 			}*/
-			//this is no need after override filter.
-			return "";
-		default:
-			return "";
+				//this is no need after override filter.
+				return "";
+			default:
+				return "";
 		}
 	}
 
@@ -378,11 +385,11 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		LineEntry entry = lineEntries.get(row);
 		switch (col)
 		{
-		case 12://comment
-			entry.setComment((String) value);
-			break;
-		default:
-			break;
+			case 12://comment
+				entry.setComment((String) value);
+				break;
+			default:
+				break;
 		}
 		fireTableCellUpdated(row, col);
 	}
@@ -451,7 +458,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			return null;
 		}
 		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
-		IHttpService service = helpers.buildHttpService(item.getHost(), 
+		IHttpService service = helpers.buildHttpService(item.getHost(),
 				item.getPort(), item.getProtocol());
 		return service;
 	}
@@ -461,7 +468,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	/*    public class LineTable extends JTable
     {	
 	 *//**
-	 * 
+	 *
 	 *//*
     	private static final long serialVersionUID = 1L;
         public LineTable(LineTableModel lineTableModel)

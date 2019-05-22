@@ -21,8 +21,8 @@ public class MessageViewPanel extends JSplitPane implements IMessageEditorContro
 	 * Create the panel.
 	 */
 	public MessageViewPanel(BurpExtender burp) {
-		requestViewer = burp.callbacks.createMessageEditor(this, false);
-		responseViewer = burp.callbacks.createMessageEditor(this, false);
+		requestViewer = BurpExtender.getCallbacks().createMessageEditor(this, false);
+		responseViewer = BurpExtender.getCallbacks().createMessageEditor(this, false);
         this.setLeftComponent(requestViewer.getComponent());
         this.setRightComponent(responseViewer.getComponent());
         this.setOrientation(JSplitPane.VERTICAL_SPLIT);

@@ -5,6 +5,7 @@ import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
+import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
@@ -14,7 +15,17 @@ import java.util.Map;
 
 public class LineEntryMenu extends JPopupMenu {
 
+	PrintWriter stdout;
+	PrintWriter stderr;
 	LineEntryMenu(final LineTable lineTable, final int[] rows){
+
+        try{
+            stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
+            stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
+        }catch (Exception e){
+            stdout = new PrintWriter(System.out, true);
+            stderr = new PrintWriter(System.out, true);
+        }
 
 		JMenuItem itemNumber = new JMenuItem(new AbstractAction(rows.length+" Items Selected") {
 			@Override
@@ -56,7 +67,7 @@ public class LineEntryMenu extends JPopupMenu {
 				}
 				catch (Exception e1)
 				{
-					e1.printStackTrace(lineTable.getBurp().stderr);
+					e1.printStackTrace(stderr);
 				}
 			}
 		});
@@ -68,7 +79,7 @@ public class LineEntryMenu extends JPopupMenu {
 			public void actionPerformed(ActionEvent actionEvent) {
 				try{
 					java.util.List<String> urls = lineTable.getModel().getURLs(rows);
-					IBurpExtenderCallbacks callbacks = lineTable.getBurp().callbacks;
+					IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
 					for(String url:urls) {
 						URL shortUrl = new URL(url);
 						callbacks.includeInScope(shortUrl);
@@ -76,7 +87,7 @@ public class LineEntryMenu extends JPopupMenu {
 				}
 				catch (Exception e1)
 				{
-					e1.printStackTrace(lineTable.getBurp().stderr);
+					e1.printStackTrace(stderr);
 				}
 			}
 		});
@@ -87,7 +98,7 @@ public class LineEntryMenu extends JPopupMenu {
 			public void actionPerformed(ActionEvent actionEvent) {
 				try{
 					java.util.List<LineEntry> entries = lineTable.getModel().getLineEntries();
-					IBurpExtenderCallbacks callbacks = lineTable.getBurp().callbacks;
+					IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
 					for (int i=rows.length-1;i>=0 ;i-- ) {
 						LineEntry entry = entries.get(rows[i]);
 
@@ -107,7 +118,7 @@ public class LineEntryMenu extends JPopupMenu {
 				}
 				catch (Exception e1)
 				{
-					e1.printStackTrace(lineTable.getBurp().stderr);
+					e1.printStackTrace(stderr);
 				}
 			}
 		});
@@ -117,12 +128,12 @@ public class LineEntryMenu extends JPopupMenu {
 		JMenuItem checkedItem = new JMenuItem(new AbstractAction("Mark As Checked") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				BurpExtender.getTitleTableModel().updateRows(rows);
+				BurpExtender.getGui().getTitlePanel().getTitleTableModel().updateRows(rows);
 //				if (BurpExtender.rdbtnHideCheckedItems.isSelected()) {//实现自动隐藏，为了避免误操作，不启用
 //					String keyword = BurpExtender.textFieldSearch.getText().trim();
 //					lineTable.search(keyword);
 //				}
-				BurpExtender.digStatus();
+				BurpExtender.getGui().titlePanel.digStatus();
 			}
 		});
 		this.add(checkedItem);
@@ -134,7 +145,7 @@ public class LineEntryMenu extends JPopupMenu {
 				while(Comments.trim().equals("")){
 					Comments = JOptionPane.showInputDialog("Comments", null).trim();
 				}
-				BurpExtender.getTitleTableModel().updateComments(rows,Comments);
+				BurpExtender.getGui().getTitlePanel().getTitleTableModel().updateComments(rows,Comments);
 			}
 		});
 		this.add(batchAddCommentsItem);
@@ -152,7 +163,7 @@ public class LineEntryMenu extends JPopupMenu {
 				}
 				catch (Exception e1)
 				{
-					e1.printStackTrace(lineTable.getBurp().stderr);
+					e1.printStackTrace(stderr);
 				}
 			}
 		});
@@ -219,7 +230,7 @@ public class LineEntryMenu extends JPopupMenu {
 				}else {
 					return;
 				}
-				BurpExtender.digStatus();
+				BurpExtender.getGui().titlePanel.digStatus();
 			}
 		});
 		this.add(removeItem);
@@ -233,7 +244,7 @@ public class LineEntryMenu extends JPopupMenu {
 				}else {
 					return;
 				}
-				BurpExtender.digStatus();
+				BurpExtender.getGui().titlePanel.digStatus();
 			}
 		});
 		blackListItem.setToolTipText("will not get title from next time");

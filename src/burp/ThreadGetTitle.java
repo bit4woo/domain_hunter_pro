@@ -18,7 +18,7 @@ class ThreadGetTitle{
 	private Set<String> domains;
 	private List<Producer> plist;
 
-	private static IBurpExtenderCallbacks callbacks = BurpExtender.callbacks;//静态变量，burp插件的逻辑中，是可以保证它被初始化的。;
+	private static IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();//静态变量，burp插件的逻辑中，是可以保证它被初始化的。;
 	public PrintWriter stdout = new PrintWriter(callbacks.getStdout(), true);
 	public PrintWriter stderr = new PrintWriter(callbacks.getStderr(), true);
 	public IExtensionHelpers helpers = callbacks.getHelpers();
@@ -93,7 +93,7 @@ class Producer extends Thread {//Producer do
 	private int threadNo;
 	private boolean stopflag = false;
 
-	private static IBurpExtenderCallbacks callbacks = BurpExtender.callbacks;//静态变量，burp插件的逻辑中，是可以保证它被初始化的。;
+	private static IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();//静态变量，burp插件的逻辑中，是可以保证它被初始化的。;
 	public PrintWriter stdout = new PrintWriter(callbacks.getStdout(), true);
 	public PrintWriter stderr = new PrintWriter(callbacks.getStderr(), true);
 	public IExtensionHelpers helpers = callbacks.getHelpers();
@@ -184,10 +184,10 @@ class Producer extends Thread {//Producer do
 
 					if (item.getResponse() == null) {
 						stdout.println(String.format("%s tasks left || --- [%s] --- has no response",leftTaskNum,url));
-						BurpExtender.getTitleTableModel().addNewNoResponseDomain(host, IPSet);
+						TitlePanel.getTitleTableModel().addNewNoResponseDomain(host, IPSet);
 					}else if(status >= 500){
 						stdout.println(String.format("%s tasks left || --- [%s] --- status code >= 500",leftTaskNum,url));
-						BurpExtender.getTitleTableModel().addNewNoResponseDomain(host, IPSet);
+						TitlePanel.getTitleTableModel().addNewNoResponseDomain(host, IPSet);
 					}else {
 						byte[] byteBody = getter.getBody(false, item);
 						String body = new String(byteBody);
@@ -212,7 +212,7 @@ class Producer extends Thread {//Producer do
 								err.printStackTrace(stderr);
 							}
 						}
-						BurpExtender.getTitleTableModel().addNewLineEntry(new LineEntry(item,isNew,isChecked,comment,IPSet,CDNSet));
+						BurpExtender.getGui().getTitlePanel().getTitleTableModel().addNewLineEntry(new LineEntry(item,isNew,isChecked,comment,IPSet,CDNSet));
 
 						//stdout.println(new LineEntry(messageinfo,true).ToJson());
 
@@ -228,7 +228,7 @@ class Producer extends Thread {//Producer do
 	}
 
 	public LineEntry findHistory(String url) {
-		List<LineEntry> HistoryLines = BurpExtender.getBackupLineEntries();
+		List<LineEntry> HistoryLines = BurpExtender.getGui().getTitlePanel().getBackupLineEntries();
 		if (HistoryLines == null) return null;
 		for (LineEntry line:HistoryLines) {
 			line.setHelpers(helpers);
