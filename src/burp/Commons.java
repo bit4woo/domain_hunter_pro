@@ -23,7 +23,7 @@ public class Commons {
 		StringBuilder result = new StringBuilder();
 		while(iter.hasNext())
 		{
-			//System.out.println(iter.next());  	
+			//System.out.println(iter.next());  		
 			result.append(iter.next()).append("\n");
 		}
 		return result.toString();

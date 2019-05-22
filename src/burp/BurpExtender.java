@@ -1,19 +1,15 @@
 package burp;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 import java.io.PrintWriter;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -64,13 +60,13 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	@Override
 	public void registerExtenderCallbacks(IBurpExtenderCallbacks callbacks)
 	{
-        try{
-            stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
-            stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
-        }catch (Exception e){
-            stdout = new PrintWriter(System.out, true);
-            stderr = new PrintWriter(System.out, true);
-        }
+		try{
+			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
+			stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
+		}catch (Exception e){
+			stdout = new PrintWriter(System.out, true);
+			stderr = new PrintWriter(System.out, true);
+		}
 		stdout.println(ExtenderName);
 		stdout.println(github);
 		BurpExtender.callbacks = callbacks;

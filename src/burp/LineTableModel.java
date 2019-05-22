@@ -1,13 +1,17 @@
 package burp;
 
-import javax.sql.RowSet;
+import java.io.PrintWriter;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
-
-import java.io.PrintWriter;
-import java.io.Serializable;
-import java.util.*;
 
 
 public class LineTableModel extends AbstractTableModel implements IMessageEditorController,Serializable {

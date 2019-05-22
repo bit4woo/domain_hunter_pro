@@ -1,39 +1,74 @@
 package burp;
 
-import com.google.common.base.Charsets;
-import com.google.common.io.Files;
-import com.google.common.net.InternetDomainName;
-import test.HTTPPost;
-
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-import javax.swing.filechooser.FileFilter;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Desktop;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.HeadlessException;
+import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Vector;
+
+import javax.swing.Box;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.RowSorter;
+import javax.swing.SortOrder;
+import javax.swing.SwingWorker;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
+
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
+import com.google.common.net.InternetDomainName;
+
+import test.HTTPPost;
 
 public class DomainPanel extends JPanel {
 
     private JRadioButton rdbtnAddRelatedToRoot;
     private JTabbedPane tabbedWrapper;
-    private JPanel domainContentPane;
     private JTextField textFieldUploadURL;
     private JButton btnSearch;
     private JButton btnUpload;
@@ -81,9 +116,8 @@ public class DomainPanel extends JPanel {
     PrintWriter stderr;
 
     public DomainPanel() {//构造函数
-        domainContentPane =  new JPanel();
-        domainContentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-        domainContentPane.setLayout(new BorderLayout(0, 0));
+        this.setBorder(new EmptyBorder(5, 5, 5, 5));
+        this.setLayout(new BorderLayout(0, 0));
 
         try{
             stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
@@ -100,7 +134,7 @@ public class DomainPanel extends JPanel {
         JPanel HeaderPanel = new JPanel();
         FlowLayout fl_HeaderPanel = (FlowLayout) HeaderPanel.getLayout();
         fl_HeaderPanel.setAlignment(FlowLayout.LEFT);
-        domainContentPane.add(HeaderPanel, BorderLayout.NORTH);
+        this.add(HeaderPanel, BorderLayout.NORTH);
 
 
         JButton btnSaveDomainOnly = new JButton("Save Domain Only");
@@ -339,7 +373,7 @@ public class DomainPanel extends JPanel {
 
         JSplitPane CenterSplitPane = new JSplitPane();
         CenterSplitPane.setResizeWeight(0.5);
-        domainContentPane.add(CenterSplitPane, BorderLayout.CENTER);
+        this.add(CenterSplitPane, BorderLayout.CENTER);
 
 
         JSplitPane leftOfCenterSplitPane = new JSplitPane();
@@ -604,7 +638,7 @@ public class DomainPanel extends JPanel {
         FooterPanel = new JPanel();
         FlowLayout fl_FooterPanel = (FlowLayout) FooterPanel.getLayout();
         fl_FooterPanel.setAlignment(FlowLayout.LEFT);
-        domainContentPane.add(FooterPanel, BorderLayout.SOUTH);
+        this.add(FooterPanel, BorderLayout.SOUTH);
 
         lblNewLabel_2 = new JLabel(BurpExtender.getExtenderName()+"    "+BurpExtender.getGithub());
         lblNewLabel_2.setFont(new Font("宋体", Font.BOLD, 12));
