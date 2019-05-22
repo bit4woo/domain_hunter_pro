@@ -112,13 +112,40 @@ public class DBHelper {
 		return false;
 	}
 
-	public void saveDomainObject(DomainObject domainResult){
+	public void updateDomainObject(DomainObject domainResult){
 		try {
 			//clear table
 			conn = getConnection();
-			Statement  stmt = conn.createStatement();
-			String sqlclear = "Delete From DOMAINObject";
-			stmt.executeUpdate(sqlclear);
+//			Statement  stmt = conn.createStatement();
+//			String sqlclear = "Delete From DOMAINObject";
+//			stmt.executeUpdate(sqlclear);
+
+			String name = domainResult.getProjectName();
+			String content  = domainResult.ToJson();
+			String sql="update DOMAINObject SET Content=? where NAME=?";
+			pres=conn.prepareStatement(sql);//预编译
+
+			pres.setString(1,content);
+			pres.setObject(2,name);
+			int n = pres.executeUpdate();
+			if (n==1){
+				System.out.println("update domain object successfully");
+			}else {
+				System.out.println("update domain object failed");
+			}
+			destroy();
+		} catch (Exception e) {
+			e.printStackTrace(stderr);
+		}
+	}
+
+	public void addDomainObject(DomainObject domainResult){
+		try {
+			//clear table
+			conn = getConnection();
+//			Statement  stmt = conn.createStatement();
+//			String sqlclear = "Delete From DOMAINObject";
+//			stmt.executeUpdate(sqlclear);
 
 			String name = domainResult.getProjectName();
 			String content  = domainResult.ToJson();
@@ -127,7 +154,12 @@ public class DBHelper {
 
 			pres.setString(1,name);
 			pres.setObject(2,content);
-			pres.execute();
+			boolean isSuccess = pres.execute();
+			if (isSuccess){
+				System.out.println("add domain object successfully");
+			}else {
+				System.out.println("add domain object failed");
+			}
 			destroy();
 		} catch (Exception e) {
 			e.printStackTrace(stderr);
@@ -245,9 +277,9 @@ public class DBHelper {
 	public static void main(String args[]){
 		DBHelper helper = new DBHelper("test1.db");
 		DomainObject xxx = new DomainObject("test");
-		helper.saveDomainObject(xxx);
+		helper.addDomainObject(xxx);
 		DomainObject yyyy = new DomainObject("yyyy");
-		helper.saveDomainObject(yyyy);
+		helper.addDomainObject(yyyy);
 		System.out.println(helper.getDomainObj().ToJson());
 	}
 }

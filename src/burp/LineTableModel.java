@@ -44,7 +44,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 					int rowend = e.getLastRow();
 					int column = e.getColumn();//获取触发事件的列索引
 					if (type == TableModelEvent.INSERT) {//如果是"插入"事件
-						//System.out.println("此事件是由\"插入\"触发,在" + row + "行" + column + "列");
+
 					} else if (type == TableModelEvent.UPDATE) {
 						DBHelper dbHelper = new DBHelper(GUI.currentDBFile.toString());
 						for (int i = rowstart; i <= rowend; i++) {
@@ -282,7 +282,25 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 				//				lineEntries.remove(rows[i]);
 				//				lineEntries.add(rows[i], checked);
 				//				//https://stackoverflow.com/questions/4352885/how-do-i-update-the-element-at-a-certain-position-in-an-arraylist
-				lineEntries.set(rows[i], checked);
+				//lineEntries.set(rows[i], checked);
+				this.burp.stdout.println("$$$ "+checked.getUrl()+" updated");
+			}
+			this.fireTableRowsUpdated(rows[0], rows[rows.length-1]);
+		}
+	}
+
+	public void updateComments(int[] rows, String comments) {
+		synchronized (lineEntries) {
+			//because thread let the delete action not in order, so we must loop in here.
+			//list length and index changed after every remove.the origin index not point to right item any more.
+			Arrays.sort(rows); //升序
+			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
+				LineEntry checked = lineEntries.get(rows[i]);
+				String originComment = checked.getComment();
+				checked.setComment(originComment+","+comments);
+				//				lineEntries.remove(rows[i]);
+				//				lineEntries.add(rows[i], checked);
+				//				//https://stackoverflow.com/questions/4352885/how-do-i-update-the-element-at-a-certain-position-in-an-arraylist
 				this.burp.stdout.println("$$$ "+checked.getUrl()+" updated");
 			}
 			this.fireTableRowsUpdated(rows[0], rows[rows.length-1]);

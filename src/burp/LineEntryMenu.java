@@ -127,6 +127,18 @@ public class LineEntryMenu extends JPopupMenu {
 		});
 		this.add(checkedItem);
 
+		JMenuItem batchAddCommentsItem = new JMenuItem(new AbstractAction("Add Comments") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				String Comments = JOptionPane.showInputDialog("Comments", null).trim();
+				while(Comments.trim().equals("")){
+					Comments = JOptionPane.showInputDialog("Comments", null).trim();
+				}
+				BurpExtender.getTitleTableModel().updateComments(rows,Comments);
+			}
+		});
+		this.add(batchAddCommentsItem);
+
 		JMenuItem copyLocationURLItem = new JMenuItem(new AbstractAction("Copy Location URL") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
