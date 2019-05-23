@@ -1,9 +1,9 @@
 package burp;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -75,6 +75,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		callbacks.setExtensionName(ExtenderName); //插件名称
 		callbacks.registerExtensionStateListener(this);
 		callbacks.registerContextMenuFactory(this);
+		
 		gui = new GUI();
 
 		SwingUtilities.invokeLater(new Runnable()
@@ -101,28 +102,8 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		}//必须要先结束线程，否则获取数据的操作根本无法结束，因为线程一直通过sync占用资源
 		gui.saveDBfilepathToExtension();
 		gui.saveDialog(false);
-	}
-
-
-
-
-	/**
-	 * @return IHttpService set to void duplicate IHttpRequestResponse handling
-	 *
-	 */
-	Set<IHttpService> getHttpServiceFromSiteMap(){
-		IHttpRequestResponse[] requestResponses = callbacks.getSiteMap(null);
-		Set<IHttpService> HttpServiceSet = new HashSet<IHttpService>();
-		for (IHttpRequestResponse x:requestResponses){
-
-			IHttpService httpservice = x.getHttpService();
-			HttpServiceSet.add(httpservice);
-			/*	    	String shortURL = httpservice.toString();
-	    	String protocol =  httpservice.getProtocol();
-			String Host = httpservice.getHost();*/
-		}
-		return HttpServiceSet;
-
+		
+		gui.getProjectMenu().remove();
 	}
 
 	//ITab必须实现的两个方法
@@ -154,7 +135,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 
 	public class addHostToRootDomain implements ActionListener{
 		private IContextMenuInvocation invocation;
-		public addHostToRootDomain(IContextMenuInvocation invocation) {
+		addHostToRootDomain(IContextMenuInvocation invocation) {
 			this.invocation  = invocation;
 		}
 		@Override
@@ -187,7 +168,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 
 	public class runWithSamePath implements ActionListener{
 		private IContextMenuInvocation invocation;
-		public runWithSamePath(IContextMenuInvocation invocation) {
+		runWithSamePath(IContextMenuInvocation invocation) {
 			this.invocation  = invocation;
 		}
 		@Override
@@ -208,7 +189,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 
 			LineTableModel runnerTableModel = new LineTableModel();
 			LineTable runnerTable = new LineTable(runnerTableModel);
-			//frame.getRunnerPanel().add(TitlePanel.tableAndDetail(), BorderLayout.CENTER);
+			frame.getRunnerPanel().add(runnerTable.getTableAndDetailSplitPane(), BorderLayout.CENTER);
 			//frame.getRootPane().add(runnerTable.getSplitPane(), BorderLayout.CENTER);
 
 

@@ -15,28 +15,27 @@ import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
 
 public class ProjectMenu{
-    GUI gui;
-
-    public ProjectMenu(GUI gui)
-    {
-        this.gui = gui;
+	GUI gui;
+	JMenu hunterMenu;
+	
+	ProjectMenu(GUI gui){
+		this.gui = gui;
+		hunterMenu = Menu();
+	}
+    
+    public void Add() {
         try{
             JMenuBar menuBar = getBurpFrame().getJMenuBar();
-            JMenu hunterMenu = Menu();
             menuBar.add(hunterMenu, menuBar.getMenuCount() - 1);
         }catch (Exception e){
 
         }
-    }
+	}
 
     public void remove(){
-            JMenuBar menuBar = getBurpFrame().getJMenuBar();
-            int num = menuBar.getMenuCount();
-            for (int n=0 ; n < num; n++){
-                if (menuBar.getMenu(n).getAction().equals("Domainhunter")){
-                    menuBar.remove(menuBar.getMenu(n));
-                }
-            }
+        JMenuBar menuBar = getBurpFrame().getJMenuBar();
+        menuBar.remove(hunterMenu);
+        menuBar.repaint();
     }
 
     static JFrame getBurpFrame()

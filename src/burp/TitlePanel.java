@@ -31,16 +31,7 @@ public class TitlePanel extends JPanel {
 	PrintWriter stderr;
 	private ThreadGetTitle threadGetTitle;
 	private List<LineEntry> BackupLineEntries;
-	private static IMessageEditor requestViewer;
-	private static IMessageEditor responseViewer;
 
-	public static IMessageEditor getRequestViewer() {
-		return requestViewer;
-	}
-
-	public static IMessageEditor getResponseViewer() {
-		return responseViewer;
-	}
 
 	public static LineTableModel getTitleTableModel() {
 		return titleTableModel;
@@ -296,66 +287,11 @@ public class TitlePanel extends JPanel {
 		buttonPanel.add(lblSummaryOfTitle);
 
 		/////////////////////////////////////////
-
-		JSplitPane splitPane = new JSplitPane();//table area + detail area
-		splitPane.setResizeWeight(0.5);
-		splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
-		this.add(splitPane, BorderLayout.CENTER); // getTitlePanel to get it
-
-		JScrollPane scrollPaneRequests = new JScrollPane();//table area
-		splitPane.setLeftComponent(scrollPaneRequests);
 		titleTable = new LineTable(titleTableModel);
-		scrollPaneRequests.setViewportView(titleTable);
-
-		JSplitPane RequestDetailPanel = new JSplitPane();//request and response
-		RequestDetailPanel.setResizeWeight(0.5);
-		splitPane.setRightComponent(RequestDetailPanel);
-
-		JTabbedPane RequestPanel = new JTabbedPane();
-		RequestDetailPanel.setLeftComponent(RequestPanel);
-
-		JTabbedPane ResponsePanel = new JTabbedPane();
-		RequestDetailPanel.setRightComponent(ResponsePanel);
-
-		IMessageEditor requestViewer = BurpExtender.getCallbacks().createMessageEditor(titleTableModel, false);
-		IMessageEditor responseViewer = BurpExtender.getCallbacks().createMessageEditor(titleTableModel, false);
-		RequestPanel.addTab("Request", requestViewer.getComponent());
-		ResponsePanel.addTab("Response", responseViewer.getComponent());
-
-
-		//this.add(tableAndDetail(titleTableModel),BorderLayout.CENTER);
+		this.add(titleTable.getTableAndDetailSplitPane(),BorderLayout.CENTER);
 	}
 
 
-	public JSplitPane tableAndDetail(LineTableModel titleTableModel){
-		JSplitPane splitPane = new JSplitPane();//table area + detail area
-		splitPane.setResizeWeight(0.5);
-		splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
-		//TitlePanel.add(splitPane, BorderLayout.CENTER); // getTitlePanel to get it
-
-		JScrollPane scrollPaneRequests = new JScrollPane();//table area
-		splitPane.setLeftComponent(scrollPaneRequests);
-		scrollPaneRequests.setViewportView(this);
-		titleTable = new LineTable(titleTableModel);
-		scrollPaneRequests.add(titleTable);
-
-		JSplitPane RequestDetailPanel = new JSplitPane();//request and response
-		RequestDetailPanel.setResizeWeight(0.5);
-		splitPane.setRightComponent(RequestDetailPanel);
-
-		JTabbedPane RequestPanel = new JTabbedPane();
-		RequestDetailPanel.setLeftComponent(RequestPanel);
-
-		JTabbedPane ResponsePanel = new JTabbedPane();
-		RequestDetailPanel.setRightComponent(ResponsePanel);
-
-		IMessageEditor requestViewer = BurpExtender.getCallbacks().createMessageEditor(titleTableModel, false);
-		IMessageEditor responseViewer = BurpExtender.getCallbacks().createMessageEditor(titleTableModel, false);
-		RequestPanel.addTab("Request", requestViewer.getComponent());
-		ResponsePanel.addTab("Response", responseViewer.getComponent());
-
-		return splitPane;
-	}
 
 
 	public void getAllTitle(){

@@ -1,16 +1,13 @@
 package burp;
 
-import java.awt.EventQueue;
-import java.io.File;
-import java.io.PrintWriter;
-
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.JTabbedPane;
-
 import com.alibaba.fastjson.JSON;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
+
+import javax.swing.*;
+import java.awt.*;
+import java.io.File;
+import java.io.PrintWriter;
 
 
 public class GUI extends JFrame {
@@ -21,6 +18,11 @@ public class GUI extends JFrame {
 	protected PrintWriter stdout;
 	protected PrintWriter stderr;
 	protected dbFileChooser dbfc = new dbFileChooser();
+	protected ProjectMenu projectMenu;
+
+	public ProjectMenu getProjectMenu() {
+		return projectMenu;
+	}
 
 	public static DomainPanel getDomainPanel() {
 		return domainPanel;
@@ -52,7 +54,9 @@ public class GUI extends JFrame {
 		tabbedWrapper.addTab("Domains", null, domainPanel, null);
 		tabbedWrapper.addTab("Titles", null, titlePanel, null);
 
-		new ProjectMenu(this);
+		projectMenu = new ProjectMenu(this);
+		projectMenu.Add();
+		
 	}
 
 

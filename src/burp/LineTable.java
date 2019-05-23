@@ -19,14 +19,22 @@ public class LineTable extends JTable
 	private LineTableModel lineTableModel;
 	private TableRowSorter<LineTableModel> rowSorter;//TableRowSorter vs. RowSorter
 
+	private IMessageEditor requestViewer;
+	private IMessageEditor responseViewer;
 	PrintWriter stdout;
 	PrintWriter stderr;
+
+	private JSplitPane tableAndDetailSplitPane;//table area + detail area
+	public JSplitPane getTableAndDetailSplitPane() {
+		return tableAndDetailSplitPane;
+	}
+
 
 	private int selectedRow = this.getSelectedRow();//to identify the selected row after search or hide lines
 
 	public LineTable(LineTableModel lineTableModel)
 	{
-		//super(lineTableModel);//有了它反而出错？
+		//super(lineTableModel);//这个方法创建的表没有header
         try{
             stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
             stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
@@ -38,11 +46,60 @@ public class LineTable extends JTable
 		this.lineTableModel = lineTableModel;
 		this.setFillsViewportHeight(true);//在table的空白区域显示右键菜单
 		//https://stackoverflow.com/questions/8903040/right-click-mouselistener-on-whole-jtable-component
-		this.setModel(lineTableModel);//没有这个就没有table header
+		this.setModel(lineTableModel);
+
 		tableinit();
 		addClickSort();
 		registerListeners();
 
+		tableAndDetailSplitPane = tableAndDetailPanel();
+	}
+
+	@Override
+	public void changeSelection(int row, int col, boolean toggle, boolean extend)
+	{
+		// show the log entry for the selected row
+		LineEntry Entry = this.lineTableModel.getLineEntries().get(super.convertRowIndexToModel(row));
+
+		requestViewer.setMessage(Entry.getRequest(), true);
+		responseViewer.setMessage(Entry.getResponse(), false);
+		this.lineTableModel.setCurrentlyDisplayedItem(Entry);
+		super.changeSelection(row, col, toggle, extend);
+	}
+
+	@Override
+	public LineTableModel getModel(){
+		//return (LineTableModel) super.getModel();
+		return lineTableModel;
+	}
+
+
+	public JSplitPane tableAndDetailPanel(){
+		JSplitPane splitPane = new JSplitPane();//table area + detail area
+		splitPane.setResizeWeight(0.5);
+		splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
+		//TitlePanel.add(splitPane, BorderLayout.CENTER); // getTitlePanel to get it
+
+		JScrollPane scrollPaneRequests = new JScrollPane(this);//table area
+		//scrollPaneRequests.setViewportView(titleTable);//titleTable should lay here.
+		splitPane.setLeftComponent(scrollPaneRequests);
+
+		JSplitPane RequestDetailPanel = new JSplitPane();//request and response
+		RequestDetailPanel.setResizeWeight(0.5);
+		splitPane.setRightComponent(RequestDetailPanel);
+
+		JTabbedPane RequestPanel = new JTabbedPane();
+		RequestDetailPanel.setLeftComponent(RequestPanel);
+
+		JTabbedPane ResponsePanel = new JTabbedPane();
+		RequestDetailPanel.setRightComponent(ResponsePanel);
+
+		requestViewer = BurpExtender.getCallbacks().createMessageEditor(this.getModel(), false);
+		responseViewer = BurpExtender.getCallbacks().createMessageEditor(this.getModel(), false);
+		RequestPanel.addTab("Request", requestViewer.getComponent());
+		ResponsePanel.addTab("Response", responseViewer.getComponent());
+
+		return splitPane;
 	}
 
 	public void tableinit(){
@@ -50,6 +107,7 @@ public class LineTable extends JTable
 		Font f = this.getFont();
 		FontMetrics fm = this.getFontMetrics(f);
 		int width = fm.stringWidth("A");//一个字符的宽度
+		this.getColumnModel().getColumnIndex("#");
 
 		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("#")).setPreferredWidth(width*5);
 		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("#")).setMaxWidth(width*8);
@@ -69,31 +127,13 @@ public class LineTable extends JTable
 		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Text")).setMaxWidth(width*0);//response text,for search
 		this.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
 
+	}
+
+
+	public void addClickSort() {//双击header头进行排序
 
 		rowSorter = new TableRowSorter<LineTableModel>(lineTableModel);//排序和搜索
 		LineTable.this.setRowSorter(rowSorter);
-	}
-
-	@Override
-	public void changeSelection(int row, int col, boolean toggle, boolean extend)
-	{
-		// show the log entry for the selected row
-		LineEntry Entry = this.lineTableModel.getLineEntries().get(super.convertRowIndexToModel(row));
-		TitlePanel.getRequestViewer().setMessage(Entry.getRequest(), true);
-		TitlePanel.getResponseViewer().setMessage(Entry.getResponse(), false);
-		this.lineTableModel.setCurrentlyDisplayedItem(Entry);
-		super.changeSelection(row, col, toggle, extend);
-	}
-
-	@Override
-	public LineTableModel getModel(){
-		//return (LineTableModel) super.getModel();
-		return lineTableModel;
-	}
-
-	private void addClickSort() {
-		//    	rowSorter = new TableRowSorter<LineTableModel>(lineTableModel);
-		//		LineTable.this.setRowSorter(rowSorter); // tableinit()
 
 		JTableHeader header = this.getTableHeader();
 		header.addMouseListener(new MouseAdapter() {
@@ -164,12 +204,13 @@ public class LineTable extends JTable
 
 	}
 
-	private void registerListeners(){
-		final LineTable _this = this;
+	public void registerListeners(){
+		LineTable.this.setRowSelectionAllowed(true);
 		this.addMouseListener( new MouseAdapter()
 		{
 			@Override
 			public void mouseClicked(MouseEvent e) {
+				stderr.print("xxxxxxxxxxxxx");
 				if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2){//左键双击
 					int[] rows = getSelectedRows();
 
@@ -200,6 +241,7 @@ public class LineTable extends JTable
 
 			@Override
 			public void mouseReleased( MouseEvent e ){
+				stderr.print("xxxxxxxxxxxxx");
 				if ( SwingUtilities.isRightMouseButton( e )){
 					if (e.isPopupTrigger() && e.getComponent() instanceof JTable ) {
 						//getSelectionModel().setSelectionInterval(rows[0], rows[1]);
@@ -210,7 +252,7 @@ public class LineTable extends JTable
 							}
 							Arrays.sort(rows);//升序
 
-							new LineEntryMenu(_this, rows).show(e.getComponent(), e.getX(), e.getY());
+							new LineEntryMenu(LineTable.this, rows).show(e.getComponent(), e.getX(), e.getY());
 						}else{//在table的空白处显示右键菜单
 							//https://stackoverflow.com/questions/8903040/right-click-mouselistener-on-whole-jtable-component
 							//new LineEntryMenu(_this).show(e.getComponent(), e.getX(), e.getY());
@@ -222,6 +264,7 @@ public class LineTable extends JTable
 			@Override
 			public void mousePressed(MouseEvent e) {
 				//no need
+				stderr.print("xxxxxxxxxxxxx");
 			}
 
 		});
