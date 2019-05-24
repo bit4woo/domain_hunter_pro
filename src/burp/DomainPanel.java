@@ -834,18 +834,25 @@ public class DomainPanel extends JPanel {
             }
 
             DBHelper dbHelper = new DBHelper(file.toString());
-            dbHelper.addDomainObject(domainResult);
-            stdout.println("Save Domain Only Success! "+ Commons.getNowTimeString());
-            return file;
+            if (dbHelper.saveDomainObject(domainResult)){
+                stdout.println("Save Domain Only Success! "+ Commons.getNowTimeString());
+                return file;
+            }
         } catch (HeadlessException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
-
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         stdout.println("Save Domain Only failed! "+ Commons.getNowTimeString());
         return null;
+    }
+
+    public boolean save(File fullPathFileName){
+        DBHelper dbHelper = new DBHelper(fullPathFileName.toString());
+        if (dbHelper.tableExists("DomainObject")){
+            boolean success = dbHelper.saveDomainObject(domainResult);
+            return success;
+        }
+        return false;
     }
 }
