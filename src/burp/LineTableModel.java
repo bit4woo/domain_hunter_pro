@@ -50,20 +50,24 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		this.addTableModelListener(new TableModelListener() {//表格模型监听
 			@Override
 			public void tableChanged(TableModelEvent e) {
-				if (ListenerIsOn) {//开关，记载数据文件的过程中，要清空之前的数据包，这时关闭这个监听
+				if (ListenerIsOn) {//开关，加载数据文件的过程中，这时关闭这个监听
 					int type = e.getType();//获取事件类型(增、删、改等)
 					int rowstart = e.getFirstRow();//获取触发事件的行索引
 					int rowend = e.getLastRow();
 					int column = e.getColumn();//获取触发事件的列索引
-					if (type == TableModelEvent.INSERT) {//如果是"插入"事件
+					stdout.println(rowstart+"---"+rowend);
 
-					} else if (type == TableModelEvent.UPDATE) {
-						DBHelper dbHelper = new DBHelper(GUI.currentDBFile.toString());
+					DBHelper dbHelper = new DBHelper(GUI.currentDBFile.toString());
+					if (type == TableModelEvent.INSERT) {//插入事件使用批量方法好像不行，都是一个个插入的，每次都会触发
+						for (int i = rowstart; i <= rowend; i++) {
+							dbHelper.addTitle(lineEntries.get(i));
+						}
+					} else if (type == TableModelEvent.UPDATE) {//可以批量数据库操作
+						//dbHelper.updateTitles()
 						for (int i = rowstart; i <= rowend; i++) {
 							dbHelper.updateTitle(lineEntries.get(i));
 						}
-					} else if (type == TableModelEvent.DELETE) {
-						DBHelper dbHelper = new DBHelper(GUI.currentDBFile.toString());
+					} else if (type == TableModelEvent.DELETE) {//可以批量操作
 						for (int i = rowstart; i <= rowend; i++) {
 							dbHelper.deleteTitle(lineEntries.get(i));
 						}
@@ -88,7 +92,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	}
 
 	public void setListenerIsOn(boolean listenerIsOn) {
-		ListenerIsOn = listenerIsOn;
+		this.ListenerIsOn = listenerIsOn;
 	}
 
 	public void clear() {

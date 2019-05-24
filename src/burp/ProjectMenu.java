@@ -57,33 +57,15 @@ public class ProjectMenu{
         {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                DomainObject domainResult = DomainPanel.getDomainResult();
-                if (domainResult != null){
-                    gui.saveDialog(true);//save old project
-                    int result = JOptionPane.showConfirmDialog(null,"Save Current Project?");
-
-                    /*     是:   JOptionPane.YES_OPTION
-                     *     否:   JOptionPane.NO_OPTION
-                     *     取消: JOptionPane.CANCEL_OPTION
-                     *     关闭: JOptionPane.CLOSED_OPTION*/
-                    if (result == JOptionPane.CANCEL_OPTION || result == JOptionPane.CLOSED_OPTION) {
-                        return;
-                    }else if (result == JOptionPane.YES_OPTION) {
-                        gui.saveDialog(true);
-                    }else if (result == JOptionPane.NO_OPTION) {
-                        // nothing to do
-                    }
-                }
-
-                domainResult = new DomainObject("");
-                TitlePanel.getTitleTableModel().clear();
-                gui.currentDBFile = null;
-                gui.saveDialog(false);
-                gui.getDomainPanel().showToDomainUI();
+//                TitlePanel.getTitleTableModel().clear();
+//                gui.currentDBFile = null;
+//                gui.saveDialog(false);
+//                gui.getDomainPanel().showToDomainUI();
+                //TODO
             }
         }
         );
-        newMenu.setToolTipText("New A Project File");
+        newMenu.setToolTipText("Create A New Project File");
         menuButton.add(newMenu);
 
         JMenuItem openMenu = new JMenuItem(new AbstractAction("Open") {
@@ -96,13 +78,13 @@ public class ProjectMenu{
         menuButton.add(openMenu);
 
 
-        JMenuItem saveMenu = new JMenuItem(new AbstractAction("Save") {
+        JMenuItem saveMenu = new JMenuItem(new AbstractAction("Save as") {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                gui.saveDialog(true);
+                //gui.saveDialog(true); //TODO
             }
         });
-        openMenu.setToolTipText("Save Domain Hunter Project File");
+        openMenu.setToolTipText("Save All Domains And Titles To Another File");
         menuButton.add(saveMenu);
 
 

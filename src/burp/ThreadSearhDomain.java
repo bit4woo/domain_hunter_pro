@@ -61,11 +61,14 @@ class ThreadSearhDomain{
 			}
 		}
 		int oldnumber = DomainPanel.getDomainResult().getSubDomainSet().size();
+
 		DomainPanel.getDomainResult().getSubDomainSet().addAll(subDomainQueue);
-		int newnumber = DomainPanel.getDomainResult().getSubDomainSet().size();
-		stdout.println(String.format("~~~~~~~~~~~~~%s subdomains added!~~~~~~~~~~~~~",newnumber-oldnumber));
 		DomainPanel.getDomainResult().getSimilarDomainSet().addAll(similarDomainQueue);
 		DomainPanel.getDomainResult().getRelatedDomainSet().addAll(relatedDomainQueue);
+
+		int newnumber = DomainPanel.getDomainResult().getSubDomainSet().size();
+		stdout.println(String.format("~~~~~~~~~~~~~%s subdomains added!~~~~~~~~~~~~~",newnumber-oldnumber));
+
 		return;
 	}
 
@@ -178,9 +181,7 @@ class DomainProducer extends Thread {//Producer do
 					}else {
 						classifyDomains(messageinfo);
 					}
-					
 				}
-				
 			} catch (Throwable error) {//java.lang.RuntimeException can't been catched, why?
 			}
 		}

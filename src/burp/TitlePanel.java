@@ -169,7 +169,7 @@ public class TitlePanel extends JPanel {
 		});
 		buttonPanel.add(btnGetSubnet);
 
-
+		//通过tableModelListener实现自动保存后，无需这个模块了
 		JButton btnSaveState = new JButton("Save");
 		btnSaveState.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -190,7 +190,7 @@ public class TitlePanel extends JPanel {
 			}
 		});
 		btnSaveState.setToolTipText("Save Data To DataBase");
-		buttonPanel.add(btnSaveState);
+		//buttonPanel.add(btnSaveState);
 
 
 		InputMap inputMap1 = btnSaveState.getInputMap(JButton.WHEN_IN_FOCUSED_WINDOW);
@@ -334,11 +334,13 @@ public class TitlePanel extends JPanel {
 		//titleTableModel.setLineEntries(new ArrayList<LineEntry>());//clear
 		//这里没有fire delete事件，会导致排序号加载文件出错，但是如果fire了又会触发tableModel的删除事件，导致数据库删除。改用clear()
 		titleTableModel.clear();
+		titleTableModel.setListenerIsOn(false);
 		for (LineEntry line:lineEntries) {
 			titleTableModel.addNewLineEntry(line);
 		}
 		digStatus();
 		stdout.println("Load Title Panel Data Done");
+		titleTableModel.setListenerIsOn(true);
 	}
 
 

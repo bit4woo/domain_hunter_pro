@@ -33,6 +33,14 @@ public class GUI extends JFrame {
 	}
 
 
+	public static File getCurrentDBFile() {
+		return currentDBFile;
+	}
+
+	public static void setCurrentDBFile(File currentDBFile) {
+		GUI.currentDBFile = currentDBFile;
+	}
+
 	/**
 	 * Create the frame.
 	 */
@@ -84,7 +92,12 @@ public class GUI extends JFrame {
 			BurpExtender.getCallbacks().saveExtensionSetting("domainHunterpro", currentDBFile.getAbsolutePath());
 	}
 
-	public File saveDialog(boolean includeTitle) {
+
+	/*
+	使用数据模型监听后，不需再自行单独保存了
+	 */
+	@Deprecated
+	public File saveDialog1111(boolean includeTitle) {//和saveDomainOnly 有点重复了，后续优化一下 //TODO
 		try{
 			File file;
 			if (null != currentDBFile && currentDBFile.getAbsolutePath().endsWith(".db")) {
@@ -111,9 +124,9 @@ public class GUI extends JFrame {
 
 
 			DBHelper dbHelper = new DBHelper(file.toString());
-			dbHelper.addDomainObject(domainPanel.domainResult);
+			dbHelper.saveDomainObject(domainPanel.domainResult);
 			if (includeTitle){
-				dbHelper.saveTitles(TitlePanel.getTitleTableModel().getLineEntries());
+				//dbHelper.updateTitles(TitlePanel.getTitleTableModel().getLineEntries());
 			}
 
 			stdout.println("Save Success! includeTitle:"+includeTitle+" "+ Commons.getNowTimeString());
@@ -124,7 +137,9 @@ public class GUI extends JFrame {
 			return null;
 		}
 	}
-
+	/*
+	应该是和数据加载一样的流程，后续看看优化一下//TODO
+	 */
 	public File openDialog() {
 		try {
 			File file = dbfc.dialog(true);

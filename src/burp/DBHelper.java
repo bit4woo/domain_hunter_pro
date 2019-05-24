@@ -1,5 +1,6 @@
 package burp;
 
+import java.io.File;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -20,15 +21,14 @@ createStatement  //在固定语句时可以用它
 它们都对应2种语句执行方法 executeQuery - select  \executeUpdate - insert、update、delete
  */
 public class DBHelper {
-	private static Connection conn = null;                                      //连接
+	private Connection conn = null;                                      //连接
 	private PreparedStatement pres;                                      //PreparedStatement对象
 	private String dbFilePath;
 
 
 	private static IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();//静态变量，burp插件的逻辑中，是可以保证它被初始化的。;
-    public PrintWriter stdout = new PrintWriter(callbacks.getStdout(), true);
-    public PrintWriter stderr = new PrintWriter(callbacks.getStderr(), true);
-    public IExtensionHelpers helpers = callbacks.getHelpers();
+	public PrintWriter stdout;
+	public PrintWriter stderr;
 	/**
 	 * 构造函数
 	 * @param dbFilePath sqlite db 文件路径
@@ -36,10 +36,18 @@ public class DBHelper {
 	 * @throws SQLException
 	 */
 	public DBHelper(String dbFilePath){
+		try{
+			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
+			stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
+		}catch (Exception e){
+			stdout = new PrintWriter(System.out, true);
+			stderr = new PrintWriter(System.out, true);
+		}
 		this.dbFilePath = dbFilePath;
 		try {
 			conn = getConnection();
-			if (!tableExists("DOMAINObject") && conn != null){
+			if (!tableExists("DOMAINObject")){
+				stdout.println("create tables");
 				createTable();
 			}
 		} catch ( Exception e ) {
@@ -50,6 +58,7 @@ public class DBHelper {
 
 	public void createTable(){
 		try {
+			conn = getConnection();
 			Statement stmt = conn.createStatement();
 			String sql = "CREATE TABLE DOMAINObject" +
 					"(ID INT PRIMARY KEY     NOT NULL," +
@@ -58,25 +67,31 @@ public class DBHelper {
 			stmt.executeUpdate(sql);
 
 			String sqlTitle = "CREATE TABLE Title" +
-					"(ID INT PRIMARY KEY     Identity(1,1)," +//自动增长
+					"(ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +//自动增长 https://www.sqlite.org/autoinc.html
 					" NAME           TEXT    NOT NULL," +
 					" Content        TEXT    NOT NULL)";
 			stmt.executeUpdate(sqlTitle);
 
 			stmt.close();
 			conn.close();
+			System.out.println("Table created successfully");
 		} catch ( Exception e ) {
+			System.out.println("Table create failed");
 			e.printStackTrace(stderr);
-			//System.exit(0);
 		}
-		System.out.println("Table created successfully");
+
 	}
 
 	//何时创建连接，何时关闭连接呢？最佳实践是怎样的？
 	private Connection getConnection() throws ClassNotFoundException, SQLException{
 		if (conn == null || conn.isClosed()){
 			Class.forName("org.sqlite.JDBC");
-			conn = DriverManager.getConnection("jdbc:sqlite:"+dbFilePath);
+			if (new File(dbFilePath).exists()){
+				conn = DriverManager.getConnection("jdbc:sqlite:"+dbFilePath);
+			}
+		}
+		if (conn == null){
+			stderr.println("get connection failed --- "+dbFilePath);
 		}
 		return conn;
 	}
@@ -112,45 +127,41 @@ public class DBHelper {
 		} catch (Exception ex) {
 			ex.printStackTrace(stderr);
 		} finally {
-            destroy();
-        }
+			destroy();
+		}
 		return false;
 	}
 
 	public boolean saveDomainObject(DomainObject domainResult){
 		try {
-			//clear table
 			conn = getConnection();
-            pres = conn.prepareStatement("select * From DOMAINObject");
-            int number = pres.executeQuery().getFetchSize();
-            String sql = "";
-            if (number == 1){
-                sql = "update DOMAINObject SET NAME=?,Content=? where ID=1";
-            }else if(number ==0){
-                sql = "insert into DOMAINObject(ID,NAME,Content) values(1,?,?)";
-            }else {
-                System.out.println("incorrect number of domain object");
-                return false;
-            }
-            String name = domainResult.getProjectName();
-            String content  = domainResult.ToJson();
-            pres=conn.prepareStatement(sql);//预编译
+			pres = conn.prepareStatement("select * From DOMAINObject");
+			ResultSet rs = pres.executeQuery();
+			String sql = "";
+			if (rs.next()){
+				sql = "update DOMAINObject SET NAME=?,Content=? where ID=1";
+			}else{
+				sql = "insert into DOMAINObject(ID,NAME,Content) values(1,?,?)";
+			}
+			String name = domainResult.getProjectName();
+			String content  = domainResult.ToJson();
+			pres=conn.prepareStatement(sql);//预编译
 
-            pres.setString(1,name);
-            pres.setString(2,content);
-            int n = pres.executeUpdate();
-            if (n==1){
-                System.out.println("save domain object successfully");
-                return true;
-            }else {
-                System.out.println("save domain object failed");
-                return false;
-            }
+			pres.setString(1,name);
+			pres.setString(2,content);
+			int n = pres.executeUpdate();
+			if (n==1){
+				System.out.println("save domain object successfully");
+				return true;
+			}else {
+				System.out.println("save domain object failed");
+				return false;
+			}
 		} catch (Exception e) {
 			e.printStackTrace(stderr);
 		} finally {
-            destroy();
-        }
+			destroy();
+		}
 		return false;
 	}
 
@@ -159,7 +170,7 @@ public class DBHelper {
 	 */
 	public DomainObject getDomainObj(){
 		try {
-            String sql="select * from DOMAINObject";
+			String sql="select * from DOMAINObject";
 			conn = getConnection();
 			pres=conn.prepareStatement(sql);
 			ResultSet res=pres.executeQuery();
@@ -170,44 +181,67 @@ public class DBHelper {
 		} catch (Exception e) {
 			e.printStackTrace(stderr);
 		} finally {
-            destroy();
-        }
+			destroy();
+		}
 		return null;
-}
+	}
+
+
+	public boolean addTitle(LineEntry entry){
+		try {
+			conn = getConnection();
+			String sql="insert into Title(NAME,Content) values(?,?)";
+			pres=conn.prepareStatement(sql);
+			pres.setString(1, entry.getUrl());
+			pres.setString(2,entry.ToJson());
+			int result = pres.executeUpdate();
+			if ( result == 1){
+				System.out.println("add title successfully");
+				return true;
+			}else {
+				return false;
+			}
+		} catch (Exception e) {
+			e.printStackTrace(stderr);
+		} finally {
+			destroy();
+		}
+		return false;
+	}
 
 
 
 	public boolean addTitles(List<LineEntry> lineEntries){
 		try {
 			conn = getConnection();
-            String sql="insert into Title(NAME,Content) values(?,?)";
+			String sql="insert into Title(NAME,Content) values(?,?)";
 			pres=conn.prepareStatement(sql);
 			for(int i=0;i<lineEntries.size();i++){
 				pres.setString(1, lineEntries.get(i).getUrl());
 				pres.setString(2,lineEntries.get(i).ToJson());
 				pres.addBatch();                                   //实现批量插入
 			}
-            int[] result = pres.executeBatch();                                   //批量插入到数据库中
-            if ( IntStream.of(result).sum() == lineEntries.size()){
-                System.out.println("add titles successfully");
-                return true;
-            }else {
-                return false;
-            }
+			int[] result = pres.executeBatch();                                   //批量插入到数据库中
+			if ( IntStream.of(result).sum() == lineEntries.size()){
+				System.out.println("add titles successfully");
+				return true;
+			}else {
+				return false;
+			}
 		} catch (Exception e) {
 			e.printStackTrace(stderr);
 		} finally {
-            destroy();
-        }
+			destroy();
+		}
 		return false;
 	}
-	
+
 
 	public List<LineEntry> getTitles(){
 		List<LineEntry> list=new ArrayList<LineEntry>();
 		try {
 			conn = getConnection();
-            String sql="select * from Title";
+			String sql="select * from Title";
 			pres=conn.prepareStatement(sql);
 
 			ResultSet res=pres.executeQuery();
@@ -219,11 +253,11 @@ public class DBHelper {
 		} catch (Exception e) {
 			e.printStackTrace(stderr);
 		} finally {
-            destroy();
-        }
+			destroy();
+		}
 		return list;
 	}
-	
+
 	@Deprecated
 	public void updateTitle(LineEntry entry){
 		String sql="update Title SET Content=? where NAME=?";
@@ -242,32 +276,32 @@ public class DBHelper {
 		}
 	}
 
-    public boolean updateTitles(List<LineEntry> lineEntries){
-        try {
-            conn = getConnection();
-            String sql="update Title SET Content=? where NAME=?";
-            //UPDATE Person SET FirstName = 'Fred' WHERE LastName = 'Wilson'
-            pres=conn.prepareStatement(sql);
-            for(LineEntry entry:lineEntries){
-                pres.setString(1, entry.ToJson());
-                pres.setString(2, entry.getUrl());
-                pres.addBatch();                                   //实现批量插入
-            }
-            int[] result = pres.executeBatch();                                   //批量插入到数据库中
-            if ( IntStream.of(result).sum() == lineEntries.size()){
-                System.out.println("update titles successfully");
-                return true;
-            }else {
-                return false;
-            }
-        } catch (Exception e) {
-            e.printStackTrace(stderr);
-        }finally {
-            destroy();
-        }
-        return false;
-    }
-	
+	public boolean updateTitles(List<LineEntry> lineEntries){
+		try {
+			conn = getConnection();
+			String sql="update Title SET Content=? where NAME=?";
+			//UPDATE Person SET FirstName = 'Fred' WHERE LastName = 'Wilson'
+			pres=conn.prepareStatement(sql);
+			for(LineEntry entry:lineEntries){
+				pres.setString(1, entry.ToJson());
+				pres.setString(2, entry.getUrl());
+				pres.addBatch();                                   //实现批量插入
+			}
+			int[] result = pres.executeBatch();                                   //批量插入到数据库中
+			if ( IntStream.of(result).sum() == lineEntries.size()){
+				System.out.println("update titles successfully");
+				return true;
+			}else {
+				return false;
+			}
+		} catch (Exception e) {
+			e.printStackTrace(stderr);
+		}finally {
+			destroy();
+		}
+		return false;
+	}
+
 	@Deprecated
 	public void deleteTitle(LineEntry entry){
 		String sql="DELETE FROM Title where NAME= ?";
@@ -287,38 +321,46 @@ public class DBHelper {
 		}
 	}
 
-    public boolean deleteTitles(List<LineEntry> lineEntries){
-        String sql="DELETE FROM Title where NAME= ?";
-        //DELETE FROM Person WHERE LastName = 'Wilson'
+	public boolean deleteTitles(List<LineEntry> lineEntries){
+		String sql="DELETE FROM Title where NAME= ?";
+		//DELETE FROM Person WHERE LastName = 'Wilson'
 
-        try {
-            conn = getConnection();
-            pres=conn.prepareStatement(sql);
-            for(LineEntry entry:lineEntries){
-                pres.setString(1, entry.getUrl());
-                pres.addBatch();                                   //实现批量插入
-            }
-            int[] result = pres.executeBatch();                                   //批量插入到数据库中
-            if ( IntStream.of(result).sum() == lineEntries.size()){
-                System.out.println("delete titles successfully");
-                return true;
-            }else {
-                return false;
-            }
-        } catch (Exception e) {
-            e.printStackTrace(stderr);
-        } finally {
-            destroy();
-        }
-        return false;
-    }
+		try {
+			conn = getConnection();
+			pres=conn.prepareStatement(sql);
+			for(LineEntry entry:lineEntries){
+				pres.setString(1, entry.getUrl());
+				pres.addBatch();                                   //实现批量插入
+			}
+			int[] result = pres.executeBatch();                                   //批量插入到数据库中
+			if ( IntStream.of(result).sum() == lineEntries.size()){
+				System.out.println("delete titles successfully");
+				return true;
+			}else {
+				return false;
+			}
+		} catch (Exception e) {
+			e.printStackTrace(stderr);
+		} finally {
+			destroy();
+		}
+		return false;
+	}
 
 	public static void main(String args[]){
 		DBHelper helper = new DBHelper("test1.db");
-		DomainObject xxx = new DomainObject("test");
-		helper.saveDomainObject(xxx);
-		DomainObject yyyy = new DomainObject("yyyy");
-		helper.saveDomainObject(yyyy);
-		System.out.println(helper.getDomainObj().ToJson());
+//		DomainObject xxx = new DomainObject("test");
+//		helper.saveDomainObject(xxx);
+//		DomainObject yyyy = new DomainObject("yyyy");
+//		helper.saveDomainObject(yyyy);
+
+		LineEntry aaa = new LineEntry();
+		aaa.setUrl("www.baidu.com");
+
+		LineEntry bbb = new LineEntry();
+		aaa.setUrl("www.jd.com");
+
+		helper.addTitle(aaa);
+		helper.addTitle(bbb);
 	}
 }

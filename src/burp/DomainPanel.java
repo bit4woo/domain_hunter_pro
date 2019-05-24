@@ -64,43 +64,23 @@ import com.google.common.io.Files;
 import com.google.common.net.InternetDomainName;
 
 import test.HTTPPost;
-
+/*
+以domainResult为核心的数据修改、数据保存和数据展示
+ */
 public class DomainPanel extends JPanel {
 
     private JRadioButton rdbtnAddRelatedToRoot;
-    private JTabbedPane tabbedWrapper;
     private JTextField textFieldUploadURL;
     private JButton btnSearch;
-    private JButton btnUpload;
     private JButton btnCrawl;
     private JLabel lblSummary;
-    private JPanel FooterPanel;
     private JLabel lblNewLabel_2;
     private JTextArea textAreaSubdomains;
     private JTextArea textAreaSimilarDomains;
     private SortOrder sortedMethod;
     private JTable table;
-    private JButton RemoveButton;
-    private JButton AddButton;
     private JTextArea textAreaRelatedDomains;
-    private JButton btnSave;
-    private JButton btnOpen;
-    private Component verticalStrut;
-    private Component verticalStrut_1;
-    private JButton btnCopy;
-    private JButton btnNew;
-    private JPanel buttonPanel;
-    public JButton btnGettitle;
-    public JScrollPane scrollPaneRequests;
-    public LineTable titleTable;
-    private JButton btnImportDomain;
-    private JButton btnSaveState;
-    private JButton btnGetExtendtitle;
-    private JFileChooser fc = new JFileChooser();
-    public static JLabel lblSummaryOfTitle;
-    public static JTextField textFieldSearch;
-    protected JPanel TitlePanel;
-    public static JRadioButton rdbtnHideCheckedItems;
+    private boolean listenerIsOn = true;
 
     public static DomainObject getDomainResult() {
         return domainResult;
@@ -169,7 +149,7 @@ public class DomainPanel extends JPanel {
                         try {
                             get();
                             showToDomainUI();
-                            //saveDialog(false);
+                            autoSave();
                             btnSearch.setEnabled(true);
                             stdout.println("~~~~~~~~~~~~~Search Done~~~~~~~~~~~~~");
                         } catch (Exception e) {
@@ -183,7 +163,7 @@ public class DomainPanel extends JPanel {
             }
         });
 
-        verticalStrut = Box.createVerticalStrut(20);
+        Component verticalStrut = Box.createVerticalStrut(20);
         HeaderPanel.add(verticalStrut);
         HeaderPanel.add(btnSearch);
 
@@ -197,7 +177,6 @@ public class DomainPanel extends JPanel {
                     //https://stackoverflow.com/questions/19708646/how-to-update-swing-ui-while-actionlistener-is-in-progress
                     @Override
                     protected Map doInBackground() throws Exception {
-                        domainResult.setRootDomainMap(getTableMap());
                         Set<String> rootDomains = domainResult.fetchRootDomainSet();
                         Set<String> keywords= domainResult.fetchKeywordSet();
 
@@ -222,7 +201,7 @@ public class DomainPanel extends JPanel {
         btnCrawl.setToolTipText("Crawl all subdomains recursively,This may take a long time and large Memory Usage!!!");
         HeaderPanel.add(btnCrawl);
 
-        btnImportDomain = new JButton("Import Domain");
+        JButton btnImportDomain = new JButton("Import Domain");
         btnImportDomain.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JFileChooser fc=new JFileChooser();
@@ -245,6 +224,7 @@ public class DomainPanel extends JPanel {
                         }
                         showToDomainUI();//保存配置并更新图形显示
                         stdout.println("Import domains finished from "+ file.getName());
+                        autoSave();
                         //List<String> lines = Files.readLines(file, Charsets.UTF_8);
 
                     } catch (IOException e1) {
@@ -265,13 +245,14 @@ public class DomainPanel extends JPanel {
                         newProjectName = JOptionPane.showInputDialog("New Project Name", null).trim();
                     }
                     domainResult.setProjectName(newProjectName);
+                    autoSave();
                     lblSummary.setText(domainResult.getSummary());
                 }
             }
         });
         HeaderPanel.add(btnRenameProject);
 
-        verticalStrut_1 = Box.createVerticalStrut(20);
+        Component verticalStrut_1 = Box.createVerticalStrut(20);
         HeaderPanel.add(verticalStrut_1);
 
         textFieldUploadURL = new JTextField("Input Upload URL Here");
@@ -294,7 +275,7 @@ public class DomainPanel extends JPanel {
         textFieldUploadURL.setColumns(30);
 
 
-        btnUpload = new JButton("Upload");
+        JButton btnUpload = new JButton("Upload");
         btnUpload.setToolTipText("Do a single search from site map");
         btnUpload.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
@@ -355,7 +336,10 @@ public class DomainPanel extends JPanel {
         domainTableModel.addTableModelListener(new TableModelListener(){
             @Override
             public void tableChanged(TableModelEvent e) {
-                domainResult.setRootDomainMap(getTableMap());
+                if (listenerIsOn){
+                    domainResult.setRootDomainMap(getTableMap());
+                    autoSave();
+                }
             }
         });
 
@@ -402,8 +386,8 @@ public class DomainPanel extends JPanel {
         panel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 
 
-        AddButton = new JButton("Add");
-        AddButton.addActionListener(new ActionListener() {
+        JButton addButton = new JButton("Add");
+        addButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
                 enteredRootDomain = enteredRootDomain.trim().toLowerCase();
@@ -420,22 +404,15 @@ public class DomainPanel extends JPanel {
 
                 domainResult.AddToRootDomainMap(enteredRootDomain, keyword);
                 showToDomainUI();
-
-
-				/*				if (domainResult.rootDomainMap.containsKey(enteredRootDomain) && domainResult.rootDomainMap.containsValue(keyword)) {
-					//do nothing
-				}else {
-					domainResult.rootDomainMap.put(enteredRootDomain,keyword);
-					showToUI(domainResult);
-				}*/
+                //将会触发listener，然后自动保存。无需主动调用了。
             }
         });
-        panel.add(AddButton);
+        panel.add(addButton);
 
 
-        RemoveButton = new JButton("Remove");
-        panel.add(RemoveButton);
-        RemoveButton.addActionListener(new ActionListener() {
+        JButton removeButton = new JButton("Remove");
+        panel.add(removeButton);
+        removeButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
 
                 int[] rowindexs = table.getSelectedRows();
@@ -449,10 +426,7 @@ public class DomainPanel extends JPanel {
                     domainTableModel.removeRow(rowindexs[i]);
                 }
                 // will trigger tableModel listener
-
                 //domainResult.setRootDomainMap(getTableMap()); //no need any more because tableModel Listener
-
-
             }
         });
 
@@ -481,10 +455,11 @@ public class DomainPanel extends JPanel {
                 domainResult.setSimilarDomainSet(newSimilarDomainSet);
 
                 showToDomainUI();
+                autoSave();
             }
         });
 
-        btnCopy = new JButton("Copy");
+        JButton btnCopy = new JButton("Copy");
         btnCopy.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
 
@@ -548,70 +523,11 @@ public class DomainPanel extends JPanel {
         ScrollPaneSubdomains.setViewportView(textAreaSubdomains);
         ScrollPaneSimilarDomains.setViewportView(textAreaSimilarDomains);
 
+        //实现编辑后自动保存
+        textAreaRelatedDomains.getDocument().addDocumentListener(new textAreaListener());
+        textAreaSubdomains.getDocument().addDocumentListener(new textAreaListener());
+        textAreaSimilarDomains.getDocument().addDocumentListener(new textAreaListener());
 
-
-        textAreaRelatedDomains.getDocument().addDocumentListener(new DocumentListener() {
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                domainResult.setRelatedDomainSet(getSetFromTextArea(textAreaRelatedDomains));
-                lblSummary.setText(domainResult.getSummary());
-            }
-
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                domainResult.setRelatedDomainSet(getSetFromTextArea(textAreaRelatedDomains));
-                lblSummary.setText(domainResult.getSummary());
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent arg0) {
-                domainResult.setRelatedDomainSet(getSetFromTextArea(textAreaRelatedDomains));
-                lblSummary.setText(domainResult.getSummary());
-            }
-        });
-
-        textAreaSubdomains.getDocument().addDocumentListener(new DocumentListener() {
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                domainResult.setSubDomainSet(getSetFromTextArea(textAreaSubdomains));
-                lblSummary.setText(domainResult.getSummary());
-            }
-
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                domainResult.setSubDomainSet(getSetFromTextArea(textAreaSubdomains));
-                lblSummary.setText(domainResult.getSummary());
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent arg0) {
-                domainResult.setSubDomainSet(getSetFromTextArea(textAreaSubdomains));
-                lblSummary.setText(domainResult.getSummary());
-            }
-        });
-
-        textAreaSimilarDomains.getDocument().addDocumentListener(new DocumentListener() {
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                domainResult.setSimilarDomainSet(getSetFromTextArea(textAreaSimilarDomains));
-                lblSummary.setText(domainResult.getSummary());
-            }
-
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                domainResult.setSimilarDomainSet(getSetFromTextArea(textAreaSimilarDomains));
-                lblSummary.setText(domainResult.getSummary());
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent arg0) {
-                domainResult.setSimilarDomainSet(getSetFromTextArea(textAreaSimilarDomains));
-                lblSummary.setText(domainResult.getSummary());
-            }
-        });
 
         textAreaSubdomains.addMouseListener(new MouseAdapter() {
             @Override
@@ -635,10 +551,10 @@ public class DomainPanel extends JPanel {
         ///////////////////////////FooterPanel//////////////////
 
 
-        FooterPanel = new JPanel();
-        FlowLayout fl_FooterPanel = (FlowLayout) FooterPanel.getLayout();
+        JPanel footerPanel = new JPanel();
+        FlowLayout fl_FooterPanel = (FlowLayout) footerPanel.getLayout();
         fl_FooterPanel.setAlignment(FlowLayout.LEFT);
-        this.add(FooterPanel, BorderLayout.SOUTH);
+        this.add(footerPanel, BorderLayout.SOUTH);
 
         lblNewLabel_2 = new JLabel(BurpExtender.getExtenderName()+"    "+BurpExtender.getGithub());
         lblNewLabel_2.setFont(new Font("宋体", Font.BOLD, 12));
@@ -665,11 +581,13 @@ public class DomainPanel extends JPanel {
                 lblNewLabel_2.setForeground(Color.BLACK);
             }
         });
-        FooterPanel.add(lblNewLabel_2);
+        footerPanel.add(lblNewLabel_2);
 
     }
 
     public void showToDomainUI() {
+
+        listenerIsOn = false;
 
         domainResult.relatedToRoot();
         ClearTable();
@@ -686,11 +604,14 @@ public class DomainPanel extends JPanel {
         rdbtnAddRelatedToRoot.setSelected(domainResult.autoAddRelatedToRoot);
 
         stdout.println("Load Domain Panel Data Done");
+        listenerIsOn = true;
     }
 
 
     //////////////////////////////methods//////////////////////////////////////
-
+    /*
+    执行完成后，就已将数据保存到了domainResult
+     */
     public Map<String, Set<String>> search(Set<String> rootdomains, Set<String> keywords){
         IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
         IHttpRequestResponse[] messages = callbacks.getSiteMap(null);
@@ -757,6 +678,9 @@ public class DomainPanel extends JPanel {
         return search(rootdomains,keywords);
     }
 
+    /*
+    仅用于root domain数据表发生更改时获取表中数据。
+     */
     public LinkedHashMap<String, String> getTableMap() {
         LinkedHashMap<String,String> tableMap= new LinkedHashMap<String,String>();
 
@@ -789,14 +713,6 @@ public class DomainPanel extends JPanel {
         domainResult.setRootDomainMap(tmp);
     }
 
-
-    public static Set<String> getSetFromTextArea(JTextArea textarea){
-        //user input maybe use "\n" in windows, so the System.lineSeparator() not always works fine!
-        Set<String> domainList = new HashSet<>(Arrays.asList(textarea.getText().replaceAll("\r\n", "\n").split("\n")));
-        domainList.remove("");
-        return domainList;
-    }
-
     public Boolean upload(String url,String content) {
         if ((url.toLowerCase().contains("http://") ||url.toLowerCase().contains("https://"))
                 && content != null){
@@ -811,11 +727,15 @@ public class DomainPanel extends JPanel {
         return false;
     }
 
+    /*
+    单独保存域名信息到另外的文件
+     */
     public File saveDomainOnly() {
         try {
-            File file = new dbFileChooser().dialog(false);
+            File file = BurpExtender.getGui().dbfc.dialog(false);
+
             if(!(file.getName().toLowerCase().endsWith(".db"))){
-                file=new File(fc.getCurrentDirectory(),file.getName()+".db");
+                file=new File(BurpExtender.getGui().dbfc.getCurrentDirectory(),file.getName()+".db");
             }
 
             if (domainResult.projectName.equals("")) {
@@ -838,46 +758,84 @@ public class DomainPanel extends JPanel {
                 stdout.println("Save Domain Only Success! "+ Commons.getNowTimeString());
                 return file;
             }
-        } catch (HeadlessException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace(stderr);
         }
         stdout.println("Save Domain Only failed! "+ Commons.getNowTimeString());
         return null;
     }
 
-    public boolean save(File fullPathFileName){
-        DBHelper dbHelper = new DBHelper(fullPathFileName.toString());
-        if (dbHelper.tableExists("DomainObject")){
-            boolean success = dbHelper.saveDomainObject(domainResult);
-            return success;
+    /*
+    自动保存，根据currentDBFile，如果currentDBFile为空或者不存在，就提示选择文件。
+     */
+    public void autoSave(){
+        File currentdbfile = GUI.getCurrentDBFile();
+        while (currentdbfile == null || !currentdbfile.exists()){
+            File file = new dbFileChooser().dialog(false);
+            if(!(file.getName().toLowerCase().endsWith(".db"))){
+                file=new File(BurpExtender.getGui().dbfc.getCurrentDirectory(),file.getName()+".db");
+            }
+
+            try{
+                if(file.exists()){
+                    int result = JOptionPane.showConfirmDialog(null,"Are you sure to overwrite this file ?");
+                    if (result == JOptionPane.YES_OPTION) {
+                        file.createNewFile();
+                    }
+                }else {
+                    file.createNewFile();
+                }
+                GUI.setCurrentDBFile(file);
+            }catch (Exception e){
+                stdout.println("create file failed");
+            }
         }
-        return false;
+        currentdbfile = GUI.getCurrentDBFile();
+        DBHelper dbHelper = new DBHelper(currentdbfile.toString());
+        boolean success = dbHelper.saveDomainObject(domainResult);
     }
 
+    /*
+    //用于各种domain的手动编辑后的保存（不包含rootdomain）
+     */
     class textAreaListener implements DocumentListener {
-        JTextArea textArea;
-        public textAreaListener(JTextArea textArea) {
-            textArea = textArea;
-        }
 
         @Override
         public void removeUpdate(DocumentEvent e) {
-            domainResult.setRelatedDomainSet(getSetFromTextArea(textArea));
-            lblSummary.setText(domainResult.getSummary());
+            if (listenerIsOn){
+                saveTextAreas();
+                autoSave();
+            }
         }
 
         @Override
         public void insertUpdate(DocumentEvent e) {
-            domainResult.setRelatedDomainSet(getSetFromTextArea(textArea));
-            lblSummary.setText(domainResult.getSummary());
+            if (listenerIsOn){
+                saveTextAreas();
+                autoSave();
+            }
         }
 
         @Override
         public void changedUpdate(DocumentEvent arg0) {
-            domainResult.setRelatedDomainSet(getSetFromTextArea(textArea));
-            lblSummary.setText(domainResult.getSummary());
+            if (listenerIsOn){
+                saveTextAreas();
+                autoSave();
+            }
         }
+    }
+
+    public void saveTextAreas(){
+        domainResult.setRelatedDomainSet(getSetFromTextArea(textAreaRelatedDomains));
+        domainResult.setSubDomainSet(getSetFromTextArea(textAreaSubdomains));
+        domainResult.setSimilarDomainSet(getSetFromTextArea(textAreaSimilarDomains));
+        domainResult.getSummary();
+    }
+
+    public static Set<String> getSetFromTextArea(JTextArea textarea){
+        //user input maybe use "\n" in windows, so the System.lineSeparator() not always works fine!
+        Set<String> domainList = new HashSet<>(Arrays.asList(textarea.getText().replaceAll("\r\n", "\n").split("\n")));
+        domainList.remove("");
+        return domainList;
     }
 }

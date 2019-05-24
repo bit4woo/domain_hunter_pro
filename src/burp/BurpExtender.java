@@ -101,8 +101,6 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 			gui.getTitlePanel().getThreadGetTitle().stopThreads();//maybe null
 		}//必须要先结束线程，否则获取数据的操作根本无法结束，因为线程一直通过sync占用资源
 		gui.saveDBfilepathToExtension();
-		gui.saveDialog(false);
-		
 		gui.getProjectMenu().remove();
 	}
 
