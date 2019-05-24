@@ -855,4 +855,29 @@ public class DomainPanel extends JPanel {
         }
         return false;
     }
+
+    class textAreaListener implements DocumentListener {
+        JTextArea textArea;
+        public textAreaListener(JTextArea textArea) {
+            textArea = textArea;
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            domainResult.setRelatedDomainSet(getSetFromTextArea(textArea));
+            lblSummary.setText(domainResult.getSummary());
+        }
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            domainResult.setRelatedDomainSet(getSetFromTextArea(textArea));
+            lblSummary.setText(domainResult.getSummary());
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent arg0) {
+            domainResult.setRelatedDomainSet(getSetFromTextArea(textArea));
+            lblSummary.setText(domainResult.getSummary());
+        }
+    }
 }
