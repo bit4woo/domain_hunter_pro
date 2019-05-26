@@ -1,9 +1,5 @@
 package burp;
 
-import com.alibaba.fastjson.JSON;
-import com.google.common.base.Charsets;
-import com.google.common.io.Files;
-
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
@@ -45,13 +41,13 @@ public class GUI extends JFrame {
 	 * Create the frame.
 	 */
 	public GUI() {//构造函数
-        try{
-            stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
-            stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
-        }catch (Exception e){
-            stdout = new PrintWriter(System.out, true);
-            stderr = new PrintWriter(System.out, true);
-        }
+		try{
+			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
+			stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
+		}catch (Exception e){
+			stdout = new PrintWriter(System.out, true);
+			stderr = new PrintWriter(System.out, true);
+		}
 
 		JTabbedPane tabbedWrapper = new JTabbedPane();
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -64,19 +60,18 @@ public class GUI extends JFrame {
 
 		projectMenu = new ProjectMenu(this);
 		projectMenu.Add();
-		
-	}
 
+	}
 
 	public boolean LoadData(String dbFilePath){
 		try {//这其中的异常会导致burp退出
-			stdout.println("Loading Data From: "+dbFilePath);
+			stdout.println("Loading Data From: " + dbFilePath);
 			DBHelper dbhelper = new DBHelper(dbFilePath);
 			domainPanel.setDomainResult(dbhelper.getDomainObj());
 			domainPanel.showToDomainUI();
 			titlePanel.showToTitleUI(dbhelper.getTitles());
 			currentDBFile = new File(dbFilePath);
-			stdout.println("Loading Finished!");
+			stdout.println("Loading Project ["+domainPanel.domainResult.projectName+"] Finished From File "+ dbFilePath);
 			return true;
 		} catch (Exception e) {
 			stdout.println("Loading Failed!");
@@ -84,6 +79,7 @@ public class GUI extends JFrame {
 			return false;
 		}
 	}
+
 
 	public void saveDBfilepathToExtension() {
 		//to save domain result to extensionSetting
@@ -94,77 +90,36 @@ public class GUI extends JFrame {
 
 
 	/*
-	使用数据模型监听后，不需再自行单独保存了
+	使用数据模型监听后，不需再自行单独保存当前项目了。
+	但是需要用于另存为，单独保存域名(和saveDomainOnly) 2个功能。
+	都需要文件选择对话框
 	 */
-	@Deprecated
-	public File saveDialog1111(boolean includeTitle) {//和saveDomainOnly 有点重复了，后续优化一下 //TODO
+	public Boolean saveData(String dbFilePath,boolean domainOnly) {
 		try{
-			File file;
-			if (null != currentDBFile && currentDBFile.getAbsolutePath().endsWith(".db")) {
-				file = currentDBFile;
-			}else {
-				file = dbfc.dialog(false);
-				if (file == null) return null;
-				if(!(file.getName().toLowerCase().endsWith(".db"))){
-					file=new File(dbfc.getCurrentDirectory(),file.getName()+".db");
-				}
-				if(file.exists()){
-					int result = JOptionPane.showConfirmDialog(null,"Are you sure to overwrite this file ?");
-					if (result != JOptionPane.YES_OPTION) {
-						return null;
+			if (dbFilePath != null){
+				DBHelper dbHelper = new DBHelper(dbFilePath.toString());
+				if (domainOnly){
+					if (dbHelper.saveDomainObject(DomainPanel.getDomainResult())){
+						stdout.println("Save Domain Only Success! "+ Commons.getNowTimeString());
+						return true;
+					}
+				}else {
+					boolean domainSaved = dbHelper.saveDomainObject(DomainPanel.getDomainResult());
+					boolean titleSaved = dbHelper.addTitles(TitlePanel.getTitleTableModel().getLineEntries());
+					if (domainSaved && titleSaved){
+						stdout.println("Save Domain And Title Success! "+ Commons.getNowTimeString());
+						return true;
 					}
 				}
-				currentDBFile = file;
-				saveDBfilepathToExtension();
 			}
-
-			if (domainPanel.domainResult.projectName.equals("")) {
-				domainPanel.domainResult.projectName = file.getName();
-			}
-
-
-			DBHelper dbHelper = new DBHelper(file.toString());
-			dbHelper.saveDomainObject(domainPanel.domainResult);
-			if (includeTitle){
-				//dbHelper.updateTitles(TitlePanel.getTitleTableModel().getLineEntries());
-			}
-
-			stdout.println("Save Success! includeTitle:"+includeTitle+" "+ Commons.getNowTimeString());
-			return file;
+			return false;
 		}catch(Exception e1){
-			stdout.println("Save failed! includeTitle:"+includeTitle+" "+Commons.getNowTimeString());
 			e1.printStackTrace(stderr);
-			return null;
+			return false;
 		}
 	}
-	/*
-	应该是和数据加载一样的流程，后续看看优化一下//TODO
-	 */
-	public File openDialog() {
-		try {
-			File file = dbfc.dialog(true);
-			if (file == null) {
-				return null;
-			}
-			if (file.getName().endsWith(".json")){//兼容旧文件
-				String contents = Files.toString(file, Charsets.UTF_8);//读取json文件的方式
-				domainPanel.domainResult = JSON.parseObject(contents,DomainObject.class);
-				if (domainPanel.domainResult != null) domainPanel.showToDomainUI();
-			}else {
-				DBHelper dbhelper = new DBHelper(file.toString());
-				domainPanel.domainResult = dbhelper.getDomainObj();
-				if (domainPanel.domainResult != null) domainPanel.showToDomainUI();
-				titlePanel.showToTitleUI(dbhelper.getTitles());
-			}
-			currentDBFile = file;//就是应该在对话框完成后就更新
-			saveDBfilepathToExtension();
-			stdout.println("open Project ["+domainPanel.domainResult.projectName+"] From File "+ file.getName());
-			return file;
-		} catch (Exception e1) {
-			e1.printStackTrace(stderr);
-			return null;
-		}
-	}
+
+
 
 	/**
 	 * Launch the application.

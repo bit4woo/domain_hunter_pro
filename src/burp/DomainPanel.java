@@ -1,54 +1,11 @@
 package burp;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Desktop;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.HeadlessException;
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URL;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Vector;
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
+import com.google.common.net.InternetDomainName;
+import test.HTTPPost;
 
-import javax.swing.Box;
-import javax.swing.JButton;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
-import javax.swing.RowSorter;
-import javax.swing.SortOrder;
-import javax.swing.SwingWorker;
+import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.event.DocumentEvent;
@@ -58,12 +15,18 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
-
-import com.google.common.base.Charsets;
-import com.google.common.io.Files;
-import com.google.common.net.InternetDomainName;
-
-import test.HTTPPost;
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.util.List;
+import java.util.*;
 /*
 以domainResult为核心的数据修改、数据保存和数据展示
  */
@@ -588,7 +551,6 @@ public class DomainPanel extends JPanel {
     public void showToDomainUI() {
 
         listenerIsOn = false;
-
         domainResult.relatedToRoot();
         ClearTable();
 
@@ -733,30 +695,12 @@ public class DomainPanel extends JPanel {
     public File saveDomainOnly() {
         try {
             File file = BurpExtender.getGui().dbfc.dialog(false);
-
-            if(!(file.getName().toLowerCase().endsWith(".db"))){
-                file=new File(BurpExtender.getGui().dbfc.getCurrentDirectory(),file.getName()+".db");
-            }
-
-            if (domainResult.projectName.equals("")) {
-                domainResult.projectName = file.getName();
-            }
-
-            if(file.exists()){
-                int result = JOptionPane.showConfirmDialog(null,"Are you sure to overwrite this file ?");
-                if (result == JOptionPane.YES_OPTION) {
-                    file.createNewFile();
-                }else {
-                    return null;
+            if (file != null){
+                DBHelper dbHelper = new DBHelper(file.toString());
+                if (dbHelper.saveDomainObject(domainResult)){
+                    stdout.println("Save Domain Only Success! "+ Commons.getNowTimeString());
+                    return file;
                 }
-            }else {
-                file.createNewFile();
-            }
-
-            DBHelper dbHelper = new DBHelper(file.toString());
-            if (dbHelper.saveDomainObject(domainResult)){
-                stdout.println("Save Domain Only Success! "+ Commons.getNowTimeString());
-                return file;
             }
         } catch (Exception e) {
             e.printStackTrace(stderr);
@@ -769,29 +713,12 @@ public class DomainPanel extends JPanel {
     自动保存，根据currentDBFile，如果currentDBFile为空或者不存在，就提示选择文件。
      */
     public void autoSave(){
-        File currentdbfile = GUI.getCurrentDBFile();
-        while (currentdbfile == null || !currentdbfile.exists()){
-            File file = new dbFileChooser().dialog(false);
-            if(!(file.getName().toLowerCase().endsWith(".db"))){
-                file=new File(BurpExtender.getGui().dbfc.getCurrentDirectory(),file.getName()+".db");
-            }
-
-            try{
-                if(file.exists()){
-                    int result = JOptionPane.showConfirmDialog(null,"Are you sure to overwrite this file ?");
-                    if (result == JOptionPane.YES_OPTION) {
-                        file.createNewFile();
-                    }
-                }else {
-                    file.createNewFile();
-                }
-                GUI.setCurrentDBFile(file);
-            }catch (Exception e){
-                stdout.println("create file failed");
-            }
+        File file = BurpExtender.getGui().getCurrentDBFile();
+        if (file == null){
+            file = BurpExtender.getGui().dbfc.dialog(false);
+            GUI.setCurrentDBFile(file);
         }
-        currentdbfile = GUI.getCurrentDBFile();
-        DBHelper dbHelper = new DBHelper(currentdbfile.toString());
+        DBHelper dbHelper = new DBHelper(file.toString());
         boolean success = dbHelper.saveDomainObject(domainResult);
     }
 

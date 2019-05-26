@@ -1,18 +1,10 @@
 package burp;
 
-import java.awt.Frame;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-
-import javax.swing.AbstractAction;
-import javax.swing.InputMap;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.KeyStroke;
+import java.io.File;
 
 public class ProjectMenu{
 	GUI gui;
@@ -56,12 +48,12 @@ public class ProjectMenu{
         JMenuItem newMenu = new JMenuItem(new AbstractAction("New")
         {
             @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-//                TitlePanel.getTitleTableModel().clear();
-//                gui.currentDBFile = null;
-//                gui.saveDialog(false);
-//                gui.getDomainPanel().showToDomainUI();
-                //TODO
+            public void actionPerformed(ActionEvent actionEvent) {//实质就是save一个空的项目
+                File file = gui.dbfc.dialog(false);//通过保存对话指定文件，这会是一个空文件。
+                DomainPanel.setDomainResult(new DomainObject(file.getName()));
+                gui.saveData(file.toString(),true);
+                gui.LoadData(file.toString());//然后加载，就是一个新的空项目了。
+                GUI.setCurrentDBFile(file);
             }
         }
         );
@@ -71,7 +63,9 @@ public class ProjectMenu{
         JMenuItem openMenu = new JMenuItem(new AbstractAction("Open") {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                gui.openDialog();
+                File file = gui.dbfc.dialog(true);
+                gui.LoadData(file.toString());
+                GUI.setCurrentDBFile(file);
             }
         });
         openMenu.setToolTipText("Open Domain Hunter Project File");
@@ -81,7 +75,9 @@ public class ProjectMenu{
         JMenuItem saveMenu = new JMenuItem(new AbstractAction("Save as") {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                //gui.saveDialog(true); //TODO
+                File file = gui.dbfc.dialog(false);
+                gui.saveData(file.toString(),false);
+                //GUI.setCurrentDBFile(file);
             }
         });
         openMenu.setToolTipText("Save All Domains And Titles To Another File");
