@@ -255,7 +255,7 @@ public class TitlePanel extends JPanel {
 		});
 		buttonPanel.add(buttonSearch);
 
-		JRadioButton rdbtnHideCheckedItems = new JRadioButton("Hide Checked");
+		rdbtnHideCheckedItems = new JRadioButton("Hide Checked");
 		rdbtnHideCheckedItems.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String keyword = textFieldSearch.getText().trim();
