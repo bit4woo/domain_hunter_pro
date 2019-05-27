@@ -5,16 +5,18 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ProjectMenu{
-	GUI gui;
-	JMenu hunterMenu;
-	
-	ProjectMenu(GUI gui){
-		this.gui = gui;
-		hunterMenu = Menu();
-	}
-    
+    GUI gui;
+    JMenu hunterMenu;
+
+    ProjectMenu(GUI gui){
+        this.gui = gui;
+        hunterMenu = Menu();
+    }
+
     public void Add() {
         try{
             JMenuBar menuBar = getBurpFrame().getJMenuBar();
@@ -22,7 +24,7 @@ public class ProjectMenu{
         }catch (Exception e){
 
         }
-	}
+    }
 
     public void remove(){
         JMenuBar menuBar = getBurpFrame().getJMenuBar();
@@ -75,9 +77,19 @@ public class ProjectMenu{
         JMenuItem saveMenu = new JMenuItem(new AbstractAction("Save as") {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                File file = gui.dbfc.dialog(false);
-                gui.saveData(file.toString(),false);
-                //GUI.setCurrentDBFile(file);
+                SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+                    @Override
+                    protected Map doInBackground() throws Exception {
+                        File file = gui.dbfc.dialog(false);
+                        gui.saveData(file.toString(),false);
+                        return new HashMap<String, String>();
+                        //no use ,the return.
+                    }
+                    @Override
+                    protected void done() {
+                    }
+                };
+                worker.execute();
             }
         });
         openMenu.setToolTipText("Save All Domains And Titles To Another File");

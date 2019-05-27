@@ -110,8 +110,15 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		//this.setLineEntries(new ArrayList<LineEntry>());//这个方式无法通过listenser去同步数据库，因为LineEntries已经空了。
 		//虽然触发了，却无法更新数据库。
 		if (syncToFile){
-			DBHelper dbHelper = new DBHelper(GUI.currentDBFile.toString());
-			dbHelper.deleteTitles(this.getLineEntries());
+			try {
+				GUI.currentDBFile.createNewFile();
+				DBHelper dbHelper = new DBHelper(GUI.currentDBFile.toString());
+				dbHelper.saveDomainObject(DomainPanel.getDomainResult());//效果等同于删除所有title。速度更快
+				//dbHelper.deleteTitles(this.getLineEntries());
+			}catch (Exception e){
+				e.printStackTrace(stderr);
+			}
+
 		}
 		this.setLineEntries(new ArrayList<LineEntry>());//如果ListenerIsOn，将会触发listener
 		System.out.println(rows);
@@ -356,7 +363,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 				String Host = lineEntries.get(rows[i]).getHost();
 				DomainPanel.getDomainResult().getBlackDomainSet().add(Host);
 				String url = lineEntries.get(rows[i]).getUrl();
-				//lineEntries.remove(rows[i]); 
+				//lineEntries.remove(rows[i]);
 				stdout.println("### "+url+" added to black list and deleted");
 				this.fireTableRowsDeleted(rows[i], rows[i]);
 			}
