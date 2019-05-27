@@ -210,7 +210,6 @@ public class LineTable extends JTable
 		{
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				stderr.print("xxxxxxxxxxxxx");
 				if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2){//左键双击
 					int[] rows = getSelectedRows();
 
@@ -241,7 +240,6 @@ public class LineTable extends JTable
 
 			@Override
 			public void mouseReleased( MouseEvent e ){
-				stderr.print("xxxxxxxxxxxxx");
 				if ( SwingUtilities.isRightMouseButton( e )){
 					if (e.isPopupTrigger() && e.getComponent() instanceof JTable ) {
 						//getSelectionModel().setSelectionInterval(rows[0], rows[1]);
@@ -264,7 +262,6 @@ public class LineTable extends JTable
 			@Override
 			public void mousePressed(MouseEvent e) {
 				//no need
-				stderr.print("xxxxxxxxxxxxx");
 			}
 
 		});

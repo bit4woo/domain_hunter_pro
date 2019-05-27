@@ -1,20 +1,14 @@
 package burp;
 
-import java.io.PrintWriter;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
+import java.io.PrintWriter;
+import java.io.Serializable;
+import java.util.*;
 
 
-public class LineTableModel extends AbstractTableModel implements IMessageEditorController,Serializable {
+public class LineTableModelBackup extends AbstractTableModel implements IMessageEditorController,Serializable {
 	//https://stackoverflow.com/questions/11553426/error-in-getrowcount-on-defaulttablemodel
 	//when use DefaultTableModel, getRowCount encounter NullPointerException. why?
 	/**
@@ -39,7 +33,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		return titles;
 	}
 
-	public LineTableModel(){
+	public LineTableModelBackup(){
 		try{
 			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
 			stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
@@ -71,7 +65,6 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 					} else if (type == TableModelEvent.DELETE) {//可以批量操作
 						for (int i = rowstart; i <= rowend; i++) {
 							dbHelper.deleteTitle(lineEntries.get(i));
-							lineEntries.remove(i);
 						}
 					} else {
 						//System.out.println("此事件是由其他原因触发");
@@ -290,21 +283,15 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	}
 
 
-	/*
-	//如果使用了tableModelListener,就需要注意：在监听事件中去执行具体动作，这里只是起通知作用！！！！
-	尤其是改变了lineEntries数量的操作！index将发生改变。
-	 */
-
-
 	public void removeRows(int[] rows) {
 		synchronized (lineEntries) {
 			//because thread let the delete action not in order, so we must loop in here.
 			//list length and index changed after every remove.the origin index not point to right item any more.
 			Arrays.sort(rows); //升序
 			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
-//				String url = lineEntries.get(rows[i]).getUrl();
-//				lineEntries.remove(rows[i]);//在监听事件中去执行具体动作，这里只是起通知作用！！！！
-//				stdout.println("!!! "+url+" deleted");
+				String url = lineEntries.get(rows[i]).getUrl();
+				lineEntries.remove(rows[i]);
+				stdout.println("!!! "+url+" deleted");
 				this.fireTableRowsDeleted(rows[i], rows[i]);
 			}
 		}
@@ -356,7 +343,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 				String Host = lineEntries.get(rows[i]).getHost();
 				DomainPanel.getDomainResult().getBlackDomainSet().add(Host);
 				String url = lineEntries.get(rows[i]).getUrl();
-				//lineEntries.remove(rows[i]); 
+				lineEntries.remove(rows[i]);
 				stdout.println("### "+url+" added to black list and deleted");
 				this.fireTableRowsDeleted(rows[i], rows[i]);
 			}

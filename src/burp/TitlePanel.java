@@ -303,7 +303,8 @@ public class TitlePanel extends JPanel {
 		//backup to history
 		BackupLineEntries = titleTableModel.getLineEntries();
 		//clear tableModel
-		titleTableModel.clear();//clear
+
+		titleTableModel.clear(true);//clear
 
 		threadGetTitle = new ThreadGetTitle(domains);
 		threadGetTitle.Do();
@@ -333,7 +334,7 @@ public class TitlePanel extends JPanel {
 	public void showToTitleUI(List<LineEntry> lineEntries) {
 		//titleTableModel.setLineEntries(new ArrayList<LineEntry>());//clear
 		//这里没有fire delete事件，会导致排序号加载文件出错，但是如果fire了又会触发tableModel的删除事件，导致数据库删除。改用clear()
-		titleTableModel.clear();
+		titleTableModel.clear(false);//clear
 		titleTableModel.setListenerIsOn(false);
 		for (LineEntry line:lineEntries) {
 			titleTableModel.addNewLineEntry(line);
