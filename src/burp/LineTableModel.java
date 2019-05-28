@@ -57,7 +57,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			public void tableChanged(TableModelEvent e) {
 				if (ListenerIsOn) {//开关，加载数据文件的过程中，这时关闭这个监听
 					int type = e.getType();//获取事件类型(增、删、改等)
-					int rowstart = e.getFirstRow();//获取触发事件的行索引
+					int rowstart = e.getFirstRow();//获取触发事件的行索引，即是fireTableRowxxx中的2个参数。
 					int rowend = e.getLastRow();
 					int column = e.getColumn();//获取触发事件的列索引
 					//stdout.println(rowstart+"---"+rowend);
@@ -336,8 +336,10 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 				//				//https://stackoverflow.com/questions/4352885/how-do-i-update-the-element-at-a-certain-position-in-an-arraylist
 				//lineEntries.set(rows[i], checked);
 				stdout.println("$$$ "+checked.getUrl()+" updated");
+				this.fireTableRowsUpdated(rows[i], rows[i]);
 			}
-			this.fireTableRowsUpdated(rows[0], rows[rows.length-1]);
+			//this.fireTableRowsUpdated(rows[0], rows[rows.length-1]);
+			//最好还是一行一行地触发监听事件，因为自定义排序后的行号可能不是连续的，如果用批量触发，会做很多无用功，导致操作变慢。
 		}
 	}
 
@@ -354,8 +356,9 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 				//				lineEntries.add(rows[i], checked);
 				//				//https://stackoverflow.com/questions/4352885/how-do-i-update-the-element-at-a-certain-position-in-an-arraylist
 				stdout.println("$$$ "+checked.getUrl()+" updated");
+				this.fireTableRowsUpdated(rows[i], rows[i]);
 			}
-			this.fireTableRowsUpdated(rows[0], rows[rows.length-1]);
+			//this.fireTableRowsUpdated(rows[0], rows[rows.length-1]);
 		}
 	}
 
