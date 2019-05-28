@@ -47,6 +47,11 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			stdout = new PrintWriter(System.out, true);
 			stderr = new PrintWriter(System.out, true);
 		}
+		/*
+		关于这个listener，主要的目标的是当数据发生改变时，更新到数据库。通过fireTableRowsxxxx来触发。
+		但是clear()中对lineEntries的操作也触发了，注意
+		The call to fireTableRowsDeleted simply fires off the event to indicate rows have been deleted, you still need to actually remove them from the model.
+		 */
 		this.addTableModelListener(new TableModelListener() {//表格模型监听
 			@Override
 			public void tableChanged(TableModelEvent e) {
