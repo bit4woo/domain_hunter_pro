@@ -116,7 +116,9 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		//虽然触发了，却无法更新数据库。
 		if (syncToFile){
 			try {
-				GUI.currentDBFile.createNewFile();
+				if (GUI.currentDBFile.delete()){
+					GUI.currentDBFile.createNewFile();//文件存在时，不会创建新文件!必须先删除就文件
+				}
 				DBHelper dbHelper = new DBHelper(GUI.currentDBFile.toString());
 				dbHelper.saveDomainObject(DomainPanel.getDomainResult());//效果等同于删除所有title。速度更快
 				//dbHelper.deleteTitles(this.getLineEntries());

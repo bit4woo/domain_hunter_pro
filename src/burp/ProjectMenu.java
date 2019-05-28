@@ -92,19 +92,20 @@ public class ProjectMenu{
                 worker.execute();
             }
         });
-        openMenu.setToolTipText("Save All Domains And Titles To Another File");
-        menuButton.add(saveMenu);
+        saveMenu.setToolTipText("Save All Domains And Titles To Another File");
+
+//        menuButton.add(saveMenu);
 
 
-        InputMap inputMap = saveMenu.getInputMap(JButton.WHEN_IN_FOCUSED_WINDOW);
-        KeyStroke sav = KeyStroke.getKeyStroke(KeyEvent.VK_S, 2); //2 --ctrl;  Ctrl+S
-        inputMap.put(sav, "Save");
-
-        saveMenu.getActionMap().put("Save", new AbstractAction() {
-            public void actionPerformed(ActionEvent evt) {
-                //saveDialog(false);
-            }
-        });
+//        InputMap inputMap = saveMenu.getInputMap(JButton.WHEN_IN_FOCUSED_WINDOW);
+//        KeyStroke sav = KeyStroke.getKeyStroke(KeyEvent.VK_S, 2); //2 --ctrl;  Ctrl+S
+//        inputMap.put(sav, "Save");
+//
+//        saveMenu.getActionMap().put("Save", new AbstractAction() {
+//            public void actionPerformed(ActionEvent evt) {
+//                //saveDialog(false);
+//            }
+//        });
 
         return menuButton;
     }

@@ -107,7 +107,7 @@ public class DomainObject {
 
 
 	public String getSummary() {
-		summary = String.format("     Project Name:%s  Related-domain:%s  Sub-domain:%s  Similar-domain:%s  ^_^", projectName, relatedDomainSet.size(),subDomainSet.size(),similarDomainSet.size());
+		summary = String.format("     Project Name:%s  Root-domain:%s  Related-domain:%s  Sub-domain:%s  Similar-domain:%s  ^_^", projectName, rootDomainMap.size(),relatedDomainSet.size(),subDomainSet.size(),similarDomainSet.size());
 		return summary;
     }
 	

@@ -48,6 +48,7 @@ public class dbFileChooser extends JFileChooser {
                     if(file.exists()){
                         int result = JOptionPane.showConfirmDialog(null,"Are you sure to overwrite this file ?");
                         if (result == JOptionPane.YES_OPTION) {
+                            file.delete();
                             file.createNewFile();
                         }
                     }else {
