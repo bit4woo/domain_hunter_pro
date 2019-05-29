@@ -4,34 +4,33 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.io.UnsupportedEncodingException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class JtableFont {
+
+    	/*
+Content-Type: text/html;charset=UTF-8
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta charset="utf-8">
+<script type="text/javascript" charset="utf-8" src="./resources/jrf-resource/js/jrf.min.js"></script>
+ */
     public static void main(String args[]){
-        JTable table = new JTable();
+        String body = "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"/>";
+        String title = "中文";
+    			final String DOMAIN_NAME_PATTERN = "charset=(.*?)>";
+			Pattern pDomainNameOnly = Pattern.compile(DOMAIN_NAME_PATTERN);
+			Matcher matcher = pDomainNameOnly.matcher(body);
+			while (matcher.find()) {//多次查找
 
-        DefaultTableModel domainTableModel = new DefaultTableModel(
-                new Object[][]{
-                        //{"1", "1","1"},
-                },
-                new String[]{
-                        "Root Domain", "Keyword"//, "Source"
-                }
-        );
-        table.setModel(domainTableModel);
-        domainTableModel.addRow(new String[]{"1111","京东白拿"});
-        Font f = table.getFont();
-        System.out.println(f);
+				String charSet = matcher.group(0);
+				charSet = charSet.replace("\"","");
+				charSet = charSet.replace(">","");
+				charSet = charSet.replace("/","");
+				System.out.println(charSet);
+			}
+        //System.out.println(new String(title.getBytes(),"gbk"));
+
     }
-
-    public String changeCharset(String str, String originCharset,String newCharset)
-            throws UnsupportedEncodingException {
-        if (str != null) {
-            //用默认字符编码解码字符串。
-            byte[] bs = str.getBytes(originCharset);
-            //用新的字符编码生成字符串
-            return new String(bs, newCharset);
-        }
-        return null;
-    }
-
 }
