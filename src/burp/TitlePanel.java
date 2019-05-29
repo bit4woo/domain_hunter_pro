@@ -11,10 +11,7 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
 import java.io.PrintWriter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -295,8 +292,9 @@ public class TitlePanel extends JPanel {
 
 
 	public void getAllTitle(){
-		Set<String> domains = BurpExtender.getGui().getDomainPanel().getDomainResult().getSubDomainSet();
+		Set<String> domains = new HashSet<>();//新建一个对象，直接赋值后的删除操作，实质是对domainResult的操作。
 
+		domains.addAll(BurpExtender.getGui().getDomainPanel().getDomainResult().getSubDomainSet());
 		//remove domains in black list
 		domains.removeAll(BurpExtender.getGui().getDomainPanel().getDomainResult().getBlackDomainSet());
 

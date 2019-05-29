@@ -199,7 +199,7 @@ public class LineTable extends JTable
 		try {
 			this.setRowSelectionInterval(selectedRow,selectedRow);
 		} catch (Exception e) {
-			// TODO: handle exception
+			e.printStackTrace(stderr);
 		}
 
 	}

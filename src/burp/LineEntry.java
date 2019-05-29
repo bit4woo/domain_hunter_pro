@@ -1,6 +1,8 @@
 package burp;
 
+import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -162,6 +164,15 @@ public class LineEntry {
 				}
 			}
 
+			if (!title.equals("")){//编码转换
+				String charSet = getResponseCharset(messageinfo);
+				Charset systemCharset = Charset.defaultCharset();
+				if (charSet != null){
+					title = new String(title.getBytes(charSet),systemCharset);
+				}
+			}
+
+
 
 			time = Commons.getNowTimeString();//这是动态的，会跟随系统时间自动变化
 
@@ -292,33 +303,33 @@ public class LineEntry {
 		return new String(byte_body);
 	}
 
-	public String getHeaderValueOf(boolean messageIsRequest,String headerName) {
-		helpers = BurpExtender.getCallbacks().getHelpers();
-		List<String> headers=null;
-		if(messageIsRequest) {
-			if (this.request == null) {
-				return null;
-			}
-			IRequestInfo analyzeRequest = helpers.analyzeRequest(this.request);
-			headers = analyzeRequest.getHeaders();
+
+	/*
+Content-Type: text/html;charset=UTF-8
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta charset="utf-8">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<script type="text/javascript" charset="utf-8" src="./resources/jrf-resource/js/jrf.min.js"></script>
+ */
+	public String getResponseCharset(IHttpRequestResponse messageInfo){
+		Getter getter = new Getter(helpers);
+		String contentType = getter.getHeaderValueOf(false,messageInfo,"Content-Type");
+		String charSet = null;
+		if (contentType.toLowerCase().contains("charset=")){
+			charSet = contentType.toLowerCase().split("charset=")[1];
 		}else {
-			if (this.response == null) {
-				return null;
-			}
-			IResponseInfo analyzeResponse = helpers.analyzeResponse(this.response);
-			headers = analyzeResponse.getHeaders();
-		}
-
-
-		headerName = headerName.toLowerCase().replace(":", "");
-		String Header_Spliter = ": ";
-		for (String header : headers) {
-			if (header.toLowerCase().startsWith(headerName)) {
-				return header.split(Header_Spliter, 2)[1];//分成2部分，Location: https://www.jd.com
+			byte[] body = getter.getBody(false,messageInfo);
+			final String DOMAIN_NAME_PATTERN = "charset=([A-Za-z0-9-]{1,15})[\"]";
+			Pattern pDomainNameOnly = Pattern.compile(DOMAIN_NAME_PATTERN);
+			Matcher matcher = pDomainNameOnly.matcher(new String(body));
+			if (matcher.find()) {//多次查找
+				charSet = matcher.group().replace("\"","");
 			}
 		}
-		return null;
+		return charSet;
 	}
+
 
 	public void setBodyText(String bodyText) {
 		this.bodyText = bodyText;
