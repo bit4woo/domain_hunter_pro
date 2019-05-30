@@ -42,16 +42,18 @@ public class LineEntryMenu extends JPopupMenu {
 		JMenuItem googleSearchItem = new JMenuItem(new AbstractAction("Google It (double click)") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				String host = lineTable.getModel().getLineEntries().get(rows[0]).getHost();
-				String url= "https://www.google.com/search?q=site%3A"+host;
-				try {
-					URI uri = new URI(url);
-					Desktop desktop = Desktop.getDesktop();
-					if(Desktop.isDesktopSupported()&&desktop.isSupported(Desktop.Action.BROWSE)){
-						desktop.browse(uri);
+				for (int row:rows) {
+					String host = lineTable.getModel().getLineEntries().get(row).getHost();
+					String url= "https://www.google.com/search?q=site%3A"+host;
+					try {
+						URI uri = new URI(url);
+						Desktop desktop = Desktop.getDesktop();
+						if(Desktop.isDesktopSupported()&&desktop.isSupported(Desktop.Action.BROWSE)){
+							desktop.browse(uri);
+						}
+					} catch (Exception e2) {
+						e2.printStackTrace();
 					}
-				} catch (Exception e2) {
-					e2.printStackTrace();
 				}
 			}
 		});
