@@ -128,6 +128,11 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		JMenuItem runWithSamePathItem = new JMenuItem("^_^ Run Targets with this path");
 		runWithSamePathItem.addActionListener(new runWithSamePath(invocation));
 		list.add(runWithSamePathItem);
+		
+		JMenuItem addCommentItem = new JMenuItem("^_^ Add Title Comment");
+		addCommentItem.addActionListener(new addComment(invocation));
+		list.add(addCommentItem);
+		
 		return list;
 	}
 
@@ -211,6 +216,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 						IHttpRequestResponse messageinfo = callbacks.makeHttpRequest(httpService, request);
 						Getter getter = new Getter(helpers);
 						String body = new String(getter.getBody(false, messageinfo));
+						stdout.println("Runner Checking: "+line.getUrl());
 
 						if (body != null && body.toLowerCase().contains(keyword)) {
 							runnerTableModel.addNewLineEntry(new LineEntry(messageinfo,false,false,"Runner"));
@@ -223,6 +229,45 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 				}
 			};
 			worker.execute();
+		}
+	}
+	
+	public class addComment implements ActionListener{
+		private IContextMenuInvocation invocation;
+		addComment(IContextMenuInvocation invocation) {
+			this.invocation  = invocation;
+		}
+		@Override
+		public void actionPerformed(ActionEvent e)
+		{
+			try{
+				IHttpRequestResponse[] messages = invocation.getSelectedMessages();
+				String shortUrlString = messages[0].getHttpService().toString();
+				
+				LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(shortUrlString);
+				
+				if (entry != null) {
+					String commentAdd = JOptionPane.showInputDialog("Comments", null).trim();
+					while(commentAdd.trim().equals("")){
+						commentAdd = JOptionPane.showInputDialog("Comments", null).trim();
+					}
+					if (commentAdd != null) {
+						String comment = entry.getComment().trim();
+						if (comment == null || comment.equals("")) {
+							comment = commentAdd;
+						}else if(comment.contains(commentAdd)){
+							//do nothing
+						}else{
+							comment = comment+","+commentAdd;
+						}
+						entry.setComment(comment);
+					}
+				}
+			}
+			catch (Exception e1)
+			{
+				e1.printStackTrace(stderr);
+			}
 		}
 	}
 }

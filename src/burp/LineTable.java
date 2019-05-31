@@ -2,6 +2,7 @@ package burp;
 
 import javax.swing.*;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumn;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -9,6 +10,7 @@ import java.awt.event.MouseEvent;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.util.Arrays;
+import java.util.Enumeration;
 
 public class LineTable extends JTable
 {
@@ -49,6 +51,7 @@ public class LineTable extends JTable
 		this.setModel(lineTableModel);
 
 		tableinit();
+		//FitTableColumns(this);
 		addClickSort();
 		registerListeners();
 
@@ -80,7 +83,9 @@ public class LineTable extends JTable
 		splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
 		//TitlePanel.add(splitPane, BorderLayout.CENTER); // getTitlePanel to get it
 
-		JScrollPane scrollPaneRequests = new JScrollPane(this);//table area
+		JScrollPane scrollPaneRequests = new JScrollPane(this,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);//table area
+		//允许横向滚动条
 		//scrollPaneRequests.setViewportView(titleTable);//titleTable should lay here.
 		splitPane.setLeftComponent(scrollPaneRequests);
 
@@ -98,6 +103,8 @@ public class LineTable extends JTable
 		responseViewer = BurpExtender.getCallbacks().createMessageEditor(this.getModel(), false);
 		RequestPanel.addTab("Request", requestViewer.getComponent());
 		ResponsePanel.addTab("Response", responseViewer.getComponent());
+		
+		this.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);//配合横向滚动条
 
 		return splitPane;
 	}
@@ -111,6 +118,16 @@ public class LineTable extends JTable
 
 		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("#")).setPreferredWidth(width*5);
 		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("#")).setMaxWidth(width*8);
+		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("URL")).setPreferredWidth(width*25);
+		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("URL")).setMaxWidth(width*50);
+		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Title")).setPreferredWidth(width*30);
+		//this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Title")).setMaxWidth(width*50);
+		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("IP")).setPreferredWidth(width*30);
+		//this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("IP")).setMaxWidth(width*50);
+		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("CDN")).setPreferredWidth(width*30);
+		//this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("CDN")).setMaxWidth(width*50);
+		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Comments")).setPreferredWidth(width*30);
+		
 		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Status")).setPreferredWidth(width*"Status".length());
 		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Status")).setMaxWidth(width*("Status".length()+3));
 		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("isNew")).setPreferredWidth(width*"isNew".length());
@@ -121,12 +138,34 @@ public class LineTable extends JTable
 		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Length")).setMaxWidth(width*15);
 		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("MIME Type")).setPreferredWidth(width*"MIME Type".length());
 		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("MIME Type")).setMaxWidth(width*("MIME Type".length()+3));
-		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Time")).setPreferredWidth(width*22);
+		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Time")).setPreferredWidth(width*("2019-05-28-14-13-16".length()));
 		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Time")).setMaxWidth(width*25);
 		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Text")).setPreferredWidth(width*0);//response text,for search
 		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Text")).setMaxWidth(width*0);//response text,for search
-		this.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
+		//this.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
+		this.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);//配合横向滚动条
 
+	}
+	
+	@Deprecated//据说自动调整行宽度，测试了一下没用啊
+	public void FitTableColumns(JTable myTable){
+		  JTableHeader header = myTable.getTableHeader();
+		     int rowCount = myTable.getRowCount();
+		     Enumeration columns = myTable.getColumnModel().getColumns();
+		     while(columns.hasMoreElements()){
+		         TableColumn column = (TableColumn)columns.nextElement();
+		         int col = header.getColumnModel().getColumnIndex(column.getIdentifier());
+		         int width = (int)myTable.getTableHeader().getDefaultRenderer()
+		                 .getTableCellRendererComponent(myTable, column.getIdentifier()
+		                         , false, false, -1, col).getPreferredSize().getWidth();
+		         for(int row = 0; row<rowCount; row++){
+		             int preferedWidth = (int)myTable.getCellRenderer(row, col).getTableCellRendererComponent(myTable,
+		               myTable.getValueAt(row, col), false, false, row, col).getPreferredSize().getWidth();
+		             width = Math.max(width, preferedWidth);
+		         }
+		         header.setResizingColumn(column); // 此行很重要
+		         column.setWidth(width+myTable.getIntercellSpacing().width);
+		     }
 	}
 
 
@@ -199,7 +238,7 @@ public class LineTable extends JTable
 		try {
 			this.setRowSelectionInterval(selectedRow,selectedRow);
 		} catch (Exception e) {
-			e.printStackTrace(stderr);
+			//e.printStackTrace(stderr);//java.lang.IllegalArgumentException: Row index out of range
 		}
 
 	}

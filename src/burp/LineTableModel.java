@@ -345,18 +345,22 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		}
 	}
 
-	public void updateComments(int[] rows, String comments) {
+	public void updateComments(int[] rows, String commentAdd) {
 		synchronized (lineEntries) {
 			//because thread let the delete action not in order, so we must loop in here.
 			//list length and index changed after every remove.the origin index not point to right item any more.
 			Arrays.sort(rows); //升序
 			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
 				LineEntry checked = lineEntries.get(rows[i]);
-				String originComment = checked.getComment();
-				if (originComment != null && originComment != ""){
-					comments = originComment+","+comments;
+				String commentToSet = checked.getComment();
+				if (commentToSet == null || commentToSet.trim().equals("")){
+					commentToSet = commentAdd;
+				}else if(commentToSet.contains(commentAdd)){
+					//do nothing
+				}else {
+					commentToSet = commentToSet+","+commentAdd;
 				}
-				checked.setComment(comments);
+				checked.setComment(commentToSet);
 				//				lineEntries.remove(rows[i]);
 				//				lineEntries.add(rows[i], checked);
 				//				//https://stackoverflow.com/questions/4352885/how-do-i-update-the-element-at-a-certain-position-in-an-arraylist
@@ -461,6 +465,17 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			//https://stackoverflow.com/questions/6165060/after-adding-a-tablerowsorter-adding-values-to-model-cause-java-lang-indexoutofb
 			fireTableRowsInserted(row-1, row-1);
 		}
+	}
+	
+	public LineEntry findLineEntry(String url) {
+		if (lineEntries == null) return null;
+		for (LineEntry line:lineEntries) {
+			line.setHelpers(BurpExtender.getCallbacks().getHelpers());
+			if (url.equalsIgnoreCase(line.getUrl())) {
+				return line;
+			}
+		}
+		return null;
 	}
 
 	public void addNewNoResponseDomain(String domain,Set<String> IPSet){

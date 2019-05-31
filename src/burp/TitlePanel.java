@@ -9,11 +9,25 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.PrintWriter;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.InputMap;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JTextField;
+import javax.swing.KeyStroke;
+import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 
 public class TitlePanel extends JPanel {
@@ -28,6 +42,7 @@ public class TitlePanel extends JPanel {
 	PrintWriter stderr;
 	private ThreadGetTitle threadGetTitle;
 	private List<LineEntry> BackupLineEntries;
+	private History searchHistory = new History(10);
 
 
 	public static LineTableModel getTitleTableModel() {
@@ -236,6 +251,35 @@ public class TitlePanel extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				String keyword = textFieldSearch.getText().trim();
 				titleTable.search(keyword);
+				searchHistory.addRecord(keyword);//记录搜索历史
+			}
+		});
+
+		textFieldSearch.addKeyListener(new KeyAdapter(){
+			public void keyPressed(KeyEvent e)    
+			{    
+				if (e.getKeyCode()==KeyEvent.VK_KP_UP || e.getKeyCode() == KeyEvent.VK_UP)//上键
+				{
+					try {
+						String record = searchHistory.moveUP();
+						if (record != null) {
+							textFieldSearch.setText(record);
+						}
+					} catch (Exception ex) {
+						ex.printStackTrace(stderr);
+					}
+				}
+
+				if (e.getKeyCode() == KeyEvent.VK_KP_DOWN || e.getKeyCode() == KeyEvent.VK_DOWN){
+					try {
+						String record = searchHistory.moveDown();
+						if (record != null) {
+							textFieldSearch.setText(record);
+						}
+					} catch (Exception ex) {	
+						ex.printStackTrace(stderr);
+					}
+				}
 
 			}
 		});
@@ -248,6 +292,7 @@ public class TitlePanel extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				String keyword = textFieldSearch.getText().trim();
 				titleTable.search(keyword);
+				searchHistory.addRecord(keyword);
 			}
 		});
 		buttonPanel.add(buttonSearch);
