@@ -148,6 +148,18 @@ class Producer extends Thread {//Producer do
 				IHttpService https = helpers.buildHttpService(host,443,"https");
 
 				byte[] http_Request = helpers.buildHttpRequest(new URL(http.toString()));
+				String cookie = TitlePanel.getTextFieldCookie().getText().trim();
+				if (cookie != null && !cookie.equals("")){
+					if (!cookie.startsWith("Cookie: ")){
+						cookie = "Cookie: "+cookie;
+					}
+					List<String > newHeader = helpers.analyzeRequest(http_Request).getHeaders();
+					int bodyOffset = helpers.analyzeRequest(http_Request).getBodyOffset();
+					byte[] byte_body = Arrays.copyOfRange(http_Request, bodyOffset, http_Request.length);
+					newHeader.add(cookie);
+					http_Request = helpers.buildHttpMessage(newHeader,byte_body);
+				}
+
 				IHttpRequestResponse http_Messageinfo = callbacks.makeHttpRequest(http, http_Request);
 				//stdout.println("messageinfo"+JSONObject.toJSONString(messageinfo));
 				//这里有2种异常情况：1.请求失败（连IP都解析不了,已经通过第一步过滤了）；2.请求成功但是响应包为空（可以解析IP，比如内网域名）。

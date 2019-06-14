@@ -32,8 +32,8 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	PrintWriter stderr;
 
 	private static final String[] titles = new String[] {
-			"#", "URL", "Status", "Length", "MIME Type", "Server","Title", "IP", "CDN", "Time","isNew","isChecked","Comments","Text"
-	};
+			"#", "URL", "Status", "Length", "MIME Type", "Server","Title", "IP", "CDN", "Comments","Time","isNew","isChecked"};
+	//       0-id, 1-url,2-status, 3-length,4-mimetype,5-server, 6-title, 7-ip, 8-cdn, 9-comments, 10-time, 11-isnew, 12-ischecked
 
 	public static String[] getTitles() {
 		return titles;
@@ -223,13 +223,13 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 				return Integer.class;//Status
 			case 3:
 				return Integer.class;//Length
-			case 8:
+			case 11:
 				return boolean.class;//isNew
-			case 9:
+			case 12:
 				return boolean.class;//isChecked
 			default:
 				return String.class;
-		}
+		}//0-id, 1-url,2-status, 3-length,4-mimetype,5-server, 6-title, 7-ip, 8-cdn, 9-comments, 10-time, 11-isnew, 12-ischecked
 
 	}
 
@@ -251,10 +251,10 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 
 	@Override
 	public boolean isCellEditable(int rowIndex, int columnIndex) {
-		if (columnIndex < titles.length-2) {//可以编辑comment
-			return false;
-		}else {
+		if (titles[columnIndex].equals("Comments")) {//可以编辑comment
 			return true;
+		}else {
+			return false;
 		}
 	}
 
@@ -393,7 +393,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		LineEntry entry = lineEntries.get(rowIndex);
 		entry.parse();
 		switch (columnIndex)
-		{
+		{//0-id, 1-url,2-status, 3-length,4-mimetype,5-server, 6-title, 7-ip, 8-cdn, 9-comments, 10-time, 11-isnew, 12-ischecked
 			case 0:
 				return rowIndex;
 			case 1:
@@ -413,13 +413,13 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			case 8:
 				return entry.getCDN();
 			case 9:
-				return entry.getTime();
-			case 10:
-				return entry.isNew();
-			case 11:
-				return entry.isChecked();
-			case 12:
 				return entry.getComment();
+			case 10:
+				return entry.getTime();
+			case 11:
+				return entry.isNew();
+			case 12:
+				return entry.isChecked();
 			case 13:
 				//return new String(entry.getResponse());// response text for search
 				//it takes too many memories
@@ -442,7 +442,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		LineEntry entry = lineEntries.get(row);
 		switch (col)
 		{
-			case 12://comment
+			case 9://comment
 				entry.setComment((String) value);
 				break;
 			default:
@@ -466,7 +466,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			fireTableRowsInserted(row-1, row-1);
 		}
 	}
-	
+
 	public LineEntry findLineEntry(String url) {
 		if (lineEntries == null) return null;
 		for (LineEntry line:lineEntries) {

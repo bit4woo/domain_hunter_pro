@@ -79,6 +79,26 @@ public class LineEntryMenu extends JPopupMenu {
 		});
 		this.add(copyURLItem);
 
+		JMenuItem openURLwithBrowserItem = new JMenuItem(new AbstractAction("Open URL With Browser") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				try{
+					java.util.List<String> urls = lineTable.getModel().getURLs(rows);
+					if (urls.size() >= 50){//避免一次开太多网页导致系统卡死
+						return;
+					}
+					for (String url:urls){
+						Commons.open(url,"C:\\Program Files\\Mozilla Firefox\\firefox.exe");
+					}
+				}
+				catch (Exception e1)
+				{
+					e1.printStackTrace(stderr);
+				}
+			}
+		});
+		this.add(openURLwithBrowserItem);
+
 
 		JMenuItem addHostsToScope = new JMenuItem(new AbstractAction("Add To Scope") {
 			@Override

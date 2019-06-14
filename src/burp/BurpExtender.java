@@ -245,6 +245,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 				String shortUrlString = messages[0].getHttpService().toString();
 				
 				LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(shortUrlString);
+				int index = TitlePanel.getTitleTableModel().getLineEntries().indexOf(entry);
 				
 				if (entry != null) {
 					String commentAdd = JOptionPane.showInputDialog("Comments", null).trim();
@@ -261,6 +262,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 							comment = comment+","+commentAdd;
 						}
 						entry.setComment(comment);
+						TitlePanel.getTitleTableModel().fireTableRowsUpdated(index,index);//主动通知更新，否则不会写入数据库!!!
 					}
 				}
 			}

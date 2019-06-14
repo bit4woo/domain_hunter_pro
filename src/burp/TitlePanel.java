@@ -35,7 +35,8 @@ public class TitlePanel extends JPanel {
 	private JPanel buttonPanel;
 	private LineTable titleTable;
 	private JLabel lblSummaryOfTitle;
-	public JRadioButton rdbtnHideCheckedItems;
+	private static JTextField textFieldCookie;
+	public  JRadioButton rdbtnHideCheckedItems;
 	//add table and tablemodel to GUI
 	private static LineTableModel titleTableModel = new LineTableModel();
 	PrintWriter stdout;
@@ -73,6 +74,12 @@ public class TitlePanel extends JPanel {
 		buttonPanel = new JPanel();
 		this.add(buttonPanel, BorderLayout.NORTH);
 		buttonPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
+
+		JLabel cookieLabel = new JLabel("Cookie:");
+		buttonPanel.add(cookieLabel);
+		textFieldCookie = new JTextField("");
+		textFieldCookie.setColumns(30);
+		buttonPanel.add(textFieldCookie);
 
 		JButton btnGettitle = new JButton("Get Title");
 		btnGettitle.setToolTipText("A fresh start");
@@ -393,5 +400,9 @@ public class TitlePanel extends JPanel {
 	public void digStatus() {
 		String status = titleTableModel.getStatusSummary();
 		lblSummaryOfTitle.setText(status);
+	}
+
+	public static JTextField getTextFieldCookie() {
+		return textFieldCookie;
 	}
 }
