@@ -177,25 +177,6 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		@Override
 		public void actionPerformed(ActionEvent e)
 		{
-
-			String responseKeyword = JOptionPane.showInputDialog("Response Keyword", null);
-			while(responseKeyword.trim().equals("")){
-				responseKeyword = JOptionPane.showInputDialog("Response Keyword", null);
-			}
-			responseKeyword = responseKeyword.trim();
-			final String keyword = responseKeyword;
-
-
-			RunnerGUI frame = new RunnerGUI();
-			frame.setVisible(true);
-			frame.setTitle("Runner");
-
-			LineTableModel runnerTableModel = new LineTableModel();
-			LineTable runnerTable = new LineTable(runnerTableModel);
-			frame.getRunnerPanel().add(runnerTable.getTableAndDetailSplitPane(), BorderLayout.CENTER);
-			//frame.getRootPane().add(runnerTable.getSplitPane(), BorderLayout.CENTER);
-
-
 			SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
 				//using SwingWorker to prevent blocking burp main UI.
 
@@ -205,23 +186,8 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 					IHttpRequestResponse[] messages = invocation.getSelectedMessages();
 					IHttpRequestResponse currentmessage =messages[0];
 					byte[] request = currentmessage.getRequest();
-
-					for(LineEntry line:TitlePanel.getTitleTableModel().getLineEntries()) {
-						String protocol = line.getProtocol();
-						boolean useHttps =false;
-						if (protocol.equalsIgnoreCase("https")) {
-							useHttps =true;
-						}
-						IHttpService httpService = helpers.buildHttpService(line.getHost(), line.getPort(), useHttps);
-						IHttpRequestResponse messageinfo = callbacks.makeHttpRequest(httpService, request);
-						Getter getter = new Getter(helpers);
-						String body = new String(getter.getBody(false, messageinfo));
-						stdout.println("Runner Checking: "+line.getUrl());
-
-						if (body != null && body.toLowerCase().contains(keyword)) {
-							runnerTableModel.addNewLineEntry(new LineEntry(messageinfo,false,false,"Runner"));
-						}
-					}
+					
+					RunnerGUI runnergui = new RunnerGUI(request);
 					return null;
 				}
 				@Override

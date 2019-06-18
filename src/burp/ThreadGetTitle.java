@@ -41,13 +41,18 @@ class ThreadGetTitle{
 			plist.add(p);
 		}
 
+		long waitTime = 0; 
 		while(true) {//to wait all threads exit.
 			if (domainQueue.isEmpty() && isAllProductorFinished()) {
 				stdout.println("~~~~~~~~~~~~~Get Title Done~~~~~~~~~~~~~");
 				break;
+			}else if(domainQueue.isEmpty() && waitTime >=10*60*1000){
+				stdout.println("~~~~~~~~~~~~~Get Title Done(force exits due to time out)~~~~~~~~~~~~~");
+				break;
 			}else {
 				try {
 					Thread.sleep(60*1000);//1分钟
+					waitTime =waitTime+60*1000;
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
