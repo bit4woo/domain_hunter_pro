@@ -145,8 +145,10 @@ public class RunnerGUI extends JFrame {
 	
 	public RunnerGUI(byte[] request) {
 		getKeywordFromUI();
+		this.request = request;
 		
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		//if use "EXIT_ON_CLOSE",burp will exit!!
 		setVisible(true);
 		setTitle("Runner");
 		

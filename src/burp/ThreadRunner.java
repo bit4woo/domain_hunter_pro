@@ -138,16 +138,19 @@ class RunnerProducer extends Thread {//Producer do
 				IHttpService httpService = helpers.buildHttpService(line.getHost(), line.getPort(), useHttps);
 
 				int leftTaskNum = lineEntryQueue.size();
-
+				stdout.println(String.format("%s tasks left, Runner Checking: %s",leftTaskNum,line.getUrl()));
+				
 				IHttpRequestResponse messageinfo = callbacks.makeHttpRequest(httpService, this.request);
 				Getter getter = new Getter(helpers);
-				String body = new String(getter.getBody(false, messageinfo));
-				stdout.println("Runner Checking: "+line.getUrl());
-
-				if (body != null && body.toLowerCase().contains(keyword)) {
-					runnerTableModel.addNewLineEntry(new LineEntry(messageinfo,false,false,"Runner"));
+				if (messageinfo !=null) {
+					byte[] bodybyte = getter.getBody(false, messageinfo);
+					if (bodybyte != null) {
+						String body = new String(bodybyte);
+						if (body.toLowerCase().contains(keyword)) {
+							runnerTableModel.addNewLineEntry(new LineEntry(messageinfo,false,false,"Runner"));
+						}
+					}
 				}
-				stdout.println(String.format("%s tasks left",leftTaskNum));
 			}catch (Exception e) {
 				e.printStackTrace(stderr);
 			}
