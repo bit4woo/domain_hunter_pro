@@ -110,6 +110,7 @@ class RunnerProducer extends Thread {//Producer do
 
 	public RunnerProducer(LineTableModel runnerTableModel,BlockingQueue<LineEntry> lineEntryQueue,byte[] request, String keyword, int threadNo) {
 		this.runnerTableModel = runnerTableModel;
+		this.runnerTableModel.setListenerIsOn(false);//否则数据会写入title的数据库
 		this.threadNo = threadNo;
 		this.lineEntryQueue = lineEntryQueue;
 		this.request = request;
