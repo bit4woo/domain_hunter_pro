@@ -761,7 +761,7 @@ public class DomainPanel extends JPanel {
 
     public static Set<String> getSetFromTextArea(JTextArea textarea){
         //user input maybe use "\n" in windows, so the System.lineSeparator() not always works fine!
-        Set<String> domainList = new HashSet<>(Arrays.asList(textarea.getText().replaceAll("\r\n", "\n").split("\n")));
+        Set<String> domainList = new HashSet<>(Arrays.asList(textarea.getText().replaceAll(" ","").replaceAll("\r\n", "\n").split("\n")));
         domainList.remove("");
         return domainList;
     }

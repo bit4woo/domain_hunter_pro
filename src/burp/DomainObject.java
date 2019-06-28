@@ -245,6 +245,10 @@ public class DomainObject {
 	}
     
     public int domainType(String domain) {
+    	if (domain.endsWith(".")) {
+    		domain = domain.substring(0,domain.length()-1);
+    	}
+    	
 		for (String rootdomain:fetchRootDomainSet()) {
 			if (rootdomain.contains(".")&&!rootdomain.endsWith(".")&&!rootdomain.startsWith("."))
 			{

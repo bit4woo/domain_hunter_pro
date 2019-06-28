@@ -161,7 +161,11 @@ class Producer extends Thread {//Producer do
 				//第一种请求在这里就结束了，第二种情况的请求信息会传递到consumer中进行IP获取的操作。
 				byte[] http_Body = getter.getBody(false, http_Messageinfo);
 				int http_Status = getter.getStatusCode(http_Messageinfo);//当为第二种异常时，httpStatus == -1
-				int http_response_length = http_Body.length;
+				int http_response_length = 0;
+				if (http_Body != null) {
+					http_response_length = http_Body.length;
+				}
+				
 				String location = getter.getHeaderValueOf(false, http_Messageinfo, "Location");
 
 				byte[] https_Request = helpers.buildHttpRequest(new URL(https.toString()));
@@ -169,14 +173,17 @@ class Producer extends Thread {//Producer do
 				IHttpRequestResponse https_Messageinfo = callbacks.makeHttpRequest(https, https_Request);
 				byte[] https_Body = getter.getBody(false, https_Messageinfo);
 				int https_Status = getter.getStatusCode(https_Messageinfo);//当为第二种异常时，httpStatus == -1
-				int https_response_length = https_Body.length;
+				int https_response_length = 0;
+				if (https_Body != null) {
+					https_response_length = https_Body.length;
+				}
 
 				Set<IHttpRequestResponse> tmpSet = new HashSet<IHttpRequestResponse>();
 
 
 				//去重
 				//if (http_Status == https_Status && Arrays.equals(http_Body,https_Body)) {//parameters can be null,great
-				if (http_Status == https_Status && https_response_length == http_response_length) {//body长度系统就行了
+				if (http_Status == https_Status && https_response_length == http_response_length) {//body长度相同就行了
 					tmpSet.add(http_Messageinfo);
 				}else if( 300 <= http_Status && http_Status <400 && location.equalsIgnoreCase(https.toString()+"/") ) {//redirect to https
 					tmpSet.add(https_Messageinfo);
@@ -253,6 +260,24 @@ class Producer extends Thread {//Producer do
 			String lineProtol = line.getUrl().split("://")[0];
 			List<String> lineHost = Arrays.asList(line.getIP().trim().split(","));
 			if (protocol.equalsIgnoreCase(lineProtol) && lineHost.contains(host)) {
+				return line;
+			}
+		}
+		return null;
+	}
+	
+	public LineEntry findHistorynew(String url,String IP) {
+		List<LineEntry> HistoryLines = BurpExtender.getGui().getTitlePanel().getBackupLineEntries();
+		if (HistoryLines == null) return null;
+		for (LineEntry line:HistoryLines) {
+			line.setHelpers(helpers);
+			
+			String host = url.trim().split("://")[1];
+			
+			String lineHost= line.getUrl().split("://")[1];
+			List<String> lineIPList = Arrays.asList(line.getIP().trim().split(","));
+			lineIPList.add(lineHost);
+			if (lineIPList.contains(host) || lineIPList.contains(IP)) {
 				return line;
 			}
 		}
