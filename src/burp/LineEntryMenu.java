@@ -42,6 +42,9 @@ public class LineEntryMenu extends JPopupMenu {
 		JMenuItem googleSearchItem = new JMenuItem(new AbstractAction("Google It (double click)") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
+				if (rows.length >=50) {
+					return;
+				}
 				for (int row:rows) {
 					String host = lineTable.getModel().getLineEntries().get(row).getHost();
 					String url= "https://www.google.com/search?q=site%3A"+host;
@@ -59,6 +62,31 @@ public class LineEntryMenu extends JPopupMenu {
 		});
 
 		this.add(googleSearchItem);
+		
+		
+		JMenuItem SearchOnGithubItem = new JMenuItem(new AbstractAction("Seach On Github") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				if (rows.length >=50) {
+					return;
+				}
+				for (int row:rows) {
+					try {
+						String host = lineTable.getModel().getLineEntries().get(row).getHost();
+						String url= "https://github.com/search?q=%22"+host+"%22+%22jdbc.url%22&type=Code";
+						URI uri = new URI(url);
+						Desktop desktop = Desktop.getDesktop();
+						if(Desktop.isDesktopSupported()&&desktop.isSupported(Desktop.Action.BROWSE)){
+							desktop.browse(uri);
+						}
+					} catch (Exception e2) {
+						e2.printStackTrace(stderr);
+					}
+				}
+			}
+		});
+
+		this.add(SearchOnGithubItem);
 
 		JMenuItem copyURLItem = new JMenuItem(new AbstractAction("Copy URL") {
 			@Override
