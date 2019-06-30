@@ -47,7 +47,7 @@ public class myHttpService implements IHttpService {
 	}
 
 	public static void main(String args[]) {
-		IExtensionHelpers helpers = BurpExtender.callbacks.getHelpers();
+		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
 		IHttpService http = helpers.buildHttpService("www.jd.com",80,"http");
 		IHttpService https = helpers.buildHttpService("www.jd.com",443,"https");
 		System.out.println(http);

@@ -2,8 +2,11 @@ package burp;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
@@ -15,6 +18,13 @@ public class RunnerGUI extends JFrame {
 	private JTabbedPane RequestPanel;
 	private JTabbedPane ResponsePanel;
 	private JPanel RunnerPanel;
+	
+	
+	private static LineTableModel runnerTableModel = new LineTableModel();
+	private static LineTable runnerTable = new LineTable(runnerTableModel);
+	private static ThreadRunner runner;
+	private static byte[] request;
+	private static String keyword;
 	
 	public JPanel getRunnerPanel() {
 		return RunnerPanel;
@@ -48,6 +58,46 @@ public class RunnerGUI extends JFrame {
 		ResponsePanel = responsePanel;
 	}
 
+	public static LineTableModel getRunnerTableModel() {
+		return runnerTableModel;
+	}
+
+	public static void setRunnerTableModel(LineTableModel runnerTableModel) {
+		RunnerGUI.runnerTableModel = runnerTableModel;
+	}
+
+	public static LineTable getRunnerTable() {
+		return runnerTable;
+	}
+
+	public static void setRunnerTable(LineTable runnerTable) {
+		RunnerGUI.runnerTable = runnerTable;
+	}
+
+	public static ThreadRunner getRunner() {
+		return runner;
+	}
+
+	public static void setRunner(ThreadRunner runner) {
+		RunnerGUI.runner = runner;
+	}
+
+	public static byte[] getRequest() {
+		return request;
+	}
+
+	public static void setRequest(byte[] request) {
+		RunnerGUI.request = request;
+	}
+
+	public static String getKeyword() {
+		return keyword;
+	}
+
+	public static void setKeyword(String keyword) {
+		RunnerGUI.keyword = keyword;
+	}
+
 	/**
 	 * Launch the application.
 	 */
@@ -64,11 +114,25 @@ public class RunnerGUI extends JFrame {
 		});
 	}
 
+	
+	public String getKeywordFromUI() {
+		String responseKeyword = JOptionPane.showInputDialog("Response Keyword", null);
+		while(responseKeyword.trim().equals("")){
+			responseKeyword = JOptionPane.showInputDialog("Response Keyword", null);
+		}
+		responseKeyword = responseKeyword.trim();
+		this.keyword = responseKeyword;
+		return keyword;
+	}
+
+	
 	/**
 	 * Create the frame.
 	 */
+	
 	public RunnerGUI() {
-		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
 		setBounds(100, 100, 1000, 500);
 		RunnerPanel = new JPanel();
 		RunnerPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -76,5 +140,79 @@ public class RunnerGUI extends JFrame {
 		setContentPane(RunnerPanel);//for test
 		
 		//RunnerPanel.add(splitPane, BorderLayout.CENTER);
+	}
+	
+	
+	public RunnerGUI(byte[] request) {
+		getKeywordFromUI();
+		this.request = request;
+		
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		//if use "EXIT_ON_CLOSE",burp will exit!!
+		setVisible(true);
+		setTitle("Runner");
+		
+		RunnerPanel = new JPanel();
+		RunnerPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
+		RunnerPanel.setLayout(new BorderLayout(0, 0));
+		setContentPane(RunnerPanel);//for test
+		
+		RunnerPanel.add(runnerTable.getTableAndDetailSplitPane(), BorderLayout.CENTER);
+		//frame.getRootPane().add(runnerTable.getSplitPane(), BorderLayout.CENTER);
+		addWindowListener(new WindowListener() {
+
+			@Override
+			public void windowOpened(WindowEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void windowClosing(WindowEvent e) {
+				// TODO 关闭多线程
+				runnerTableModel.clear(false);
+				runner.stopThreads();
+			}
+
+			@Override
+			public void windowClosed(WindowEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void windowIconified(WindowEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void windowDeiconified(WindowEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void windowActivated(WindowEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void windowDeactivated(WindowEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
+		setBounds(100, 100, 1000, 500);
+		
+		//准备工作
+		
+		begainRun();
+	}
+	
+	public void begainRun() {
+		runner = new ThreadRunner(request);
+		runner.Do();
 	}
 }

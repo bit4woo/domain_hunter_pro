@@ -107,7 +107,12 @@ public class DomainObject {
 
 
 	public String getSummary() {
-		summary = String.format("     Project:%s  Related-domain:%s  Sub-domain:%s  Similar-domain:%s  ^_^", projectName, relatedDomainSet.size(),subDomainSet.size(),similarDomainSet.size());
+    	String filename ="unknown";
+    	if (GUI.currentDBFile != null){
+			filename = GUI.currentDBFile.getName();
+		}
+		summary = String.format("     FileName:%s  Project:%s  Root-domain:%s  Related-domain:%s  Sub-domain:%s  Similar-domain:%s  ^_^",
+				filename, projectName, rootDomainMap.size(),relatedDomainSet.size(),subDomainSet.size(),similarDomainSet.size());
 		return summary;
     }
 	
@@ -189,10 +194,6 @@ public class DomainObject {
     		this.rootDomainMap.put(key,value);
     	}
     }
-    
-    public void clearWhenRemove() {
-    	// TODO
-    }
 	
 	public void relatedToRoot() {
 		if (this.autoAddRelatedToRoot == true) {
@@ -244,6 +245,10 @@ public class DomainObject {
 	}
     
     public int domainType(String domain) {
+    	if (domain.endsWith(".")) {
+    		domain = domain.substring(0,domain.length()-1);
+    	}
+    	
 		for (String rootdomain:fetchRootDomainSet()) {
 			if (rootdomain.contains(".")&&!rootdomain.endsWith(".")&&!rootdomain.startsWith("."))
 			{

@@ -18,7 +18,7 @@ class ThreadGetTitle{
 	private Set<String> domains;
 	private List<Producer> plist;
 
-	private static IBurpExtenderCallbacks callbacks = BurpExtender.callbacks;//静态变量，burp插件的逻辑中，是可以保证它被初始化的。;
+	private static IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();//静态变量，burp插件的逻辑中，是可以保证它被初始化的。;
 	public PrintWriter stdout = new PrintWriter(callbacks.getStdout(), true);
 	public PrintWriter stderr = new PrintWriter(callbacks.getStderr(), true);
 	public IExtensionHelpers helpers = callbacks.getHelpers();
@@ -41,13 +41,18 @@ class ThreadGetTitle{
 			plist.add(p);
 		}
 
+		long waitTime = 0; 
 		while(true) {//to wait all threads exit.
 			if (domainQueue.isEmpty() && isAllProductorFinished()) {
 				stdout.println("~~~~~~~~~~~~~Get Title Done~~~~~~~~~~~~~");
 				break;
+			}else if(domainQueue.isEmpty() && waitTime >=10*60*1000){
+				stdout.println("~~~~~~~~~~~~~Get Title Done(force exits due to time out)~~~~~~~~~~~~~");
+				break;
 			}else {
 				try {
 					Thread.sleep(60*1000);//1分钟
+					waitTime =waitTime+60*1000;
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
@@ -93,7 +98,7 @@ class Producer extends Thread {//Producer do
 	private int threadNo;
 	private boolean stopflag = false;
 
-	private static IBurpExtenderCallbacks callbacks = BurpExtender.callbacks;//静态变量，burp插件的逻辑中，是可以保证它被初始化的。;
+	private static IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();//静态变量，burp插件的逻辑中，是可以保证它被初始化的。;
 	public PrintWriter stdout = new PrintWriter(callbacks.getStdout(), true);
 	public PrintWriter stderr = new PrintWriter(callbacks.getStderr(), true);
 	public IExtensionHelpers helpers = callbacks.getHelpers();
@@ -148,24 +153,37 @@ class Producer extends Thread {//Producer do
 				IHttpService https = helpers.buildHttpService(host,443,"https");
 
 				byte[] http_Request = helpers.buildHttpRequest(new URL(http.toString()));
+				String cookie = TitlePanel.getTextFieldCookie().getText().trim();
+				http_Request = buildCookieRequest(cookie,http_Request);
 				IHttpRequestResponse http_Messageinfo = callbacks.makeHttpRequest(http, http_Request);
 				//stdout.println("messageinfo"+JSONObject.toJSONString(messageinfo));
 				//这里有2种异常情况：1.请求失败（连IP都解析不了,已经通过第一步过滤了）；2.请求成功但是响应包为空（可以解析IP，比如内网域名）。
 				//第一种请求在这里就结束了，第二种情况的请求信息会传递到consumer中进行IP获取的操作。
 				byte[] http_Body = getter.getBody(false, http_Messageinfo);
 				int http_Status = getter.getStatusCode(http_Messageinfo);//当为第二种异常时，httpStatus == -1
+				int http_response_length = 0;
+				if (http_Body != null) {
+					http_response_length = http_Body.length;
+				}
+				
 				String location = getter.getHeaderValueOf(false, http_Messageinfo, "Location");
 
 				byte[] https_Request = helpers.buildHttpRequest(new URL(https.toString()));
+				http_Request = buildCookieRequest(cookie,https_Request);
 				IHttpRequestResponse https_Messageinfo = callbacks.makeHttpRequest(https, https_Request);
 				byte[] https_Body = getter.getBody(false, https_Messageinfo);
 				int https_Status = getter.getStatusCode(https_Messageinfo);//当为第二种异常时，httpStatus == -1
+				int https_response_length = 0;
+				if (https_Body != null) {
+					https_response_length = https_Body.length;
+				}
 
 				Set<IHttpRequestResponse> tmpSet = new HashSet<IHttpRequestResponse>();
 
 
 				//去重
-				if (http_Status == https_Status && Arrays.equals(http_Body,https_Body)) {//parameters can be null,great
+				//if (http_Status == https_Status && Arrays.equals(http_Body,https_Body)) {//parameters can be null,great
+				if (http_Status == https_Status && https_response_length == http_response_length) {//body长度相同就行了
 					tmpSet.add(http_Messageinfo);
 				}else if( 300 <= http_Status && http_Status <400 && location.equalsIgnoreCase(https.toString()+"/") ) {//redirect to https
 					tmpSet.add(https_Messageinfo);
@@ -184,10 +202,10 @@ class Producer extends Thread {//Producer do
 
 					if (item.getResponse() == null) {
 						stdout.println(String.format("%s tasks left || --- [%s] --- has no response",leftTaskNum,url));
-						BurpExtender.getTitleTableModel().addNewNoResponseDomain(host, IPSet);
+						TitlePanel.getTitleTableModel().addNewNoResponseDomain(host, IPSet);
 					}else if(status >= 500){
 						stdout.println(String.format("%s tasks left || --- [%s] --- status code >= 500",leftTaskNum,url));
-						BurpExtender.getTitleTableModel().addNewNoResponseDomain(host, IPSet);
+						TitlePanel.getTitleTableModel().addNewNoResponseDomain(host, IPSet);
 					}else {
 						byte[] byteBody = getter.getBody(false, item);
 						String body = new String(byteBody);
@@ -212,7 +230,7 @@ class Producer extends Thread {//Producer do
 								err.printStackTrace(stderr);
 							}
 						}
-						BurpExtender.getTitleTableModel().addNewLineEntry(new LineEntry(item,isNew,isChecked,comment,IPSet,CDNSet));
+						BurpExtender.getGui().getTitlePanel().getTitleTableModel().addNewLineEntry(new LineEntry(item,isNew,isChecked,comment,IPSet,CDNSet));
 
 						//stdout.println(new LineEntry(messageinfo,true).ToJson());
 
@@ -228,14 +246,56 @@ class Producer extends Thread {//Producer do
 	}
 
 	public LineEntry findHistory(String url) {
-		List<LineEntry> HistoryLines = BurpExtender.getBackupLineEntries();
+		List<LineEntry> HistoryLines = BurpExtender.getGui().getTitlePanel().getBackupLineEntries();
 		if (HistoryLines == null) return null;
 		for (LineEntry line:HistoryLines) {
 			line.setHelpers(helpers);
 			if (url.equalsIgnoreCase(line.getUrl())) {
 				return line;
 			}
+			
+			String protocol = url.trim().split("://")[0];
+			String host = url.trim().split("://")[1];
+			
+			String lineProtol = line.getUrl().split("://")[0];
+			List<String> lineHost = Arrays.asList(line.getIP().trim().split(","));
+			if (protocol.equalsIgnoreCase(lineProtol) && lineHost.contains(host)) {
+				return line;
+			}
 		}
 		return null;
+	}
+	
+	public LineEntry findHistorynew(String url,String IP) {
+		List<LineEntry> HistoryLines = BurpExtender.getGui().getTitlePanel().getBackupLineEntries();
+		if (HistoryLines == null) return null;
+		for (LineEntry line:HistoryLines) {
+			line.setHelpers(helpers);
+			
+			String host = url.trim().split("://")[1];
+			
+			String lineHost= line.getUrl().split("://")[1];
+			List<String> lineIPList = Arrays.asList(line.getIP().trim().split(","));
+			lineIPList.add(lineHost);
+			if (lineIPList.contains(host) || lineIPList.contains(IP)) {
+				return line;
+			}
+		}
+		return null;
+	}
+	
+	
+	public byte[] buildCookieRequest(String cookie, byte[] request) {
+		if (cookie != null && !cookie.equals("")){
+			if (!cookie.startsWith("Cookie: ")){
+				cookie = "Cookie: "+cookie;
+			}
+			List<String > newHeader = helpers.analyzeRequest(request).getHeaders();
+			int bodyOffset = helpers.analyzeRequest(request).getBodyOffset();
+			byte[] byte_body = Arrays.copyOfRange(request, bodyOffset, request.length);
+			newHeader.add(cookie);
+			request = helpers.buildHttpMessage(newHeader,byte_body);
+		}
+		return request;
 	}
 }

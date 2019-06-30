@@ -1,5 +1,8 @@
 package burp;
 
+import java.awt.*;
+import java.net.URI;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,7 +26,7 @@ public class Commons {
 		StringBuilder result = new StringBuilder();
 		while(iter.hasNext())
 		{
-			//System.out.println(iter.next());  	
+			//System.out.println(iter.next());  		
 			result.append(iter.next()).append("\n");
 		}
 		return result.toString();
@@ -218,6 +221,31 @@ public class Commons {
 		SimpleDateFormat simpleDateFormat = 
                 new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
 		return simpleDateFormat.format(new Date());
+	}
+
+
+	public static void open(Object url,String browser) throws Exception{
+		String urlString = null;
+		URI uri = null;
+		if (url instanceof String) {
+			urlString = (String) url;
+			uri = new URI((String)url);
+		}else if (url instanceof URL) {
+			uri = ((URL)url).toURI();
+			urlString = url.toString();
+		}
+		if(browser =="default" || browser=="") {
+			Desktop desktop = Desktop.getDesktop();
+			if(Desktop.isDesktopSupported()&&desktop.isSupported(Desktop.Action.BROWSE)){
+				desktop.browse(uri);
+			}
+		}else {
+			Runtime runtime = Runtime.getRuntime();
+			runtime.exec(browser+" "+urlString);
+			//C:\Program Files\Mozilla Firefox\firefox.exe
+			//C:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe
+		}
+
 	}
 
 	public static void main(String args[]) {

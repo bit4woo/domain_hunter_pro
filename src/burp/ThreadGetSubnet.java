@@ -15,7 +15,7 @@ class ThreadGetSubnet{
 	private Set<String> domains;
 	private List<IPProducer> plist;
 	
-	private static IBurpExtenderCallbacks callbacks = BurpExtender.callbacks;//静态变量，burp插件的逻辑中，是可以保证它被初始化的。;
+	private static IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();//静态变量，burp插件的逻辑中，是可以保证它被初始化的。;
     public PrintWriter stdout = new PrintWriter(callbacks.getStdout(), true);
     public PrintWriter stderr = new PrintWriter(callbacks.getStderr(), true);
     public IExtensionHelpers helpers = callbacks.getHelpers();
@@ -87,7 +87,7 @@ class IPProducer extends Thread {//Producer do
 	private int threadNo;
 	private boolean stopflag = false;
 	
-	private static IBurpExtenderCallbacks callbacks = BurpExtender.callbacks;//静态变量，burp插件的逻辑中，是可以保证它被初始化的。;
+	private static IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();//静态变量，burp插件的逻辑中，是可以保证它被初始化的。;
     public PrintWriter stdout = new PrintWriter(callbacks.getStdout(), true);
     public PrintWriter stderr = new PrintWriter(callbacks.getStderr(), true);
     public IExtensionHelpers helpers = callbacks.getHelpers();

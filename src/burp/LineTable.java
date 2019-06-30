@@ -1,20 +1,16 @@
 package burp;
 
-import java.awt.Desktop;
-import java.awt.Font;
-import java.awt.FontMetrics;
+import javax.swing.*;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableRowSorter;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.PrintWriter;
 import java.net.URI;
 import java.util.Arrays;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.RowFilter;
-import javax.swing.SwingUtilities;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableRowSorter;
+import java.util.Enumeration;
 
 public class LineTable extends JTable
 {
@@ -23,63 +19,94 @@ public class LineTable extends JTable
 	 */
 	private static final long serialVersionUID = 1L;
 	private LineTableModel lineTableModel;
+	private TableRowSorter<LineTableModel> rowSorter;//TableRowSorter vs. RowSorter
+
 	private IMessageEditor requestViewer;
 	private IMessageEditor responseViewer;
-	private BurpExtender burp;
-	private TableRowSorter<LineTableModel> rowSorter;//TableRowSorter vs. RowSorter
-	public JTabbedPane RequestPanel;
-	public JTabbedPane ResponsePanel;
-	private JSplitPane splitPane;//table area + detail area
+	PrintWriter stdout;
+	PrintWriter stderr;
+
+	private JSplitPane tableAndDetailSplitPane;//table area + detail area
+	public JSplitPane getTableAndDetailSplitPane() {
+		return tableAndDetailSplitPane;
+	}
+
 
 	private int selectedRow = this.getSelectedRow();//to identify the selected row after search or hide lines
 
-	public JSplitPane getSplitPane() {
-		return splitPane;
-	}
-
-	public void setSplitPane(JSplitPane splitPane) {
-		this.splitPane = splitPane;
-	}
-
-	public LineTable(LineTableModel lineTableModel,BurpExtender burp)
+	public LineTable(LineTableModel lineTableModel)
 	{
-		super(lineTableModel);
+		//super(lineTableModel);//这个方法创建的表没有header
+        try{
+            stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
+            stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
+        }catch (Exception e){
+            stdout = new PrintWriter(System.out, true);
+            stderr = new PrintWriter(System.out, true);
+        }
+
 		this.lineTableModel = lineTableModel;
-		this.burp = burp;
 		this.setFillsViewportHeight(true);//在table的空白区域显示右键菜单
 		//https://stackoverflow.com/questions/8903040/right-click-mouselistener-on-whole-jtable-component
+		this.setModel(lineTableModel);
 
-		splitPane = new JSplitPane();//table area + detail area
+		tableinit();
+		//FitTableColumns(this);
+		addClickSort();
+		registerListeners();
+
+		tableAndDetailSplitPane = tableAndDetailPanel();
+	}
+
+	@Override
+	public void changeSelection(int row, int col, boolean toggle, boolean extend)
+	{
+		// show the log entry for the selected row
+		LineEntry Entry = this.lineTableModel.getLineEntries().get(super.convertRowIndexToModel(row));
+
+		requestViewer.setMessage(Entry.getRequest(), true);
+		responseViewer.setMessage(Entry.getResponse(), false);
+		this.lineTableModel.setCurrentlyDisplayedItem(Entry);
+		super.changeSelection(row, col, toggle, extend);
+	}
+
+	@Override
+	public LineTableModel getModel(){
+		//return (LineTableModel) super.getModel();
+		return lineTableModel;
+	}
+
+
+	public JSplitPane tableAndDetailPanel(){
+		JSplitPane splitPane = new JSplitPane();//table area + detail area
 		splitPane.setResizeWeight(0.5);
 		splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
 		//TitlePanel.add(splitPane, BorderLayout.CENTER); // getTitlePanel to get it
 
-		JScrollPane scrollPaneRequests = new JScrollPane();//table area
+		JScrollPane scrollPaneRequests = new JScrollPane(this,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);//table area
+		//允许横向滚动条
+		//scrollPaneRequests.setViewportView(titleTable);//titleTable should lay here.
 		splitPane.setLeftComponent(scrollPaneRequests);
-		scrollPaneRequests.setViewportView(this);
 
 		JSplitPane RequestDetailPanel = new JSplitPane();//request and response
 		RequestDetailPanel.setResizeWeight(0.5);
 		splitPane.setRightComponent(RequestDetailPanel);
 
-		RequestPanel = new JTabbedPane();
+		JTabbedPane RequestPanel = new JTabbedPane();
 		RequestDetailPanel.setLeftComponent(RequestPanel);
 
-		ResponsePanel = new JTabbedPane();
+		JTabbedPane ResponsePanel = new JTabbedPane();
 		RequestDetailPanel.setRightComponent(ResponsePanel);
 
-		requestViewer = BurpExtender.callbacks.createMessageEditor(lineTableModel, false);
-		responseViewer = BurpExtender.callbacks.createMessageEditor(lineTableModel, false);
+		requestViewer = BurpExtender.getCallbacks().createMessageEditor(this.getModel(), false);
+		responseViewer = BurpExtender.getCallbacks().createMessageEditor(this.getModel(), false);
 		RequestPanel.addTab("Request", requestViewer.getComponent());
 		ResponsePanel.addTab("Response", responseViewer.getComponent());
-		tableinit();
-		addClickSort();
-		registerListeners();
+		
+		this.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);//配合横向滚动条
 
-	}
-
-	public BurpExtender getBurp() {
-		return burp;
+		return splitPane;
 	}
 
 	public void tableinit(){
@@ -87,9 +114,20 @@ public class LineTable extends JTable
 		Font f = this.getFont();
 		FontMetrics fm = this.getFontMetrics(f);
 		int width = fm.stringWidth("A");//一个字符的宽度
+		this.getColumnModel().getColumnIndex("#");
 
 		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("#")).setPreferredWidth(width*5);
 		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("#")).setMaxWidth(width*8);
+		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("URL")).setPreferredWidth(width*25);
+		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("URL")).setMaxWidth(width*50);
+		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Title")).setPreferredWidth(width*30);
+		//this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Title")).setMaxWidth(width*50);
+		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("IP")).setPreferredWidth(width*30);
+		//this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("IP")).setMaxWidth(width*50);
+		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("CDN")).setPreferredWidth(width*30);
+		//this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("CDN")).setMaxWidth(width*50);
+		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Comments")).setPreferredWidth(width*30);
+		
 		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Status")).setPreferredWidth(width*"Status".length());
 		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Status")).setMaxWidth(width*("Status".length()+3));
 		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("isNew")).setPreferredWidth(width*"isNew".length());
@@ -100,36 +138,41 @@ public class LineTable extends JTable
 		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Length")).setMaxWidth(width*15);
 		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("MIME Type")).setPreferredWidth(width*"MIME Type".length());
 		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("MIME Type")).setMaxWidth(width*("MIME Type".length()+3));
-		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Time")).setPreferredWidth(width*22);
+		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Time")).setPreferredWidth(width*("2019-05-28-14-13-16".length()));
 		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Time")).setMaxWidth(width*25);
-		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Text")).setPreferredWidth(width*0);//response text,for search
-		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Text")).setMaxWidth(width*0);//response text,for search
-		this.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
+//		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Text")).setPreferredWidth(width*0);//response text,for search
+//		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Text")).setMaxWidth(width*0);//response text,for search
+		//this.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
+		this.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);//配合横向滚动条
 
+	}
+	
+	@Deprecated//据说自动调整行宽度，测试了一下没用啊
+	public void FitTableColumns(JTable myTable){
+		  JTableHeader header = myTable.getTableHeader();
+		     int rowCount = myTable.getRowCount();
+		     Enumeration columns = myTable.getColumnModel().getColumns();
+		     while(columns.hasMoreElements()){
+		         TableColumn column = (TableColumn)columns.nextElement();
+		         int col = header.getColumnModel().getColumnIndex(column.getIdentifier());
+		         int width = (int)myTable.getTableHeader().getDefaultRenderer()
+		                 .getTableCellRendererComponent(myTable, column.getIdentifier()
+		                         , false, false, -1, col).getPreferredSize().getWidth();
+		         for(int row = 0; row<rowCount; row++){
+		             int preferedWidth = (int)myTable.getCellRenderer(row, col).getTableCellRendererComponent(myTable,
+		               myTable.getValueAt(row, col), false, false, row, col).getPreferredSize().getWidth();
+		             width = Math.max(width, preferedWidth);
+		         }
+		         header.setResizingColumn(column); // 此行很重要
+		         column.setWidth(width+myTable.getIntercellSpacing().width);
+		     }
+	}
+
+
+	public void addClickSort() {//双击header头进行排序
 
 		rowSorter = new TableRowSorter<LineTableModel>(lineTableModel);//排序和搜索
 		LineTable.this.setRowSorter(rowSorter);
-	}
-
-	@Override
-	public void changeSelection(int row, int col, boolean toggle, boolean extend)
-	{
-		// show the log entry for the selected row
-		LineEntry Entry = this.lineTableModel.getLineEntries().get(super.convertRowIndexToModel(row));
-		requestViewer.setMessage(Entry.getRequest(), true);
-		responseViewer.setMessage(Entry.getResponse(), false);
-		this.lineTableModel.setCurrentlyDisplayedItem(Entry);
-		super.changeSelection(row, col, toggle, extend);
-	}
-
-	@Override
-	public LineTableModel getModel(){
-		return (LineTableModel) super.getModel();
-	}
-
-	private void addClickSort() {
-		//    	rowSorter = new TableRowSorter<LineTableModel>(lineTableModel);
-		//		LineTable.this.setRowSorter(rowSorter); // tableinit()
 
 		JTableHeader header = this.getTableHeader();
 		header.addMouseListener(new MouseAdapter() {
@@ -139,7 +182,7 @@ public class LineTable extends JTable
 					LineTable.this.getRowSorter().getSortKeys().get(0).getColumn();
 					////当Jtable中无数据时，jtable.getRowSorter()是nul
 				} catch (Exception e1) {
-					e1.printStackTrace(LineTable.this.burp.stderr);
+					e1.printStackTrace(stderr);
 				}
 			}
 		});
@@ -155,7 +198,7 @@ public class LineTable extends JTable
 				int row = (int) entry.getIdentifier();
 				LineEntry line = rowSorter.getModel().getLineEntries().get(row);
 
-				if (BurpExtender.rdbtnHideCheckedItems.isSelected()&& line.isChecked()) {//to hide checked lines
+				if (BurpExtender.getGui().getTitlePanel().rdbtnHideCheckedItems.isSelected()&& line.isChecked()) {//to hide checked lines
 					if (selectedRow == row) {
 						selectedRow = row+1;
 					}
@@ -195,13 +238,13 @@ public class LineTable extends JTable
 		try {
 			this.setRowSelectionInterval(selectedRow,selectedRow);
 		} catch (Exception e) {
-			// TODO: handle exception
+			//e.printStackTrace(stderr);//java.lang.IllegalArgumentException: Row index out of range
 		}
 
 	}
 
-	private void registerListeners(){
-		final LineTable _this = this;
+	public void registerListeners(){
+		LineTable.this.setRowSelectionAllowed(true);
 		this.addMouseListener( new MouseAdapter()
 		{
 			@Override
@@ -246,7 +289,7 @@ public class LineTable extends JTable
 							}
 							Arrays.sort(rows);//升序
 
-							new LineEntryMenu(_this, rows).show(e.getComponent(), e.getX(), e.getY());
+							new LineEntryMenu(LineTable.this, rows).show(e.getComponent(), e.getX(), e.getY());
 						}else{//在table的空白处显示右键菜单
 							//https://stackoverflow.com/questions/8903040/right-click-mouselistener-on-whole-jtable-component
 							//new LineEntryMenu(_this).show(e.getComponent(), e.getX(), e.getY());

@@ -1,20 +1,35 @@
 package burp;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Desktop;
+import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
+import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.AbstractAction;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
+import javax.swing.SwingWorker;
+
 public class LineEntryMenu extends JPopupMenu {
 
+	PrintWriter stdout;
+	PrintWriter stderr;
 	LineEntryMenu(final LineTable lineTable, final int[] rows){
+
+        try{
+            stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
+            stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
+        }catch (Exception e){
+            stdout = new PrintWriter(System.out, true);
+            stderr = new PrintWriter(System.out, true);
+        }
 
 		JMenuItem itemNumber = new JMenuItem(new AbstractAction(rows.length+" Items Selected") {
 			@Override
@@ -27,21 +42,51 @@ public class LineEntryMenu extends JPopupMenu {
 		JMenuItem googleSearchItem = new JMenuItem(new AbstractAction("Google It (double click)") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				String host = lineTable.getModel().getLineEntries().get(rows[0]).getHost();
-				String url= "https://www.google.com/search?q=site%3A"+host;
-				try {
-					URI uri = new URI(url);
-					Desktop desktop = Desktop.getDesktop();
-					if(Desktop.isDesktopSupported()&&desktop.isSupported(Desktop.Action.BROWSE)){
-						desktop.browse(uri);
+				if (rows.length >=50) {
+					return;
+				}
+				for (int row:rows) {
+					String host = lineTable.getModel().getLineEntries().get(row).getHost();
+					String url= "https://www.google.com/search?q=site%3A"+host;
+					try {
+						URI uri = new URI(url);
+						Desktop desktop = Desktop.getDesktop();
+						if(Desktop.isDesktopSupported()&&desktop.isSupported(Desktop.Action.BROWSE)){
+							desktop.browse(uri);
+						}
+					} catch (Exception e2) {
+						e2.printStackTrace();
 					}
-				} catch (Exception e2) {
-					e2.printStackTrace();
 				}
 			}
 		});
 
 		this.add(googleSearchItem);
+		
+		
+		JMenuItem SearchOnGithubItem = new JMenuItem(new AbstractAction("Seach On Github") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				if (rows.length >=50) {
+					return;
+				}
+				for (int row:rows) {
+					try {
+						String host = lineTable.getModel().getLineEntries().get(row).getHost();
+						String url= "https://github.com/search?q=%22"+host+"%22+%22jdbc.url%22&type=Code";
+						URI uri = new URI(url);
+						Desktop desktop = Desktop.getDesktop();
+						if(Desktop.isDesktopSupported()&&desktop.isSupported(Desktop.Action.BROWSE)){
+							desktop.browse(uri);
+						}
+					} catch (Exception e2) {
+						e2.printStackTrace(stderr);
+					}
+				}
+			}
+		});
+
+		this.add(SearchOnGithubItem);
 
 		JMenuItem copyURLItem = new JMenuItem(new AbstractAction("Copy URL") {
 			@Override
@@ -56,11 +101,31 @@ public class LineEntryMenu extends JPopupMenu {
 				}
 				catch (Exception e1)
 				{
-					e1.printStackTrace(lineTable.getBurp().stderr);
+					e1.printStackTrace(stderr);
 				}
 			}
 		});
 		this.add(copyURLItem);
+
+		JMenuItem openURLwithBrowserItem = new JMenuItem(new AbstractAction("Open URL With Browser") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				try{
+					java.util.List<String> urls = lineTable.getModel().getURLs(rows);
+					if (urls.size() >= 50){//避免一次开太多网页导致系统卡死
+						return;
+					}
+					for (String url:urls){
+						Commons.open(url,"C:\\Program Files\\Mozilla Firefox\\firefox.exe");
+					}
+				}
+				catch (Exception e1)
+				{
+					e1.printStackTrace(stderr);
+				}
+			}
+		});
+		this.add(openURLwithBrowserItem);
 
 
 		JMenuItem addHostsToScope = new JMenuItem(new AbstractAction("Add To Scope") {
@@ -68,7 +133,7 @@ public class LineEntryMenu extends JPopupMenu {
 			public void actionPerformed(ActionEvent actionEvent) {
 				try{
 					java.util.List<String> urls = lineTable.getModel().getURLs(rows);
-					IBurpExtenderCallbacks callbacks = lineTable.getBurp().callbacks;
+					IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
 					for(String url:urls) {
 						URL shortUrl = new URL(url);
 						callbacks.includeInScope(shortUrl);
@@ -76,7 +141,7 @@ public class LineEntryMenu extends JPopupMenu {
 				}
 				catch (Exception e1)
 				{
-					e1.printStackTrace(lineTable.getBurp().stderr);
+					e1.printStackTrace(stderr);
 				}
 			}
 		});
@@ -87,7 +152,7 @@ public class LineEntryMenu extends JPopupMenu {
 			public void actionPerformed(ActionEvent actionEvent) {
 				try{
 					java.util.List<LineEntry> entries = lineTable.getModel().getLineEntries();
-					IBurpExtenderCallbacks callbacks = lineTable.getBurp().callbacks;
+					IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
 					for (int i=rows.length-1;i>=0 ;i-- ) {
 						LineEntry entry = entries.get(rows[i]);
 
@@ -107,7 +172,7 @@ public class LineEntryMenu extends JPopupMenu {
 				}
 				catch (Exception e1)
 				{
-					e1.printStackTrace(lineTable.getBurp().stderr);
+					e1.printStackTrace(stderr);
 				}
 			}
 		});
@@ -117,15 +182,27 @@ public class LineEntryMenu extends JPopupMenu {
 		JMenuItem checkedItem = new JMenuItem(new AbstractAction("Mark As Checked") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				BurpExtender.getTitleTableModel().updateRows(rows);
+				BurpExtender.getGui().getTitlePanel().getTitleTableModel().updateRows(rows);
 //				if (BurpExtender.rdbtnHideCheckedItems.isSelected()) {//实现自动隐藏，为了避免误操作，不启用
 //					String keyword = BurpExtender.textFieldSearch.getText().trim();
 //					lineTable.search(keyword);
 //				}
-				BurpExtender.digStatus();
+				BurpExtender.getGui().titlePanel.digStatus();
 			}
 		});
 		this.add(checkedItem);
+
+		JMenuItem batchAddCommentsItem = new JMenuItem(new AbstractAction("Add Comments") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				String Comments = JOptionPane.showInputDialog("Comments", null).trim();
+				while(Comments.trim().equals("")){
+					Comments = JOptionPane.showInputDialog("Comments", null).trim();
+				}
+				BurpExtender.getGui().getTitlePanel().getTitleTableModel().updateComments(rows,Comments);
+			}
+		});
+		this.add(batchAddCommentsItem);
 
 		JMenuItem copyLocationURLItem = new JMenuItem(new AbstractAction("Copy Location URL") {
 			@Override
@@ -140,7 +217,7 @@ public class LineEntryMenu extends JPopupMenu {
 				}
 				catch (Exception e1)
 				{
-					e1.printStackTrace(lineTable.getBurp().stderr);
+					e1.printStackTrace(stderr);
 				}
 			}
 		});
@@ -207,7 +284,7 @@ public class LineEntryMenu extends JPopupMenu {
 				}else {
 					return;
 				}
-				BurpExtender.digStatus();
+				BurpExtender.getGui().titlePanel.digStatus();
 			}
 		});
 		this.add(removeItem);
@@ -221,7 +298,7 @@ public class LineEntryMenu extends JPopupMenu {
 				}else {
 					return;
 				}
-				BurpExtender.digStatus();
+				BurpExtender.getGui().titlePanel.digStatus();
 			}
 		});
 		blackListItem.setToolTipText("will not get title from next time");

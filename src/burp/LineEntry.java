@@ -1,6 +1,8 @@
 package burp;
 
+import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -162,6 +164,19 @@ public class LineEntry {
 				}
 			}
 
+			/*
+			编码转没有成功，好像还引起了栈溢出....奇怪！
+			 */
+
+//			if (!title.equals("")){//编码转换
+//				String charSet = getResponseCharset(messageinfo);
+//				Charset systemCharset = Charset.defaultCharset();
+//				if (charSet != null){
+//					title = new String(title.getBytes(charSet),systemCharset);
+//				}
+//			}
+
+
 
 			time = Commons.getNowTimeString();//这是动态的，会跟随系统时间自动变化
 
@@ -290,6 +305,35 @@ public class LineEntry {
 		int bodyOffset = analyzeResponse.getBodyOffset();
 		byte[] byte_body = Arrays.copyOfRange(this.response, bodyOffset, this.response.length);//not length-1
 		return new String(byte_body);
+	}
+
+
+	/*
+Content-Type: text/html;charset=UTF-8
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta charset="utf-8">
+<script type="text/javascript" charset="utf-8" src="./resources/jrf-resource/js/jrf.min.js"></script>
+ */
+	public String getResponseCharset(IHttpRequestResponse messageInfo){
+		Getter getter = new Getter(helpers);
+		String contentType = getter.getHeaderValueOf(false,messageInfo,"Content-Type");
+		String charSet = null;
+		if (contentType.toLowerCase().contains("charset=")){
+			charSet = contentType.toLowerCase().split("charset=")[1];
+		}else {
+			byte[] body = getter.getBody(false,messageInfo);
+			Pattern pDomainNameOnly = Pattern.compile("charset=(.*?)>");
+			Matcher matcher = pDomainNameOnly.matcher(new String(body));
+			if (matcher.find()) {
+				charSet = matcher.group(0).toLowerCase();
+				charSet = charSet.replace("\"","");
+				charSet = charSet.replace(">","");
+				charSet = charSet.replace("/","");
+				charSet = charSet.replace("charset=","");
+			}
+		}
+		return charSet;
 	}
 
 	public String getHeaderValueOf(boolean messageIsRequest,String headerName) {

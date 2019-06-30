@@ -20,7 +20,7 @@ public class ThreadCertInfo implements Callable<Set<String>>{
     }
     
     
-    @Override
+    @Override	
     public Set<String> call(){
     	Set<String> tmpDomains = new HashSet<String>();
       for (int i=0;i<=urls.size()/10+1;i++) {//一般根据   【资源数量%线程数量+1】 来确定，保证资源得到处理
