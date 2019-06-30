@@ -318,27 +318,46 @@ public class DomainPanel extends JPanel {
         table.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
         TargetPanel.setViewportView(table);
 
-        JSplitPane CenterSplitPane = new JSplitPane();
+        //第一次分割
+        JSplitPane CenterSplitPane = new JSplitPane();//中间的大模块，一分为二
         CenterSplitPane.setResizeWeight(0.5);
         this.add(CenterSplitPane, BorderLayout.CENTER);
 
-
-        JSplitPane leftOfCenterSplitPane = new JSplitPane();
+        
+        //第二次分割，左边
+        JSplitPane leftOfCenterSplitPane = new JSplitPane();//放入左边的分区。再讲左边的分区一分为二
         leftOfCenterSplitPane.setResizeWeight(0.5);
         CenterSplitPane.setLeftComponent(leftOfCenterSplitPane);
 
-
-        JSplitPane rightOfCenterSplitPane = new JSplitPane();//右半部分
+        //第二次分割，右边
+        JSplitPane rightOfCenterSplitPane = new JSplitPane();//放入右半部分分区，
         rightOfCenterSplitPane.setResizeWeight(0.5);
         CenterSplitPane.setRightComponent(rightOfCenterSplitPane);
 
+        //第三次分割，将最左边的1/4分为上下2部分，上面存根域名，下面存控制按钮
         JSplitPane TargetSplitPane = new JSplitPane();//1/4
         TargetSplitPane.setResizeWeight(0.5);
         TargetSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
         leftOfCenterSplitPane.setLeftComponent(TargetSplitPane);
 
         TargetSplitPane.setLeftComponent(TargetPanel);
+        
 
+        
+        
+        JSplitPane eastSplitPane = new JSplitPane();
+        eastSplitPane.setResizeWeight(0.5);
+        this.add(eastSplitPane, BorderLayout.EAST);
+
+
+//        JSplitPane leftOfEastSplitPane = new JSplitPane();
+//        leftOfEastSplitPane.setResizeWeight(0.5);
+//        eastSplitPane.setLeftComponent(leftOfEastSplitPane);
+//
+//
+//        JSplitPane rightOfEastSplitPane = new JSplitPane();//右半部分
+//        rightOfEastSplitPane.setResizeWeight(0.5);
+//        eastSplitPane.setRightComponent(rightOfEastSplitPane);
 
         ///////////////////////////////Target Operations and Config//////////////////////
 
@@ -469,9 +488,9 @@ public class DomainPanel extends JPanel {
 
         ///////////////////////////////textAreas///////////////////////////////////////////////////////
 
-        JScrollPane ScrollPaneRelatedDomains = new JScrollPane();
-        JScrollPane ScrollPaneSubdomains = new JScrollPane();
-        JScrollPane ScrollPaneSimilarDomains = new JScrollPane();
+        JScrollPane ScrollPaneRelatedDomains = new JScrollPane(); //2of4
+        JScrollPane ScrollPaneSubdomains = new JScrollPane(); //3of4
+        JScrollPane ScrollPaneSimilarDomains = new JScrollPane();//4of4
 
 
         leftOfCenterSplitPane.setRightComponent(ScrollPaneRelatedDomains);
