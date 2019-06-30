@@ -16,30 +16,33 @@ public class DomainObject {
 	public String uploadURL = "Input Upload URL Here";
 	public String summary = "";
 	public boolean autoAddRelatedToRoot = false; 
-	
+
 	private LinkedHashMap<String,String> rootDomainMap = new LinkedHashMap<String,String>();
 	// LinkedHashMap to keep the insert order 
 	private Set<String> subDomainSet = new HashSet<String>();
 	private Set<String> similarDomainSet = new HashSet<String>();
 	private Set<String> relatedDomainSet = new HashSet<String>();
 	private Set<String> blackDomainSet = new HashSet<String>();
+	private Set<String> EmailSet = new HashSet<String>();
+	private Set<String> PackageNameSet = new HashSet<String>();
 
-    public static int SUB_DOMAIN=0;
-    public static int SIMILAR_DOMAIN=1;
-    public static int IP_ADDRESS=2;
-    public static int USELESS =-1;
-    
-    
-    DomainObject(){
-    	//to resolve "default constructor not found" error
+	public static int SUB_DOMAIN=0;
+	public static int SIMILAR_DOMAIN=1;
+	public static int IP_ADDRESS=2;
+	public static int PACKAGE_NAME=3;
+	public static int USELESS =-1;
+
+
+	DomainObject(){
+		//to resolve "default constructor not found" error
 	}
-    
-    DomainObject(String projectName){
+
+	DomainObject(String projectName){
 		this.projectName = projectName;
 	}
-    
-    
-    public String getProjectName() {
+
+
+	public String getProjectName() {
 		return projectName;
 	}
 
@@ -106,60 +109,84 @@ public class DomainObject {
 	}
 
 
+	public Set<String> getEmailSet() {
+		return EmailSet;
+	}
+
+	public void setEmailSet(Set<String> emailSet) {
+		EmailSet = emailSet;
+	}
+
+	public Set<String> getPackageNameSet() {
+		return PackageNameSet;
+	}
+
+	public void setPackageNameSet(Set<String> packageNameSet) {
+		PackageNameSet = packageNameSet;
+	}
+
 	public String getSummary() {
-    	String filename ="unknown";
-    	if (GUI.currentDBFile != null){
+		String filename ="unknown";
+		if (GUI.currentDBFile != null){
 			filename = GUI.currentDBFile.getName();
 		}
 		summary = String.format("     FileName:%s  Project:%s  Root-domain:%s  Related-domain:%s  Sub-domain:%s  Similar-domain:%s  ^_^",
 				filename, projectName, rootDomainMap.size(),relatedDomainSet.size(),subDomainSet.size(),similarDomainSet.size());
 		return summary;
-    }
-	
+	}
+
 	public void setSummary(String Summary) {
 		this.summary = Summary;
-		
+
 	}
-    
+
 
 	////////////////ser and deser///////////
-	
-	public String ToJson() {
-    	//return JSON.toJSONString(this);
-		//https://blog.csdn.net/qq_27093465/article/details/73277291
-    	return JSONObject.toJSONString(this);
-    }
-    
-    
-    public  static DomainObject FromJson(String instanceString) {// throws Exception {
-    	return JSON.parseObject(instanceString, DomainObject.class);
-    }
-	
-    
-    // below methods is self-defined, function name start with "fetch" to void fastjson parser error
-    
 
-    public String fetchRelatedDomains() {
-    	return String.join(System.lineSeparator(), relatedDomainSet);
-    }
-	
-    public String fetchSimilarDomains() {
-    	return String.join(System.lineSeparator(), similarDomainSet);
-    }
-    
-    public String fetchSubDomains() {
-    	return String.join(System.lineSeparator(), subDomainSet);
-    }
-    
+	public String ToJson() {
+		//return JSON.toJSONString(this);
+		//https://blog.csdn.net/qq_27093465/article/details/73277291
+		return JSONObject.toJSONString(this);
+	}
+
+
+	public  static DomainObject FromJson(String instanceString) {// throws Exception {
+		return JSON.parseObject(instanceString, DomainObject.class);
+	}
+
+
+	// below methods is self-defined, function name start with "fetch" to void fastjson parser error
+
+
+	public String fetchRelatedDomains() {
+		return String.join(System.lineSeparator(), relatedDomainSet);
+	}
+
+	public String fetchSimilarDomains() {
+		return String.join(System.lineSeparator(), similarDomainSet);
+	}
+
+	public String fetchSubDomains() {
+		return String.join(System.lineSeparator(), subDomainSet);
+	}
+
+	public String fetchEmails() {
+		return String.join(System.lineSeparator(), EmailSet);
+	}
+
+	public String fetchPackageNames() {
+		return String.join(System.lineSeparator(), PackageNameSet);
+	}
+
 	public String fetchRootDomains() {
 		return String.join(System.lineSeparator(), rootDomainMap.keySet());
 	}
-	
-	
+
+
 	public Set<String> fetchRootDomainSet() {
 		return rootDomainMap.keySet();
 	}
-	
+
 	public Set<String> fetchKeywordSet(){
 		Set<String> result = new HashSet<String>();
 		for (String key:rootDomainMap.keySet()) {
@@ -167,9 +194,8 @@ public class DomainObject {
 		}
 		return result;
 	}
-    
-	//没有使用过，主要想考虑oml.jd.local等，非公共域名结尾的情况。暂时先不考虑
-	@Deprecated
+
+	//主要用于package name的有效性判断
 	public Set<String> fetchSuffixSet(){
 		Set<String> result = new HashSet<String>();
 		for (String key:rootDomainMap.keySet()) {
@@ -184,22 +210,22 @@ public class DomainObject {
 		}
 		return result;
 	}
-    
-    
-	
-    public void AddToRootDomainMap(String key,String value) {
-    	if (this.rootDomainMap.containsKey(key) && this.rootDomainMap.containsValue(value)) {
-    		//do nothing
-    	}else {
-    		this.rootDomainMap.put(key,value);
-    	}
-    }
-	
+
+
+
+	public void AddToRootDomainMap(String key,String value) {
+		if (this.rootDomainMap.containsKey(key) && this.rootDomainMap.containsValue(value)) {
+			//do nothing
+		}else {
+			this.rootDomainMap.put(key,value);
+		}
+	}
+
 	public void relatedToRoot() {
 		if (this.autoAddRelatedToRoot == true) {
 			for(String relatedDomain:this.relatedDomainSet) {
 				if (relatedDomain!=null && relatedDomain.contains(".")) {
-		        	String rootDomain =getRootDomain(relatedDomain);
+					String rootDomain =getRootDomain(relatedDomain);
 					String keyword = rootDomain.substring(0,rootDomain.indexOf("."));
 					if (!rootDomainMap.keySet().contains(rootDomain) && rootDomain != null) {
 						rootDomainMap.put(rootDomain,keyword);
@@ -211,20 +237,20 @@ public class DomainObject {
 			relatedDomainSet.clear();
 		}
 		//System.out.println(similarDomainSet);
-		
 
-        Iterator<String> iterator = similarDomainSet.iterator();
-        while(iterator.hasNext()){
-        	String similarDomain = iterator.next();
-            
-            String rootDomain =getRootDomain(similarDomain);
+
+		Iterator<String> iterator = similarDomainSet.iterator();
+		while(iterator.hasNext()){
+			String similarDomain = iterator.next();
+
+			String rootDomain =getRootDomain(similarDomain);
 			if (rootDomainMap.keySet().contains(rootDomain) && rootDomain != null) {
 				subDomainSet.add(similarDomain);
 				iterator.remove();
 			}
-        }
+		}
 
-/*		for (String similarDomain:this.similarDomainSet) {
+		/*		for (String similarDomain:this.similarDomainSet) {
         	String rootDomain =getRootDomain(similarDomain);
 			if (rootDomainMap.keySet().contains(rootDomain) && rootDomain != null) {
 				subDomainSet.add(similarDomain);
@@ -232,9 +258,9 @@ public class DomainObject {
 			}
 		}*/
 	}
-	
-	
-    public static String getRootDomain(String inputDomain) {
+
+
+	public static String getRootDomain(String inputDomain) {
 		try {
 			String rootDomain =InternetDomainName.from(inputDomain).topPrivateDomain().toString();
 			return rootDomain;
@@ -243,12 +269,13 @@ public class DomainObject {
 			//InternetDomainName.from("www.jd.local").topPrivateDomain()//Not under a public suffix: www.jd.local
 		}
 	}
-    
-    public int domainType(String domain) {
-    	if (domain.endsWith(".")) {
-    		domain = domain.substring(0,domain.length()-1);
-    	}
-    	
+
+	public int domainType(String domain) {
+
+		if (domain.endsWith(".")) {
+			domain = domain.substring(0,domain.length()-1);
+		}
+
 		for (String rootdomain:fetchRootDomainSet()) {
 			if (rootdomain.contains(".")&&!rootdomain.endsWith(".")&&!rootdomain.startsWith("."))
 			{
@@ -257,23 +284,37 @@ public class DomainObject {
 				}
 			}
 		}
-		
+
 		for (String keyword:fetchKeywordSet()) {
-			if (!keyword.equals("") && domain.contains(keyword)
-					&& InternetDomainName.from(domain).hasPublicSuffix()){//是否是以公开的 .com .cn等结尾的域名。//如果是以比如local结尾的域名，就不会被认可
-				return DomainObject.SIMILAR_DOMAIN;
+			if (!keyword.equals("") && domain.contains(keyword)) {
+				if (InternetDomainName.from(domain).hasPublicSuffix()) {//是否是以公开的 .com .cn等结尾的域名。//如果是以比如local结尾的域名，就不会被认可
+					return DomainObject.SIMILAR_DOMAIN;
+				}
+
+				if (fetchSuffixSet().contains(domain.substring(0, domain.indexOf(".")))){
+					return DomainObject.PACKAGE_NAME;
+				}
 			}
 		}
-			
+
 		if (Commons.isValidIP(domain)) {//https://202.77.129.30
 			return DomainObject.IP_ADDRESS;
 		}
 		return DomainObject.USELESS;
 	}
-    
-    @Deprecated
-    public static String whois(String domainName) {
-    	StringBuilder result = new StringBuilder("");
+
+	public boolean isRelatedEmail(String email) {
+		for (String keyword:fetchKeywordSet()) {
+			if (!keyword.equals("") && keyword.length() >= 2 && email.contains(keyword)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Deprecated
+	public static String whois(String domainName) {
+		StringBuilder result = new StringBuilder("");
 
 		WhoisClient whois = new WhoisClient();
 		try {
@@ -287,25 +328,25 @@ public class DomainObject {
 		}
 		return result.toString();
 	}
-	
+
 	public static void main(String args[]) {
-/*		String Host ="www.baidu.com";
+		/*		String Host ="www.baidu.com";
 		Set<String> rootdomains = new HashSet<String>();
 		rootdomains.add("baidu.com");
 		Set<String> keywords = new HashSet<String>();
 		keywords.add("baidu");
-		
+
 		int type = new DomainObject("").domainType(Host);
 		System.out.println(type);*/
-		
+
 		DomainObject xx = new DomainObject("");
 		xx.getRelatedDomainSet().add("xxx.baidu.com");
 		System.out.println(xx.getRelatedDomainSet());
-		
-		
-//		System.out.println(InternetDomainName.from("www.jd.local").publicSuffix());
-//		System.out.println(InternetDomainName.from("www.jd.local").topPrivateDomain());
-//		System.out.println(whois("jd.ru"));
+
+
+		//		System.out.println(InternetDomainName.from("www.jd.local").publicSuffix());
+		//		System.out.println(InternetDomainName.from("www.jd.local").topPrivateDomain());
+		//		System.out.println(whois("jd.ru"));
 	}
-	
+
 }
