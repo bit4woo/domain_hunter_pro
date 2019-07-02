@@ -230,6 +230,7 @@ public class DomainObject {
 					if (!rootDomainMap.keySet().contains(rootDomain) && rootDomain != null) {
 						rootDomainMap.put(rootDomain,keyword);
 					}
+					subDomainSet.add(relatedDomain);
 				}else {
 					System.out.println("error related domain : "+relatedDomain);
 				}

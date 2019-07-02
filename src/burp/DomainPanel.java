@@ -58,6 +58,8 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
+import org.apache.commons.io.FileUtils;
+
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import com.google.common.net.InternetDomainName;
@@ -257,6 +259,26 @@ public class DomainPanel extends JPanel {
 			}
 		});
 		HeaderPanel.add(btnRenameProject);
+		
+		JButton btnBuckupDB = new JButton("Backup DB");
+		btnBuckupDB.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				File file = BurpExtender.getGui().getCurrentDBFile();
+//				if (System.getProperty("os.name").contains("Windows")) {
+//					String basedir = "C:\\";
+//				}else {
+//					
+//				}
+				File bakfile = new File(file.getAbsoluteFile().toString()+".bak"+Commons.getNowTimeString());
+				try {
+					FileUtils.copyFile(file, bakfile);
+				} catch (IOException e1) {
+					e1.printStackTrace(stderr);
+				} 
+		
+			}
+		});
+		HeaderPanel.add(btnBuckupDB);
 
 		Component verticalStrut_1 = Box.createVerticalStrut(20);
 		HeaderPanel.add(verticalStrut_1);
@@ -463,6 +485,7 @@ public class DomainPanel extends JPanel {
 				Set<String> newSubDomainSet = new HashSet<>();
 				Set<String> newSimilarDomainSet = new HashSet<String>();
 				tmpDomains.addAll(domainResult.getSimilarDomainSet());
+				
 				for (String domain:tmpDomains) {
 					int type = domainResult.domainType(domain);
 					if (type == DomainObject.SUB_DOMAIN)
@@ -470,6 +493,16 @@ public class DomainPanel extends JPanel {
 						newSubDomainSet.add(domain);
 					}else if (type == DomainObject.SIMILAR_DOMAIN) {
 						newSimilarDomainSet.add(domain);
+					}
+				}
+				
+				//相关域名中也可能包含子域名，子域名才是核心，要将它们加到子域名
+				tmpDomains = domainResult.getRelatedDomainSet();
+				for (String domain:tmpDomains) {
+					int type = domainResult.domainType(domain);
+					if (type == DomainObject.SUB_DOMAIN)
+					{
+						newSubDomainSet.add(domain);
 					}
 				}
 
@@ -523,7 +556,7 @@ public class DomainPanel extends JPanel {
 			}
 		});
 		rdbtnAddRelatedToRoot.setSelected(false);
-		//panel.add(rdbtnAddRelatedToRoot);
+		ControlPanel.add(rdbtnAddRelatedToRoot);
 
 
 		///////////////////////////////textAreas///////////////////////////////////////////////////////
@@ -665,7 +698,10 @@ public class DomainPanel extends JPanel {
 				String detail = issue.getIssueDetail();
 				Matcher matcher = pDomainNameOnly.matcher(detail);
 				while (matcher.find()) {//多次查找
-					Emails.add(matcher.group());
+					String email = matcher.group();
+					if (domainResult.isRelatedEmail(email)) {
+						Emails.add(matcher.group());
+					}
 					System.out.println(matcher.group());
 				}
 			}
