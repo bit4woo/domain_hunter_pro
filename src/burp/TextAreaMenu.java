@@ -4,6 +4,7 @@ import java.awt.Desktop;
 import java.awt.event.ActionEvent;
 import java.io.PrintWriter;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.List;
 
@@ -58,8 +59,9 @@ public class TextAreaMenu extends JPopupMenu {
 				}
 				for (String item:selectedItems) {
 					try {
-						String url= "https://github.com/search?q=%22"+item+"%22+%22jdbc.url%22&type=Code";
-						URI uri = new URI(url);
+						String url= "https://github.com/search?q=%s&type=Code";
+						String keyword= String.format("\"%s\" \"jdbc.url\"",item);
+						URI uri = new URI(String.format(url, URLEncoder.encode(keyword)));
 						Desktop desktop = Desktop.getDesktop();
 						if(Desktop.isDesktopSupported()&&desktop.isSupported(Desktop.Action.BROWSE)){
 							desktop.browse(uri);
