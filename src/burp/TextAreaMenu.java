@@ -36,13 +36,9 @@ public class TextAreaMenu extends JPopupMenu {
 				for (String item:selectedItems) {
 					String url= "https://www.google.com/search?q=%22"+item+"%22";
 					try {
-						URI uri = new URI(url);
-						Desktop desktop = Desktop.getDesktop();
-						if(Desktop.isDesktopSupported()&&desktop.isSupported(Desktop.Action.BROWSE)){
-							desktop.browse(uri);
-						}
-					} catch (Exception e2) {
-						e2.printStackTrace();
+						Commons.browserOpen(url, null);
+					} catch (Exception e) {
+						e.printStackTrace(stderr);
 					}
 				}
 			}

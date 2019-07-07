@@ -282,6 +282,32 @@ public class DomainPanel extends JPanel {
 			}
 		});
 		HeaderPanel.add(btnBuckupDB);
+		
+		JButton btnBgphenet = new JButton("bgp.he.net");
+		btnBgphenet.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String url= "https://bgp.he.net/";
+				try {
+					Commons.browserOpen(url,null);
+				} catch (Exception e1) {
+					e1.printStackTrace(stderr);
+				}
+			}
+		});
+		HeaderPanel.add(btnBgphenet);
+		
+		JButton btnIcp = new JButton("icp.chinaz.com");
+		btnIcp.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String url= "http://icp.chinaz.com/";
+				try {
+					Commons.browserOpen(url,null);
+				} catch (Exception e1) {
+					e1.printStackTrace(stderr);
+				}
+			}
+		});
+		HeaderPanel.add(btnIcp);
 
 		Component verticalStrut_1 = Box.createVerticalStrut(20);
 		HeaderPanel.add(verticalStrut_1);
@@ -404,11 +430,11 @@ public class DomainPanel extends JPanel {
 
 		JSplitPane split1of4 = new JSplitPane();
 		split1of4.setOrientation(JSplitPane.VERTICAL_SPLIT);
-		split1of4.setResizeWeight(0.5);
+		split1of4.setResizeWeight(0.7);
 		leftOfCenterSplitPane.setLeftComponent(split1of4);
 
 		JSplitPane TargetSplitPane = new JSplitPane();
-		TargetSplitPane.setResizeWeight(0.5);
+		TargetSplitPane.setResizeWeight(1.0);
 		TargetSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
 		TargetSplitPane.setLeftComponent(TargetPanel);
 		split1of4.setLeftComponent(TargetSplitPane);
@@ -916,6 +942,7 @@ JScrollPane ScrollPaneSubnets = new JScrollPane(); //1of4
 	}
 
 	public void saveTextAreas(){
+		domainResult.setSubnetSet(getSetFromTextArea(textAreaSubnets));
 		domainResult.setRelatedDomainSet(getSetFromTextArea(textAreaRelatedDomains));
 		domainResult.setSubDomainSet(getSetFromTextArea(textAreaSubdomains));
 		domainResult.setSimilarDomainSet(getSetFromTextArea(textAreaSimilarDomains));

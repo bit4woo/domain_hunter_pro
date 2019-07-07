@@ -169,7 +169,7 @@ public class TitlePanel extends JPanel {
 						Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 						StringSelection selection = new StringSelection(subnetsString);
 						clipboard.setContents(selection, null);
-						stdout.print(subnetsString);
+						stdout.println(subnetsString);
 						btnGetSubnet.setEnabled(true);
 						return new HashMap<String, String>();
 						//no use ,the return.
@@ -363,7 +363,6 @@ public class TitlePanel extends JPanel {
 
 	public void getExtendTitle(){
 		Set<String> extendIPSet = titleTableModel.GetExtendIPSet();
-		extendIPSet.addAll(DomainPanel.getDomainResult().getSubnetSet());//加入确定的subnet。
 		stdout.println(extendIPSet.size()+" extend IP Address founded"+extendIPSet);
 		threadGetTitle = new ThreadGetTitle(extendIPSet);
 		threadGetTitle.Do();

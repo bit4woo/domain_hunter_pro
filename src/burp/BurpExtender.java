@@ -107,7 +107,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	//ITab必须实现的两个方法
 	@Override
 	public String getTabCaption() {
-		return ("Domain Hunter");
+		return ("Domain Hunter Pro");
 	}
 	@Override
 	public Component getUiComponent() {
