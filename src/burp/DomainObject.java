@@ -19,6 +19,7 @@ public class DomainObject {
 
 	private LinkedHashMap<String,String> rootDomainMap = new LinkedHashMap<String,String>();
 	// LinkedHashMap to keep the insert order 
+	private Set<String> subnetSet = new HashSet<String>();
 	private Set<String> subDomainSet = new HashSet<String>();
 	private Set<String> similarDomainSet = new HashSet<String>();
 	private Set<String> relatedDomainSet = new HashSet<String>();
@@ -72,6 +73,14 @@ public class DomainObject {
 
 	public void setRootDomainMap(LinkedHashMap<String, String> rootDomainMap) {
 		this.rootDomainMap = rootDomainMap;
+	}
+	
+	public Set<String> getSubnetSet() {
+		return subnetSet;
+	}
+
+	public void setSubnetSet(Set<String> subnetSet) {
+		this.subnetSet = subnetSet;
 	}
 
 	public Set<String> getSubDomainSet() {
@@ -156,7 +165,10 @@ public class DomainObject {
 
 
 	// below methods is self-defined, function name start with "fetch" to void fastjson parser error
-
+	
+	public String fetchSubnets() {
+		return String.join(System.lineSeparator(), subnetSet);
+	}
 
 	public String fetchRelatedDomains() {
 		return String.join(System.lineSeparator(), relatedDomainSet);
@@ -349,5 +361,7 @@ public class DomainObject {
 		//		System.out.println(InternetDomainName.from("www.jd.local").topPrivateDomain());
 		//		System.out.println(whois("jd.ru"));
 	}
+
+
 
 }

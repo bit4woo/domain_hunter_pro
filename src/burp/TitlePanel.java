@@ -363,6 +363,7 @@ public class TitlePanel extends JPanel {
 
 	public void getExtendTitle(){
 		Set<String> extendIPSet = titleTableModel.GetExtendIPSet();
+		extendIPSet.addAll(DomainPanel.getDomainResult().getSubnetSet());//加入确定的subnet。
 		stdout.println(extendIPSet.size()+" extend IP Address founded"+extendIPSet);
 		threadGetTitle = new ThreadGetTitle(extendIPSet);
 		threadGetTitle.Do();

@@ -83,6 +83,7 @@ public class DomainPanel extends JPanel {
 	private JTextArea textAreaRelatedDomains;
 	private JTextArea textAreaEmails;
 	private JTextArea textAreaPackages;
+	private JTextArea textAreaSubnets;
 
 	private SortOrder sortedMethod;
 	private JTable table;
@@ -101,6 +102,7 @@ public class DomainPanel extends JPanel {
 	protected static DefaultTableModel domainTableModel;
 	PrintWriter stdout;
 	PrintWriter stderr;
+	
 
 
 	public DomainPanel() {//构造函数
@@ -400,13 +402,16 @@ public class DomainPanel extends JPanel {
 		rightOfCenterSplitPane.setResizeWeight(0.7);
 		CenterSplitPane.setRightComponent(rightOfCenterSplitPane);
 
-		//第三次分割，将最左边的1/4分为上下2部分，上面存根域名，下面存控制按钮
-		JSplitPane TargetSplitPane = new JSplitPane();//split 1of4
+		JSplitPane split1of4 = new JSplitPane();
+		split1of4.setOrientation(JSplitPane.VERTICAL_SPLIT);
+		split1of4.setResizeWeight(0.5);
+		leftOfCenterSplitPane.setLeftComponent(split1of4);
+
+		JSplitPane TargetSplitPane = new JSplitPane();
 		TargetSplitPane.setResizeWeight(0.5);
 		TargetSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
-		leftOfCenterSplitPane.setLeftComponent(TargetSplitPane);
-
 		TargetSplitPane.setLeftComponent(TargetPanel);
+		split1of4.setLeftComponent(TargetSplitPane);
 
 		JSplitPane split2of4 = new JSplitPane();//四分之二区域的分割者
 		split2of4.setResizeWeight(0.5);
@@ -562,11 +567,15 @@ public class DomainPanel extends JPanel {
 
 		///////////////////////////////textAreas///////////////////////////////////////////////////////
 
+JScrollPane ScrollPaneSubnets = new JScrollPane(); //1of4
+		
 		JScrollPane ScrollPaneRelatedDomains = new JScrollPane(); //2of4
 		JScrollPane ScrollPaneSubdomains = new JScrollPane(); 
 		JScrollPane ScrollPaneSimilarDomains = new JScrollPane();
 		JScrollPane ScrollPaneEmails = new JScrollPane(); 
 		JScrollPane ScrollPanePackageNames = new JScrollPane();
+		
+		split1of4.setRightComponent(ScrollPaneSubnets);
 
 		split2of4.setLeftComponent(ScrollPaneRelatedDomains);
 		split2of4.setRightComponent(ScrollPaneSubdomains);
@@ -577,24 +586,28 @@ public class DomainPanel extends JPanel {
 		split4of4.setLeftComponent(ScrollPanePackageNames);
 		split4of4.setRightComponent(null);//通过设置为空来隐藏它
 
+		textAreaSubnets = new JTextArea();
 		textAreaRelatedDomains = new JTextArea();
 		textAreaSubdomains = new JTextArea();
 		textAreaSimilarDomains = new JTextArea();
 		textAreaEmails = new JTextArea();
 		textAreaPackages = new JTextArea();
 
+		textAreaSubnets.setColumns(10);
 		textAreaRelatedDomains.setColumns(10);
 		textAreaSubdomains.setColumns(10);
 		textAreaSimilarDomains.setColumns(10);
 		textAreaEmails.setColumns(10);
 		textAreaPackages.setColumns(10);
 
+		textAreaSubnets.setToolTipText("Subnets for certain");
 		textAreaRelatedDomains.setToolTipText("Related Domains");
 		textAreaSubdomains.setToolTipText("Sub Domains");
 		textAreaSimilarDomains.setToolTipText("Similar Domains");
 		textAreaEmails.setToolTipText("Emails");
 		textAreaPackages.setToolTipText("Package Names");
 
+		ScrollPaneSubnets.setViewportView(textAreaSubnets);
 		ScrollPaneRelatedDomains.setViewportView(textAreaRelatedDomains);
 		ScrollPaneSubdomains.setViewportView(textAreaSubdomains);
 		ScrollPaneSimilarDomains.setViewportView(textAreaSimilarDomains);
@@ -602,12 +615,14 @@ public class DomainPanel extends JPanel {
 		ScrollPanePackageNames.setViewportView(textAreaPackages);
 
 		//实现编辑后自动保存
+		textAreaSubnets.getDocument().addDocumentListener(new textAreaListener());
 		textAreaRelatedDomains.getDocument().addDocumentListener(new textAreaListener());
 		textAreaSubdomains.getDocument().addDocumentListener(new textAreaListener());
 		textAreaSimilarDomains.getDocument().addDocumentListener(new textAreaListener());
 		textAreaEmails.getDocument().addDocumentListener(new textAreaListener());
 		textAreaPackages.getDocument().addDocumentListener(new textAreaListener());
 
+		textAreaSubnets.addMouseListener(new TextAreaMouseListener(textAreaSubnets));
 		textAreaRelatedDomains.addMouseListener(new TextAreaMouseListener(textAreaRelatedDomains));
 		textAreaSubdomains.addMouseListener(new TextAreaMouseListener(textAreaSubdomains));
 		textAreaSimilarDomains.addMouseListener(new TextAreaMouseListener(textAreaSimilarDomains));
@@ -663,6 +678,7 @@ public class DomainPanel extends JPanel {
 		}
 
 		textFieldUploadURL.setText(domainResult.uploadURL);
+		textAreaSubnets.setText(domainResult.fetchSubnets());
 		textAreaSubdomains.setText(domainResult.fetchSubDomains());
 		textAreaSimilarDomains.setText(domainResult.fetchSimilarDomains());
 		textAreaRelatedDomains.setText(domainResult.fetchRelatedDomains());

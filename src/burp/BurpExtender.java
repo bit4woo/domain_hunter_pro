@@ -25,7 +25,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	private static PrintWriter stdout;
 	private static PrintWriter stderr;
 	private static String ExtenderName = "Domain Hunter Pro by bit4woo";
-	private static String github = "https://github.com/bit4woo/bug_hunter";
+	private static String github = "https://github.com/bit4woo/domain_hunter_pro";
 	private static GUI gui;
 	public static PrintWriter getStdout() {
 		return stdout;
