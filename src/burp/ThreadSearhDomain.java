@@ -62,18 +62,25 @@ class ThreadSearhDomain{
 				continue;
 			}
 		}
-		int oldnumber = DomainPanel.getDomainResult().getSubDomainSet().size();
+		
+		HashSet<String> oldSubdomains = new HashSet<String>();
+		oldSubdomains.addAll(DomainPanel.getDomainResult().getSubDomainSet());
 
 		DomainPanel.getDomainResult().getSubDomainSet().addAll(subDomainQueue);
 		DomainPanel.getDomainResult().getSimilarDomainSet().addAll(similarDomainQueue);
 		DomainPanel.getDomainResult().getRelatedDomainSet().addAll(relatedDomainQueue);
 		DomainPanel.getDomainResult().getEmailSet().addAll(emailQueue);
 		DomainPanel.getDomainResult().getPackageNameSet().addAll(packageNameQueue);
-		stdout.println(emailQueue.size());
-		stdout.println(packageNameQueue.size());
+		//stdout.println(emailQueue.size());
+		//stdout.println(packageNameQueue.size());
 
-		int newnumber = DomainPanel.getDomainResult().getSubDomainSet().size();
-		stdout.println(String.format("~~~~~~~~~~~~~%s subdomains added!~~~~~~~~~~~~~",newnumber-oldnumber));
+		HashSet<String> newSubdomains = new HashSet<String>();
+		newSubdomains.addAll(DomainPanel.getDomainResult().getSubDomainSet());
+		
+		newSubdomains.removeAll(oldSubdomains);
+		
+		stdout.println(String.format("~~~~~~~~~~~~~%s subdomains added!~~~~~~~~~~~~~",newSubdomains.size()));
+		stdout.println(String.join(System.lineSeparator(), newSubdomains));
 
 		return;
 	}
