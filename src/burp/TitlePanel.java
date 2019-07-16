@@ -80,6 +80,48 @@ public class TitlePanel extends JPanel {
 		textFieldCookie = new JTextField("");
 		textFieldCookie.setColumns(30);
 		buttonPanel.add(textFieldCookie);
+		
+		
+		JButton btnGettitle1 = new JButton("dnsquery");
+		btnGettitle1.setToolTipText("A fresh start");
+		btnGettitle1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				//https://stackabuse.com/how-to-use-threads-in-java-swing/
+
+				//method one: // don't need to wait threads in getAllTitle to exits
+				//but hard to know the finish time of task
+				//// Runs inside of the Swing UI thread
+				/*			    SwingUtilities.invokeLater(new Runnable() {
+			        public void run() {// don't need to wait threads in getAllTitle to exits
+			        	btnGettitle.setEnabled(false);
+			        	getAllTitle();
+			        	btnGettitle.setEnabled(true);
+			        	//domainResult.setLineEntries(TitletableModel.getLineEntries());
+			        }
+			    });*/
+
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+					@Override
+					protected Map doInBackground() throws Exception {
+						btnGettitle1.setEnabled(false);
+						getAllTitle();
+						btnGettitle1.setEnabled(true);
+						return new HashMap<String, String>();
+						//no use ,the return.
+					}
+					@Override
+					protected void done() {
+						try {
+							btnGettitle1.setEnabled(true);
+						} catch (Exception e) {
+							e.printStackTrace(stderr);
+						}
+					}
+				};
+				worker.execute();
+			}
+		});
+		buttonPanel.add(btnGettitle1);
 
 		JButton btnGettitle = new JButton("Get Title");
 		btnGettitle.setToolTipText("A fresh start");
