@@ -49,13 +49,9 @@ public class LineEntryMenu extends JPopupMenu {
 					String host = lineTable.getModel().getLineEntries().get(row).getHost();
 					String url= "https://www.google.com/search?q=site%3A"+host;
 					try {
-						URI uri = new URI(url);
-						Desktop desktop = Desktop.getDesktop();
-						if(Desktop.isDesktopSupported()&&desktop.isSupported(Desktop.Action.BROWSE)){
-							desktop.browse(uri);
-						}
-					} catch (Exception e2) {
-						e2.printStackTrace();
+						Commons.browserOpen(url, null);
+					} catch (Exception e) {
+						e.printStackTrace(stderr);
 					}
 				}
 			}
@@ -71,16 +67,12 @@ public class LineEntryMenu extends JPopupMenu {
 					return;
 				}
 				for (int row:rows) {
+					String host = lineTable.getModel().getLineEntries().get(row).getHost();
+					String url= "https://github.com/search?q=%22"+host+"%22+%22jdbc.url%22&type=Code";
 					try {
-						String host = lineTable.getModel().getLineEntries().get(row).getHost();
-						String url= "https://github.com/search?q=%22"+host+"%22+%22jdbc.url%22&type=Code";
-						URI uri = new URI(url);
-						Desktop desktop = Desktop.getDesktop();
-						if(Desktop.isDesktopSupported()&&desktop.isSupported(Desktop.Action.BROWSE)){
-							desktop.browse(uri);
-						}
-					} catch (Exception e2) {
-						e2.printStackTrace(stderr);
+						Commons.browserOpen(url, null);
+					} catch (Exception e) {
+						e.printStackTrace(stderr);
 					}
 				}
 			}
@@ -116,7 +108,7 @@ public class LineEntryMenu extends JPopupMenu {
 						return;
 					}
 					for (String url:urls){
-						Commons.open(url,"C:\\Program Files\\Mozilla Firefox\\firefox.exe");
+						Commons.browserOpen(url,"C:\\Program Files\\Mozilla Firefox\\firefox.exe");
 					}
 				}
 				catch (Exception e1)

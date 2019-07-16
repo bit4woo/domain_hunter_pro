@@ -169,7 +169,7 @@ public class TitlePanel extends JPanel {
 						Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 						StringSelection selection = new StringSelection(subnetsString);
 						clipboard.setContents(selection, null);
-						stdout.print(subnetsString);
+						stdout.println(subnetsString);
 						btnGetSubnet.setEnabled(true);
 						return new HashMap<String, String>();
 						//no use ,the return.

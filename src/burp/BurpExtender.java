@@ -25,7 +25,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	private static PrintWriter stdout;
 	private static PrintWriter stderr;
 	private static String ExtenderName = "Domain Hunter Pro by bit4woo";
-	private static String github = "https://github.com/bit4woo/bug_hunter";
+	private static String github = "https://github.com/bit4woo/domain_hunter_pro";
 	private static GUI gui;
 	public static PrintWriter getStdout() {
 		return stdout;
@@ -107,7 +107,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	//ITab必须实现的两个方法
 	@Override
 	public String getTabCaption() {
-		return ("Domain Hunter");
+		return ("Domain Hunter Pro");
 	}
 	@Override
 	public Component getUiComponent() {

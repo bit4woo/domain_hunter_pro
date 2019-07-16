@@ -179,8 +179,10 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	public Set<String> GetExtendIPSet() {
 		Set<String> IPsOfDomain = getIPSet();
 		//Set<String> CSubNetIPs = Commons.subNetsToIPSet(Commons.toSubNets(IPsOfDomain));
-		Set<String> subnets = Commons.toSmallerSubNets(IPsOfDomain);
-		Set<String> CSubNetIPs = Commons.toIPSet(subnets);
+		Set<String> subnets = Commons.toSmallerSubNets(IPsOfDomain);//当前所有title结果计算出的IP网段
+		subnets.addAll(DomainPanel.getDomainResult().getSubnetSet());//确定的IP网段，用户自己输入的
+		Set<String> CSubNetIPs = Commons.toIPSet(subnets);// 当前所有title结果计算出的IP集合
+		
 		CSubNetIPs.removeAll(getIPSet());
 
 		return CSubNetIPs;

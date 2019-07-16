@@ -169,7 +169,7 @@ class Producer extends Thread {//Producer do
 				String location = getter.getHeaderValueOf(false, http_Messageinfo, "Location");
 
 				byte[] https_Request = helpers.buildHttpRequest(new URL(https.toString()));
-				http_Request = buildCookieRequest(cookie,https_Request);
+				https_Request = buildCookieRequest(cookie,https_Request);
 				IHttpRequestResponse https_Messageinfo = callbacks.makeHttpRequest(https, https_Request);
 				byte[] https_Body = getter.getBody(false, https_Messageinfo);
 				int https_Status = getter.getStatusCode(https_Messageinfo);//当为第二种异常时，httpStatus == -1
@@ -266,7 +266,7 @@ class Producer extends Thread {//Producer do
 		return null;
 	}
 	
-	public LineEntry findHistorynew(String url,String IP) {
+	public LineEntry findHistorynew(String url,String IP) {//TODO
 		List<LineEntry> HistoryLines = BurpExtender.getGui().getTitlePanel().getBackupLineEntries();
 		if (HistoryLines == null) return null;
 		for (LineEntry line:HistoryLines) {

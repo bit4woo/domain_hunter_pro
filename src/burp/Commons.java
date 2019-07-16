@@ -201,6 +201,10 @@ public class Commons {
 	public static Set<String> toIPSet (Set<String> subNets) {
 		Set<String> IPSet = new HashSet<String>();
 		for (String subnet:subNets) {
+			if (subnet.contains(":")) {
+				continue;//暂时先不处理IPv6,需要研究一下
+				//TODO
+			}
 			if (subnet.contains("/")){
 				SubnetUtils net = new SubnetUtils(subnet);
 				SubnetInfo xx = net.getInfo();
@@ -224,7 +228,7 @@ public class Commons {
 	}
 
 
-	public static void open(Object url,String browser) throws Exception{
+	public static void browserOpen(Object url,String browser) throws Exception{
 		String urlString = null;
 		URI uri = null;
 		if (url instanceof String) {
@@ -234,7 +238,8 @@ public class Commons {
 			uri = ((URL)url).toURI();
 			urlString = url.toString();
 		}
-		if(browser =="default" || browser=="") {
+		if(browser == null ||browser.equalsIgnoreCase("default") || browser.equalsIgnoreCase("")) {
+			//whether null must be the first
 			Desktop desktop = Desktop.getDesktop();
 			if(Desktop.isDesktopSupported()&&desktop.isSupported(Desktop.Action.BROWSE)){
 				desktop.browse(uri);
@@ -245,7 +250,6 @@ public class Commons {
 			//C:\Program Files\Mozilla Firefox\firefox.exe
 			//C:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe
 		}
-
 	}
 
 	public static void main(String args[]) {
@@ -270,5 +274,8 @@ public class Commons {
 //		Set<String>  a= new HashSet();
 //		a.add("218.213.102.6/31");
 //		System.out.println(toIPSet(a));
+		Set<String> subnets = new HashSet<String>();
+		subnets.add("2402:db40:1::/48");
+		System.out.print(toIPSet(subnets));
 	}
 }
