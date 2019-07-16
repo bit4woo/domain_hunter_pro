@@ -251,6 +251,21 @@ public class Commons {
 			//C:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe
 		}
 	}
+	
+	
+	public static byte[] buildCookieRequest(IExtensionHelpers helpers,String cookie, byte[] request) {
+		if (cookie != null && !cookie.equals("")){
+			if (!cookie.startsWith("Cookie: ")){
+				cookie = "Cookie: "+cookie;
+			}
+			List<String > newHeader = helpers.analyzeRequest(request).getHeaders();
+			int bodyOffset = helpers.analyzeRequest(request).getBodyOffset();
+			byte[] byte_body = Arrays.copyOfRange(request, bodyOffset, request.length);
+			newHeader.add(cookie);
+			request = helpers.buildHttpMessage(newHeader,byte_body);
+		}
+		return request;
+	}
 
 	public static void main(String args[]) {
 		

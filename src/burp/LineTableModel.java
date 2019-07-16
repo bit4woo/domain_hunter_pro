@@ -479,6 +479,18 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		}
 		return null;
 	}
+	
+	public LineEntry findLineEntryByIP(String IP) {
+		if (lineEntries == null) return null;
+		for (LineEntry line:lineEntries) {
+			line.setHelpers(BurpExtender.getCallbacks().getHelpers());
+			List<String> IPlist = Arrays.asList(line.getIP().split(","));
+			if (IPlist.contains(IP)) {
+				return line;
+			}
+		}
+		return null;
+	}
 
 	public void addNewNoResponseDomain(String domain,Set<String> IPSet){
 		synchronized (noResponseDomain) {

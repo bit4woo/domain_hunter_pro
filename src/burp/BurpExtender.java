@@ -5,6 +5,8 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.PrintWriter;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -75,7 +77,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		callbacks.setExtensionName(ExtenderName); //插件名称
 		callbacks.registerExtensionStateListener(this);
 		callbacks.registerContextMenuFactory(this);
-		
+
 		gui = new GUI();
 
 		SwingUtilities.invokeLater(new Runnable()
@@ -128,11 +130,14 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		JMenuItem runWithSamePathItem = new JMenuItem("^_^ Run Targets with this path");
 		runWithSamePathItem.addActionListener(new runWithSamePath(invocation));
 		list.add(runWithSamePathItem);
-		
+
 		JMenuItem addCommentItem = new JMenuItem("^_^ Add Title Comment");
 		addCommentItem.addActionListener(new addComment(invocation));
 		list.add(addCommentItem);
-		
+		JMenuItem addToTitleItem = new JMenuItem("^_^ Add TO Title");
+		addToTitleItem.addActionListener(new addToTitle(invocation));
+		list.add(addToTitleItem);
+
 		return list;
 	}
 
@@ -146,20 +151,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		{
 			try{
 				IHttpRequestResponse[] messages = invocation.getSelectedMessages();
-				Set<String> domains = new HashSet<String>();
-				for(IHttpRequestResponse message:messages) {
-					String host = message.getHttpService().getHost();
-					domains.add(host);
-				}
-
-				DomainObject domainResult = DomainPanel.getDomainResult();
-
-				domainResult.getRelatedDomainSet().addAll(domains);
-				if (domainResult.autoAddRelatedToRoot) {
-					domainResult.relatedToRoot();
-					domainResult.getSubDomainSet().addAll(domains);
-				}
-				gui.getDomainPanel().showToDomainUI();
+				addToDomain(messages);
 			}
 			catch (Exception e1)
 			{
@@ -186,7 +178,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 					IHttpRequestResponse[] messages = invocation.getSelectedMessages();
 					IHttpRequestResponse currentmessage =messages[0];
 					byte[] request = currentmessage.getRequest();
-					
+
 					RunnerGUI runnergui = new RunnerGUI(request);
 					return null;
 				}
@@ -197,7 +189,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 			worker.execute();
 		}
 	}
-	
+
 	public class addComment implements ActionListener{
 		private IContextMenuInvocation invocation;
 		addComment(IContextMenuInvocation invocation) {
@@ -208,34 +200,107 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		{
 			try{
 				IHttpRequestResponse[] messages = invocation.getSelectedMessages();
-				String shortUrlString = messages[0].getHttpService().toString();
-				
-				LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(shortUrlString);
-				int index = TitlePanel.getTitleTableModel().getLineEntries().indexOf(entry);
-				
-				if (entry != null) {
-					String commentAdd = JOptionPane.showInputDialog("Comments", null).trim();
-					while(commentAdd.trim().equals("")){
-						commentAdd = JOptionPane.showInputDialog("Comments", null).trim();
-					}
-					if (commentAdd != null) {
-						String comment = entry.getComment().trim();
-						if (comment == null || comment.equals("")) {
-							comment = commentAdd;
-						}else if(comment.contains(commentAdd)){
-							//do nothing
-						}else{
-							comment = comment+","+commentAdd;
-						}
-						entry.setComment(comment);
-						TitlePanel.getTitleTableModel().fireTableRowsUpdated(index,index);//主动通知更新，否则不会写入数据库!!!
-					}
+//				String shortUrlString = messages[0].getHttpService().toString();
+//				LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(shortUrlString);
+//				//这步没有必要了，addToTitle中已包含
+//				if (entry == null) {
+//					entry = addToTitle(helpers,messages[0]);
+//				}
+				for (IHttpRequestResponse message:messages) {
+					LineEntry entry = addToTitle(helpers,message);
+					addCommentForLine(entry);
 				}
+				addToDomain(messages);
+				
 			}
 			catch (Exception e1)
 			{
 				e1.printStackTrace(stderr);
 			}
 		}
+	}
+
+	public class addToTitle implements ActionListener{
+		private IContextMenuInvocation invocation;
+		addToTitle(IContextMenuInvocation invocation) {
+			this.invocation  = invocation;
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e)
+		{
+			try{
+				IHttpRequestResponse[] messages = invocation.getSelectedMessages();
+				for (IHttpRequestResponse message:messages) {
+					addToTitle(helpers,message);
+				}
+				addToDomain(messages);
+			}
+			catch (Exception e1)
+			{
+				e1.printStackTrace(stderr);
+			}
+		}
+	}
+	
+	public static LineEntry addToTitle(IExtensionHelpers helpers,IHttpRequestResponse messageInfo) throws Exception {
+		String shortUrlString = messageInfo.getHttpService().toString();
+		String host = messageInfo.getHttpService().getHost();
+		LineEntry entry;
+		if (Commons.isValidIP(host)) {
+			entry = TitlePanel.getTitleTableModel().findLineEntryByIP(host);
+		}else {
+			entry = TitlePanel.getTitleTableModel().findLineEntry(shortUrlString);
+		}					
+		if (entry == null) {
+			byte[] Request = helpers.buildHttpRequest(new URL(shortUrlString));
+			String cookie = new Getter(helpers).getHeaderValueOf(true, messageInfo, "Cookie");
+
+			Request = Commons.buildCookieRequest(helpers,cookie,Request);
+			IHttpRequestResponse messageinfo = callbacks.makeHttpRequest(messageInfo.getHttpService(), Request);
+			entry = new LineEntry(messageinfo,true,true,"");
+
+			BurpExtender.getGui().getTitlePanel().getTitleTableModel().addNewLineEntry(entry);
+		}
+		return entry;
+	}
+	
+	public static void addCommentForLine(LineEntry entry) {
+		int index = TitlePanel.getTitleTableModel().getLineEntries().indexOf(entry);
+		String commentAdd = JOptionPane.showInputDialog("Comments", null).trim();
+		while(commentAdd.trim().equals("")){
+			commentAdd = JOptionPane.showInputDialog("Comments", null).trim();
+		}
+		if (commentAdd != null) {
+			String comment = entry.getComment().trim();
+			if (comment == null || comment.equals("")) {
+				comment = commentAdd;
+			}else if(comment.contains(commentAdd)){
+				//do nothing
+			}else{
+				comment = comment+","+commentAdd;
+			}
+			entry.setComment(comment);
+			TitlePanel.getTitleTableModel().fireTableRowsUpdated(index,index);//主动通知更新，否则不会写入数据库!!!
+		}
+	}
+	
+	public static void addToDomain(IHttpRequestResponse[] messages) {
+		
+		Set<String> domains = new HashSet<String>();
+		for(IHttpRequestResponse message:messages) {
+			String host = message.getHttpService().getHost();
+			domains.add(host);
+		}
+
+		DomainObject domainResult = DomainPanel.getDomainResult();
+
+		domainResult.getRelatedDomainSet().addAll(domains);
+		if (domainResult.autoAddRelatedToRoot) {
+			domainResult.relatedToRoot();
+			domainResult.getSubDomainSet().addAll(domains);
+		}
+		gui.getDomainPanel().showToDomainUI();
+		
 	}
 }

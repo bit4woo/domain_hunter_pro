@@ -154,7 +154,7 @@ class Producer extends Thread {//Producer do
 
 				byte[] http_Request = helpers.buildHttpRequest(new URL(http.toString()));
 				String cookie = TitlePanel.getTextFieldCookie().getText().trim();
-				http_Request = buildCookieRequest(cookie,http_Request);
+				http_Request = Commons.buildCookieRequest(helpers,cookie,http_Request);
 				IHttpRequestResponse http_Messageinfo = callbacks.makeHttpRequest(http, http_Request);
 				//stdout.println("messageinfo"+JSONObject.toJSONString(messageinfo));
 				//这里有2种异常情况：1.请求失败（连IP都解析不了,已经通过第一步过滤了）；2.请求成功但是响应包为空（可以解析IP，比如内网域名）。
@@ -169,7 +169,7 @@ class Producer extends Thread {//Producer do
 				String location = getter.getHeaderValueOf(false, http_Messageinfo, "Location");
 
 				byte[] https_Request = helpers.buildHttpRequest(new URL(https.toString()));
-				https_Request = buildCookieRequest(cookie,https_Request);
+				https_Request = Commons.buildCookieRequest(helpers,cookie,https_Request);
 				IHttpRequestResponse https_Messageinfo = callbacks.makeHttpRequest(https, https_Request);
 				byte[] https_Body = getter.getBody(false, https_Messageinfo);
 				int https_Status = getter.getStatusCode(https_Messageinfo);//当为第二种异常时，httpStatus == -1
@@ -283,19 +283,5 @@ class Producer extends Thread {//Producer do
 		}
 		return null;
 	}
-	
-	
-	public byte[] buildCookieRequest(String cookie, byte[] request) {
-		if (cookie != null && !cookie.equals("")){
-			if (!cookie.startsWith("Cookie: ")){
-				cookie = "Cookie: "+cookie;
-			}
-			List<String > newHeader = helpers.analyzeRequest(request).getHeaders();
-			int bodyOffset = helpers.analyzeRequest(request).getBodyOffset();
-			byte[] byte_body = Arrays.copyOfRange(request, bodyOffset, request.length);
-			newHeader.add(cookie);
-			request = helpers.buildHttpMessage(newHeader,byte_body);
-		}
-		return request;
-	}
+
 }
