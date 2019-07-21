@@ -29,6 +29,8 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.JTree;
 
 public class TitlePanel extends JPanel {
 
@@ -44,6 +46,7 @@ public class TitlePanel extends JPanel {
 	private ThreadGetTitle threadGetTitle;
 	private List<LineEntry> BackupLineEntries;
 	private History searchHistory = new History(10);
+	private TargetMapTree sitemapTree;
 
 
 	public static LineTableModel getTitleTableModel() {
@@ -380,6 +383,17 @@ public class TitlePanel extends JPanel {
 		/////////////////////////////////////////
 		titleTable = new LineTable(titleTableModel);
 		this.add(titleTable.getTableAndDetailSplitPane(),BorderLayout.CENTER);
+		
+		
+		
+	    DefaultMutableTreeNode root=new DefaultMutableTreeNode("ROOT");
+	    TargetMapTreeModel treeModel=new TargetMapTreeModel(root);
+		sitemapTree = new TargetMapTree(treeModel);
+		sitemapTree.createNodes();
+		add(sitemapTree, BorderLayout.WEST);
+		
+
+		//sitemapTree.setModel(new TargetMapTreeModel(null));
 	}
 
 

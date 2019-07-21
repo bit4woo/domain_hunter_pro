@@ -17,7 +17,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 class ThreadPaserTarget{
 	private Set<String> domains;
 	private Set<String> fullTarget;
-	private List<Producer> plist;
+	private List<ParserProducer> plist;
 
 	private static IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();//静态变量，burp插件的逻辑中，是可以保证它被初始化的。;
 	public PrintWriter stdout = new PrintWriter(callbacks.getStdout(), true);
@@ -34,10 +34,10 @@ class ThreadPaserTarget{
 		BlockingQueue<String> IPQueue = new LinkedBlockingQueue<String>();
 		domainQueue.addAll(domains);
 
-		plist = new ArrayList<Producer>();
+		plist = new ArrayList<ParserProducer>();
 
 		for (int i=0;i<=50;i++) {
-			Producer p = new Producer(domainQueue,IPQueue,i);
+			ParserProducer p = new ParserProducer(domainQueue,IPQueue,i);
 			//Producer p = new Producer(callbacks,domainQueue,sharedQueue,i);
 			p.start();
 			plist.add(p);
@@ -82,7 +82,7 @@ class ThreadPaserTarget{
 
 	boolean isAllProductorFinished(){
 		int i = 0;
-		for (Producer p:plist) {
+		for (ParserProducer p:plist) {
 			if(p.isAlive()) {
 				i = i+1;
 			}
@@ -97,7 +97,7 @@ class ThreadPaserTarget{
 	}
 
 	public void stopThreads() {
-		for (Producer p:plist) {
+		for (ParserProducer p:plist) {
 			p.stopThread();
 		}
 		stdout.println("~~~~~~~~~~~~~All stop message sent! wait them to exit~~~~~~~~~~~~~");
@@ -110,7 +110,7 @@ class ThreadPaserTarget{
  *
  */
 
-class Producer extends Thread {//Producer do
+class ParserProducer extends Thread {//Producer do
 	private final BlockingQueue<String> domainQueue;//use to store domains
 	private final BlockingQueue<String> IPQueue;//use to store domains
 	private int threadNo;
@@ -121,7 +121,7 @@ class Producer extends Thread {//Producer do
 	public PrintWriter stderr = new PrintWriter(callbacks.getStderr(), true);
 	public IExtensionHelpers helpers = callbacks.getHelpers();
 
-	public Producer(BlockingQueue<String> domainQueue,BlockingQueue<String> IPQueue,int threadNo) {
+	public ParserProducer(BlockingQueue<String> domainQueue,BlockingQueue<String> IPQueue,int threadNo) {
 		this.threadNo = threadNo;
 		this.domainQueue = domainQueue;
 		this.IPQueue = IPQueue;
