@@ -1,6 +1,7 @@
 package burp;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
@@ -25,11 +26,17 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 import javax.swing.tree.DefaultMutableTreeNode;
+
+import target.TargetMapTree;
+import target.TargetMapTreeModel;
+
 import javax.swing.JTree;
 
 public class TitlePanel extends JPanel {
@@ -73,9 +80,31 @@ public class TitlePanel extends JPanel {
 
 		this.setBorder(new EmptyBorder(5, 5, 5, 5));
 		this.setLayout(new BorderLayout(0, 0));
+		this.add(createButtonPanel(), BorderLayout.NORTH);
 
+		/////////////////////////////////////////
+		JSplitPane TargetAndTitlePanel = new JSplitPane();//存放目标域名
+		TargetAndTitlePanel.setResizeWeight(0.2);
+		this.add(TargetAndTitlePanel,BorderLayout.CENTER);
+		
+        JScrollPane TargetMapPane = new JScrollPane();
+        TargetMapPane.setPreferredSize(new Dimension(200, 200));
+		TargetAndTitlePanel.setLeftComponent(TargetMapPane);
+		
+		
+		titleTable = new LineTable(titleTableModel);
+		TargetAndTitlePanel.setRightComponent(titleTable.getTableAndDetailSplitPane());
+        
+	    TargetMapTreeModel treeModel=new TargetMapTreeModel();
+		sitemapTree = new TargetMapTree(treeModel);
+		TargetMapPane.setViewportView(sitemapTree);
+		
+
+		//sitemapTree.setModel(new TargetMapTreeModel(null));
+	}
+
+	public JPanel createButtonPanel() {
 		buttonPanel = new JPanel();
-		this.add(buttonPanel, BorderLayout.NORTH);
 		buttonPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
 
 		JLabel cookieLabel = new JLabel("Cookie:");
@@ -379,23 +408,9 @@ public class TitlePanel extends JPanel {
 
 		lblSummaryOfTitle = new JLabel("      ^_^");
 		buttonPanel.add(lblSummaryOfTitle);
-
-		/////////////////////////////////////////
-		titleTable = new LineTable(titleTableModel);
-		this.add(titleTable.getTableAndDetailSplitPane(),BorderLayout.CENTER);
 		
-		
-		
-	    DefaultMutableTreeNode root=new DefaultMutableTreeNode("ROOT");
-	    TargetMapTreeModel treeModel=new TargetMapTreeModel(root);
-		sitemapTree = new TargetMapTree(treeModel);
-		sitemapTree.createNodes();
-		add(sitemapTree, BorderLayout.WEST);
-		
-
-		//sitemapTree.setModel(new TargetMapTreeModel(null));
+		return buttonPanel;
 	}
-
 
 
 
