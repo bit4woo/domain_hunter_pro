@@ -1,5 +1,8 @@
 package burp;
 
+import target.TargetMapTree;
+import target.TargetMapTreeModel;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -29,11 +32,24 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	private static String ExtenderName = "Domain Hunter Pro by bit4woo";
 	private static String github = "https://github.com/bit4woo/domain_hunter_pro";
 	private static GUI gui;
+
+	public static void flushStd(){
+		try{
+			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
+			stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
+		}catch (Exception e){
+			stdout = new PrintWriter(System.out, true);
+			stderr = new PrintWriter(System.out, true);
+		}
+	}
+
 	public static PrintWriter getStdout() {
+		flushStd();//不同的时候调用这个参数，可能得到不同的值
 		return stdout;
 	}
 
 	public static PrintWriter getStderr() {
+		flushStd();
 		return stderr;
 	}
 
@@ -63,13 +79,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	@Override
 	public void registerExtenderCallbacks(IBurpExtenderCallbacks callbacks)
 	{
-		try{
-			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
-			stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
-		}catch (Exception e){
-			stdout = new PrintWriter(System.out, true);
-			stderr = new PrintWriter(System.out, true);
-		}
+		flushStd();
 		stdout.println(ExtenderName);
 		stdout.println(github);
 		BurpExtender.callbacks = callbacks;
@@ -119,24 +129,38 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	@Override
 	public List<JMenuItem> createMenuItems(IContextMenuInvocation invocation) {
 		List<JMenuItem> list = new ArrayList<JMenuItem>();
+		/*
+		这里的逻辑有3重：
+		1、仅将域名添加到子域名和target中，
+		2、将请求添加到title列表中，包含1的行为
+		3、对某一个请求添加comment，如果请求不存在，放弃；添加请求包含步骤1和2的行为。
+		 */
+//		byte context = invocation.getInvocationContext();
+//		if (context == IContextMenuInvocation.CONTEXT_TARGET_SITE_MAP_TREE) {
+//
+//		}
 
-		byte context = invocation.getInvocationContext();
-		if (context == IContextMenuInvocation.CONTEXT_TARGET_SITE_MAP_TREE) {
-			JMenuItem addToDomainHunter = new JMenuItem("^_^ Add To Domain Hunter");
-			addToDomainHunter.addActionListener(new addHostToRootDomain(invocation));
-			list.add(addToDomainHunter);
-		}
-
-		JMenuItem runWithSamePathItem = new JMenuItem("^_^ Run Targets with this path");
+		JMenuItem runWithSamePathItem = new JMenuItem("^_^[Domain Hunter] Run Targets with this path");
 		runWithSamePathItem.addActionListener(new runWithSamePath(invocation));
 		list.add(runWithSamePathItem);
 
-		JMenuItem addCommentItem = new JMenuItem("^_^ Add Title Comment");
-		addCommentItem.addActionListener(new addComment(invocation));
-		list.add(addCommentItem);
+		JMenuItem addDomainToDomainHunter = new JMenuItem("^_^[Domain Hunter] Add Domain");
+		addDomainToDomainHunter.addActionListener(new addHostToRootDomain(invocation));
+		list.add(addDomainToDomainHunter);
+
+		JMenuItem addRequestToDomainHunter = new JMenuItem("^_^[Domain Hunter] Add Request");
+		addRequestToDomainHunter.addActionListener(new addRequestToHunter(invocation));
+		list.add(addRequestToDomainHunter);
+
+		JMenuItem addCommentToDomainHunter = new JMenuItem("^_^[Domain Hunter] Add Comment");
+		addCommentToDomainHunter.addActionListener(new addComment(invocation));
+		list.add(addCommentToDomainHunter);
+
 		JMenuItem addToTitleItem = new JMenuItem("^_^ Add TO Title");
 		addToTitleItem.addActionListener(new addToTitle(invocation));
 		list.add(addToTitleItem);
+
+
 
 		return list;
 	}
@@ -151,7 +175,26 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		{
 			try{
 				IHttpRequestResponse[] messages = invocation.getSelectedMessages();
-				addToDomain(messages);
+				addToDomainAndTarget(messages);
+			}
+			catch (Exception e1)
+			{
+				e1.printStackTrace(stderr);
+			}
+		}
+	}
+
+	public class addRequestToHunter implements ActionListener{
+		private IContextMenuInvocation invocation;
+		addRequestToHunter(IContextMenuInvocation invocation) {
+			this.invocation  = invocation;
+		}
+		@Override
+		public void actionPerformed(ActionEvent e)
+		{
+			try{
+				IHttpRequestResponse[] messages = invocation.getSelectedMessages();
+				addToRequest(messages);
 			}
 			catch (Exception e1)
 			{
@@ -198,20 +241,14 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		@Override
 		public void actionPerformed(ActionEvent e)
 		{
+			//还是要简化逻辑，如果找不到就不执行！
 			try{
 				IHttpRequestResponse[] messages = invocation.getSelectedMessages();
-//				String shortUrlString = messages[0].getHttpService().toString();
-//				LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(shortUrlString);
-//				//这步没有必要了，addToTitle中已包含
-//				if (entry == null) {
-//					entry = addToTitle(helpers,messages[0]);
-//				}
-				for (IHttpRequestResponse message:messages) {
-					LineEntry entry = addToTitle(helpers,message);
+				String shortUrlString = messages[0].getHttpService().toString();
+				LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(shortUrlString);
+				if (entry != null) {
 					addCommentForLine(entry);
 				}
-				addToDomain(messages);
-				
 			}
 			catch (Exception e1)
 			{
@@ -220,6 +257,8 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		}
 	}
 
+
+	@Deprecated
 	public class addToTitle implements ActionListener{
 		private IContextMenuInvocation invocation;
 		addToTitle(IContextMenuInvocation invocation) {
@@ -234,7 +273,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 				for (IHttpRequestResponse message:messages) {
 					addToTitle(helpers,message);
 				}
-				addToDomain(messages);
+				addToDomainAndTarget(messages);
 			}
 			catch (Exception e1)
 			{
@@ -242,8 +281,11 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 			}
 		}
 	}
-	
+
+	@Deprecated
 	public static LineEntry addToTitle(IExtensionHelpers helpers,IHttpRequestResponse messageInfo) throws Exception {
+		//burp不允许在这个事件中发送请求
+		//java.lang.RuntimeException: java.lang.RuntimeException: Extensions should not make HTTP requests in the Swing event dispatch thread
 		String shortUrlString = messageInfo.getHttpService().toString();
 		String host = messageInfo.getHttpService().getHost();
 		LineEntry entry;
@@ -251,7 +293,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 			entry = TitlePanel.getTitleTableModel().findLineEntryByIP(host);
 		}else {
 			entry = TitlePanel.getTitleTableModel().findLineEntry(shortUrlString);
-		}					
+		}
 		if (entry == null) {
 			byte[] Request = helpers.buildHttpRequest(new URL(shortUrlString));
 			String cookie = new Getter(helpers).getHeaderValueOf(true, messageInfo, "Cookie");
@@ -264,7 +306,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		}
 		return entry;
 	}
-	
+
 	public static void addCommentForLine(LineEntry entry) {
 		int index = TitlePanel.getTitleTableModel().getLineEntries().indexOf(entry);
 		String commentAdd = JOptionPane.showInputDialog("Comments", null).trim();
@@ -284,9 +326,9 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 			TitlePanel.getTitleTableModel().fireTableRowsUpdated(index,index);//主动通知更新，否则不会写入数据库!!!
 		}
 	}
-	
-	public static void addToDomain(IHttpRequestResponse[] messages) {
-		
+
+	public static void addToDomainAndTarget(IHttpRequestResponse[] messages) {
+
 		Set<String> domains = new HashSet<String>();
 		for(IHttpRequestResponse message:messages) {
 			String host = message.getHttpService().getHost();
@@ -294,13 +336,22 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		}
 
 		DomainObject domainResult = DomainPanel.getDomainResult();
+		domainResult.addToDomainOject(domains);
+		TargetMapTreeModel targetModel = (TargetMapTreeModel)gui.getTitlePanel().getSitemapTree().getModel();
+		targetModel.addTargetsFromDomains(domains);
+	}
 
-		domainResult.getRelatedDomainSet().addAll(domains);
-		if (domainResult.autoAddRelatedToRoot) {
-			domainResult.relatedToRoot();
-			domainResult.getSubDomainSet().addAll(domains);
+
+	public static void addToRequest(IHttpRequestResponse[] messages) {
+		Set<String> domains = new HashSet<String>();
+		for(IHttpRequestResponse message:messages) {
+			String host = message.getHttpService().getHost();
+			LineEntry entry = new LineEntry(message);
+			TitlePanel.getTitleTableModel().addNewLineEntry(entry); //add request
+			DomainPanel.getDomainResult().addToDomainOject(host); //add domain
+
+			TargetMapTreeModel targetModel = (TargetMapTreeModel)gui.getTitlePanel().getSitemapTree().getModel();
+			targetModel.addTargetFromDomain(host);// add target
 		}
-		gui.getDomainPanel().showToDomainUI();
-		
 	}
 }

@@ -233,6 +233,18 @@ public class DomainObject {
 		}
 	}
 
+	public void addToDomainOject(String domain){
+		relatedDomainSet.add(domain);
+		relatedToRoot();
+		GUI.getDomainPanel().showToDomainUI();
+	}
+
+	public void addToDomainOject(Set<String> domains){
+		relatedDomainSet.addAll(domains);
+		relatedToRoot();
+		GUI.getDomainPanel().showToDomainUI();
+	}
+
 	public void relatedToRoot() {
 		if (this.autoAddRelatedToRoot == true) {
 			for(String relatedDomain:this.relatedDomainSet) {

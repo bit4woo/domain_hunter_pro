@@ -42,7 +42,7 @@ import javax.swing.JTree;
 public class TitlePanel extends JPanel {
 
 	private JPanel buttonPanel;
-	private LineTable titleTable;
+	private static LineTable titleTable;
 	private JLabel lblSummaryOfTitle;
 	private static JTextField textFieldCookie;
 	public  JRadioButton rdbtnHideCheckedItems;
@@ -55,6 +55,9 @@ public class TitlePanel extends JPanel {
 	private History searchHistory = new History(10);
 	private TargetMapTree sitemapTree;
 
+	public static LineTable getTitleTable() {
+		return titleTable;
+	}
 
 	public static LineTableModel getTitleTableModel() {
 		return titleTableModel;
@@ -67,6 +70,11 @@ public class TitlePanel extends JPanel {
 	public List<LineEntry> getBackupLineEntries() {
 		return BackupLineEntries;
 	}
+
+	public TargetMapTree getSitemapTree() {
+		return sitemapTree;
+	}
+
 
 	public TitlePanel() {//构造函数
 

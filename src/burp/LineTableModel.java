@@ -459,7 +459,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 //			while(lineEntries.size() >= (new LineConfig()).getMaximumEntries()){
 //				final LineEntry removed = lineEntries.remove(0);
 //			}
-
+			if (findLineEntry(lineEntry.getUrl()) !=null) return;
 			lineEntries.add(lineEntry);
 			int row = lineEntries.size();
 			//fireTableRowsInserted(row, row);

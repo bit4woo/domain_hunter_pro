@@ -198,7 +198,15 @@ public class LineTable extends JTable
 				int row = (int) entry.getIdentifier();
 				LineEntry line = rowSorter.getModel().getLineEntries().get(row);
 
-				if (BurpExtender.getGui().getTitlePanel().rdbtnHideCheckedItems.isSelected()&& line.isChecked()) {//to hide checked lines
+				if (GUI.getTitlePanel().getSitemapTree().getCurrentSelected().size() > 0){
+					for (String item:GUI.getTitlePanel().getSitemapTree().getCurrentSelected()){
+						if (line.getUrl().contains(item)){
+							return true;
+						}
+					}
+				}
+
+				if (GUI.getTitlePanel().rdbtnHideCheckedItems.isSelected()&& line.isChecked()) {//to hide checked lines
 					if (selectedRow == row) {
 						selectedRow = row+1;
 					}
