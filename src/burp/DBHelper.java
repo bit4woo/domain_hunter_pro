@@ -11,9 +11,11 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 import com.alibaba.fastjson.JSON;
+import target.TargetEntry;
 
 /*
 prepareStatement  //预编译方法，在有参数传入时用它
@@ -46,7 +48,7 @@ public class DBHelper {
 		this.dbFilePath = dbFilePath;
 		try {
 			conn = getConnection();
-			if (!tableExists("DOMAINObject")){
+			if (!tableExists("DOMAINObject") ||!tableExists("Title") ||!tableExists("Target")){
 				stdout.println("create tables");
 				createTable();
 			}
@@ -71,6 +73,12 @@ public class DBHelper {
 					" NAME           TEXT    NOT NULL," +
 					" Content        TEXT    NOT NULL)";
 			stmt.executeUpdate(sqlTitle);
+
+			String sqlTarget = "CREATE TABLE Target" +
+					"(ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +//自动增长 https://www.sqlite.org/autoinc.html
+					" NAME           TEXT    NOT NULL," +
+					" Content        TEXT    NOT NULL)";
+			stmt.executeUpdate(sqlTarget);
 
 			stmt.close();
 			conn.close();
@@ -187,6 +195,170 @@ public class DBHelper {
 	}
 
 
+	/////////////////////Target//////////////////////////////
+	public boolean addTargets(Set<TargetEntry> entries){
+		try {
+			conn = getConnection();
+			String sql="insert into Target(NAME,Content) values(?,?)";
+			pres=conn.prepareStatement(sql);
+			for(TargetEntry entry:entries){
+				pres.setString(1, entry.getDomain());
+				pres.setString(2,entry.toJson());
+				pres.addBatch();                                   //实现批量插入
+			}
+			int[] result = pres.executeBatch();                                   //批量插入到数据库中
+			if ( IntStream.of(result).sum() == entries.size()){
+				System.out.println("add Target successfully");
+				return true;
+			}else {
+				return false;
+			}
+		} catch (Exception e) {
+			e.printStackTrace(stderr);
+		} finally {
+			destroy();
+		}
+		return false;
+	}
+
+
+
+	public boolean addTarget(TargetEntry entry){
+		try {
+			conn = getConnection();
+			String sql="insert into Target(NAME,Content) values(?,?)";
+			pres=conn.prepareStatement(sql);
+			pres.setString(1, entry.getDomain());
+			pres.setString(2,entry.toJson());
+			int result = pres.executeUpdate();
+			if ( result == 1){
+				System.out.println("add Target successfully");
+				return true;
+			}else {
+				return false;
+			}
+		} catch (Exception e) {
+			e.printStackTrace(stderr);
+		} finally {
+			destroy();
+		}
+		return false;
+	}
+
+
+	public List<TargetEntry> getTagets(){
+		List<TargetEntry> list=new ArrayList<TargetEntry>();
+		try {
+			conn = getConnection();
+			String sql="select * from Target";
+			pres=conn.prepareStatement(sql);
+
+			ResultSet res=pres.executeQuery();
+			while(res.next()){
+				String LineJson=res.getString("Content");
+				TargetEntry entry = TargetEntry.restoreFromJson(LineJson);
+				list.add(entry);
+			}
+		} catch (Exception e) {
+			e.printStackTrace(stderr);
+		} finally {
+			destroy();
+		}
+		return list;
+	}
+
+	@Deprecated
+	public void updateTarget(TargetEntry entry){
+		String sql="update Target SET Content=? where NAME=?";
+		//UPDATE Person SET FirstName = 'Fred' WHERE LastName = 'Wilson'
+
+		try {
+			conn = getConnection();
+			pres=conn.prepareStatement(sql);
+			pres.setString(1, entry.toJson());
+			pres.setString(2, entry.getDomain());
+			pres.executeUpdate();
+		} catch (Exception e) {
+			e.printStackTrace(stderr);
+		}finally {
+			destroy();
+		}
+	}
+
+	public boolean updateTargets(Set<TargetEntry> lineEntries){
+		try {
+			conn = getConnection();
+			String sql="update Target SET Content=? where NAME=?";
+			//UPDATE Person SET FirstName = 'Fred' WHERE LastName = 'Wilson'
+			pres=conn.prepareStatement(sql);
+			for(TargetEntry entry:lineEntries){
+				pres.setString(1, entry.toJson());
+				pres.setString(2, entry.getDomain());
+				pres.addBatch();                                   //实现批量插入
+			}
+			int[] result = pres.executeBatch();                                   //批量插入到数据库中
+			if ( IntStream.of(result).sum() == lineEntries.size()){
+				System.out.println("update targets successfully");
+				return true;
+			}else {
+				return false;
+			}
+		} catch (Exception e) {
+			e.printStackTrace(stderr);
+		}finally {
+			destroy();
+		}
+		return false;
+	}
+
+	@Deprecated
+	public void deleteTarget(TargetEntry entry){
+		String sql="DELETE FROM Target where NAME= ?";
+		//DELETE FROM Person WHERE LastName = 'Wilson'
+
+		try {
+			conn = getConnection();
+			pres=conn.prepareStatement(sql);
+			pres.setString(1, entry.getDomain());
+			pres.executeUpdate();
+			//Statement.execute(String sql) method which is mainly intended to perform database queries.
+			//To execute INSERT/UPDATE/DELETE statements it's recommended the use of Statement.executeUpdate() method instead.
+		} catch (Exception e) {
+			e.printStackTrace(stderr);
+		} finally {
+			destroy();
+		}
+	}
+
+	public boolean deleteTargets(Set<TargetEntry> lineEntries){
+		String sql="DELETE FROM Target where NAME= ?";
+		//DELETE FROM Person WHERE LastName = 'Wilson'
+
+		try {
+			conn = getConnection();
+			pres=conn.prepareStatement(sql);
+			for(TargetEntry entry:lineEntries){
+				pres.setString(1, entry.getDomain());
+				pres.addBatch();                                   //实现批量插入
+			}
+			int[] result = pres.executeBatch();                                   //批量插入到数据库中
+			if ( IntStream.of(result).sum() == lineEntries.size()){
+				System.out.println("delete targets successfully");
+				return true;
+			}else {
+				return false;
+			}
+		} catch (Exception e) {
+			e.printStackTrace(stderr);
+		} finally {
+			destroy();
+		}
+		return false;
+	}
+
+
+
+	//////////////////Title///////////////////////////////
 	public boolean addTitle(LineEntry entry){
 		try {
 			conn = getConnection();

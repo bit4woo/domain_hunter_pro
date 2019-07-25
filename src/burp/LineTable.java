@@ -4,6 +4,9 @@ import javax.swing.*;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableRowSorter;
+
+import target.TargetMapTree;
+
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -198,11 +201,9 @@ public class LineTable extends JTable
 				int row = (int) entry.getIdentifier();
 				LineEntry line = rowSorter.getModel().getLineEntries().get(row);
 
-				if (GUI.getTitlePanel().getSitemapTree().getCurrentSelected().size() > 0){
-					for (String item:GUI.getTitlePanel().getSitemapTree().getCurrentSelected()){
-						if (line.getUrl().contains(item)){
-							return true;
-						}
+				if (TargetMapTree.getCurrentSelected().size() > 0){
+					if (!TargetMapTree.getCurrentSelected().contains(line.getHost().trim())) {
+						return false;
 					}
 				}
 

@@ -1,12 +1,16 @@
 package target;
 
-import burp.Commons;
+import com.alibaba.fastjson.JSON;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
 public class TargetEntry {
+	private final static int LEVEL_HIGH = 3;
+	private final static int LEVEL_MIDDLE = 2;
+	private final static int LEVEL_LOW = 1;
+	
 	private String domain;
 	private Set<TargetEntry> children = new HashSet<TargetEntry>();
 	private TargetEntry parent = null;
@@ -14,6 +18,10 @@ public class TargetEntry {
 	private long updatedTime;
 	private String group;
 	private boolean isBlack = false;
+	private boolean isChecked = false;
+	private int valueLevel = LEVEL_LOW;
+	
+
 
 	public TargetEntry(String domain, Set<TargetEntry> childURLs) {
 		super();
@@ -28,7 +36,9 @@ public class TargetEntry {
 		this.createdTime = System.currentTimeMillis();
 	}
 
-
+	
+	
+	//////////// getter and setter///////////
 	public String getDomain() {
 		return domain;
 	}
@@ -86,6 +96,35 @@ public class TargetEntry {
 		this.group = group;
 	}
 
+	public boolean isBlack() {
+		return isBlack;
+	}
+
+	public void setBlack(boolean isBlack) {
+		this.isBlack = isBlack;
+	}
+
+	public boolean isChecked() {
+		return isChecked;
+	}
+
+	public void setChecked(boolean isChecked) {
+		this.isChecked = isChecked;
+	}
+
+	public int getValueLevel() {
+		return valueLevel;
+	}
+
+	public void setValueLevel(int valueLevel) {
+		this.valueLevel = valueLevel;
+	}
+	
+	////////////getter and setter///////////
+	
+	
+	
+
 	public Object getChildAt(int index) {
 		return children.toArray()[index];
 	}
@@ -95,5 +134,23 @@ public class TargetEntry {
     }
     
 	@Override
-	public String toString() { return domain; }
+	public String toString() { return domain+isChecked(); }
+
+	public String toJson(){
+		return JSON.toJSONString(this);
+	}
+
+	public static TargetEntry restoreFromJson(String targetJson){
+		return JSON.parseObject(targetJson,TargetEntry.class);
+	}
+	//TODO
+	public void getTitle() {
+		
+	}
+
+	public static void main(String[] args){
+		TargetEntry test = new TargetEntry("test");
+		System.out.println(test.toJson());
+		System.out.println(restoreFromJson(test.toJson()));
+	}
 }

@@ -13,11 +13,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.PrintWriter;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.swing.AbstractAction;
 import javax.swing.InputMap;
@@ -94,19 +90,19 @@ public class TitlePanel extends JPanel {
 		JSplitPane TargetAndTitlePanel = new JSplitPane();//存放目标域名
 		TargetAndTitlePanel.setResizeWeight(0.2);
 		this.add(TargetAndTitlePanel,BorderLayout.CENTER);
-		
-        JScrollPane TargetMapPane = new JScrollPane();
-        TargetMapPane.setPreferredSize(new Dimension(200, 200));
+
+		JScrollPane TargetMapPane = new JScrollPane();
+		TargetMapPane.setPreferredSize(new Dimension(200, 200));
 		TargetAndTitlePanel.setLeftComponent(TargetMapPane);
-		
-		
+
+
 		titleTable = new LineTable(titleTableModel);
 		TargetAndTitlePanel.setRightComponent(titleTable.getTableAndDetailSplitPane());
-        
-	    TargetMapTreeModel treeModel=new TargetMapTreeModel();
+
+		TargetMapTreeModel treeModel=new TargetMapTreeModel();
 		sitemapTree = new TargetMapTree(treeModel);
 		TargetMapPane.setViewportView(sitemapTree);
-		
+
 
 		//sitemapTree.setModel(new TargetMapTreeModel(null));
 	}
@@ -115,13 +111,40 @@ public class TitlePanel extends JPanel {
 		buttonPanel = new JPanel();
 		buttonPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
 
+		JButton btnSyncTarget = new JButton("Sync Target");
+		btnSyncTarget.setToolTipText("sync domain to Target");
+		btnSyncTarget.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+					@Override
+					protected Map doInBackground() throws Exception {
+						btnSyncTarget.setEnabled(false);
+						syncTarget();
+						btnSyncTarget.setEnabled(true);
+						return new HashMap<String, String>();
+						//no use ,the return.
+					}
+					@Override
+					protected void done() {
+						try {
+							btnSyncTarget.setEnabled(true);
+						} catch (Exception e) {
+							e.printStackTrace(stderr);
+						}
+					}
+				};
+				worker.execute();
+			}
+		});
+		buttonPanel.add(btnSyncTarget);
+
 		JLabel cookieLabel = new JLabel("Cookie:");
 		buttonPanel.add(cookieLabel);
 		textFieldCookie = new JTextField("");
 		textFieldCookie.setColumns(30);
 		buttonPanel.add(textFieldCookie);
-		
-		
+
+
 		JButton btnGettitle1 = new JButton("dnsquery");
 		btnGettitle1.setToolTipText("A fresh start");
 		btnGettitle1.addActionListener(new ActionListener() {
@@ -416,18 +439,22 @@ public class TitlePanel extends JPanel {
 
 		lblSummaryOfTitle = new JLabel("      ^_^");
 		buttonPanel.add(lblSummaryOfTitle);
-		
+
 		return buttonPanel;
 	}
 
+	public void syncTarget() {
+		Set<String> domains = DomainPanel.getDomainResult().getSubDomainSet();
+		TargetMapTreeModel treeModel = (TargetMapTreeModel)sitemapTree.getModel();
+		treeModel.addTargetsFromDomains(domains);
+	}
 
 
 	public void getAllTitle(){
 		Set<String> domains = new HashSet<>();//新建一个对象，直接赋值后的删除操作，实质是对domainResult的操作。
-
-		domains.addAll(BurpExtender.getGui().getDomainPanel().getDomainResult().getSubDomainSet());
+		domains.addAll(DomainPanel.getDomainResult().getSubDomainSet());
 		//remove domains in black list
-		domains.removeAll(BurpExtender.getGui().getDomainPanel().getDomainResult().getBlackDomainSet());
+		domains.removeAll(DomainPanel.getDomainResult().getBlackDomainSet());
 
 		//backup to history
 		BackupLineEntries = titleTableModel.getLineEntries();
