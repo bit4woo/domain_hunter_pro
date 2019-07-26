@@ -2,14 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="4ff4f881-baa6-4a5a-8ddc-b188e0767a25" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/src/test/SetTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/burp/DBHelper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/burp/DBHelper.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/burp/LineTable.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/burp/LineTable.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/burp/DomainPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/burp/DomainPanel.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/burp/TitlePanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/burp/TitlePanel.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/target/TargetEntry.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/target/TargetEntry.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/target/TargetMapTree.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/target/TargetMapTree.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/target/TargetMapTreeModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/target/TargetMapTreeModel.java" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/target/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -28,8 +23,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/burp/DBHelper.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="3529">
-              <caret line="198" column="19" selection-start-line="198" selection-start-column="19" selection-end-line="198" selection-end-column="19" />
+            <state relative-caret-position="273">
+              <caret line="177" column="21" lean-forward="true" selection-start-line="177" selection-start-column="21" selection-end-line="177" selection-end-column="21" />
               <folding>
                 <element signature="imports" expanded="true" />
                 <element signature="e#6601#6614#0" expanded="true" />
@@ -73,10 +68,28 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/burp/DomainPanel.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="405">
+              <caret line="961" column="55" selection-start-line="961" selection-start-column="55" selection-end-line="961" selection-end-column="55" />
+              <folding>
+                <element signature="imports" expanded="true" />
+                <element signature="e#2646#2647#0" expanded="true" />
+                <element signature="e#2672#2673#0" expanded="true" />
+                <element signature="e#3779#3780#0" expanded="true" />
+                <element signature="e#3806#3807#0" expanded="true" />
+                <element signature="e#8200#8201#0" expanded="true" />
+                <element signature="e#8238#8239#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/burp/TitlePanel.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="267">
-              <caret line="448" column="33" lean-forward="true" selection-start-line="448" selection-start-column="33" selection-end-line="448" selection-end-column="33" />
+            <state relative-caret-position="-19">
+              <caret line="453" column="31" lean-forward="true" selection-start-line="453" selection-start-column="31" selection-end-line="453" selection-end-column="31" />
               <folding>
                 <element signature="imports" expanded="true" />
                 <element signature="e#15547#15548#0" expanded="true" />
@@ -109,11 +122,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/target/TargetMapTreeModel.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="697">
-              <caret line="289" column="41" selection-start-line="289" selection-start-column="41" selection-end-line="289" selection-end-column="41" />
+            <state relative-caret-position="1203">
+              <caret line="273" column="43" selection-start-line="273" selection-start-column="28" selection-end-line="273" selection-end-column="43" />
             </state>
           </provider>
         </entry>
@@ -129,8 +142,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>showToTitleUI</find>
-      <find>showTo</find>
       <find>SwingWorker</find>
       <find>getExtendTitle</find>
       <find>getDomainConfig</find>
@@ -159,6 +170,8 @@
       <find>search</find>
       <find>titleTable</find>
       <find>title</find>
+      <find>tableExists</find>
+      <find>backup</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -176,7 +189,6 @@
         <option value="$PROJECT_DIR$/src/burp/LineEntryMenu.java" />
         <option value="$PROJECT_DIR$/src/burp/GUI.java" />
         <option value="$PROJECT_DIR$/src/burp/dbFileChooser.java" />
-        <option value="$PROJECT_DIR$/src/burp/DomainPanel.java" />
         <option value="$PROJECT_DIR$/src/burp/ProjectMenu.java" />
         <option value="$PROJECT_DIR$/src/test/treeselect.java" />
         <option value="$PROJECT_DIR$/src/test/treeModelExample.java" />
@@ -187,10 +199,11 @@
         <option value="$PROJECT_DIR$/src/target/TargetEntryMenu.java" />
         <option value="$PROJECT_DIR$/src/test/SetTest.java" />
         <option value="$PROJECT_DIR$/src/target/TargetEntry.java" />
-        <option value="$PROJECT_DIR$/src/burp/TitlePanel.java" />
-        <option value="$PROJECT_DIR$/src/burp/DBHelper.java" />
         <option value="$PROJECT_DIR$/src/target/TargetMapTree.java" />
         <option value="$PROJECT_DIR$/src/target/TargetMapTreeModel.java" />
+        <option value="$PROJECT_DIR$/src/burp/DBHelper.java" />
+        <option value="$PROJECT_DIR$/src/burp/DomainPanel.java" />
+        <option value="$PROJECT_DIR$/src/burp/TitlePanel.java" />
       </list>
     </option>
   </component>
@@ -230,7 +243,7 @@
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1564060313354" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1564126518864" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="project.structure.last.edited" value="Problems" />
     <property name="project.structure.proportion" value="0.0" />
@@ -383,12 +396,12 @@
       <workItem from="1558652018041" duration="5167000" />
       <workItem from="1558879856964" duration="7467000" />
       <workItem from="1560520492431" duration="27000" />
-      <workItem from="1563940566122" duration="36119000" />
+      <workItem from="1563940566122" duration="39516000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="122144000" />
+    <option name="totallyTimeSpent" value="125541000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -401,7 +414,6 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.20842217" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
@@ -510,7 +522,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" log-message="true" suspend="NONE" type="java-line">
           <url>file://$PROJECT_DIR$/src/burp/DBHelper.java</url>
-          <line>200</line>
+          <line>205</line>
           <properties />
           <option name="timeStamp" value="114" />
         </line-breakpoint>
@@ -720,18 +732,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/burp/DomainPanel.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-5235">
-          <caret line="695" column="16" selection-start-line="695" selection-start-column="16" selection-end-line="695" selection-end-column="16" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#2646#2647#0" expanded="true" />
-            <element signature="e#2672#2673#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="jar://C:/Program Files/Java/jdk1.8.0_121/src.zip!/javax/swing/tree/TreeSelectionModel.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="189">
@@ -861,18 +861,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/burp/TitlePanel.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="267">
-          <caret line="448" column="33" lean-forward="true" selection-start-line="448" selection-start-column="33" selection-end-line="448" selection-end-column="33" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#15547#15548#0" expanded="true" />
-            <element signature="e#15576#15577#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="jar://C:/Program Files/Java/jdk1.8.0_121/src.zip!/javax/swing/event/TreeModelEvent.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="463">
@@ -890,17 +878,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/burp/DBHelper.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3529">
-          <caret line="198" column="19" selection-start-line="198" selection-start-column="19" selection-end-line="198" selection-end-column="19" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#6601#6614#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/target/TargetMapTree.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-469">
@@ -914,8 +891,47 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/target/TargetMapTreeModel.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="697">
-          <caret line="289" column="41" selection-start-line="289" selection-start-column="41" selection-end-line="289" selection-end-column="41" />
+        <state relative-caret-position="1203">
+          <caret line="273" column="43" selection-start-line="273" selection-start-column="28" selection-end-line="273" selection-end-column="43" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/burp/DBHelper.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="273">
+          <caret line="177" column="21" lean-forward="true" selection-start-line="177" selection-start-column="21" selection-end-line="177" selection-end-column="21" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#6601#6614#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/burp/DomainPanel.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="405">
+          <caret line="961" column="55" selection-start-line="961" selection-start-column="55" selection-end-line="961" selection-end-column="55" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#2646#2647#0" expanded="true" />
+            <element signature="e#2672#2673#0" expanded="true" />
+            <element signature="e#3779#3780#0" expanded="true" />
+            <element signature="e#3806#3807#0" expanded="true" />
+            <element signature="e#8200#8201#0" expanded="true" />
+            <element signature="e#8238#8239#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/burp/TitlePanel.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-19">
+          <caret line="453" column="31" lean-forward="true" selection-start-line="453" selection-start-column="31" selection-end-line="453" selection-end-column="31" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#15547#15548#0" expanded="true" />
+            <element signature="e#15576#15577#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

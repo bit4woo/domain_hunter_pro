@@ -451,6 +451,7 @@ public class TitlePanel extends JPanel {
 
 
 	public void getAllTitle(){
+		DomainPanel.backupDB();
 		Set<String> domains = new HashSet<>();//新建一个对象，直接赋值后的删除操作，实质是对domainResult的操作。
 		domains.addAll(DomainPanel.getDomainResult().getSubDomainSet());
 		//remove domains in black list

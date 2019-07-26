@@ -48,10 +48,7 @@ public class DBHelper {
 		this.dbFilePath = dbFilePath;
 		try {
 			conn = getConnection();
-			if (!tableExists("DOMAINObject") ||!tableExists("Title") ||!tableExists("Target")){
-				stdout.println("create tables");
-				createTable();
-			}
+			createTable();
 		} catch ( Exception e ) {
 			System.err.println( e.getClass().getName() + ": " + e.getMessage() );
 			//System.exit(0);//就是这个导致了整个burp的退出！！！！
@@ -62,23 +59,31 @@ public class DBHelper {
 		try {
 			conn = getConnection();
 			Statement stmt = conn.createStatement();
-			String sql = "CREATE TABLE DOMAINObject" +
-					"(ID INT PRIMARY KEY     NOT NULL," +
-					" NAME           TEXT    NOT NULL," +
-					" Content        TEXT    NOT NULL)";
-			stmt.executeUpdate(sql);
 
-			String sqlTitle = "CREATE TABLE Title" +
-					"(ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +//自动增长 https://www.sqlite.org/autoinc.html
-					" NAME           TEXT    NOT NULL," +
-					" Content        TEXT    NOT NULL)";
-			stmt.executeUpdate(sqlTitle);
+			if (!tableExists("DOMAINObject")){
+				String sql = "CREATE TABLE DOMAINObject" +
+						"(ID INT PRIMARY KEY     NOT NULL," +
+						" NAME           TEXT    NOT NULL," +
+						" Content        TEXT    NOT NULL)";
+				stmt.executeUpdate(sql);
+			}
 
-			String sqlTarget = "CREATE TABLE Target" +
-					"(ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +//自动增长 https://www.sqlite.org/autoinc.html
-					" NAME           TEXT    NOT NULL," +
-					" Content        TEXT    NOT NULL)";
-			stmt.executeUpdate(sqlTarget);
+			if (!tableExists("Title") ){
+				String sqlTitle = "CREATE TABLE Title" +
+						"(ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +//自动增长 https://www.sqlite.org/autoinc.html
+						" NAME           TEXT    NOT NULL," +
+						" Content        TEXT    NOT NULL)";
+				stmt.executeUpdate(sqlTitle);
+			}
+
+			if (!tableExists("Target")){
+				String sqlTarget = "CREATE TABLE Target" +
+						"(ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +//自动增长 https://www.sqlite.org/autoinc.html
+						" NAME           TEXT    NOT NULL," +
+						" Content        TEXT    NOT NULL)";
+				stmt.executeUpdate(sqlTarget);
+			}
+
 
 			stmt.close();
 			conn.close();
@@ -135,7 +140,7 @@ public class DBHelper {
 		} catch (Exception ex) {
 			ex.printStackTrace(stderr);
 		} finally {
-			destroy();
+			//destroy();
 		}
 		return false;
 	}

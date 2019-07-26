@@ -102,7 +102,7 @@ public class DomainPanel extends JPanel {
 	protected static DefaultTableModel domainTableModel;
 	PrintWriter stdout;
 	PrintWriter stderr;
-	
+
 
 
 	public DomainPanel() {//构造函数
@@ -262,27 +262,17 @@ public class DomainPanel extends JPanel {
 			}
 		});
 		HeaderPanel.add(btnRenameProject);
-		
+
+
+
 		JButton btnBuckupDB = new JButton("Backup DB");
 		btnBuckupDB.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				File file = BurpExtender.getGui().getCurrentDBFile();
-//				if (System.getProperty("os.name").contains("Windows")) {
-//					String basedir = "C:\\";
-//				}else {
-//					
-//				}
-				File bakfile = new File(file.getAbsoluteFile().toString()+".bak"+Commons.getNowTimeString());
-				try {
-					FileUtils.copyFile(file, bakfile);
-				} catch (IOException e1) {
-					e1.printStackTrace(stderr);
-				} 
-		
+				DomainPanel.this.backupDB();
 			}
 		});
 		HeaderPanel.add(btnBuckupDB);
-		
+
 		JButton btnBgphenet = new JButton("bgp.he.net");
 		btnBgphenet.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -295,7 +285,7 @@ public class DomainPanel extends JPanel {
 			}
 		});
 		HeaderPanel.add(btnBgphenet);
-		
+
 		JButton btnIcp = new JButton("icp.chinaz.com");
 		btnIcp.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -383,12 +373,12 @@ public class DomainPanel extends JPanel {
 
 		domainTableModel = new DefaultTableModel(
 				new Object[][] {
-					//{"1", "1","1"},
+						//{"1", "1","1"},
 				},
 				new String[] {
 						"Root Domain", "Keyword"//, "Source"
 				}
-				);
+		);
 		table.setModel(domainTableModel);
 		domainTableModel.addTableModelListener(new TableModelListener(){
 			@Override
@@ -517,7 +507,7 @@ public class DomainPanel extends JPanel {
 				Set<String> newSubDomainSet = new HashSet<>();
 				Set<String> newSimilarDomainSet = new HashSet<String>();
 				tmpDomains.addAll(domainResult.getSimilarDomainSet());
-				
+
 				for (String domain:tmpDomains) {
 					int type = domainResult.domainType(domain);
 					if (type == DomainObject.SUB_DOMAIN)
@@ -527,7 +517,7 @@ public class DomainPanel extends JPanel {
 						newSimilarDomainSet.add(domain);
 					}
 				}
-				
+
 				//相关域名中也可能包含子域名，子域名才是核心，要将它们加到子域名
 				tmpDomains = domainResult.getRelatedDomainSet();
 				for (String domain:tmpDomains) {
@@ -593,14 +583,14 @@ public class DomainPanel extends JPanel {
 
 		///////////////////////////////textAreas///////////////////////////////////////////////////////
 
-JScrollPane ScrollPaneSubnets = new JScrollPane(); //1of4
-		
+		JScrollPane ScrollPaneSubnets = new JScrollPane(); //1of4
+
 		JScrollPane ScrollPaneRelatedDomains = new JScrollPane(); //2of4
-		JScrollPane ScrollPaneSubdomains = new JScrollPane(); 
+		JScrollPane ScrollPaneSubdomains = new JScrollPane();
 		JScrollPane ScrollPaneSimilarDomains = new JScrollPane();
-		JScrollPane ScrollPaneEmails = new JScrollPane(); 
+		JScrollPane ScrollPaneEmails = new JScrollPane();
 		JScrollPane ScrollPanePackageNames = new JScrollPane();
-		
+
 		split1of4.setRightComponent(ScrollPaneSubnets);
 
 		split2of4.setLeftComponent(ScrollPaneRelatedDomains);
@@ -725,11 +715,11 @@ JScrollPane ScrollPaneSubnets = new JScrollPane(); //1of4
 	public Map<String, Set<String>> search(Set<String> rootdomains, Set<String> keywords){
 		IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
 		IHttpRequestResponse[] messages = callbacks.getSiteMap(null);
-		
+
 		List<IHttpRequestResponse> AllMessages = new ArrayList<IHttpRequestResponse>();
 		AllMessages.addAll(Arrays.asList(messages));
 		AllMessages.addAll(collectPackageNameMessages());//包含错误回显的请求响应消息
-		
+
 		new ThreadSearhDomain(AllMessages).Do();
 		return null;
 	}
@@ -756,8 +746,8 @@ JScrollPane ScrollPaneSubnets = new JScrollPane(); //1of4
 		}
 		return Emails;
 	}
-	
-	
+
+
 	public static Set<IHttpRequestResponse> collectPackageNameMessages() {
 		Set<IHttpRequestResponse> PackageNameMessages = new HashSet<>();
 		IScanIssue[]  issues =  BurpExtender.getCallbacks().getScanIssues(null);
@@ -956,5 +946,20 @@ JScrollPane ScrollPaneSubnets = new JScrollPane(); //1of4
 		Set<String> domainList = new HashSet<>(Arrays.asList(textarea.getText().replaceAll(" ","").replaceAll("\r\n", "\n").split("\n")));
 		domainList.remove("");
 		return domainList;
+	}
+
+	public static void backupDB(){
+		File file = BurpExtender.getGui().getCurrentDBFile();
+//				if (System.getProperty("os.name").contains("Windows")) {
+//					String basedir = "C:\\";
+//				}else {
+//
+//				}
+		File bakfile = new File(file.getAbsoluteFile().toString()+".bak"+Commons.getNowTimeString());
+		try {
+			FileUtils.copyFile(file, bakfile);
+		} catch (IOException e1) {
+			e1.printStackTrace(BurpExtender.getStderr());
+		}
 	}
 }
