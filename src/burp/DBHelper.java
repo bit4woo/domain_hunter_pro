@@ -16,6 +16,8 @@ import java.util.stream.IntStream;
 
 import com.alibaba.fastjson.JSON;
 import target.TargetEntry;
+import target.TargetMapTree;
+import target.TargetMapTreeModel;
 
 /*
 prepareStatement  //预编译方法，在有参数传入时用它
@@ -200,7 +202,122 @@ public class DBHelper {
 	}
 
 
-	/////////////////////Target//////////////////////////////
+/*
+	实际上是存储rootNode
+	 */
+	public boolean saveRootNode(TargetEntry rootNode){
+		try {
+			conn = getConnection();
+			pres = conn.prepareStatement("select * From Target");
+			ResultSet rs = pres.executeQuery();
+			String sql = "";
+			if (rs.next()){
+				sql = "update Target SET NAME=?,Content=? where ID=1";
+			}else{
+				sql = "insert into Target(ID,NAME,Content) values(1,?,?)";
+			}
+			String name = rootNode.getDomain();
+			String content  = JSON.toJSONString(rootNode);
+			pres=conn.prepareStatement(sql);//预编译
+
+			pres.setString(1,name);
+			pres.setString(2,content);
+			int n = pres.executeUpdate();
+			if (n==1){
+				System.out.println("save root node successfully");
+				return true;
+			}else {
+				System.out.println("save root node object failed");
+				return false;
+			}
+		} catch (Exception e) {
+			e.printStackTrace(stderr);
+		} finally {
+			destroy();
+		}
+		return false;
+	}
+
+	public TargetEntry getRootNode(){
+		try {
+			String sql="select * from Target";
+			conn = getConnection();
+			pres=conn.prepareStatement(sql);
+			ResultSet res=pres.executeQuery();
+			while(res.next()){
+				String Content =res.getString("Content");//获取content部分的内容
+				TargetEntry rootNode = TargetMapTreeModel.restoreRootNodeFromJson(Content);
+				return rootNode;
+			}
+		} catch (Exception e) {
+			e.printStackTrace(stderr);
+		} finally {
+			destroy();
+		}
+		return null;
+	}
+
+
+
+	/*
+	实际上是存储rootNode
+	 */
+	public boolean saveTargetModel(TargetMapTreeModel treeModel){
+		try {
+			conn = getConnection();
+			pres = conn.prepareStatement("select * From Target");
+			ResultSet rs = pres.executeQuery();
+			String sql = "";
+			if (rs.next()){
+				sql = "update Target SET NAME=?,Content=? where ID=1";
+			}else{
+				sql = "insert into Target(ID,NAME,Content) values(1,?,?)";
+			}
+			String name = treeModel.getRoot().toString();
+			String content  = treeModel.rootNodeToJson();
+			pres=conn.prepareStatement(sql);//预编译
+
+			pres.setString(1,name);
+			pres.setString(2,content);
+			int n = pres.executeUpdate();
+			if (n==1){
+				System.out.println("save treeModel object successfully");
+				return true;
+			}else {
+				System.out.println("save treeModel object failed");
+				return false;
+			}
+		} catch (Exception e) {
+			e.printStackTrace(stderr);
+		} finally {
+			destroy();
+		}
+		return false;
+	}
+
+	public TargetMapTreeModel getTargetModel(){
+		try {
+			String sql="select * from Target";
+			conn = getConnection();
+			pres=conn.prepareStatement(sql);
+			ResultSet res=pres.executeQuery();
+			while(res.next()){
+				String Content =res.getString("Content");//获取content部分的内容
+				TargetEntry rootNode = TargetMapTreeModel.restoreRootNodeFromJson(Content);
+				TargetMapTreeModel model = new TargetMapTreeModel();
+				model.setRootNode(rootNode);
+				return model;
+			}
+		} catch (Exception e) {
+			e.printStackTrace(stderr);
+		} finally {
+			destroy();
+		}
+		return null;
+	}
+
+	/////////////////////Target   Deprecated//////////////////////////////
+	@Deprecated //类似domainObject，所有记录序列化成一条记录
 	public boolean addTargets(Set<TargetEntry> entries){
 		try {
 			conn = getConnection();
@@ -213,7 +330,7 @@ public class DBHelper {
 			}
 			int[] result = pres.executeBatch();                                   //批量插入到数据库中
 			if ( IntStream.of(result).sum() == entries.size()){
-				System.out.println("add Target successfully");
+				System.out.println("add Targets successfully");
 				return true;
 			}else {
 				return false;
@@ -227,7 +344,7 @@ public class DBHelper {
 	}
 
 
-
+	@Deprecated //类似domainObject，所有记录序列化成一条记录
 	public boolean addTarget(TargetEntry entry){
 		try {
 			conn = getConnection();
@@ -250,8 +367,8 @@ public class DBHelper {
 		return false;
 	}
 
-
-	public List<TargetEntry> getTagets(){
+	@Deprecated //类似domainObject，所有记录序列化成一条记录
+	public List<TargetEntry> getTargets(){
 		List<TargetEntry> list=new ArrayList<TargetEntry>();
 		try {
 			conn = getConnection();
@@ -290,6 +407,7 @@ public class DBHelper {
 		}
 	}
 
+	@Deprecated //类似domainObject，所有记录序列化成一条记录
 	public boolean updateTargets(Set<TargetEntry> lineEntries){
 		try {
 			conn = getConnection();
@@ -335,6 +453,7 @@ public class DBHelper {
 		}
 	}
 
+	@Deprecated //类似domainObject，所有记录序列化成一条记录
 	public boolean deleteTargets(Set<TargetEntry> lineEntries){
 		String sql="DELETE FROM Target where NAME= ?";
 		//DELETE FROM Person WHERE LastName = 'Wilson'
@@ -361,6 +480,24 @@ public class DBHelper {
 		return false;
 	}
 
+	@Deprecated //类似domainObject，所有记录序列化成一条记录
+	public void deleteAllTargets(){
+		String sql="DELETE FROM Target where 1=1";
+		//DELETE FROM Person WHERE LastName = 'Wilson'
+
+		try {
+			conn = getConnection();
+			pres=conn.prepareStatement(sql);
+			//pres.setString(1, entry.getDomain());
+			pres.executeUpdate();
+			//Statement.execute(String sql) method which is mainly intended to perform database queries.
+			//To execute INSERT/UPDATE/DELETE statements it's recommended the use of Statement.executeUpdate() method instead.
+		} catch (Exception e) {
+			e.printStackTrace(stderr);
+		} finally {
+			destroy();
+		}
+	}
 
 
 	//////////////////Title///////////////////////////////

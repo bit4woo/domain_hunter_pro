@@ -71,6 +71,7 @@ public class GUI extends JFrame {
 			domainPanel.setDomainResult(dbhelper.getDomainObj());
 			domainPanel.showToDomainUI();
 			titlePanel.showToTitleUI(dbhelper.getTitles());
+			titlePanel.showToTargetUI2(dbhelper.getRootNode());
 			stdout.println("Loading Project ["+domainPanel.domainResult.projectName+"] Finished From File "+ dbFilePath);
 			return true;
 		} catch (Exception e) {

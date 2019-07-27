@@ -30,6 +30,7 @@ import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 import javax.swing.tree.DefaultMutableTreeNode;
 
+import target.TargetEntry;
 import target.TargetMapTree;
 import target.TargetMapTreeModel;
 
@@ -499,6 +500,23 @@ public class TitlePanel extends JPanel {
 		digStatus();
 		stdout.println("Load Title Panel Data Done");
 		titleTableModel.setListenerIsOn(true);
+	}
+
+
+	public void showToTargetUI(TargetMapTreeModel treeModel){
+		if (treeModel ==null){
+			return;
+		}
+		sitemapTree.setModel(treeModel);
+		treeModel.fireTreeStructureChanged();
+	}
+
+	public void showToTargetUI2(TargetEntry rootNode){
+		if (rootNode ==null){
+			return;
+		}
+		((TargetMapTreeModel)sitemapTree.getModel()).setRootNode(rootNode);
+		((TargetMapTreeModel)sitemapTree.getModel()).fireTreeStructureChanged();
 	}
 
 

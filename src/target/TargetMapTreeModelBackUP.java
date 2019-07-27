@@ -1,50 +1,33 @@
 package target;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.Vector;
+import burp.BurpExtender;
+import burp.DBHelper;
+import burp.GUI;
 
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-import burp.BurpExtender;
-import burp.DBHelper;
-import burp.GUI;
-import com.alibaba.fastjson.JSON;
+public class TargetMapTreeModelBackUP implements TreeModel  {
 
-public class TargetMapTreeModel implements TreeModel  {
-
-	private Vector<TreeModelListener> treeModelListeners = new Vector<TreeModelListener>();
+	//private Vector<TreeModelListener> treeModelListeners = new Vector<TreeModelListener>();
 	//关于监听器，官方例子中，应该是一个节点对应一个监听器。在我自己的这段代码中，就只关注这个root节点，后续的操作也是以root节点为核心的。
-	//故只需要一个监听器就可以了??----似乎必须用监听器的集合，有一些默认的监听器会被自动添加，debug时可以看到！！！
+	//故只需要一个监听器就可以了
+	private TreeModelListener treeModelListener = new MyTreeModelListener();
 	static  TargetEntry rootNode;
 
-	public static TargetEntry getRootNode() {
-		return rootNode;
-	}
 
-	public static void setRootNode(TargetEntry rootNode) {
-		TargetMapTreeModel.rootNode = rootNode;
-	}
-
-	public String rootNodeToJson(){
-		return JSON.toJSONString(rootNode);
-	}
-
-	public static TargetEntry restoreRootNodeFromJson (String modelJson){
-		return JSON.parseObject(modelJson,TargetEntry.class);
-	}
-
-	public TargetMapTreeModel() {
+	public TargetMapTreeModelBackUP() {
 		super();
-		rootNode = new TargetEntry("Targets");
+		rootNode = new TargetEntry("root");
 
-//		addTargetFromDomain("test");
-//		addTargetFromDomain("www.baidu.com");
-		this.addTreeModelListener(new MyTreeModelListener());//最后再添加这个监听器，避免事件触发
+		addTargetFromDomain("test");
+		addTargetFromDomain("www.baidu.com");
+		this.addTreeModelListener(treeModelListener);//最后再添加这个监听器，避免事件触发
 	}
 
 	/*
@@ -67,6 +50,7 @@ public class TargetMapTreeModel implements TreeModel  {
 	public Set<TargetEntry> getAllTargetEntries(){
 		return getSubTargetEntrysOfNode(rootNode);
 	}
+
 
 	@Deprecated
 	public Set<TargetEntry> getTargetsbyDomains(Set<String> domains) {
@@ -147,7 +131,7 @@ public class TargetMapTreeModel implements TreeModel  {
 	public void addTargetFromDomain(String domain) {
 		TargetEntry newEntry = new TargetEntry(domain);
 		justAddTarget(newEntry);
-		fireTreeStructureChanged();
+		//fireTreeStructureChanged(rootNode);
 	}
 
 	/*
@@ -158,7 +142,7 @@ public class TargetMapTreeModel implements TreeModel  {
 		for (TargetEntry entry: targets) {
 			rootNode.getChildren().remove(entry);
 		}
-		fireTreeStructureChanged();
+		//fireTreeStructureChanged(rootNode);
 	}
 
 	/*
@@ -166,7 +150,7 @@ public class TargetMapTreeModel implements TreeModel  {
 	 */
 	public void removeTarget(TargetEntry target) {
 		rootNode.getChildren().remove(target);
-		fireTreeStructureChanged();
+		//fireTreeStructureChanged(rootNode);
 	}
 
 	/*
@@ -177,7 +161,7 @@ public class TargetMapTreeModel implements TreeModel  {
 		child.getParent().getChildren().remove(child); //从原始父节点移除
 		child.setParent(parent);
 		parent.getChildren().add(child); //添加到新的父节点下
-		fireTreeStructureChanged();
+		//fireTreeStructureChanged(rootNode);
 	}
 
 
@@ -197,21 +181,21 @@ public class TargetMapTreeModel implements TreeModel  {
 //		}
 //	}
 //
-	public void fireTreeStructureChanged() {
-		int len = treeModelListeners.size();
-		TreeModelEvent e = new TreeModelEvent(this,
-				new Object[] {rootNode});
-		for (TreeModelListener tml : treeModelListeners) {
-			tml.treeStructureChanged(e);
-		}
-	}
-
-//	//root节点的监听器处理,但是居然不生效！！！why? 一定要用多个listener？
 //	protected void fireTreeStructureChanged() {
+//		int len = treeModelListeners.size();
 //		TreeModelEvent e = new TreeModelEvent(this,
 //				new Object[] {rootNode});
-//		treeModelListener.treeStructureChanged(e);
+//		for (TreeModelListener tml : treeModelListeners) {
+//			tml.treeStructureChanged(e);
+//		}
 //	}
+
+	//root节点的监听器处理
+	protected void fireTreeStructureChanged() {
+		TreeModelEvent e = new TreeModelEvent(this,
+				new Object[] {rootNode});
+		treeModelListener.treeStructureChanged(e);
+	}
 
 	public void showToTargetUI(List<TargetEntry> targetEntries) {
 		//titleTableModel.setLineEntries(new ArrayList<LineEntry>());//clear
@@ -263,13 +247,13 @@ public class TargetMapTreeModel implements TreeModel  {
 
 	@Override
 	public void addTreeModelListener(TreeModelListener l) {
-		treeModelListeners.addElement(l);
+		//treeModelListeners.addElement(l);
 		//当使用多个监听器时需要以上代码，这里只有一个监听器，不需要了
 	}
 
 	@Override
 	public void removeTreeModelListener(TreeModelListener l) {
-		treeModelListeners.removeElement(l);
+		//treeModelListeners.removeElement(l);
 		//当使用多个监听器时需要以上代码，这里只有一个监听器，不需要了
 	}
 
@@ -282,15 +266,15 @@ public class TargetMapTreeModel implements TreeModel  {
 
 		@Override
 		public void treeNodesChanged(TreeModelEvent e) {
-			BurpExtender.getStdout().println("treeNodesChanged: ");
 //		Object[] urltest = e.getPath();
+			BurpExtender.getStdout().println("treeNodesChanged: ");
 //		TreePath tp = e.getTreePath();
 //		Object[] children = e.getChildren();
 //		BurpExtender.getStdout().println("getTreePath: "+tp);
 //		BurpExtender.getStdout().println("getChildren: "+children);
+			//TODO save to database
 //		DBHelper dbHelper = new DBHelper(GUI.getCurrentDBFile().toString());
 //		dbHelper.updateTargets(getRelatedItems(e));
-
 		}
 
 		@Override
@@ -311,13 +295,14 @@ public class TargetMapTreeModel implements TreeModel  {
 		public void treeStructureChanged(TreeModelEvent e) {
 			BurpExtender.getStdout().println("treeStructureChanged: ");
 			DBHelper dbHelper = new DBHelper(GUI.getCurrentDBFile().toString());
-			dbHelper.saveTargetModel(TargetMapTreeModel.this);
-//			//TODO 数据库操作同步过程还是有问题，关键要理解监听器的工作
-//			//目前采用全量删除+全量添加的方法来更新所有target。但这个方法肯定是效率低的！！！
+			dbHelper.deleteAllTargets();
+			dbHelper.addTargets(TargetMapTreeModelBackUP.this.getAllTargetEntries());
+			//TODO 数据库操作同步过程还是有问题，关键要理解监听器的工作
+			//目前采用全量删除+全量添加的方法来更新所有target。但这个方法肯定是效率低的！！！
 
 		}
 
-		@Deprecated
+
 		public Set<TargetEntry> getRelatedItems(TreeModelEvent e){
 			Object[] modifiedItems = e.getChildren();//获取相关的，发生了改变的节点
 			Set<TargetEntry> Targets= new HashSet<>();
@@ -330,11 +315,6 @@ public class TargetMapTreeModel implements TreeModel  {
 
 	}
 
-
-	public static void main(String[] args){
-		TargetMapTreeModel aaa = new TargetMapTreeModel();
-		System.out.print(aaa.rootNodeToJson());
-	}
 
 }
 
