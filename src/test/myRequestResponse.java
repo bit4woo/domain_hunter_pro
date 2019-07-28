@@ -1,10 +1,8 @@
 package test;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-
 import burp.IHttpRequestResponse;
 import burp.IHttpService;
+import com.google.gson.Gson;
 
 public class myRequestResponse implements IHttpRequestResponse  {
 
@@ -93,6 +91,6 @@ public class myRequestResponse implements IHttpRequestResponse  {
 		x.setRequest("xxxxx".getBytes());
 		x.setResponse("yyy".getBytes());
 		x.setHttpService((IHttpService)new myHttpService());
-		System.out.println(JSONObject.toJSON(x));
+		System.out.println(new Gson().toJson(x));
 	}
 }

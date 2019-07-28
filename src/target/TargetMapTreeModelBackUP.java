@@ -94,7 +94,7 @@ public class TargetMapTreeModelBackUP implements TreeModel  {
 	private void justAddTarget(TargetEntry target) {
 		if (isexist(target)) return;
 		rootNode.getChildren().add(target);
-		target.setParent(rootNode);
+		target.setParentName(rootNode.getDomain());
 	}
 	/*
 	向root节点添加子节点
@@ -157,9 +157,9 @@ public class TargetMapTreeModelBackUP implements TreeModel  {
 	修改2个节点的父子关系
 	 */
 	public void linkTogether(TargetEntry parent,TargetEntry child) {
-
-		child.getParent().getChildren().remove(child); //从原始父节点移除
-		child.setParent(parent);
+		getTargetbyDomain(child.getParentName()).getChildren().remove(child);
+		//child.getParent().getChildren().remove(child); //从原始父节点移除
+		child.setParentName(parent.getDomain());
 		parent.getChildren().add(child); //添加到新的父节点下
 		//fireTreeStructureChanged(rootNode);
 	}

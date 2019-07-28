@@ -13,7 +13,7 @@ import javax.swing.tree.TreePath;
 import burp.BurpExtender;
 import burp.DBHelper;
 import burp.GUI;
-import com.alibaba.fastjson.JSON;
+import com.google.gson.Gson;
 
 public class TargetMapTreeModel implements TreeModel  {
 
@@ -31,11 +31,11 @@ public class TargetMapTreeModel implements TreeModel  {
 	}
 
 	public String rootNodeToJson(){
-		return JSON.toJSONString(rootNode);
+		return new Gson().toJson(rootNode);
 	}
 
 	public static TargetEntry restoreRootNodeFromJson (String modelJson){
-		return JSON.parseObject(modelJson,TargetEntry.class);
+		return new Gson().fromJson(modelJson,TargetEntry.class);
 	}
 
 	public TargetMapTreeModel() {
@@ -52,6 +52,7 @@ public class TargetMapTreeModel implements TreeModel  {
 	 */
 	public static Set<TargetEntry> getSubTargetEntrysOfNode(TargetEntry node){
 		Set<TargetEntry> result = new HashSet<>();
+		if (node == null || node.getChildren() == null) return null;
 		for (TargetEntry child:node.getChildren()){
 			result.add(child);
 			if (child.getChildren().size() > 0){
@@ -108,9 +109,11 @@ public class TargetMapTreeModel implements TreeModel  {
 	添加子节点，不调用fire函数，批量添加时避免频繁fire！！！
 	 */
 	private void justAddTarget(TargetEntry target) {
-		if (isexist(target)) return;
-		rootNode.getChildren().add(target);
-		target.setParent(rootNode);
+		//if (isexist(target)) return;
+		if (!isexist(target)) {
+			rootNode.getChildren().add(target);
+			target.setParentName(rootNode.getDomain());
+		}
 	}
 	/*
 	向root节点添加子节点
@@ -174,8 +177,9 @@ public class TargetMapTreeModel implements TreeModel  {
 	 */
 	public void linkTogether(TargetEntry parent,TargetEntry child) {
 
-		child.getParent().getChildren().remove(child); //从原始父节点移除
-		child.setParent(parent);
+		getTargetbyDomain(child.getParentName()).getChildren().remove(child);
+		//child.getParent().getChildren().remove(child); //从原始父节点移除
+		child.setParentName(parent.getDomain());
 		parent.getChildren().add(child); //添加到新的父节点下
 		fireTreeStructureChanged();
 	}
@@ -311,7 +315,7 @@ public class TargetMapTreeModel implements TreeModel  {
 		public void treeStructureChanged(TreeModelEvent e) {
 			BurpExtender.getStdout().println("treeStructureChanged: ");
 			DBHelper dbHelper = new DBHelper(GUI.getCurrentDBFile().toString());
-			dbHelper.saveTargetModel(TargetMapTreeModel.this);
+			dbHelper.saveRootNode(TargetMapTreeModel.getRootNode());
 //			//TODO 数据库操作同步过程还是有问题，关键要理解监听器的工作
 //			//目前采用全量删除+全量添加的方法来更新所有target。但这个方法肯定是效率低的！！！
 

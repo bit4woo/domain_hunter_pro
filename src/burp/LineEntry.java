@@ -8,9 +8,9 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.annotation.JSONField;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.annotations.Expose;
 
 public class LineEntry {
 
@@ -34,29 +34,23 @@ public class LineEntry {
 	private String webcontainer = "";
 	private String time = "";
 
-
-	@JSONField(serialize=false)
-	private String messageText = "";//use to search
-	@JSONField(serialize=false)
-	private String bodyText = "";//use to adjust the response changed or not
+	//Gson中，加了transient表示不序列号，是最简单的方法
+	private transient String messageText = "";//use to search
+	private transient String bodyText = "";//use to adjust the response changed or not
 	//don't store these two field to reduce config file size.
 
-	//field for user 
+	//field for user
 	private boolean isNew =true;
 	private boolean isChecked =true;
 	private String comment ="";
 
-	@JSONField(serialize=false)//表明不序列号该字段,messageinfo对象不能被fastjson成功序列化
-	private IHttpRequestResponse messageinfo;
+	private transient IHttpRequestResponse messageinfo;
 
 	//remove IHttpRequestResponse field ,replace with request+response+httpService(host port protocol). for convert to json.
-
-	@JSONField(serialize=false)//表明不序列号该字段
-	private BurpExtender burp;
-	@JSONField(serialize=false)
-	private IExtensionHelpers helpers;
-	@JSONField(serialize=false)
-	private IBurpExtenderCallbacks callbacks;
+	
+	private transient BurpExtender burp;
+	private transient IExtensionHelpers helpers;
+	private transient IBurpExtenderCallbacks callbacks;
 
 	LineEntry(){
 
@@ -98,13 +92,12 @@ public class LineEntry {
 		}
 	}
 
-	@JSONField(serialize=false)//表明不序列号该字段
 	public String ToJson(){//注意函数名称，如果是get set开头，会被认为是Getter和Setter函数，会在序列化过程中被调用。
-		return JSONObject.toJSONString(this);
+		return new Gson().toJson(this);
 	}
 
 	public static LineEntry FromJson(String json){//注意函数名称，如果是get set开头，会被认为是Getter和Setter函数，会在序列化过程中被调用。
-		return JSON.parseObject(json, LineEntry.class);
+		return new Gson().fromJson(json, LineEntry.class);
 	}
 
 	public void parse() {
@@ -440,10 +433,11 @@ Content-Type: text/html;charset=UTF-8
 	public static void main(String args[]) {
 		LineEntry x = new LineEntry();
 		x.setRequest("xxxxxx".getBytes());
-		System.out.println(JSON.toJSON(x));
 
-		System.out.println(JSON.toJSONString(x));
-		System.out.println(JSONObject.toJSONString(x));
-		System.out.println(JSONObject.toJSON(x));
+		String xx = new Gson().toJson(x);
+		System.out.println(xx);
+
+		LineEntry yy = new Gson().fromJson(xx,LineEntry.class);
+		System.out.println(yy);
 	}
 }

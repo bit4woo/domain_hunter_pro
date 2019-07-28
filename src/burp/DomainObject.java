@@ -6,10 +6,8 @@ import java.util.LinkedHashMap;
 import java.util.Set;
 
 import org.apache.commons.net.whois.WhoisClient;
-
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.google.common.net.InternetDomainName;
+import com.google.gson.Gson;
 
 public class DomainObject {
 	public String projectName = "";
@@ -155,12 +153,12 @@ public class DomainObject {
 	public String ToJson() {
 		//return JSON.toJSONString(this);
 		//https://blog.csdn.net/qq_27093465/article/details/73277291
-		return JSONObject.toJSONString(this);
+		return new Gson().toJson(this);
 	}
 
 
 	public  static DomainObject FromJson(String instanceString) {// throws Exception {
-		return JSON.parseObject(instanceString, DomainObject.class);
+		return new Gson().fromJson(instanceString, DomainObject.class);
 	}
 
 
@@ -373,7 +371,5 @@ public class DomainObject {
 		//		System.out.println(InternetDomainName.from("www.jd.local").topPrivateDomain());
 		//		System.out.println(whois("jd.ru"));
 	}
-
-
 
 }

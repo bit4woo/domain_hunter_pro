@@ -1,5 +1,7 @@
 package test;
 
+import com.google.gson.Gson;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -8,7 +10,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Map;
 
-import com.alibaba.fastjson.JSON;
 
 public class HTTPPost {
 	public static String httpPostRequest(String url, String param)
@@ -51,7 +52,7 @@ public class HTTPPost {
 	}
 	
 	public static String Map2String(Map input) {
-		return JSON.toJSONString(input);
+		return new Gson().toJson(input);
 	}
 	
 	

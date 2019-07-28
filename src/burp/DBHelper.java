@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.IntStream;
 
-import com.alibaba.fastjson.JSON;
+import com.google.gson.Gson;
 import target.TargetEntry;
 import target.TargetMapTree;
 import target.TargetMapTreeModel;
@@ -191,7 +191,7 @@ public class DBHelper {
 			ResultSet res=pres.executeQuery();
 			while(res.next()){
 				String Content =res.getString("Content");//获取content部分的内容
-				return JSON.parseObject(Content,DomainObject.class);
+				return new Gson().fromJson(Content,DomainObject.class);
 			}
 		} catch (Exception e) {
 			e.printStackTrace(stderr);
@@ -217,7 +217,7 @@ public class DBHelper {
 				sql = "insert into Target(ID,NAME,Content) values(1,?,?)";
 			}
 			String name = rootNode.getDomain();
-			String content  = JSON.toJSONString(rootNode);
+			String content  = new Gson().toJson(rootNode);
 			pres=conn.prepareStatement(sql);//预编译
 
 			pres.setString(1,name);
@@ -561,7 +561,7 @@ public class DBHelper {
 			ResultSet res=pres.executeQuery();
 			while(res.next()){
 				String LineJson=res.getString("Content");
-				LineEntry entry = JSON.parseObject(LineJson,LineEntry.class);
+				LineEntry entry = new Gson().fromJson(LineJson,LineEntry.class);
 				list.add(entry);
 			}
 		} catch (Exception e) {
