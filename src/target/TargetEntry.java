@@ -3,8 +3,7 @@ package target;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 /*
 为了正常序列号和反序列化，非getter和setter的函数，不要使用get、set开头！
@@ -16,7 +15,7 @@ public class TargetEntry {
 	private final static int LEVEL_LOW = 1;
 	
 	private String domain;
-	private Set<TargetEntry> children = new HashSet<TargetEntry>();
+	private List<TargetEntry> children = new ArrayList<TargetEntry>();//用list方便排序
 	//private transient TargetEntry parent = null;
 	//由于gson默认会递归的去序列化对象，如果这里用了TargetEntry去存储父节点，将陷入死循环！所以改为使用父节点名称（域名）
 	private String parentName;
@@ -29,10 +28,10 @@ public class TargetEntry {
 	
 
 
-	public TargetEntry(String domain, Set<TargetEntry> childURLs) {
+	public TargetEntry(String domain, List<TargetEntry> children) {
 		super();
 		this.domain = domain;
-		this.children = childURLs;
+		this.children = children;
 		this.createdTime = System.currentTimeMillis();
 	}
 
@@ -55,12 +54,12 @@ public class TargetEntry {
 	}
 
 
-	public Set<TargetEntry> getChildren() {
+	public List<TargetEntry> getChildren() {
 		return children;
 	}
 
 
-	public void setChildren(Set<TargetEntry> children) {
+	public void setChildren(List<TargetEntry> children) {
 		this.children = children;
 	}
 
@@ -146,7 +145,10 @@ public class TargetEntry {
     }
     
 	@Override
-	public String toString() { return domain+isChecked(); }
+	public String toString() {
+		String display = "[%s] %s";
+		return  String.format(display,valueLevel,domain);
+	}
 
 	public String toJson(){
 		return  new Gson().toJson(this);

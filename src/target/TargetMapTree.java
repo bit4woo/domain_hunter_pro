@@ -63,9 +63,9 @@ public class TargetMapTree extends JTree{
 			@Override
 			public void valueChanged(TreeSelectionEvent e) {
 				TargetEntry SelectedTarget = (TargetEntry)TargetMapTree.this.getLastSelectedPathComponent();
-				if (SelectedTarget.getDomain().equals("Targets")){
-					//TODO 是否有必要在某些情况下让currentSelected为空，以显示全部呢？
-				}
+//				if (SelectedTarget.getDomain().equals("Targets")){
+//					//TODO 是否有必要在某些情况下让currentSelected为空，以显示全部呢？
+//				}
 
 				TreePath[] paths = TargetMapTree.this.getSelectionModel().getSelectionPaths();
 				currentSelected.clear();

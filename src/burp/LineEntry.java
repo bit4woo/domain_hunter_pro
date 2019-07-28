@@ -47,7 +47,7 @@ public class LineEntry {
 	private transient IHttpRequestResponse messageinfo;
 
 	//remove IHttpRequestResponse field ,replace with request+response+httpService(host port protocol). for convert to json.
-	
+
 	private transient BurpExtender burp;
 	private transient IExtensionHelpers helpers;
 	private transient IBurpExtenderCallbacks callbacks;
@@ -102,8 +102,12 @@ public class LineEntry {
 
 	public void parse() {
 		try {
-			IResponseInfo responseInfo = helpers.analyzeResponse(messageinfo.getResponse());
+
+			time = Commons.getNowTimeString();//这是动态的，会跟随系统时间自动变化
+
 			IHttpService service = this.messageinfo.getHttpService();
+
+			url = service.toString();
 			port = service.getPort();
 			host = service.getHost();
 			protocol = service.getProtocol();
@@ -111,51 +115,51 @@ public class LineEntry {
 			request = messageinfo.getRequest();
 			response = messageinfo.getResponse();
 
-			Getter getter = new Getter(helpers);
+			if (response != null){
+				IResponseInfo responseInfo = helpers.analyzeResponse(response);
+				statuscode = responseInfo.getStatusCode();
 
-			messageText = new String(messageinfo.getRequest())+new String(messageinfo.getResponse());
-
-			statuscode = responseInfo.getStatusCode();
-
-			MIMEtype = responseInfo.getStatedMimeType();
-			if(MIMEtype == null) {
-				MIMEtype = responseInfo.getInferredMimeType();
-			}
-
-			url = this.messageinfo.getHttpService().toString();
-
-
-			webcontainer = getter.getHeaderValueOf(false, messageinfo, "Server");
-
-			bodyText = new String(getter.getBody(false, messageinfo));
-			try{
-				contentLength = Integer.parseInt(getter.getHeaderValueOf(false, messageinfo, "Content-Length").trim());
-			}catch (Exception e){
-				if (contentLength==-1 && bodyText!=null) {
-					contentLength = bodyText.length();
+				MIMEtype = responseInfo.getStatedMimeType();
+				if(MIMEtype == null) {
+					MIMEtype = responseInfo.getInferredMimeType();
 				}
-			}
 
-			Pattern p = Pattern.compile("<title(.*?)</title>");
-			//<title ng-bind="service.title">The Evolution of the Producer-Consumer Problem in Java - DZone Java</title>
-			Matcher m  = p.matcher(bodyText);
-			while ( m.find() ) {
-				title = m.group(0);
-			}
-			if (title.equals("")) {
-				Pattern ph = Pattern.compile("<title [.*?]>(.*?)</title>");
-				Matcher mh  = ph.matcher(bodyText);
-				while ( mh.find() ) {
-					title = mh.group(0);
+
+				Getter getter = new Getter(helpers);
+				messageText = new String(messageinfo.getRequest())+new String(response);
+
+
+				webcontainer = getter.getHeaderValueOf(false, messageinfo, "Server");
+
+				bodyText = new String(getter.getBody(false, messageinfo));
+				try{
+					contentLength = Integer.parseInt(getter.getHeaderValueOf(false, messageinfo, "Content-Length").trim());
+				}catch (Exception e){
+					if (contentLength==-1 && bodyText!=null) {
+						contentLength = bodyText.length();
+					}
 				}
-			}
-			if (title.equals("")) {
-				Pattern ph = Pattern.compile("<h[1-6]>(.*?)</h[1-6]>");
-				Matcher mh  = ph.matcher(bodyText);
-				while ( mh.find() ) {
-					title = mh.group(0);
+
+				Pattern p = Pattern.compile("<title(.*?)</title>");
+				//<title ng-bind="service.title">The Evolution of the Producer-Consumer Problem in Java - DZone Java</title>
+				Matcher m  = p.matcher(bodyText);
+				while ( m.find() ) {
+					title = m.group(0);
 				}
-			}
+				if (title.equals("")) {
+					Pattern ph = Pattern.compile("<title [.*?]>(.*?)</title>");
+					Matcher mh  = ph.matcher(bodyText);
+					while ( mh.find() ) {
+						title = mh.group(0);
+					}
+				}
+				if (title.equals("")) {
+					Pattern ph = Pattern.compile("<h[1-6]>(.*?)</h[1-6]>");
+					Matcher mh  = ph.matcher(bodyText);
+					while ( mh.find() ) {
+						title = mh.group(0);
+					}
+				}
 
 			/*
 			编码转没有成功，好像还引起了栈溢出....奇怪！
@@ -169,11 +173,9 @@ public class LineEntry {
 //				}
 //			}
 
-
-
-			time = Commons.getNowTimeString();//这是动态的，会跟随系统时间自动变化
-
-
+			}else {
+				response = "".getBytes();
+			}
 		}catch(Exception e) {
 			//e.printStackTrace(burp.stderr);
 		}

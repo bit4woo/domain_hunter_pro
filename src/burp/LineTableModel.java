@@ -327,6 +327,26 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	}
 
 
+	public void removeLinesByDomain(String domain) {
+		synchronized (lineEntries) {
+			//because thread let the delete action not in order, so we must loop in here.
+			//list length and index changed after every remove.the origin index not point to right item any more.
+			List<Integer> indexes = new ArrayList<Integer>();
+			for (LineEntry entry:lineEntries){
+				if (entry.getHost().equalsIgnoreCase(domain)){
+					int index = lineEntries.indexOf(entry);
+					indexes.add(index);
+				}
+			}
+			int[] rows = new int[indexes.size()];
+			for(int i = 0; i < indexes.size();i++){
+				rows[i] = indexes.get(i);
+			}
+			removeRows(rows);
+		}
+	}
+
+
 	public void updateRows(int[] rows) {
 		synchronized (lineEntries) {
 			//because thread let the delete action not in order, so we must loop in here.

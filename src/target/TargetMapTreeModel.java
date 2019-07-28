@@ -10,9 +10,7 @@ import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
-import burp.BurpExtender;
-import burp.DBHelper;
-import burp.GUI;
+import burp.*;
 import com.google.gson.Gson;
 
 public class TargetMapTreeModel implements TreeModel  {
@@ -66,7 +64,9 @@ public class TargetMapTreeModel implements TreeModel  {
 	获取root节点下的所有节点
 	 */
 	public Set<TargetEntry> getAllTargetEntries(){
-		return getSubTargetEntrysOfNode(rootNode);
+		Set<TargetEntry> results = getSubTargetEntrysOfNode(rootNode);
+		results.add(rootNode);//需包含节点本身
+		return results;
 	}
 
 	@Deprecated
@@ -86,6 +86,7 @@ public class TargetMapTreeModel implements TreeModel  {
 	根据域名在root节点下查找
 	 */
 	public TargetEntry getTargetbyDomain(String domain) {
+		Set<TargetEntry> enties = getAllTargetEntries();
 		for (TargetEntry entry:getAllTargetEntries()){
 			if (entry.getDomain().equalsIgnoreCase(domain)){
 				return entry;
@@ -160,6 +161,7 @@ public class TargetMapTreeModel implements TreeModel  {
 	public void removeTargets(Set<TargetEntry> targets) {
 		for (TargetEntry entry: targets) {
 			rootNode.getChildren().remove(entry);
+			TitlePanel.getTitleTableModel().removeLinesByDomain(entry.getDomain());
 		}
 		fireTreeStructureChanged();
 	}
@@ -175,12 +177,13 @@ public class TargetMapTreeModel implements TreeModel  {
 	/*
 	修改2个节点的父子关系
 	 */
-	public void linkTogether(TargetEntry parent,TargetEntry child) {
+	public void linkTogether(TargetEntry newParent,TargetEntry child) {
 
-		getTargetbyDomain(child.getParentName()).getChildren().remove(child);
+		TargetEntry oldParent = getTargetbyDomain(child.getParentName());
+		oldParent.getChildren().remove(child);
 		//child.getParent().getChildren().remove(child); //从原始父节点移除
-		child.setParentName(parent.getDomain());
-		parent.getChildren().add(child); //添加到新的父节点下
+		child.setParentName(newParent.getDomain());
+		newParent.getChildren().add(child); //添加到新的父节点下
 		fireTreeStructureChanged();
 	}
 
@@ -333,7 +336,6 @@ public class TargetMapTreeModel implements TreeModel  {
 		}
 
 	}
-
 
 	public static void main(String[] args){
 		TargetMapTreeModel aaa = new TargetMapTreeModel();
