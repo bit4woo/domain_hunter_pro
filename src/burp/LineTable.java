@@ -1,19 +1,24 @@
 package burp;
 
-import javax.swing.*;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableRowSorter;
-
-import target.TargetMapTree;
-
-import java.awt.*;
+import java.awt.Desktop;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Enumeration;
+
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.RowFilter;
+import javax.swing.SwingUtilities;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableRowSorter;
 
 public class LineTable extends JTable
 {
@@ -200,12 +205,6 @@ public class LineTable extends JTable
 				//entry --- a non-null object that wraps the underlying object from the model
 				int row = (int) entry.getIdentifier();
 				LineEntry line = rowSorter.getModel().getLineEntries().get(row);
-
-				if (TargetMapTree.getCurrentSelected().size() > 0){
-					if (!TargetMapTree.getCurrentSelected().contains(line.getHost().trim())) {
-						return false;
-					}
-				}
 
 				if (GUI.getTitlePanel().rdbtnHideCheckedItems.isSelected()&& line.isChecked()) {//to hide checked lines
 					if (selectedRow == row) {

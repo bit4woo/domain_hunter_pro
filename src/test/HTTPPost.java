@@ -1,14 +1,11 @@
 package test;
 
-import com.google.gson.Gson;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Map;
 
 
 public class HTTPPost {
@@ -51,9 +48,9 @@ public class HTTPPost {
 		}
 	}
 	
-	public static String Map2String(Map input) {
-		return new Gson().toJson(input);
-	}
+//	public static String Map2String(Map input) {
+//		return new Gson().toJson(input);
+//	}
 	
 	
 }

@@ -2,7 +2,6 @@ package test;
 
 import burp.IHttpRequestResponse;
 import burp.IHttpService;
-import com.google.gson.Gson;
 
 public class myRequestResponse implements IHttpRequestResponse  {
 
@@ -87,10 +86,10 @@ public class myRequestResponse implements IHttpRequestResponse  {
 	}
 	
 	public static void main(String args[]) {
-		myRequestResponse x =new myRequestResponse();
-		x.setRequest("xxxxx".getBytes());
-		x.setResponse("yyy".getBytes());
-		x.setHttpService((IHttpService)new myHttpService());
-		System.out.println(new Gson().toJson(x));
+//		myRequestResponse x =new myRequestResponse();
+//		x.setRequest("xxxxx".getBytes());
+//		x.setResponse("yyy".getBytes());
+//		x.setHttpService((IHttpService)new myHttpService());
+//		System.out.println(new Gson().toJson(x));
 	}
 }

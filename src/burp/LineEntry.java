@@ -1,16 +1,12 @@
 package burp;
 
-import java.nio.charset.Charset;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.annotations.Expose;
+import com.alibaba.fastjson.JSON;
 
 public class LineEntry {
 
@@ -93,11 +89,11 @@ public class LineEntry {
 	}
 
 	public String ToJson(){//注意函数名称，如果是get set开头，会被认为是Getter和Setter函数，会在序列化过程中被调用。
-		return new Gson().toJson(this);
+		return JSON.toJSONString(this);
 	}
 
 	public static LineEntry FromJson(String json){//注意函数名称，如果是get set开头，会被认为是Getter和Setter函数，会在序列化过程中被调用。
-		return new Gson().fromJson(json, LineEntry.class);
+		return JSON.parseObject(json, LineEntry.class);
 	}
 
 	public void parse() {
@@ -436,11 +432,6 @@ Content-Type: text/html;charset=UTF-8
 	public static void main(String args[]) {
 		LineEntry x = new LineEntry();
 		x.setRequest("xxxxxx".getBytes());
-
-		String xx = new Gson().toJson(x);
-		System.out.println(xx);
-
-		LineEntry yy = new Gson().fromJson(xx,LineEntry.class);
-		System.out.println(yy);
+//		System.out.println(yy);
 	}
 }

@@ -16,8 +16,6 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
-import target.TargetMapTreeModel;
-
 public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListener,IContextMenuFactory{
 	/**
 	 *
@@ -155,7 +153,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 
 		JMenuItem addToTitleItem = new JMenuItem("^_^ Add TO Title");
 		addToTitleItem.addActionListener(new addToTitle(invocation));
-		list.add(addToTitleItem);
+		//list.add(addToTitleItem);
 
 
 
@@ -172,7 +170,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		{
 			try{
 				IHttpRequestResponse[] messages = invocation.getSelectedMessages();
-				addToDomainAndTarget(messages);
+				addToDomain(messages);
 			}
 			catch (Exception e1)
 			{
@@ -276,7 +274,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 				for (IHttpRequestResponse message:messages) {
 					addToTitle(helpers,message);
 				}
-				addToDomainAndTarget(messages);
+				addToDomain(messages);
 			}
 			catch (Exception e1)
 			{
@@ -331,7 +329,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		}
 	}
 
-	public static void addToDomainAndTarget(IHttpRequestResponse[] messages) {
+	public static void addToDomain(IHttpRequestResponse[] messages) {
 
 		Set<String> domains = new HashSet<String>();
 		for(IHttpRequestResponse message:messages) {
@@ -341,8 +339,6 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 
 		DomainObject domainResult = DomainPanel.getDomainResult();
 		domainResult.addToDomainOject(domains);
-		TargetMapTreeModel targetModel = (TargetMapTreeModel)gui.getTitlePanel().getSitemapTree().getModel();
-		targetModel.addTargetsFromDomains(domains);
 	}
 
 
@@ -353,9 +349,6 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 			LineEntry entry = new LineEntry(message);
 			TitlePanel.getTitleTableModel().addNewLineEntry(entry); //add request
 			DomainPanel.getDomainResult().addToDomainOject(host); //add domain
-
-			TargetMapTreeModel targetModel = (TargetMapTreeModel)gui.getTitlePanel().getSitemapTree().getModel();
-			targetModel.addTargetFromDomain(host);// add target
 		}
 	}
 }

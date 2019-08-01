@@ -13,7 +13,11 @@ import java.awt.event.FocusEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.PrintWriter;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.InputMap;
@@ -28,13 +32,6 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
-import javax.swing.tree.DefaultMutableTreeNode;
-
-import target.TargetEntry;
-import target.TargetMapTree;
-import target.TargetMapTreeModel;
-
-import javax.swing.JTree;
 
 public class TitlePanel extends JPanel {
 
@@ -50,7 +47,6 @@ public class TitlePanel extends JPanel {
 	private ThreadGetTitle threadGetTitle;
 	private List<LineEntry> BackupLineEntries;
 	private History searchHistory = new History(10);
-	private TargetMapTree sitemapTree;
 
 	public static LineTable getTitleTable() {
 		return titleTable;
@@ -66,10 +62,6 @@ public class TitlePanel extends JPanel {
 
 	public List<LineEntry> getBackupLineEntries() {
 		return BackupLineEntries;
-	}
-
-	public TargetMapTree getSitemapTree() {
-		return sitemapTree;
 	}
 
 
@@ -88,56 +80,25 @@ public class TitlePanel extends JPanel {
 		this.add(createButtonPanel(), BorderLayout.NORTH);
 
 		/////////////////////////////////////////
-		JSplitPane TargetAndTitlePanel = new JSplitPane();//存放目标域名
-		TargetAndTitlePanel.setResizeWeight(0.2);
-		this.add(TargetAndTitlePanel,BorderLayout.CENTER);
-
-		JScrollPane TargetMapPane = new JScrollPane();
-		TargetMapPane.setPreferredSize(new Dimension(200, 200));
-		TargetAndTitlePanel.setLeftComponent(TargetMapPane);
-
-
+//		JSplitPane TargetAndTitlePanel = new JSplitPane();//存放目标域名
+//		TargetAndTitlePanel.setResizeWeight(0.2);
+//		this.add(TargetAndTitlePanel,BorderLayout.CENTER);
+//
+//		JScrollPane TargetMapPane = new JScrollPane();
+//		TargetMapPane.setPreferredSize(new Dimension(200, 200));
+//		TargetAndTitlePanel.setLeftComponent(TargetMapPane);
+//
+//
+//		titleTable = new LineTable(titleTableModel);
+//		TargetAndTitlePanel.setRightComponent(titleTable.getTableAndDetailSplitPane());
+		
 		titleTable = new LineTable(titleTableModel);
-		TargetAndTitlePanel.setRightComponent(titleTable.getTableAndDetailSplitPane());
-
-		TargetMapTreeModel treeModel=new TargetMapTreeModel();
-		sitemapTree = new TargetMapTree(treeModel);
-		TargetMapPane.setViewportView(sitemapTree);
-
-
-		//sitemapTree.setModel(new TargetMapTreeModel(null));
+		this.add(titleTable.getTableAndDetailSplitPane(),BorderLayout.CENTER);
 	}
 
 	public JPanel createButtonPanel() {
 		buttonPanel = new JPanel();
 		buttonPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
-
-		JButton btnSyncTarget = new JButton("Sync Target");
-		btnSyncTarget.setToolTipText("sync domain to Target");
-		btnSyncTarget.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-					@Override
-					protected Map doInBackground() throws Exception {
-						btnSyncTarget.setEnabled(false);
-						syncTarget();
-						btnSyncTarget.setEnabled(true);
-						return new HashMap<String, String>();
-						//no use ,the return.
-					}
-					@Override
-					protected void done() {
-						try {
-							btnSyncTarget.setEnabled(true);
-						} catch (Exception e) {
-							e.printStackTrace(stderr);
-						}
-					}
-				};
-				worker.execute();
-			}
-		});
-		buttonPanel.add(btnSyncTarget);
 
 		JLabel cookieLabel = new JLabel("Cookie:");
 		buttonPanel.add(cookieLabel);
@@ -444,13 +405,6 @@ public class TitlePanel extends JPanel {
 		return buttonPanel;
 	}
 
-	public void syncTarget() {
-		Set<String> domains = DomainPanel.getDomainResult().getSubDomainSet();
-		TargetMapTreeModel treeModel = (TargetMapTreeModel)sitemapTree.getModel();
-		treeModel.addTargetsFromDomains(domains);
-	}
-
-
 	public void getAllTitle(){
 		DomainPanel.backupDB();
 		Set<String> domains = new HashSet<>();//新建一个对象，直接赋值后的删除操作，实质是对domainResult的操作。
@@ -501,25 +455,6 @@ public class TitlePanel extends JPanel {
 		stdout.println("Load Title Panel Data Done");
 		titleTableModel.setListenerIsOn(true);
 	}
-
-
-	public void showToTargetUI(TargetMapTreeModel treeModel){
-		if (treeModel ==null){
-			return;
-		}
-		sitemapTree.setModel(treeModel);
-		treeModel.fireTreeStructureChanged();
-	}
-
-	public void showToTargetUI2(TargetEntry rootNode){
-		if (rootNode ==null){
-			return;
-		}
-		((TargetMapTreeModel)sitemapTree.getModel()).setRootNode(rootNode);
-		((TargetMapTreeModel)sitemapTree.getModel()).fireTreeStructureChanged();
-	}
-
-
 
 
 	public void digStatus() {

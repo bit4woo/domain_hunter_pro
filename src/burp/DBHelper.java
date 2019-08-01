@@ -11,13 +11,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.IntStream;
 
-import com.google.gson.Gson;
-import target.TargetEntry;
-import target.TargetMapTree;
-import target.TargetMapTreeModel;
+import com.alibaba.fastjson.JSON;
 
 /*
 prepareStatement  //预编译方法，在有参数传入时用它
@@ -77,15 +73,6 @@ public class DBHelper {
 						" Content        TEXT    NOT NULL)";
 				stmt.executeUpdate(sqlTitle);
 			}
-
-			if (!tableExists("Target")){
-				String sqlTarget = "CREATE TABLE Target" +
-						"(ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +//自动增长 https://www.sqlite.org/autoinc.html
-						" NAME           TEXT    NOT NULL," +
-						" Content        TEXT    NOT NULL)";
-				stmt.executeUpdate(sqlTarget);
-			}
-
 
 			stmt.close();
 			conn.close();
@@ -191,7 +178,7 @@ public class DBHelper {
 			ResultSet res=pres.executeQuery();
 			while(res.next()){
 				String Content =res.getString("Content");//获取content部分的内容
-				return new Gson().fromJson(Content,DomainObject.class);
+				return DomainObject.FromJson(Content);
 			}
 		} catch (Exception e) {
 			e.printStackTrace(stderr);
@@ -199,304 +186,6 @@ public class DBHelper {
 			destroy();
 		}
 		return null;
-	}
-
-
-/*
-	实际上是存储rootNode
-	 */
-	public boolean saveRootNode(TargetEntry rootNode){
-		try {
-			conn = getConnection();
-			pres = conn.prepareStatement("select * From Target");
-			ResultSet rs = pres.executeQuery();
-			String sql = "";
-			if (rs.next()){
-				sql = "update Target SET NAME=?,Content=? where ID=1";
-			}else{
-				sql = "insert into Target(ID,NAME,Content) values(1,?,?)";
-			}
-			String name = rootNode.getDomain();
-			String content  = new Gson().toJson(rootNode);
-			pres=conn.prepareStatement(sql);//预编译
-
-			pres.setString(1,name);
-			pres.setString(2,content);
-			int n = pres.executeUpdate();
-			if (n==1){
-				System.out.println("save root node successfully");
-				return true;
-			}else {
-				System.out.println("save root node object failed");
-				return false;
-			}
-		} catch (Exception e) {
-			e.printStackTrace(stderr);
-		} finally {
-			destroy();
-		}
-		return false;
-	}
-
-	public TargetEntry getRootNode(){
-		try {
-			String sql="select * from Target";
-			conn = getConnection();
-			pres=conn.prepareStatement(sql);
-			ResultSet res=pres.executeQuery();
-			while(res.next()){
-				String Content =res.getString("Content");//获取content部分的内容
-				TargetEntry rootNode = TargetMapTreeModel.restoreRootNodeFromJson(Content);
-				return rootNode;
-			}
-		} catch (Exception e) {
-			e.printStackTrace(stderr);
-		} finally {
-			destroy();
-		}
-		return null;
-	}
-
-
-
-	/*
-	实际上是存储rootNode
-	 */
-	public boolean saveTargetModel(TargetMapTreeModel treeModel){
-		try {
-			conn = getConnection();
-			pres = conn.prepareStatement("select * From Target");
-			ResultSet rs = pres.executeQuery();
-			String sql = "";
-			if (rs.next()){
-				sql = "update Target SET NAME=?,Content=? where ID=1";
-			}else{
-				sql = "insert into Target(ID,NAME,Content) values(1,?,?)";
-			}
-			String name = treeModel.getRoot().toString();
-			String content  = treeModel.rootNodeToJson();
-			pres=conn.prepareStatement(sql);//预编译
-
-			pres.setString(1,name);
-			pres.setString(2,content);
-			int n = pres.executeUpdate();
-			if (n==1){
-				System.out.println("save treeModel object successfully");
-				return true;
-			}else {
-				System.out.println("save treeModel object failed");
-				return false;
-			}
-		} catch (Exception e) {
-			e.printStackTrace(stderr);
-		} finally {
-			destroy();
-		}
-		return false;
-	}
-
-	public TargetMapTreeModel getTargetModel(){
-		try {
-			String sql="select * from Target";
-			conn = getConnection();
-			pres=conn.prepareStatement(sql);
-			ResultSet res=pres.executeQuery();
-			while(res.next()){
-				String Content =res.getString("Content");//获取content部分的内容
-				TargetEntry rootNode = TargetMapTreeModel.restoreRootNodeFromJson(Content);
-				TargetMapTreeModel model = new TargetMapTreeModel();
-				model.setRootNode(rootNode);
-				return model;
-			}
-		} catch (Exception e) {
-			e.printStackTrace(stderr);
-		} finally {
-			destroy();
-		}
-		return null;
-	}
-
-	/////////////////////Target   Deprecated//////////////////////////////
-	@Deprecated //类似domainObject，所有记录序列化成一条记录
-	public boolean addTargets(Set<TargetEntry> entries){
-		try {
-			conn = getConnection();
-			String sql="insert into Target(NAME,Content) values(?,?)";
-			pres=conn.prepareStatement(sql);
-			for(TargetEntry entry:entries){
-				pres.setString(1, entry.getDomain());
-				pres.setString(2,entry.toJson());
-				pres.addBatch();                                   //实现批量插入
-			}
-			int[] result = pres.executeBatch();                                   //批量插入到数据库中
-			if ( IntStream.of(result).sum() == entries.size()){
-				System.out.println("add Targets successfully");
-				return true;
-			}else {
-				return false;
-			}
-		} catch (Exception e) {
-			e.printStackTrace(stderr);
-		} finally {
-			destroy();
-		}
-		return false;
-	}
-
-
-	@Deprecated //类似domainObject，所有记录序列化成一条记录
-	public boolean addTarget(TargetEntry entry){
-		try {
-			conn = getConnection();
-			String sql="insert into Target(NAME,Content) values(?,?)";
-			pres=conn.prepareStatement(sql);
-			pres.setString(1, entry.getDomain());
-			pres.setString(2,entry.toJson());
-			int result = pres.executeUpdate();
-			if ( result == 1){
-				System.out.println("add Target successfully");
-				return true;
-			}else {
-				return false;
-			}
-		} catch (Exception e) {
-			e.printStackTrace(stderr);
-		} finally {
-			destroy();
-		}
-		return false;
-	}
-
-	@Deprecated //类似domainObject，所有记录序列化成一条记录
-	public List<TargetEntry> getTargets(){
-		List<TargetEntry> list=new ArrayList<TargetEntry>();
-		try {
-			conn = getConnection();
-			String sql="select * from Target";
-			pres=conn.prepareStatement(sql);
-
-			ResultSet res=pres.executeQuery();
-			while(res.next()){
-				String LineJson=res.getString("Content");
-				TargetEntry entry = TargetEntry.restoreFromJson(LineJson);
-				list.add(entry);
-			}
-		} catch (Exception e) {
-			e.printStackTrace(stderr);
-		} finally {
-			destroy();
-		}
-		return list;
-	}
-
-	@Deprecated
-	public void updateTarget(TargetEntry entry){
-		String sql="update Target SET Content=? where NAME=?";
-		//UPDATE Person SET FirstName = 'Fred' WHERE LastName = 'Wilson'
-
-		try {
-			conn = getConnection();
-			pres=conn.prepareStatement(sql);
-			pres.setString(1, entry.toJson());
-			pres.setString(2, entry.getDomain());
-			pres.executeUpdate();
-		} catch (Exception e) {
-			e.printStackTrace(stderr);
-		}finally {
-			destroy();
-		}
-	}
-
-	@Deprecated //类似domainObject，所有记录序列化成一条记录
-	public boolean updateTargets(Set<TargetEntry> lineEntries){
-		try {
-			conn = getConnection();
-			String sql="update Target SET Content=? where NAME=?";
-			//UPDATE Person SET FirstName = 'Fred' WHERE LastName = 'Wilson'
-			pres=conn.prepareStatement(sql);
-			for(TargetEntry entry:lineEntries){
-				pres.setString(1, entry.toJson());
-				pres.setString(2, entry.getDomain());
-				pres.addBatch();                                   //实现批量插入
-			}
-			int[] result = pres.executeBatch();                                   //批量插入到数据库中
-			if ( IntStream.of(result).sum() == lineEntries.size()){
-				System.out.println("update targets successfully");
-				return true;
-			}else {
-				return false;
-			}
-		} catch (Exception e) {
-			e.printStackTrace(stderr);
-		}finally {
-			destroy();
-		}
-		return false;
-	}
-
-	@Deprecated
-	public void deleteTarget(TargetEntry entry){
-		String sql="DELETE FROM Target where NAME= ?";
-		//DELETE FROM Person WHERE LastName = 'Wilson'
-
-		try {
-			conn = getConnection();
-			pres=conn.prepareStatement(sql);
-			pres.setString(1, entry.getDomain());
-			pres.executeUpdate();
-			//Statement.execute(String sql) method which is mainly intended to perform database queries.
-			//To execute INSERT/UPDATE/DELETE statements it's recommended the use of Statement.executeUpdate() method instead.
-		} catch (Exception e) {
-			e.printStackTrace(stderr);
-		} finally {
-			destroy();
-		}
-	}
-
-	@Deprecated //类似domainObject，所有记录序列化成一条记录
-	public boolean deleteTargets(Set<TargetEntry> lineEntries){
-		String sql="DELETE FROM Target where NAME= ?";
-		//DELETE FROM Person WHERE LastName = 'Wilson'
-
-		try {
-			conn = getConnection();
-			pres=conn.prepareStatement(sql);
-			for(TargetEntry entry:lineEntries){
-				pres.setString(1, entry.getDomain());
-				pres.addBatch();                                   //实现批量插入
-			}
-			int[] result = pres.executeBatch();                                   //批量插入到数据库中
-			if ( IntStream.of(result).sum() == lineEntries.size()){
-				System.out.println("delete targets successfully");
-				return true;
-			}else {
-				return false;
-			}
-		} catch (Exception e) {
-			e.printStackTrace(stderr);
-		} finally {
-			destroy();
-		}
-		return false;
-	}
-
-	@Deprecated //类似domainObject，所有记录序列化成一条记录
-	public void deleteAllTargets(){
-		String sql="DELETE FROM Target where 1=1";
-		//DELETE FROM Person WHERE LastName = 'Wilson'
-
-		try {
-			conn = getConnection();
-			pres=conn.prepareStatement(sql);
-			//pres.setString(1, entry.getDomain());
-			pres.executeUpdate();
-			//Statement.execute(String sql) method which is mainly intended to perform database queries.
-			//To execute INSERT/UPDATE/DELETE statements it's recommended the use of Statement.executeUpdate() method instead.
-		} catch (Exception e) {
-			e.printStackTrace(stderr);
-		} finally {
-			destroy();
-		}
 	}
 
 
@@ -561,7 +250,7 @@ public class DBHelper {
 			ResultSet res=pres.executeQuery();
 			while(res.next()){
 				String LineJson=res.getString("Content");
-				LineEntry entry = new Gson().fromJson(LineJson,LineEntry.class);
+				LineEntry entry = LineEntry.FromJson(LineJson);
 				list.add(entry);
 			}
 		} catch (Exception e) {
