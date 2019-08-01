@@ -248,9 +248,11 @@ public class DomainObject {
 			for(String relatedDomain:this.relatedDomainSet) {
 				if (relatedDomain!=null && relatedDomain.contains(".")) {
 					String rootDomain =getRootDomain(relatedDomain);
-					String keyword = rootDomain.substring(0,rootDomain.indexOf("."));
-					if (!rootDomainMap.keySet().contains(rootDomain) && rootDomain != null) {
-						rootDomainMap.put(rootDomain,keyword);
+					if (rootDomain != null) {
+						String keyword = rootDomain.substring(0,rootDomain.indexOf("."));
+						if (!rootDomainMap.keySet().contains(rootDomain) && rootDomain != null) {
+							rootDomainMap.put(rootDomain,keyword);
+						}
 					}
 					subDomainSet.add(relatedDomain);
 				}else {

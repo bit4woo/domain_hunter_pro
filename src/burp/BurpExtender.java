@@ -1,14 +1,9 @@
 package burp;
 
-import target.TargetMapTree;
-import target.TargetMapTreeModel;
-
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.PrintWriter;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -20,6 +15,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
+
+import target.TargetMapTreeModel;
 
 public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListener,IContextMenuFactory{
 	/**
@@ -244,8 +241,14 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 			//还是要简化逻辑，如果找不到就不执行！
 			try{
 				IHttpRequestResponse[] messages = invocation.getSelectedMessages();
-				String shortUrlString = messages[0].getHttpService().toString();
-				LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(shortUrlString);
+				
+				String urlString = helpers.analyzeRequest(messages[0]).getUrl().toString();
+				LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(urlString);
+				if (entry == null) {
+					String shortUrlString = messages[0].getHttpService().toString();
+					entry = TitlePanel.getTitleTableModel().findLineEntry(shortUrlString);
+				}
+				
 				if (entry != null) {
 					addCommentForLine(entry);
 				}
@@ -310,6 +313,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	public static void addCommentForLine(LineEntry entry) {
 		int index = TitlePanel.getTitleTableModel().getLineEntries().indexOf(entry);
 		String commentAdd = JOptionPane.showInputDialog("Comments", null).trim();
+		if (commentAdd == null) return;
 		while(commentAdd.trim().equals("")){
 			commentAdd = JOptionPane.showInputDialog("Comments", null).trim();
 		}

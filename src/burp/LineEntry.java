@@ -107,7 +107,8 @@ public class LineEntry {
 
 			IHttpService service = this.messageinfo.getHttpService();
 
-			url = service.toString();
+			//url = service.toString();
+			url = helpers.analyzeRequest(messageinfo).getUrl().toString();
 			port = service.getPort();
 			host = service.getHost();
 			protocol = service.getProtocol();
