@@ -37,7 +37,7 @@ public class LineEntry {
 
 	//field for user
 	private boolean isNew =true;
-	private boolean isChecked =true;
+	private boolean isChecked =false;
 	private String comment ="";
 
 	private transient IHttpRequestResponse messageinfo;
@@ -183,6 +183,9 @@ public class LineEntry {
 	}
 
 	public String getUrl() {
+		if (url == null || url.equals("")) {
+			url = this.protocol+"://"+this.host+":"+this.port;
+		} 
 		return url;
 	}
 
@@ -229,6 +232,10 @@ public class LineEntry {
 	public void setIP(String iP) {
 		IP = iP;
 	}
+	
+	public void setIPWithSet(Set<String> ipSet) {
+		IP = ipSet.toString().replace("[", "").replace("]", "");
+	}
 
 	public String getCDN() {
 		return CDN;
@@ -238,6 +245,9 @@ public class LineEntry {
 		CDN = cDN;
 	}
 
+	public void setCDNWithSet(Set<String> cDNSet) {
+		CDN = cDNSet.toString().replace("[", "").replace("]", "");
+	}
 	public String getWebcontainer() {
 		return webcontainer;
 	}

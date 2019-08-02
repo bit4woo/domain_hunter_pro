@@ -13,6 +13,8 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 
+import Config.LineConfig;
+
 
 public class LineTableModel extends AbstractTableModel implements IMessageEditorController,Serializable {
 	//https://stackoverflow.com/questions/11553426/error-in-getrowcount-on-defaulttablemodel
@@ -31,13 +33,12 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	PrintWriter stdout;
 	PrintWriter stderr;
 
-	private static final String[] titles = new String[] {
+	private static final String[] standardTitles = new String[] {
 			"#", "URL", "Status", "Length", "MIME Type", "Server","Title", "IP", "CDN", "Comments","Time","isNew","isChecked"};
 	//       0-id, 1-url,2-status, 3-length,4-mimetype,5-server, 6-title, 7-ip, 8-cdn, 9-comments, 10-time, 11-isnew, 12-ischecked
-
-	public static String[] getTitles() {
-		return titles;
-	}
+	private static List<String> titletList = Arrays.asList(standardTitles);
+	//为了实现动态表结构
+	
 
 	public LineTableModel(){
 		try{
@@ -211,27 +212,48 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	@Override
 	public int getColumnCount()
 	{
-		return titles.length;//the one is the request String + response String,for search
+		return titletList.size();//the one is the request String + response String,for search
 	}
 
 	@Override
 	public Class<?> getColumnClass(int columnIndex)
 	{
-		switch(columnIndex)
-		{
-			case 0:
-				return Integer.class;//id
-			case 2:
-				return Integer.class;//Status
-			case 3:
-				return Integer.class;//Length
-			case 11:
-				return boolean.class;//isNew
-			case 12:
-				return boolean.class;//isChecked
-			default:
-				return String.class;
-		}//0-id, 1-url,2-status, 3-length,4-mimetype,5-server, 6-title, 7-ip, 8-cdn, 9-comments, 10-time, 11-isnew, 12-ischecked
+
+		if (columnIndex == titletList.indexOf("#")) {
+			return Integer.class;//id
+		}
+		if (columnIndex == titletList.indexOf("Status")) {
+			return Integer.class;//id
+		}
+		if (columnIndex == titletList.indexOf("Length")) {
+			return Integer.class;//id
+		}
+		if (columnIndex == titletList.indexOf("isNew")) {
+			return boolean.class;//id
+		}
+		if (columnIndex == titletList.indexOf("isChecked")) {
+			return boolean.class;//id
+		}
+		return String.class;
+		
+		
+		
+//		
+//		switch(columnIndex)
+//		{	
+//			case 0:
+//				return Integer.class;//id
+//			case 2:
+//				return Integer.class;//Status
+//			case 3:
+//				return Integer.class;//Length
+//			case 11:
+//				return boolean.class;//isNew
+//			case 12:
+//				return boolean.class;//isChecked
+//			default:
+//				return String.class;
+//		}//0-id, 1-url,2-status, 3-length,4-mimetype,5-server, 6-title, 7-ip, 8-cdn, 9-comments, 10-time, 11-isnew, 12-ischecked
 
 	}
 
@@ -244,8 +266,8 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	//define header of table???
 	@Override
 	public String getColumnName(int columnIndex) {
-		if (columnIndex >= 0 && columnIndex <= titles.length) {
-			return titles[columnIndex];
+		if (columnIndex >= 0 && columnIndex <= titletList.size()) {
+			return titletList.get(columnIndex);
 		}else {
 			return "";
 		}
@@ -253,7 +275,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 
 	@Override
 	public boolean isCellEditable(int rowIndex, int columnIndex) {
-		if (titles[columnIndex].equals("Comments")) {//可以编辑comment
+		if (titletList.get(columnIndex).equals("Comments")) {//可以编辑comment
 			return true;
 		}else {
 			return false;
@@ -476,9 +498,12 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 
 	public void addNewLineEntry(LineEntry lineEntry){
 		synchronized (lineEntries) {
-//			while(lineEntries.size() >= (new LineConfig()).getMaximumEntries()){
+			while(lineEntries.size() >= LineConfig.getMaximumEntries()){
+//				ListenerIsOn = false;
 //				final LineEntry removed = lineEntries.remove(0);
-//			}
+//				ListenerIsOn = true;
+//				//TODO
+			}
 			if (findLineEntry(lineEntry.getUrl()) !=null) return;
 			lineEntries.add(lineEntry);
 			int row = lineEntries.size();
@@ -515,6 +540,12 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	public void addNewNoResponseDomain(String domain,Set<String> IPSet){
 		synchronized (noResponseDomain) {
 			noResponseDomain.put(domain,IPSet);
+		}
+	}
+	
+	public void addNewNoResponseDomain(String domain,String IPSet){
+		synchronized (noResponseDomain) {
+			noResponseDomain.put(domain,new HashSet<String>(Arrays.asList(IPSet.split("."))));
 		}
 	}
 
