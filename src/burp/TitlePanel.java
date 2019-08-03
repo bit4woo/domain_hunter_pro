@@ -405,9 +405,9 @@ public class TitlePanel extends JPanel {
 		titleTableModel.clear(false);//clear
 		titleTableModel.setListenerIsOn(false);
 		for (LineEntry line:lineEntries) {
-			if (rdbtnHideCheckedItems.isSelected() && line.isChecked()){
-				continue;
-			}
+//			if (rdbtnHideCheckedItems.isSelected() && line.isChecked()){
+//				continue;
+//			}
 			titleTableModel.addNewLineEntry(line);
 		}
 		digStatus();

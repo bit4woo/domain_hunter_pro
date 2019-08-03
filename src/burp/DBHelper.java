@@ -263,29 +263,6 @@ public class DBHelper {
 		}
 		return list;
 	}
-	
-	
-	public List<LineEntry> getTitlesWithLimit(int limitIndex){
-		List<LineEntry> list=new ArrayList<LineEntry>();
-		try {
-			conn = getConnection();
-			String sql="select * from Title Limit %s,%s";
-			sql = String.format(sql, limitIndex,limitIndex+LineConfig.getMaximumEntries());
-			pres=conn.prepareStatement(sql);
-
-			ResultSet res=pres.executeQuery();
-			while(res.next()){
-				String LineJson=res.getString("Content");
-				LineEntry entry = LineEntry.FromJson(LineJson);
-				list.add(entry);
-			}
-		} catch (Exception e) {
-			e.printStackTrace(stderr);
-		} finally {
-			destroy();
-		}
-		return list;
-	}
 
 	@Deprecated
 	public void updateTitle(LineEntry entry){

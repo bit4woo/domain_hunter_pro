@@ -42,6 +42,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	public LineTableModel(){
 
 		//titletList.remove("CDN");
+		titletList.remove("Time");
 		try{
 			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
 			stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
