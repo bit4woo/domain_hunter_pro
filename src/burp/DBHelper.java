@@ -66,6 +66,7 @@ public class DBHelper {
 						" NAME           TEXT    NOT NULL," +
 						" Content        TEXT    NOT NULL)";
 				stmt.executeUpdate(sql);
+				System.out.println("Table created successfully");
 			}
 
 			if (!tableExists("Title") ){
@@ -74,11 +75,11 @@ public class DBHelper {
 						" NAME           TEXT    NOT NULL," +
 						" Content        TEXT    NOT NULL)";
 				stmt.executeUpdate(sqlTitle);
+				System.out.println("Table created successfully");
 			}
 
 			stmt.close();
 			conn.close();
-			System.out.println("Table created successfully");
 		} catch ( Exception e ) {
 			System.out.println("Table create failed");
 			e.printStackTrace(stderr);

@@ -88,7 +88,7 @@ public class TitlePanel extends JPanel {
 //
 //		titleTable = new LineTable(titleTableModel);
 //		TargetAndTitlePanel.setRightComponent(titleTable.getTableAndDetailSplitPane());
-		
+
 		titleTable = new LineTable(titleTableModel);
 		this.add(titleTable.getTableAndDetailSplitPane(),BorderLayout.CENTER);
 	}
@@ -102,48 +102,6 @@ public class TitlePanel extends JPanel {
 		textFieldCookie = new JTextField("");
 		textFieldCookie.setColumns(30);
 		buttonPanel.add(textFieldCookie);
-
-
-		JButton btnGettitle1 = new JButton("dnsquery");
-		btnGettitle1.setToolTipText("A fresh start");
-		btnGettitle1.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				//https://stackabuse.com/how-to-use-threads-in-java-swing/
-
-				//method one: // don't need to wait threads in getAllTitle to exits
-				//but hard to know the finish time of task
-				//// Runs inside of the Swing UI thread
-				/*			    SwingUtilities.invokeLater(new Runnable() {
-			        public void run() {// don't need to wait threads in getAllTitle to exits
-			        	btnGettitle.setEnabled(false);
-			        	getAllTitle();
-			        	btnGettitle.setEnabled(true);
-			        	//domainResult.setLineEntries(TitletableModel.getLineEntries());
-			        }
-			    });*/
-
-				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-					@Override
-					protected Map doInBackground() throws Exception {
-						btnGettitle1.setEnabled(false);
-						getAllTitle();
-						btnGettitle1.setEnabled(true);
-						return new HashMap<String, String>();
-						//no use ,the return.
-					}
-					@Override
-					protected void done() {
-						try {
-							btnGettitle1.setEnabled(true);
-						} catch (Exception e) {
-							e.printStackTrace(stderr);
-						}
-					}
-				};
-				worker.execute();
-			}
-		});
-		buttonPanel.add(btnGettitle1);
 
 		JButton btnGettitle = new JButton("Get Title");
 		btnGettitle.setToolTipText("A fresh start");
@@ -327,8 +285,8 @@ public class TitlePanel extends JPanel {
 		});
 
 		textFieldSearch.addKeyListener(new KeyAdapter(){
-			public void keyPressed(KeyEvent e)    
-			{    
+			public void keyPressed(KeyEvent e)
+			{
 				if (e.getKeyCode()==KeyEvent.VK_KP_UP || e.getKeyCode() == KeyEvent.VK_UP)//上键
 				{
 					try {
@@ -347,7 +305,7 @@ public class TitlePanel extends JPanel {
 						if (record != null) {
 							textFieldSearch.setText(record);
 						}
-					} catch (Exception ex) {	
+					} catch (Exception ex) {
 						ex.printStackTrace(stderr);
 					}
 				}
@@ -369,6 +327,7 @@ public class TitlePanel extends JPanel {
 		buttonPanel.add(buttonSearch);
 
 		rdbtnHideCheckedItems = new JRadioButton("Hide Checked");
+		rdbtnHideCheckedItems.setSelected(true);
 		rdbtnHideCheckedItems.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String keyword = textFieldSearch.getText().trim();
@@ -446,6 +405,9 @@ public class TitlePanel extends JPanel {
 		titleTableModel.clear(false);//clear
 		titleTableModel.setListenerIsOn(false);
 		for (LineEntry line:lineEntries) {
+			if (rdbtnHideCheckedItems.isSelected() && line.isChecked()){
+				continue;
+			}
 			titleTableModel.addNewLineEntry(line);
 		}
 		digStatus();

@@ -34,13 +34,14 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	PrintWriter stderr;
 
 	private static final String[] standardTitles = new String[] {
-			"#", "URL", "Status", "Length", "MIME Type", "Server","Title", "IP", "CDN", "Comments","Time","isNew","isChecked"};
-	//       0-id, 1-url,2-status, 3-length,4-mimetype,5-server, 6-title, 7-ip, 8-cdn, 9-comments, 10-time, 11-isnew, 12-ischecked
-	private static List<String> titletList = Arrays.asList(standardTitles);
+			"#", "URL", "Status", "Length", "Title","Comments","Time","isChecked","IP", "CDN","Server"};
+	private static List<String> titletList = new ArrayList<>(Arrays.asList(standardTitles));
 	//为了实现动态表结构
-	
+
 
 	public LineTableModel(){
+
+		//titletList.remove("CDN");
 		try{
 			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
 			stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
@@ -72,7 +73,9 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 					} else if (type == TableModelEvent.UPDATE) {//可以批量数据库操作//这里的逻辑也不对，lineEntries已经改变了，在触发这个事件之前
 						//dbHelper.updateTitles()
 						for (int i = rowstart; i <= rowend; i++) {
-							dbHelper.updateTitle(lineEntries.get(i));
+							LineEntry entry = lineEntries.get(i);
+							entry.setTime(Commons.getNowTimeString());
+							dbHelper.updateTitle(entry);
 						}
 					} else if (type == TableModelEvent.DELETE) {//可以批量操作
 						for (int i = rowstart; i <= rowend; i++) {
@@ -204,7 +207,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 				checked ++;
 			}
 		}
-		return "     ALL: "+all+"     Checked: "+checked+"     unchecked: "+(all-checked);
+		return String.format(" [ALL:%s Unchecked:%s]",all,all-checked);
 	}
 
 	////////////////////// extend AbstractTableModel////////////////////////////////
@@ -436,48 +439,41 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	{
 		LineEntry entry = lineEntries.get(rowIndex);
 		entry.parse();
-		switch (columnIndex)
-		{//0-id, 1-url,2-status, 3-length,4-mimetype,5-server, 6-title, 7-ip, 8-cdn, 9-comments, 10-time, 11-isnew, 12-ischecked
-			case 0:
-				return rowIndex;
-			case 1:
-				return entry.getUrl();
-			case 2:
-				return entry.getStatuscode();
-			case 3:
-				return entry.getContentLength();
-			case 4:
-				return entry.getMIMEtype();
-			case 5:
-				return entry.getWebcontainer();
-			case 6:
-				return entry.getTitle();
-			case 7:
-				return entry.getIP();
-			case 8:
-				return entry.getCDN();
-			case 9:
-				return entry.getComment();
-			case 10:
-				return entry.getTime();
-			case 11:
-				return entry.isNew();
-			case 12:
-				return entry.isChecked();
-			case 13:
-				//return new String(entry.getResponse());// response text for search
-				//it takes too many memories
-			/*
-			if (EnableSearch) {
-				return new String(entry.getResponse());
-			}else {
-				return "";
-			}*/
-				//this is no need after override filter.
-				return "";
-			default:
-				return "";
+		//"#", "URL", "Status", "Length", "Server","Title", "IP", "CDN", "Comments","Time","isChecked"};
+		if (columnIndex == titletList.indexOf("#")) {
+			return rowIndex;
 		}
+		if (columnIndex == titletList.indexOf("URL")){
+			return entry.getUrl();
+		}
+		if (columnIndex == titletList.indexOf("Status")){
+			return entry.getStatuscode();
+		}
+		if (columnIndex == titletList.indexOf("Length")){
+			return entry.getContentLength();
+		}
+		if (columnIndex == titletList.indexOf("Server")){
+			return entry.getWebcontainer();
+		}
+		if (columnIndex == titletList.indexOf("Title")){
+			return entry.getTitle();
+		}
+		if (columnIndex == titletList.indexOf("IP")){
+			return entry.getIP();
+		}
+		if (columnIndex == titletList.indexOf("CDN")){
+			return entry.getCDN();
+		}
+		if (columnIndex == titletList.indexOf("Comments")){
+			return entry.getComment();
+		}
+		if (columnIndex == titletList.indexOf("Time")){
+			return entry.getTime();
+		}
+		if (columnIndex == titletList.indexOf("isChecked")){
+			return entry.isChecked();
+		}
+		return "";
 	}
 
 
@@ -498,12 +494,12 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 
 	public void addNewLineEntry(LineEntry lineEntry){
 		synchronized (lineEntries) {
-			while(lineEntries.size() >= LineConfig.getMaximumEntries()){
+//			while(lineEntries.size() >= LineConfig.getMaximumEntries()){
 //				ListenerIsOn = false;
 //				final LineEntry removed = lineEntries.remove(0);
 //				ListenerIsOn = true;
 //				//TODO
-			}
+//			}
 			if (findLineEntry(lineEntry.getUrl()) !=null) return;
 			lineEntries.add(lineEntry);
 			int row = lineEntries.size();

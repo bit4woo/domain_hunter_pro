@@ -144,16 +144,13 @@ class Producer extends Thread {//Producer do
 					LineEntry linefound = findHistory(url);
 					boolean isChecked = false;
 					String comment = "";
-					boolean isNew = true;
 
 					if (null != linefound) {
-						isChecked = linefound.isChecked();
 						comment = linefound.getComment();
-						//stderr.println(new String(linefound.getResponse()));
 						try {
 							String text = linefound.getUrl()+linefound.getBodyText();
-							if (text.equalsIgnoreCase(URLAndbodyText) && isChecked) {
-								isNew = false;
+							if (text.equalsIgnoreCase(URLAndbodyText)) {
+								isChecked = linefound.isChecked();
 							}
 						}catch(Exception err) {
 							err.printStackTrace(stderr);
@@ -161,7 +158,6 @@ class Producer extends Thread {//Producer do
 					}
 					
 					item.setChecked(isChecked);
-					item.setNew(isNew);
 					item.setComment(comment);
 
 					

@@ -23,7 +23,6 @@ public class LineEntry {
 	private String url = "";
 	private int statuscode = -1;
 	private int contentLength = -1;
-	private String MIMEtype = "";
 	private String title = "";
 	private String IP = "";
 	private String CDN = "";
@@ -36,7 +35,6 @@ public class LineEntry {
 	//don't store these two field to reduce config file size.
 
 	//field for user
-	private boolean isNew =true;
 	private boolean isChecked =false;
 	private String comment ="";
 
@@ -65,7 +63,6 @@ public class LineEntry {
 		this.helpers = this.callbacks.getHelpers();
 		parse();
 
-		this.isNew = isNew;
 		this.isChecked = Checked;
 		this.comment = comment;
 	}
@@ -76,7 +73,6 @@ public class LineEntry {
 		this.helpers = this.callbacks.getHelpers();
 		parse();
 
-		this.isNew = isNew;
 		this.isChecked = Checked;
 		this.comment = comment;
 		if (this.IP != null) {
@@ -99,7 +95,7 @@ public class LineEntry {
 	public void parse() {
 		try {
 
-			time = Commons.getNowTimeString();//这是动态的，会跟随系统时间自动变化
+			time = Commons.getNowTimeString();//这是动态的，会跟随系统时间自动变化,why?
 
 			IHttpService service = this.messageinfo.getHttpService();
 
@@ -116,10 +112,10 @@ public class LineEntry {
 				IResponseInfo responseInfo = helpers.analyzeResponse(response);
 				statuscode = responseInfo.getStatusCode();
 
-				MIMEtype = responseInfo.getStatedMimeType();
-				if(MIMEtype == null) {
-					MIMEtype = responseInfo.getInferredMimeType();
-				}
+//				MIMEtype = responseInfo.getStatedMimeType();
+//				if(MIMEtype == null) {
+//					MIMEtype = responseInfo.getInferredMimeType();
+//				}
 
 
 				Getter getter = new Getter(helpers);
@@ -209,14 +205,6 @@ public class LineEntry {
 		this.contentLength = contentLength;
 	}
 
-	public String getMIMEtype() {
-		return MIMEtype;
-	}
-
-	public void setMIMEtype(String mIMEtype) {
-		MIMEtype = mIMEtype;
-	}
-
 	public String getTitle() {
 		return title;
 	}
@@ -264,21 +252,6 @@ public class LineEntry {
 		this.time = time;
 	}
 
-	/*
-	 * public String getMessageText() { return messageText; }
-	 *
-	 * public void setMessageText(String messageText) { this.messageText =
-	 * messageText; }
-	 */
-
-
-	public boolean isNew() {
-		return isNew;
-	}
-
-	public void setNew(boolean isNew) {
-		this.isNew = isNew;
-	}
 
 	public IHttpRequestResponse getMessageinfo() {
 		//		if (messageinfo == null){

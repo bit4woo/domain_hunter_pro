@@ -122,34 +122,36 @@ public class LineTable extends JTable
 		Font f = this.getFont();
 		FontMetrics fm = this.getFontMetrics(f);
 		int width = fm.stringWidth("A");//一个字符的宽度
-		this.getColumnModel().getColumnIndex("#");
 
-		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("#")).setPreferredWidth(width*5);
-		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("#")).setMaxWidth(width*8);
-		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("URL")).setPreferredWidth(width*25);
-		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("URL")).setMaxWidth(width*50);
-		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Title")).setPreferredWidth(width*30);
-		//this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Title")).setMaxWidth(width*50);
-		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("IP")).setPreferredWidth(width*30);
-		//this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("IP")).setMaxWidth(width*50);
-		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("CDN")).setPreferredWidth(width*30);
-		//this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("CDN")).setMaxWidth(width*50);
-		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Comments")).setPreferredWidth(width*30);
-		
-		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Status")).setPreferredWidth(width*"Status".length());
-		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Status")).setMaxWidth(width*("Status".length()+3));
-		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("isNew")).setPreferredWidth(width*"isNew".length());
-		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("isNew")).setMaxWidth(width*("isNew".length()+3));
-		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("isChecked")).setPreferredWidth(width*"isChecked".length());
-		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("isChecked")).setMaxWidth(width*("isChecked".length()+3));
-		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Length")).setPreferredWidth(width*10);
-		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Length")).setMaxWidth(width*15);
-		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("MIME Type")).setPreferredWidth(width*"MIME Type".length());
-		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("MIME Type")).setMaxWidth(width*("MIME Type".length()+3));
-		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Time")).setPreferredWidth(width*("2019-05-28-14-13-16".length()));
-		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Time")).setMaxWidth(width*25);
-//		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Text")).setPreferredWidth(width*0);//response text,for search
-//		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Text")).setMaxWidth(width*0);//response text,for search
+		try{//避免动态删除表字段时，出错
+			this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("#")).setPreferredWidth(width*5);
+			this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("#")).setMaxWidth(width*8);
+			this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("URL")).setPreferredWidth(width*25);
+			this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("URL")).setMaxWidth(width*50);
+
+			this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Comments")).setPreferredWidth(width*30);
+
+			this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Status")).setPreferredWidth(width*"Status".length());
+			this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Status")).setMaxWidth(width*("Status".length()+3));
+			this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("isChecked")).setPreferredWidth(width*"isChecked".length());
+			this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("isChecked")).setMaxWidth(width*("isChecked".length()+3));
+			this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Length")).setPreferredWidth(width*10);
+			this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Length")).setMaxWidth(width*15);
+			this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Time")).setPreferredWidth(width*("2019-05-28-14-13-16".length()));
+			this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Time")).setMaxWidth(width*25);
+
+
+			this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Title")).setPreferredWidth(width*30);
+			//this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Title")).setMaxWidth(width*50);
+			this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("IP")).setPreferredWidth(width*30);
+			//this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("IP")).setMaxWidth(width*50);
+			this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("CDN")).setPreferredWidth(width*30);
+			//this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("CDN")).setMaxWidth(width*50);
+
+
+		}catch (Exception e){
+
+		}
 		//this.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
 		this.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);//配合横向滚动条
 
