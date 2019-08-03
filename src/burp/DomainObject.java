@@ -138,8 +138,8 @@ public class DomainObject {
 		if (GUI.currentDBFile != null){
 			filename = GUI.currentDBFile.getName();
 		}
-		summary = String.format("     FileName:%s  Project:%s  Root-domain:%s  Related-domain:%s  Sub-domain:%s  Similar-domain:%s  ^_^",
-				filename, projectName, rootDomainMap.size(),relatedDomainSet.size(),subDomainSet.size(),similarDomainSet.size());
+		summary = String.format("  FileName:%s  Root-domain:%s  Related-domain:%s  Sub-domain:%s  Similar-domain:%s  ^_^",
+				filename, rootDomainMap.size(),relatedDomainSet.size(),subDomainSet.size(),similarDomainSet.size());
 		return summary;
 	}
 

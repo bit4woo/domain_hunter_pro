@@ -182,41 +182,24 @@ class Producer extends Thread {//Producer do
 		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
 		for (LineEntry line:HistoryLines) {
 			line.setHelpers(helpers);
-			if (url.equalsIgnoreCase(line.getUrl())) {
+			if (url.equalsIgnoreCase(line.getUrl())) {//根据url查找
 				return line;
 			}
-			
-			String protocol = url.trim().split("://")[0];
-			String host = url.trim().split("://")[1];
-			
-			String lineProtol = line.getUrl().split("://")[0];
-			List<String> lineHost = Arrays.asList(line.getIP().trim().split(","));
-			if (protocol.equalsIgnoreCase(lineProtol) && lineHost.contains(host)) {
-				return line;
-			}
-		}
-		return null;
-	}
-	
-	public LineEntry findHistorynew(String url,String IP) {//TODO
-		List<LineEntry> HistoryLines = BurpExtender.getGui().getTitlePanel().getBackupLineEntries();
-		if (HistoryLines == null) return null;
-		for (LineEntry line:HistoryLines) {
-			line.setHelpers(helpers);
-			
-			String host = url.trim().split("://")[1];
-			
-			String lineHost= line.getUrl().split("://")[1];
-			List<String> lineIPList = Arrays.asList(line.getIP().trim().split(","));
-			lineIPList.add(lineHost);
-			if (lineIPList.contains(host) || lineIPList.contains(IP)) {
-				return line;
-			}
-		}
-		return null;
-	}
-	
 
+			try{//根据host查找
+				String host = new URL(url).getHost();
+
+				List<String> lineHost = new ArrayList<>(Arrays.asList(line.getIP().trim().split(",")));
+				lineHost.add(line.getHost());
+				if (lineHost.contains(host)) {
+					return line;
+				}
+			}catch (Exception e){
+				e.printStackTrace(BurpExtender.getStderr());
+			}
+		}
+		return null;
+	}
 	
  	public static Set<LineEntry> doGetTitle(String host) throws MalformedURLException {
  		

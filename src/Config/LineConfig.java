@@ -87,7 +87,7 @@ public class LineConfig {
 		
 		//default requirement
 		if (entry.getStatuscode() <=0 || entry.getStatuscode() >=500) {
-			stdout.println(String.format("--- [%s] --- status code >= 500",entry.getUrl()));
+			stdout.println(String.format("--- [%s] --- status code >= 500 or no response",entry.getUrl()));
 			TitlePanel.getTitleTableModel().addNewNoResponseDomain(entry.getHost(), entry.getIP());
 			return false;
 		}
