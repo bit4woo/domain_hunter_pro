@@ -37,6 +37,9 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			"#", "URL", "Status", "Length", "Title","Comments","Time","isChecked","IP", "CDN","Server"};
 	private static List<String> titletList = new ArrayList<>(Arrays.asList(standardTitles));
 	//为了实现动态表结构
+	public static List<String> getTitletList() {
+		return titletList;
+	}
 
 
 	public LineTableModel(){
@@ -75,7 +78,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 						//dbHelper.updateTitles()
 						for (int i = rowstart; i <= rowend; i++) {
 							LineEntry entry = lineEntries.get(i);
-							entry.setTime(Commons.getNowTimeString());
+							//entry.setTime(Commons.getNowTimeString());
 							dbHelper.updateTitle(entry);
 						}
 					} else if (type == TableModelEvent.DELETE) {//可以批量操作

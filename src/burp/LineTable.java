@@ -9,6 +9,8 @@ import java.io.PrintWriter;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -123,34 +125,26 @@ public class LineTable extends JTable
 		FontMetrics fm = this.getFontMetrics(f);
 		int width = fm.stringWidth("A");//一个字符的宽度
 
-		try{//避免动态删除表字段时，出错
-			this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("#")).setPreferredWidth(width*5);
-			this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("#")).setMaxWidth(width*8);
-			this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("URL")).setPreferredWidth(width*25);
-			this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("URL")).setMaxWidth(width*50);
 
-			this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Comments")).setPreferredWidth(width*30);
+		Map<String,Integer> preferredWidths = new HashMap<String,Integer>();
+		preferredWidths.put("#",5);
+		preferredWidths.put("URL",25);
+		preferredWidths.put("Status",6);
+		preferredWidths.put("Length",10);
+		preferredWidths.put("Title",30);
+		preferredWidths.put("Comments",30);
+		preferredWidths.put("Time","2019-05-28-14-13-16".length());
+		preferredWidths.put("isChecked","isChecked".length());
+		preferredWidths.put("IP",30);
+		preferredWidths.put("CDN",30);
+		preferredWidths.put("Server",10);
+		for(String header:LineTableModel.getTitletList()){
+			try{//避免动态删除表字段时，出错
+				int multiNumber = preferredWidths.get(header);
+				this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex(header)).setPreferredWidth(width*multiNumber);
+			}catch (Exception e){
 
-			this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Status")).setPreferredWidth(width*"Status".length());
-			this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Status")).setMaxWidth(width*("Status".length()+3));
-			this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("isChecked")).setPreferredWidth(width*"isChecked".length());
-			this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("isChecked")).setMaxWidth(width*("isChecked".length()+3));
-			this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Length")).setPreferredWidth(width*10);
-			this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Length")).setMaxWidth(width*15);
-			this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Time")).setPreferredWidth(width*("2019-05-28-14-13-16".length()));
-			this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Time")).setMaxWidth(width*25);
-
-
-			this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Title")).setPreferredWidth(width*30);
-			//this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Title")).setMaxWidth(width*50);
-			this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("IP")).setPreferredWidth(width*30);
-			//this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("IP")).setMaxWidth(width*50);
-			this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("CDN")).setPreferredWidth(width*30);
-			//this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("CDN")).setMaxWidth(width*50);
-
-
-		}catch (Exception e){
-
+			}
 		}
 		//this.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
 		this.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);//配合横向滚动条

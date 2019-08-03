@@ -411,6 +411,7 @@ public class TitlePanel extends JPanel {
 			titleTableModel.addNewLineEntry(line);
 		}
 		digStatus();
+		titleTable.search("");
 		stdout.println("Load Title Panel Data Done");
 		titleTableModel.setListenerIsOn(true);
 	}
