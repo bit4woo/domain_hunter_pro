@@ -247,12 +247,14 @@ class Producer extends Thread {//Producer do
 		LineEntry httpsEntry = new LineEntry(https_Messageinfo);
 		httpsEntry.setIPWithSet(IPSet);
 		httpsEntry.setCDNWithSet(CDNSet);
-		
-		if (LineConfig.doFilter(httpsEntry)) {
+
+		boolean httpsOK = LineConfig.doFilter(httpsEntry);
+
+		if (httpsOK) {
 			resultSet.add(httpsEntry);
 		}
 		
-		if (!LineConfig.doFilter(httpsEntry) || !LineConfig.isIgnoreHttpIfHttpsOK()) {
+		if (!httpsOK || !LineConfig.isIgnoreHttpIfHttpsOK()) {
 			
 			byte[] http_Request = helpers.buildHttpRequest(new URL(http.toString()));
 			http_Request = Commons.buildCookieRequest(helpers,cookie,http_Request);
