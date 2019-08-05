@@ -402,7 +402,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			Arrays.sort(rows); //升序
 			for (int i=rows.length-1;i>=0 ;i-- ) {
 				LineEntry checked = lineEntries.get(rows[i]);
-				if (level == checked.getLevel()) return;
+				if (level == checked.getLevel()) continue;
 				checked.setLevel(level);
 				stdout.println(String.format("$$$ %s updated [level-->%s]",checked.getUrl(),level));
 				this.fireTableRowsUpdated(rows[i], rows[i]);

@@ -1,20 +1,13 @@
 package burp;
 
-import java.awt.Component;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.PrintWriter;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
+import java.util.*;
 
 public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListener,IContextMenuFactory{
 	/**
@@ -151,6 +144,8 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		addCommentToDomainHunter.addActionListener(new addComment(invocation));
 		list.add(addCommentToDomainHunter);
 
+		list.add(createLevelMenu(invocation));
+
 		JMenuItem addToTitleItem = new JMenuItem("^_^ Add TO Title");
 		addToTitleItem.addActionListener(new addToTitle(invocation));
 		//list.add(addToTitleItem);
@@ -239,14 +234,14 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 			//还是要简化逻辑，如果找不到就不执行！
 			try{
 				IHttpRequestResponse[] messages = invocation.getSelectedMessages();
-				
+
 				String urlString = helpers.analyzeRequest(messages[0]).getUrl().toString();
 				LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(urlString);
 				if (entry == null) {
 					String shortUrlString = messages[0].getHttpService().toString();
 					entry = TitlePanel.getTitleTableModel().findLineEntry(shortUrlString);
 				}
-				
+
 				if (entry != null) {
 					addCommentForLine(entry);
 				}
@@ -350,5 +345,28 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 			TitlePanel.getTitleTableModel().addNewLineEntry(entry); //add request
 			DomainPanel.getDomainResult().addToDomainOject(host); //add domain
 		}
+	}
+
+
+	public JMenuItem createLevelMenu(IContextMenuInvocation invocation){
+		JMenuItem setLevelMenu = null;
+		try{
+			IHttpRequestResponse[] messages = invocation.getSelectedMessages();
+
+			String urlString = BurpExtender.getCallbacks().getHelpers().analyzeRequest(messages[0]).getUrl().toString();
+			LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(urlString);
+			if (entry == null) {
+				String shortUrlString = messages[0].getHttpService().toString();
+				entry = TitlePanel.getTitleTableModel().findLineEntry(shortUrlString);
+			}
+
+			if (entry != null) {
+				int index = TitlePanel.getTitleTable().getModel().getLineEntries().indexOf(entry);
+				setLevelMenu = new LineEntryLevelMenu(TitlePanel.getTitleTable(),new int[] {index});
+				setLevelMenu.setText("^_^[Domain Hunter] Set Level As");
+			}
+		}catch (Exception e){
+		}
+		return setLevelMenu;
 	}
 }
