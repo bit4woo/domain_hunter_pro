@@ -34,7 +34,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	PrintWriter stderr;
 
 	private static final String[] standardTitles = new String[] {
-			"#", "URL", "Status", "Length", "Title","Comments","Time","isChecked","IP", "CDN","Server"};
+			"#", "URL", "Status", "Length", "Title","Comments","Time","isChecked","Level","IP", "CDN","Server"};
 	private static List<String> titletList = new ArrayList<>(Arrays.asList(standardTitles));
 	//为了实现动态表结构
 	public static List<String> getTitletList() {
@@ -395,6 +395,22 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			//最好还是一行一行地触发监听事件，因为自定义排序后的行号可能不是连续的，如果用批量触发，会做很多无用功，导致操作变慢。
 		}
 	}
+	
+	
+	public void updateLevelofRows(int[] rows,String level) {
+		synchronized (lineEntries) {
+			Arrays.sort(rows); //升序
+			for (int i=rows.length-1;i>=0 ;i-- ) {
+				LineEntry checked = lineEntries.get(rows[i]);
+				if (level == checked.getLevel()) return;
+				checked.setLevel(level);
+				stdout.println(String.format("$$$ %s updated [level-->%s]",checked.getUrl(),level));
+				this.fireTableRowsUpdated(rows[i], rows[i]);
+			}
+		}
+	}
+	
+	
 
 	public void updateComments(int[] rows, String commentAdd) {
 		synchronized (lineEntries) {
@@ -477,6 +493,9 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		if (columnIndex == titletList.indexOf("isChecked")){
 			return entry.isChecked();
 		}
+		if (columnIndex == titletList.indexOf("Level")){
+			return entry.getLevel();
+		}
 		return "";
 	}
 
@@ -484,15 +503,12 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	@Override
 	public void setValueAt(Object value, int row, int col) {
 		LineEntry entry = lineEntries.get(row);
-		switch (col)
-		{
-			case 9://comment
-				entry.setComment((String) value);
-				break;
-			default:
-				break;
+		if (col == titletList.indexOf("Comments")){
+			String valueStr = ((String) value).trim();
+			if (valueStr.equals("")) return;
+			entry.setComment((String) value);
+			fireTableCellUpdated(row, col);
 		}
-		fireTableCellUpdated(row, col);
 	}
 	//////////////////////extend AbstractTableModel////////////////////////////////
 

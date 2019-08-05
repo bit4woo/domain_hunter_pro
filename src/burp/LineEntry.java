@@ -9,6 +9,10 @@ import java.util.regex.Pattern;
 import com.alibaba.fastjson.JSON;
 
 public class LineEntry {
+	
+	public static final String Level_A = "A";
+	public static final String Level_B = "B";
+	public static final String Level_C = "C";
 
 	private int port =-1;
 	private String host = "";
@@ -36,6 +40,7 @@ public class LineEntry {
 
 	//field for user
 	private boolean isChecked =false;
+	private String Level = Level_C;
 	private String comment ="";
 
 	private transient IHttpRequestResponse messageinfo;
@@ -389,6 +394,18 @@ Content-Type: text/html;charset=UTF-8
 
 	public void setChecked(boolean isChecked) {
 		this.isChecked = isChecked;
+	}
+
+	public String getLevel() {
+		return Level;
+	}
+
+	public void setLevel(String level) {
+		if (level.equalsIgnoreCase(Level_A)
+				||level.equalsIgnoreCase(Level_B)
+				||level.equalsIgnoreCase(Level_C)) {
+			Level = level;
+		}
 	}
 
 	public String getComment() {

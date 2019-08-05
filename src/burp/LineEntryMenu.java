@@ -5,6 +5,7 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URL;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.AbstractAction;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
@@ -183,6 +185,10 @@ public class LineEntryMenu extends JPopupMenu {
 			}
 		});
 		this.add(checkedItem);
+		
+		LevelMenu levelMenu = new LevelMenu(lineTable,rows);
+		
+		this.add(levelMenu);
 
 		JMenuItem batchAddCommentsItem = new JMenuItem(new AbstractAction("Add Comments") {
 			@Override
@@ -295,5 +301,34 @@ public class LineEntryMenu extends JPopupMenu {
 		});
 		blackListItem.setToolTipText("will not get title from next time");
 		this.add(blackListItem);
+	}
+}
+
+class LevelMenu extends JMenu{
+	public String[] MainMenu = {"A", "B", "C"};
+
+	public LevelMenu(final LineTable lineTable, final int[] rows){
+		this.setText("Set Level As");
+
+		for(int i = 0; i < MainMenu.length; i++){
+			JMenuItem item = new JMenuItem(MainMenu[i]);
+			item.addActionListener((ActionListener) new LevelItemListener(lineTable,rows));
+			this.add(item);
+		}
+	}
+
+	class LevelItemListener implements ActionListener {
+
+		LineTable lineTable;
+		int[] rows;
+		LevelItemListener(final LineTable lineTable, final int[] rows) {
+			this.lineTable = lineTable;
+			this.rows = rows;
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			lineTable.getModel().updateLevelofRows(rows,e.getActionCommand());
+		}
 	}
 }
