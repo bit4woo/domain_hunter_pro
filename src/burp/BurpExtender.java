@@ -352,12 +352,14 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		JMenuItem setLevelMenu = null;
 		try{
 			IHttpRequestResponse[] messages = invocation.getSelectedMessages();
-
-			String urlString = BurpExtender.getCallbacks().getHelpers().analyzeRequest(messages[0]).getUrl().toString();
+			Getter getter = new Getter(BurpExtender.getCallbacks().getHelpers());
+			String urlString = getter.getURL(messages[0]).toString();//这个url包含了默认端口
 			LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(urlString);
 			if (entry == null) {
-				String shortUrlString = messages[0].getHttpService().toString();
-				entry = TitlePanel.getTitleTableModel().findLineEntry(shortUrlString);
+				String shortUrlString = getter.getShortUrl(messages[0]);//这个url包含了默认端口
+				if (!shortUrlString.equals(urlString)){
+					entry = TitlePanel.getTitleTableModel().findLineEntry(shortUrlString);
+				}
 			}
 
 			if (entry != null) {
@@ -366,6 +368,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 				setLevelMenu.setText("^_^[Domain Hunter] Set Level As");
 			}
 		}catch (Exception e){
+			e.printStackTrace(stderr);
 		}
 		return setLevelMenu;
 	}

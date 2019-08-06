@@ -105,7 +105,7 @@ public class LineEntry {
 			IHttpService service = this.messageinfo.getHttpService();
 
 			//url = service.toString();
-			url = helpers.analyzeRequest(messageinfo).getUrl().toString();
+			url = helpers.analyzeRequest(messageinfo).getUrl().toString();//包含了默认端口
 			port = service.getPort();
 			host = service.getHost();
 			protocol = service.getProtocol();
@@ -183,10 +183,10 @@ public class LineEntry {
 
 	}
 
-	public String getUrl() {
+	public String getUrl() {//为了格式统一，和查找匹配更精确，都包含了默认端口
 		if (url == null || url.equals("")) {
-			url = this.protocol+"://"+this.host+":"+this.port;
-		} 
+			return protocol+"://"+host+":"+port+"/";
+		}
 		return url;
 	}
 
