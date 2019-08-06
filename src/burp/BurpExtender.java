@@ -234,12 +234,15 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 			//还是要简化逻辑，如果找不到就不执行！
 			try{
 				IHttpRequestResponse[] messages = invocation.getSelectedMessages();
-
-				String urlString = helpers.analyzeRequest(messages[0]).getUrl().toString();
+				Getter getter = new Getter(helpers);
+				String urlString = getter.getURL(messages[0]).toString();
 				LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(urlString);
 				if (entry == null) {
-					String shortUrlString = messages[0].getHttpService().toString();
-					entry = TitlePanel.getTitleTableModel().findLineEntry(shortUrlString);
+					//String shortUrlString = messages[0].getHttpService().toString();//这个方法居然没有默认端口！！！
+					String shortUrlString = getter.getShortUrl(messages[0]);
+					if(!shortUrlString.equals(urlString)) {
+						entry = TitlePanel.getTitleTableModel().findLineEntry(shortUrlString);
+					}
 				}
 
 				if (entry != null) {
