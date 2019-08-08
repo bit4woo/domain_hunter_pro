@@ -1,13 +1,20 @@
 package burp;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.PrintWriter;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.*;
+import java.util.Map;
+import java.util.Set;
+
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 
 public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListener,IContextMenuFactory{
 	/**
@@ -209,10 +216,9 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 				protected Map doInBackground() throws Exception {
 
 					IHttpRequestResponse[] messages = invocation.getSelectedMessages();
-					IHttpRequestResponse currentmessage =messages[0];
-					byte[] request = currentmessage.getRequest();
+					IHttpRequestResponse messageInfo =messages[0];
 
-					RunnerGUI runnergui = new RunnerGUI(request);
+					RunnerGUI runnergui = new RunnerGUI(messageInfo);
 					return null;
 				}
 				@Override

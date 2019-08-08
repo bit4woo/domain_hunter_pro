@@ -1,24 +1,16 @@
 package burp;
 
-import java.awt.BorderLayout;
 import java.io.PrintWriter;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-
-import javax.swing.JOptionPane;
 
 //////////////////ThreadGetTitle block/////////////
 //no need to pass BurpExtender object to these class, IBurpExtenderCallbacks object is enough 
 class ThreadRunner{
-	private byte[] request;
+	private IHttpRequestResponse messageInfo;
 	private List<RunnerProducer> plist;
 
 	private static IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();//静态变量，burp插件的逻辑中，是可以保证它被初始化的。;
@@ -26,8 +18,8 @@ class ThreadRunner{
 	public PrintWriter stderr = new PrintWriter(callbacks.getStderr(), true);
 	public IExtensionHelpers helpers = callbacks.getHelpers();
 
-	public ThreadRunner(byte[] request) {
-		this.request = request;
+	public ThreadRunner(IHttpRequestResponse messageInfo) {
+		this.messageInfo = messageInfo;
 	}
 
 	public void Do(){
@@ -38,7 +30,7 @@ class ThreadRunner{
 		plist = new ArrayList<RunnerProducer>();
 
 		for (int i=0;i<=50;i++) {
-			RunnerProducer p = new RunnerProducer(RunnerGUI.getRunnerTableModel(),lineEntryQueue,request, RunnerGUI.getKeyword(), i);
+			RunnerProducer p = new RunnerProducer(RunnerGUI.getRunnerTableModel(),lineEntryQueue,messageInfo, RunnerGUI.getKeyword(), i);
 			p.start();
 			plist.add(p);
 		}
@@ -104,16 +96,16 @@ class RunnerProducer extends Thread {//Producer do
 	public PrintWriter stdout = new PrintWriter(callbacks.getStdout(), true);
 	public PrintWriter stderr = new PrintWriter(callbacks.getStderr(), true);
 	public IExtensionHelpers helpers = callbacks.getHelpers();
-	private byte[] request;
+	private IHttpRequestResponse messageInfo;
 	LineTableModel runnerTableModel;
 	String keyword;
 
-	public RunnerProducer(LineTableModel runnerTableModel,BlockingQueue<LineEntry> lineEntryQueue,byte[] request, String keyword, int threadNo) {
+	public RunnerProducer(LineTableModel runnerTableModel,BlockingQueue<LineEntry> lineEntryQueue,IHttpRequestResponse messageInfo, String keyword, int threadNo) {
 		this.runnerTableModel = runnerTableModel;
 		this.runnerTableModel.setListenerIsOn(false);//否则数据会写入title的数据库
 		this.threadNo = threadNo;
 		this.lineEntryQueue = lineEntryQueue;
-		this.request = request;
+		this.messageInfo = messageInfo;
 		this.keyword = keyword;
 		stopflag= false;
 	}
@@ -130,24 +122,31 @@ class RunnerProducer extends Thread {//Producer do
 					//stdout.println(threadNo+" Producer exited");
 					break;
 				}
+				//只需要从line中获取host信息就可以了，其他信息都应该和当前的请求一致！
 				LineEntry line = lineEntryQueue.take();
-				String protocol = line.getProtocol();
-				boolean useHttps =false;
-				if (protocol.equalsIgnoreCase("https")) {
-					useHttps =true;
-				}
-				IHttpService httpService = helpers.buildHttpService(line.getHost(), line.getPort(), useHttps);
+				
+				String host = line.getHost();
+				String protocol = messageInfo.getHttpService().getProtocol();
+				int port = messageInfo.getHttpService().getPort();
+				
+				IHttpService httpService = helpers.buildHttpService(host, port, protocol);
+
+				Getter getter = new Getter(helpers);
+				HashMap<String, String> headers = getter.getHeaderHashMap(true, messageInfo);
+				headers.put("Host", host);//update host of request header
+				byte[] body = getter.getBody(true, messageInfo);
+				
+				byte[] neRequest = helpers.buildHttpMessage(getter.headerMapToHeaderList(headers), body);
 
 				int leftTaskNum = lineEntryQueue.size();
 				stdout.println(String.format("%s tasks left, Runner Checking: %s",leftTaskNum,line.getUrl()));
 				
-				IHttpRequestResponse messageinfo = callbacks.makeHttpRequest(httpService, this.request);
-				Getter getter = new Getter(helpers);
+				IHttpRequestResponse messageinfo = callbacks.makeHttpRequest(httpService, neRequest);
 				if (messageinfo !=null) {
 					byte[] bodybyte = getter.getBody(false, messageinfo);
 					if (bodybyte != null) {
-						String body = new String(bodybyte);
-						if (body.toLowerCase().contains(keyword)) {
+						String responseBody = new String(bodybyte);
+						if (responseBody.toLowerCase().contains(keyword)) {
 							runnerTableModel.addNewLineEntry(new LineEntry(messageinfo,false,false,"Runner"));
 						}
 					}
