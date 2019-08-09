@@ -556,7 +556,9 @@ public class DomainPanel extends JPanel {
 				domainResult.autoAddRelatedToRoot = rdbtnAddRelatedToRoot.isSelected();
 				if (domainResult.autoAddRelatedToRoot) {
 					domainResult.relatedToRoot();
-					showToDomainUI();/*
+					showToDomainUI();
+					autoSave();
+					/*
 					Set<String> tableRootDomains = getColumnValues("Root Domain");
 					for(String relatedDomain:domainResult.relatedDomainSet) {
 			        	String rootDomain =InternetDomainName.from(relatedDomain).topPrivateDomain().toString();
@@ -891,8 +893,9 @@ public class DomainPanel extends JPanel {
 	/*
     自动保存，根据currentDBFile，如果currentDBFile为空或者不存在，就提示选择文件。
 	 */
-	public void autoSave(){
-		File file = BurpExtender.getGui().getCurrentDBFile();
+	public static void autoSave(){
+		BurpExtender.getGui();
+		File file = GUI.getCurrentDBFile();
 		if (file == null){
 			file = BurpExtender.getGui().dbfc.dialog(false);
 			GUI.setCurrentDBFile(file);

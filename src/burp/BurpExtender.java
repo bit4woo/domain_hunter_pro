@@ -343,6 +343,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 
 		DomainObject domainResult = DomainPanel.getDomainResult();
 		domainResult.addToDomainOject(domains);
+		DomainPanel.autoSave();
 	}
 
 
