@@ -2,7 +2,7 @@ package burp;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -132,7 +132,7 @@ class RunnerProducer extends Thread {//Producer do
 				IHttpService httpService = helpers.buildHttpService(host, port, protocol);
 
 				Getter getter = new Getter(helpers);
-				HashMap<String, String> headers = getter.getHeaderHashMap(true, messageInfo);
+				LinkedHashMap<String, String> headers = getter.getHeaderMap(true, messageInfo);
 				headers.put("Host", host);//update host of request header
 				byte[] body = getter.getBody(true, messageInfo);
 				
