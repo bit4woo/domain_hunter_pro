@@ -298,36 +298,42 @@ public class DomainObject {
 	}
 
 	public int domainType(String domain) {
+		
+		try {
+			domain = domain.trim();
+			if (domain.endsWith(".")) {
+				domain = domain.substring(0,domain.length()-1);
+			}
 
-		if (domain.endsWith(".")) {
-			domain = domain.substring(0,domain.length()-1);
-		}
-
-		for (String rootdomain:fetchRootDomainSet()) {
-			if (rootdomain.contains(".")&&!rootdomain.endsWith(".")&&!rootdomain.startsWith("."))
-			{
-				if (domain.endsWith("."+rootdomain)||domain.equalsIgnoreCase(rootdomain)){
-					return DomainObject.SUB_DOMAIN;
+			for (String rootdomain:fetchRootDomainSet()) {
+				if (rootdomain.contains(".")&&!rootdomain.endsWith(".")&&!rootdomain.startsWith("."))
+				{
+					if (domain.endsWith("."+rootdomain)||domain.equalsIgnoreCase(rootdomain)){
+						return DomainObject.SUB_DOMAIN;
+					}
 				}
 			}
-		}
 
-		for (String keyword:fetchKeywordSet()) {
-			if (!keyword.equals("") && domain.contains(keyword)) {
-				if (InternetDomainName.from(domain).hasPublicSuffix()) {//是否是以公开的 .com .cn等结尾的域名。//如果是以比如local结尾的域名，就不会被认可
-					return DomainObject.SIMILAR_DOMAIN;
-				}
+			for (String keyword:fetchKeywordSet()) {
+				if (!keyword.equals("") && domain.contains(keyword)) {
+					if (InternetDomainName.from(domain).hasPublicSuffix()) {//是否是以公开的 .com .cn等结尾的域名。//如果是以比如local结尾的域名，就不会被认可
+						return DomainObject.SIMILAR_DOMAIN;
+					}
 
-				if (fetchSuffixSet().contains(domain.substring(0, domain.indexOf(".")))){
-					return DomainObject.PACKAGE_NAME;
+					if (fetchSuffixSet().contains(domain.substring(0, domain.indexOf(".")))){
+						return DomainObject.PACKAGE_NAME;
+					}
 				}
 			}
-		}
 
-		if (Commons.isValidIP(domain)) {//https://202.77.129.30
-			return DomainObject.IP_ADDRESS;
+			if (Commons.isValidIP(domain)) {//https://202.77.129.30
+				return DomainObject.IP_ADDRESS;
+			}
+			return DomainObject.USELESS;
+		} catch (Exception e) {
+			e.printStackTrace(BurpExtender.getStderr());
+			return DomainObject.USELESS;
 		}
-		return DomainObject.USELESS;
 	}
 
 	public boolean isRelatedEmail(String email) {
