@@ -505,7 +505,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		LineEntry entry = lineEntries.get(row);
 		if (col == titletList.indexOf("Comments")){
 			String valueStr = ((String) value).trim();
-			if (valueStr.equals("")) return;
+			//if (valueStr.equals("")) return;
 			entry.setComment((String) value);
 			fireTableCellUpdated(row, col);
 		}
