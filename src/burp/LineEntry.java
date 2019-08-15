@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 import com.alibaba.fastjson.JSON;
 
 public class LineEntry {
-	
+
 	public static final String Level_A = "A";
 	public static final String Level_B = "B";
 	public static final String Level_C = "C";
@@ -110,17 +110,19 @@ public class LineEntry {
 			host = service.getHost();
 			protocol = service.getProtocol();
 
-			request = messageinfo.getRequest();
-			response = messageinfo.getResponse();
+			if (messageinfo.getRequest() != null){
+				request = messageinfo.getRequest();
+			}
 
-			if (response != null){
+			if (messageinfo.getResponse() != null){
+				response = messageinfo.getResponse();
 				IResponseInfo responseInfo = helpers.analyzeResponse(response);
 				statuscode = responseInfo.getStatusCode();
 
-//				MIMEtype = responseInfo.getStatedMimeType();
-//				if(MIMEtype == null) {
-//					MIMEtype = responseInfo.getInferredMimeType();
-//				}
+				//				MIMEtype = responseInfo.getStatedMimeType();
+				//				if(MIMEtype == null) {
+				//					MIMEtype = responseInfo.getInferredMimeType();
+				//				}
 
 
 				Getter getter = new Getter(helpers);
@@ -159,20 +161,18 @@ public class LineEntry {
 					}
 				}
 
-			/*
+				/*
 			编码转没有成功，好像还引起了栈溢出....奇怪！
-			 */
+				 */
 
-//			if (!title.equals("")){//编码转换
-//				String charSet = getResponseCharset(messageinfo);
-//				Charset systemCharset = Charset.defaultCharset();
-//				if (charSet != null){
-//					title = new String(title.getBytes(charSet),systemCharset);
-//				}
-//			}
+				//			if (!title.equals("")){//编码转换
+				//				String charSet = getResponseCharset(messageinfo);
+				//				Charset systemCharset = Charset.defaultCharset();
+				//				if (charSet != null){
+				//					title = new String(title.getBytes(charSet),systemCharset);
+				//				}
+				//			}
 
-			}else {
-				response = "".getBytes();
 			}
 		}catch(Exception e) {
 			//e.printStackTrace(burp.stderr);
@@ -225,7 +225,7 @@ public class LineEntry {
 	public void setIP(String iP) {
 		IP = iP;
 	}
-	
+
 	public void setIPWithSet(Set<String> ipSet) {
 		IP = ipSet.toString().replace("[", "").replace("]", "");
 	}
@@ -294,7 +294,7 @@ Content-Type: text/html;charset=UTF-8
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <meta charset="utf-8">
 <script type="text/javascript" charset="utf-8" src="./resources/jrf-resource/js/jrf.min.js"></script>
- */
+	 */
 	public String getResponseCharset(IHttpRequestResponse messageInfo){
 		Getter getter = new Getter(helpers);
 		String contentType = getter.getHeaderValueOf(false,messageInfo,"Content-Type");
@@ -432,6 +432,6 @@ Content-Type: text/html;charset=UTF-8
 	public static void main(String args[]) {
 		LineEntry x = new LineEntry();
 		x.setRequest("xxxxxx".getBytes());
-//		System.out.println(yy);
+		//		System.out.println(yy);
 	}
 }
