@@ -97,10 +97,10 @@ public class LineEntry {
 		return JSON.parseObject(json, LineEntry.class);
 	}
 
-	public void parse() {
+	private void parse() {
 		try {
 
-			//time = Commons.getNowTimeString();//这是动态的，会跟随系统时间自动变化,why?
+			//time = Commons.getNowTimeString();//这是动态的，会跟随系统时间自动变化,why?--是因为之前LineTableModel的getValueAt函数每次都主动调用了该函数。
 
 			IHttpService service = this.messageinfo.getHttpService();
 

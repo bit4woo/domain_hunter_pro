@@ -458,7 +458,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	public Object getValueAt(int rowIndex, int columnIndex)
 	{
 		LineEntry entry = lineEntries.get(rowIndex);
-		entry.parse();
+		//entry.parse();---
 		//"#", "URL", "Status", "Length", "Server","Title", "IP", "CDN", "Comments","Time","isChecked"};
 		if (columnIndex == titletList.indexOf("#")) {
 			return rowIndex;
