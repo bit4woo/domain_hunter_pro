@@ -13,6 +13,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import javax.swing.JOptionPane;
+
 import org.apache.commons.net.util.SubnetUtils;
 import org.apache.commons.net.util.SubnetUtils.SubnetInfo;
 import org.xbill.DNS.ARecord;
@@ -266,6 +268,23 @@ public class Commons {
 		}
 		return request;
 	}
+	
+	
+    public static List<Integer> Port_prompt(Component prompt, String str){
+    	String defaultPorts = "8080,8000,8443";
+        String user_input = JOptionPane.showInputDialog(prompt, str,defaultPorts);
+        if (null == user_input) return  null;
+        while(user_input.trim().equals("")){
+            user_input = JOptionPane.showInputDialog(prompt, str);
+        }
+        
+        List<Integer> portList = new ArrayList<Integer>();
+        for (String port: user_input.trim().split(",")) {
+        	int portint = Integer.parseInt(port);
+        	portList.add(portint);
+        }
+        return portList;
+    }
 
 	public static void main(String args[]) {
 		

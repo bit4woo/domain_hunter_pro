@@ -44,6 +44,7 @@ public class TitlePanel extends JPanel {
 	private ThreadGetTitle threadGetTitle;
 	private List<LineEntry> BackupLineEntries;
 	private History searchHistory = new History(10);
+	private static List<Integer> externalPortList;
 
 	public static LineTable getTitleTable() {
 		return titleTable;
@@ -61,6 +62,13 @@ public class TitlePanel extends JPanel {
 		return BackupLineEntries;
 	}
 
+	public static List<Integer> getExternalPortList() {
+		return externalPortList;
+	}
+
+	public static void setExternalPortList(List<Integer> externalPortList) {
+		TitlePanel.externalPortList = externalPortList;
+	}
 
 	public TitlePanel() {//构造函数
 
@@ -373,6 +381,9 @@ public class TitlePanel extends JPanel {
 		//clear tableModel
 
 		titleTableModel.clear(true);//clear
+		
+		TitlePanel.externalPortList = Commons.Port_prompt(null,"External Ports To Run");
+		stdout.println("external ports: "+ externalPortList);
 
 		threadGetTitle = new ThreadGetTitle(domains);
 		threadGetTitle.Do();
@@ -386,6 +397,7 @@ public class TitlePanel extends JPanel {
 		threadGetTitle.Do();
 	}
 
+	
 
 	public String getSubnet(boolean isCurrent){
 		Set<String> subnets;

@@ -133,7 +133,7 @@ class RunnerProducer extends Thread {//Producer do
 
 				Getter getter = new Getter(helpers);
 				LinkedHashMap<String, String> headers = getter.getHeaderMap(true, messageInfo);
-				headers.put("Host", host);//update host of request header
+				headers.put("Host", host+":"+port);//update host of request header
 				byte[] body = getter.getBody(true, messageInfo);
 				
 				byte[] neRequest = helpers.buildHttpMessage(getter.headerMapToHeaderList(headers), body);

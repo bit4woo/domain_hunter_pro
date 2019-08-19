@@ -100,7 +100,7 @@ public class LineEntry {
 	public void parse() {
 		try {
 
-			time = Commons.getNowTimeString();//这是动态的，会跟随系统时间自动变化,why?
+			//time = Commons.getNowTimeString();//这是动态的，会跟随系统时间自动变化,why?
 
 			IHttpService service = this.messageinfo.getHttpService();
 

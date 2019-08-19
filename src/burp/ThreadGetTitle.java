@@ -286,6 +286,46 @@ class Producer extends Thread {//Producer do
 				}
 			}
 		}
+		
+		//do request for external port, 8000,8080, 
+		
+		if (TitlePanel.getExternalPortList() != null) {
+			for (int port: TitlePanel.getExternalPortList()) {
+				IHttpService ex_https = helpers.buildHttpService(host,port,"https");
+				IHttpService ex_http = helpers.buildHttpService(host,port,"http");
+				
+				//do https request
+//				stdout.println("port:"+ex_https);
+				byte[] ex_https_Request = helpers.buildHttpRequest(new URL(ex_https.toString()));
+				ex_https_Request = Commons.buildCookieRequest(helpers,cookie,ex_https_Request);
+				IHttpRequestResponse ex_https_Messageinfo = callbacks.makeHttpRequest(ex_https, ex_https_Request);
+				LineEntry exhttpsEntry = new LineEntry(ex_https_Messageinfo);
+//				stdout.println("service:"+ex_https_Messageinfo.getHttpService().toString());
+//				stdout.println("port:"+exhttpsEntry.getUrl());
+				exhttpsEntry.setIPWithSet(IPSet);
+				exhttpsEntry.setCDNWithSet(CDNSet);
+
+				boolean exhttpsOK = LineConfig.doFilter(exhttpsEntry);
+
+				if (exhttpsOK) {
+					resultSet.add(exhttpsEntry);
+					continue;
+				}
+				
+				
+				//do http request
+				byte[] ex_http_Request = helpers.buildHttpRequest(new URL(ex_http.toString()));
+				ex_http_Request = Commons.buildCookieRequest(helpers,cookie,ex_http_Request);
+				IHttpRequestResponse ex_http_Messageinfo = callbacks.makeHttpRequest(ex_http, ex_http_Request);
+				LineEntry exhttpEntry = new LineEntry(ex_http_Messageinfo);
+				exhttpEntry.setIPWithSet(IPSet);
+				exhttpEntry.setCDNWithSet(CDNSet);
+				
+				if (LineConfig.doFilter(exhttpEntry)) {
+					resultSet.add(exhttpsEntry);
+				}
+			}
+		}
 
 		return resultSet;
 	}
