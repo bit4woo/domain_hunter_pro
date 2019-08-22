@@ -2,9 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="4ff4f881-baa6-4a5a-8ddc-b188e0767a25" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/burp/LineEntry.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/burp/LineEntry.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/burp/LineTableModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/burp/LineTableModel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/burp/ThreadGetTitle.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/burp/ThreadGetTitle.java" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/target/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -34,37 +32,6 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/burp/BurpExtender.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="6380">
-              <caret line="353" column="53" selection-start-line="353" selection-start-column="53" selection-end-line="353" selection-end-column="53" />
-              <folding>
-                <element signature="e#1425#1426#0" expanded="true" />
-                <element signature="e#1448#1449#0" expanded="true" />
-                <element signature="e#1491#1492#0" expanded="true" />
-                <element signature="e#1517#1518#0" expanded="true" />
-                <element signature="e#1554#1555#0" expanded="true" />
-                <element signature="e#1574#1575#0" expanded="true" />
-                <element signature="e#1605#1606#0" expanded="true" />
-                <element signature="e#1622#1623#0" expanded="true" />
-                <element signature="e#3019#3020#0" expanded="true" />
-                <element signature="e#3054#3055#0" expanded="true" />
-                <element signature="e#3102#3103#0" expanded="true" />
-                <element signature="e#3136#3137#0" expanded="true" />
-                <element signature="e#4745#4746#0" expanded="true" />
-                <element signature="e#4783#4784#0" expanded="true" />
-                <element signature="e#5193#5194#0" expanded="true" />
-                <element signature="e#5231#5232#0" expanded="true" />
-                <element signature="class#runWithSamePath#0;class#BurpExtender#0" />
-                <element signature="e#5637#5638#0" expanded="true" />
-                <element signature="e#5675#5676#0" expanded="true" />
-                <element signature="class#addToTitle#0;class#BurpExtender#0" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/burp/TitlePanel.java">
           <provider selected="true" editor-type-id="text-editor">
@@ -143,10 +110,10 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/burp/LineEntry.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="338">
+            <state relative-caret-position="-652">
               <caret line="40" lean-forward="true" selection-start-line="40" selection-end-line="40" />
               <folding>
                 <element signature="imports" expanded="true" />
@@ -155,6 +122,15 @@
                 <element signature="e#2745#2746#0" expanded="true" />
                 <element signature="e#2853#2854#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/burp/ThreadGetTitle.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="550">
+              <caret line="144" column="66" lean-forward="true" selection-start-line="144" selection-start-column="66" selection-end-line="144" selection-end-column="66" />
             </state>
           </provider>
         </entry>
@@ -225,7 +201,6 @@
         <option value="$PROJECT_DIR$/src/target/TargetMapTreeModel.java" />
         <option value="$PROJECT_DIR$/src/target/TargetEntry.java" />
         <option value="$PROJECT_DIR$/src/target/TargetEntryMenu.java" />
-        <option value="$PROJECT_DIR$/src/burp/ThreadGetTitle.java" />
         <option value="$PROJECT_DIR$/src/burp/LineTable.java" />
         <option value="$PROJECT_DIR$/src/burp/Commons.java" />
         <option value="$PROJECT_DIR$/src/burp/DBHelper.java" />
@@ -236,6 +211,7 @@
         <option value="$PROJECT_DIR$/src/burp/LineEntryMenu.java" />
         <option value="$PROJECT_DIR$/src/burp/LineTableModel.java" />
         <option value="$PROJECT_DIR$/src/burp/LineEntry.java" />
+        <option value="$PROJECT_DIR$/src/burp/ThreadGetTitle.java" />
       </list>
     </option>
   </component>
@@ -257,7 +233,7 @@
       <select />
     </treeState>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
+  <component name="ProjectFrameBounds" extendedState="7">
     <option name="x" value="599" />
     <option name="width" value="1080" />
     <option name="height" value="1000" />
@@ -286,6 +262,13 @@
               <item name="domain_hunter_pro" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="burp" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="domain_hunter_pro" type="b2602c69:ProjectViewProjectNode" />
+              <item name="domain_hunter_pro" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="burp" type="462c0819:PsiDirectoryNode" />
+              <item name="ThreadGetTitle.java" type="529ef68f:ClassesTreeStructureProvider$PsiClassOwnerTreeNode" />
             </path>
             <path>
               <item name="domain_hunter_pro" type="b2602c69:ProjectViewProjectNode" />
@@ -483,12 +466,12 @@
       <workItem from="1566206685552" duration="5877000" />
       <workItem from="1566267065369" duration="651000" />
       <workItem from="1566295132253" duration="1689000" />
-      <workItem from="1566460290723" duration="2258000" />
+      <workItem from="1566460290723" duration="3870000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="183920000" />
+    <option name="totallyTimeSpent" value="185532000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -500,7 +483,7 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
+    <frame x="-8" y="-8" width="1936" height="1056" extended-state="7" />
     <editor active="true" />
     <layout>
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.1652452" />
@@ -884,13 +867,6 @@
     <entry file="file://$PROJECT_DIR$/src/target/TargetMapTreeModel.java" />
     <entry file="file://$PROJECT_DIR$/src/target/TargetEntryMenu.java" />
     <entry file="file://$PROJECT_DIR$/src/target/TargetEntry.java" />
-    <entry file="file://$PROJECT_DIR$/src/burp/ThreadGetTitle.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="325">
-          <caret line="159" column="47" selection-start-line="159" selection-start-column="47" selection-end-line="159" selection-end-column="47" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/Config/LineConfig.java" />
     <entry file="file://$PROJECT_DIR$/src/burp/GUI.java">
       <provider selected="true" editor-type-id="text-editor">
@@ -1040,7 +1016,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/burp/LineEntry.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="338">
+        <state relative-caret-position="-652">
           <caret line="40" lean-forward="true" selection-start-line="40" selection-end-line="40" />
           <folding>
             <element signature="imports" expanded="true" />
@@ -1049,6 +1025,13 @@
             <element signature="e#2745#2746#0" expanded="true" />
             <element signature="e#2853#2854#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/burp/ThreadGetTitle.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="550">
+          <caret line="144" column="66" lean-forward="true" selection-start-line="144" selection-start-column="66" selection-end-line="144" selection-end-column="66" />
         </state>
       </provider>
     </entry>

@@ -134,16 +134,13 @@ class Producer extends Thread {//Producer do
 				Iterator<LineEntry> it = resultSet.iterator();
 				while (it.hasNext()) {
 					LineEntry item = it.next();
-					String url = item.getProtocol()+"://"+item.getHost()+":"+item.getPort();
-					String body = item.getBodyText();
-					String URLAndbodyText = url+body;
+					String url = item.getUrl();
 					LineEntry linefound = findHistory(url);
 					if (null != linefound) {
 						item.setComment(linefound.getComment());
 						item.setLevel(linefound.getLevel());
 						try {
-							String text = linefound.getUrl()+linefound.getBodyText();
-							if (text.equalsIgnoreCase(URLAndbodyText)) {
+							if (url.equalsIgnoreCase(linefound.getUrl()) && item.getBodyText().length() == linefound.getBodyText().length()) {
 								item.setChecked(linefound.isChecked());
 								item.setTime(linefound.getTime());
 							}
