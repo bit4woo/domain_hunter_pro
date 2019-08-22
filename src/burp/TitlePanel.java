@@ -387,6 +387,13 @@ public class TitlePanel extends JPanel {
 
 		threadGetTitle = new ThreadGetTitle(domains);
 		threadGetTitle.Do();
+		
+		//转移手动保存的结果
+		for (LineEntry entry:BackupLineEntries) {
+			if (entry.getComment().contains("Manual-Saved")) {
+				TitlePanel.getTitleTableModel().addNewLineEntry(entry);
+			}
+		}
 	}
 
 

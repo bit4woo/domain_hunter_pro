@@ -6,6 +6,7 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.io.PrintWriter;
 import java.net.URL;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -237,10 +238,10 @@ public class LineEntryMenu extends JPopupMenu {
 
 							byte[] request = entry.getRequest();
 							Getter getter = new Getter(callbacks.getHelpers());
-							List<String> headers = getter.getHeaderList(true,request);
-							headers.add("Cookie: "+cookieValue);
+							LinkedHashMap<String, String> headers = getter.getHeaderMap(true,request);
+							headers.put("Cookie",cookieValue);
 							byte[] body = getter.getBody(true,request);
-							request = callbacks.getHelpers().buildHttpMessage(headers,body);
+							request = callbacks.getHelpers().buildHttpMessage(getter.headerMapToHeaderList(headers),body);
 
 							String tabCaption = row+"DH";
 							callbacks.sendToRepeater(

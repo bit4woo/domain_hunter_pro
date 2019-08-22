@@ -273,11 +273,7 @@ public class Commons {
     public static List<Integer> Port_prompt(Component prompt, String str){
     	String defaultPorts = "8080,8000,8443";
         String user_input = JOptionPane.showInputDialog(prompt, str,defaultPorts);
-        if (null == user_input) return  null;
-        while(user_input.trim().equals("")){
-            user_input = JOptionPane.showInputDialog(prompt, str);
-        }
-        
+        if (null == user_input || user_input.trim().equals("")) return  null; 
         List<Integer> portList = new ArrayList<Integer>();
         for (String port: user_input.trim().split(",")) {
         	int portint = Integer.parseInt(port);

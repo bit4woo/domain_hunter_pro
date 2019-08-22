@@ -34,7 +34,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	PrintWriter stderr;
 
 	private static final String[] standardTitles = new String[] {
-			"#", "URL", "Status", "Length", "Title","Comments","Time","isChecked","Level","IP", "CDN","Server"};
+			"#", "URL", "Status", "Length", "Title","Comments","isChecked","Level","Time","IP", "CDN","Server"};
 	private static List<String> titletList = new ArrayList<>(Arrays.asList(standardTitles));
 	//为了实现动态表结构
 	public static List<String> getTitletList() {
@@ -44,8 +44,8 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 
 	public LineTableModel(){
 
-		//titletList.remove("CDN");
-		titletList.remove("Time");
+		titletList.remove("Server");
+		//titletList.remove("Time");
 		try{
 			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
 			stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
@@ -78,7 +78,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 						//dbHelper.updateTitles()
 						for (int i = rowstart; i <= rowend; i++) {
 							LineEntry entry = lineEntries.get(i);
-							//entry.setTime(Commons.getNowTimeString());
+							entry.setTime(Commons.getNowTimeString());
 							dbHelper.updateTitle(entry);
 						}
 					} else if (type == TableModelEvent.DELETE) {//可以批量操作

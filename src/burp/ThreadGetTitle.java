@@ -134,33 +134,24 @@ class Producer extends Thread {//Producer do
 				Iterator<LineEntry> it = resultSet.iterator();
 				while (it.hasNext()) {
 					LineEntry item = it.next();
-
 					String url = item.getProtocol()+"://"+item.getHost()+":"+item.getPort();
-					
 					String body = item.getBodyText();
-
 					String URLAndbodyText = url+body;
-
 					LineEntry linefound = findHistory(url);
-					boolean isChecked = false;
-					String comment = "";
-
 					if (null != linefound) {
-						comment = linefound.getComment();
+						item.setComment(linefound.getComment());
+						item.setLevel(linefound.getLevel());
 						try {
 							String text = linefound.getUrl()+linefound.getBodyText();
 							if (text.equalsIgnoreCase(URLAndbodyText)) {
-								isChecked = linefound.isChecked();
+								item.setChecked(linefound.isChecked());
+								item.setTime(linefound.getTime());
 							}
 						}catch(Exception err) {
 							err.printStackTrace(stderr);
 						}
 					}
-					
-					item.setChecked(isChecked);
-					item.setComment(comment);
 
-					
 					TitlePanel.getTitleTableModel().addNewLineEntry(item);
 
 					//stdout.println(new LineEntry(messageinfo,true).ToJson());
@@ -289,7 +280,7 @@ class Producer extends Thread {//Producer do
 		
 		//do request for external port, 8000,8080, 
 		
-		if (TitlePanel.getExternalPortList() != null) {
+		if (TitlePanel.getExternalPortList() != null && TitlePanel.getExternalPortList().size() != 0) {
 			for (int port: TitlePanel.getExternalPortList()) {
 				IHttpService ex_https = helpers.buildHttpService(host,port,"https");
 				IHttpService ex_http = helpers.buildHttpService(host,port,"http");
@@ -322,7 +313,7 @@ class Producer extends Thread {//Producer do
 				exhttpEntry.setCDNWithSet(CDNSet);
 				
 				if (LineConfig.doFilter(exhttpEntry)) {
-					resultSet.add(exhttpsEntry);
+					resultSet.add(exhttpEntry);
 				}
 			}
 		}

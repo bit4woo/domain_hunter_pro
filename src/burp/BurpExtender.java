@@ -352,6 +352,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		for(IHttpRequestResponse message:messages) {
 			String host = message.getHttpService().getHost();
 			LineEntry entry = new LineEntry(message);
+			entry.setComment("Manual-Saved");
 			TitlePanel.getTitleTableModel().addNewLineEntry(entry); //add request
 			DomainPanel.getDomainResult().addToDomainOject(host); //add domain
 		}
