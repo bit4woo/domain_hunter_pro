@@ -173,6 +173,8 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		Set<String> result = new HashSet<String>();
 		//lineEntries.addAll(hidenLineEntries);
 		for(LineEntry line:lineEntries) {
+			String IPString = line.getIP();
+			if (IPString == null || IPString.length() <7) continue;//处理保存的请求，没有IP的情况
 			String[] linetext = line.getIP().split(", ");
 			result.addAll(Arrays.asList(linetext));
 		}

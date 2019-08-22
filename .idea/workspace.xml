@@ -3,6 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="4ff4f881-baa6-4a5a-8ddc-b188e0767a25" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/burp/LineEntry.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/burp/LineEntry.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/burp/LineTableModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/burp/LineTableModel.java" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/target/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -66,8 +68,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/burp/TitlePanel.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="6908">
-              <caret line="356" selection-start-line="356" selection-end-line="356" />
+            <state relative-caret-position="562">
+              <caret line="400" column="60" selection-start-line="400" selection-start-column="50" selection-end-line="400" selection-end-column="64" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -105,11 +107,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/burp/LineEntryMenu.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-10">
-              <caret line="90" column="20" selection-start-line="90" selection-start-column="20" selection-end-line="90" selection-end-column="20" />
+            <state relative-caret-position="1694">
+              <caret line="91" column="20" selection-start-line="91" selection-start-column="20" selection-end-line="91" selection-end-column="20" />
             </state>
           </provider>
         </entry>
@@ -135,17 +137,17 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/burp/LineTableModel.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="352">
-              <caret line="79" column="65" selection-start-line="79" selection-start-column="65" selection-end-line="79" selection-end-column="65" />
+            <state relative-caret-position="3366">
+              <caret line="176" column="84" selection-start-line="176" selection-start-column="84" selection-end-line="176" selection-end-column="84" />
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/burp/LineEntry.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2090">
-              <caret line="105" selection-start-line="105" selection-end-line="105" />
+            <state relative-caret-position="338">
+              <caret line="40" lean-forward="true" selection-start-line="40" selection-end-line="40" />
               <folding>
                 <element signature="imports" expanded="true" />
                 <element signature="e#2604#2605#0" expanded="true" />
@@ -168,7 +170,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>loadConfigAndShow</find>
       <find>createTable</find>
       <find>backupLineEntries</find>
       <find>close</find>
@@ -198,6 +199,7 @@
       <find>search</find>
       <find>getStatusSummary</find>
       <find>rdbtnHideCheckedItems</find>
+      <find>bodyText</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -231,9 +233,9 @@
         <option value="$PROJECT_DIR$/pom.xml" />
         <option value="$PROJECT_DIR$/src/burp/Getter.java" />
         <option value="$PROJECT_DIR$/src/burp/BurpExtender.java" />
-        <option value="$PROJECT_DIR$/src/burp/LineEntry.java" />
-        <option value="$PROJECT_DIR$/src/burp/LineTableModel.java" />
         <option value="$PROJECT_DIR$/src/burp/LineEntryMenu.java" />
+        <option value="$PROJECT_DIR$/src/burp/LineTableModel.java" />
+        <option value="$PROJECT_DIR$/src/burp/LineEntry.java" />
       </list>
     </option>
   </component>
@@ -481,11 +483,12 @@
       <workItem from="1566206685552" duration="5877000" />
       <workItem from="1566267065369" duration="651000" />
       <workItem from="1566295132253" duration="1689000" />
+      <workItem from="1566460290723" duration="2258000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="181662000" />
+    <option name="totallyTimeSpent" value="183920000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -498,8 +501,9 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
+    <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.16364606" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.1652452" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Image Layers" order="2" />
       <window_info id="Designer" order="3" />
@@ -542,7 +546,7 @@
       <breakpoints>
         <line-breakpoint type="java-line">
           <url>file://$PROJECT_DIR$/src/burp/LineEntry.java</url>
-          <line>72</line>
+          <line>73</line>
           <properties />
           <option name="timeStamp" value="14" />
         </line-breakpoint>
@@ -578,7 +582,7 @@
         </line-breakpoint>
         <line-breakpoint type="java-line">
           <url>file://$PROJECT_DIR$/src/burp/LineEntry.java</url>
-          <line>259</line>
+          <line>260</line>
           <properties />
           <option name="timeStamp" value="94" />
         </line-breakpoint>
@@ -644,7 +648,7 @@
         </line-breakpoint>
         <line-breakpoint type="java-line">
           <url>file://$PROJECT_DIR$/src/burp/LineEntry.java</url>
-          <line>409</line>
+          <line>410</line>
           <properties />
           <option name="timeStamp" value="132" />
         </line-breakpoint>
@@ -692,13 +696,13 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/burp/LineTableModel.java</url>
-          <line>217</line>
+          <line>219</line>
           <properties />
           <option name="timeStamp" value="152" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/burp/BurpExtender.java</url>
-          <line>359</line>
+          <line>360</line>
           <properties />
           <option name="timeStamp" value="153" />
         </line-breakpoint>
@@ -716,7 +720,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/burp/LineTableModel.java</url>
-          <line>569</line>
+          <line>571</line>
           <properties />
           <option name="timeStamp" value="166" />
         </line-breakpoint>
@@ -972,16 +976,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/burp/TitlePanel.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="6908">
-          <caret line="356" selection-start-line="356" selection-end-line="356" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/burp/LineTable.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="4224">
@@ -1020,10 +1014,34 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/burp/TitlePanel.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="562">
+          <caret line="400" column="60" selection-start-line="400" selection-start-column="50" selection-end-line="400" selection-end-column="64" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/burp/LineTableModel.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3366">
+          <caret line="176" column="84" selection-start-line="176" selection-start-column="84" selection-end-line="176" selection-end-column="84" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/burp/LineEntryMenu.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1694">
+          <caret line="91" column="20" selection-start-line="91" selection-start-column="20" selection-end-line="91" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/burp/LineEntry.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2090">
-          <caret line="105" selection-start-line="105" selection-end-line="105" />
+        <state relative-caret-position="338">
+          <caret line="40" lean-forward="true" selection-start-line="40" selection-end-line="40" />
           <folding>
             <element signature="imports" expanded="true" />
             <element signature="e#2604#2605#0" expanded="true" />
@@ -1031,20 +1049,6 @@
             <element signature="e#2745#2746#0" expanded="true" />
             <element signature="e#2853#2854#0" expanded="true" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/burp/LineTableModel.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="352">
-          <caret line="79" column="65" selection-start-line="79" selection-start-column="65" selection-end-line="79" selection-end-column="65" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/burp/LineEntryMenu.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-10">
-          <caret line="90" column="20" selection-start-line="90" selection-start-column="20" selection-end-line="90" selection-end-column="20" />
         </state>
       </provider>
     </entry>

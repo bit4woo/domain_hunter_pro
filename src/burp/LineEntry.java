@@ -34,6 +34,7 @@ public class LineEntry {
 	private String time = "";
 
 	//Gson中，加了transient表示不序列号，是最简单的方法
+	//给不想被序列化的属性增加transient属性---java特性
 	private transient String messageText = "";//use to search
 	private transient String bodyText = "";//use to adjust the response changed or not
 	//don't store these two field to reduce config file size.
