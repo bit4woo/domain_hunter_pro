@@ -102,7 +102,7 @@ public class LineEntryMenu extends JPopupMenu {
 						return;
 					}
 					for (String url:urls){
-						Commons.browserOpen(url,"C:\\Program Files\\Mozilla Firefox\\firefox.exe");
+						Commons.browserOpen(url,"C:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe");
 					}
 				}
 				catch (Exception e1)

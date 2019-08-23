@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="4ff4f881-baa6-4a5a-8ddc-b188e0767a25" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/src/burp/ThreadGetTitle.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/burp/ThreadGetTitle.java" afterDir="false" />
-    </list>
+    <list default="true" id="4ff4f881-baa6-4a5a-8ddc-b188e0767a25" name="Default" comment="" />
     <ignored path="$PROJECT_DIR$/target/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -233,7 +231,7 @@
       <select />
     </treeState>
   </component>
-  <component name="ProjectFrameBounds" extendedState="7">
+  <component name="ProjectFrameBounds" extendedState="6">
     <option name="x" value="599" />
     <option name="width" value="1080" />
     <option name="height" value="1000" />
@@ -466,12 +464,12 @@
       <workItem from="1566206685552" duration="5877000" />
       <workItem from="1566267065369" duration="651000" />
       <workItem from="1566295132253" duration="1689000" />
-      <workItem from="1566460290723" duration="3870000" />
+      <workItem from="1566460290723" duration="3937000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="185532000" />
+    <option name="totallyTimeSpent" value="185599000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -483,10 +481,9 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1936" height="1056" extended-state="7" />
-    <editor active="true" />
+    <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.1652452" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.1652452" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Image Layers" order="2" />
       <window_info id="Designer" order="3" />
@@ -502,7 +499,7 @@
       <window_info anchor="bottom" id="TODO" order="6" weight="0.32936078" />
       <window_info anchor="bottom" id="Terminal" order="7" weight="0.32936078" />
       <window_info anchor="bottom" id="Event Log" order="8" sideWeight="0.5005208" side_tool="true" weight="0.39915523" />
-      <window_info anchor="bottom" id="Version Control" order="9" />
+      <window_info active="true" anchor="bottom" id="Version Control" order="9" visible="true" weight="0.32936078" />
       <window_info anchor="bottom" id="Docker" order="10" show_stripe_button="false" />
       <window_info anchor="bottom" id="Messages" order="11" weight="0.32936078" />
       <window_info anchor="bottom" id="Database Changes" order="12" />
