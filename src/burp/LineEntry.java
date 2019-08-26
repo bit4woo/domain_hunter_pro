@@ -1,10 +1,18 @@
 package burp;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.commons.io.Charsets;
 
 import com.alibaba.fastjson.JSON;
 
@@ -36,7 +44,7 @@ public class LineEntry {
 	//Gson中，加了transient表示不序列号，是最简单的方法
 	//给不想被序列化的属性增加transient属性---java特性
 	private transient String messageText = "";//use to search
-	private transient String bodyText = "";//use to adjust the response changed or not
+	//private transient String bodyText = "";//use to adjust the response changed or not
 	//don't store these two field to reduce config file size.
 
 	//field for user
@@ -131,52 +139,20 @@ public class LineEntry {
 
 
 				webcontainer = getter.getHeaderValueOf(false, messageinfo, "Server");
-
-				bodyText = new String(getter.getBody(false, messageinfo));
+				byte[] byteBody = getter.getBody(false, messageinfo);
 				try{
 					contentLength = Integer.parseInt(getter.getHeaderValueOf(false, messageinfo, "Content-Length").trim());
 				}catch (Exception e){
-					if (contentLength==-1 && bodyText!=null) {
-						contentLength = bodyText.length();
+					if (contentLength==-1 && byteBody!=null) {
+						contentLength = byteBody.length;
 					}
 				}
 
-				Pattern p = Pattern.compile("<title(.*?)</title>");
-				//<title ng-bind="service.title">The Evolution of the Producer-Consumer Problem in Java - DZone Java</title>
-				Matcher m  = p.matcher(bodyText);
-				while ( m.find() ) {
-					title = m.group(0);
-				}
-				if (title.equals("")) {
-					Pattern ph = Pattern.compile("<title [.*?]>(.*?)</title>");
-					Matcher mh  = ph.matcher(bodyText);
-					while ( mh.find() ) {
-						title = mh.group(0);
-					}
-				}
-				if (title.equals("")) {
-					Pattern ph = Pattern.compile("<h[1-6]>(.*?)</h[1-6]>");
-					Matcher mh  = ph.matcher(bodyText);
-					while ( mh.find() ) {
-						title = mh.group(0);
-					}
-				}
-
-				/*
-			编码转没有成功，好像还引起了栈溢出....奇怪！
-				 */
-
-				//			if (!title.equals("")){//编码转换
-				//				String charSet = getResponseCharset(messageinfo);
-				//				Charset systemCharset = Charset.defaultCharset();
-				//				if (charSet != null){
-				//					title = new String(title.getBytes(charSet),systemCharset);
-				//				}
-				//			}
+				title = fetchTitle(response);
 
 			}
 		}catch(Exception e) {
-			//e.printStackTrace(burp.stderr);
+			e.printStackTrace(BurpExtender.getStderr());
 		}
 	}
 
@@ -296,25 +272,87 @@ Content-Type: text/html;charset=UTF-8
 <meta charset="utf-8">
 <script type="text/javascript" charset="utf-8" src="./resources/jrf-resource/js/jrf.min.js"></script>
 	 */
-	public String getResponseCharset(IHttpRequestResponse messageInfo){
+	private String getResponseCharset(byte[] response){
 		Getter getter = new Getter(helpers);
-		String contentType = getter.getHeaderValueOf(false,messageInfo,"Content-Type");
-		String charSet = null;
-		if (contentType.toLowerCase().contains("charset=")){
-			charSet = contentType.toLowerCase().split("charset=")[1];
+		String contentType = getter.getHeaderValueOf(false,response,"Content-Type");
+		String tmpcharSet = null;
+		if (contentType != null && contentType.toLowerCase().contains("charset=")){
+			tmpcharSet = contentType.toLowerCase().split("charset=")[1];
 		}else {
-			byte[] body = getter.getBody(false,messageInfo);
+			String body = new String(getter.getBody(false,response));
 			Pattern pDomainNameOnly = Pattern.compile("charset=(.*?)>");
-			Matcher matcher = pDomainNameOnly.matcher(new String(body));
+			Matcher matcher = pDomainNameOnly.matcher(body);
 			if (matcher.find()) {
-				charSet = matcher.group(0).toLowerCase();
-				charSet = charSet.replace("\"","");
-				charSet = charSet.replace(">","");
-				charSet = charSet.replace("/","");
-				charSet = charSet.replace("charset=","");
+				tmpcharSet = matcher.group(0).toLowerCase();
+//				tmpcharSet = tmpcharSet.replace("\"","");
+//				tmpcharSet = tmpcharSet.replace(">","");
+//				tmpcharSet = tmpcharSet.replace("/","");
+//				tmpcharSet = tmpcharSet.replace("charset=","");
 			}
 		}
-		return charSet;
+		//常见的编码格式有ASCII、ANSI、GBK、GB2312、UTF-8、GB18030和UNICODE等。
+		List<String> commonCharSet = Arrays.asList("ASCII,ANSI,GBK,GB2312,UTF-8,GB18030,UNICODE,ISO-8859-1".toLowerCase().split(","));
+		if (tmpcharSet == null){
+			return null;
+		}else if (tmpcharSet.contains("utf8")){
+			return "utf-8";
+		}else {
+			for (String item:commonCharSet) {
+				if (tmpcharSet.contains(item)) {
+					return item;
+				}
+			}
+		}
+		return null;
+	}
+
+	//https://javarevisited.blogspot.com/2012/01/get-set-default-character-encoding.html
+	private static String getSystemCharSet() {
+		return Charset.defaultCharset().toString();
+	}
+
+
+	public String covertCharSet(byte[] response) {
+		String originalCharSet = getResponseCharset(response);
+		BurpExtender.getStderr().println(url+"---"+originalCharSet);
+		if (originalCharSet == null) {
+			return new String(response);
+		}else {
+			byte[] newResponse;
+			try {
+				newResponse = new String(response,originalCharSet).getBytes(getSystemCharSet());
+				return new String(newResponse,getSystemCharSet());
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace(BurpExtender.getStderr());
+				return new String(response);
+			}
+		}
+	}
+
+	public String fetchTitle(byte[] response) {
+		String bodyText = covertCharSet(response);
+
+		Pattern p = Pattern.compile("<title(.*?)</title>");
+		//<title ng-bind="service.title">The Evolution of the Producer-Consumer Problem in Java - DZone Java</title>
+		Matcher m  = p.matcher(bodyText);
+		while ( m.find() ) {
+			title = m.group(0);
+		}
+		if (title.equals("")) {
+			Pattern ph = Pattern.compile("<title [.*?]>(.*?)</title>");
+			Matcher mh  = ph.matcher(bodyText);
+			while ( mh.find() ) {
+				title = mh.group(0);
+			}
+		}
+		if (title.equals("")) {
+			Pattern ph = Pattern.compile("<h[1-6]>(.*?)</h[1-6]>");
+			Matcher mh  = ph.matcher(bodyText);
+			while ( mh.find() ) {
+				title = mh.group(0);
+			}
+		}
+		return title;
 	}
 
 	public String getHeaderValueOf(boolean messageIsRequest,String headerName) {
@@ -343,10 +381,6 @@ Content-Type: text/html;charset=UTF-8
 			}
 		}
 		return null;
-	}
-
-	public void setBodyText(String bodyText) {
-		this.bodyText = bodyText;
 	}
 
 	public int getPort() {
