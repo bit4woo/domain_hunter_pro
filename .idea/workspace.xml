@@ -2,9 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="4ff4f881-baa6-4a5a-8ddc-b188e0767a25" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/burp/LineEntry.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/burp/LineEntry.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/burp/ThreadRunner.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/burp/ThreadRunner.java" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/target/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -37,29 +36,11 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/burp/TitlePanel.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="7832">
-              <caret line="400" column="60" selection-start-line="400" selection-start-column="50" selection-end-line="400" selection-end-column="64" />
+            <state relative-caret-position="259">
+              <caret line="391" column="49" lean-forward="true" selection-start-line="391" selection-start-column="49" selection-end-line="391" selection-end-column="49" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/burp/LineTable.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="4224">
-              <caret line="214" column="72" selection-start-line="214" selection-start-column="62" selection-end-line="214" selection-end-column="72" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/burp/CertInfo.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2090">
-              <caret line="114" column="42" selection-start-line="114" selection-start-column="42" selection-end-line="114" selection-end-column="42" />
             </state>
           </provider>
         </entry>
@@ -112,20 +93,40 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/burp/LineEntry.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="211">
-              <caret line="295" column="24" lean-forward="true" selection-start-line="295" selection-start-column="24" selection-end-line="295" selection-end-column="24" />
+            <state relative-caret-position="2499">
+              <caret line="303" column="13" lean-forward="true" selection-start-line="303" selection-start-column="13" selection-end-line="303" selection-end-column="13" />
             </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/burp/ThreadRunner.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-1" />
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/burp/ThreadGetTitle.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="523">
-              <caret line="144" column="66" selection-start-line="144" selection-start-column="66" selection-end-line="144" selection-end-column="66" />
+            <state relative-caret-position="768">
+              <caret line="311" column="55" lean-forward="true" selection-start-line="311" selection-start-column="55" selection-end-line="311" selection-end-column="55" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/burp/TestGetter.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="546">
+              <caret line="42" column="68" selection-start-line="42" selection-start-column="59" selection-end-line="42" selection-end-column="68" />
+              <folding>
+                <element signature="e#660#661#0" expanded="true" />
+                <element signature="e#691#692#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -141,7 +142,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>createTable</find>
       <find>backupLineEntries</find>
       <find>close</find>
       <find>System.out.println</find>
@@ -171,6 +171,7 @@
       <find>getStatusSummary</find>
       <find>rdbtnHideCheckedItems</find>
       <find>bodyText</find>
+      <find>IHttpRequestResponse</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -201,12 +202,14 @@
         <option value="$PROJECT_DIR$/src/burp/DBHelper.java" />
         <option value="$PROJECT_DIR$/src/burp/TitlePanel.java" />
         <option value="$PROJECT_DIR$/pom.xml" />
-        <option value="$PROJECT_DIR$/src/burp/Getter.java" />
         <option value="$PROJECT_DIR$/src/burp/BurpExtender.java" />
         <option value="$PROJECT_DIR$/src/burp/LineEntryMenu.java" />
         <option value="$PROJECT_DIR$/src/burp/LineTableModel.java" />
         <option value="$PROJECT_DIR$/src/burp/ThreadGetTitle.java" />
         <option value="$PROJECT_DIR$/src/burp/LineEntry.java" />
+        <option value="$PROJECT_DIR$/src/burp/Getter.java" />
+        <option value="$PROJECT_DIR$/src/burp/TestGetter.java" />
+        <option value="$PROJECT_DIR$/src/burp/ThreadRunner.java" />
       </list>
     </option>
   </component>
@@ -268,6 +271,13 @@
             </path>
             <path>
               <item name="domain_hunter_pro" type="b2602c69:ProjectViewProjectNode" />
+              <item name="domain_hunter_pro" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="burp" type="462c0819:PsiDirectoryNode" />
+              <item name="ThreadRunner.java" type="529ef68f:ClassesTreeStructureProvider$PsiClassOwnerTreeNode" />
+            </path>
+            <path>
+              <item name="domain_hunter_pro" type="b2602c69:ProjectViewProjectNode" />
               <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
             </path>
           </expand>
@@ -279,7 +289,7 @@
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1565255238358" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1566889051456" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="project.structure.last.edited" value="Problems" />
     <property name="project.structure.proportion" value="0.0" />
@@ -462,12 +472,12 @@
       <workItem from="1566267065369" duration="651000" />
       <workItem from="1566295132253" duration="1689000" />
       <workItem from="1566460290723" duration="3937000" />
-      <workItem from="1566819286367" duration="2471000" />
+      <workItem from="1566819286367" duration="10340000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="188070000" />
+    <option name="totallyTimeSpent" value="195939000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -492,7 +502,7 @@
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
       <window_info anchor="bottom" id="Run" order="2" weight="0.2936078" />
-      <window_info active="true" anchor="bottom" id="Debug" order="3" sideWeight="0.49947917" visible="true" weight="0.3997833" />
+      <window_info active="true" anchor="bottom" id="Debug" order="3" sideWeight="0.49947917" visible="true" weight="0.42578548" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.32936078" />
@@ -709,6 +719,30 @@
           <properties />
           <option name="timeStamp" value="168" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/burp/ThreadRunner.java</url>
+          <line>149</line>
+          <properties />
+          <option name="timeStamp" value="181" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/burp/ThreadRunner.java</url>
+          <line>169</line>
+          <properties />
+          <option name="timeStamp" value="182" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/burp/TestGetter.java</url>
+          <line>32</line>
+          <properties />
+          <option name="timeStamp" value="183" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/burp/ThreadRunner.java</url>
+          <line>145</line>
+          <properties />
+          <option name="timeStamp" value="184" />
+        </line-breakpoint>
         <line-breakpoint type="java-field">
           <url>file://$PROJECT_DIR$/src/burp/GUI.java</url>
           <line>20</line>
@@ -723,7 +757,6 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="jar://D:/Program Files/Java/jdk1.8.0_191/src.zip!/java/io/File.java" />
     <entry file="file://$PROJECT_DIR$/src/burp/IPAddress.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="44">
@@ -870,7 +903,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/burp/Getter.java" />
     <entry file="file://$PROJECT_DIR$/pom.xml">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="286">
@@ -942,16 +974,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/burp/TitlePanel.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="7832">
-          <caret line="400" column="60" selection-start-line="400" selection-start-column="50" selection-end-line="400" selection-end-column="64" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/burp/LineTable.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="4224">
@@ -997,13 +1019,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/burp/ThreadGetTitle.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="523">
-          <caret line="144" column="66" selection-start-line="144" selection-start-column="66" selection-end-line="144" selection-end-column="66" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/burp/LineTableModel.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="457">
@@ -1011,11 +1026,44 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/burp/TitlePanel.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="259">
+          <caret line="391" column="49" lean-forward="true" selection-start-line="391" selection-start-column="49" selection-end-line="391" selection-end-column="49" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/burp/LineEntry.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="211">
-          <caret line="295" column="24" lean-forward="true" selection-start-line="295" selection-start-column="24" selection-end-line="295" selection-end-column="24" />
+        <state relative-caret-position="2499">
+          <caret line="303" column="13" lean-forward="true" selection-start-line="303" selection-start-column="13" selection-end-line="303" selection-end-column="13" />
         </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/burp/ThreadGetTitle.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="768">
+          <caret line="311" column="55" lean-forward="true" selection-start-line="311" selection-start-column="55" selection-end-line="311" selection-end-column="55" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/burp/TestGetter.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="546">
+          <caret line="42" column="68" selection-start-line="42" selection-start-column="59" selection-end-line="42" selection-end-column="68" />
+          <folding>
+            <element signature="e#660#661#0" expanded="true" />
+            <element signature="e#691#692#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/burp/ThreadRunner.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1" />
       </provider>
     </entry>
   </component>

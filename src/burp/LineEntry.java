@@ -314,7 +314,7 @@ Content-Type: text/html;charset=UTF-8
 
 	public String covertCharSet(byte[] response) {
 		String originalCharSet = getResponseCharset(response);
-		BurpExtender.getStderr().println(url+"---"+originalCharSet);
+		//BurpExtender.getStderr().println(url+"---"+originalCharSet);
 		if (originalCharSet == null) {
 			return new String(response);
 		}else {
