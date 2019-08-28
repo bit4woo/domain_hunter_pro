@@ -256,11 +256,8 @@ public class LineEntry {
 	}
 
 	public String getBodyText() {
-		IResponseInfo analyzeResponse = helpers.analyzeResponse(this.response);//java.lang.NullPointerException why???? 
-		// helpers will be null if this object is recovered from json.
-		//IResponseInfo analyzeResponse = helpers.analyzeResponse(this.getResponse()); 
-		int bodyOffset = analyzeResponse.getBodyOffset();
-		byte[] byte_body = Arrays.copyOfRange(this.response, bodyOffset, this.response.length);//not length-1
+		Getter getter = new Getter(BurpExtender.getCallbacks().getHelpers());
+		byte[] byte_body = getter.getBody(false, response);
 		return new String(byte_body);
 	}
 
