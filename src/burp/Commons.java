@@ -1,8 +1,12 @@
 package burp;
 
-import java.awt.*;
+import java.awt.Component;
+import java.awt.Desktop;
+import java.net.InetAddress;
 import java.net.URI;
 import java.net.URL;
+import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -114,8 +118,8 @@ public class Commons {
 					//					System.out.println("getName "+ a.getName());
 					//					System.out.println(a);
 				}
-//				result.put("IP", IPset);
-//				result.put("CDN", CDNSet);
+				//				result.put("IP", IPset);
+				//				result.put("CDN", CDNSet);
 				//System.out.println(records);
 			}
 			result.put("IP", IPset);
@@ -215,17 +219,50 @@ public class Commons {
 				resultIPs.add(xx.getNetworkAddress());
 				resultIPs.add(xx.getBroadcastAddress());
 				IPSet.addAll(resultIPs);
+			}else if (subnet.contains("-")) {
+				String[] ips = subnet.split("-");
+				if (ips.length ==2) {
+					try {
+						String startip = ips[0].trim();
+						String endip = ips[1].trim();
+						//System.out.println(startip);
+						//System.out.println(endip);
+						//Converts a String that represents an IP to an int.
+						InetAddress i = InetAddress.getByName(startip);
+						int startIPInt= ByteBuffer.wrap(i.getAddress()).getInt();
+						
+						if (endip.indexOf(".") == -1) {
+							endip = startip.substring(0,startip.lastIndexOf("."))+endip;
+							//System.out.println(endip);
+						}
+						InetAddress j = InetAddress.getByName(endip);
+						int endIPInt= ByteBuffer.wrap(j.getAddress()).getInt();
+						
+						while (startIPInt <= endIPInt) {
+							//System.out.println(startIPInt);
+							startIPInt  = startIPInt+1;
+							//This convert an int representation of ip back to String
+							i= InetAddress.getByName(String.valueOf(startIPInt));
+							String ip= i.getHostAddress();
+							IPSet.add(ip);
+							continue;
+						}
+						//System.out.print(IPSet);
+					} catch (UnknownHostException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
 			}else { //单IP
 				IPSet.add(subnet);
 			}
-
 		}
 		return IPSet;
 	}
-	
+
 	public static String getNowTimeString() {
 		SimpleDateFormat simpleDateFormat = 
-                new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
+				new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
 		return simpleDateFormat.format(new Date());
 	}
 
@@ -253,8 +290,8 @@ public class Commons {
 			//C:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe
 		}
 	}
-	
-	
+
+
 	public static byte[] buildCookieRequest(IExtensionHelpers helpers,String cookie, byte[] request) {
 		if (cookie != null && !cookie.equals("")){
 			if (!cookie.startsWith("Cookie: ")){
@@ -268,51 +305,51 @@ public class Commons {
 		}
 		return request;
 	}
-	
-	
-    public static List<Integer> Port_prompt(Component prompt, String str){
-    	String defaultPorts = "8080,8000,8443";
-        String user_input = JOptionPane.showInputDialog(prompt, str,defaultPorts);
-        if (null == user_input || user_input.trim().equals("")) return  null; 
-        List<Integer> portList = new ArrayList<Integer>();
-        for (String port: user_input.trim().split(",")) {
-        	int portint = Integer.parseInt(port);
-        	portList.add(portint);
-        }
-        return portList;
-    }
-    
-    public static boolean isWindows() {
-    	String OS_NAME = System.getProperties().getProperty("os.name").toLowerCase();
-        if (OS_NAME.contains("windows")) {
-            return true;
-        } else {
-        	return false;
-        }
-    }
+
+
+	public static List<Integer> Port_prompt(Component prompt, String str){
+		String defaultPorts = "8080,8000,8443";
+		String user_input = JOptionPane.showInputDialog(prompt, str,defaultPorts);
+		if (null == user_input || user_input.trim().equals("")) return  null; 
+		List<Integer> portList = new ArrayList<Integer>();
+		for (String port: user_input.trim().split(",")) {
+			int portint = Integer.parseInt(port);
+			portList.add(portint);
+		}
+		return portList;
+	}
+
+	public static boolean isWindows() {
+		String OS_NAME = System.getProperties().getProperty("os.name").toLowerCase();
+		if (OS_NAME.contains("windows")) {
+			return true;
+		} else {
+			return false;
+		}
+	}
 
 	public static void main(String args[]) {
-		
-//		HashMap<String, Set<String>> result = dnsquery("www.baidu.com");
-//		System.out.println(result.get("IP").toString());
+
+		//		HashMap<String, Set<String>> result = dnsquery("www.baidu.com");
+		//		System.out.println(result.get("IP").toString());
 		System.out.println(dnsquery("www.baidu111.com"));
-		 
-//		//System.out.println(new SubnetUtils("192.168.1.1/23").getInfo().getCidrSignature());
-//		
-//		Set<String> IPSet = new HashSet<String>();
-//		IPSet.add("192.168.1.225");
-///*		IPSet.add("192.168.1.128");
-//		IPSet.add("192.168.1.129");
-//		IPSet.add("192.168.1.155");
-//		IPSet.add("192.168.1.224");
-//		IPSet.add("192.168.1.130");*/
-//		Set<String> subnets = toSmallerSubNets(IPSet);
-//
-//		System.out.println(toIPSet(subnets));
-//		
-//		Set<String>  a= new HashSet();
-//		a.add("218.213.102.6/31");
-//		System.out.println(toIPSet(a));
+
+		//		//System.out.println(new SubnetUtils("192.168.1.1/23").getInfo().getCidrSignature());
+		//		
+		//		Set<String> IPSet = new HashSet<String>();
+		//		IPSet.add("192.168.1.225");
+		///*		IPSet.add("192.168.1.128");
+		//		IPSet.add("192.168.1.129");
+		//		IPSet.add("192.168.1.155");
+		//		IPSet.add("192.168.1.224");
+		//		IPSet.add("192.168.1.130");*/
+		//		Set<String> subnets = toSmallerSubNets(IPSet);
+		//
+		//		System.out.println(toIPSet(subnets));
+		//		
+		//		Set<String>  a= new HashSet();
+		//		a.add("218.213.102.6/31");
+		//		System.out.println(toIPSet(a));
 		Set<String> subnets = new HashSet<String>();
 		subnets.add("2402:db40:1::/48");
 		System.out.print(toIPSet(subnets));

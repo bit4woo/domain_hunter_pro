@@ -382,8 +382,8 @@ public class TitlePanel extends JPanel {
 
 		titleTableModel.clear(true);//clear
 		
-		TitlePanel.externalPortList = Commons.Port_prompt(null,"External Ports To Run");
-		stdout.println("external ports: "+ externalPortList);
+//		TitlePanel.externalPortList = Commons.Port_prompt(null,"External Ports To Run");
+//		stdout.println("external ports: "+ externalPortList);
 
 		threadGetTitle = new ThreadGetTitle(domains);
 		threadGetTitle.Do();
