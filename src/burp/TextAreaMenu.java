@@ -34,7 +34,7 @@ public class TextAreaMenu extends JPopupMenu {
 					return;
 				}
 				for (String item:selectedItems) {
-					String url= "https://www.google.com/search?q=%22"+item+"%22";
+					String url= "https://www.google.com/search?q=%22"+URLEncoder.encode(item)+"%22";
 					try {
 						Commons.browserOpen(url, null);
 					} catch (Exception e) {
