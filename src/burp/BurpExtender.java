@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -150,6 +151,10 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		JMenuItem addCommentToDomainHunter = new JMenuItem("^_^[Domain Hunter] Add Comment");
 		addCommentToDomainHunter.addActionListener(new addComment(invocation));
 		list.add(addCommentToDomainHunter);
+		
+		JMenuItem setAsChecked = new JMenuItem("^_^[Domain Hunter] Set As Checked");
+		setAsChecked.addActionListener(new setAsChecked(invocation));
+		list.add(setAsChecked);
 
 		list.add(createLevelMenu(invocation));
 
@@ -262,6 +267,42 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		}
 	}
 
+	
+	
+	public class setAsChecked implements ActionListener{
+		private IContextMenuInvocation invocation;
+		setAsChecked(IContextMenuInvocation invocation) {
+			this.invocation  = invocation;
+		}
+		@Override
+		public void actionPerformed(ActionEvent e)
+		{
+			try{
+				IHttpRequestResponse[] messages = invocation.getSelectedMessages();
+				Getter getter = new Getter(helpers);
+				String urlString = getter.getURL(messages[0]).toString();
+				LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(urlString);
+				if (entry == null) {
+					String shortUrlString = getter.getShortUrl(messages[0]);
+					if(!shortUrlString.equals(urlString)) {
+						entry = TitlePanel.getTitleTableModel().findLineEntry(shortUrlString);
+					}
+				}
+				
+				if (entry != null) {
+					int index = TitlePanel.getTitleTableModel().getLineEntries().indexOf(entry);
+					entry.setChecked(true);
+					stdout.println("$$$ "+entry.getUrl()+" updated");
+					TitlePanel.getTitleTableModel().fireTableRowsUpdated(index,index);//主动通知更新，否则不会写入数据库!!!
+				}
+			}
+			catch (Exception e1)
+			{
+				e1.printStackTrace(stderr);
+			}
+		}
+	}
+	
 
 	@Deprecated
 	public class addToTitle implements ActionListener{
