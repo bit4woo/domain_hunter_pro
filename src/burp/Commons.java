@@ -207,54 +207,58 @@ public class Commons {
 	public static Set<String> toIPSet (Set<String> subNets) {
 		Set<String> IPSet = new HashSet<String>();
 		for (String subnet:subNets) {
-			if (subnet.contains(":")) {
-				continue;//暂时先不处理IPv6,需要研究一下
-				//TODO
-			}
-			if (subnet.contains("/")){
-				SubnetUtils net = new SubnetUtils(subnet);
-				SubnetInfo xx = net.getInfo();
-				String[] ips = xx.getAllAddresses();
-				Set<String> resultIPs = new HashSet<>(Arrays.asList(ips));
-				resultIPs.add(xx.getNetworkAddress());
-				resultIPs.add(xx.getBroadcastAddress());
-				IPSet.addAll(resultIPs);
-			}else if (subnet.contains("-")) {
-				String[] ips = subnet.split("-");
-				if (ips.length ==2) {
-					try {
-						String startip = ips[0].trim();
-						String endip = ips[1].trim();
-						//System.out.println(startip);
-						//System.out.println(endip);
-						//Converts a String that represents an IP to an int.
-						InetAddress i = InetAddress.getByName(startip);
-						int startIPInt= ByteBuffer.wrap(i.getAddress()).getInt();
-						
-						if (endip.indexOf(".") == -1) {
-							endip = startip.substring(0,startip.lastIndexOf("."))+endip;
-							//System.out.println(endip);
-						}
-						InetAddress j = InetAddress.getByName(endip);
-						int endIPInt= ByteBuffer.wrap(j.getAddress()).getInt();
-						
-						while (startIPInt <= endIPInt) {
-							//System.out.println(startIPInt);
-							startIPInt  = startIPInt+1;
-							//This convert an int representation of ip back to String
-							i= InetAddress.getByName(String.valueOf(startIPInt));
-							String ip= i.getHostAddress();
-							IPSet.add(ip);
-							continue;
-						}
-						//System.out.print(IPSet);
-					} catch (UnknownHostException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+			try {
+				if (subnet.contains(":")) {
+					continue;//暂时先不处理IPv6,需要研究一下
+					//TODO
 				}
-			}else { //单IP
-				IPSet.add(subnet);
+				if (subnet.contains("/")){
+					SubnetUtils net = new SubnetUtils(subnet);
+					SubnetInfo xx = net.getInfo();
+					String[] ips = xx.getAllAddresses();
+					Set<String> resultIPs = new HashSet<>(Arrays.asList(ips));
+					resultIPs.add(xx.getNetworkAddress());
+					resultIPs.add(xx.getBroadcastAddress());
+					IPSet.addAll(resultIPs);
+				}else if (subnet.contains("-")) {
+					String[] ips = subnet.split("-");
+					if (ips.length ==2) {
+						try {
+							String startip = ips[0].trim();
+							String endip = ips[1].trim();
+							//System.out.println(startip);
+							//System.out.println(endip);
+							//Converts a String that represents an IP to an int.
+							InetAddress i = InetAddress.getByName(startip);
+							int startIPInt= ByteBuffer.wrap(i.getAddress()).getInt();
+
+							if (endip.indexOf(".") == -1) {
+								endip = startip.substring(0,startip.lastIndexOf("."))+endip;
+								//System.out.println(endip);
+							}
+							InetAddress j = InetAddress.getByName(endip);
+							int endIPInt= ByteBuffer.wrap(j.getAddress()).getInt();
+
+							while (startIPInt <= endIPInt) {
+								//System.out.println(startIPInt);
+								startIPInt  = startIPInt+1;
+								//This convert an int representation of ip back to String
+								i= InetAddress.getByName(String.valueOf(startIPInt));
+								String ip= i.getHostAddress();
+								IPSet.add(ip);
+								continue;
+							}
+							//System.out.print(IPSet);
+						} catch (UnknownHostException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+				}else { //单IP
+					IPSet.add(subnet);
+				}
+			}catch(Exception e) {
+				e.printStackTrace(BurpExtender.getStderr());
 			}
 		}
 		return IPSet;
