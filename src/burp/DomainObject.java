@@ -14,7 +14,7 @@ public class DomainObject {
 	public String projectName = "";
 	public String uploadURL = "Input Upload URL Here";
 	public String summary = "";
-	public boolean autoAddRelatedToRoot = false; 
+	public boolean autoAddRelatedToRoot = false;
 
 	private LinkedHashMap<String,String> rootDomainMap = new LinkedHashMap<String,String>();
 	// LinkedHashMap to keep the insert order 
@@ -73,7 +73,7 @@ public class DomainObject {
 	public void setRootDomainMap(LinkedHashMap<String, String> rootDomainMap) {
 		this.rootDomainMap = rootDomainMap;
 	}
-	
+
 	public Set<String> getSubnetSet() {
 		return subnetSet;
 	}
@@ -165,7 +165,7 @@ public class DomainObject {
 
 
 	// below methods is self-defined, function name start with "fetch" to void fastjson parser error
-	
+
 	public String fetchSubnets() {
 		return String.join(System.lineSeparator(), subnetSet);
 	}
@@ -298,11 +298,17 @@ public class DomainObject {
 	}
 
 	public int domainType(String domain) {
-		
+
 		try {
-			domain = domain.trim();
+			domain = domain.toLowerCase().trim();
 			if (domain.endsWith(".")) {
 				domain = domain.substring(0,domain.length()-1);
+			}
+
+			if (!domain.contains(".")) return DomainObject.USELESS;
+
+			if (Commons.isValidIP(domain)) {//https://202.77.129.30
+				return DomainObject.IP_ADDRESS;
 			}
 
 			for (String rootdomain:fetchRootDomainSet()) {
@@ -326,9 +332,6 @@ public class DomainObject {
 				}
 			}
 
-			if (Commons.isValidIP(domain)) {//https://202.77.129.30
-				return DomainObject.IP_ADDRESS;
-			}
 			return DomainObject.USELESS;
 		} catch (Exception e) {
 			e.printStackTrace(BurpExtender.getStderr());
