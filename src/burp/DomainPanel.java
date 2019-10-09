@@ -453,6 +453,7 @@ public class DomainPanel extends JPanel {
 
 
 		JButton addButton = new JButton("Add");
+		addButton.setToolTipText("add Top-Level domain");
 		addButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
@@ -474,6 +475,31 @@ public class DomainPanel extends JPanel {
 			}
 		});
 		ControlPanel.add(addButton);
+
+
+		JButton addButton1 = new JButton("Add1");
+		addButton1.setToolTipText("add Multiple-Level domain");
+		addButton1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
+				enteredRootDomain = enteredRootDomain.trim().toLowerCase();
+				if (enteredRootDomain.startsWith("http://") || enteredRootDomain.startsWith("https://")){
+					try {
+						URL url = new URL(enteredRootDomain);
+						enteredRootDomain = url.getHost();
+					} catch (Exception e2) {
+
+					}
+				}
+				//enteredRootDomain = InternetDomainName.from(enteredRootDomain).topPrivateDomain().toString();
+				String keyword = enteredRootDomain.substring(0,enteredRootDomain.indexOf("."));
+
+				domainResult.AddToRootDomainMap(enteredRootDomain, keyword);
+				showToDomainUI();
+				//将会触发listener，然后自动保存。无需主动调用了。
+			}
+		});
+		ControlPanel.add(addButton1);
 
 
 		JButton removeButton = new JButton("Remove");
