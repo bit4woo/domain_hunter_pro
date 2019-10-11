@@ -21,9 +21,7 @@ import javax.swing.JOptionPane;
 
 import org.apache.commons.net.util.SubnetUtils;
 import org.apache.commons.net.util.SubnetUtils.SubnetInfo;
-import org.xbill.DNS.ARecord;
-import org.xbill.DNS.Lookup;
-import org.xbill.DNS.Record;
+import org.xbill.DNS.*;
 
 public class Commons {
 
@@ -132,6 +130,46 @@ public class Commons {
 		}
 	}
 
+	public static HashMap<String,Set<String>> dnsquery(String domain,String server) {
+		HashMap<String,Set<String>> result = new HashMap<String,Set<String>>();
+		try{
+			Lookup lookup = new Lookup(domain, org.xbill.DNS.Type.A);
+			Resolver resolver = new SimpleResolver(server);
+			lookup.setResolver(resolver);
+			lookup.run();
+
+			Set<String> IPset = new HashSet<String>();
+			Set<String> CDNSet = new HashSet<String>();
+			if(lookup.getResult() == Lookup.SUCCESSFUL){
+				Record[] records=lookup.getAnswers();
+				for (int i = 0; i < records.length; i++) {
+					ARecord a = (ARecord) records[i];
+					String ip = a.getAddress().getHostAddress();
+					String CName = a.getAddress().getHostName();
+					if (ip!=null) {
+						IPset.add(ip);
+					}
+					if (CName!=null) {
+						CDNSet.add(CName);
+					}
+					//					System.out.println("getAddress "+ a.getAddress().getHostAddress());
+					//					System.out.println("getAddress "+ a.getAddress().getHostName());
+					//					System.out.println("getName "+ a.getName());
+					//					System.out.println(a);
+				}
+				//				result.put("IP", IPset);
+				//				result.put("CDN", CDNSet);
+				//System.out.println(records);
+			}
+			result.put("IP", IPset);
+			result.put("CDN", CDNSet);
+			return result;
+
+		}catch(Exception e){
+			e.printStackTrace();
+			return result;
+		}
+	}
 
 
 	//////////////////////////////////////////IP  subnet  CIDR/////////////////////////////////
@@ -354,8 +392,9 @@ public class Commons {
 		//		Set<String>  a= new HashSet();
 		//		a.add("218.213.102.6/31");
 		//		System.out.println(toIPSet(a));
-		Set<String> subnets = new HashSet<String>();
-		subnets.add("2402:db40:1::/48");
-		System.out.print(toIPSet(subnets));
+//		Set<String> subnets = new HashSet<String>();
+//		subnets.add("2402:db40:1::/48");
+//		System.out.print(toIPSet(subnets));
+		System.out.print(dnsquery("www.baidu.com"));
 	}
 }

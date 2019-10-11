@@ -71,6 +71,7 @@ import test.HTTPPost;
  */
 public class DomainPanel extends JPanel {
 
+	private final JButton btnBrute;
 	private JRadioButton rdbtnAddRelatedToRoot;
 	private JTextField textFieldUploadURL;
 	private JButton btnSearch;
@@ -89,6 +90,7 @@ public class DomainPanel extends JPanel {
 	private JTable table;
 
 	private boolean listenerIsOn = true;
+	public static ThreadBruteDomain threadBruteDomain;
 
 	public static DomainObject getDomainResult() {
 		return domainResult;
@@ -135,6 +137,50 @@ public class DomainPanel extends JPanel {
 		HeaderPanel.add(btnSaveDomainOnly);
 
 
+		btnBrute = new JButton("Brute");
+		btnBrute.setToolTipText("Do Brute for all root domains");
+		btnBrute.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+					//using SwingWorker to prevent blocking burp main UI.
+
+					@Override
+					protected Map doInBackground() throws Exception {
+
+						Set<String> rootDomains = domainResult.fetchRootDomainSet();
+						Set<String> keywords= domainResult.fetchKeywordSet();
+
+						//stderr.print(keywords.size());
+						//System.out.println(rootDomains.toString());
+						//System.out.println("xxx"+keywords.toString());
+						btnBrute.setEnabled(false);
+						threadBruteDomain = new ThreadBruteDomain(rootDomains);
+						threadBruteDomain.Do();
+						return null;
+					}
+					@Override
+					protected void done() {
+						try {
+							get();
+							showToDomainUI();
+							autoSave();
+							btnBrute.setEnabled(true);
+							stdout.println("~~~~~~~~~~~~~brute Done~~~~~~~~~~~~~");
+						} catch (Exception e) {
+							btnBrute.setEnabled(true);
+							e.printStackTrace(stderr);
+						}
+					}
+				};
+				worker.execute();
+			}
+		});
+
+		Component verticalStrut = Box.createVerticalStrut(20);
+		HeaderPanel.add(verticalStrut);
+		HeaderPanel.add(btnBrute);
+
+
 		btnSearch = new JButton("Search");
 		btnSearch.setToolTipText("Do a single search from site map");
 		btnSearch.addActionListener(new ActionListener() {
@@ -174,8 +220,6 @@ public class DomainPanel extends JPanel {
 			}
 		});
 
-		Component verticalStrut = Box.createVerticalStrut(20);
-		HeaderPanel.add(verticalStrut);
 		HeaderPanel.add(btnSearch);
 
 		btnCrawl = new JButton("Crawl");
