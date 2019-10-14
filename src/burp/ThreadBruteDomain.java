@@ -60,7 +60,7 @@ class ThreadBruteDomain{
 
         plist = new ArrayList<DomainBruteProducer>();
 
-        for (int i=0;i<=500;i++) {
+        for (int i=0;i<=20000;i++) {//layer中是10万
             DomainBruteProducer p = new DomainBruteProducer(rootDomains,dictQueue,outputQueue,i);
             p.start();
             plist.add(p);
