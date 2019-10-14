@@ -1,4 +1,7 @@
-package burp;
+package Deprecated;
+
+import burp.CertInfo;
+import burp.Commons;
 
 import java.util.HashMap;
 import java.util.HashSet;
