@@ -67,12 +67,10 @@ class RootDomainForBrute{
 
 	public HashMap<String,Set<String>> query(String domain){
 		HashMap<String,Set<String>> result = new HashMap();
-		int i = 0;
-		while (i<=nameServers.size()){
+		for (String server:nameServers){
 			try {
-				i++;
-				result = Commons.dnsquery(domain,(String) nameServers.toArray()[i]);
-				break;
+				result = Commons.dnsquery(domain,server);
+				return result;
 			}catch (Exception e){
 				;//do nothing
 			}
