@@ -111,6 +111,9 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		if (DomainPanel.threadBruteDomain != null){
 			DomainPanel.threadBruteDomain.stopThreads();
 		}
+		if (DomainPanel.threadBruteDomain2 != null){
+			DomainPanel.threadBruteDomain2.stopThreads();
+		}
 		gui.saveDBfilepathToExtension();
 		gui.getProjectMenu().remove();
 	}
@@ -154,7 +157,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		JMenuItem addCommentToDomainHunter = new JMenuItem("^_^[Domain Hunter] Add Comment");
 		addCommentToDomainHunter.addActionListener(new addComment(invocation));
 		list.add(addCommentToDomainHunter);
-		
+
 		JMenuItem setAsChecked = new JMenuItem("^_^[Domain Hunter] Set As Checked");
 		setAsChecked.addActionListener(new setAsChecked(invocation));
 		list.add(setAsChecked);
@@ -270,8 +273,8 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		}
 	}
 
-	
-	
+
+
 	public class setAsChecked implements ActionListener{
 		private IContextMenuInvocation invocation;
 		setAsChecked(IContextMenuInvocation invocation) {
@@ -291,7 +294,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 						entry = TitlePanel.getTitleTableModel().findLineEntry(shortUrlString);
 					}
 				}
-				
+
 				if (entry != null) {
 					int index = TitlePanel.getTitleTableModel().getLineEntries().indexOf(entry);
 					entry.setChecked(true);
@@ -305,7 +308,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 			}
 		}
 	}
-	
+
 
 	@Deprecated
 	public class addToTitle implements ActionListener{

@@ -1,4 +1,4 @@
-package Deprecated;
+package burp;
 
 import burp.Commons;
 import org.apache.commons.net.whois.WhoisClient;
@@ -11,19 +11,19 @@ import java.util.regex.Pattern;
 
 
 class RootDomainForBrute{
-    public String rootDomain;
-    public Set<String> nameServers = new HashSet();
-    public Set<String> wildIPset = new HashSet<String>(); //泛解析的IP
+	public String rootDomain;
+	public Set<String> nameServers = new HashSet();
+	public Set<String> wildIPset = new HashSet<String>(); //泛解析的IP
 	public Set<String> wildCDNSet = new HashSet<String>(); //泛解析的CDN
 	public RootDomainForBrute(String rootDomain){
-	    this.rootDomain = rootDomain;
-	    nameServers = nameServer(this.rootDomain);
+		this.rootDomain = rootDomain;
+		nameServers = nameServer(this.rootDomain);
 
-	    String badDomain = "domain-hunter-pro-test."+rootDomain;
-        HashMap<String,Set<String>> result = query(badDomain);
-	    wildCDNSet = result.get("CDN");
-	    wildIPset = result.get("IP");
-    }
+		String badDomain = "domain-hunter-pro-test."+rootDomain;
+		HashMap<String,Set<String>> result = query(badDomain);
+		wildCDNSet = result.get("CDN");
+		wildIPset = result.get("IP");
+	}
 
 
 	public static String whois(String domainName) {
@@ -55,31 +55,34 @@ class RootDomainForBrute{
 				domains.add(server);
 			}
 		}
+
+		if (domains.size() == 0){
+			//result = Commons.dnsquery(domain); //使用本地dns服务器进行爆破，会导致本地访问很慢
+			domains.add("223.5.5.5");
+			domains.add("223.6.6.6");
+		}
+
 		return domains;
 	}
 
 	public HashMap<String,Set<String>> query(String domain){
-	    HashMap<String,Set<String>> result = new HashMap();
-	    if (this.nameServers.size() == 0){
-	        result = Commons.dnsquery(domain);
-        }else {
-	        int i = 0;
-	        while (i<=nameServers.size()){
-	            try {
-	                i++;
-	                result = Commons.dnsquery(domain,(String) nameServers.toArray()[0]);
-	                break;
-                }catch (Exception e){
-	                ;//do nothing
-                }
-            }
-        }
-	    return result;
-    }
+		HashMap<String,Set<String>> result = new HashMap();
+		int i = 0;
+		while (i<=nameServers.size()){
+			try {
+				i++;
+				result = Commons.dnsquery(domain,(String) nameServers.toArray()[0]);
+				break;
+			}catch (Exception e){
+				;//do nothing
+			}
+		}
+		return result;
+	}
 
-    public static void main(String args[]){
+	public static void main(String args[]){
 //        System.out.println(Commons.dnsquery("xxxsdfdsfasf.jr.jd.com","223.5.5.5"));
-        RootDomainForBrute a = new RootDomainForBrute("jd.com");
-        System.out.println(a.query("0g.jd.com"));
-    }
+		//RootDomainForBrute a = new RootDomainForBrute("jd.com");
+		System.out.println(nameServer("jd.com"));
+	}
 }

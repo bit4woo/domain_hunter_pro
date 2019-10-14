@@ -1,6 +1,4 @@
-package Deprecated;
-
-import burp.*;
+package burp;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -11,18 +9,18 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 //////////////////ThreadGetTitle block/////////////
 //no need to pass BurpExtender object to these class, IBurpExtenderCallbacks object is enough 
-class ThreadBruteDomain{
+public class ThreadBruteDomainWithDNSServer{
     private Set<String> rootDomains = new HashSet<>();
-    private List<DomainBruteProducer> plist;
+    private List<DomainBruteProducerWithDNSServer> plist;
 
     private static IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();//静态变量，burp插件的逻辑中，是可以保证它被初始化的。;
     public PrintWriter stdout = new PrintWriter(callbacks.getStdout(), true);
     public PrintWriter stderr = new PrintWriter(callbacks.getStderr(), true);
     public IExtensionHelpers helpers = callbacks.getHelpers();
 
-    public static Map<String ,String> badRecords = new HashMap<>();
+    public static int dictOriginalSize;
 
-    public ThreadBruteDomain(Set<String> rootDomains) {
+    public ThreadBruteDomainWithDNSServer(Set<String> rootDomains) {
         this.rootDomains.addAll(rootDomains);
         //this.rootDomains = rootDomains; 是对象地址的传递，删除其中元素，将导致原始数据被删除
     }
@@ -59,11 +57,11 @@ class ThreadBruteDomain{
         BlockingQueue<String> dictQueue = new LinkedBlockingQueue<String>();//store dict
 
         dictQueue.addAll(readDictFile());
-
-        plist = new ArrayList<DomainBruteProducer>();
+        dictOriginalSize = dictQueue.size();
+        plist = new ArrayList<DomainBruteProducerWithDNSServer>();
 
         for (int i=0;i<=10000;i++) {
-            DomainBruteProducer p = new DomainBruteProducer(rds,dictQueue,outputQueue,i);
+            DomainBruteProducerWithDNSServer p = new DomainBruteProducerWithDNSServer(rds,dictQueue,outputQueue,i);
             p.start();
             plist.add(p);
         }
@@ -104,7 +102,7 @@ class ThreadBruteDomain{
     }
 
     boolean isAllProductorFinished(){
-        for (DomainBruteProducer p:plist) {
+        for (DomainBruteProducerWithDNSServer p:plist) {
             if(p.isAlive()) {
                 return false;
             }
@@ -113,7 +111,7 @@ class ThreadBruteDomain{
     }
 
     public void stopThreads() {
-        for (DomainBruteProducer p:plist) {
+        for (DomainBruteProducerWithDNSServer p:plist) {
             p.stopThread();
         }
         stdout.println("brute threads stopped!");
@@ -176,11 +174,10 @@ class ThreadBruteDomain{
  *
  */
 
-class DomainBruteProducer extends Thread {//Producer do
+class DomainBruteProducerWithDNSServer extends Thread {//Producer do
     private Set<RootDomainForBrute> rootDomainForBrutes;
     private BlockingQueue<String> dictQueue;
     private BlockingQueue<String> outputQueue;
-    public static int originSize;
 
     private int threadNo;
     private boolean stopflag = false;
@@ -190,16 +187,16 @@ class DomainBruteProducer extends Thread {//Producer do
     public PrintWriter stderr = new PrintWriter(callbacks.getStderr(), true);
     public IExtensionHelpers helpers = callbacks.getHelpers();
 
-    public DomainBruteProducer(Set<RootDomainForBrute> rootDomainForBrutes,
-                               BlockingQueue<String> dictQueue,
-                               BlockingQueue<String> outputQueue,
-                               int threadNo) {
+    public DomainBruteProducerWithDNSServer(Set<RootDomainForBrute> rootDomainForBrutes,
+                                            BlockingQueue<String> dictQueue,
+                                            BlockingQueue<String> outputQueue,
+                                            int threadNo) {
         this.threadNo = threadNo;
         this.dictQueue = dictQueue;
         this.outputQueue = outputQueue;
         this.rootDomainForBrutes = rootDomainForBrutes;
         stopflag= false;
-        originSize = dictQueue.size();
+
     }
 
     public void stopThread() {
@@ -208,32 +205,42 @@ class DomainBruteProducer extends Thread {//Producer do
 
     @Override
     public void run() {
-        while(true){
-            try {
-                if (dictQueue.isEmpty() || stopflag) {
-                    //stdout.println("Producer break");
-                    break;
-                }
-                String subdomainWord = dictQueue.take().trim().toLowerCase();
+        while(true) try {
+            if (dictQueue.isEmpty() || stopflag) {
+                //stdout.println("Producer break");
+                break;
+            }
+            String subdomainWord = dictQueue.take().trim().toLowerCase();
 
-                int progress = originSize-dictQueue.size();
+            for (RootDomainForBrute item : rootDomainForBrutes) {
+                String tmpDomain = subdomainWord + "." + item.rootDomain;
+                //stdout.println(tmpDomain);
+                HashMap<String, Set<String>> result = item.query(tmpDomain);
+                Set<String> CDNSet = result.get("CDN");
+                Set<String> IPset = result.get("IP");
+                boolean successfulflag = false;
 
-                for (RootDomainForBrute item: rootDomainForBrutes){
-                    String tmpDomain = subdomainWord+"."+item.rootDomain;
-                    stdout.println(tmpDomain);
-                    HashMap<String,Set<String>> result = item.query(tmpDomain);
-                    Set<String > CDNSet = result.get("CDN");
-                    Set<String > IPset = result.get("IP");
-                    if( IPset != null && CDNSet != null && IPset.size() != 0 && !CDNSet.toString().equalsIgnoreCase(item.wildCDNSet.toString())
-                            && IPset.toString().equalsIgnoreCase(item.wildIPset.toString())){
-                        outputQueue.add(tmpDomain);
-                        stdout.println("domain found by brute force ["+progress+"/"+originSize+"] "
-                                +tmpDomain+" "+IPset.toString() +" "+ CDNSet.toString());
+                //根据CDN进行判断是否为泛解析域名
+                if (CDNSet != null && CDNSet.size() != 0 && !CDNSet.toString().equalsIgnoreCase(item.wildCDNSet.toString())) {
+                    successfulflag = true;
+                } else if (IPset != null && IPset.size() != 0) {//根据IP集合进行判断是否为泛解析域名
+                    Set<String> tmpSet = new HashSet<>();
+                    tmpSet.addAll(IPset);
+                    tmpSet.retainAll(item.wildIPset);
+                    if (tmpSet.size() != IPset.size()) {
+                        successfulflag = true;
                     }
                 }
-            } catch (Exception error) {
-                error.printStackTrace(stderr);
+
+                if (successfulflag){
+                    outputQueue.add(tmpDomain);
+                    int progress = ThreadBruteDomain.dictOriginalSize - dictQueue.size();
+                    stdout.println("domain found by brute force [" + progress + "/" + ThreadBruteDomain.dictOriginalSize + "] "
+                            + tmpDomain + " " + IPset.toString() + " " + CDNSet.toString());
+                }
             }
+        } catch (Exception error) {
+            error.printStackTrace(stderr);
         }
     }
 
