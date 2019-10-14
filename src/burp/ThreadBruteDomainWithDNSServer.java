@@ -3,6 +3,7 @@ package burp;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -232,7 +233,9 @@ class DomainBruteProducerWithDNSServer extends Thread {//Producer do
 
                 if (successfulflag){
                     outputQueue.add(tmpDomain);
-                    stdout.println("domain found by brute force [" + dictQueue.size() + " left] "
+                    DecimalFormat df=(DecimalFormat) DecimalFormat.getInstance();
+                    df.setGroupingSize(4);
+                    stdout.println("domain found by brute force [" + df.format(dictQueue.size()) + " left] "
                             + tmpDomain + " " + IPset.toString() + " " + CDNSet.toString());
                 }
             }
