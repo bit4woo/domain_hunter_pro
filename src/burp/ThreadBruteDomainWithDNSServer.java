@@ -18,8 +18,6 @@ public class ThreadBruteDomainWithDNSServer{
     public PrintWriter stderr = new PrintWriter(callbacks.getStderr(), true);
     public IExtensionHelpers helpers = callbacks.getHelpers();
 
-    public static int dictOriginalSize;
-
     public ThreadBruteDomainWithDNSServer(Set<String> rootDomains) {
         this.rootDomains.addAll(rootDomains);
         //this.rootDomains = rootDomains; 是对象地址的传递，删除其中元素，将导致原始数据被删除
@@ -57,7 +55,7 @@ public class ThreadBruteDomainWithDNSServer{
         BlockingQueue<String> dictQueue = new LinkedBlockingQueue<String>();//store dict
 
         dictQueue.addAll(readDictFile());
-        dictOriginalSize = dictQueue.size();
+
         plist = new ArrayList<DomainBruteProducerWithDNSServer>();
 
         for (int i=0;i<=10000;i++) {
@@ -234,8 +232,7 @@ class DomainBruteProducerWithDNSServer extends Thread {//Producer do
 
                 if (successfulflag){
                     outputQueue.add(tmpDomain);
-                    int progress = ThreadBruteDomain.dictOriginalSize - dictQueue.size();
-                    stdout.println("domain found by brute force [" + progress + "/" + ThreadBruteDomain.dictOriginalSize + "] "
+                    stdout.println("domain found by brute force [" + dictQueue.size() + " left] "
                             + tmpDomain + " " + IPset.toString() + " " + CDNSet.toString());
                 }
             }

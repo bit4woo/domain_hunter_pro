@@ -19,7 +19,6 @@ class ThreadBruteDomain{
     public IExtensionHelpers helpers = callbacks.getHelpers();
 
     public static Map<String ,Set<String>> badRecords = new HashMap<>();
-    public static int dictOriginalSize;
 
     public ThreadBruteDomain(Set<String> rootDomains) {
         this.rootDomains.addAll(rootDomains);
@@ -57,7 +56,6 @@ class ThreadBruteDomain{
         BlockingQueue<String> dictQueue = new LinkedBlockingQueue<String>();//store dict
 
         dictQueue.addAll(readDictFile());
-        dictOriginalSize = dictQueue.size();
         plist = new ArrayList<DomainBruteProducer>();
 
         for (int i=0;i<=10000;i++) {//layer中是10万
@@ -211,8 +209,7 @@ class DomainBruteProducer extends Thread {//Producer do
                     String ip = query(tmpDomain);
                     if(ip != null && !ThreadBruteDomain.badRecords.get(rootDomain).contains(ip)){
                         outputQueue.add(tmpDomain);
-                        int progress = ThreadBruteDomain.dictOriginalSize-dictQueue.size();
-                        stdout.println("domain found by brute force ["+progress+"/"+ThreadBruteDomain.dictOriginalSize+"] "+tmpDomain+" "+ip);
+                        stdout.println("domain found by brute force ["+dictQueue.size()+" left] "+tmpDomain+" "+ip);
                     }
                 }
             } catch (Exception error) {
