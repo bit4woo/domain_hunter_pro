@@ -19,6 +19,7 @@ class ThreadBruteDomain{
     public IExtensionHelpers helpers = callbacks.getHelpers();
 
     public static Map<String ,Set<String>> badRecords = new HashMap<>();
+    public static int dictOriginalSize;
 
     public ThreadBruteDomain(Set<String> rootDomains) {
         this.rootDomains.addAll(rootDomains);
@@ -56,10 +57,10 @@ class ThreadBruteDomain{
         BlockingQueue<String> dictQueue = new LinkedBlockingQueue<String>();//store dict
 
         dictQueue.addAll(readDictFile());
-
+        dictOriginalSize = dictQueue.size();
         plist = new ArrayList<DomainBruteProducer>();
 
-        for (int i=0;i<=20000;i++) {//layer中是10万
+        for (int i=0;i<=10000;i++) {//layer中是10万
             DomainBruteProducer p = new DomainBruteProducer(rootDomains,dictQueue,outputQueue,i);
             p.start();
             plist.add(p);
@@ -171,7 +172,6 @@ class DomainBruteProducer extends Thread {//Producer do
     private Set<String> rootDomains;
     private BlockingQueue<String> dictQueue;
     private BlockingQueue<String> outputQueue;
-    private int originSize;
 
     private int threadNo;
     private boolean stopflag = false;
@@ -190,7 +190,6 @@ class DomainBruteProducer extends Thread {//Producer do
         this.outputQueue = outputQueue;
         this.rootDomains = rootDomains;
         stopflag= false;
-        originSize = dictQueue.size();
     }
 
     public void stopThread() {
@@ -207,14 +206,14 @@ class DomainBruteProducer extends Thread {//Producer do
                 }
                 String subdomainWord = dictQueue.take().trim().toLowerCase();
 
-                int progress = originSize-dictQueue.size();
+                int progress = ThreadBruteDomain.dictOriginalSize-dictQueue.size();
 
                 for (String rootDomain: rootDomains){
                     String tmpDomain = subdomainWord+"."+rootDomain;
                     String ip = query(tmpDomain);
                     if(ip != null && !ThreadBruteDomain.badRecords.get(rootDomain).contains(ip)){
                         outputQueue.add(tmpDomain);
-                        stdout.println("domain found by brute force ["+progress+"/"+originSize+"] "+tmpDomain+" "+ip);
+                        stdout.println("domain found by brute force ["+progress+"/"+ThreadBruteDomain.dictOriginalSize+"] "+tmpDomain+" "+ip);
                     }
                 }
             } catch (Exception error) {
