@@ -206,13 +206,12 @@ class DomainBruteProducer extends Thread {//Producer do
                 }
                 String subdomainWord = dictQueue.take().trim().toLowerCase();
 
-                int progress = ThreadBruteDomain.dictOriginalSize-dictQueue.size();
-
                 for (String rootDomain: rootDomains){
                     String tmpDomain = subdomainWord+"."+rootDomain;
                     String ip = query(tmpDomain);
                     if(ip != null && !ThreadBruteDomain.badRecords.get(rootDomain).contains(ip)){
                         outputQueue.add(tmpDomain);
+                        int progress = ThreadBruteDomain.dictOriginalSize-dictQueue.size();
                         stdout.println("domain found by brute force ["+progress+"/"+ThreadBruteDomain.dictOriginalSize+"] "+tmpDomain+" "+ip);
                     }
                 }
