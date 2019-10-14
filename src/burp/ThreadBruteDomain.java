@@ -1,16 +1,11 @@
 package burp;
 
-import org.apache.commons.text.StringEscapeUtils;
-
 import java.io.*;
 import java.net.InetAddress;
-import java.net.URLDecoder;
 import java.net.UnknownHostException;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 //////////////////ThreadGetTitle block/////////////
 //no need to pass BurpExtender object to these class, IBurpExtenderCallbacks object is enough 
@@ -23,7 +18,7 @@ class ThreadBruteDomain{
     public PrintWriter stderr = new PrintWriter(callbacks.getStderr(), true);
     public IExtensionHelpers helpers = callbacks.getHelpers();
 
-    public static Map<String ,String> badRecords = new HashMap<>();
+    public static Map<String ,Set<String>> badRecords = new HashMap<>();
 
     public ThreadBruteDomain(Set<String> rootDomains) {
         this.rootDomains.addAll(rootDomains);
@@ -48,9 +43,9 @@ class ThreadBruteDomain{
 
         for (String rootDomain: rootDomains){
             String badDomain = "domain-hunter-pro-test."+rootDomain;
-            String ip = DomainBruteProducer.query(badDomain);
-            if (ip != null){
-                badRecords.put(rootDomain,ip);
+            Set<String> ipset = Commons.dnsquery(badDomain).get("IP");
+            if (ipset != null && ipset.size() != 0){
+                badRecords.put(rootDomain,ipset);
             }
         }
 
@@ -218,7 +213,7 @@ class DomainBruteProducer extends Thread {//Producer do
                 for (String rootDomain: rootDomains){
                     String tmpDomain = subdomainWord+"."+rootDomain;
                     String ip = query(tmpDomain);
-                    if(ip != null && !ip.equalsIgnoreCase(ThreadBruteDomain.badRecords.get(rootDomain))){
+                    if(ip != null && !ThreadBruteDomain.badRecords.get(rootDomain).contains(ip)){
                         outputQueue.add(tmpDomain);
                         stdout.println("domain found by brute force ["+progress+"/"+originSize+"] "+tmpDomain+" "+ip);
                     }
@@ -229,7 +224,7 @@ class DomainBruteProducer extends Thread {//Producer do
         }
     }
 
-
+    //simple query ,just get one ip
     public static String query(String domain){
         try {
             InetAddress inetAddress = InetAddress.getByName(domain);
