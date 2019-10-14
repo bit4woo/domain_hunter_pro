@@ -71,7 +71,7 @@ class RootDomainForBrute{
 		while (i<=nameServers.size()){
 			try {
 				i++;
-				result = Commons.dnsquery(domain,(String) nameServers.toArray()[0]);
+				result = Commons.dnsquery(domain,(String) nameServers.toArray()[i]);
 				break;
 			}catch (Exception e){
 				;//do nothing
