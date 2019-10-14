@@ -1,14 +1,15 @@
 package burp;
 
+import com.alibaba.fastjson.JSON;
+import com.google.common.net.InternetDomainName;
+import org.apache.commons.net.whois.WhoisClient;
+
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Set;
-
-import org.apache.commons.net.whois.WhoisClient;
-
-import com.alibaba.fastjson.JSON;
-import com.google.common.net.InternetDomainName;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class DomainObject {
 	public String projectName = "";
@@ -348,23 +349,6 @@ public class DomainObject {
 		return false;
 	}
 
-	@Deprecated
-	public static String whois(String domainName) {
-		StringBuilder result = new StringBuilder("");
-
-		WhoisClient whois = new WhoisClient();
-		try {
-			//default is internic.net
-			whois.connect(WhoisClient.DEFAULT_HOST);
-			String whoisData1 = whois.query("=" + domainName);
-			result.append(whoisData1);
-			whois.disconnect();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return result.toString();
-	}
-
 	public static void main(String args[]) {
 		/*		String Host ="www.baidu.com";
 		Set<String> rootdomains = new HashSet<String>();
@@ -375,9 +359,9 @@ public class DomainObject {
 		int type = new DomainObject("").domainType(Host);
 		System.out.println(type);*/
 
-		DomainObject xx = new DomainObject("");
-		xx.getRelatedDomainSet().add("xxx.baidu.com");
-		System.out.println(xx.getRelatedDomainSet());
+//		DomainObject xx = new DomainObject("");
+//		xx.getRelatedDomainSet().add("xxx.baidu.com");
+//		System.out.println(xx.getRelatedDomainSet());
 
 
 		//		System.out.println(InternetDomainName.from("www.jd.local").publicSuffix());

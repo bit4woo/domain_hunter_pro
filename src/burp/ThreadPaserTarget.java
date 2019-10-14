@@ -13,7 +13,8 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 //////////////////Thread Parser Target: dnsquery to get full target area that include domains and IPs/////////////
-//no need to pass BurpExtender object to these class, IBurpExtenderCallbacks object is enough 
+//no need to pass BurpExtender object to these class, IBurpExtenderCallbacks object is enough
+@Deprecated
 class ThreadPaserTarget{
 	private Set<String> domains;
 	private Set<String> fullTarget;
@@ -110,6 +111,7 @@ class ThreadPaserTarget{
  *
  */
 
+@Deprecated
 class ParserProducer extends Thread {//Producer do
 	private final BlockingQueue<String> domainQueue;//use to store domains
 	private final BlockingQueue<String> IPQueue;//use to store domains

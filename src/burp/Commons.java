@@ -152,14 +152,7 @@ public class Commons {
 					if (CName!=null) {
 						CDNSet.add(CName);
 					}
-					//					System.out.println("getAddress "+ a.getAddress().getHostAddress());
-					//					System.out.println("getAddress "+ a.getAddress().getHostName());
-					//					System.out.println("getName "+ a.getName());
-					//					System.out.println(a);
 				}
-				//				result.put("IP", IPset);
-				//				result.put("CDN", CDNSet);
-				//System.out.println(records);
 			}
 			result.put("IP", IPset);
 			result.put("CDN", CDNSet);
@@ -395,6 +388,6 @@ public class Commons {
 //		Set<String> subnets = new HashSet<String>();
 //		subnets.add("2402:db40:1::/48");
 //		System.out.print(toIPSet(subnets));
-		System.out.print(dnsquery("www.baidu.com"));
+		System.out.print(dnsquery("0g.jd.com"));
 	}
 }
