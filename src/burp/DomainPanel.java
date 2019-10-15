@@ -56,7 +56,7 @@ public class DomainPanel extends JPanel {
 
 	private boolean listenerIsOn = true;
 	public static ThreadBruteDomain threadBruteDomain;
-	public static ThreadBruteDomainWithDNSServer threadBruteDomain2;
+	public static ThreadBruteDomainWithDNSServer2 threadBruteDomain2;
 
 	public static DomainObject getDomainResult() {
 		return domainResult;
@@ -122,9 +122,12 @@ public class DomainPanel extends JPanel {
 						btnBrute.setEnabled(false);
 //						threadBruteDomain = new ThreadBruteDomain(rootDomains);
 //						threadBruteDomain.Do();
-
-						threadBruteDomain2 = new ThreadBruteDomainWithDNSServer(rootDomains);
+        for (String rootDomain: rootDomains){
+						threadBruteDomain2 = new ThreadBruteDomainWithDNSServer2(rootDomain);
 						threadBruteDomain2.Do();
+        }
+
+
 						return null;
 					}
 					@Override
