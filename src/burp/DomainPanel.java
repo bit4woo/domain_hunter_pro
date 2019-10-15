@@ -122,10 +122,10 @@ public class DomainPanel extends JPanel {
 						btnBrute.setEnabled(false);
 //						threadBruteDomain = new ThreadBruteDomain(rootDomains);
 //						threadBruteDomain.Do();
-        for (String rootDomain: rootDomains){
-						threadBruteDomain2 = new ThreadBruteDomainWithDNSServer2(rootDomain);
-						threadBruteDomain2.Do();
-        }
+						for (String rootDomain: rootDomains){
+							threadBruteDomain2 = new ThreadBruteDomainWithDNSServer2(rootDomain);
+							threadBruteDomain2.Do();
+						}
 
 
 						return null;
@@ -150,7 +150,7 @@ public class DomainPanel extends JPanel {
 
 		Component verticalStrut = Box.createVerticalStrut(20);
 		HeaderPanel.add(verticalStrut);
-		HeaderPanel.add(btnBrute);
+		//HeaderPanel.add(btnBrute);
 
 
 		btnSearch = new JButton("Search");
