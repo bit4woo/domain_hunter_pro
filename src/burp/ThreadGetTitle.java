@@ -210,6 +210,9 @@ class Producer extends Thread {//Producer do
 		}else {//默认过滤私有IP
 			String ip = new ArrayList<>(IPSet).get(0);
 			if (IPAddress.isPrivateIPv4(ip)) {
+				LineEntry entry = new LineEntry(host,IPSet);
+				entry.setTitle("Private IP");
+				resultSet.add(entry);
 				return resultSet;
 			}
 		}

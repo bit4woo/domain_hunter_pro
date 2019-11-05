@@ -1,18 +1,12 @@
 package burp;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.apache.commons.io.Charsets;
 
 import com.alibaba.fastjson.JSON;
 
@@ -62,6 +56,16 @@ public class LineEntry {
 
 	LineEntry(){
 
+	}
+	
+	public LineEntry(String host,Set<String> IPset) {
+		this.host = host;
+		this.port = 80;
+		this.protocol ="http";
+		
+		if (this.IP != null) {
+			this.IP = IPset.toString().replace("[", "").replace("]", "");
+		}
 	}
 
 	public LineEntry(IHttpRequestResponse messageinfo) {
