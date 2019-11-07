@@ -7,7 +7,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.bit4woo.burp</groupId>
 	<artifactId>domain_hunter_pro</artifactId>
-	<version>20190826</version>
+	<version>20191107</version>
 
 	<repositories>
 		<repository>
@@ -76,14 +76,14 @@
 		<dependency>
 			<groupId>com.github.bit4woo</groupId>
 			<artifactId>burp-api-common</artifactId>
-			<version>v0.0.4</version>
+			<version>v0.0.6</version>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/com.alibaba/fastjson -->
 		<dependency>
 			<groupId>com.alibaba</groupId>
 			<artifactId>fastjson</artifactId>
-			<version>1.2.58</version>
+			<version>1.2.62</version>
 		</dependency>
 
 		<!-- to get root domain -->

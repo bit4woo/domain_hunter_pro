@@ -18,6 +18,7 @@ public class DomainObject {
 	public boolean autoAddRelatedToRoot = false;
 
 	private LinkedHashMap<String,String> rootDomainMap = new LinkedHashMap<String,String>();
+	//private LinkedHashMap<String,String> rootBlackDomainMap = new LinkedHashMap<String,String>();
 	// LinkedHashMap to keep the insert order 
 	private Set<String> subnetSet = new HashSet<String>();
 	private Set<String> subDomainSet = new HashSet<String>();
@@ -31,7 +32,8 @@ public class DomainObject {
 	public static int SIMILAR_DOMAIN=1;
 	public static int IP_ADDRESS=2;
 	public static int PACKAGE_NAME=3;
-	public static int USELESS =-1;
+	public static int USELESS = -1;
+	//public static int BLACKLIST = -2;
 
 
 	DomainObject(){
@@ -197,13 +199,32 @@ public class DomainObject {
 
 
 	public Set<String> fetchRootDomainSet() {
-		return rootDomainMap.keySet();
+		Set<String> result = new HashSet<String>();
+		for (String key:rootDomainMap.keySet()) {
+			if (!key.trim().toLowerCase().startsWith("[exclude]")) {
+				result.add(key.trim().toLowerCase());
+			}
+		}
+		return result;
+	}
+	
+	public Set<String> fetchRootBlackDomainSet() {
+		Set<String> result = new HashSet<String>();
+		for (String key:rootDomainMap.keySet()) {
+			if (key.trim().toLowerCase().startsWith("[exclude]")) {
+				result.add(key.trim().toLowerCase());
+			}
+		}
+		return result;
 	}
 
 	public Set<String> fetchKeywordSet(){
 		Set<String> result = new HashSet<String>();
 		for (String key:rootDomainMap.keySet()) {
-			result.add(rootDomainMap.get(key));
+			String value = rootDomainMap.get(key);
+			if (!value.trim().equals("")) {
+				result.add(rootDomainMap.get(key));
+			}
 		}
 		return result;
 	}
@@ -252,6 +273,9 @@ public class DomainObject {
 				if (relatedDomain!=null && relatedDomain.contains(".")) {
 					String rootDomain =getRootDomain(relatedDomain);
 					if (rootDomain != null) {
+						if (fetchRootBlackDomainSet().contains("[exclude]"+rootDomain)){
+							continue;
+						}					
 						String keyword = rootDomain.substring(0,rootDomain.indexOf("."));
 						if (!rootDomainMap.keySet().contains(rootDomain) && rootDomain != null) {
 							rootDomainMap.put(rootDomain,keyword);
@@ -299,6 +323,9 @@ public class DomainObject {
 	}
 
 	public int domainType(String domain) {
+		if (domain.contains(":")) {//处理带有端口号的域名
+			domain = domain.substring(0,domain.indexOf(":"));
+		}
 
 		try {
 			domain = domain.toLowerCase().trim();
@@ -310,6 +337,10 @@ public class DomainObject {
 
 			if (Commons.isValidIP(domain)) {//https://202.77.129.30
 				return DomainObject.IP_ADDRESS;
+			}
+			
+			if (isInRootBlackDomain(domain)) {
+				return DomainObject.USELESS;
 			}
 
 			for (String rootdomain:fetchRootDomainSet()) {
@@ -344,6 +375,22 @@ public class DomainObject {
 		for (String keyword:fetchKeywordSet()) {
 			if (!keyword.equals("") && keyword.length() >= 2 && email.contains(keyword)) {
 				return true;
+			}
+		}
+		return false;
+	}
+	
+	public boolean isInRootBlackDomain(String domain) {
+		if (domain.contains(":")) {//处理带有端口号的域名
+			domain = domain.substring(0,domain.indexOf(":"));
+		}
+		for (String rootdomain:fetchRootBlackDomainSet()) {
+			rootdomain = rootdomain.replace("[exclude]", "");
+			if (rootdomain.contains(".")&&!rootdomain.endsWith(".")&&!rootdomain.startsWith("."))
+			{
+				if (domain.endsWith("."+rootdomain)||domain.equalsIgnoreCase(rootdomain)){
+					return true;
+				}
 			}
 		}
 		return false;

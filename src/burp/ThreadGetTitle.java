@@ -191,7 +191,16 @@ class Producer extends Thread {//Producer do
 	
  	public static Set<LineEntry> doGetTitle(String host) throws MalformedURLException {
  		
+ 		int httpport = -1;
  		Set<LineEntry> resultSet = new HashSet<LineEntry>();
+ 		
+		if (host.contains(":")) {//处理带有端口号的域名
+			String port = host.substring(host.indexOf(":")+1,host.length());
+			host = host.substring(0,host.indexOf(":"));
+			if (port.length()>0) {
+				httpport = Integer.parseInt(port);
+			}
+		}
  		
 		//第一步：IP解析
 		Set<String> IPSet = new HashSet<>();
@@ -223,58 +232,74 @@ class Producer extends Thread {//Producer do
 		PrintWriter stderr = BurpExtender.getStderr();
 		
 		//第二步：对成功解析的host进行HTTP请求。
-		IHttpService http = helpers.buildHttpService(host,80,"http");
-		IHttpService https = helpers.buildHttpService(host,443,"https");
-		
+
 		String cookie = TitlePanel.getTextFieldCookie().getText().trim();
 		
-		
-		
-		
-		//do https request
-		byte[] https_Request = helpers.buildHttpRequest(new URL(https.toString()));
-		https_Request = Commons.buildCookieRequest(helpers,cookie,https_Request);
-		IHttpRequestResponse https_Messageinfo = callbacks.makeHttpRequest(https, https_Request);
-		LineEntry httpsEntry = new LineEntry(https_Messageinfo);
-		httpsEntry.setIPWithSet(IPSet);
-		httpsEntry.setCDNWithSet(CDNSet);
-
-		boolean httpsOK = LineConfig.doFilter(httpsEntry);
-
-		if (httpsOK) {
-			resultSet.add(httpsEntry);
-		}
-		
-		if (!httpsOK || !LineConfig.isIgnoreHttpIfHttpsOK()) {
+		if (httpport ==-1) {//表明host没有带端口号，默认情况
+			IHttpService http = helpers.buildHttpService(host,80,"http");
+			IHttpService https = helpers.buildHttpService(host,443,"https");
 			
+			//do https request
+			byte[] https_Request = helpers.buildHttpRequest(new URL(https.toString()));
+			https_Request = Commons.buildCookieRequest(helpers,cookie,https_Request);
+			IHttpRequestResponse https_Messageinfo = callbacks.makeHttpRequest(https, https_Request);
+			LineEntry httpsEntry = new LineEntry(https_Messageinfo);
+			httpsEntry.setIPWithSet(IPSet);
+			httpsEntry.setCDNWithSet(CDNSet);
+	
+			boolean httpsOK = LineConfig.doFilter(httpsEntry);
+	
+			if (httpsOK) {
+				resultSet.add(httpsEntry);
+			}
+			
+			if (!httpsOK || !LineConfig.isIgnoreHttpIfHttpsOK()) {
+				
+				byte[] http_Request = helpers.buildHttpRequest(new URL(http.toString()));
+				http_Request = Commons.buildCookieRequest(helpers,cookie,http_Request);
+				IHttpRequestResponse http_Messageinfo = callbacks.makeHttpRequest(http, http_Request);
+				LineEntry httpEntry = new LineEntry(http_Messageinfo);
+				httpEntry.setIPWithSet(IPSet);
+				httpEntry.setCDNWithSet(CDNSet);
+				//stdout.println("messageinfo"+JSONObject.toJSONString(messageinfo));
+				//这里有2种异常情况：1.请求失败（连IP都解析不了,已经通过第一步过滤了）；2.请求成功但是响应包为空（可以解析IP，比如内网域名）。
+				//第一种请求在这里就结束了，第二种情况的请求信息会传递到consumer中进行IP获取的操作。
+				if (LineConfig.doFilter(httpEntry)) {
+	//				if (httpEntry.getStatuscode() == httpsEntry.getStatuscode() && httpEntry.getContentLength() == httpsEntry.getContentLength()) {
+	//					
+	//				}else if( 300 <= httpEntry.getStatuscode() && httpEntry.getStatuscode() <400 ) {
+	//					String location = httpEntry.getHeaderValueOf(false,"Location");
+	//					if (location != null && location.equalsIgnoreCase(https.toString()+"/")) {
+	//						
+	//					}else {
+	//						resultSet.add(httpEntry);
+	//					}
+	//				}else {
+	//					resultSet.add(httpEntry);
+	//				}
+								
+					String location = httpEntry.getHeaderValueOf(false,"Location");
+					if ((location == null || !location.equalsIgnoreCase(https.toString()+"/")) && 
+							httpEntry.getStatuscode() != httpsEntry.getStatuscode()) {
+						resultSet.add(httpEntry);
+					}
+				}
+			}
+		}else {//处理自带端口号的情况
+			IHttpService http = helpers.buildHttpService(host,httpport,"http");
+			
+			//do http request with specified port
 			byte[] http_Request = helpers.buildHttpRequest(new URL(http.toString()));
 			http_Request = Commons.buildCookieRequest(helpers,cookie,http_Request);
 			IHttpRequestResponse http_Messageinfo = callbacks.makeHttpRequest(http, http_Request);
 			LineEntry httpEntry = new LineEntry(http_Messageinfo);
 			httpEntry.setIPWithSet(IPSet);
 			httpEntry.setCDNWithSet(CDNSet);
-			//stdout.println("messageinfo"+JSONObject.toJSONString(messageinfo));
-			//这里有2种异常情况：1.请求失败（连IP都解析不了,已经通过第一步过滤了）；2.请求成功但是响应包为空（可以解析IP，比如内网域名）。
-			//第一种请求在这里就结束了，第二种情况的请求信息会传递到consumer中进行IP获取的操作。
-			if (LineConfig.doFilter(httpEntry)) {
-//				if (httpEntry.getStatuscode() == httpsEntry.getStatuscode() && httpEntry.getContentLength() == httpsEntry.getContentLength()) {
-//					
-//				}else if( 300 <= httpEntry.getStatuscode() && httpEntry.getStatuscode() <400 ) {
-//					String location = httpEntry.getHeaderValueOf(false,"Location");
-//					if (location != null && location.equalsIgnoreCase(https.toString()+"/")) {
-//						
-//					}else {
-//						resultSet.add(httpEntry);
-//					}
-//				}else {
-//					resultSet.add(httpEntry);
-//				}
-							
-				String location = httpEntry.getHeaderValueOf(false,"Location");
-				if ((location == null || !location.equalsIgnoreCase(https.toString()+"/")) && 
-						httpEntry.getStatuscode() != httpsEntry.getStatuscode()) {
-					resultSet.add(httpEntry);
-				}
+	
+			boolean httpOK = LineConfig.doFilter(httpEntry);
+	
+			if (httpOK) {
+				resultSet.add(httpEntry);
 			}
 		}
 		

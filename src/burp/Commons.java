@@ -64,6 +64,10 @@ public class Commons {
 
 
 	public static boolean isValidIP (String ip) {
+		if (ip.contains(":")) {//处理带有端口号的域名
+			ip = ip.substring(0,ip.indexOf(":"));
+		}
+		
 		try {
 			if ( ip == null || ip.isEmpty() ) {
 				return false;

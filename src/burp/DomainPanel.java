@@ -493,7 +493,7 @@ public class DomainPanel extends JPanel {
 		ControlPanel.add(addButton);
 
 
-		JButton addButton1 = new JButton("Add1");
+		JButton addButton1 = new JButton("Add+");
 		addButton1.setToolTipText("add Multiple-Level domain");
 		addButton1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -532,6 +532,29 @@ public class DomainPanel extends JPanel {
 				domainTableModel = (DefaultTableModel) table.getModel();
 				for(int i=rowindexs.length-1;i>=0;i--){
 					domainTableModel.removeRow(rowindexs[i]);
+				}
+				// will trigger tableModel listener
+				//domainResult.setRootDomainMap(getTableMap()); //no need any more because tableModel Listener
+			}
+		});
+		
+		JButton blackButton = new JButton("Black");
+		ControlPanel.add(blackButton);
+		blackButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+
+				int[] rowindexs = table.getSelectedRows();
+				for (int i=0; i < rowindexs.length; i++){
+					rowindexs[i] = table.convertRowIndexToModel(rowindexs[i]);//转换为Model的索引，否则排序后索引不对应。
+				}
+				Arrays.sort(rowindexs);
+
+				domainTableModel = (DefaultTableModel) table.getModel();
+				for(int i=rowindexs.length-1;i>=0;i--){
+					String rootdomain = (String) domainTableModel.getValueAt(rowindexs[i], 0);
+					domainTableModel.removeRow(rowindexs[i]);
+					domainResult.AddToRootDomainMap("[exclude]"+rootdomain,"");
+					showToDomainUI();
 				}
 				// will trigger tableModel listener
 				//domainResult.setRootDomainMap(getTableMap()); //no need any more because tableModel Listener
