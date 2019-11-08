@@ -199,16 +199,11 @@ public class Commons {
 			ZoneTransferIn zone = ZoneTransferIn.newAXFR(new Name(domain), NameServer, null);
 			zone.run();
 			Result = zone.getAXFR();
+			BurpExtender.getStdout().println("!!! "+NameServer+" is zoneTransfer vulnerable for domain "+domain+" !");
 			System.out.print(Result);
-		} catch (UnknownHostException e1) {
-			//e1.printStackTrace();
-		} catch (TextParseException e1) {
-			//e1.printStackTrace();
-		} catch (IOException e) {
-			//e.printStackTrace();
-		} catch (ZoneTransferException e) {
-			//e.printStackTrace();
-		}
+		} catch (Exception e1) {
+			BurpExtender.getStdout().println(String.format("[Server:%s Domain:%s] %s", NameServer,domain,e1.getMessage()));
+		} 
 		return Result;
 	}
 	
