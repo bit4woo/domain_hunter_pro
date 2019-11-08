@@ -95,7 +95,7 @@ public class DomainPanel extends JPanel {
 		this.add(HeaderPanel, BorderLayout.NORTH);
 
 
-		JButton btnSaveDomainOnly = new JButton("Save Domain Only");
+		JButton btnSaveDomainOnly = new JButton("SaveDomainOnly");
 		btnSaveDomainOnly.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				saveDomainOnly();
@@ -238,6 +238,7 @@ public class DomainPanel extends JPanel {
 				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
 					@Override
 					protected Map doInBackground() throws Exception {
+						stdout.println("~~~~~~~~~~~~~Zone Transfer Checking~~~~~~~~~~~~~");
 						btnZoneTransferCheck.setEnabled(false);
 						ZoneTransferCheckAll();
 						return null;
@@ -245,6 +246,7 @@ public class DomainPanel extends JPanel {
 					@Override
 					protected void done() {
 						btnZoneTransferCheck.setEnabled(true);
+						stdout.println("~~~~~~~~~~~~~Zone Transfer Check Done~~~~~~~~~~~~~");
 					}
 				};
 				worker.execute();
