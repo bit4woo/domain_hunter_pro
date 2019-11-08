@@ -227,6 +227,30 @@ public class DomainPanel extends JPanel {
 		});
 		btnCrawl.setToolTipText("Crawl all subdomains recursively,This may take a long time and large Memory Usage!!!");
 		HeaderPanel.add(btnCrawl);
+		
+
+
+		
+		JButton btnZoneTransferCheck = new JButton("AXFR");
+		btnZoneTransferCheck.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+					@Override
+					protected Map doInBackground() throws Exception {
+						btnZoneTransferCheck.setEnabled(false);
+						ZoneTransferCheckAll();
+						return null;
+					}
+					@Override
+					protected void done() {
+						btnZoneTransferCheck.setEnabled(true);
+					}
+				};
+				worker.execute();
+			}
+		});
+		HeaderPanel.add(btnZoneTransferCheck);
 
 		JButton btnImportDomain = new JButton("Import Domain");
 		btnImportDomain.addActionListener(new ActionListener() {
@@ -791,6 +815,26 @@ public class DomainPanel extends JPanel {
 		return null;
 	}
 
+	public void ZoneTransferCheckAll() {
+		for (String rootDomain:domainResult.fetchRootDomainSet()) {
+			Set<String> NS = Commons.GetAuthoritativeNameServer(rootDomain);
+			for (String Server:NS) {
+				List<String> Records = Commons.ZoneTransferCheck(rootDomain, Server);
+				if (Records.size() > 0) {
+					try {
+						stdout.println("!!! "+rootDomain+" is zoneTransfer vulnerable!");
+						File file = new File(rootDomain+"-ZoneTransfer-"+Commons.getNowTimeString()+".txt");
+						file.createNewFile();
+						FileUtils.writeLines(file, Records);
+						stdout.println("!!! Records saved to "+file.getAbsolutePath());
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+				}
+			}
+		}
+	}
+	
 	public static Set<String> collectEmails() {
 		Set<String> Emails = new HashSet<>();
 		IScanIssue[]  issues =  BurpExtender.getCallbacks().getScanIssues(null);

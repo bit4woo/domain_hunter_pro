@@ -2,6 +2,7 @@ package burp;
 
 import java.awt.Component;
 import java.awt.Desktop;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URL;
@@ -168,6 +169,49 @@ public class Commons {
 		}
 	}
 
+	public static Set<String> GetAuthoritativeNameServer(String domain) {
+		Set<String> NameServerSet = new HashSet<String>();
+		try{
+			Lookup lookup = new Lookup(domain, org.xbill.DNS.Type.NS);
+			lookup.run();
+
+			if(lookup.getResult() == Lookup.SUCCESSFUL){
+				Record[] records=lookup.getAnswers();
+				for (int i = 0; i < records.length; i++) {
+					NSRecord a = (NSRecord) records[i];
+					String server = a.getTarget().toString();
+					if (server!=null) {
+						NameServerSet.add(server);
+					}
+				}
+			}
+			return NameServerSet;
+
+		}catch(Exception e){
+			e.printStackTrace();
+			return NameServerSet;
+		}
+	}
+	
+	public static List<String> ZoneTransferCheck(String domain,String NameServer) {
+		List<String> Result = new ArrayList<String>();
+		try {
+			ZoneTransferIn zone = ZoneTransferIn.newAXFR(new Name(domain), NameServer, null);
+			zone.run();
+			Result = zone.getAXFR();
+			System.out.print(Result);
+		} catch (UnknownHostException e1) {
+			//e1.printStackTrace();
+		} catch (TextParseException e1) {
+			//e1.printStackTrace();
+		} catch (IOException e) {
+			//e.printStackTrace();
+		} catch (ZoneTransferException e) {
+			//e.printStackTrace();
+		}
+		return Result;
+	}
+	
 
 	//////////////////////////////////////////IP  subnet  CIDR/////////////////////////////////
 	/*
@@ -371,7 +415,7 @@ public class Commons {
 
 		//		HashMap<String, Set<String>> result = dnsquery("www.baidu.com");
 		//		System.out.println(result.get("IP").toString());
-		System.out.println(dnsquery("www.baidu111.com"));
+		//System.out.println(dnsquery("www.baidu111.com"));
 
 		//		//System.out.println(new SubnetUtils("192.168.1.1/23").getInfo().getCidrSignature());
 		//		
@@ -392,6 +436,8 @@ public class Commons {
 //		Set<String> subnets = new HashSet<String>();
 //		subnets.add("2402:db40:1::/48");
 //		System.out.print(toIPSet(subnets));
-		System.out.print(dnsquery("0g.jd.com"));
+		//System.out.print(dnsquery("0g.jd.com"));
+		//System.out.print(GetAuthoritativeNameServer("jd.com"));
+		ZoneTransferCheck("sf-express.com","ns4.sf-express.com");
 	}
 }
