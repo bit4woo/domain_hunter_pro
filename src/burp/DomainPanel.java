@@ -824,7 +824,7 @@ public class DomainPanel extends JPanel {
 				List<String> Records = Commons.ZoneTransferCheck(rootDomain, Server);
 				if (Records.size() > 0) {
 					try {
-						stdout.println("!!! "+rootDomain+" is zoneTransfer vulnerable!");
+						stdout.println("!!! "+Server+" is zoneTransfer vulnerable for domain "+rootDomain+" !");
 						File file = new File(rootDomain+"-ZoneTransfer-"+Commons.getNowTimeString()+".txt");
 						file.createNewFile();
 						FileUtils.writeLines(file, Records);
