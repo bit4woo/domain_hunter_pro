@@ -601,7 +601,8 @@ public class DomainPanel extends JPanel {
 
 				for (String domain:tmpDomains) {
 					int type = domainResult.domainType(domain);
-					if (type == DomainObject.SUB_DOMAIN)
+					if (type == DomainObject.SUB_DOMAIN || type == DomainObject.IP_ADDRESS)
+					//包含手动添加的IP
 					{
 						newSubDomainSet.add(domain);
 					}else if (type == DomainObject.SIMILAR_DOMAIN) {
