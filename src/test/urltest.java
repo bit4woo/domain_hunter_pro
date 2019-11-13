@@ -9,7 +9,9 @@ public class urltest
    {
       try
       {
-         URL url = new URL("http://www.runoob.com/index.html?language=cn#j2se");
+         URL url = new URL("https://www.runoob.com/index.html?language=cn#j2se");
+         URL url1 = new URL("https://www.runoob.com:443/index.html?language=cn#j2se");
+         System.out.println(url.equals(url1));
          System.out.println("URL 为：" + url.toString());
          System.out.println("协议为：" + url.getProtocol());
          System.out.println("验证信息：" + url.getAuthority());

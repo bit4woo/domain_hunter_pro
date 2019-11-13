@@ -2,6 +2,8 @@ package burp;
 
 import java.io.PrintWriter;
 import java.io.Serializable;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -532,15 +534,42 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		}
 	}
 
-	public LineEntry findLineEntry(String url) {
+	public LineEntry findLineEntry(String url) {//这里的URL需要包含默认端口
 		if (lineEntries == null) return null;
-		for (LineEntry line:lineEntries) {
-			line.setHelpers(BurpExtender.getCallbacks().getHelpers());
-			if (url.equalsIgnoreCase(line.getUrl())) {
-				return line;
+		try {//统一使用URL的格式进行比较
+			URL inputURL = new URL(url);
+			for (LineEntry line:lineEntries) {
+				line.setHelpers(BurpExtender.getCallbacks().getHelpers());
+				URL lineURL = new URL(line.getUrl());
+				if (inputURL.equals(lineURL)) {//equals方法会根据协议、主机、端口等信息来判断，不是字符串判断方式
+			         //URL url = new URL("https://www.runoob.com/index.html?language=cn#j2se");
+			         //URL url1 = new URL("https://www.runoob.com:443/index.html?language=cn#j2se");
+			         //System.out.println(url.equals(url1));//二者相等，返回true
+					return line;
+				}
 			}
+			return null;
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+			return null;
 		}
-		return null;
+	}
+	
+	public LineEntry findLineEntry(URL url) {//这里的URL需要包含默认端口
+		if (lineEntries == null) return null;
+		try {
+			for (LineEntry line:lineEntries) {
+				line.setHelpers(BurpExtender.getCallbacks().getHelpers());
+				URL lineURL = new URL(line.getUrl());
+				if (url.equals(lineURL)) {//equals方法会根据协议、主机、端口等信息来判断，不是字符串判断方式
+					return line;
+				}
+			}
+			return null;
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 	
 	public LineEntry findLineEntryByIP(String IP) {
