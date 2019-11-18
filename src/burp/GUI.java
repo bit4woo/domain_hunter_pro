@@ -65,16 +65,20 @@ public class GUI extends JFrame {
 
 	public boolean LoadData(String dbFilePath){
 		try {//这其中的异常会导致burp退出
-			stdout.println("Loading Data From: " + dbFilePath);
+			System.out.println("=================================");
+			System.out.println("==Start Loading Data From: " + dbFilePath+"==");
+			stdout.println("==Start Loading Data From: " + dbFilePath+"==");
 			currentDBFile = new File(dbFilePath);
 			DBHelper dbhelper = new DBHelper(dbFilePath);
 			domainPanel.setDomainResult(dbhelper.getDomainObj());
 			domainPanel.showToDomainUI();
 			titlePanel.showToTitleUI(dbhelper.getTitles());
-			stdout.println("Loading Project ["+domainPanel.domainResult.projectName+"] Finished From File "+ dbFilePath);
+			System.out.println("==End Loading Data From: "+ dbFilePath +"==");//输出到debug console
+			stdout.println("==End Loading Data From: "+ dbFilePath +"==");
 			return true;
 		} catch (Exception e) {
 			stdout.println("Loading Failed!");
+			e.printStackTrace();//输出到debug console
 			e.printStackTrace(stderr);
 			return false;
 		}

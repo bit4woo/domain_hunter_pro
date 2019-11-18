@@ -261,6 +261,7 @@ public class DBHelper {
 		} finally {
 			destroy();
 		}
+		System.out.println(list.size() +" title lines found from DB file");
 		return list;
 	}
 

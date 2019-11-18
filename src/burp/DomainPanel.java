@@ -797,7 +797,8 @@ public class DomainPanel extends JPanel {
 		lblSummary.setText(domainResult.getSummary());
 		rdbtnAddRelatedToRoot.setSelected(domainResult.autoAddRelatedToRoot);
 
-		stdout.println("Load Domain Panel Data Done");
+		System.out.println("Load Domain Panel Data Done, "+domainResult.getSummary());
+		stdout.println("Load Domain Panel Data Done, "+domainResult.getSummary());
 		listenerIsOn = true;
 	}
 

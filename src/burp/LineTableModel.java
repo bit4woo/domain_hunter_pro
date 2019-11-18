@@ -138,7 +138,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 
 		}
 		this.setLineEntries(new ArrayList<LineEntry>());//如果ListenerIsOn，将会触发listener
-		System.out.println(rows);
+		System.out.println("clean lines of old data,"+rows+" lines cleaned");
 		if (rows-1 >=0)	fireTableRowsDeleted(0, rows-1);
 		this.setListenerIsOn(true);
 	}
