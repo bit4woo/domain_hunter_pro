@@ -418,27 +418,19 @@ public class TitlePanel extends JPanel {
 		return String.join(System.lineSeparator(), subnets);
 	}
 
+	/*
+	 * 用于从DB文件中加载数据，没有去重检查。
+	 */
 	public void showToTitleUI(List<LineEntry> lineEntries) {
 		//titleTableModel.setLineEntries(new ArrayList<LineEntry>());//clear
 		//这里没有fire delete事件，会导致排序号加载文件出错，但是如果fire了又会触发tableModel的删除事件，导致数据库删除。改用clear()
 		titleTableModel.clear(false);//clear
 		titleTableModel.setListenerIsOn(false);
-		int totle = lineEntries.size();
-		for (LineEntry line:lineEntries) {
-//			if (rdbtnHideCheckedItems.isSelected() && line.isChecked()){
-//				continue;
-//			}
-			int progress = lineEntries.indexOf(line);
-			if (progress%100 ==0){
-				System.out.println("  Add line progress: "+progress+"/"+totle);
-			}
-			titleTableModel.addNewLineEntry(line);
-		}
-		digStatus();
-		titleTable.search("");
-		System.out.println("Load Title Panel Data Done, "+lineEntries.size()+" title lines added");
-		stdout.println("Load Title Panel Data Done, "+lineEntries.size()+" title lines added");
+		int row = lineEntries.size();
+		titleTableModel.setLineEntries(lineEntries);//如果listener是on，将触发listener--同步到db文件
+		titleTableModel.fireTableRowsInserted(0, row-1);
 		titleTableModel.setListenerIsOn(true);
+		digStatus();
 	}
 
 
