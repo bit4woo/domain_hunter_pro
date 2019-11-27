@@ -29,10 +29,10 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	private static String github = "https://github.com/bit4woo/domain_hunter_pro";
 	private static GUI gui;
 
-	public static void flushStd(){
+	private static void flushStd(){
 		try{
-			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
-			stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
+			stdout = new PrintWriter(callbacks.getStdout(), true);
+			stderr = new PrintWriter(callbacks.getStderr(), true);
 		}catch (Exception e){
 			stdout = new PrintWriter(System.out, true);
 			stderr = new PrintWriter(System.out, true);
