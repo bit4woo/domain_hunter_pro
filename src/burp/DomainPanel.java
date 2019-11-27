@@ -600,6 +600,11 @@ public class DomainPanel extends JPanel {
 				tmpDomains.addAll(domainResult.getSimilarDomainSet());
 
 				for (String domain:tmpDomains) {
+					domain = domain.toLowerCase().trim();
+					if (domain.endsWith(".")) {
+						domain = domain.substring(0,domain.length()-1);
+					}
+					
 					int type = domainResult.domainType(domain);
 					if (type == DomainObject.SUB_DOMAIN || type == DomainObject.IP_ADDRESS)
 					//包含手动添加的IP
@@ -613,6 +618,11 @@ public class DomainPanel extends JPanel {
 				//相关域名中也可能包含子域名，子域名才是核心，要将它们加到子域名
 				tmpDomains = domainResult.getRelatedDomainSet();
 				for (String domain:tmpDomains) {
+					domain = domain.toLowerCase().trim();
+					if (domain.endsWith(".")) {
+						domain = domain.substring(0,domain.length()-1);
+					}
+					
 					int type = domainResult.domainType(domain);
 					if (type == DomainObject.SUB_DOMAIN)
 					{
