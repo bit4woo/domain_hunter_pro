@@ -30,6 +30,8 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 
+import Config.LineConfig;
+
 public class TitlePanel extends JPanel {
 
 	private JPanel buttonPanel;
@@ -382,8 +384,17 @@ public class TitlePanel extends JPanel {
 
 		titleTableModel.clear(true);//clear
 		
+		//获取额外端口逻辑
 //		TitlePanel.externalPortList = Commons.Port_prompt(null,"External Ports To Run");
 //		stdout.println("external ports: "+ externalPortList);
+		
+		//是否在目标的内网中
+		int user_input = JOptionPane.showConfirmDialog(null, "Are you in private network of target?","Chose work model",JOptionPane.YES_NO_OPTION);
+		if (JOptionPane.YES_OPTION == user_input) {
+			LineConfig.setPrivateNetworkWorkingModel(true);
+		}else {
+			LineConfig.setPrivateNetworkWorkingModel(false);
+		}
 
 		threadGetTitle = new ThreadGetTitle(domains);
 		threadGetTitle.Do();

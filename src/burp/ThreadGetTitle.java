@@ -205,24 +205,30 @@ class Producer extends Thread {//Producer do
 		//第一步：IP解析
 		Set<String> IPSet = new HashSet<>();
 		Set<String> CDNSet = new HashSet<>();
-		if (Commons.isValidIP(host)) {
-			IPSet.add(host);
-			CDNSet.add("");
-		}else {
+		
+		boolean isInPrivateNetwork = LineConfig.isPrivateNetworkWorkingModel(); 
+		if (Commons.isValidIP(host)) {//目标是一个IP
+			if (IPAddress.isPrivateIPv4(host) && !isInPrivateNetwork) {//外网模式，内网IP，直接返回。
+				return resultSet;
+			}else {
+				IPSet.add(host);
+				CDNSet.add("");
+			}
+		}else {//目标是域名
 			HashMap<String,Set<String>> result = Commons.dnsquery(host);
 			IPSet = result.get("IP");
 			CDNSet = result.get("CDN");
-		}
-
-		if (IPSet.size() <= 0) {
-			return resultSet;
-		}else {//默认过滤私有IP
-			String ip = new ArrayList<>(IPSet).get(0);
-			if (IPAddress.isPrivateIPv4(ip)) {
-				LineEntry entry = new LineEntry(host,IPSet);
-				entry.setTitle("Private IP");
-				resultSet.add(entry);
+			
+			if (IPSet.size() <= 0) {
 				return resultSet;
+			}else {//默认过滤私有IP
+				String ip = new ArrayList<>(IPSet).get(0);
+				if (IPAddress.isPrivateIPv4(ip) && !isInPrivateNetwork) {//外网模式，内网域名，仅仅显示域名和IP。
+					LineEntry entry = new LineEntry(host,IPSet);
+					entry.setTitle("Private IP");
+					resultSet.add(entry);
+					return resultSet;
+				}
 			}
 		}
 

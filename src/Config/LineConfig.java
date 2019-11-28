@@ -18,8 +18,17 @@ public class LineConfig {
 	private static Set<String> blacklistCDNSet = new HashSet<String>(); 
 	private static Set<String> blacklistWebContainerSet = new HashSet<String>(); 
 	private static boolean ignoreHttpIfHttpsOK =true;
-	
-	
+	private static boolean isPrivateNetworkWorkingModel = false;//默认外网模式
+	//对于内外网域名或IP的处理分为2种情况：
+	//1、外网模式，即在自己公司挖掘别人公司的漏洞。这个是时候收集到的域名如果是解析到私有IP的，仅仅显示就可以了；如果是私有IP地址则直接忽略。
+	//2、内网模式，即在自己公司挖掘自己公司的漏洞。这个时候所有域名一视同仁，全部和外网域名一样进行请求并获取title，因为内网的IP也是可以访问的。
+
+	private static String python3Path = "C:\\Python37\\python.exe";
+	private static String dirSearchPath = "D:\\github\\dirsearch\\dirsearch.py";
+	private static String browserPath = "C:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe";
+
+
+
 	
 	public static int getMaximumEntries() {
 		return MaximumEntries;
@@ -75,6 +84,38 @@ public class LineConfig {
 
 	public static void setIgnoreHttpIfHttpsOK(boolean ignoreHttpIfHttpsOK) {
 		LineConfig.ignoreHttpIfHttpsOK = ignoreHttpIfHttpsOK;
+	}
+
+	public static boolean isPrivateNetworkWorkingModel() {
+		return isPrivateNetworkWorkingModel;
+	}
+
+	public static void setPrivateNetworkWorkingModel(boolean isPrivateNetworkWorkingModel) {
+		LineConfig.isPrivateNetworkWorkingModel = isPrivateNetworkWorkingModel;
+	}
+
+	public static String getPython3Path() {
+		return python3Path;
+	}
+
+	public static void setPython3Path(String python3Path) {
+		LineConfig.python3Path = python3Path;
+	}
+
+	public static String getDirSearchPath() {
+		return dirSearchPath;
+	}
+
+	public static void setDirSearchPath(String dirSearchPath) {
+		LineConfig.dirSearchPath = dirSearchPath;
+	}
+
+	public static String getBrowserPath() {
+		return browserPath;
+	}
+
+	public static void setBrowserPath(String browserPath) {
+		LineConfig.browserPath = browserPath;
 	}
 
 	/*

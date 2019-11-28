@@ -16,6 +16,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingWorker;
 
+import Config.LineConfig;
+
 public class LineEntryMenu extends JPopupMenu {
 
 	PrintWriter stdout = BurpExtender.getStdout();
@@ -102,7 +104,7 @@ public class LineEntryMenu extends JPopupMenu {
 						return;
 					}
 					for (String url:urls){
-						Commons.browserOpen(url,"C:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe");
+						Commons.browserOpen(url,LineConfig.getBrowserPath());
 					}
 				}
 				catch (Exception e1)
