@@ -10,7 +10,8 @@ public class urltest
 {
    public static void main(String [] args)
    {
-	   System.out.println(getFullUrlStringWithoutDefaultPort());
+	   //System.out.println(getFullUrlStringWithoutDefaultPort());
+	   test2();
    }
    public void test() {
 	      try
@@ -58,5 +59,32 @@ public class urltest
 			return null;
 		}
 
+	}
+	
+	public static void printURLinfo(URL url) {
+        System.out.println("URL 为：" + url.toString());
+        System.out.println("协议为：" + url.getProtocol());
+        System.out.println("验证信息：" + url.getAuthority());
+        System.out.println("文件名及请求参数：" + url.getFile());
+        System.out.println("主机名：" + url.getHost());
+        System.out.println("路径：" + url.getPath());
+        System.out.println("端口：" + url.getPort());
+        System.out.println("默认端口：" + url.getDefaultPort());
+        System.out.println("请求参数：" + url.getQuery());
+        System.out.println("定位位置：" + url.getRef());
+	}
+	
+	public static void test2() {
+        try {
+			URL url = new URL("https://www.runoob.com");
+			printURLinfo(url);
+			URL url1 = new URL("https://www.runoob.com:443/");
+			printURLinfo(url1);
+			System.out.println(url.equals(url1));
+			System.out.println(url1.sameFile(url));
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }
