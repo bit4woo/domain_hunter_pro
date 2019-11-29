@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.AbstractAction;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
@@ -180,8 +181,8 @@ public class LineEntryMenu extends JPopupMenu {
 		});
 
 
-		LineEntryLevelMenu levelMenu = new LineEntryLevelMenu(lineTable,rows);
-
+		JMenu levelMenu = new JMenu("Set Level As");
+		LineEntryMenuForBurp.addLevelABC(levelMenu, lineTable, rows);
 
 
 		JMenuItem batchAddCommentsItem = new JMenuItem(new AbstractAction("Add Comments") {

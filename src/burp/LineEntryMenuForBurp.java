@@ -1,0 +1,367 @@
+package burp;
+
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.PrintWriter;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.SwingWorker;
+
+public class LineEntryMenuForBurp{
+
+	public PrintWriter stderr = BurpExtender.getStderr();
+	public IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
+	public PrintWriter stdout = BurpExtender.getStdout();
+
+
+
+	public List<JMenuItem> createMenuItemsForBurp(IContextMenuInvocation invocation) {
+		List<JMenuItem> list = new ArrayList<JMenuItem>();
+		/*
+		这里的逻辑有3重：
+		1、仅将域名添加到子域名和target中，
+		2、将请求添加到title列表中，包含1的行为
+		3、对某一个请求添加comment，如果请求不存在，放弃；添加请求包含步骤1和2的行为。
+		 */
+
+		JMenuItem runWithSamePathItem = new JMenuItem("^_^[Domain Hunter] Run Targets with this path");
+		runWithSamePathItem.addActionListener(new runWithSamePath(invocation));
+		list.add(runWithSamePathItem);
+
+		JMenuItem addDomainToDomainHunter = new JMenuItem("^_^[Domain Hunter] Add Domain");
+		addDomainToDomainHunter.addActionListener(new addHostToRootDomain(invocation));
+		list.add(addDomainToDomainHunter);
+
+		JMenuItem addRequestToDomainHunter = new JMenuItem("^_^[Domain Hunter] Add Request");
+		addRequestToDomainHunter.addActionListener(new addRequestToHunter(invocation));
+		list.add(addRequestToDomainHunter);
+
+		JMenuItem addCommentToDomainHunter = new JMenuItem("^_^[Domain Hunter] Add Comment");
+		addCommentToDomainHunter.addActionListener(new addComment(invocation));
+		list.add(addCommentToDomainHunter);
+
+		JMenuItem setAsChecked = new JMenuItem("^_^[Domain Hunter] Set As Checked");
+		setAsChecked.addActionListener(new setAsChecked(invocation));
+		list.add(setAsChecked);
+
+		//list.add(createLevelMenu(invocation));//这是导致右键菜单反应慢的根源，因为在每次在构造右键菜单时都要执行一遍tilte的查找。
+
+		//替换方案1：当鼠标进入菜单时再去查询。//弃用，这种方式响应速度较慢，效果不好
+		/*
+		 * JMenu setLevelAs = new JMenu("^_^[Domain Hunter] Set Level As");
+		 * setAsChecked.addMouseListener(new
+		 * setLevelAsMouseListener(invocation,setLevelAs)); list.add(setLevelAs);
+		 */
+
+		//替换方案2：
+		JMenu setLevelAs2 = new JMenu("^_^[Domain Hunter] Set Level As");
+		setAsChecked.addActionListener(new setLevelAsActionListener(invocation,setLevelAs2));
+		list.add(setLevelAs2);
+
+		return list;
+	}
+
+	public static void addLevelABC(JMenu topMenu,final LineTable lineTable, final int[] rows){
+		String[] MainMenu = {"A", "B", "C"};
+		for(int i = 0; i < MainMenu.length; i++){
+			JMenuItem item = new JMenuItem(MainMenu[i]);
+
+			item.addActionListener(new ActionListener() {
+
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					lineTable.getModel().updateLevelofRows(rows,e.getActionCommand());
+				}
+
+			});
+			topMenu.add(item);
+		}
+	}
+
+
+	public class addHostToRootDomain implements ActionListener{
+		private IContextMenuInvocation invocation;
+		addHostToRootDomain(IContextMenuInvocation invocation) {
+			this.invocation  = invocation;
+		}
+		@Override
+		public void actionPerformed(ActionEvent e)
+		{
+			try{
+				IHttpRequestResponse[] messages = invocation.getSelectedMessages();
+				addToDomain(messages);
+			}
+			catch (Exception e1)
+			{
+				e1.printStackTrace(stderr );
+			}
+		}
+	}
+
+	public class addRequestToHunter implements ActionListener{
+		private IContextMenuInvocation invocation;
+		addRequestToHunter(IContextMenuInvocation invocation) {
+			this.invocation  = invocation;
+		}
+		@Override
+		public void actionPerformed(ActionEvent e)
+		{
+			try{
+				IHttpRequestResponse[] messages = invocation.getSelectedMessages();
+				addToRequest(messages);
+			}
+			catch (Exception e1)
+			{
+				e1.printStackTrace(stderr);
+			}
+		}
+	}
+
+
+	public class runWithSamePath implements ActionListener{
+		private IContextMenuInvocation invocation;
+		runWithSamePath(IContextMenuInvocation invocation) {
+			this.invocation  = invocation;
+		}
+		@Override
+		public void actionPerformed(ActionEvent e)
+		{
+			SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+				//using SwingWorker to prevent blocking burp main UI.
+
+				@Override
+				protected Map doInBackground() throws Exception {
+
+					IHttpRequestResponse[] messages = invocation.getSelectedMessages();
+					IHttpRequestResponse messageInfo =messages[0];
+
+					RunnerGUI runnergui = new RunnerGUI(messageInfo);
+					return null;
+				}
+				@Override
+				protected void done() {
+				}
+			};
+			worker.execute();
+		}
+	}
+
+	public class addComment implements ActionListener{
+		private IContextMenuInvocation invocation;
+		addComment(IContextMenuInvocation invocation) {
+			this.invocation  = invocation;
+		}
+		@Override
+		public void actionPerformed(ActionEvent e)
+		{
+			//还是要简化逻辑，如果找不到就不执行！
+			try{
+				IHttpRequestResponse[] messages = invocation.getSelectedMessages();
+				Getter getter = new Getter(helpers);
+				URL fullurl = getter.getFullURL(messages[0]);
+				LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(fullurl);
+				if (entry == null) {
+					//String shortUrlString = messages[0].getHttpService().toString();//这个方法居然没有默认端口！！！
+					URL shortUrl = getter.getShortURL(messages[0]);
+					if(!fullurl.equals(shortUrl)) {
+						entry = TitlePanel.getTitleTableModel().findLineEntry(shortUrl);
+					}
+				}
+
+				if (entry != null) {
+					addCommentForLine(entry);
+				}
+			}
+			catch (Exception e1)
+			{
+				e1.printStackTrace(stderr);
+			}
+		}
+	}
+
+
+
+	public class setAsChecked implements ActionListener{
+		private IContextMenuInvocation invocation;
+		setAsChecked(IContextMenuInvocation invocation) {
+			this.invocation  = invocation;
+		}
+		@Override
+		public void actionPerformed(ActionEvent e)
+		{
+			try{
+				IHttpRequestResponse[] messages = invocation.getSelectedMessages();
+				Getter getter = new Getter(helpers);
+				URL fullurl = getter.getFullURL(messages[0]);
+				LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(fullurl);
+				if (entry == null) {
+					URL shortUrl = getter.getShortURL(messages[0]);
+					if(!fullurl.equals(shortUrl)) {
+						entry = TitlePanel.getTitleTableModel().findLineEntry(shortUrl);
+					}
+				}
+
+				if (entry != null) {
+					int index = TitlePanel.getTitleTableModel().getLineEntries().indexOf(entry);
+					entry.setChecked(true);
+					stdout.println("$$$ "+entry.getUrl()+" updated");
+					TitlePanel.getTitleTableModel().fireTableRowsUpdated(index,index);//主动通知更新，否则不会写入数据库!!!
+				}
+			}
+			catch (Exception e1)
+			{
+				e1.printStackTrace(stderr);
+			}
+		}
+	}
+
+	public class setLevelAsActionListener implements ActionListener{
+		private IContextMenuInvocation invocation;
+		private JMenu topMenu;
+		setLevelAsActionListener(IContextMenuInvocation invocation,JMenu topMenu) {
+			this.invocation  = invocation;
+			this.topMenu = topMenu;
+			addSubMenuInBackGround();
+		}
+		@Override
+		public void actionPerformed(ActionEvent e)
+		{
+			//do nothing
+		}
+
+		public void addSubMenuInBackGround() {
+			SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+				@Override
+				protected Map doInBackground() throws Exception {
+					try{
+						IHttpRequestResponse[] messages = invocation.getSelectedMessages();
+						Getter getter = new Getter(BurpExtender.getCallbacks().getHelpers());
+						URL fullurl = getter.getFullURL(messages[0]);
+						LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(fullurl);
+						if (entry == null) {
+							//String shortUrlString = messages[0].getHttpService().toString();//这个方法居然没有默认端口！！！
+							URL shortUrl = getter.getShortURL(messages[0]);
+							if(!fullurl.equals(shortUrl)) {
+								entry = TitlePanel.getTitleTableModel().findLineEntry(shortUrl);
+							}
+						}
+
+						if (entry != null) {
+							int index = TitlePanel.getTitleTable().getModel().getLineEntries().indexOf(entry);
+							addLevelABC(topMenu,TitlePanel.getTitleTable(),new int[] {index});
+						}else {
+							//topMenu.add(new JMenuItem("Null"));
+						}
+					}
+					catch (Exception e1)
+					{
+						e1.printStackTrace(stderr);
+					}
+					return null;
+				}
+				@Override
+				protected void done() {
+					topMenu.updateUI();
+				}
+			};
+			worker.execute();
+		}
+
+	}
+	
+	@Deprecated//该方案响应速度慢，弃用
+	public class setLevelAsMouseListener extends MouseAdapter{
+		private IContextMenuInvocation invocation;
+		private JMenu topMenu;
+		setLevelAsMouseListener(IContextMenuInvocation invocation,JMenu topMenu) {
+			this.invocation  = invocation;
+			this.topMenu = topMenu;
+		}
+		@Override
+		public void mouseEntered(MouseEvent e) {
+			if (topMenu.getItemCount() == 0) {
+				try{
+					IHttpRequestResponse[] messages = invocation.getSelectedMessages();
+					Getter getter = new Getter(BurpExtender.getCallbacks().getHelpers());
+					URL fullurl = getter.getFullURL(messages[0]);
+					LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(fullurl);
+					if (entry == null) {
+						URL shortUrl = getter.getShortURL(messages[0]);
+						if(!fullurl.equals(shortUrl)) {
+							entry = TitlePanel.getTitleTableModel().findLineEntry(shortUrl);
+						}
+					}
+
+					if (entry != null) {
+						int index = TitlePanel.getTitleTable().getModel().getLineEntries().indexOf(entry);
+
+						addLevelABC(topMenu,TitlePanel.getTitleTable(),new int[] {index});
+						System.out.println("111");
+					}
+				}
+				catch (Exception e1)
+				{
+					e1.printStackTrace(stderr);
+				}
+			}
+		}
+	}
+
+
+	public static void addCommentForLine(LineEntry entry) {
+		int index = TitlePanel.getTitleTableModel().getLineEntries().indexOf(entry);
+		String commentAdd = JOptionPane.showInputDialog("Comments", null).trim();
+		if (commentAdd == null) return;
+		while(commentAdd.trim().equals("")){
+			commentAdd = JOptionPane.showInputDialog("Comments", null).trim();
+		}
+		if (commentAdd != null) {
+			String comment = entry.getComment().trim();
+			if (comment == null || comment.equals("")) {
+				comment = commentAdd;
+			}else if(comment.contains(commentAdd)){
+				//do nothing
+			}else{
+				comment = comment+","+commentAdd;
+			}
+			entry.setComment(comment);
+			TitlePanel.getTitleTableModel().fireTableRowsUpdated(index,index);//主动通知更新，否则不会写入数据库!!!
+		}
+	}
+
+	public static void addToDomain(IHttpRequestResponse[] messages) {
+
+		Set<String> domains = new HashSet<String>();
+		for(IHttpRequestResponse message:messages) {
+			String host = message.getHttpService().getHost();
+			domains.add(host);
+		}
+
+		DomainObject domainResult = DomainPanel.getDomainResult();
+		domainResult.addToDomainOject(domains);
+		DomainPanel.autoSave();
+	}
+
+
+	public static void addToRequest(IHttpRequestResponse[] messages) {
+		Set<String> domains = new HashSet<String>();
+		for(IHttpRequestResponse message:messages) {
+			String host = message.getHttpService().getHost();
+			LineEntry entry = new LineEntry(message);
+			entry.setComment("Manual-Saved");
+			TitlePanel.getTitleTableModel().addNewLineEntry(entry); //add request
+			DomainPanel.getDomainResult().addToDomainOject(host); //add domain
+		}
+	}
+}

@@ -76,7 +76,7 @@
 		<dependency>
 			<groupId>com.github.bit4woo</groupId>
 			<artifactId>burp-api-common</artifactId>
-			<version>v0.0.6</version>
+			<version>v0.0.8</version>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/com.alibaba/fastjson -->

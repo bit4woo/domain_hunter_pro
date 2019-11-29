@@ -533,7 +533,9 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			fireTableRowsInserted(row-1, row-1);
 		}
 	}
-
+	/*
+	这个方法更新了URL的比对方法，无论是否包含默认端口都可以成功匹配
+	 */
 	public LineEntry findLineEntry(String url) {//这里的URL需要包含默认端口
 		if (lineEntries == null) return null;
 		try {//统一使用URL的格式进行比较
