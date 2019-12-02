@@ -73,8 +73,6 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		callbacks.setExtensionName(ExtenderName); //插件名称
 		callbacks.registerExtensionStateListener(this);
 		callbacks.registerContextMenuFactory(this);
-		
-		stdout.println(helpers.buildHttpService("www.baidu.com",80,"http").toString());
 
 		gui = new GUI();
 
