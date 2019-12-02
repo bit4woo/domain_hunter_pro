@@ -319,7 +319,7 @@ public class LineEntryMenuForBurp{
 
 	public static void addCommentForLine(LineEntry entry) {
 		int index = TitlePanel.getTitleTableModel().getLineEntries().IndexOfKey(entry.getUrl());
-		String commentAdd = JOptionPane.showInputDialog("Comments", null).trim();
+		String commentAdd = JOptionPane.showInputDialog("Comments", null);
 		if (commentAdd == null) return;
 		while(commentAdd.trim().equals("")){
 			commentAdd = JOptionPane.showInputDialog("Comments", null).trim();
