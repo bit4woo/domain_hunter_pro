@@ -34,6 +34,10 @@ import Config.LineConfig;
 
 public class TitlePanel extends JPanel {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private JPanel buttonPanel;
 	private static LineTable titleTable;
 	private JLabel lblSummaryOfTitle;
@@ -44,7 +48,7 @@ public class TitlePanel extends JPanel {
 	PrintWriter stdout;
 	PrintWriter stderr;
 	private ThreadGetTitle threadGetTitle;
-	private List<LineEntry> BackupLineEntries;
+	private IndexedLinkedHashMap<String,LineEntry> BackupLineEntries;
 	private History searchHistory = new History(10);
 	private static List<Integer> externalPortList;
 
@@ -60,7 +64,7 @@ public class TitlePanel extends JPanel {
 		return threadGetTitle;
 	}
 
-	public List<LineEntry> getBackupLineEntries() {
+	public IndexedLinkedHashMap<String,LineEntry> getBackupLineEntries() {
 		return BackupLineEntries;
 	}
 
@@ -400,7 +404,7 @@ public class TitlePanel extends JPanel {
 		threadGetTitle.Do();
 		
 		//转移手动保存的结果
-		for (LineEntry entry:BackupLineEntries) {
+		for (LineEntry entry:BackupLineEntries.values()) {
 			if (entry.getComment().contains("Manual-Saved")) {
 				TitlePanel.getTitleTableModel().addNewLineEntry(entry);
 			}
@@ -422,7 +426,7 @@ public class TitlePanel extends JPanel {
 		if (isCurrent) {//获取的是现有可成功连接的IP集合
 			subnets = titleTableModel.GetSubnets();
 		}else {//重新解析所有域名的IP
-			Set<String> IPsOfDomain = new ThreadGetSubnet(BurpExtender.getGui().getDomainPanel().getDomainResult().getSubDomainSet()).Do();
+			Set<String> IPsOfDomain = new ThreadGetSubnet(DomainPanel.getDomainResult().getSubDomainSet()).Do();
 			//Set<String> CSubNetIPs = Commons.subNetsToIPSet(Commons.toSubNets(IPsOfDomain));
 			subnets = Commons.toSmallerSubNets(IPsOfDomain);
 		}
@@ -432,7 +436,7 @@ public class TitlePanel extends JPanel {
 	/*
 	 * 用于从DB文件中加载数据，没有去重检查。
 	 */
-	public void showToTitleUI(List<LineEntry> lineEntries) {
+	public void showToTitleUI(IndexedLinkedHashMap<String,LineEntry> lineEntries) {
 		//titleTableModel.setLineEntries(new ArrayList<LineEntry>());//clear
 		//这里没有fire delete事件，会导致排序号加载文件出错，但是如果fire了又会触发tableModel的删除事件，导致数据库删除。改用clear()
 		titleTableModel.clear(false);//clear

@@ -24,7 +24,7 @@ class ThreadRunner{
 
 	public void Do(){
 		BlockingQueue<LineEntry> lineEntryQueue = new LinkedBlockingQueue<LineEntry>();//use to store domains
-		lineEntryQueue.addAll(TitlePanel.getTitleTableModel().getLineEntries());
+		lineEntryQueue.addAll(TitlePanel.getTitleTableModel().getLineEntries().values());
 		stdout.println("~~~~~~~~~~~~~Start threading Runner~~~~~~~~~~~~~ total task number: "+lineEntryQueue.size());
 
 		plist = new ArrayList<RunnerProducer>();

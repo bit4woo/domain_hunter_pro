@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -217,14 +218,14 @@ public class DBHelper {
 
 
 
-	public boolean addTitles(List<LineEntry> lineEntries){
+	public boolean addTitles(LinkedHashMap<String,LineEntry> lineEntries){
 		try {
 			conn = getConnection();
 			String sql="insert into Title(NAME,Content) values(?,?)";
 			pres=conn.prepareStatement(sql);
-			for(int i=0;i<lineEntries.size();i++){
-				pres.setString(1, lineEntries.get(i).getUrl());
-				pres.setString(2,lineEntries.get(i).ToJson());
+			for(String key:lineEntries.keySet()){
+				pres.setString(1, key);
+				pres.setString(2,lineEntries.get(key).ToJson());
 				pres.addBatch();                                   //实现批量插入
 			}
 			int[] result = pres.executeBatch();                                   //批量插入到数据库中
@@ -243,8 +244,8 @@ public class DBHelper {
 	}
 
 
-	public List<LineEntry> getTitles(){
-		List<LineEntry> list=new ArrayList<LineEntry>();
+	public IndexedLinkedHashMap<String,LineEntry> getTitles(){
+		IndexedLinkedHashMap<String,LineEntry> lineEntriesMap=new IndexedLinkedHashMap<String,LineEntry>();
 		try {
 			conn = getConnection();
 			String sql="select * from Title";
@@ -254,18 +255,18 @@ public class DBHelper {
 			while(res.next()){
 				String LineJson=res.getString("Content");
 				LineEntry entry = LineEntry.FromJson(LineJson);
-				list.add(entry);
+				lineEntriesMap.put(entry.getUrl(), entry);
 			}
 		} catch (Exception e) {
 			e.printStackTrace(stderr);
 		} finally {
 			destroy();
 		}
-		System.out.println(list.size() +" title lines found from DB file");
-		return list;
+		System.out.println(lineEntriesMap.size() +" title lines found from DB file");
+		return lineEntriesMap;
 	}
 
-	@Deprecated
+	
 	public void updateTitle(LineEntry entry){
 		String sql="update Title SET Content=? where NAME=?";
 		//UPDATE Person SET FirstName = 'Fred' WHERE LastName = 'Wilson' 
@@ -309,7 +310,7 @@ public class DBHelper {
 		return false;
 	}
 
-	@Deprecated
+	
 	public void deleteTitle(LineEntry entry){
 		String sql="DELETE FROM Title where NAME= ?";
 		//DELETE FROM Person WHERE LastName = 'Wilson'  

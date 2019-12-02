@@ -140,7 +140,7 @@ public class LineEntryMenu extends JPopupMenu {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				try{
-					java.util.List<LineEntry> entries = lineTable.getModel().getLineEntries();
+					LinkedHashMap<String,LineEntry> entries = lineTable.getModel().getLineEntries();
 					IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
 					for (int i=rows.length-1;i>=0 ;i-- ) {
 						LineEntry entry = entries.get(rows[i]);

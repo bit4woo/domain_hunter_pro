@@ -170,12 +170,11 @@ public class LineEntryMenuForBurp{
 				IHttpRequestResponse[] messages = invocation.getSelectedMessages();
 				Getter getter = new Getter(helpers);
 				URL fullurl = getter.getFullURL(messages[0]);
-				LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(fullurl);
+				LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(fullurl.toString());
 				if (entry == null) {
-					//String shortUrlString = messages[0].getHttpService().toString();//这个方法居然没有默认端口！！！
 					URL shortUrl = getter.getShortURL(messages[0]);
 					if(!fullurl.equals(shortUrl)) {
-						entry = TitlePanel.getTitleTableModel().findLineEntry(shortUrl);
+						entry = TitlePanel.getTitleTableModel().findLineEntry(shortUrl.toString());
 					}
 				}
 
@@ -204,16 +203,16 @@ public class LineEntryMenuForBurp{
 				IHttpRequestResponse[] messages = invocation.getSelectedMessages();
 				Getter getter = new Getter(helpers);
 				URL fullurl = getter.getFullURL(messages[0]);
-				LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(fullurl);
+				LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(fullurl.toString());
 				if (entry == null) {
 					URL shortUrl = getter.getShortURL(messages[0]);
 					if(!fullurl.equals(shortUrl)) {
-						entry = TitlePanel.getTitleTableModel().findLineEntry(shortUrl);
+						entry = TitlePanel.getTitleTableModel().findLineEntry(shortUrl.toString());
 					}
 				}
 
 				if (entry != null) {
-					int index = TitlePanel.getTitleTableModel().getLineEntries().indexOf(entry);
+					int index = TitlePanel.getTitleTableModel().getLineEntries().IndexOfKey(entry.getUrl());
 					entry.setChecked(true);
 					stdout.println("$$$ "+entry.getUrl()+" updated");
 					TitlePanel.getTitleTableModel().fireTableRowsUpdated(index,index);//主动通知更新，否则不会写入数据库!!!
@@ -246,19 +245,18 @@ public class LineEntryMenuForBurp{
 				protected Map doInBackground() throws Exception {
 					try{
 						IHttpRequestResponse[] messages = invocation.getSelectedMessages();
-						Getter getter = new Getter(BurpExtender.getCallbacks().getHelpers());
+						Getter getter = new Getter(helpers);
 						URL fullurl = getter.getFullURL(messages[0]);
-						LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(fullurl);
+						LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(fullurl.toString());
 						if (entry == null) {
-							//String shortUrlString = messages[0].getHttpService().toString();//这个方法居然没有默认端口！！！
 							URL shortUrl = getter.getShortURL(messages[0]);
 							if(!fullurl.equals(shortUrl)) {
-								entry = TitlePanel.getTitleTableModel().findLineEntry(shortUrl);
+								entry = TitlePanel.getTitleTableModel().findLineEntry(shortUrl.toString());
 							}
 						}
 
 						if (entry != null) {
-							int index = TitlePanel.getTitleTable().getModel().getLineEntries().indexOf(entry);
+							int index = TitlePanel.getTitleTable().getModel().getLineEntries().IndexOfKey(entry.getUrl());
 							addLevelABC(topMenu,TitlePanel.getTitleTable(),new int[] {index});
 						}else {
 							//topMenu.add(new JMenuItem("Null"));
@@ -293,18 +291,18 @@ public class LineEntryMenuForBurp{
 			if (topMenu.getItemCount() == 0) {
 				try{
 					IHttpRequestResponse[] messages = invocation.getSelectedMessages();
-					Getter getter = new Getter(BurpExtender.getCallbacks().getHelpers());
+					Getter getter = new Getter(helpers);
 					URL fullurl = getter.getFullURL(messages[0]);
-					LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(fullurl);
+					LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(fullurl.toString());
 					if (entry == null) {
 						URL shortUrl = getter.getShortURL(messages[0]);
 						if(!fullurl.equals(shortUrl)) {
-							entry = TitlePanel.getTitleTableModel().findLineEntry(shortUrl);
+							entry = TitlePanel.getTitleTableModel().findLineEntry(shortUrl.toString());
 						}
 					}
 
 					if (entry != null) {
-						int index = TitlePanel.getTitleTable().getModel().getLineEntries().indexOf(entry);
+						int index = TitlePanel.getTitleTable().getModel().getLineEntries().IndexOfKey(entry.getUrl());
 
 						addLevelABC(topMenu,TitlePanel.getTitleTable(),new int[] {index});
 						System.out.println("111");
@@ -320,7 +318,7 @@ public class LineEntryMenuForBurp{
 
 
 	public static void addCommentForLine(LineEntry entry) {
-		int index = TitlePanel.getTitleTableModel().getLineEntries().indexOf(entry);
+		int index = TitlePanel.getTitleTableModel().getLineEntries().IndexOfKey(entry.getUrl());
 		String commentAdd = JOptionPane.showInputDialog("Comments", null).trim();
 		if (commentAdd == null) return;
 		while(commentAdd.trim().equals("")){
@@ -355,7 +353,6 @@ public class LineEntryMenuForBurp{
 
 
 	public static void addToRequest(IHttpRequestResponse[] messages) {
-		Set<String> domains = new HashSet<String>();
 		for(IHttpRequestResponse message:messages) {
 			String host = message.getHttpService().getHost();
 			LineEntry entry = new LineEntry(message);

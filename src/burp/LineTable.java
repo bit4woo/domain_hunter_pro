@@ -72,7 +72,7 @@ public class LineTable extends JTable
 	public void changeSelection(int row, int col, boolean toggle, boolean extend)
 	{
 		// show the log entry for the selected row
-		LineEntry Entry = this.lineTableModel.getLineEntries().get(super.convertRowIndexToModel(row));
+		LineEntry Entry = this.lineTableModel.getLineEntries().getValueAtIndex(super.convertRowIndexToModel(row));
 
 		requestViewer.setMessage(Entry.getRequest(), true);
 		responseViewer.setMessage(Entry.getResponse(), false);
@@ -200,7 +200,7 @@ public class LineTable extends JTable
 			public boolean include(Entry entry) {
 				//entry --- a non-null object that wraps the underlying object from the model
 				int row = (int) entry.getIdentifier();
-				LineEntry line = rowSorter.getModel().getLineEntries().get(row);
+				LineEntry line = rowSorter.getModel().getLineEntries().getValueAtIndex(row);
 
 				if (GUI.getTitlePanel().rdbtnHideCheckedItems.isSelected()&& line.isChecked()) {//to hide checked lines
 					if (selectedRow == row) {
@@ -266,7 +266,7 @@ public class LineTable extends JTable
 
 
 					if ((col < LineTable.this.getColumnModel().getColumnIndex("Comments"))) {//last column----comments
-						String host = LineTable.this.lineTableModel.getLineEntries().get(rows[0]).getHost();
+						String host = LineTable.this.lineTableModel.getLineEntries().getValueAtIndex(rows[0]).getHost();
 						String url= "https://www.google.com/search?q=site%3A"+host;
 						try {
 							URI uri = new URI(url);

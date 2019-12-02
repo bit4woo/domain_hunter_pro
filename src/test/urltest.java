@@ -11,7 +11,7 @@ public class urltest
    public static void main(String [] args)
    {
 	   //System.out.println(getFullUrlStringWithoutDefaultPort());
-	   test2();
+	   test3();
    }
    public void test() {
 	      try
@@ -82,6 +82,32 @@ public class urltest
 			printURLinfo(url1);
 			System.out.println(url.equals(url1));
 			System.out.println(url1.sameFile(url));
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public static void test3() {
+        try {
+        	String urlString = "https://www.runoob.com";
+			URL url = new URL("https://www.runoob.com");
+			String host = url.getHost();
+			int port = url.getPort();
+			String path = url.getPath();
+			
+			if (port == -1) {
+				
+				String newHost = url.getHost()+":"+url.getDefaultPort();
+				urlString = urlString.replace(host, newHost);
+				
+			}
+			if (path.equals("")) {
+				urlString = urlString+"/";
+			}
+			
+		System.out.println(urlString);
+			
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

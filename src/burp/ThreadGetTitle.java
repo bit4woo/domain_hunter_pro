@@ -164,16 +164,13 @@ class Producer extends Thread {//Producer do
 	}
 
 	public static LineEntry findHistory(String url) {
-		BurpExtender.getGui();
-		List<LineEntry> HistoryLines = GUI.getTitlePanel().getBackupLineEntries();
+		IndexedLinkedHashMap<String,LineEntry> HistoryLines = GUI.getTitlePanel().getBackupLineEntries();
 		if (HistoryLines == null) return null;
+		LineEntry found = HistoryLines.get(url);
+		if (found != null) return found;
 		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
-		for (LineEntry line:HistoryLines) {
+		for (LineEntry line:HistoryLines.values()) {
 			line.setHelpers(helpers);
-			if (url.equalsIgnoreCase(line.getUrl())) {//根据url查找
-				return line;
-			}
-
 			try{//根据host查找
 				String host = new URL(url).getHost();
 
@@ -234,8 +231,8 @@ class Producer extends Thread {//Producer do
 
 
 		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
-		PrintWriter stdout = BurpExtender.getStdout();
-		PrintWriter stderr = BurpExtender.getStderr();
+		
+		
 		
 		//第二步：对成功解析的host进行HTTP请求。
 

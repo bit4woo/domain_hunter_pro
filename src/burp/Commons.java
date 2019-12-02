@@ -4,6 +4,7 @@ import java.awt.Component;
 import java.awt.Desktop;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.UnknownHostException;
@@ -434,5 +435,35 @@ public class Commons {
 		//System.out.print(dnsquery("0g.jd.com"));
 		//System.out.print(GetAuthoritativeNameServer("jd.com"));
 		ZoneTransferCheck("sf-express.com","ns4.sf-express.com");
+	}
+	
+	/*
+	 *将形如 https://www.runoob.com的URL统一转换为
+	 * https://www.runoob.com:443/
+	 * 
+	 * 因为末尾的斜杠，影响URL类的equals的结果。
+	 * 而默认端口影响String格式的对比结果。
+	 */
+	
+	public static String formateURLString(String urlString) {
+        try {
+        	//urlString = "https://www.runoob.com";
+			URL url = new URL(urlString);
+			String host = url.getHost();
+			int port = url.getPort();
+			String path = url.getPath();
+			
+			if (port == -1) {
+				String newHost = url.getHost()+":"+url.getDefaultPort();
+				urlString = urlString.replace(host, newHost);
+			}
+			
+			if (path.equals("")) {
+				urlString = urlString+"/";
+			}
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+		return urlString;
 	}
 }
