@@ -810,6 +810,7 @@ public class DomainPanel extends JPanel {
 		System.out.println("Load Domain Panel Data Done, "+domainResult.getSummary());
 		stdout.println("Load Domain Panel Data Done, "+domainResult.getSummary());
 		listenerIsOn = true;
+		TitlePanel.getTitleTable().search("");// hide checked items
 	}
 
 
