@@ -205,7 +205,9 @@ class DomainProducer extends Thread {//Producer do
 						//classifyEmails(messageinfo);
 					}
 				}
-			} catch (Exception error) {//java.lang.RuntimeException can't been catched, why?
+			} catch (IllegalArgumentException error) {//url 编码问题
+				//error.printStackTrace(BurpExtender.getStderr());
+			} catch (Exception error) {
 				error.printStackTrace(BurpExtender.getStderr());
 			}
 		}
