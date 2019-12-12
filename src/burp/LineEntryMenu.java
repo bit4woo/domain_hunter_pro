@@ -21,6 +21,10 @@ import Config.LineConfig;
 
 public class LineEntryMenu extends JPopupMenu {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	PrintWriter stdout = BurpExtender.getStdout();
 	PrintWriter stderr = BurpExtender.getStderr();
 	LineEntryMenu(final LineTable lineTable, final int[] rows){
@@ -39,7 +43,7 @@ public class LineEntryMenu extends JPopupMenu {
 					return;
 				}
 				for (int row:rows) {
-					String host = lineTable.getModel().getLineEntries().get(row).getHost();
+					String host = lineTable.getModel().getLineEntries().getValueAtIndex(row).getHost();
 					String url= "https://www.google.com/search?q=site%3A"+host;
 					try {
 						Commons.browserOpen(url, null);
@@ -58,7 +62,7 @@ public class LineEntryMenu extends JPopupMenu {
 					return;
 				}
 				for (int row:rows) {
-					String host = lineTable.getModel().getLineEntries().get(row).getHost();
+					String host = lineTable.getModel().getLineEntries().getValueAtIndex(row).getHost();
 					String url= "https://github.com/search?q=%22"+host+"%22+%22jdbc.url%22&type=Code";
 					try {
 						Commons.browserOpen(url, null);
@@ -142,10 +146,10 @@ public class LineEntryMenu extends JPopupMenu {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				try{
-					LinkedHashMap<String,LineEntry> entries = lineTable.getModel().getLineEntries();
+					IndexedLinkedHashMap<String,LineEntry> entries = lineTable.getModel().getLineEntries();
 					IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
 					for (int i=rows.length-1;i>=0 ;i-- ) {
-						LineEntry entry = entries.get(rows[i]);
+						LineEntry entry = entries.getValueAtIndex(rows[i]);
 
 						String host = entry.getHost();
 						int port = entry.getPort();
@@ -231,7 +235,7 @@ public class LineEntryMenu extends JPopupMenu {
 						}
 						IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
 						for (int row: rows){
-							LineEntry entry = lineTable.getModel().getLineEntries().get(row);
+							LineEntry entry = lineTable.getModel().getLineEntries().getValueAtIndex(row);
 							String host =entry.getHost();
 							int port = entry.getPort();
 							String protocol = entry.getProtocol();
