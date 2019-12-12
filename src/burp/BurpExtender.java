@@ -106,6 +106,8 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		}
 		gui.saveDBfilepathToExtension();
 		gui.getProjectMenu().remove();
+		
+		DomainPanel.autoSave();//域名面板自动保存逻辑有地复杂，退出前再自动保存一次
 	}
 
 	//ITab必须实现的两个方法

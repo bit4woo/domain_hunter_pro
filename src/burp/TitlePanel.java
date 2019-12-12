@@ -448,6 +448,7 @@ public class TitlePanel extends JPanel {
 		}
 		titleTableModel.setListenerIsOn(true);
 		digStatus();
+		TitlePanel.getTitleTable().search("");// hide checked items
 	}
 
 

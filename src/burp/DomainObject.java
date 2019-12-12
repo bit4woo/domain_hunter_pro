@@ -1,16 +1,20 @@
 package burp;
 
-import com.alibaba.fastjson.JSON;
-import com.google.common.net.InternetDomainName;
-import org.apache.commons.net.whois.WhoisClient;
-
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
+import com.alibaba.fastjson.JSON;
+import com.google.common.net.InternetDomainName;
+
+/*
+ *注意，所有直接对DomainObject中数据的修改，都不会触发该tableChanged监听器。
+ *1、除非操作的逻辑中包含了firexxxx来主动通知监听器。比如DomainPanel.domainTableModel.fireTableChanged(null);
+ *2、或者主动调用显示和保存的函数直接完成，不经过监听器。
+	//GUI.getDomainPanel().showToDomainUI();
+	//DomainPanel.autoSave();
+ */
 public class DomainObject {
 	public String projectName = "";
 	public String uploadURL = "Input Upload URL Here";
@@ -251,20 +255,27 @@ public class DomainObject {
 		if (this.rootDomainMap.containsKey(key) && this.rootDomainMap.containsValue(value)) {
 			//do nothing
 		}else {
-			this.rootDomainMap.put(key,value);
+			this.rootDomainMap.put(key,value);//这个操作不会触发TableChanged事件。
 		}
+		//1\主动触发监听器，让监听器去执行数据的保存。
+		//DomainPanel.domainTableModel.fireTableChanged(null);
+		//2\或者主动调用显示和保存的函数直接完成，不经过监听器。
+		//GUI.getDomainPanel().showToDomainUI();
+		//DomainPanel.autoSave();
 	}
 
-	public void addToDomainOject(String domain){
+	public void addToDomainOject(String domain){//仅用于鼠标右键，所以加了数据的展示和保存逻辑在里面
 		relatedDomainSet.add(domain);
 		relatedToRoot();
 		GUI.getDomainPanel().showToDomainUI();
+		DomainPanel.autoSave();
 	}
 
-	public void addToDomainOject(Set<String> domains){
+	public void addToDomainOject(Set<String> domains){//仅用于鼠标右键，所以加了数据的展示和保存逻辑在里面
 		relatedDomainSet.addAll(domains);
 		relatedToRoot();
 		GUI.getDomainPanel().showToDomainUI();
+		DomainPanel.autoSave();
 	}
 
 	public void relatedToRoot() {

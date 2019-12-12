@@ -1,12 +1,54 @@
 package burp;
 
-import com.google.common.base.Charsets;
-import com.google.common.io.Files;
-import com.google.common.net.InternetDomainName;
-import org.apache.commons.io.FileUtils;
-import test.HTTPPost;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Desktop;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import javax.swing.*;
+import javax.swing.Box;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.RowSorter;
+import javax.swing.SortOrder;
+import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.event.DocumentEvent;
@@ -16,23 +58,21 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
-import java.awt.*;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
-import java.awt.event.*;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URL;
-import java.util.List;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
+import org.apache.commons.io.FileUtils;
+
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
+import com.google.common.net.InternetDomainName;
+
+import test.HTTPPost;
 
 /*
-以domainResult为核心的数据修改、数据保存和数据展示
+ *注意，所有直接对DomainObject中数据的修改，都不会触发该tableChanged监听器。
+ *1、除非操作的逻辑中包含了firexxxx来主动通知监听器。比如DomainPanel.domainTableModel.fireTableChanged(null);
+ *2、或者主动调用显示和保存的函数直接完成，不经过监听器。
+	//GUI.getDomainPanel().showToDomainUI();
+	//DomainPanel.autoSave();
  */
 public class DomainPanel extends JPanel {
 
@@ -216,6 +256,7 @@ public class DomainPanel extends JPanel {
 						try {
 							get();
 							showToDomainUI();
+							autoSave();
 							btnCrawl.setEnabled(true);
 						} catch (Exception e) {
 							e.printStackTrace(stderr);
@@ -422,6 +463,12 @@ public class DomainPanel extends JPanel {
 				}
 		);
 		table.setModel(domainTableModel);
+		
+		/*
+		 * 注意，所有直接对DomainObject中数据的修改，都不会触发该tableChanged监听器。
+		 * 除非操作的逻辑中包含了firexxxx来主动通知监听器。
+		 * DomainPanel.domainTableModel.fireTableChanged(null);
+		 */
 		domainTableModel.addTableModelListener(new TableModelListener(){
 			@Override
 			public void tableChanged(TableModelEvent e) {
@@ -513,7 +560,7 @@ public class DomainPanel extends JPanel {
 
 				domainResult.AddToRootDomainMap(enteredRootDomain, keyword);
 				showToDomainUI();
-				//将会触发listener，然后自动保存。无需主动调用了。
+				autoSave();
 			}
 		});
 		ControlPanel.add(addButton);
@@ -538,7 +585,7 @@ public class DomainPanel extends JPanel {
 
 				domainResult.AddToRootDomainMap(enteredRootDomain, keyword);
 				showToDomainUI();
-				//将会触发listener，然后自动保存。无需主动调用了。
+				autoSave();
 			}
 		});
 		ControlPanel.add(addButton1);
@@ -559,7 +606,7 @@ public class DomainPanel extends JPanel {
 				for(int i=rowindexs.length-1;i>=0;i--){
 					domainTableModel.removeRow(rowindexs[i]);
 				}
-				// will trigger tableModel listener
+				// will trigger tableModel listener---due to "fireTableRowsDeleted" in removeRow
 				//domainResult.setRootDomainMap(getTableMap()); //no need any more because tableModel Listener
 			}
 		});
@@ -580,8 +627,9 @@ public class DomainPanel extends JPanel {
 					String rootdomain = (String) domainTableModel.getValueAt(rowindexs[i], 0);
 					domainTableModel.removeRow(rowindexs[i]);
 					domainResult.AddToRootDomainMap("[exclude]"+rootdomain,"");
-					showToDomainUI();
 				}
+				showToDomainUI();
+				autoSave();
 				// will trigger tableModel listener
 				//domainResult.setRootDomainMap(getTableMap()); //no need any more because tableModel Listener
 			}
@@ -810,7 +858,7 @@ public class DomainPanel extends JPanel {
 		System.out.println("Load Domain Panel Data Done, "+domainResult.getSummary());
 		stdout.println("Load Domain Panel Data Done, "+domainResult.getSummary());
 		listenerIsOn = true;
-		TitlePanel.getTitleTable().search("");// hide checked items
+
 	}
 
 
