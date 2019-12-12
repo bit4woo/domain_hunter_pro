@@ -205,8 +205,6 @@ class DomainProducer extends Thread {//Producer do
 						//classifyEmails(messageinfo);
 					}
 				}
-			} catch (IllegalArgumentException error) {//url 编码问题
-				//error.printStackTrace(BurpExtender.getStderr());
 			} catch (Exception error) {
 				error.printStackTrace(BurpExtender.getStderr());
 			}
@@ -252,20 +250,35 @@ class DomainProducer extends Thread {//Producer do
 		final String DOMAIN_NAME_PATTERN = "([A-Za-z0-9-]{1,63}(?<!-)\\.)+[A-Za-z]{2,6}";
 		int counter =0;
 		while (httpResponse.contains("&#x") && counter<3) {// &#x html编码的特征
-			httpResponse = StringEscapeUtils.unescapeHtml4(httpResponse);
-			counter++;
+			try {
+				httpResponse = StringEscapeUtils.unescapeHtml4(httpResponse);
+				counter++;
+			}catch(Exception e) {
+				e.printStackTrace(BurpExtender.getStderr());
+				break;//即使出错，也要进行后续的查找
+			}
 		}
 		
 		counter = 0;
 		while (httpResponse.contains("%") && counter<3) {// %对应的URL编码
-			httpResponse = URLDecoder.decode(httpResponse);
-			counter++;
+			try {
+				httpResponse = URLDecoder.decode(httpResponse);
+				counter++;
+			}catch(Exception e) {
+				e.printStackTrace(BurpExtender.getStderr());
+				break;//即使出错，也要进行后续的查找
+			}
 		}
 		
 		counter = 0;
 		while (httpResponse.contains("\\u00") && counter<3) {//unicode解码
-			httpResponse = StringEscapeUtils.unescapeJava(httpResponse);
-			counter++;
+			try {
+				httpResponse = StringEscapeUtils.unescapeJava(httpResponse);
+				counter++;
+			}catch(Exception e) {
+				e.printStackTrace(BurpExtender.getStderr());
+				break;//即使出错，也要进行后续的查找
+			}
 		}
 		
 		Pattern pDomainNameOnly = Pattern.compile(DOMAIN_NAME_PATTERN);
