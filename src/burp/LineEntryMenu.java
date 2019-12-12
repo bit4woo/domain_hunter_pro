@@ -89,11 +89,13 @@ public class LineEntryMenu extends JPopupMenu {
 			}
 		});
 
-
 		JMenuItem dirSearchItem = new JMenuItem();
 		dirSearchItem.setText("Do Dir Search");
 		dirSearchItem.addActionListener(new DirSearchAction(lineTable, rows));
 
+		JMenuItem doPortScan = new JMenuItem();
+		doPortScan.setText("Do Port Scan");
+		doPortScan.addActionListener(new NmapScanAction(lineTable, rows));
 
 
 		JMenuItem openURLwithBrowserItem = new JMenuItem(new AbstractAction("Open URL With Browser") {
@@ -165,8 +167,7 @@ public class LineEntryMenu extends JPopupMenu {
 				}
 			}
 		});
-
-
+		
 
 		JMenuItem checkedItem = new JMenuItem(new AbstractAction("Set As Checked") {
 			@Override
@@ -300,6 +301,7 @@ public class LineEntryMenu extends JPopupMenu {
 
 		this.add(addHostsToScope);
 		this.add(doActiveScan);
+		this.add(doPortScan);
 		this.add(dirSearchItem);
 
 		this.addSeparator();

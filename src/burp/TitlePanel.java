@@ -443,7 +443,9 @@ public class TitlePanel extends JPanel {
 		titleTableModel.setListenerIsOn(false);
 		int row = lineEntries.size();
 		titleTableModel.setLineEntries(lineEntries);//如果listener是on，将触发listener--同步到db文件
-		titleTableModel.fireTableRowsInserted(0, row-1);
+		if (row>=1) {
+			titleTableModel.fireTableRowsInserted(0, row-1);
+		}
 		titleTableModel.setListenerIsOn(true);
 		digStatus();
 	}

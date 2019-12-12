@@ -205,7 +205,8 @@ class DomainProducer extends Thread {//Producer do
 						//classifyEmails(messageinfo);
 					}
 				}
-			} catch (Throwable error) {//java.lang.RuntimeException can't been catched, why?
+			} catch (Exception error) {//java.lang.RuntimeException can't been catched, why?
+				error.printStackTrace(BurpExtender.getStderr());
 			}
 		}
 	}

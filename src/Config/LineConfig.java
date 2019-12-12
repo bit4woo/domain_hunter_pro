@@ -26,6 +26,7 @@ public class LineConfig {
 	private static String python3Path = "C:\\Python37\\python.exe";
 	private static String dirSearchPath = "D:\\github\\dirsearch\\dirsearch.py";
 	private static String browserPath = "C:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe";
+	private static String nmapPath ="D:\\Program Files (x86)\\Nmap\\nmap.exe";
 
 
 
@@ -116,6 +117,14 @@ public class LineConfig {
 
 	public static void setBrowserPath(String browserPath) {
 		LineConfig.browserPath = browserPath;
+	}
+
+	public static String getNmapPath() {
+		return nmapPath;
+	}
+
+	public static void setNmapPath(String nmapPath) {
+		LineConfig.nmapPath = nmapPath;
 	}
 
 	/*
