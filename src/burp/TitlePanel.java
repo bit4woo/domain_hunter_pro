@@ -375,6 +375,9 @@ public class TitlePanel extends JPanel {
 		return buttonPanel;
 	}
 
+	/*
+	 * 根据所有已知域名获取title
+	 */
 	public void getAllTitle(){
 		DomainPanel.backupDB();
 		Set<String> domains = new HashSet<>();//新建一个对象，直接赋值后的删除操作，实质是对domainResult的操作。
@@ -403,12 +406,6 @@ public class TitlePanel extends JPanel {
 		threadGetTitle = new ThreadGetTitle(domains);
 		threadGetTitle.Do();
 		
-		//转移手动保存的结果
-		for (LineEntry entry:BackupLineEntries.values()) {
-			if (entry.getComment().contains("Manual-Saved")) {
-				TitlePanel.getTitleTableModel().addNewLineEntry(entry);
-			}
-		}
 	}
 
 
@@ -417,6 +414,15 @@ public class TitlePanel extends JPanel {
 		stdout.println(extendIPSet.size()+" extend IP Address founded"+extendIPSet);
 		threadGetTitle = new ThreadGetTitle(extendIPSet);
 		threadGetTitle.Do();
+		
+		//转移手动保存的结果
+		for (LineEntry entry:BackupLineEntries.values()) {
+//			if (entry.getComment().contains("Manual-Saved")) {
+//				TitlePanel.getTitleTableModel().addNewLineEntry(entry);
+//			}
+			
+			TitlePanel.getTitleTableModel().addNewLineEntry(entry);//保存所有历史记录中没有匹配到的记录。
+		}
 	}
 
 	

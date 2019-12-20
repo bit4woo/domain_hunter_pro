@@ -148,6 +148,8 @@ class Producer extends Thread {//Producer do
 							err.printStackTrace(stderr);
 						}
 					}
+					
+					GUI.getTitlePanel().getBackupLineEntries().remove(url);//如果有相同URL的记录，就删除这个记录。
 
 					TitlePanel.getTitleTableModel().addNewLineEntry(item);
 
