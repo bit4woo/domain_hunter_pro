@@ -1,5 +1,6 @@
 package burp;
 
+import java.net.SocketException;
 import java.net.URL;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -99,7 +100,9 @@ public class CertInfo {
 
                 }
             }
-        } catch (Exception e) {
+        }catch (SocketException e) {
+        	throw new Exception("connecttion failed --- "+aURL);
+        }catch (Exception e) {
         	throw e;
         }finally {
         	if (conn!=null) {

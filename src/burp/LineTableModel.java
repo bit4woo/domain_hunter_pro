@@ -470,9 +470,16 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 //				final LineEntry removed = lineEntries.remove(0);
 //				ListenerIsOn = true;
 //			}
+			int oldsize = lineEntries.size();
 			lineEntries.put(lineEntry.getUrl(),lineEntry);
+			int newsize = lineEntries.size();
 			int index = lineEntries.IndexOfKey(lineEntry.getUrl());
-			fireTableRowsInserted(index, index);
+			if (oldsize == newsize) {//覆盖
+				fireTableRowsUpdated(index, index);
+			}else {//新增
+				fireTableRowsInserted(index, index);
+			}
+			
 			//need to use row-1 when add setRowSorter to table. why??
 			//https://stackoverflow.com/questions/6165060/after-adding-a-tablerowsorter-adding-values-to-model-cause-java-lang-indexoutofb
 			//fireTableRowsInserted(newsize-1, newsize-1);
