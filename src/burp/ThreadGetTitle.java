@@ -168,7 +168,7 @@ class Producer extends Thread {//Producer do
 		if (HistoryLines == null) return null;
 		LineEntry found = HistoryLines.get(url);
 		if (found != null) {
-			GUI.getTitlePanel().getBackupLineEntries().remove(url);//如果有相同URL的记录，就删除这个记录。
+			HistoryLines.remove(url);//如果有相同URL的记录，就删除这个记录。
 			return found;
 		}
 		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
@@ -180,7 +180,7 @@ class Producer extends Thread {//Producer do
 				List<String> lineHost = new ArrayList<>(Arrays.asList(line.getIP().trim().split(",")));
 				lineHost.add(line.getHost());
 				if (lineHost.contains(host)) {
-					GUI.getTitlePanel().getBackupLineEntries().remove(line.getUrl());//如果有相同URL的记录，就删除这个记录。
+					HistoryLines.remove(line.getUrl());//如果有相同URL的记录，就删除这个记录。
 					return line;
 				}
 			}catch (Exception e){
