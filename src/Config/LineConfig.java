@@ -17,7 +17,7 @@ public class LineConfig {
 	private static Set<String> blacklistIPSet = new HashSet<String>(); 
 	private static Set<String> blacklistCDNSet = new HashSet<String>(); 
 	private static Set<String> blacklistWebContainerSet = new HashSet<String>(); 
-	private static boolean ignoreHttpIfHttpsOK =true;
+	private static boolean ignoreHttpsIfHttpOK =true;
 	private static boolean isPrivateNetworkWorkingModel = false;//默认外网模式
 	//对于内外网域名或IP的处理分为2种情况：
 	//1、外网模式，即在自己公司挖掘别人公司的漏洞。这个是时候收集到的域名如果是解析到私有IP的，仅仅显示就可以了；如果是私有IP地址则直接忽略。
@@ -79,12 +79,12 @@ public class LineConfig {
 		LineConfig.blacklistWebContainerSet = blacklistWebContainerSet;
 	}
 
-	public static boolean isIgnoreHttpIfHttpsOK() {
-		return ignoreHttpIfHttpsOK;
+	public static boolean isIgnoreHttpsIfHttpOK() {
+		return ignoreHttpsIfHttpOK;
 	}
 
-	public static void setIgnoreHttpIfHttpsOK(boolean ignoreHttpIfHttpsOK) {
-		LineConfig.ignoreHttpIfHttpsOK = ignoreHttpIfHttpsOK;
+	public static void setIgnoreHttpsIfHttpOK(boolean ignoreHttpsIfHttpOK) {
+		LineConfig.ignoreHttpsIfHttpOK = ignoreHttpsIfHttpOK;
 	}
 
 	public static boolean isPrivateNetworkWorkingModel() {

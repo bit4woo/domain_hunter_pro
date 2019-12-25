@@ -188,6 +188,19 @@ class Producer extends Thread {//Producer do
 		return null;
 	}
 	
+	public static LineEntry doRequest(URL url) {
+		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
+		String cookie = TitlePanel.getTextFieldCookie().getText().trim();
+		
+		byte[] byteRequest = helpers.buildHttpRequest(url);//GET
+		byteRequest = Commons.buildCookieRequest(helpers,cookie,byteRequest);
+		
+		IHttpService service = helpers.buildHttpService(url.getHost(),url.getPort(),url.getProtocol());
+		IHttpRequestResponse https_Messageinfo = callbacks.makeHttpRequest(service, byteRequest);
+		LineEntry Entry = new LineEntry(https_Messageinfo);
+		return Entry;
+	}
+	
  	public static Set<LineEntry> doGetTitle(String host) throws MalformedURLException {
  		
  		int httpport = -1;
@@ -230,74 +243,47 @@ class Producer extends Thread {//Producer do
 				}
 			}
 		}
-
-
-		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
-		
-		
 		
 		//第二步：对成功解析的host进行HTTP请求。
-
-		String cookie = TitlePanel.getTextFieldCookie().getText().trim();
-		
 		if (httpport ==-1) {//表明host没有带端口号，默认情况
-			IHttpService http = helpers.buildHttpService(host,80,"http");
-			IHttpService https = helpers.buildHttpService(host,443,"https");
+			URL httpURL = new URL("http://"+host+":80/");
+			URL httpsURL = new URL("https://"+host+":443/");
 			
-			//do https request
-			byte[] https_Request = helpers.buildHttpRequest(new URL(https.toString()));
-			https_Request = Commons.buildCookieRequest(helpers,cookie,https_Request);
-			IHttpRequestResponse https_Messageinfo = callbacks.makeHttpRequest(https, https_Request);
-			LineEntry httpsEntry = new LineEntry(https_Messageinfo);
-			httpsEntry.setIPWithSet(IPSet);
-			httpsEntry.setCDNWithSet(CDNSet);
-	
-			boolean httpsOK = LineConfig.doFilter(httpsEntry);
-	
-			if (httpsOK) {
-				resultSet.add(httpsEntry);
+			//https://superuser.com/questions/1054724/how-to-make-firefox-ignore-all-ssl-certification-errors
+			//仍然改为先请求http，http不可用再请求https.避免浏览器中证书问题重复点击很麻烦
+			
+			//do http request first
+			LineEntry httpEntry = doRequest(httpURL);
+			httpEntry.setIPWithSet(IPSet);
+			httpEntry.setCDNWithSet(CDNSet);
+			//stdout.println("messageinfo"+JSONObject.toJSONString(messageinfo));
+			//这里有2种异常情况：1.请求失败（连IP都解析不了,已经通过第一步过滤了）；2.请求成功但是响应包为空（可以解析IP，比如内网域名）。
+			//第一种请求在这里就结束了，第二种情况的请求信息会传递到consumer中进行IP获取的操作。
+			if (LineConfig.doFilter(httpEntry)) {	
+				String location = httpEntry.getHeaderValueOf(false,"Location");
+				if (location == null || !location.startsWith("https://"+host)) {//如果是跳转到https，还是请求https
+					resultSet.add(httpEntry);
+				}
 			}
+
 			
-			if (!httpsOK || !LineConfig.isIgnoreHttpIfHttpsOK()) {
+			//在http不可用，或者设置为不忽略https的情况下
+			if (resultSet.size() ==0 || !LineConfig.isIgnoreHttpsIfHttpOK()) {
 				
-				byte[] http_Request = helpers.buildHttpRequest(new URL(http.toString()));
-				http_Request = Commons.buildCookieRequest(helpers,cookie,http_Request);
-				IHttpRequestResponse http_Messageinfo = callbacks.makeHttpRequest(http, http_Request);
-				LineEntry httpEntry = new LineEntry(http_Messageinfo);
-				httpEntry.setIPWithSet(IPSet);
-				httpEntry.setCDNWithSet(CDNSet);
-				//stdout.println("messageinfo"+JSONObject.toJSONString(messageinfo));
-				//这里有2种异常情况：1.请求失败（连IP都解析不了,已经通过第一步过滤了）；2.请求成功但是响应包为空（可以解析IP，比如内网域名）。
-				//第一种请求在这里就结束了，第二种情况的请求信息会传递到consumer中进行IP获取的操作。
-				if (LineConfig.doFilter(httpEntry)) {
-	//				if (httpEntry.getStatuscode() == httpsEntry.getStatuscode() && httpEntry.getContentLength() == httpsEntry.getContentLength()) {
-	//					
-	//				}else if( 300 <= httpEntry.getStatuscode() && httpEntry.getStatuscode() <400 ) {
-	//					String location = httpEntry.getHeaderValueOf(false,"Location");
-	//					if (location != null && location.equalsIgnoreCase(https.toString()+"/")) {
-	//						
-	//					}else {
-	//						resultSet.add(httpEntry);
-	//					}
-	//				}else {
-	//					resultSet.add(httpEntry);
-	//				}
-								
-					String location = httpEntry.getHeaderValueOf(false,"Location");
-					if ((location == null || !location.equalsIgnoreCase(https.toString()+"/")) && 
-							httpEntry.getStatuscode() != httpsEntry.getStatuscode()) {
-						resultSet.add(httpEntry);
-					}
+				LineEntry httpsEntry = doRequest(httpsURL);
+				httpsEntry.setIPWithSet(IPSet);
+				httpsEntry.setCDNWithSet(CDNSet);
+		
+				boolean httpsOK = LineConfig.doFilter(httpsEntry);
+		
+				if (httpsOK) {
+					resultSet.add(httpsEntry);
 				}
 			}
 		}else {//处理自带端口号的情况
-			IHttpService http = helpers.buildHttpService(host,httpport,"http");
-			
 			//do http request with specified port
-			byte[] http_Request = helpers.buildHttpRequest(new URL(http.toString()));
-			http_Request = Commons.buildCookieRequest(helpers,cookie,http_Request);
-			IHttpRequestResponse http_Messageinfo = callbacks.makeHttpRequest(http, http_Request);
-			LineEntry httpEntry = new LineEntry(http_Messageinfo);
+			URL porthttpURL = new URL("http://"+host+":"+httpport+"/");
+			LineEntry httpEntry = doRequest(porthttpURL);
 			httpEntry.setIPWithSet(IPSet);
 			httpEntry.setCDNWithSet(CDNSet);
 	
@@ -312,39 +298,28 @@ class Producer extends Thread {//Producer do
 		
 		if (TitlePanel.getExternalPortList() != null && TitlePanel.getExternalPortList().size() != 0) {
 			for (int port: TitlePanel.getExternalPortList()) {
-				IHttpService ex_https = helpers.buildHttpService(host,port,"https");
-				IHttpService ex_http = helpers.buildHttpService(host,port,"http");
-				
-				//do https request
-//				stdout.println("port:"+ex_https);
-				byte[] ex_https_Request = helpers.buildHttpRequest(new URL(ex_https.toString()));
-				ex_https_Request = Commons.buildCookieRequest(helpers,cookie,ex_https_Request);
-				IHttpRequestResponse ex_https_Messageinfo = callbacks.makeHttpRequest(ex_https, ex_https_Request);
-				LineEntry exhttpsEntry = new LineEntry(ex_https_Messageinfo);
-//				stdout.println("service:"+ex_https_Messageinfo.getHttpService().toString());
-//				stdout.println("port:"+exhttpsEntry.getUrl());
-				exhttpsEntry.setIPWithSet(IPSet);
-				exhttpsEntry.setCDNWithSet(CDNSet);
-
-				boolean exhttpsOK = LineConfig.doFilter(exhttpsEntry);
-
-				if (exhttpsOK) {
-					resultSet.add(exhttpsEntry);
-					continue;
-				}
-				
-				
+		
 				//do http request
-				byte[] ex_http_Request = helpers.buildHttpRequest(new URL(ex_http.toString()));
-				ex_http_Request = Commons.buildCookieRequest(helpers,cookie,ex_http_Request);
-				IHttpRequestResponse ex_http_Messageinfo = callbacks.makeHttpRequest(ex_http, ex_http_Request);
-				LineEntry exhttpEntry = new LineEntry(ex_http_Messageinfo);
+				URL ex_http = new URL("http://"+host+":"+port+"/");
+				LineEntry exhttpEntry = doRequest(ex_http);
 				exhttpEntry.setIPWithSet(IPSet);
 				exhttpEntry.setCDNWithSet(CDNSet);
 				
 				if (LineConfig.doFilter(exhttpEntry)) {
 					resultSet.add(exhttpEntry);
+					continue;
 				}
+				
+				//do https request
+				URL ex_https = new URL("https://"+host+":"+port+"/");
+				LineEntry exhttpsEntry = doRequest(ex_https);
+				exhttpsEntry.setIPWithSet(IPSet);
+				exhttpsEntry.setCDNWithSet(CDNSet);
+
+				if (LineConfig.doFilter(exhttpsEntry)) {
+					resultSet.add(exhttpsEntry);
+				}
+				
 			}
 		}
 
