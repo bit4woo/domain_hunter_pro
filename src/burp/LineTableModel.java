@@ -2,6 +2,7 @@ package burp;
 
 import java.io.PrintWriter;
 import java.io.Serializable;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -498,6 +499,24 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		return lineEntries.get(url);
 	}
 
+	/*
+	 * find all lineEntries base host
+	 */
+	public List<LineEntry> findLineEntriesByHost(String host) {//
+		if (lineEntries == null) return null;
+		List<LineEntry> result = new ArrayList<LineEntry>();
+		for (String urlkey:lineEntries.keySet()) {
+			try{//根据host查找
+				URL URL = new URL(urlkey);
+				if (URL.getHost() == host) {
+					result.add(lineEntries.get(urlkey));
+				}
+			}catch (Exception e){
+				e.printStackTrace(BurpExtender.getStderr());
+			}
+		}
+		return result;
+	}
 
 	public LineEntry getCurrentlyDisplayedItem() {
 		return this.currentlyDisplayedItem;

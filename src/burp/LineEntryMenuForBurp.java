@@ -18,6 +18,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 
+import Config.LineConfig;
+
 public class LineEntryMenuForBurp{
 
 	public PrintWriter stderr = BurpExtender.getStderr();
@@ -51,7 +53,7 @@ public class LineEntryMenuForBurp{
 		addCommentToDomainHunter.addActionListener(new addComment(invocation));
 		list.add(addCommentToDomainHunter);
 
-		JMenuItem setAsChecked = new JMenuItem("^_^[Domain Hunter] Set As Checked");
+		JMenuItem setAsChecked = new JMenuItem("^_^[Domain Hunter] Set Host As Checked");
 		setAsChecked.addActionListener(new setAsChecked(invocation));
 		list.add(setAsChecked);
 
@@ -65,7 +67,7 @@ public class LineEntryMenuForBurp{
 		 */
 
 		//替换方案2：
-		JMenu setLevelAs2 = new JMenu("^_^[Domain Hunter] Set Level As");
+		JMenu setLevelAs2 = new JMenu("^_^[Domain Hunter] Set Host Level As");
 		setAsChecked.addActionListener(new setLevelAsActionListener(invocation,setLevelAs2));
 		list.add(setLevelAs2);
 
@@ -119,7 +121,18 @@ public class LineEntryMenuForBurp{
 		{
 			try{
 				IHttpRequestResponse[] messages = invocation.getSelectedMessages();
-				addToRequest(messages);
+				Getter getter = new Getter(helpers);
+				URL fullurl = getter.getFullURL(messages[0]);
+				LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(fullurl.toString());
+				if (entry != null) {
+					int user_input = JOptionPane.showConfirmDialog(null, "Do you want to overwrite?","Item already exist",JOptionPane.YES_NO_OPTION);
+					if (JOptionPane.YES_OPTION == user_input) {
+						addToRequest(messages);
+					}
+				}else {
+					addToRequest(messages);
+				}
+				
 			}
 			catch (Exception e1)
 			{
@@ -200,22 +213,38 @@ public class LineEntryMenuForBurp{
 		public void actionPerformed(ActionEvent e)
 		{
 			try{
+//				IHttpRequestResponse[] messages = invocation.getSelectedMessages();
+//				Getter getter = new Getter(helpers);
+//				URL fullurl = getter.getFullURL(messages[0]);
+//				LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(fullurl.toString());
+//				if (entry == null) {
+//					URL shortUrl = getter.getShortURL(messages[0]);
+//					if(!fullurl.equals(shortUrl)) {
+//						entry = TitlePanel.getTitleTableModel().findLineEntry(shortUrl.toString());
+//					}
+//				}
+//
+//				if (entry != null) {
+//					int index = TitlePanel.getTitleTableModel().getLineEntries().IndexOfKey(entry.getUrl());
+//					entry.setChecked(true);
+//					stdout.println("$$$ "+entry.getUrl()+" updated");
+//					TitlePanel.getTitleTableModel().fireTableRowsUpdated(index,index);//主动通知更新，否则不会写入数据库!!!
+//				}
+				
+				
+				
 				IHttpRequestResponse[] messages = invocation.getSelectedMessages();
 				Getter getter = new Getter(helpers);
-				URL fullurl = getter.getFullURL(messages[0]);
-				LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(fullurl.toString());
-				if (entry == null) {
-					URL shortUrl = getter.getShortURL(messages[0]);
-					if(!fullurl.equals(shortUrl)) {
-						entry = TitlePanel.getTitleTableModel().findLineEntry(shortUrl.toString());
-					}
-				}
+				String host = getter.getHost(messages[0]);
+				List<LineEntry> entries = TitlePanel.getTitleTableModel().findLineEntriesByHost(host);
 
-				if (entry != null) {
-					int index = TitlePanel.getTitleTableModel().getLineEntries().IndexOfKey(entry.getUrl());
-					entry.setChecked(true);
-					stdout.println("$$$ "+entry.getUrl()+" updated");
-					TitlePanel.getTitleTableModel().fireTableRowsUpdated(index,index);//主动通知更新，否则不会写入数据库!!!
+				if (entries.size() > 0) {
+					for (LineEntry entry:entries) {
+						entry.setChecked(true);
+						int index = TitlePanel.getTitleTableModel().getLineEntries().IndexOfKey(entry.getUrl());
+						stdout.println("$$$ "+entry.getUrl()+" updated");
+						TitlePanel.getTitleTableModel().fireTableRowsUpdated(index,index);//主动通知更新，否则不会写入数据库!!!
+					}
 				}
 			}
 			catch (Exception e1)
@@ -244,22 +273,35 @@ public class LineEntryMenuForBurp{
 				@Override
 				protected Map doInBackground() throws Exception {
 					try{
+//						IHttpRequestResponse[] messages = invocation.getSelectedMessages();
+//						Getter getter = new Getter(helpers);
+//						URL fullurl = getter.getFullURL(messages[0]);
+//						LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(fullurl.toString());
+//						if (entry == null) {
+//							URL shortUrl = getter.getShortURL(messages[0]);
+//							if(!fullurl.equals(shortUrl)) {
+//								entry = TitlePanel.getTitleTableModel().findLineEntry(shortUrl.toString());
+//							}
+//						}
+//
+//						if (entry != null) {
+//							int index = TitlePanel.getTitleTable().getModel().getLineEntries().IndexOfKey(entry.getUrl());
+//							addLevelABC(topMenu,TitlePanel.getTitleTable(),new int[] {index});
+//						}else {
+//							//topMenu.add(new JMenuItem("Null"));
+//						}
+						
+						
 						IHttpRequestResponse[] messages = invocation.getSelectedMessages();
 						Getter getter = new Getter(helpers);
-						URL fullurl = getter.getFullURL(messages[0]);
-						LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(fullurl.toString());
-						if (entry == null) {
-							URL shortUrl = getter.getShortURL(messages[0]);
-							if(!fullurl.equals(shortUrl)) {
-								entry = TitlePanel.getTitleTableModel().findLineEntry(shortUrl.toString());
-							}
-						}
+						String host = getter.getHost(messages[0]);
+						List<LineEntry> entries = TitlePanel.getTitleTableModel().findLineEntriesByHost(host);
 
-						if (entry != null) {
-							int index = TitlePanel.getTitleTable().getModel().getLineEntries().IndexOfKey(entry.getUrl());
-							addLevelABC(topMenu,TitlePanel.getTitleTable(),new int[] {index});
-						}else {
-							//topMenu.add(new JMenuItem("Null"));
+						if (entries.size() > 0) {
+							for (LineEntry entry:entries) {
+								int index = TitlePanel.getTitleTable().getModel().getLineEntries().IndexOfKey(entry.getUrl());
+								addLevelABC(topMenu,TitlePanel.getTitleTable(),new int[] {index});
+							}
 						}
 					}
 					catch (Exception e1)
@@ -357,6 +399,7 @@ public class LineEntryMenuForBurp{
 			String host = message.getHttpService().getHost();
 			LineEntry entry = new LineEntry(message);
 			entry.setComment("Manual-Saved");
+			entry.setChecked(true);
 			TitlePanel.getTitleTableModel().addNewLineEntry(entry); //add request
 			DomainPanel.getDomainResult().addToDomainOject(host); //add domain
 		}
