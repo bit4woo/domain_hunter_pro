@@ -14,6 +14,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -58,6 +60,9 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultHighlighter;
+import javax.swing.text.Highlighter;
 
 import org.apache.commons.io.FileUtils;
 
@@ -832,7 +837,54 @@ public class DomainPanel extends JPanel {
 			}
 		});
 		footerPanel.add(lblNewLabel_2);
-
+		
+		
+		//搜索域名，但是效果不怎么好
+//		JTextField textFieldSearch = new JTextField("");
+//		textFieldSearch.addFocusListener(new FocusAdapter() {
+//			@Override
+//			public void focusGained(FocusEvent e) {
+//				if (textFieldSearch.getText().equals("Input text to search")) {
+//					textFieldSearch.setText("");
+//				}
+//			}
+//			@Override
+//			public void focusLost(FocusEvent e) {
+//				/*
+//				 * if (textFieldSearch.getText().equals("")) {
+//				 * textFieldSearch.setText("Input text to search"); }
+//				 */
+//
+//			}
+//		});
+//
+//		textFieldSearch.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				String keyword = textFieldSearch.getText().trim();
+//				domainPanelSearch(keyword);
+//			}
+//			
+//			public void domainPanelSearch(String keyword) {
+//				try {
+//					Highlighter h = textAreaSubdomains.getHighlighter();
+//					h.removeAllHighlights();
+//					int pos = textAreaSubdomains.getText().indexOf(keyword, 0);
+//					h.addHighlight(pos ,
+//					               pos  + keyword.length(),
+//					               DefaultHighlighter.DefaultPainter);
+//					textAreaRelatedDomains = new JTextArea();
+//					textAreaSubdomains = new JTextArea();
+//					textAreaSimilarDomains = new JTextArea();
+//					textAreaEmails = new JTextArea();
+//					textAreaPackages = new JTextArea();
+//				} catch (BadLocationException e) {
+//					e.printStackTrace(stderr);
+//				}
+//			}
+//		});
+//
+//		textFieldSearch.setColumns(30);
+//		footerPanel.add(textFieldSearch);
 	}
 
 	public void showToDomainUI() {
