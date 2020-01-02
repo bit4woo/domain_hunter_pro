@@ -294,13 +294,14 @@ public class LineEntryMenuForBurp{
 						
 						IHttpRequestResponse[] messages = invocation.getSelectedMessages();
 						Getter getter = new Getter(helpers);
-						String host = getter.getHost(messages[0]);
-						List<LineEntry> entries = TitlePanel.getTitleTableModel().findLineEntriesByHost(host);
-
-						if (entries.size() > 0) {
-							for (LineEntry entry:entries) {
-								int index = TitlePanel.getTitleTable().getModel().getLineEntries().IndexOfKey(entry.getUrl());
-								addLevelABC(topMenu,TitlePanel.getTitleTable(),new int[] {index});
+						if (messages[0] != null) {
+							String host = getter.getHost(messages[0]);
+							List<LineEntry> entries = TitlePanel.getTitleTableModel().findLineEntriesByHost(host);
+							if (entries.size() > 0) {
+								for (LineEntry entry:entries) {
+									int index = TitlePanel.getTitleTable().getModel().getLineEntries().IndexOfKey(entry.getUrl());
+									addLevelABC(topMenu,TitlePanel.getTitleTable(),new int[] {index});
+								}
 							}
 						}
 					}
