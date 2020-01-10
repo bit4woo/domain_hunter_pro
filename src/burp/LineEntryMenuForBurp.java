@@ -273,37 +273,37 @@ public class LineEntryMenuForBurp{
 				@Override
 				protected Map doInBackground() throws Exception {
 					try{
-//						IHttpRequestResponse[] messages = invocation.getSelectedMessages();
-//						Getter getter = new Getter(helpers);
-//						URL fullurl = getter.getFullURL(messages[0]);
-//						LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(fullurl.toString());
-//						if (entry == null) {
-//							URL shortUrl = getter.getShortURL(messages[0]);
-//							if(!fullurl.equals(shortUrl)) {
-//								entry = TitlePanel.getTitleTableModel().findLineEntry(shortUrl.toString());
-//							}
-//						}
-//
-//						if (entry != null) {
-//							int index = TitlePanel.getTitleTable().getModel().getLineEntries().IndexOfKey(entry.getUrl());
-//							addLevelABC(topMenu,TitlePanel.getTitleTable(),new int[] {index});
-//						}else {
-//							//topMenu.add(new JMenuItem("Null"));
-//						}
-						
-						
 						IHttpRequestResponse[] messages = invocation.getSelectedMessages();
 						Getter getter = new Getter(helpers);
-						if (messages[0] != null) {
-							String host = getter.getHost(messages[0]);
-							List<LineEntry> entries = TitlePanel.getTitleTableModel().findLineEntriesByHost(host);
-							if (entries.size() > 0) {
-								for (LineEntry entry:entries) {
-									int index = TitlePanel.getTitleTable().getModel().getLineEntries().IndexOfKey(entry.getUrl());
-									addLevelABC(topMenu,TitlePanel.getTitleTable(),new int[] {index});
-								}
+						URL fullurl = getter.getFullURL(messages[0]);
+						LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(fullurl.toString());
+						if (entry == null) {
+							URL shortUrl = getter.getShortURL(messages[0]);
+							if(!fullurl.equals(shortUrl)) {
+								entry = TitlePanel.getTitleTableModel().findLineEntry(shortUrl.toString());
 							}
 						}
+
+						if (entry != null) {
+							int index = TitlePanel.getTitleTable().getModel().getLineEntries().IndexOfKey(entry.getUrl());
+							addLevelABC(topMenu,TitlePanel.getTitleTable(),new int[] {index});
+						}else {
+							//topMenu.add(new JMenuItem("Null"));
+						}
+						
+						
+//						IHttpRequestResponse[] messages = invocation.getSelectedMessages();
+//						Getter getter = new Getter(helpers);
+//						if (messages[0] != null) {
+//							String host = getter.getHost(messages[0]);
+//							List<LineEntry> entries = TitlePanel.getTitleTableModel().findLineEntriesByHost(host);
+//							if (entries.size() > 0) {
+//								for (LineEntry entry:entries) {
+//									int index = TitlePanel.getTitleTable().getModel().getLineEntries().IndexOfKey(entry.getUrl());
+//									addLevelABC(topMenu,TitlePanel.getTitleTable(),new int[] {index});
+//								}
+//							}
+//						}
 					}
 					catch (Exception e1)
 					{
