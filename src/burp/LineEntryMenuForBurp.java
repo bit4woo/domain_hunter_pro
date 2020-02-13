@@ -275,6 +275,9 @@ public class LineEntryMenuForBurp{
 					try{
 						IHttpRequestResponse[] messages = invocation.getSelectedMessages();
 						Getter getter = new Getter(helpers);
+						if (messages[0] ==null) {
+							return null;
+						}
 						URL fullurl = getter.getFullURL(messages[0]);
 						LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(fullurl.toString());
 						if (entry == null) {
