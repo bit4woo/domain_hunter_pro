@@ -324,7 +324,7 @@ Content-Type: text/html;charset=UTF-8
 				newResponse = new String(response,originalCharSet).getBytes(getSystemCharSet());
 				return new String(newResponse,getSystemCharSet());
 			} catch (UnsupportedEncodingException e) {
-				e.printStackTrace(BurpExtender.getStderr());
+				//e.printStackTrace(BurpExtender.getStderr());
 				return new String(response);
 			}
 		}
