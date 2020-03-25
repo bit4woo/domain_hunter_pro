@@ -28,22 +28,30 @@ public class SearchMenu extends JPopupMenu {
 				//app\.([0-9a-zA-Z])*\.js
 				//以上2个是可以在burp的搜索框中验证成功
 				//final String webpack_PATTERN = "app\\.([0-9a-zA-Z])*\\.js";
-				String webpack_PATTERN = "[app|pc]\\.([0-9a-z])*\\.js";//后文有小写转换
+				String webpack_PATTERN = "(app|pc)\\.([0-9a-z])*\\.js";//后文有小写转换
 				TitlePanel.getTitleTable().searchRegex(webpack_PATTERN);
 			}
 		});
-
 		this.add(webpackItem);
 		
 		
-		JMenuItem SearchOnGithubItem = new JMenuItem(new AbstractAction("webpack-pc") {
+		JMenuItem webpackItemPc = new JMenuItem(new AbstractAction("webpack-pc") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				String webpack_PATTERN = "pc\\.([0-9a-z])*\\.js";//后文有小写转换
 				TitlePanel.getTitleTable().searchRegex(webpack_PATTERN);
 			}
 		});
-
-		this.add(SearchOnGithubItem);
+		this.add(webpackItemPc);
+		
+		
+		JMenuItem webpackItemApp = new JMenuItem(new AbstractAction("webpack-app") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				String webpack_PATTERN = "app\\.([0-9a-z])*\\.js";//后文有小写转换
+				TitlePanel.getTitleTable().searchRegex(webpack_PATTERN);
+			}
+		});
+		this.add(webpackItemApp);
 	}
 }
