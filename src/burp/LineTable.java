@@ -11,6 +11,8 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -228,6 +230,63 @@ public class LineTable extends JTable
 						return true;
 					}
 					if (new String(line.getComment()).toLowerCase().contains(keywork.toLowerCase())) {
+						return true;
+					}
+					if (selectedRow== row) {
+						selectedRow = row+1;
+					}
+					return false;
+				}
+			}
+		};
+		rowSorter.setRowFilter(filter);
+
+		try {
+			this.setRowSelectionInterval(selectedRow,selectedRow);
+		} catch (Exception e) {
+			//e.printStackTrace(stderr);//java.lang.IllegalArgumentException: Row index out of range
+		}
+
+	}
+	
+	public void searchRegex(String regex) {		
+
+		final RowFilter filter = new RowFilter() {
+			@Override
+			public boolean include(Entry entry) {
+				//entry --- a non-null object that wraps the underlying object from the model
+				int row = (int) entry.getIdentifier();
+				LineEntry line = rowSorter.getModel().getLineEntries().getValueAtIndex(row);
+
+				if (GUI.getTitlePanel().rdbtnHideCheckedItems.isSelected()&& line.isChecked()) {//to hide checked lines
+					if (selectedRow == row) {
+						selectedRow = row+1;
+					}
+					return false;
+				}
+
+				
+				Pattern pRegex = Pattern.compile(regex);
+
+				if (regex.trim().length() == 0) {
+					return true;
+				} else {
+					if (pRegex.matcher(new String(line.getRequest()).toLowerCase()).find()) {
+						return true;
+					}
+					if (pRegex.matcher(new String(line.getResponse()).toLowerCase()).find()) {
+						return true;
+					}
+					if (pRegex.matcher(new String(line.getUrl()).toLowerCase()).find()) {
+						return true;
+					}
+					if (pRegex.matcher(new String(line.getIP()).toLowerCase()).find()) {
+						return true;
+					}
+					if (pRegex.matcher(new String(line.getCDN()).toLowerCase()).find()) {
+						return true;
+					}
+					if (pRegex.matcher(new String(line.getComment()).toLowerCase()).find()) {
 						return true;
 					}
 					if (selectedRow== row) {

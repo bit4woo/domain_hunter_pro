@@ -11,6 +11,8 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,6 +29,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 
@@ -297,6 +300,21 @@ public class TitlePanel extends JPanel {
 				searchHistory.addRecord(keyword);//记录搜索历史
 			}
 		});
+		
+		textFieldSearch.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseClicked(MouseEvent e) {
+					if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2){//左键双击
+						}
+			        if (e.getButton() == MouseEvent.BUTTON3) {//鼠标右键
+			            // 弹出菜单
+			        	SearchMenu sm = new SearchMenu();
+			            sm.show(textFieldSearch, e.getX(), e.getY());
+			        }
+				}
+		}
+		);
+		
 
 		textFieldSearch.addKeyListener(new KeyAdapter(){
 			public void keyPressed(KeyEvent e)

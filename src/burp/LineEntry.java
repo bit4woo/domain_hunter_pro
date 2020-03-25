@@ -23,9 +23,9 @@ public class LineEntry {
 
 	private byte[] request = {};
 	private byte[] response = {};
-	// request+response+httpService == IHttpRequestResponse
+	// request+response+httpService == IHttpRequestResponse,burp的划分方式
 
-	//used in UI,the fields to show
+	//used in UI,the fields to show,平常的划分方式
 	private String url = "";
 	private int statuscode = -1;
 	private int contentLength = -1;
