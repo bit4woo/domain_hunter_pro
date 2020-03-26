@@ -508,7 +508,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		for (String urlkey:lineEntries.keySet()) {
 			try{//根据host查找
 				URL URL = new URL(urlkey);
-				if (URL.getHost() == host) {
+				if (URL.getHost().equalsIgnoreCase(host)) {
 					result.add(lineEntries.get(urlkey));
 				}
 			}catch (Exception e){
