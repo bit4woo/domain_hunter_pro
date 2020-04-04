@@ -111,7 +111,7 @@ public class LineEntryMenu extends JPopupMenu {
 						return;
 					}
 					for (String url:urls){
-						Commons.browserOpen(url,LineConfig.getBrowserPath());
+						Commons.browserOpen(url,BurpExtender.getLineConfig().getBrowserPath());
 					}
 				}
 				catch (Exception e1)

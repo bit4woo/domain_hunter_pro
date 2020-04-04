@@ -7,6 +7,8 @@ import java.util.List;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 
+import Config.LineConfig;
+
 public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListener,IContextMenuFactory{
 	/**
 	 *
@@ -18,6 +20,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	private static String ExtenderName = "Domain Hunter Pro by bit4woo";
 	private static String github = "https://github.com/bit4woo/domain_hunter_pro";
 	private static GUI gui;
+	private static LineConfig lineConfig;
 
 	private static void flushStd(){
 		try{
@@ -55,6 +58,14 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		return gui;
 	}
 
+	public static LineConfig getLineConfig() {
+		return lineConfig;
+	}
+
+	public static void setLineConfig(LineConfig lineConfig) {
+		BurpExtender.lineConfig = lineConfig;
+	}
+
 	private IExtensionHelpers helpers;
 
 
@@ -74,6 +85,14 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		callbacks.registerExtensionStateListener(this);
 		callbacks.registerContextMenuFactory(this);
 
+		String lineConfig = BurpExtender.getCallbacks().loadExtensionSetting("domain_hunter_pro");//LineConfig
+		if (lineConfig != null) {
+			setLineConfig(LineConfig.FromJson(lineConfig));
+		}else {
+			setLineConfig(new LineConfig());
+		}
+		
+		
 		gui = new GUI();
 
 		SwingUtilities.invokeLater(new Runnable()
@@ -91,6 +110,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		if (content != null && content.endsWith(".db")) {
 			gui.LoadData(content);
 		}
+		
 	}
 
 	@Override
@@ -107,6 +127,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		gui.saveDBfilepathToExtension();
 		gui.getProjectMenu().remove();
 		
+		BurpExtender.getCallbacks().saveExtensionSetting("domain_hunter_pro",BurpExtender.getLineConfig().ToJson());
 		DomainPanel.autoSave();//域名面板自动保存逻辑有地复杂，退出前再自动保存一次
 	}
 

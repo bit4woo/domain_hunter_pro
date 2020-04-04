@@ -2,6 +2,7 @@ package burp;
 
 import java.awt.Component;
 import java.awt.Desktop;
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
@@ -363,10 +364,10 @@ public class Commons {
 				desktop.browse(uri);
 			}
 		}else {
-			Runtime runtime = Runtime.getRuntime();
-			runtime.exec(browser+" "+urlString);
-			//C:\Program Files\Mozilla Firefox\firefox.exe
-			//C:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe
+			String[] cmdArray = new String[] {browser,urlString};
+			
+			//runtime.exec(browser+" "+urlString);//当命令中有空格时会有问题
+			Runtime.getRuntime().exec(cmdArray);
 		}
 	}
 

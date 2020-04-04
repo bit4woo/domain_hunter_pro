@@ -15,6 +15,7 @@ public class GUI extends JFrame {
 	protected PrintWriter stderr;
 	protected dbFileChooser dbfc = new dbFileChooser();
 	protected ProjectMenu projectMenu;
+	private ConfigPanel configPanel;
 
 	public ProjectMenu getProjectMenu() {
 		return projectMenu;
@@ -55,8 +56,10 @@ public class GUI extends JFrame {
 		setContentPane(tabbedWrapper);
 		domainPanel = new DomainPanel();
 		titlePanel = new TitlePanel();
+		configPanel = new ConfigPanel();
 		tabbedWrapper.addTab("Domains", null, domainPanel, null);
 		tabbedWrapper.addTab("Titles", null, titlePanel, null);
+		tabbedWrapper.addTab("Config", null,configPanel,null);
 
 		projectMenu = new ProjectMenu(this);
 		projectMenu.Add();
