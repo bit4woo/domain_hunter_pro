@@ -12,17 +12,24 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.PrintWriter;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 
 public class ConfigPanel extends JPanel {
@@ -34,8 +41,10 @@ public class ConfigPanel extends JPanel {
 	PrintWriter stderr;
 	private JTextField BrowserPath;
 	private JTextArea URLS;
+	public boolean allUrlsChanged;
 
-	public ConfigPanel() {//构造函数
+	public ConfigPanel() {
+		setForeground(Color.DARK_GRAY);//构造函数
 		this.setBorder(new EmptyBorder(5, 5, 5, 5));
 		this.setLayout(new BorderLayout(0, 0));
 
@@ -52,15 +61,40 @@ public class ConfigPanel extends JPanel {
 
 
 		JPanel HeaderPanel = new JPanel();
+		HeaderPanel.setBorder(new LineBorder(new Color(0, 0, 0)));
 		FlowLayout fl_HeaderPanel = (FlowLayout) HeaderPanel.getLayout();
 		fl_HeaderPanel.setAlignment(FlowLayout.LEFT);
 		this.add(HeaderPanel, BorderLayout.NORTH);
 		
+		JLabel lblNewLabelNull = new JLabel("  ");
+		HeaderPanel.add(lblNewLabelNull);
+		
+		//第一次分割
+		JSplitPane CenterSplitPane = new JSplitPane();//中间的大模块，一分为二
+		CenterSplitPane.setResizeWeight(0.5);
+		this.add(CenterSplitPane, BorderLayout.CENTER);
+		
+		//左半部分放一个panel，panel里放文本框，文本框里放URL
+		JPanel textPanel = new JPanel();
+		CenterSplitPane.setLeftComponent(textPanel);
+		textPanel.setLayout(new BorderLayout(0, 0));
+		URLS = new JTextArea();
+		textPanel.add(URLS);
+		URLS.setColumns(10);
+		String toDisplay = String.join(System.lineSeparator(),BurpExtender.getLineConfig().getUrlsToOpen());
+		System.out.println(toDisplay);
+		URLS.setText(toDisplay);
+		URLS.getDocument().addDocumentListener(new textAreaListener());
+		
+		
+		//右半部分放一个panel，panel里放配置和按钮
+		JPanel panel = new JPanel();
+		CenterSplitPane.setRightComponent(panel);
 		JLabel lblNewLabel = new JLabel("Browser Path:");
-		HeaderPanel.add(lblNewLabel);
+		panel.add(lblNewLabel);
 		
 		BrowserPath = new JTextField();
-		HeaderPanel.add(BrowserPath);
+		panel.add(BrowserPath);
 		BrowserPath.setColumns(50);
 		BrowserPath.setText(BurpExtender.getLineConfig().getBrowserPath());
 		BrowserPath.addMouseListener(new MouseAdapter() {
@@ -77,25 +111,29 @@ public class ConfigPanel extends JPanel {
  
             }
 		});
-
-
-		//第一次分割
-		JSplitPane CenterSplitPane = new JSplitPane();//中间的大模块，一分为二
-		CenterSplitPane.setResizeWeight(0.5);
-		this.add(CenterSplitPane, BorderLayout.CENTER);
 		
-		URLS = new JTextArea();
-		CenterSplitPane.setLeftComponent(URLS);
-		URLS.setColumns(10);
+		JSeparator sep = new JSeparator(SwingConstants.CENTER);
+		sep.setForeground(Color.GRAY);
+
+		panel.add(sep);//分割线
 		
 		JButton btnOpenurls = new JButton("OpenURLs");
+		panel.add(btnOpenurls);
 		btnOpenurls.addActionListener(new ActionListener() {
-
+			Iterator<String> it = BurpExtender.getLineConfig().getUrlsToOpen().iterator();
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				if (allUrlsChanged) {
+					it = BurpExtender.getLineConfig().getUrlsToOpen().iterator();
+				}
+				allUrlsChanged = false;
 				try {
-					for (String url:getSetFromTextArea(URLS)) {
+					int i =10;
+					while(i>0 && it.hasNext()) {
+						String url = it.next();
+						//stdout.println(url);
 						Commons.browserOpen(url, BurpExtender.getLineConfig().getBrowserPath());
+						i--;
 					}
 				} catch (Exception e1) {
 					e1.printStackTrace(stderr);
@@ -103,7 +141,7 @@ public class ConfigPanel extends JPanel {
 			}
 			
 		});
-		CenterSplitPane.setRightComponent(btnOpenurls);
+		
 
 
 		/*
@@ -116,12 +154,15 @@ public class ConfigPanel extends JPanel {
 		 * rightOfCenterSplitPane.setResizeWeight(0.7);
 		 * CenterSplitPane.setRightComponent(rightOfCenterSplitPane);
 		 */
+		
+
 
 
 		///////////////////////////FooterPanel//////////////////
 
 
 		JPanel footerPanel = new JPanel();
+		footerPanel.setBorder(new LineBorder(new Color(0, 0, 0)));
 		FlowLayout fl_FooterPanel = (FlowLayout) footerPanel.getLayout();
 		fl_FooterPanel.setAlignment(FlowLayout.LEFT);
 		this.add(footerPanel, BorderLayout.SOUTH);
@@ -159,5 +200,30 @@ public class ConfigPanel extends JPanel {
 		Set<String> domainList = new HashSet<>(Arrays.asList(textarea.getText().replaceAll(" ","").replaceAll("\r\n", "\n").split("\n")));
 		domainList.remove("");
 		return domainList;
+	}
+	
+	
+	class textAreaListener implements DocumentListener {
+
+		@Override
+		public void removeUpdate(DocumentEvent e) {
+			ArrayList allUrls = new ArrayList(getSetFromTextArea(URLS));
+			BurpExtender.getLineConfig().setUrlsToOpen(allUrls);
+			allUrlsChanged = true;
+		}
+
+		@Override
+		public void insertUpdate(DocumentEvent e) {
+			ArrayList allUrls = new ArrayList(getSetFromTextArea(URLS));
+			BurpExtender.getLineConfig().setUrlsToOpen(allUrls);
+			allUrlsChanged = true;
+		}
+
+		@Override
+		public void changedUpdate(DocumentEvent arg0) {
+			ArrayList allUrls = new ArrayList(getSetFromTextArea(URLS));
+			BurpExtender.getLineConfig().setUrlsToOpen(allUrls);
+			allUrlsChanged = true;
+		}
 	}
 }

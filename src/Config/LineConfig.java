@@ -1,15 +1,18 @@
 package Config;
 
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
 import com.alibaba.fastjson.JSON;
 
 import burp.BurpExtender;
-import burp.DomainObject;
 import burp.LineEntry;
 import burp.TitlePanel;
+/*
+ * 这个类的配置都只保存在本地，不保存到db文件
+ */
 
 public class LineConfig {
 	private static int MaximumEntries = 1000;//控制显示的条目数，减少内存占用
@@ -30,6 +33,7 @@ public class LineConfig {
 	private String dirSearchPath = "D:\\github\\dirsearch\\dirsearch.py";
 	private String browserPath = "C:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe";
 	private String nmapPath ="D:\\Program Files (x86)\\Nmap\\nmap.exe";
+	private ArrayList<String> urlsToOpen = new ArrayList<String>();
 
 
 
@@ -128,6 +132,14 @@ public class LineConfig {
 
 	public void setNmapPath(String nmapPath) {
 		this.nmapPath = nmapPath;
+	}
+
+	public ArrayList<String> getUrlsToOpen() {
+		return urlsToOpen;
+	}
+
+	public void setUrlsToOpen(ArrayList<String> urlsToOpen) {
+		this.urlsToOpen = urlsToOpen;
 	}
 
 	public String ToJson() {
