@@ -9,12 +9,16 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.alibaba.fastjson.JSON;
+import com.ibm.icu.text.CharsetDetector;
+import com.ibm.icu.text.CharsetMatch;
 
 public class LineEntry {
 
 	public static final String Level_A = "A";
 	public static final String Level_B = "B";
 	public static final String Level_C = "C";
+
+	public static String systemCharSet = getSystemCharSet();
 
 	private int port =-1;
 	private String host = "";
@@ -57,12 +61,12 @@ public class LineEntry {
 	LineEntry(){
 
 	}
-	
+
 	public LineEntry(String host,Set<String> IPset) {
 		this.host = host;
 		this.port = 80;
 		this.protocol ="http";
-		
+
 		if (this.IP != null) {
 			this.IP = IPset.toString().replace("[", "").replace("]", "");
 		}
@@ -276,58 +280,71 @@ Content-Type: text/html;charset=UTF-8
 	private String getResponseCharset(byte[] response){
 		Getter getter = new Getter(helpers);
 		String contentType = getter.getHeaderValueOf(false,response,"Content-Type");
+		String body = new String(getter.getBody(false,response));
 		String tmpcharSet = null;
-		if (contentType != null && contentType.toLowerCase().contains("charset=")){
-			tmpcharSet = contentType.toLowerCase().split("charset=")[1];
-		}else {
-			String body = new String(getter.getBody(false,response));
+		
+		if (contentType != null){//1、尝试从contentTpye中获取
+			if (contentType.toLowerCase().contains("charset=")) {
+				tmpcharSet = contentType.toLowerCase().split("charset=")[1];
+			}
+		}
+		
+		if (tmpcharSet == null){//2、尝试从body中获取
 			Pattern pDomainNameOnly = Pattern.compile("charset=(.*?)>");
 			Matcher matcher = pDomainNameOnly.matcher(body);
 			if (matcher.find()) {
 				tmpcharSet = matcher.group(0).toLowerCase();
-//				tmpcharSet = tmpcharSet.replace("\"","");
-//				tmpcharSet = tmpcharSet.replace(">","");
-//				tmpcharSet = tmpcharSet.replace("/","");
-//				tmpcharSet = tmpcharSet.replace("charset=","");
+				//				tmpcharSet = tmpcharSet.replace("\"","");
+				//				tmpcharSet = tmpcharSet.replace(">","");
+				//				tmpcharSet = tmpcharSet.replace("/","");
+				//				tmpcharSet = tmpcharSet.replace("charset=","");
 			}
 		}
-		//常见的编码格式有ASCII、ANSI、GBK、GB2312、UTF-8、GB18030和UNICODE等。
-		List<String> commonCharSet = Arrays.asList("ASCII,ANSI,GBK,GB2312,UTF-8,GB18030,UNICODE,ISO-8859-1".toLowerCase().split(","));
-		if (tmpcharSet == null){
-			return null;
-		}else if (tmpcharSet.contains("utf8")){
-			return "utf-8";
+		
+		if (tmpcharSet == null){//3、尝试使用ICU4J进行编码的检测
+			CharsetDetector detector = new CharsetDetector();
+			detector.setText(response);
+			CharsetMatch cm = detector.detect();
+			tmpcharSet = cm.getName();
+		}
+		
+		tmpcharSet = tmpcharSet.toLowerCase().trim();
+		if (tmpcharSet.contains("utf8")){
+			tmpcharSet = "utf-8";
 		}else {
+			//常见的编码格式有ASCII、ANSI、GBK、GB2312、UTF-8、GB18030和UNICODE等。
+			List<String> commonCharSet = Arrays.asList("ASCII,ANSI,GBK,GB2312,UTF-8,GB18030,UNICODE,ISO-8859-1".toLowerCase().split(","));
 			for (String item:commonCharSet) {
 				if (tmpcharSet.contains(item)) {
-					return item;
+					tmpcharSet = item;
 				}
 			}
 		}
-		return null;
+		return tmpcharSet;
 	}
 
 	//https://javarevisited.blogspot.com/2012/01/get-set-default-character-encoding.html
 	private static String getSystemCharSet() {
 		return Charset.defaultCharset().toString();
+
+		//System.out.println(System.getProperty("file.encoding"));
 	}
 
 
 	public String covertCharSet(byte[] response) {
 		String originalCharSet = getResponseCharset(response);
 		//BurpExtender.getStderr().println(url+"---"+originalCharSet);
-		if (originalCharSet == null) {
-			return new String(response);
-		}else {
-			byte[] newResponse;
+
+		if (originalCharSet != null && !originalCharSet.equalsIgnoreCase(systemCharSet)) {
 			try {
-				newResponse = new String(response,originalCharSet).getBytes(getSystemCharSet());
-				return new String(newResponse,getSystemCharSet());
-			} catch (UnsupportedEncodingException e) {
-				//e.printStackTrace(BurpExtender.getStderr());
-				return new String(response);
+				byte[] newResponse = new String(response,originalCharSet).getBytes(systemCharSet);
+				return new String(newResponse,systemCharSet);
+			} catch (Exception e) {
+				e.printStackTrace(BurpExtender.getStderr());
+				BurpExtender.getStderr().print("title 编码转换失败");
 			}
 		}
+		return new String(response);
 	}
 
 	public String fetchTitle(byte[] response) {
@@ -469,5 +486,8 @@ Content-Type: text/html;charset=UTF-8
 		LineEntry x = new LineEntry();
 		x.setRequest("xxxxxx".getBytes());
 		//		System.out.println(yy);
+		System.out.println(getSystemCharSet());
+		System.out.println(System.getProperty("file.encoding"));
+		System.out.println(Charset.defaultCharset());
 	}
 }
