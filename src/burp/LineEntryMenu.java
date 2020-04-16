@@ -328,25 +328,31 @@ public class LineEntryMenu extends JPopupMenu {
 		this.add(itemNumber);
 		this.add(googleSearchItem);
 		this.add(SearchOnGithubItem);
-
+		this.add(SearchOnHunterItem);
+		
+		this.addSeparator();
+		
 		this.add(addHostsToScope);
 		this.add(doActiveScan);
 		this.add(doPortScan);
 		this.add(dirSearchItem);
 
 		this.addSeparator();
+		
 		this.add(checkedItem);
 		this.add(levelMenu);
 		this.add(batchAddCommentsItem);
+		
 		this.addSeparator();
-
 
 		this.add(openURLwithBrowserItem);
 		this.add(copyHostItem);
 		this.add(copyURLItem);
 		this.add(copyLocationURLItem);
 		this.add(SendToRepeaterWithCookieItem);
+		
 		this.addSeparator();
+		
 		this.add(removeItem);
 		this.add(blackListItem);
 
