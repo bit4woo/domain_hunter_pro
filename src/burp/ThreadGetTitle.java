@@ -234,6 +234,8 @@ class Producer extends Thread {//Producer do
 			CDNSet = result.get("CDN");
 			
 			if (IPSet.size() <= 0) {
+				//TODO 是否应该移除无效域名？理清楚：无效域名，黑名单域名，无响应域名等情况。
+				
 				return resultSet;
 			}else {//默认过滤私有IP
 				String ip = new ArrayList<>(IPSet).get(0);

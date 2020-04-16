@@ -1,5 +1,6 @@
 package burp;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -28,7 +29,8 @@ public class DomainObject {
 	private Set<String> subDomainSet = new HashSet<String>();
 	private Set<String> similarDomainSet = new HashSet<String>();
 	private Set<String> relatedDomainSet = new HashSet<String>();
-	private Set<String> blackDomainSet = new HashSet<String>();
+	private Set<String> blackDomainSet = new HashSet<String>();//有效(能解析IP)但无用的域名，比如JD的网店域名；唯一的用处是用来聚合网段。
+	private HashMap<String,Integer> unkownDomainMap = new HashMap<String,Integer>();//记录域名和解析失败的次数，大于五次就从子域名中删除。
 	private Set<String> EmailSet = new HashSet<String>();
 	private Set<String> PackageNameSet = new HashSet<String>();
 
@@ -242,7 +244,7 @@ public class DomainObject {
 				//InternetDomainName.from(key).publicSuffix() //当不是com、cn等公共的域名结尾时，将返回空。
 				suffix = InternetDomainName.from(key).publicSuffix().toString();
 			} catch (Exception e) {
-				suffix = key.split(".",2)[1];//分割成2份
+				suffix = key.split("\\.",2)[1];//分割成2份
 			}
 			result.add(suffix);
 		}

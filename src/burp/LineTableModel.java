@@ -585,7 +585,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	
 	public void addNewNoResponseDomain(String domain,String IPSet){
 		synchronized (noResponseDomain) {
-			noResponseDomain.put(domain,new HashSet<String>(Arrays.asList(IPSet.split("."))));
+			noResponseDomain.put(domain,new HashSet<String>(Arrays.asList(IPSet.split(","))));
 		}
 	}
 
