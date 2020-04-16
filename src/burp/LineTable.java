@@ -10,6 +10,7 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -23,6 +24,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableRowSorter;
+
+import Config.Dork;
 
 public class LineTable extends JTable
 {
@@ -49,13 +52,13 @@ public class LineTable extends JTable
 	public LineTable(LineTableModel lineTableModel)
 	{
 		//super(lineTableModel);//这个方法创建的表没有header
-        try{
-            stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
-            stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
-        }catch (Exception e){
-            stdout = new PrintWriter(System.out, true);
-            stderr = new PrintWriter(System.out, true);
-        }
+		try{
+			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
+			stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
+		}catch (Exception e){
+			stdout = new PrintWriter(System.out, true);
+			stderr = new PrintWriter(System.out, true);
+		}
 
 		this.lineTableModel = lineTableModel;
 		this.setFillsViewportHeight(true);//在table的空白区域显示右键菜单
@@ -96,7 +99,7 @@ public class LineTable extends JTable
 		//TitlePanel.add(splitPane, BorderLayout.CENTER); // getTitlePanel to get it
 
 		JScrollPane scrollPaneRequests = new JScrollPane(this,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);//table area
+				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);//table area
 		//允许横向滚动条
 		//scrollPaneRequests.setViewportView(titleTable);//titleTable should lay here.
 		splitPane.setLeftComponent(scrollPaneRequests);
@@ -115,7 +118,7 @@ public class LineTable extends JTable
 		responseViewer = BurpExtender.getCallbacks().createMessageEditor(this.getModel(), false);
 		RequestPanel.addTab("Request", requestViewer.getComponent());
 		ResponsePanel.addTab("Response", responseViewer.getComponent());
-		
+
 		this.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);//配合横向滚动条
 
 		return splitPane;
@@ -152,26 +155,26 @@ public class LineTable extends JTable
 		this.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);//配合横向滚动条
 
 	}
-	
+
 	@Deprecated//据说自动调整行宽度，测试了一下没用啊
 	public void FitTableColumns(JTable myTable){
-		  JTableHeader header = myTable.getTableHeader();
-		     int rowCount = myTable.getRowCount();
-		     Enumeration columns = myTable.getColumnModel().getColumns();
-		     while(columns.hasMoreElements()){
-		         TableColumn column = (TableColumn)columns.nextElement();
-		         int col = header.getColumnModel().getColumnIndex(column.getIdentifier());
-		         int width = (int)myTable.getTableHeader().getDefaultRenderer()
-		                 .getTableCellRendererComponent(myTable, column.getIdentifier()
-		                         , false, false, -1, col).getPreferredSize().getWidth();
-		         for(int row = 0; row<rowCount; row++){
-		             int preferedWidth = (int)myTable.getCellRenderer(row, col).getTableCellRendererComponent(myTable,
-		               myTable.getValueAt(row, col), false, false, row, col).getPreferredSize().getWidth();
-		             width = Math.max(width, preferedWidth);
-		         }
-		         header.setResizingColumn(column); // 此行很重要
-		         column.setWidth(width+myTable.getIntercellSpacing().width);
-		     }
+		JTableHeader header = myTable.getTableHeader();
+		int rowCount = myTable.getRowCount();
+		Enumeration columns = myTable.getColumnModel().getColumns();
+		while(columns.hasMoreElements()){
+			TableColumn column = (TableColumn)columns.nextElement();
+			int col = header.getColumnModel().getColumnIndex(column.getIdentifier());
+			int width = (int)myTable.getTableHeader().getDefaultRenderer()
+					.getTableCellRendererComponent(myTable, column.getIdentifier()
+							, false, false, -1, col).getPreferredSize().getWidth();
+			for(int row = 0; row<rowCount; row++){
+				int preferedWidth = (int)myTable.getCellRenderer(row, col).getTableCellRendererComponent(myTable,
+						myTable.getValueAt(row, col), false, false, row, col).getPreferredSize().getWidth();
+				width = Math.max(width, preferedWidth);
+			}
+			header.setResizingColumn(column); // 此行很重要
+			column.setWidth(width+myTable.getIntercellSpacing().width);
+		}
 	}
 
 
@@ -194,9 +197,26 @@ public class LineTable extends JTable
 		});
 	}
 
-	public void search(String keywork) {
-		//rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + keywork));
+	//dork搜索和全数据包字符串搜索
+	public void search(String keyword) {
+		keyword = keyword.trim().toLowerCase();
+		if (Dork.isDorkString(keyword)) {
+			dorkSearch(keyword);
+		}else {
+			fullSearch(keyword);
+		}
+	}
 
+	public void fullSearch(String Inputkeyword) {
+		//rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + keyword));
+
+		Inputkeyword = Inputkeyword.trim().toLowerCase();
+		if (Inputkeyword.contains("\"") || Inputkeyword.contains("\'")){
+			//为了处理输入是"dork:12345"的情况，下面的这种写法其实不严谨，中间也可能有引号，不过应付一般的搜索足够了。
+			Inputkeyword = Inputkeyword.replaceAll("\"", "");
+			Inputkeyword = Inputkeyword.replaceAll("\'", "");
+		}
+		final String keyword = Inputkeyword;
 		final RowFilter filter = new RowFilter() {
 			@Override
 			public boolean include(Entry entry) {
@@ -211,25 +231,25 @@ public class LineTable extends JTable
 					return false;
 				}
 
-				if (keywork.trim().length() == 0) {
+				if (keyword.length() == 0) {
 					return true;
-				} else {
-					if (new String(line.getRequest()).toLowerCase().contains(keywork.toLowerCase())) {
+				}else {//全局搜索
+					if (new String(line.getRequest()).toLowerCase().contains(keyword)) {
 						return true;
 					}
-					if (new String(line.getResponse()).toLowerCase().contains(keywork.toLowerCase())) {
+					if (new String(line.getResponse()).toLowerCase().contains(keyword)) {
 						return true;
 					}
-					if (new String(line.getUrl()).toLowerCase().contains(keywork.toLowerCase())) {
+					if (new String(line.getUrl()).toLowerCase().contains(keyword)) {
 						return true;
 					}
-					if (new String(line.getIP()).toLowerCase().contains(keywork.toLowerCase())) {
+					if (new String(line.getIP()).toLowerCase().contains(keyword)) {
 						return true;
 					}
-					if (new String(line.getCDN()).toLowerCase().contains(keywork.toLowerCase())) {
+					if (new String(line.getCDN()).toLowerCase().contains(keyword)) {
 						return true;
 					}
-					if (new String(line.getComment()).toLowerCase().contains(keywork.toLowerCase())) {
+					if (new String(line.getComment()).toLowerCase().contains(keyword)) {
 						return true;
 					}
 					if (selectedRow== row) {
@@ -248,7 +268,83 @@ public class LineTable extends JTable
 		}
 
 	}
-	
+
+	//支持部分类似google dork的搜索语法
+	//Host url header body request response comment
+	public void dorkSearch(String dorkString) {
+
+		dorkString = dorkString.toLowerCase().trim();
+
+		String[] arr = dorkString.split(":",2);//limit =2 分割成2份
+		String dork = arr[0].trim();
+		String keyword =  arr[1].trim();
+
+		final RowFilter filter = new RowFilter() {
+			@Override
+			public boolean include(Entry entry) {
+				//entry --- a non-null object that wraps the underlying object from the model
+				int row = (int) entry.getIdentifier();
+				LineEntry line = rowSorter.getModel().getLineEntries().getValueAtIndex(row);
+
+				if (GUI.getTitlePanel().rdbtnHideCheckedItems.isSelected()&& line.isChecked()) {//to hide checked lines
+					if (selectedRow == row) {
+						selectedRow = row+1;
+					}
+					return false;
+				}
+
+				if (dork.equalsIgnoreCase(Dork.HOST)) {
+					if (line.getHost().toLowerCase().contains(keyword)) {
+						return true;
+					}else {
+						return false;
+					}
+				}
+
+				if (dork.equalsIgnoreCase(Dork.URL)) {
+					if (line.getUrl().toLowerCase().contains(keyword)) {
+						return true;
+					}else {
+						return false;
+					}
+				}
+
+				if (dork.equalsIgnoreCase(Dork.REQUEST)) {
+					if (new String(line.getRequest()).toLowerCase().contains(keyword)) {
+						return true;
+					}else {
+						return false;
+					}
+				}
+
+				if (dork.equalsIgnoreCase(Dork.RESPONSE)) {
+					if (new String(line.getResponse()).toLowerCase().contains(keyword)) {
+						return true;
+					}else {
+						return false;
+					}
+				}
+
+				if (dork.equalsIgnoreCase(Dork.COMMENT)) {
+					if (line.getComment().toLowerCase().contains(keyword)) {
+						return true;
+					}else {
+						return false;
+					}
+				}
+				stderr.println("Unsupported dork: "+dork);
+				return false;
+			}
+		};
+		rowSorter.setRowFilter(filter);
+
+		try {
+			this.setRowSelectionInterval(selectedRow,selectedRow);
+		} catch (Exception e) {
+			//e.printStackTrace(stderr);//java.lang.IllegalArgumentException: Row index out of range
+		}
+	}
+
 	public void searchRegex(String regex) {		
 
 		final RowFilter filter = new RowFilter() {
@@ -265,7 +361,7 @@ public class LineTable extends JTable
 					return false;
 				}
 
-				
+
 				Pattern pRegex = Pattern.compile(regex);
 
 				if (regex.trim().length() == 0) {

@@ -36,7 +36,7 @@ public class LineEntryMenu extends JPopupMenu {
 		});
 
 
-		JMenuItem googleSearchItem = new JMenuItem(new AbstractAction("Seach With Google (double click)") {
+		JMenuItem googleSearchItem = new JMenuItem(new AbstractAction("Seach on Google (double click)") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				if (rows.length >=50) {
@@ -72,7 +72,33 @@ public class LineEntryMenu extends JPopupMenu {
 				}
 			}
 		});
+		
+		JMenuItem SearchOnHunterItem = new JMenuItem(new AbstractAction("Seach On Hunter") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+		
+				String host = lineTable.getModel().getLineEntries().getValueAtIndex(rows[0]).getHost();
+				TitlePanel.getTextFieldSearch().setText("host:"+host);
+			}
+		});
 
+		JMenuItem copyHostItem = new JMenuItem(new AbstractAction("Copy Domain Name") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				try{
+					java.util.List<String> urls = lineTable.getModel().getHosts(rows);
+					String textUrls = String.join(System.lineSeparator(), urls);
+
+					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+					StringSelection selection = new StringSelection(textUrls);
+					clipboard.setContents(selection, null);
+				}
+				catch (Exception e1)
+				{
+					e1.printStackTrace(stderr);
+				}
+			}
+		});
 
 
 		JMenuItem copyURLItem = new JMenuItem(new AbstractAction("Copy URL") {
@@ -316,6 +342,7 @@ public class LineEntryMenu extends JPopupMenu {
 
 
 		this.add(openURLwithBrowserItem);
+		this.add(copyHostItem);
 		this.add(copyURLItem);
 		this.add(copyLocationURLItem);
 		this.add(SendToRepeaterWithCookieItem);

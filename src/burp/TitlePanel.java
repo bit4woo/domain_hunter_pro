@@ -54,6 +54,15 @@ public class TitlePanel extends JPanel {
 	private IndexedLinkedHashMap<String,LineEntry> BackupLineEntries;
 	private History searchHistory = new History(10);
 	private static List<Integer> externalPortList;
+	private static JTextField textFieldSearch;
+
+	public static JTextField getTextFieldSearch() {
+		return textFieldSearch;
+	}
+
+	public static void setTextFieldSearch(JTextField textFieldSearch) {
+		TitlePanel.textFieldSearch = textFieldSearch;
+	}
 
 	public static LineTable getTitleTable() {
 		return titleTable;
@@ -275,7 +284,7 @@ public class TitlePanel extends JPanel {
 			}
 		});
 
-		JTextField textFieldSearch = new JTextField("");
+		textFieldSearch = new JTextField("");
 		textFieldSearch.addFocusListener(new FocusAdapter() {
 			@Override
 			public void focusGained(FocusEvent e) {

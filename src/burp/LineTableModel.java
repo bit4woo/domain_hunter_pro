@@ -273,6 +273,19 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		}
 	}
 
+	public List<String> getHosts(int[] rows) {
+		synchronized (lineEntries) {
+			Arrays.sort(rows); //升序
+			List<String> hosts = new ArrayList<>();
+
+			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
+				String key = lineEntries.getKeyAtIndex(rows[i]);
+				String host = lineEntries.get(key).getHost();
+				hosts.add(host);
+			}
+			return hosts;
+		}
+	}
 
 
 	public List<String> getURLs(int[] rows) {
