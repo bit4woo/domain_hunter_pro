@@ -33,7 +33,7 @@ public class LineConfig {
 	private String dirSearchPath = "D:\\github\\dirsearch\\dirsearch.py";
 	private String browserPath = "C:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe";
 	private String nmapPath ="D:\\Program Files (x86)\\Nmap\\nmap.exe";
-	private ArrayList<String> urlsToOpen = new ArrayList<String>();
+	private String toolPanelText = "";
 
 
 
@@ -134,12 +134,12 @@ public class LineConfig {
 		this.nmapPath = nmapPath;
 	}
 
-	public ArrayList<String> getUrlsToOpen() {
-		return urlsToOpen;
+	public String getToolPanelText() {
+		return toolPanelText;
 	}
 
-	public void setUrlsToOpen(ArrayList<String> urlsToOpen) {
-		this.urlsToOpen = urlsToOpen;
+	public void setToolPanelText(String toolPanelText) {
+		this.toolPanelText = toolPanelText;
 	}
 
 	public String ToJson() {
