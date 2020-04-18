@@ -192,7 +192,7 @@ class Producer extends Thread {//Producer do
 	
 	public static LineEntry doRequest(URL url) {
 		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
-		String cookie = TitlePanel.getTextFieldCookie().getText().trim();
+		String cookie = TitlePanel.getCookie();
 		
 		byte[] byteRequest = helpers.buildHttpRequest(url);//GET
 		byteRequest = Commons.buildCookieRequest(helpers,cookie,byteRequest);

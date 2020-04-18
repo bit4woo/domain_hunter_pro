@@ -1,9 +1,11 @@
 package burp;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.EventQueue;
 import java.io.File;
 import java.io.PrintWriter;
+
+import javax.swing.JFrame;
+import javax.swing.JTabbedPane;
 
 
 public class GUI extends JFrame {

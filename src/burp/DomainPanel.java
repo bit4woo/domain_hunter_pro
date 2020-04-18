@@ -427,10 +427,6 @@ public class DomainPanel extends JPanel {
 				worker.execute();
 			}
 		});
-		//HeaderPanel.add(btnUpload);
-
-		lblSummary = new JLabel("      ^_^");
-		HeaderPanel.add(lblSummary);
 
 
 		////////////////////////////////////target area///////////////////////////////////////////////////////
@@ -837,6 +833,10 @@ public class DomainPanel extends JPanel {
 			}
 		});
 		footerPanel.add(lblNewLabel_2);
+		//HeaderPanel.add(btnUpload);
+
+		lblSummary = new JLabel("      ^_^");
+		footerPanel.add(lblSummary);
 		
 		
 		//搜索域名，但是效果不怎么好
@@ -1178,14 +1178,10 @@ public class DomainPanel extends JPanel {
 
 	public static void backupDB(){
 		File file = BurpExtender.getGui().getCurrentDBFile();
-//				if (System.getProperty("os.name").contains("Windows")) {
-//					String basedir = "C:\\";
-//				}else {
-//
-//				}
 		File bakfile = new File(file.getAbsoluteFile().toString()+".bak"+Commons.getNowTimeString());
 		try {
 			FileUtils.copyFile(file, bakfile);
+			BurpExtender.getStdout().println("DB File Backed Up:"+bakfile.getAbsolutePath());
 		} catch (IOException e1) {
 			e1.printStackTrace(BurpExtender.getStderr());
 		}

@@ -44,7 +44,7 @@ public class TitlePanel extends JPanel {
 	private JPanel buttonPanel;
 	private static LineTable titleTable;
 	private JLabel lblSummaryOfTitle;
-	private static JTextField textFieldCookie;
+	private static String cookie;
 	public  JRadioButton rdbtnHideCheckedItems;
 	//add table and tablemodel to GUI
 	private static LineTableModel titleTableModel = new LineTableModel();
@@ -122,12 +122,6 @@ public class TitlePanel extends JPanel {
 	public JPanel createButtonPanel() {
 		buttonPanel = new JPanel();
 		buttonPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
-
-		JLabel cookieLabel = new JLabel("Cookie:");
-		buttonPanel.add(cookieLabel);
-		textFieldCookie = new JTextField("");
-		textFieldCookie.setColumns(30);
-		buttonPanel.add(textFieldCookie);
 
 		JButton btnGettitle = new JButton("Get Title");
 		btnGettitle.setToolTipText("A fresh start");
@@ -363,6 +357,7 @@ public class TitlePanel extends JPanel {
 				String keyword = textFieldSearch.getText().trim();
 				titleTable.search(keyword);
 				searchHistory.addRecord(keyword);
+				digStatus();
 			}
 		});
 		buttonPanel.add(buttonSearch);
@@ -378,26 +373,9 @@ public class TitlePanel extends JPanel {
 		});
 		buttonPanel.add(rdbtnHideCheckedItems);
 
-		JButton btnRefresh = new JButton("Refresh");//主要目的是隐藏新标注的条目，代替自动隐藏
-		btnRefresh.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				String keyword = textFieldSearch.getText().trim();
-				titleTable.search(keyword);
-			}
-		});
-		buttonPanel.add(btnRefresh);
-
-		JButton btnStatus = new JButton("status");
-		btnStatus.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				digStatus();
-			}
-		});
-		btnStatus.setToolTipText("Show Status Of Digging.");
-		buttonPanel.add(btnStatus);
-
-		lblSummaryOfTitle = new JLabel("      ^_^");
+		lblSummaryOfTitle = new JLabel("^_^");
 		buttonPanel.add(lblSummaryOfTitle);
+		buttonPanel.setToolTipText(titleTableModel.getStatusSummary());
 
 		return buttonPanel;
 	}
@@ -406,6 +384,16 @@ public class TitlePanel extends JPanel {
 	 * 根据所有已知域名获取title
 	 */
 	public void getAllTitle(){
+		//是否在目标的内网中
+		int user_input = JOptionPane.showConfirmDialog(null, "Are you in private network of target?","Chose work model",JOptionPane.YES_NO_OPTION);
+		if (JOptionPane.YES_OPTION == user_input) {
+			LineConfig.setPrivateNetworkWorkingModel(true);
+		}else {
+			LineConfig.setPrivateNetworkWorkingModel(false);
+		}
+		
+		inputCookie();//如果用户点击cancel，就不会进行后续步骤，why?
+		
 		DomainPanel.backupDB();
 		Set<String> domains = new HashSet<>();//新建一个对象，直接赋值后的删除操作，实质是对domainResult的操作。
 		domains.addAll(DomainPanel.getDomainResult().getSubDomainSet());
@@ -421,14 +409,6 @@ public class TitlePanel extends JPanel {
 		//获取额外端口逻辑
 //		TitlePanel.externalPortList = Commons.Port_prompt(null,"External Ports To Run");
 //		stdout.println("external ports: "+ externalPortList);
-		
-		//是否在目标的内网中
-		int user_input = JOptionPane.showConfirmDialog(null, "Are you in private network of target?","Chose work model",JOptionPane.YES_NO_OPTION);
-		if (JOptionPane.YES_OPTION == user_input) {
-			LineConfig.setPrivateNetworkWorkingModel(true);
-		}else {
-			LineConfig.setPrivateNetworkWorkingModel(false);
-		}
 
 		threadGetTitle = new ThreadGetTitle(domains);
 		threadGetTitle.Do();
@@ -490,7 +470,13 @@ public class TitlePanel extends JPanel {
 		lblSummaryOfTitle.setText(status);
 	}
 
-	public static JTextField getTextFieldCookie() {
-		return textFieldCookie;
+	public static String getCookie() {
+		return cookie;
+	}
+	
+	//cookie used at burp.Commons.buildCookieRequest(IExtensionHelpers, String, byte[])
+	//burp.Producer.doRequest(URL)
+	public static void inputCookie() {
+		cookie = JOptionPane.showInputDialog("Input cookie OR Leave it blank", null).trim();
 	}
 }
