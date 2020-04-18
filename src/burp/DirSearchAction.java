@@ -13,8 +13,6 @@ import java.util.Date;
 
 import org.apache.commons.io.FileUtils;
 
-import Config.LineConfig;
-
 class DirSearchAction implements ActionListener{
 
 	public LineTable lineTable;
@@ -69,7 +67,7 @@ class DirSearchAction implements ActionListener{
 		try {
 			String basedir = (String) System.getProperties().get("java.io.tmpdir");
 			
-			String command = BurpExtender.getLineConfig().getPython3Path()+" "+BurpExtender.getLineConfig().getDirSearchPath()+" -L "+targetFilePath+" -e jsp";
+			String command = ToolPanel.getLineConfig().getPython3Path()+" "+ToolPanel.getLineConfig().getDirSearchPath()+" -L "+targetFilePath+" -e jsp";
 
 			//将命令写入剪切板
 			Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();

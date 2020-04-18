@@ -2,6 +2,9 @@ package burp;
 
 import java.awt.Component;
 import java.awt.Desktop;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -19,6 +22,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.JOptionPane;
 
@@ -408,6 +413,23 @@ public class Commons {
 		}
 	}
 
+	public static ArrayList<String> regexFind(String regex,String content) {
+		ArrayList<String> result = new ArrayList<String>();
+		Pattern pRegex = Pattern.compile(regex);
+		Matcher matcher = pRegex.matcher(content);
+		while (matcher.find()) {//多次查找
+			result.add(matcher.group());
+		}
+		return result;
+	}
+	
+	
+	public static void writeToClipboard(String text) {
+		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+		StringSelection selection = new StringSelection(text);
+		clipboard.setContents(selection, null);
+	}
+	
 	public static void main(String args[]) {
 
 		//		HashMap<String, Set<String>> result = dnsquery("www.baidu.com");

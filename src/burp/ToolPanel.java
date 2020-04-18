@@ -5,9 +5,6 @@ import java.awt.Color;
 import java.awt.Desktop;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -21,23 +18,30 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JSeparator;
+import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import Config.LineConfig;
 import Tools.JSONHandler;
 
+/*
+ * 所有配置的修改，界面的操作，都立即写入LineConfig对象，如有必要保存到磁盘，再调用一次SaveConfig函数，思路要清晰
+ * 加载： 磁盘文件-->LineConfig对象--->具体控件的值
+ * 保存： 具体各个控件的值---->LineConfig对象---->磁盘文件
+ */
 
 public class ToolPanel extends JPanel {
 
@@ -47,8 +51,36 @@ public class ToolPanel extends JPanel {
 	PrintWriter stdout;
 	PrintWriter stderr;
 	private JTextField BrowserPath;
-	private JTextArea URLS;
-	public boolean allUrlsChanged;
+	private JTextArea inputTextArea;
+	public boolean inputTextAreaChanged = true;
+	private JTextArea outputTextArea;
+	private static LineConfig lineConfig;
+
+	public static LineConfig getLineConfig() {
+		return lineConfig;
+	}
+
+	//加载： 磁盘文件-->LineConfig对象--->具体控件的值
+	public void loadConfig() {
+		String content = BurpExtender.getCallbacks().loadExtensionSetting(BurpExtender.Extension_Setting_Name_Line_Config);
+		if (content == null) {
+			lineConfig = new LineConfig();
+		}else {
+			lineConfig = LineConfig.FromJson(content);
+		}
+		inputTextArea.setText(lineConfig.getToolPanelText());
+		BrowserPath.setText(lineConfig.getBrowserPath());
+	}
+
+	//要不要主动获取一下所有控件的值呢？
+	//还是说LineConfig的更新全靠控件的监听器
+	//保存： 具体各个控件的值---->LineConfig对象---->磁盘文件
+	public void saveConfig() {
+		lineConfig.setBrowserPath(BrowserPath.getText());
+		lineConfig.setToolPanelText(inputTextArea.getText());
+		String config = lineConfig.ToJson();
+		BurpExtender.getCallbacks().saveExtensionSetting(BurpExtender.Extension_Setting_Name_Line_Config, config);
+	}
 
 	public ToolPanel() {
 		setForeground(Color.DARK_GRAY);//构造函数
@@ -76,73 +108,61 @@ public class ToolPanel extends JPanel {
 		JLabel lblNewLabelNull = new JLabel("  ");
 		HeaderPanel.add(lblNewLabelNull);
 
-		//第一次分割
+		//第一次分割，中间的大模块一分为二
 		JSplitPane CenterSplitPane = new JSplitPane();//中间的大模块，一分为二
 		CenterSplitPane.setResizeWeight(0.5);
 		this.add(CenterSplitPane, BorderLayout.CENTER);
 
-		//左半部分放一个panel，panel里放文本框，文本框里放URL
-		JPanel textPanel = new JPanel();
-		CenterSplitPane.setLeftComponent(textPanel);
-		textPanel.setLayout(new BorderLayout(0, 0));
-		URLS = new JTextArea();
-		URLS.setLineWrap(true);
-		textPanel.add(URLS);
-		URLS.setColumns(10);
-		String toDisplay = BurpExtender.getLineConfig().getToolPanelText();
-		System.out.println(toDisplay);
-		URLS.setText(toDisplay);
-		URLS.getDocument().addDocumentListener(new textAreaListener());
+		//第二次分割：二分为四
+		JSplitPane LeftOfCenter = new JSplitPane();
+		LeftOfCenter.setResizeWeight(0.5);
+		CenterSplitPane.setLeftComponent(LeftOfCenter);
+
+		JSplitPane RightOfCenter = new JSplitPane();
+		RightOfCenter.setOrientation(JSplitPane.VERTICAL_SPLIT);
+		RightOfCenter.setResizeWeight(0.5);
+		CenterSplitPane.setRightComponent(RightOfCenter);
+
+		//  1/4
+		JScrollPane oneFourthPanel = new JScrollPane();
+		LeftOfCenter.setLeftComponent(oneFourthPanel);
+		//  2/4
+		JScrollPane twoFourthPanel = new JScrollPane();
+		LeftOfCenter.setRightComponent(twoFourthPanel);
+
+		inputTextArea = new JTextArea();
+		inputTextArea.setLineWrap(true);
+		inputTextArea.getDocument().addDocumentListener(new textAreaListener());
+		oneFourthPanel.setViewportView(inputTextArea);
+
+		outputTextArea = new JTextArea();
+		outputTextArea.setLineWrap(true);
+		twoFourthPanel.setViewportView(outputTextArea);
 
 
-		//右半部分放一个panel，panel里放配置和按钮
-		JPanel panel = new JPanel();
-		CenterSplitPane.setRightComponent(panel);
-		JLabel lblNewLabel = new JLabel("Browser Path:");
-		panel.add(lblNewLabel);
-
-		BrowserPath = new JTextField();
-		panel.add(BrowserPath);
-		BrowserPath.setColumns(50);
-		BrowserPath.setText(BurpExtender.getLineConfig().getBrowserPath());
-		BrowserPath.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseExited(MouseEvent e) {
-				File browser = new File(BrowserPath.getText().trim());
-				if (browser.exists()) {
-					BurpExtender.getLineConfig().setBrowserPath(browser.getAbsolutePath());
-					BurpExtender.getCallbacks().saveExtensionSetting("domain_hunter_pro",BurpExtender.getLineConfig().ToJson());
-				}
-			}
-			@Override
-			public void mouseEntered(MouseEvent e) {
-
-			}
-		});
-
-		JSeparator sep = new JSeparator(SwingConstants.CENTER);
-		sep.setForeground(Color.GRAY);
-
-		panel.add(sep);//分割线
+		//四分之三部分放一个panel，里面放操作按钮
+		JPanel threeFourthPanel = new JPanel();
+		RightOfCenter.setLeftComponent(threeFourthPanel);
 
 		JButton btnOpenurls = new JButton("OpenURLs");
-		panel.add(btnOpenurls);
+		threeFourthPanel.add(btnOpenurls);
 		btnOpenurls.addActionListener(new ActionListener() {
-			List<String> urls = Arrays.asList(BurpExtender.getLineConfig().getToolPanelText().replaceAll(" ","").replaceAll("\r\n", "\n").split("\n"));
+			List<String> urls = new ArrayList<>();
 			Iterator<String> it = urls.iterator();
+			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (allUrlsChanged) {
-					List<String> urls = Arrays.asList(BurpExtender.getLineConfig().getToolPanelText().replaceAll(" ","").replaceAll("\r\n", "\n").split("\n"));
+				if (inputTextAreaChanged) {//default is true
+					urls = Arrays.asList(lineConfig.getToolPanelText().replaceAll(" ","").replaceAll("\r\n", "\n").split("\n"));
 					it = urls.iterator();
+					inputTextAreaChanged = false;
 				}
-				allUrlsChanged = false;
 				try {
 					int i =10;
 					while(i>0 && it.hasNext()) {
 						String url = it.next();
 						//stdout.println(url);
-						Commons.browserOpen(url, BurpExtender.getLineConfig().getBrowserPath());
+						Commons.browserOpen(url, lineConfig.getBrowserPath());
 						i--;
 					}
 				} catch (Exception e1) {
@@ -152,47 +172,89 @@ public class ToolPanel extends JPanel {
 
 		});
 
+
 		JButton btnGrep = new JButton("grep json");
-		panel.add(btnGrep);
+		threeFourthPanel.add(btnGrep);
 		btnGrep.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
-					String content = URLS.getText();
+					String content = inputTextArea.getText();
 					String toFind = JOptionPane.showInputDialog("to find which value", null);
 					if (toFind == null) {
 						return;
 					} else {
 						//stdout.println(content);
 						ArrayList<String> result = JSONHandler.grepValueFromJson(content, toFind);
-						stdout.println("##################Result of Grep JSON##################");
-						stdout.println(result.toString());
-						stdout.println("##################Result of Grep JSON##################");
-						stdout.println();
+						//								stdout.println("##################Result of Grep JSON##################");
+						//								stdout.println(result.toString());
+						//								stdout.println("##################Result of Grep JSON##################");
+						//								stdout.println();
 
-						Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-						StringSelection selection = new StringSelection(String.join(System.lineSeparator(), result));
-						clipboard.setContents(selection, null);
+						outputTextArea.setText(result.toString());
 					}
 
 				} catch (Exception e1) {
-					e1.printStackTrace(stderr);
+					outputTextArea.setText(e1.getMessage());
+					//e1.printStackTrace(stderr);
 				}
 			}
 
 		});
 
 
-		/*
-		 * //第二次分割，左边 JSplitPane leftOfCenterSplitPane = new
-		 * JSplitPane();//放入左边的分区。再讲左边的分区一分为二
-		 * leftOfCenterSplitPane.setResizeWeight(0.2);
-		 * CenterSplitPane.setLeftComponent(leftOfCenterSplitPane);
-		 * 
-		 * //第二次分割，右边 JSplitPane rightOfCenterSplitPane = new JSplitPane();//放入右半部分分区，
-		 * rightOfCenterSplitPane.setResizeWeight(0.7);
-		 * CenterSplitPane.setRightComponent(rightOfCenterSplitPane);
-		 */
+		JButton btnRegexGrep = new JButton("Regex Grep");
+		btnRegexGrep.setEnabled(false);
+		threeFourthPanel.add(btnRegexGrep);
+		btnGrep.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					//					String toFind = JOptionPane.showInputDialog("to find which value", null);
+					//					if (toFind == null) {
+					//						return;
+					//					} else {
+					ArrayList<String> result = new ArrayList<String>();
+					//主要目的是找url        path: '/admin/menu',
+					String webpack_PATTERN = "\'/([0-9a-z])*\'"; //TODO 正则表达不正确
+					Pattern pRegex = Pattern.compile(webpack_PATTERN);
+					String content = inputTextArea.getText();
+					Matcher matcher = pRegex.matcher(content);
+					while (matcher.find()) {//多次查找
+						result.add(matcher.group());
+					}
+					outputTextArea.setText(result.toString());
+					//}
+				} catch (Exception e1) {
+					outputTextArea.setText(e1.getMessage());
+					e1.printStackTrace(stderr);
+				}
+			}
+
+		});
+
+		JPanel fourFourthPanel = new JPanel();
+		RightOfCenter.setRightComponent(fourFourthPanel);
+		JLabel lblNewLabel = new JLabel("Browser Path:");
+		fourFourthPanel.add(lblNewLabel);
+
+		BrowserPath = new JTextField();
+		fourFourthPanel.add(BrowserPath);
+		BrowserPath.setColumns(50);
+		BrowserPath.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseExited(MouseEvent e) {
+				File browser = new File(BrowserPath.getText().trim());
+				if (browser.exists()) {
+					lineConfig.setBrowserPath(browser.getAbsolutePath());
+					saveConfig();
+				}
+			}
+			@Override
+			public void mouseEntered(MouseEvent e) {
+
+			}
+		});
 
 
 
@@ -232,6 +294,7 @@ public class ToolPanel extends JPanel {
 			}
 		});
 		footerPanel.add(lblNewLabel_2);
+
 	}
 
 	public static Set<String> getSetFromTextArea(JTextArea textarea){
@@ -246,20 +309,20 @@ public class ToolPanel extends JPanel {
 
 		@Override
 		public void removeUpdate(DocumentEvent e) {
-			BurpExtender.getLineConfig().setToolPanelText(URLS.getText());
-			allUrlsChanged = true;
+			lineConfig.setToolPanelText(inputTextArea.getText());
+			inputTextAreaChanged = true;
 		}
 
 		@Override
 		public void insertUpdate(DocumentEvent e) {
-			BurpExtender.getLineConfig().setToolPanelText(URLS.getText());
-			allUrlsChanged = true;
+			lineConfig.setToolPanelText(inputTextArea.getText());
+			inputTextAreaChanged = true;
 		}
 
 		@Override
 		public void changedUpdate(DocumentEvent arg0) {
-			BurpExtender.getLineConfig().setToolPanelText(URLS.getText());
-			allUrlsChanged = true;
+			lineConfig.setToolPanelText(inputTextArea.getText());
+			inputTextAreaChanged = true;
 		}
 	}
 }

@@ -7,8 +7,6 @@ import java.util.List;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 
-import Config.LineConfig;
-
 public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListener,IContextMenuFactory{
 	/**
 	 *
@@ -20,7 +18,9 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	private static String ExtenderName = "Domain Hunter Pro by bit4woo";
 	private static String github = "https://github.com/bit4woo/domain_hunter_pro";
 	private static GUI gui;
-	private static LineConfig lineConfig;
+	public static final String Extension_Setting_Name_DB_File = "domain-Hunter-pro-db-path";
+	public static final String Extension_Setting_Name_Line_Config = "domain-Hunter-pro-line-config";
+
 
 	private static void flushStd(){
 		try{
@@ -58,21 +58,9 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		return gui;
 	}
 
-	public static LineConfig getLineConfig() {
-		return lineConfig;
-	}
-
-	public static void setLineConfig(LineConfig lineConfig) {
-		BurpExtender.lineConfig = lineConfig;
-	}
-
 	private IExtensionHelpers helpers;
 
-
-
-
-
-
+	//插件加载过程中需要做的事
 	@Override
 	public void registerExtenderCallbacks(IBurpExtenderCallbacks callbacks)
 	{
@@ -83,16 +71,8 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		helpers = callbacks.getHelpers();
 		callbacks.setExtensionName(ExtenderName); //插件名称
 		callbacks.registerExtensionStateListener(this);
-		callbacks.registerContextMenuFactory(this);
+		callbacks.registerContextMenuFactory(this);		
 
-		String lineConfig = BurpExtender.getCallbacks().loadExtensionSetting("domain_hunter_pro");//LineConfig
-		if (lineConfig != null) {
-			setLineConfig(LineConfig.FromJson(lineConfig));
-		}else {
-			setLineConfig(new LineConfig());
-		}
-		
-		
 		gui = new GUI();
 
 		SwingUtilities.invokeLater(new Runnable()
@@ -105,12 +85,14 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		});
 
 		//recovery save domain results from extensionSetting
-		String content = callbacks.loadExtensionSetting("domainHunterpro");//file name of db file
+		String content = callbacks.loadExtensionSetting(Extension_Setting_Name_DB_File);//file name of db file
 		System.out.println(content);
 		if (content != null && content.endsWith(".db")) {
 			gui.LoadData(content);
 		}
 		
+		gui.getToolPanel().loadConfig();
+
 	}
 
 	@Override
@@ -126,9 +108,9 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		}
 		gui.saveDBfilepathToExtension();
 		gui.getProjectMenu().remove();
-		
-		BurpExtender.getCallbacks().saveExtensionSetting("domain_hunter_pro",BurpExtender.getLineConfig().ToJson());
-		DomainPanel.autoSave();//域名面板自动保存逻辑有地复杂，退出前再自动保存一次
+
+		gui.getToolPanel().saveConfig();
+		DomainPanel.autoSave();//域名面板自动保存逻辑有点复杂，退出前再自动保存一次
 	}
 
 	//ITab必须实现的两个方法
@@ -143,10 +125,10 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 
 	@Override
 	public List<JMenuItem> createMenuItems(IContextMenuInvocation invocation) {
-		
+
 		return new LineEntryMenuForBurp().createMenuItemsForBurp(invocation);
 	}
 
-	
+
 
 }

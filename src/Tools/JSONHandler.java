@@ -47,7 +47,7 @@ public class JSONHandler {
 		}
 	}
 	
-	public static ArrayList<String> grepValueFromJson(String jsonString,String toFind) {
+	public static ArrayList<String> grepValueFromJson(String jsonString,String toFind) throws Exception {
 		ArrayList<String> result = new ArrayList<String>();
 		
 		if (isJSONObject(jsonString)) {
@@ -75,7 +75,7 @@ public class JSONHandler {
 				result.addAll(grepValueFromJson(item,toFind));
 			}
 		}else {
-			System.out.println("wrong json formate");
+			throw new Exception("wrong json formate");
 		}
 		return result;
 	}
@@ -116,6 +116,11 @@ public class JSONHandler {
 				"        }\r\n" + 
 				"    }\r\n" + 
 				"}";
-		System.out.println(grepValueFromJson(ccc,"intext"));
+		try {
+			System.out.println(grepValueFromJson(ccc,"intext"));
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

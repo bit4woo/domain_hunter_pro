@@ -15,7 +15,7 @@ public class GUI extends JFrame {
 	protected PrintWriter stderr;
 	protected dbFileChooser dbfc = new dbFileChooser();
 	protected ProjectMenu projectMenu;
-	private ToolPanel configPanel;
+	private ToolPanel toolPanel;
 
 	public ProjectMenu getProjectMenu() {
 		return projectMenu;
@@ -29,6 +29,10 @@ public class GUI extends JFrame {
 		return titlePanel;
 	}
 
+
+	public ToolPanel getToolPanel() {
+		return toolPanel;
+	}
 
 	public static File getCurrentDBFile() {
 		return currentDBFile;
@@ -56,10 +60,10 @@ public class GUI extends JFrame {
 		setContentPane(tabbedWrapper);
 		domainPanel = new DomainPanel();
 		titlePanel = new TitlePanel();
-		configPanel = new ToolPanel();
+		toolPanel = new ToolPanel();
 		tabbedWrapper.addTab("Domains", null, domainPanel, null);
 		tabbedWrapper.addTab("Titles", null, titlePanel, null);
-		tabbedWrapper.addTab("Config", null,configPanel,null);
+		tabbedWrapper.addTab("Config", null,toolPanel,null);
 
 		projectMenu = new ProjectMenu(this);
 		projectMenu.Add();
@@ -92,7 +96,7 @@ public class GUI extends JFrame {
 		//to save domain result to extensionSetting
 		//仅仅存储sqllite数据库的名称,也就是domainResult的项目名称
 		if (currentDBFile != null)
-			BurpExtender.getCallbacks().saveExtensionSetting("domainHunterpro", currentDBFile.getAbsolutePath());
+			BurpExtender.getCallbacks().saveExtensionSetting(BurpExtender.Extension_Setting_Name_DB_File, currentDBFile.getAbsolutePath());
 	}
 
 

@@ -45,7 +45,7 @@ class NmapScanAction implements ActionListener{
 		try {
 			String basedir = (String) System.getProperties().get("java.io.tmpdir");
 			
-			String nmapPath = BurpExtender.getLineConfig().getNmapPath();
+			String nmapPath = ToolPanel.getLineConfig().getNmapPath();
 			if (nmapPath.contains(" ")) {//如果路径中包含空格，需要引号
 				nmapPath = "\""+nmapPath+"\"";
 			}
