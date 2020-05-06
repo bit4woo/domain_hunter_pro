@@ -131,6 +131,7 @@ public class ToolPanel extends JPanel {
 		LeftOfCenter.setRightComponent(twoFourthPanel);
 
 		inputTextArea = new JTextArea();
+		inputTextArea.setColumns(20);
 		inputTextArea.setLineWrap(true);
 		inputTextArea.getDocument().addDocumentListener(new textAreaListener());
 		oneFourthPanel.setViewportView(inputTextArea);
@@ -241,22 +242,7 @@ public class ToolPanel extends JPanel {
 		BrowserPath = new JTextField();
 		fourFourthPanel.add(BrowserPath);
 		BrowserPath.setColumns(50);
-		BrowserPath.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseExited(MouseEvent e) {
-				File browser = new File(BrowserPath.getText().trim());
-				if (browser.exists()) {
-					lineConfig.setBrowserPath(browser.getAbsolutePath());
-					saveConfig();
-				}
-			}
-			@Override
-			public void mouseEntered(MouseEvent e) {
-
-			}
-		});
-
-
+		BrowserPath.getDocument().addDocumentListener(new textFieldListener());
 
 
 		///////////////////////////FooterPanel//////////////////
@@ -323,6 +309,36 @@ public class ToolPanel extends JPanel {
 		public void changedUpdate(DocumentEvent arg0) {
 			lineConfig.setToolPanelText(inputTextArea.getText());
 			inputTextAreaChanged = true;
+		}
+	}
+	
+	class textFieldListener implements DocumentListener {
+
+		@Override
+		public void removeUpdate(DocumentEvent e) {
+			File browser = new File(BrowserPath.getText().trim());
+			if (browser.exists()) {
+				lineConfig.setBrowserPath(browser.getAbsolutePath());
+				saveConfig();
+			}
+		}
+
+		@Override
+		public void insertUpdate(DocumentEvent e) {
+			File browser = new File(BrowserPath.getText().trim());
+			if (browser.exists()) {
+				lineConfig.setBrowserPath(browser.getAbsolutePath());
+				saveConfig();
+			}
+		}
+
+		@Override
+		public void changedUpdate(DocumentEvent arg0) {
+			File browser = new File(BrowserPath.getText().trim());
+			if (browser.exists()) {
+				lineConfig.setBrowserPath(browser.getAbsolutePath());
+				saveConfig();
+			}
 		}
 	}
 }
