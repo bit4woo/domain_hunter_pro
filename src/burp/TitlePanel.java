@@ -202,12 +202,11 @@ public class TitlePanel extends JPanel {
 
 						btnGetSubnet.setEnabled(false);
 						int result = JOptionPane.showConfirmDialog(null,"Just get IP Subnets of [Current] lines ?");
-						String subnetsString;
-						if (result == JOptionPane.YES_OPTION) {
-							subnetsString = getSubnet(true);
-						}else {
-							subnetsString = getSubnet(false);
-						}
+						
+						int publicSubnets = JOptionPane.showConfirmDialog(null,"Just get [Pulic] IP Subnets ?");
+						
+						String subnetsString = getSubnet(result == JOptionPane.YES_OPTION?true:false,publicSubnets == JOptionPane.YES_OPTION?true:false);
+
 						Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 						StringSelection selection = new StringSelection(subnetsString);
 						clipboard.setContents(selection, null);
@@ -434,7 +433,8 @@ public class TitlePanel extends JPanel {
 
 	
 
-	public String getSubnet(boolean isCurrent){
+	public String getSubnet(boolean isCurrent,boolean justPulic){
+		//stdout.println(" "+isCurrent+justPulic);
 		Set<String> subnets;
 		if (isCurrent) {//获取的是现有可成功连接的IP集合
 			subnets = titleTableModel.GetSubnets();
@@ -443,7 +443,20 @@ public class TitlePanel extends JPanel {
 			//Set<String> CSubNetIPs = Commons.subNetsToIPSet(Commons.toSubNets(IPsOfDomain));
 			subnets = Commons.toSmallerSubNets(IPsOfDomain);
 		}
-		return String.join(System.lineSeparator(), subnets);
+		
+		HashSet<String> result = new HashSet<>(subnets);
+		if (justPulic) {
+			//stdout.println("删除私有IP");
+			for (String subnet :subnets) {
+				String tmp = subnet.split("/")[0];
+				if (IPAddress.isPrivateIPv4(tmp)) {
+					result.remove(subnet);
+					//stdout.println("删除"+subnet);
+				}
+			}
+		}
+		
+		return String.join(System.lineSeparator(), result);
 	}
 
 	/*
