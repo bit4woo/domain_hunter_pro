@@ -426,7 +426,7 @@ public class TitlePanel extends JPanel {
 //			if (entry.getComment().contains("Manual-Saved")) {
 //				TitlePanel.getTitleTableModel().addNewLineEntry(entry);
 //			}
-			if (!entry.isHistoryMatched()) {
+			if (entry != null) {
 				TitlePanel.getTitleTableModel().addNewLineEntry(entry);//保存所有历史记录中没有匹配到的记录。
 			}
 		}

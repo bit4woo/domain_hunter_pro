@@ -168,11 +168,14 @@ class Producer extends Thread {//Producer do
 		if (HistoryLines == null) return null;
 		LineEntry found = HistoryLines.get(url);
 		if (found != null) {
-			HistoryLines.remove(url);//如果有相同URL的记录，就删除这个记录。
+			HistoryLines.put(url,null);//不使用删除操作，避免//ConcurrentModificationException问题
 			return found;
 		}
 		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
 		for (LineEntry line:HistoryLines.values()) {
+			if (line== null) {
+				continue;
+			}
 			line.setHelpers(helpers);
 			try{//根据host查找
 				String host = new URL(url).getHost();
@@ -181,7 +184,7 @@ class Producer extends Thread {//Producer do
 				lineHost.add(line.getHost());
 				if (lineHost.contains(host)) {
 					//HistoryLines.remove(line.getUrl());//如果有相同URL的记录，就删除这个记录。//ConcurrentModificationException
-					line.setHistoryMatched(true);
+					HistoryLines.put(url,null);
 					return line;
 				}
 			}catch (Exception e){

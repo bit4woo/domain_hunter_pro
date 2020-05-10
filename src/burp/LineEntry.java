@@ -49,8 +49,6 @@ public class LineEntry {
 	private boolean isChecked =false;
 	private String Level = Level_C;
 	private String comment ="";
-	
-	private boolean historyMatched = false; //用于在gettitle时，从历史记录中进行查找，如果匹配就修改这个属性。
 
 	private transient IHttpRequestResponse messageinfo;
 
@@ -469,14 +467,6 @@ Content-Type: text/html;charset=UTF-8
 
 	public void setComment(String comment) {
 		this.comment = comment;
-	}
-
-	public boolean isHistoryMatched() {
-		return historyMatched;
-	}
-
-	public void setHistoryMatched(boolean historyMatched) {
-		this.historyMatched = historyMatched;
 	}
 
 	public IExtensionHelpers getHelpers() {
