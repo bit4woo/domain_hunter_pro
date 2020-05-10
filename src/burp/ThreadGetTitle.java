@@ -180,7 +180,8 @@ class Producer extends Thread {//Producer do
 				List<String> lineHost = new ArrayList<>(Arrays.asList(line.getIP().trim().split(",")));
 				lineHost.add(line.getHost());
 				if (lineHost.contains(host)) {
-					HistoryLines.remove(line.getUrl());//如果有相同URL的记录，就删除这个记录。
+					//HistoryLines.remove(line.getUrl());//如果有相同URL的记录，就删除这个记录。//ConcurrentModificationException
+					line.setHistoryMatched(true);
 					return line;
 				}
 			}catch (Exception e){
