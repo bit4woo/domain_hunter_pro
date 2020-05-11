@@ -168,7 +168,8 @@ class Producer extends Thread {//Producer do
 		if (HistoryLines == null) return null;
 		LineEntry found = HistoryLines.get(url);
 		if (found != null) {
-			HistoryLines.put(url,null);//不使用删除操作，避免//ConcurrentModificationException问题
+			HistoryLines.replace(url,null);//不使用remove和put操作，避免//ConcurrentModificationException问题
+			//因为这2个操作都会让map的长度发生变化，从而导致问题
 			return found;
 		}
 		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
@@ -184,7 +185,7 @@ class Producer extends Thread {//Producer do
 				lineHost.add(line.getHost());
 				if (lineHost.contains(host)) {
 					//HistoryLines.remove(line.getUrl());//如果有相同URL的记录，就删除这个记录。//ConcurrentModificationException
-					HistoryLines.put(url,null);
+					HistoryLines.replace(url,null);
 					return line;
 				}
 			}catch (Exception e){
