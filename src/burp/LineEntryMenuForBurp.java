@@ -30,6 +30,9 @@ public class LineEntryMenuForBurp{
 
 	public List<JMenuItem> createMenuItemsForBurp(IContextMenuInvocation invocation) {
 		List<JMenuItem> list = new ArrayList<JMenuItem>();
+		
+		JMenu domainHunterPro = new JMenu("^_^ Domain Hunter Pro");
+		list.add(domainHunterPro);
 		/*
 		这里的逻辑有3重：
 		1、仅将域名添加到子域名和target中，
@@ -37,39 +40,39 @@ public class LineEntryMenuForBurp{
 		3、对某一个请求添加comment，如果请求不存在，放弃；添加请求包含步骤1和2的行为。
 		 */
 
-		JMenuItem runWithSamePathItem = new JMenuItem("^_^[Domain Hunter] Run Targets with this path");
+		JMenuItem runWithSamePathItem = new JMenuItem("Run Targets with this path");
 		runWithSamePathItem.addActionListener(new runWithSamePath(invocation));
-		list.add(runWithSamePathItem);
+		domainHunterPro.add(runWithSamePathItem);
 
-		JMenuItem addDomainToDomainHunter = new JMenuItem("^_^[Domain Hunter] Add Domain");
+		JMenuItem addDomainToDomainHunter = new JMenuItem("Add Domain");
 		addDomainToDomainHunter.addActionListener(new addHostToRootDomain(invocation));
-		list.add(addDomainToDomainHunter);
+		domainHunterPro.add(addDomainToDomainHunter);
 
-		JMenuItem addRequestToDomainHunter = new JMenuItem("^_^[Domain Hunter] Add Request");
+		JMenuItem addRequestToDomainHunter = new JMenuItem("Add Request");
 		addRequestToDomainHunter.addActionListener(new addRequestToHunter(invocation));
-		list.add(addRequestToDomainHunter);
+		domainHunterPro.add(addRequestToDomainHunter);
 
-		JMenuItem addCommentToDomainHunter = new JMenuItem("^_^[Domain Hunter] Add Comment");
+		JMenuItem addCommentToDomainHunter = new JMenuItem("Add Comment");
 		addCommentToDomainHunter.addActionListener(new addComment(invocation));
-		list.add(addCommentToDomainHunter);
+		domainHunterPro.add(addCommentToDomainHunter);
 
-		JMenuItem setAsChecked = new JMenuItem("^_^[Domain Hunter] Set Host As Checked");
+		JMenuItem setAsChecked = new JMenuItem("Set Host As Checked");
 		setAsChecked.addActionListener(new setAsChecked(invocation));
-		list.add(setAsChecked);
+		domainHunterPro.add(setAsChecked);
 
 		//list.add(createLevelMenu(invocation));//这是导致右键菜单反应慢的根源，因为在每次在构造右键菜单时都要执行一遍tilte的查找。
 
 		//替换方案1：当鼠标进入菜单时再去查询。//弃用，这种方式响应速度较慢，效果不好
 		/*
-		 * JMenu setLevelAs = new JMenu("^_^[Domain Hunter] Set Level As");
+		 * JMenu setLevelAs = new JMenu("Set Level As");
 		 * setAsChecked.addMouseListener(new
 		 * setLevelAsMouseListener(invocation,setLevelAs)); list.add(setLevelAs);
 		 */
 
 		//替换方案2：
-		JMenu setLevelAs2 = new JMenu("^_^[Domain Hunter] Set Host Level As");
+		JMenu setLevelAs2 = new JMenu("Set Host Level As");
 		setAsChecked.addActionListener(new setLevelAsActionListener(invocation,setLevelAs2));
-		list.add(setLevelAs2);
+		domainHunterPro.add(setLevelAs2);
 
 		return list;
 	}
