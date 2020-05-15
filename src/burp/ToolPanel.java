@@ -25,6 +25,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
@@ -53,6 +54,7 @@ public class ToolPanel extends JPanel {
 	private JTextField BrowserPath;
 	private JTextArea inputTextArea;
 	public boolean inputTextAreaChanged = true;
+	public static JRadioButton showItemsInOne;
 	private JTextArea outputTextArea;
 	private static LineConfig lineConfig;
 
@@ -70,6 +72,7 @@ public class ToolPanel extends JPanel {
 		}
 		inputTextArea.setText(lineConfig.getToolPanelText());
 		BrowserPath.setText(lineConfig.getBrowserPath());
+		showItemsInOne.setSelected(lineConfig.isShowItemsInOne());
 	}
 
 	//要不要主动获取一下所有控件的值呢？
@@ -78,6 +81,7 @@ public class ToolPanel extends JPanel {
 	public void saveConfig() {
 		lineConfig.setBrowserPath(BrowserPath.getText());
 		lineConfig.setToolPanelText(inputTextArea.getText());
+		lineConfig.setShowItemsInOne(showItemsInOne.isSelected());
 		String config = lineConfig.ToJson();
 		BurpExtender.getCallbacks().saveExtensionSetting(BurpExtender.Extension_Setting_Name_Line_Config, config);
 	}
@@ -243,7 +247,14 @@ public class ToolPanel extends JPanel {
 		fourFourthPanel.add(BrowserPath);
 		BrowserPath.setColumns(50);
 		BrowserPath.getDocument().addDocumentListener(new textFieldListener());
-
+		
+		showItemsInOne = new JRadioButton("show items in one");
+		fourFourthPanel.add(showItemsInOne);
+		showItemsInOne.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				lineConfig.setShowItemsInOne(showItemsInOne.isSelected());
+			}
+		});
 
 		///////////////////////////FooterPanel//////////////////
 
