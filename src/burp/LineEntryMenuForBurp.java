@@ -27,12 +27,8 @@ public class LineEntryMenuForBurp{
 	public PrintWriter stdout = BurpExtender.getStdout();
 
 
-
 	public List<JMenuItem> createMenuItemsForBurp(IContextMenuInvocation invocation) {
-		List<JMenuItem> list = new ArrayList<JMenuItem>();
-		
-		JMenu domainHunterPro = new JMenu("^_^ Domain Hunter Pro");
-		list.add(domainHunterPro);
+		List<JMenuItem> JMenuItemList = new ArrayList<JMenuItem>();
 		/*
 		这里的逻辑有3重：
 		1、仅将域名添加到子域名和target中，
@@ -40,25 +36,20 @@ public class LineEntryMenuForBurp{
 		3、对某一个请求添加comment，如果请求不存在，放弃；添加请求包含步骤1和2的行为。
 		 */
 
-		JMenuItem runWithSamePathItem = new JMenuItem("Run Targets with this path");
+		JMenuItem runWithSamePathItem = new JMenuItem("^_^ Run Targets with this path");
 		runWithSamePathItem.addActionListener(new runWithSamePath(invocation));
-		domainHunterPro.add(runWithSamePathItem);
 
-		JMenuItem addDomainToDomainHunter = new JMenuItem("Add Domain");
+		JMenuItem addDomainToDomainHunter = new JMenuItem("^_^ Add Domain");
 		addDomainToDomainHunter.addActionListener(new addHostToRootDomain(invocation));
-		domainHunterPro.add(addDomainToDomainHunter);
 
-		JMenuItem addRequestToDomainHunter = new JMenuItem("Add Request");
+		JMenuItem addRequestToDomainHunter = new JMenuItem("^_^ Add Request");
 		addRequestToDomainHunter.addActionListener(new addRequestToHunter(invocation));
-		domainHunterPro.add(addRequestToDomainHunter);
 
-		JMenuItem addCommentToDomainHunter = new JMenuItem("Add Comment");
+		JMenuItem addCommentToDomainHunter = new JMenuItem("^_^ Add Comment");
 		addCommentToDomainHunter.addActionListener(new addComment(invocation));
-		domainHunterPro.add(addCommentToDomainHunter);
 
-		JMenuItem setAsChecked = new JMenuItem("Set Host As Checked");
+		JMenuItem setAsChecked = new JMenuItem("^_^ Set Host As Checked");
 		setAsChecked.addActionListener(new setAsChecked(invocation));
-		domainHunterPro.add(setAsChecked);
 
 		//list.add(createLevelMenu(invocation));//这是导致右键菜单反应慢的根源，因为在每次在构造右键菜单时都要执行一遍tilte的查找。
 
@@ -70,11 +61,32 @@ public class LineEntryMenuForBurp{
 		 */
 
 		//替换方案2：
-		JMenu setLevelAs2 = new JMenu("Set Host Level As");
+		JMenu setLevelAs2 = new JMenu("^_^ Set Host Level As");
 		setAsChecked.addActionListener(new setLevelAsActionListener(invocation,setLevelAs2));
-		domainHunterPro.add(setLevelAs2);
-
-		return list;
+		
+		
+		
+		JMenuItemList.add(setAsChecked);
+		JMenuItemList.add(setLevelAs2);
+		
+		JMenuItemList.add(addRequestToDomainHunter);
+		JMenuItemList.add(addCommentToDomainHunter);
+		
+		JMenuItemList.add(addDomainToDomainHunter);
+		JMenuItemList.add(runWithSamePathItem);
+		
+		
+		if (ToolPanel.showItemsInOne.isSelected()) {
+			ArrayList<JMenuItem> result = new ArrayList<JMenuItem>();
+			JMenu domainHunterPro = new JMenu("^_^ Domain Hunter Pro");
+			result.add(domainHunterPro);
+			for (JMenuItem item : JMenuItemList) {
+				domainHunterPro.add(item);
+			}
+			return result;
+		}else {
+			return JMenuItemList;
+		}
 	}
 
 	public static void addLevelABC(JMenu topMenu,final LineTable lineTable, final int[] rows){

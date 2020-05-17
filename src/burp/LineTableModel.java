@@ -478,6 +478,9 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	//////////////////////extend AbstractTableModel////////////////////////////////
 
 	public void addNewLineEntry(LineEntry lineEntry){
+		if (lineEntry == null) {
+			return;
+		}
 		synchronized (lineEntries) {
 //			while(lineEntries.size() >= LineConfig.getMaximumEntries()){
 //				ListenerIsOn = false;

@@ -34,6 +34,7 @@ public class LineConfig {
 	private String browserPath = "C:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe";
 	private String nmapPath ="D:\\Program Files (x86)\\Nmap\\nmap.exe";
 	private String toolPanelText = "";
+	private boolean showItemsInOne = false;
 
 
 
@@ -140,6 +141,14 @@ public class LineConfig {
 
 	public void setToolPanelText(String toolPanelText) {
 		this.toolPanelText = toolPanelText;
+	}
+
+	public boolean isShowItemsInOne() {
+		return showItemsInOne;
+	}
+
+	public void setShowItemsInOne(boolean showItemsInOne) {
+		this.showItemsInOne = showItemsInOne;
 	}
 
 	public String ToJson() {
