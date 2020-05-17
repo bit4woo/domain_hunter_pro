@@ -192,7 +192,7 @@ public class ToolPanel extends JPanel {
 						//								stdout.println("##################Result of Grep JSON##################");
 						//								stdout.println();
 
-						outputTextArea.setText(result.toString());
+						outputTextArea.setText(String.join(System.lineSeparator(), result));
 					}
 
 				} catch (Exception e1) {
@@ -201,6 +201,34 @@ public class ToolPanel extends JPanel {
 				}
 			}
 
+		});
+		
+		JButton btnLine = new JButton("grep line");
+		threeFourthPanel.add(btnLine);
+		btnLine.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					String toFind = JOptionPane.showInputDialog("to find which value", null);
+					ArrayList<String> result = new ArrayList<String>();
+					if (toFind == null) {
+						return;
+					} else {
+						List<String> content = Commons.getLinesFromTextArea(inputTextArea);
+						for (String item:content) {
+							if (item.toLowerCase().contains(toFind.toLowerCase().trim())) {
+								result.add(item); 
+							}
+						}
+						//outputTextArea.setText(result.toString());
+						outputTextArea.setText(String.join(System.lineSeparator(), result));
+					}
+
+				} catch (Exception e1) {
+					outputTextArea.setText(e1.getMessage());
+					//e1.printStackTrace(stderr);
+				}
+			}
 		});
 
 

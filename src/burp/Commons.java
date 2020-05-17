@@ -26,6 +26,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.JOptionPane;
+import javax.swing.JTextArea;
 
 import org.apache.commons.net.util.SubnetUtils;
 import org.apache.commons.net.util.SubnetUtils.SubnetInfo;
@@ -488,5 +489,12 @@ public class Commons {
 			e.printStackTrace();
 		}
 		return urlString;
+	}
+	
+	public static List<String> getLinesFromTextArea(JTextArea textarea){
+		//user input maybe use "\n" in windows, so the System.lineSeparator() not always works fine!
+		List<String> result = Arrays.asList(textarea.getText().replaceAll(" ","").replaceAll("\r\n", "\n").split("\n"));
+		result.remove("");
+		return result;
 	}
 }
