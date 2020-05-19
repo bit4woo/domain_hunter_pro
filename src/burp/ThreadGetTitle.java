@@ -126,7 +126,7 @@ class Producer extends Thread {//Producer do
 				}
 				String host = domainQueue.take();
 				int leftTaskNum = domainQueue.size();
-				
+
 				stdout.print(String.format("%s tasks left ",leftTaskNum));
 
 				Set<LineEntry> resultSet  = doGetTitle(host);
@@ -194,37 +194,43 @@ class Producer extends Thread {//Producer do
 		}
 		return null;
 	}
-	
+
 	public static LineEntry doRequest(URL url) {
 		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
 		String cookie = TitlePanel.getCookie();
-		
+
 		byte[] byteRequest = helpers.buildHttpRequest(url);//GET
 		byteRequest = Commons.buildCookieRequest(helpers,cookie,byteRequest);
-		
+
 		IHttpService service = helpers.buildHttpService(url.getHost(),url.getPort(),url.getProtocol());
 		IHttpRequestResponse https_Messageinfo = callbacks.makeHttpRequest(service, byteRequest);
 		LineEntry Entry = new LineEntry(https_Messageinfo);
 		return Entry;
 	}
-	
- 	public static Set<LineEntry> doGetTitle(String host) throws MalformedURLException {
- 		
- 		int httpport = -1;
- 		Set<LineEntry> resultSet = new HashSet<LineEntry>();
- 		
+
+	public static Set<LineEntry> doGetTitle(String host) throws MalformedURLException {
+
+		int httpPort = 80;
+		int httpsPort = 443;
+		Set<LineEntry> resultSet = new HashSet<LineEntry>();
+
+
 		if (host.contains(":")) {//处理带有端口号的域名
 			String port = host.substring(host.indexOf(":")+1,host.length());
 			host = host.substring(0,host.indexOf(":"));
 			if (port.length()>0) {
-				httpport = Integer.parseInt(port);
+				httpPort = Integer.parseInt(port);
+				httpsPort = httpPort;
 			}
 		}
- 		
+
+		URL httpURL = new URL(String.format("http://%s:%s/",host,httpPort));
+		URL httpsURL = new URL(String.format("https://%s:%s/",host,httpsPort));
+
 		//第一步：IP解析
 		Set<String> IPSet = new HashSet<>();
 		Set<String> CDNSet = new HashSet<>();
-		
+
 		boolean isInPrivateNetwork = LineConfig.isPrivateNetworkWorkingModel(); 
 		if (Commons.isValidIP(host)) {//目标是一个IP
 			if (IPAddress.isPrivateIPv4(host) && !isInPrivateNetwork) {//外网模式，内网IP，直接返回。
@@ -237,10 +243,10 @@ class Producer extends Thread {//Producer do
 			HashMap<String,Set<String>> result = Commons.dnsquery(host);
 			IPSet = result.get("IP");
 			CDNSet = result.get("CDN");
-			
+
 			if (IPSet.size() <= 0) {
 				//TODO 是否应该移除无效域名？理清楚：无效域名，黑名单域名，无响应域名等情况。
-				
+
 				return resultSet;
 			}else {//默认过滤私有IP
 				String ip = new ArrayList<>(IPSet).get(0);
@@ -252,73 +258,58 @@ class Producer extends Thread {//Producer do
 				}
 			}
 		}
-		
-		//第二步：对成功解析的host进行HTTP请求。
-		if (httpport ==-1) {//表明host没有带端口号，默认情况
-			URL httpURL = new URL("http://"+host+":80/");
-			URL httpsURL = new URL("https://"+host+":443/");
-			
-			//https://superuser.com/questions/1054724/how-to-make-firefox-ignore-all-ssl-certification-errors
-			//仍然改为先请求http，http不可用再请求https.避免浏览器中证书问题重复点击很麻烦
-			
-			//do http request first
-			LineEntry httpEntry = doRequest(httpURL);
-			httpEntry.setIPWithSet(IPSet);
-			httpEntry.setCDNWithSet(CDNSet);
-			//stdout.println("messageinfo"+JSONObject.toJSONString(messageinfo));
-			//这里有2种异常情况：1.请求失败（连IP都解析不了,已经通过第一步过滤了）；2.请求成功但是响应包为空（可以解析IP，比如内网域名）。
-			//第一种请求在这里就结束了，第二种情况的请求信息会传递到consumer中进行IP获取的操作。
-			if (LineConfig.doFilter(httpEntry)) {	
-				String location = httpEntry.getHeaderValueOf(false,"Location");
-				if (location == null || !location.startsWith("https://"+host)) {//如果是跳转到https，还是请求https
-					resultSet.add(httpEntry);
-				}
-			}
 
-			
-			//在http不可用，或者设置为不忽略https的情况下
-			if (resultSet.size() ==0 || !LineConfig.isIgnoreHttpsIfHttpOK()) {
-				
-				LineEntry httpsEntry = doRequest(httpsURL);
-				httpsEntry.setIPWithSet(IPSet);
-				httpsEntry.setCDNWithSet(CDNSet);
-		
-				boolean httpsOK = LineConfig.doFilter(httpsEntry);
-		
-				if (httpsOK) {
-					resultSet.add(httpsEntry);
-				}
-			}
-		}else {//处理自带端口号的情况
-			//do http request with specified port
-			URL porthttpURL = new URL("http://"+host+":"+httpport+"/");
-			LineEntry httpEntry = doRequest(porthttpURL);
-			httpEntry.setIPWithSet(IPSet);
-			httpEntry.setCDNWithSet(CDNSet);
-	
-			boolean httpOK = LineConfig.doFilter(httpEntry);
-	
-			if (httpOK) {
+		//第二步：对成功解析的host进行HTTP请求。
+
+		//https://superuser.com/questions/1054724/how-to-make-firefox-ignore-all-ssl-certification-errors
+		//仍然改为先请求http，http不可用再请求https.避免浏览器中证书问题重复点击很麻烦
+
+		//do http request first
+		LineEntry httpEntry = doRequest(httpURL);
+		httpEntry.setIPWithSet(IPSet);
+		httpEntry.setCDNWithSet(CDNSet);
+		//stdout.println("messageinfo"+JSONObject.toJSONString(messageinfo));
+		//这里有2种异常情况：1.请求失败（连IP都解析不了,已经通过第一步过滤了）；2.请求成功但是响应包为空（可以解析IP，比如内网域名）。
+		//第一种请求在这里就结束了，第二种情况的请求信息会传递到consumer中进行IP获取的操作。
+		if (LineConfig.doFilter(httpEntry)) {	
+			String location = httpEntry.getHeaderValueOf(false,"Location");
+			if (location == null || !location.startsWith("https://"+host)) {//如果是跳转到https，还是请求https
 				resultSet.add(httpEntry);
 			}
 		}
-		
+
+
+		//在http不可用，或者设置为不忽略https的情况下
+		if (resultSet.size() ==0 || !LineConfig.isIgnoreHttpsIfHttpOK()) {
+
+			LineEntry httpsEntry = doRequest(httpsURL);
+			httpsEntry.setIPWithSet(IPSet);
+			httpsEntry.setCDNWithSet(CDNSet);
+
+			boolean httpsOK = LineConfig.doFilter(httpsEntry);
+
+			if (httpsOK) {
+				resultSet.add(httpsEntry);
+			}
+		}
+
+
 		//do request for external port, 8000,8080, 
-		
+
 		if (TitlePanel.getExternalPortList() != null && TitlePanel.getExternalPortList().size() != 0) {
 			for (int port: TitlePanel.getExternalPortList()) {
-		
+
 				//do http request
 				URL ex_http = new URL("http://"+host+":"+port+"/");
 				LineEntry exhttpEntry = doRequest(ex_http);
 				exhttpEntry.setIPWithSet(IPSet);
 				exhttpEntry.setCDNWithSet(CDNSet);
-				
+
 				if (LineConfig.doFilter(exhttpEntry)) {
 					resultSet.add(exhttpEntry);
 					continue;
 				}
-				
+
 				//do https request
 				URL ex_https = new URL("https://"+host+":"+port+"/");
 				LineEntry exhttpsEntry = doRequest(ex_https);
@@ -328,7 +319,7 @@ class Producer extends Thread {//Producer do
 				if (LineConfig.doFilter(exhttpsEntry)) {
 					resultSet.add(exhttpsEntry);
 				}
-				
+
 			}
 		}
 
