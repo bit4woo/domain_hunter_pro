@@ -14,8 +14,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -60,9 +58,6 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultHighlighter;
-import javax.swing.text.Highlighter;
 
 import org.apache.commons.io.FileUtils;
 
@@ -165,8 +160,8 @@ public class DomainPanel extends JPanel {
 						//System.out.println(rootDomains.toString());
 						//System.out.println("xxx"+keywords.toString());
 						btnBrute.setEnabled(false);
-//						threadBruteDomain = new ThreadBruteDomain(rootDomains);
-//						threadBruteDomain.Do();
+						//						threadBruteDomain = new ThreadBruteDomain(rootDomains);
+						//						threadBruteDomain.Do();
 						for (String rootDomain: rootDomains){
 							threadBruteDomain2 = new ThreadBruteDomainWithDNSServer2(rootDomain);
 							threadBruteDomain2.Do();
@@ -273,14 +268,14 @@ public class DomainPanel extends JPanel {
 		});
 		btnCrawl.setToolTipText("Crawl all subdomains recursively,This may take a long time and large Memory Usage!!!");
 		HeaderPanel.add(btnCrawl);
-		
 
 
-		
+
+
 		JButton btnZoneTransferCheck = new JButton("AXFR");
 		btnZoneTransferCheck.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				
+
 				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
 					@Override
 					protected Map doInBackground() throws Exception {
@@ -457,14 +452,14 @@ public class DomainPanel extends JPanel {
 
 		domainTableModel = new DefaultTableModel(
 				new Object[][] {
-						//{"1", "1","1"},
+					//{"1", "1","1"},
 				},
 				new String[] {
 						"Root Domain", "Keyword"//, "Source"
 				}
-		);
+				);
 		table.setModel(domainTableModel);
-		
+
 		/*
 		 * 注意，所有直接对DomainObject中数据的修改，都不会触发该tableChanged监听器。
 		 * 除非操作的逻辑中包含了firexxxx来主动通知监听器。
@@ -611,7 +606,7 @@ public class DomainPanel extends JPanel {
 				//domainResult.setRootDomainMap(getTableMap()); //no need any more because tableModel Listener
 			}
 		});
-		
+
 		JButton blackButton = new JButton("Black");
 		ControlPanel.add(blackButton);
 		blackButton.addActionListener(new ActionListener() {
@@ -653,10 +648,10 @@ public class DomainPanel extends JPanel {
 					if (domain.endsWith(".")) {
 						domain = domain.substring(0,domain.length()-1);
 					}
-					
+
 					int type = domainResult.domainType(domain);
 					if (type == DomainObject.SUB_DOMAIN || type == DomainObject.IP_ADDRESS)
-					//包含手动添加的IP
+						//包含手动添加的IP
 					{
 						newSubDomainSet.add(domain);
 					}else if (type == DomainObject.SIMILAR_DOMAIN) {
@@ -671,7 +666,7 @@ public class DomainPanel extends JPanel {
 					if (domain.endsWith(".")) {
 						domain = domain.substring(0,domain.length()-1);
 					}
-					
+
 					int type = domainResult.domainType(domain);
 					if (type == DomainObject.SUB_DOMAIN)
 					{
@@ -837,54 +832,74 @@ public class DomainPanel extends JPanel {
 
 		lblSummary = new JLabel("      ^_^");
 		footerPanel.add(lblSummary);
-		
-		
+		lblSummary.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				try {
+					String[] cmdArray = new String[] {"explorer.exe","\""+GUI.getCurrentDBFile().getParent()+"\""};
+					//stdout.println(GUI.getCurrentDBFile().getParent());
+					Runtime.getRuntime().exec(cmdArray);
+				} catch (Exception e2) {
+					e2.printStackTrace(stderr);
+				}
+			}
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				lblSummary.setForeground(Color.RED);
+			}
+			@Override
+			public void mouseExited(MouseEvent e) {
+				lblSummary.setForeground(Color.BLACK);
+			}
+		});
+
+
 		//搜索域名，但是效果不怎么好
-//		JTextField textFieldSearch = new JTextField("");
-//		textFieldSearch.addFocusListener(new FocusAdapter() {
-//			@Override
-//			public void focusGained(FocusEvent e) {
-//				if (textFieldSearch.getText().equals("Input text to search")) {
-//					textFieldSearch.setText("");
-//				}
-//			}
-//			@Override
-//			public void focusLost(FocusEvent e) {
-//				/*
-//				 * if (textFieldSearch.getText().equals("")) {
-//				 * textFieldSearch.setText("Input text to search"); }
-//				 */
-//
-//			}
-//		});
-//
-//		textFieldSearch.addActionListener(new ActionListener() {
-//			public void actionPerformed(ActionEvent e) {
-//				String keyword = textFieldSearch.getText().trim();
-//				domainPanelSearch(keyword);
-//			}
-//			
-//			public void domainPanelSearch(String keyword) {
-//				try {
-//					Highlighter h = textAreaSubdomains.getHighlighter();
-//					h.removeAllHighlights();
-//					int pos = textAreaSubdomains.getText().indexOf(keyword, 0);
-//					h.addHighlight(pos ,
-//					               pos  + keyword.length(),
-//					               DefaultHighlighter.DefaultPainter);
-//					textAreaRelatedDomains = new JTextArea();
-//					textAreaSubdomains = new JTextArea();
-//					textAreaSimilarDomains = new JTextArea();
-//					textAreaEmails = new JTextArea();
-//					textAreaPackages = new JTextArea();
-//				} catch (BadLocationException e) {
-//					e.printStackTrace(stderr);
-//				}
-//			}
-//		});
-//
-//		textFieldSearch.setColumns(30);
-//		footerPanel.add(textFieldSearch);
+		//		JTextField textFieldSearch = new JTextField("");
+		//		textFieldSearch.addFocusListener(new FocusAdapter() {
+		//			@Override
+		//			public void focusGained(FocusEvent e) {
+		//				if (textFieldSearch.getText().equals("Input text to search")) {
+		//					textFieldSearch.setText("");
+		//				}
+		//			}
+		//			@Override
+		//			public void focusLost(FocusEvent e) {
+		//				/*
+		//				 * if (textFieldSearch.getText().equals("")) {
+		//				 * textFieldSearch.setText("Input text to search"); }
+		//				 */
+		//
+		//			}
+		//		});
+		//
+		//		textFieldSearch.addActionListener(new ActionListener() {
+		//			public void actionPerformed(ActionEvent e) {
+		//				String keyword = textFieldSearch.getText().trim();
+		//				domainPanelSearch(keyword);
+		//			}
+		//			
+		//			public void domainPanelSearch(String keyword) {
+		//				try {
+		//					Highlighter h = textAreaSubdomains.getHighlighter();
+		//					h.removeAllHighlights();
+		//					int pos = textAreaSubdomains.getText().indexOf(keyword, 0);
+		//					h.addHighlight(pos ,
+		//					               pos  + keyword.length(),
+		//					               DefaultHighlighter.DefaultPainter);
+		//					textAreaRelatedDomains = new JTextArea();
+		//					textAreaSubdomains = new JTextArea();
+		//					textAreaSimilarDomains = new JTextArea();
+		//					textAreaEmails = new JTextArea();
+		//					textAreaPackages = new JTextArea();
+		//				} catch (BadLocationException e) {
+		//					e.printStackTrace(stderr);
+		//				}
+		//			}
+		//		});
+		//
+		//		textFieldSearch.setColumns(30);
+		//		footerPanel.add(textFieldSearch);
 	}
 
 	public void showToDomainUI() {
@@ -950,7 +965,7 @@ public class DomainPanel extends JPanel {
 			}
 		}
 	}
-	
+
 	public static Set<String> collectEmails() {
 		Set<String> Emails = new HashSet<>();
 		IScanIssue[]  issues =  BurpExtender.getCallbacks().getScanIssues(null);
