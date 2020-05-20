@@ -27,7 +27,7 @@ public class TextAreaMenu extends JPopupMenu {
         }
 
         List<String> selectedItems = Arrays.asList(selectedText.split(System.lineSeparator()));
-		JMenuItem googleSearchItem = new JMenuItem(new AbstractAction("Google It (double click)") {
+		JMenuItem googleSearchItem = new JMenuItem(new AbstractAction("Google It") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				if (selectedItems.size() >=50) {

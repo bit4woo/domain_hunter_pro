@@ -419,9 +419,9 @@ public class LineTable extends JTable
 					//int row = ((LineTable) e.getSource()).rowAtPoint(e.getPoint()); // 获得行位置
 					int col = ((LineTable) e.getSource()).columnAtPoint(e.getPoint()); // 获得列位置
 
-
-					if ((col < LineTable.this.getColumnModel().getColumnIndex("Comments"))) {//last column----comments
-						String host = LineTable.this.lineTableModel.getLineEntries().getValueAtIndex(rows[0]).getHost();
+					LineEntry selecteEntry = LineTable.this.lineTableModel.getLineEntries().getValueAtIndex(rows[0]);
+					if ((col==0 )) {//双击index在google中搜索host。
+						String host = selecteEntry.getHost();
 						String url= "https://www.google.com/search?q=site%3A"+host;
 						try {
 							URI uri = new URI(url);
@@ -431,6 +431,13 @@ public class LineTable extends JTable
 							}
 						} catch (Exception e2) {
 							e2.printStackTrace();
+						}
+					}else if(col==1) {//双击url在浏览器中打开
+						try{
+							String url = selecteEntry.getUrl();
+							Commons.browserOpen(url,ToolPanel.getLineConfig().getBrowserPath());
+						}catch (Exception e1){
+							e1.printStackTrace(stderr);
 						}
 					}
 				}

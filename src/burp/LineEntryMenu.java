@@ -36,7 +36,7 @@ public class LineEntryMenu extends JPopupMenu {
 		});
 
 
-		JMenuItem googleSearchItem = new JMenuItem(new AbstractAction("Seach on Google (double click)") {
+		JMenuItem googleSearchItem = new JMenuItem(new AbstractAction("Seach on Google (double click index)") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				if (rows.length >=50) {
@@ -128,7 +128,7 @@ public class LineEntryMenu extends JPopupMenu {
 		doPortScan.addActionListener(new NmapScanAction(lineTable, rows));
 
 
-		JMenuItem openURLwithBrowserItem = new JMenuItem(new AbstractAction("Open URL With Browser") {
+		JMenuItem openURLwithBrowserItem = new JMenuItem(new AbstractAction("Open With Browser(double click url)") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				try{
