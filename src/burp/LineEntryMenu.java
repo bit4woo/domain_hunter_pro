@@ -36,7 +36,7 @@ public class LineEntryMenu extends JPopupMenu {
 		JMenuItem setColorItem = new JMenuItem(new AbstractAction("Checking (Set to red)#TODO") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				lineTable.setColor(1);
+				//lineTable.setColor(1);
 			}
 		});
 
