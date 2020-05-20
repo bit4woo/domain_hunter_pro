@@ -17,8 +17,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingWorker;
 
-import Config.LineConfig;
-
 public class LineEntryMenu extends JPopupMenu {
 
 	/**
@@ -35,6 +33,12 @@ public class LineEntryMenu extends JPopupMenu {
 			}
 		});
 
+		JMenuItem setColorItem = new JMenuItem(new AbstractAction("Checking (Set to red)#TODO") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				lineTable.setColor(1);
+			}
+		});
 
 		JMenuItem googleSearchItem = new JMenuItem(new AbstractAction("Seach on Google (double click index)") {
 			@Override
@@ -326,6 +330,7 @@ public class LineEntryMenu extends JPopupMenu {
 
 
 		this.add(itemNumber);
+		this.add(setColorItem);
 		this.add(googleSearchItem);
 		this.add(SearchOnGithubItem);
 		this.add(SearchOnHunterItem);
@@ -358,4 +363,3 @@ public class LineEntryMenu extends JPopupMenu {
 
 	}
 }
-

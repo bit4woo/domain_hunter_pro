@@ -1,5 +1,7 @@
 package burp;
 
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -10,9 +12,7 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.JScrollPane;
@@ -21,6 +21,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.RowFilter;
 import javax.swing.SwingUtilities;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableRowSorter;
@@ -177,6 +178,30 @@ public class LineTable extends JTable
 		}
 	}
 
+	//TODO,还没弄明白
+	public void setColor(int inputRow) {
+		try {
+			DefaultTableCellRenderer dtcr = new DefaultTableCellRenderer() {
+				//重写getTableCellRendererComponent 方法
+				@Override
+				public Component getTableCellRendererComponent(JTable table,Object value, boolean isSelected, boolean hasFocus,int row, int column) {
+					Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+					if (row == 1) {
+						c.setBackground(Color.RED);
+					}
+					return c;
+				}
+			};
+			//对每行的每一个单元格
+			int columnCount = this.getColumnCount();
+			for (int i = 0; i < columnCount; i++) {
+				this.getColumn(this.getColumnName(i)).setCellRenderer(dtcr);
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
 	public void addClickSort() {//双击header头进行排序
 
