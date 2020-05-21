@@ -22,9 +22,9 @@ import burp.IResponseInfo;
 
 public class LineEntry {
 
-	public static final String Level_A = "A";
-	public static final String Level_B = "B";
-	public static final String Level_C = "C";
+	public static final String Level_A = "重要";
+	public static final String Level_B = "无用";
+	public static final String Level_C = "一般";
 
 	public static final String CheckStatus_UnChecked = "UnChecked";
 	public static final String CheckStatus_Checked = "Checked";

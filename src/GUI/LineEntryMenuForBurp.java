@@ -101,7 +101,7 @@ public class LineEntryMenuForBurp{
 	}
 
 	public static void addLevelABC(JMenu topMenu,final LineTable lineTable, final int[] rows){
-		String[] MainMenu = {"A", "B", "C"};
+		String[] MainMenu = {LineEntry.Level_A, LineEntry.Level_B, LineEntry.Level_C};
 		for(int i = 0; i < MainMenu.length; i++){
 			JMenuItem item = new JMenuItem(MainMenu[i]);
 
