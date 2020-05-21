@@ -1,24 +1,16 @@
 package burp;
 
-import java.awt.BorderLayout;
 import java.io.PrintWriter;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-
-import javax.swing.JOptionPane;
 
 //////////////////ThreadGetTitle block/////////////
 //no need to pass BurpExtender object to these class, IBurpExtenderCallbacks object is enough 
 class ThreadRunner{
-	private byte[] request;
+	private IHttpRequestResponse messageInfo;
 	private List<RunnerProducer> plist;
 
 	private static IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();//静态变量，burp插件的逻辑中，是可以保证它被初始化的。;
@@ -26,24 +18,24 @@ class ThreadRunner{
 	public PrintWriter stderr = new PrintWriter(callbacks.getStderr(), true);
 	public IExtensionHelpers helpers = callbacks.getHelpers();
 
-	public ThreadRunner(byte[] request) {
-		this.request = request;
+	public ThreadRunner(IHttpRequestResponse messageInfo) {
+		this.messageInfo = messageInfo;
 	}
 
 	public void Do(){
 		BlockingQueue<LineEntry> lineEntryQueue = new LinkedBlockingQueue<LineEntry>();//use to store domains
-		lineEntryQueue.addAll(TitlePanel.getTitleTableModel().getLineEntries());
+		lineEntryQueue.addAll(TitlePanel.getTitleTableModel().getLineEntries().values());
 		stdout.println("~~~~~~~~~~~~~Start threading Runner~~~~~~~~~~~~~ total task number: "+lineEntryQueue.size());
 
 		plist = new ArrayList<RunnerProducer>();
 
 		for (int i=0;i<=50;i++) {
-			RunnerProducer p = new RunnerProducer(RunnerGUI.getRunnerTableModel(),lineEntryQueue,request, RunnerGUI.getKeyword(), i);
+			RunnerProducer p = new RunnerProducer(RunnerGUI.getRunnerTableModel(),lineEntryQueue,messageInfo, RunnerGUI.getKeyword(), i);
 			p.start();
 			plist.add(p);
 		}
 
-		long waitTime = 0; 
+		long waitTime = 0;
 		while(true) {//to wait all threads exit.
 			if (lineEntryQueue.isEmpty() && isAllProductorFinished()) {
 				stdout.println("~~~~~~~~~~~~~Get Title Done~~~~~~~~~~~~~");
@@ -104,18 +96,33 @@ class RunnerProducer extends Thread {//Producer do
 	public PrintWriter stdout = new PrintWriter(callbacks.getStdout(), true);
 	public PrintWriter stderr = new PrintWriter(callbacks.getStderr(), true);
 	public IExtensionHelpers helpers = callbacks.getHelpers();
+
+	private Getter getter;
 	private byte[] request;
+	private byte[] response;
+	private String protocol;
+	private String host;
+	private int port;
+
 	LineTableModel runnerTableModel;
 	String keyword;
 
-	public RunnerProducer(LineTableModel runnerTableModel,BlockingQueue<LineEntry> lineEntryQueue,byte[] request, String keyword, int threadNo) {
+	public RunnerProducer(LineTableModel runnerTableModel,BlockingQueue<LineEntry> lineEntryQueue,IHttpRequestResponse messageInfo, String keyword, int threadNo) {
 		this.runnerTableModel = runnerTableModel;
 		this.runnerTableModel.setListenerIsOn(false);//否则数据会写入title的数据库
 		this.threadNo = threadNo;
 		this.lineEntryQueue = lineEntryQueue;
-		this.request = request;
 		this.keyword = keyword;
 		stopflag= false;
+
+		//为了避免原始messageinfo的改变导致影响后续获取headers等参数，先完成解析存储下来。
+		//而且也可以避免多线程下getter时常getHeaderMap的结果为空的情况！！！
+		//虽然减少了getter的次数，但是还是每个线程执行了一次，目前看来没有出错，因为线程的启动是顺序执行的！
+		getter = new Getter(helpers);
+		request = messageInfo.getRequest();
+		response = messageInfo.getResponse();
+		protocol = messageInfo.getHttpService().getProtocol();
+		port = messageInfo.getHttpService().getPort();
 	}
 
 	public void stopThread() {
@@ -130,24 +137,31 @@ class RunnerProducer extends Thread {//Producer do
 					//stdout.println(threadNo+" Producer exited");
 					break;
 				}
+				//只需要从line中获取host信息就可以了，其他信息都应该和当前的请求一致！
 				LineEntry line = lineEntryQueue.take();
-				String protocol = line.getProtocol();
-				boolean useHttps =false;
-				if (protocol.equalsIgnoreCase("https")) {
-					useHttps =true;
+				String host = line.getHost();
+
+				IHttpService httpService = helpers.buildHttpService(host, port, protocol);
+
+				LinkedHashMap<String, String> headers = getter.getHeaderMap(true, request);
+				if ((protocol.toLowerCase().equals("http")&&port==80) || (protocol.toLowerCase().equals("https")&&port==443)) {
+					headers.put("Host", host);
+				}else {
+					headers.put("Host", host+":"+port);//update host of request header
 				}
-				IHttpService httpService = helpers.buildHttpService(line.getHost(), line.getPort(), useHttps);
+				byte[] body = getter.getBody(true, request);
+
+				byte[] neRequest = helpers.buildHttpMessage(getter.headerMapToHeaderList(headers), body);
 
 				int leftTaskNum = lineEntryQueue.size();
-				stdout.println(String.format("%s tasks left, Runner Checking: %s",leftTaskNum,line.getUrl()));
-				
-				IHttpRequestResponse messageinfo = callbacks.makeHttpRequest(httpService, this.request);
-				Getter getter = new Getter(helpers);
+				stdout.println(String.format("%s tasks left, Runner Checking: %s",leftTaskNum,line.getHost()));
+
+				IHttpRequestResponse messageinfo = callbacks.makeHttpRequest(httpService, neRequest);
 				if (messageinfo !=null) {
-					byte[] bodybyte = getter.getBody(false, messageinfo);
-					if (bodybyte != null) {
-						String body = new String(bodybyte);
-						if (body.toLowerCase().contains(keyword)) {
+					byte[] response = messageinfo.getResponse();
+					if (response != null) {
+						String responseBody = new String(response);
+						if (responseBody.toLowerCase().contains(keyword)) {
 							runnerTableModel.addNewLineEntry(new LineEntry(messageinfo,false,false,"Runner"));
 						}
 					}
@@ -156,6 +170,5 @@ class RunnerProducer extends Thread {//Producer do
 				e.printStackTrace(stderr);
 			}
 		}
-
 	}
 }

@@ -23,7 +23,7 @@ public class RunnerGUI extends JFrame {
 	private static LineTableModel runnerTableModel = new LineTableModel();
 	private static LineTable runnerTable = new LineTable(runnerTableModel);
 	private static ThreadRunner runner;
-	private static byte[] request;
+	private static IHttpRequestResponse messageInfo;
 	private static String keyword;
 	
 	public JPanel getRunnerPanel() {
@@ -82,12 +82,12 @@ public class RunnerGUI extends JFrame {
 		RunnerGUI.runner = runner;
 	}
 
-	public static byte[] getRequest() {
-		return request;
+	public static IHttpRequestResponse getMessageInfo() {
+		return messageInfo;
 	}
 
-	public static void setRequest(byte[] request) {
-		RunnerGUI.request = request;
+	public static void setMessageInfo(IHttpRequestResponse messageInfo) {
+		RunnerGUI.messageInfo = messageInfo;
 	}
 
 	public static String getKeyword() {
@@ -143,9 +143,9 @@ public class RunnerGUI extends JFrame {
 	}
 	
 	
-	public RunnerGUI(byte[] request) {
+	public RunnerGUI(IHttpRequestResponse messageInfo) {
 		getKeywordFromUI();
-		this.request = request;
+		this.messageInfo = messageInfo;
 		
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		//if use "EXIT_ON_CLOSE",burp will exit!!
@@ -212,7 +212,7 @@ public class RunnerGUI extends JFrame {
 	}
 	
 	public void begainRun() {
-		runner = new ThreadRunner(request);
+		runner = new ThreadRunner(messageInfo);
 		runner.Do();
 	}
 }

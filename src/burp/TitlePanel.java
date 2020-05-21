@@ -11,6 +11,8 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,24 +29,44 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 
+import Config.LineConfig;
+
 public class TitlePanel extends JPanel {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private JPanel buttonPanel;
-	private LineTable titleTable;
+	private static LineTable titleTable;
 	private JLabel lblSummaryOfTitle;
-	private static JTextField textFieldCookie;
+	private static String cookie;
 	public  JRadioButton rdbtnHideCheckedItems;
 	//add table and tablemodel to GUI
 	private static LineTableModel titleTableModel = new LineTableModel();
 	PrintWriter stdout;
 	PrintWriter stderr;
 	private ThreadGetTitle threadGetTitle;
-	private List<LineEntry> BackupLineEntries;
+	private IndexedLinkedHashMap<String,LineEntry> BackupLineEntries;
 	private History searchHistory = new History(10);
+	private static List<Integer> externalPortList;
+	private static JTextField textFieldSearch;
 
+	public static JTextField getTextFieldSearch() {
+		return textFieldSearch;
+	}
+
+	public static void setTextFieldSearch(JTextField textFieldSearch) {
+		TitlePanel.textFieldSearch = textFieldSearch;
+	}
+
+	public static LineTable getTitleTable() {
+		return titleTable;
+	}
 
 	public static LineTableModel getTitleTableModel() {
 		return titleTableModel;
@@ -54,8 +76,16 @@ public class TitlePanel extends JPanel {
 		return threadGetTitle;
 	}
 
-	public List<LineEntry> getBackupLineEntries() {
+	public IndexedLinkedHashMap<String,LineEntry> getBackupLineEntries() {
 		return BackupLineEntries;
+	}
+
+	public static List<Integer> getExternalPortList() {
+		return externalPortList;
+	}
+
+	public static void setExternalPortList(List<Integer> externalPortList) {
+		TitlePanel.externalPortList = externalPortList;
 	}
 
 	public TitlePanel() {//构造函数
@@ -70,16 +100,28 @@ public class TitlePanel extends JPanel {
 
 		this.setBorder(new EmptyBorder(5, 5, 5, 5));
 		this.setLayout(new BorderLayout(0, 0));
+		this.add(createButtonPanel(), BorderLayout.NORTH);
 
+		/////////////////////////////////////////
+//		JSplitPane TargetAndTitlePanel = new JSplitPane();//存放目标域名
+//		TargetAndTitlePanel.setResizeWeight(0.2);
+//		this.add(TargetAndTitlePanel,BorderLayout.CENTER);
+//
+//		JScrollPane TargetMapPane = new JScrollPane();
+//		TargetMapPane.setPreferredSize(new Dimension(200, 200));
+//		TargetAndTitlePanel.setLeftComponent(TargetMapPane);
+//
+//
+//		titleTable = new LineTable(titleTableModel);
+//		TargetAndTitlePanel.setRightComponent(titleTable.getTableAndDetailSplitPane());
+
+		titleTable = new LineTable(titleTableModel);
+		this.add(titleTable.getTableAndDetailSplitPane(),BorderLayout.CENTER);
+	}
+
+	public JPanel createButtonPanel() {
 		buttonPanel = new JPanel();
-		this.add(buttonPanel, BorderLayout.NORTH);
 		buttonPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
-
-		JLabel cookieLabel = new JLabel("Cookie:");
-		buttonPanel.add(cookieLabel);
-		textFieldCookie = new JTextField("");
-		textFieldCookie.setColumns(30);
-		buttonPanel.add(textFieldCookie);
 
 		JButton btnGettitle = new JButton("Get Title");
 		btnGettitle.setToolTipText("A fresh start");
@@ -160,12 +202,11 @@ public class TitlePanel extends JPanel {
 
 						btnGetSubnet.setEnabled(false);
 						int result = JOptionPane.showConfirmDialog(null,"Just get IP Subnets of [Current] lines ?");
-						String subnetsString;
-						if (result == JOptionPane.YES_OPTION) {
-							subnetsString = getSubnet(true);
-						}else {
-							subnetsString = getSubnet(false);
-						}
+						
+						int publicSubnets = JOptionPane.showConfirmDialog(null,"Just get [Pulic] IP Subnets ?");
+						
+						String subnetsString = getSubnet(result == JOptionPane.YES_OPTION?true:false,publicSubnets == JOptionPane.YES_OPTION?true:false);
+
 						Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 						StringSelection selection = new StringSelection(subnetsString);
 						clipboard.setContents(selection, null);
@@ -236,7 +277,7 @@ public class TitlePanel extends JPanel {
 			}
 		});
 
-		JTextField textFieldSearch = new JTextField("");
+		textFieldSearch = new JTextField("");
 		textFieldSearch.addFocusListener(new FocusAdapter() {
 			@Override
 			public void focusGained(FocusEvent e) {
@@ -261,10 +302,25 @@ public class TitlePanel extends JPanel {
 				searchHistory.addRecord(keyword);//记录搜索历史
 			}
 		});
+		
+		textFieldSearch.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseClicked(MouseEvent e) {
+					if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2){//左键双击
+						}
+			        if (e.getButton() == MouseEvent.BUTTON3) {//鼠标右键
+			            // 弹出菜单
+			        	SearchMenu sm = new SearchMenu();
+			            sm.show(textFieldSearch, e.getX(), e.getY());
+			        }
+				}
+		}
+		);
+		
 
 		textFieldSearch.addKeyListener(new KeyAdapter(){
-			public void keyPressed(KeyEvent e)    
-			{    
+			public void keyPressed(KeyEvent e)
+			{
 				if (e.getKeyCode()==KeyEvent.VK_KP_UP || e.getKeyCode() == KeyEvent.VK_UP)//上键
 				{
 					try {
@@ -283,7 +339,7 @@ public class TitlePanel extends JPanel {
 						if (record != null) {
 							textFieldSearch.setText(record);
 						}
-					} catch (Exception ex) {	
+					} catch (Exception ex) {
 						ex.printStackTrace(stderr);
 					}
 				}
@@ -300,11 +356,13 @@ public class TitlePanel extends JPanel {
 				String keyword = textFieldSearch.getText().trim();
 				titleTable.search(keyword);
 				searchHistory.addRecord(keyword);
+				digStatus();
 			}
 		});
 		buttonPanel.add(buttonSearch);
 
 		rdbtnHideCheckedItems = new JRadioButton("Hide Checked");
+		rdbtnHideCheckedItems.setSelected(true);
 		rdbtnHideCheckedItems.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String keyword = textFieldSearch.getText().trim();
@@ -314,50 +372,46 @@ public class TitlePanel extends JPanel {
 		});
 		buttonPanel.add(rdbtnHideCheckedItems);
 
-		JButton btnRefresh = new JButton("Refresh");//主要目的是隐藏新标注的条目，代替自动隐藏
-		btnRefresh.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				String keyword = textFieldSearch.getText().trim();
-				titleTable.search(keyword);
-			}
-		});
-		buttonPanel.add(btnRefresh);
-
-		JButton btnStatus = new JButton("status");
-		btnStatus.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				digStatus();
-			}
-		});
-		btnStatus.setToolTipText("Show Status Of Digging.");
-		buttonPanel.add(btnStatus);
-
-		lblSummaryOfTitle = new JLabel("      ^_^");
+		lblSummaryOfTitle = new JLabel("^_^");
 		buttonPanel.add(lblSummaryOfTitle);
+		buttonPanel.setToolTipText(titleTableModel.getStatusSummary());
 
-		/////////////////////////////////////////
-		titleTable = new LineTable(titleTableModel);
-		this.add(titleTable.getTableAndDetailSplitPane(),BorderLayout.CENTER);
+		return buttonPanel;
 	}
 
-
-
-
+	/*
+	 * 根据所有已知域名获取title
+	 */
 	public void getAllTitle(){
+		//是否在目标的内网中
+		int user_input = JOptionPane.showConfirmDialog(null, "Are you in private network of target?","Chose work model",JOptionPane.YES_NO_OPTION);
+		if (JOptionPane.YES_OPTION == user_input) {
+			LineConfig.setPrivateNetworkWorkingModel(true);
+		}else {
+			LineConfig.setPrivateNetworkWorkingModel(false);
+		}
+		
+		inputCookie();//如果用户点击cancel，就不会进行后续步骤，why?
+		
+		DomainPanel.backupDB();
 		Set<String> domains = new HashSet<>();//新建一个对象，直接赋值后的删除操作，实质是对domainResult的操作。
-
-		domains.addAll(BurpExtender.getGui().getDomainPanel().getDomainResult().getSubDomainSet());
+		domains.addAll(DomainPanel.getDomainResult().getSubDomainSet());
 		//remove domains in black list
-		domains.removeAll(BurpExtender.getGui().getDomainPanel().getDomainResult().getBlackDomainSet());
+		domains.removeAll(DomainPanel.getDomainResult().getBlackDomainSet());
 
 		//backup to history
 		BackupLineEntries = titleTableModel.getLineEntries();
 		//clear tableModel
 
 		titleTableModel.clear(true);//clear
+		
+		//获取额外端口逻辑
+//		TitlePanel.externalPortList = Commons.Port_prompt(null,"External Ports To Run");
+//		stdout.println("external ports: "+ externalPortList);
 
 		threadGetTitle = new ThreadGetTitle(domains);
 		threadGetTitle.Do();
+		
 	}
 
 
@@ -366,35 +420,63 @@ public class TitlePanel extends JPanel {
 		stdout.println(extendIPSet.size()+" extend IP Address founded"+extendIPSet);
 		threadGetTitle = new ThreadGetTitle(extendIPSet);
 		threadGetTitle.Do();
+		
+		//转移手动保存的结果
+		for (LineEntry entry:BackupLineEntries.values()) {
+//			if (entry.getComment().contains("Manual-Saved")) {
+//				TitlePanel.getTitleTableModel().addNewLineEntry(entry);
+//			}
+			if (entry != null) {
+				TitlePanel.getTitleTableModel().addNewLineEntry(entry);//保存所有历史记录中没有匹配到的记录。
+			}
+		}
 	}
 
+	
 
-	public String getSubnet(boolean isCurrent){
+	public String getSubnet(boolean isCurrent,boolean justPulic){
+		//stdout.println(" "+isCurrent+justPulic);
 		Set<String> subnets;
 		if (isCurrent) {//获取的是现有可成功连接的IP集合
 			subnets = titleTableModel.GetSubnets();
 		}else {//重新解析所有域名的IP
-			Set<String> IPsOfDomain = new ThreadGetSubnet(BurpExtender.getGui().getDomainPanel().getDomainResult().getSubDomainSet()).Do();
+			Set<String> IPsOfDomain = new ThreadGetSubnet(DomainPanel.getDomainResult().getSubDomainSet()).Do();
 			//Set<String> CSubNetIPs = Commons.subNetsToIPSet(Commons.toSubNets(IPsOfDomain));
 			subnets = Commons.toSmallerSubNets(IPsOfDomain);
 		}
-		return String.join(System.lineSeparator(), subnets);
+		
+		HashSet<String> result = new HashSet<>(subnets);
+		if (justPulic) {
+			//stdout.println("删除私有IP");
+			for (String subnet :subnets) {
+				String tmp = subnet.split("/")[0];
+				if (IPAddress.isPrivateIPv4(tmp)) {
+					result.remove(subnet);
+					//stdout.println("删除"+subnet);
+				}
+			}
+		}
+		
+		return String.join(System.lineSeparator(), result);
 	}
 
-	public void showToTitleUI(List<LineEntry> lineEntries) {
+	/*
+	 * 用于从DB文件中加载数据，没有去重检查。
+	 */
+	public void showToTitleUI(IndexedLinkedHashMap<String,LineEntry> lineEntries) {
 		//titleTableModel.setLineEntries(new ArrayList<LineEntry>());//clear
 		//这里没有fire delete事件，会导致排序号加载文件出错，但是如果fire了又会触发tableModel的删除事件，导致数据库删除。改用clear()
 		titleTableModel.clear(false);//clear
 		titleTableModel.setListenerIsOn(false);
-		for (LineEntry line:lineEntries) {
-			titleTableModel.addNewLineEntry(line);
+		int row = lineEntries.size();
+		titleTableModel.setLineEntries(lineEntries);//如果listener是on，将触发listener--同步到db文件
+		if (row>=1) {
+			titleTableModel.fireTableRowsInserted(0, row-1);
 		}
-		digStatus();
-		stdout.println("Load Title Panel Data Done");
 		titleTableModel.setListenerIsOn(true);
+		digStatus();
+		TitlePanel.getTitleTable().search("");// hide checked items
 	}
-
-
 
 
 	public void digStatus() {
@@ -402,7 +484,13 @@ public class TitlePanel extends JPanel {
 		lblSummaryOfTitle.setText(status);
 	}
 
-	public static JTextField getTextFieldCookie() {
-		return textFieldCookie;
+	public static String getCookie() {
+		return cookie;
+	}
+	
+	//cookie used at burp.Commons.buildCookieRequest(IExtensionHelpers, String, byte[])
+	//burp.Producer.doRequest(URL)
+	public static void inputCookie() {
+		cookie = JOptionPane.showInputDialog("Input cookie OR Leave it blank", null).trim();
 	}
 }

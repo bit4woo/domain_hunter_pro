@@ -1,16 +1,32 @@
 package burp;
 
-import javax.swing.*;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableRowSorter;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Desktop;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Pattern;
+
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.RowFilter;
+import javax.swing.SwingUtilities;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableRowSorter;
+
+import Config.Dork;
 
 public class LineTable extends JTable
 {
@@ -37,13 +53,13 @@ public class LineTable extends JTable
 	public LineTable(LineTableModel lineTableModel)
 	{
 		//super(lineTableModel);//这个方法创建的表没有header
-        try{
-            stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
-            stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
-        }catch (Exception e){
-            stdout = new PrintWriter(System.out, true);
-            stderr = new PrintWriter(System.out, true);
-        }
+		try{
+			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
+			stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
+		}catch (Exception e){
+			stdout = new PrintWriter(System.out, true);
+			stderr = new PrintWriter(System.out, true);
+		}
 
 		this.lineTableModel = lineTableModel;
 		this.setFillsViewportHeight(true);//在table的空白区域显示右键菜单
@@ -62,7 +78,7 @@ public class LineTable extends JTable
 	public void changeSelection(int row, int col, boolean toggle, boolean extend)
 	{
 		// show the log entry for the selected row
-		LineEntry Entry = this.lineTableModel.getLineEntries().get(super.convertRowIndexToModel(row));
+		LineEntry Entry = this.lineTableModel.getLineEntries().getValueAtIndex(super.convertRowIndexToModel(row));
 
 		requestViewer.setMessage(Entry.getRequest(), true);
 		responseViewer.setMessage(Entry.getResponse(), false);
@@ -84,7 +100,7 @@ public class LineTable extends JTable
 		//TitlePanel.add(splitPane, BorderLayout.CENTER); // getTitlePanel to get it
 
 		JScrollPane scrollPaneRequests = new JScrollPane(this,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);//table area
+				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);//table area
 		//允许横向滚动条
 		//scrollPaneRequests.setViewportView(titleTable);//titleTable should lay here.
 		splitPane.setLeftComponent(scrollPaneRequests);
@@ -103,7 +119,7 @@ public class LineTable extends JTable
 		responseViewer = BurpExtender.getCallbacks().createMessageEditor(this.getModel(), false);
 		RequestPanel.addTab("Request", requestViewer.getComponent());
 		ResponsePanel.addTab("Response", responseViewer.getComponent());
-		
+
 		this.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);//配合横向滚动条
 
 		return splitPane;
@@ -114,60 +130,78 @@ public class LineTable extends JTable
 		Font f = this.getFont();
 		FontMetrics fm = this.getFontMetrics(f);
 		int width = fm.stringWidth("A");//一个字符的宽度
-		this.getColumnModel().getColumnIndex("#");
 
-		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("#")).setPreferredWidth(width*5);
-		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("#")).setMaxWidth(width*8);
-		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("URL")).setPreferredWidth(width*25);
-		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("URL")).setMaxWidth(width*50);
-		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Title")).setPreferredWidth(width*30);
-		//this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Title")).setMaxWidth(width*50);
-		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("IP")).setPreferredWidth(width*30);
-		//this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("IP")).setMaxWidth(width*50);
-		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("CDN")).setPreferredWidth(width*30);
-		//this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("CDN")).setMaxWidth(width*50);
-		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Comments")).setPreferredWidth(width*30);
-		
-		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Status")).setPreferredWidth(width*"Status".length());
-		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Status")).setMaxWidth(width*("Status".length()+3));
-		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("isNew")).setPreferredWidth(width*"isNew".length());
-		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("isNew")).setMaxWidth(width*("isNew".length()+3));
-		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("isChecked")).setPreferredWidth(width*"isChecked".length());
-		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("isChecked")).setMaxWidth(width*("isChecked".length()+3));
-		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Length")).setPreferredWidth(width*10);
-		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Length")).setMaxWidth(width*15);
-		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("MIME Type")).setPreferredWidth(width*"MIME Type".length());
-		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("MIME Type")).setMaxWidth(width*("MIME Type".length()+3));
-		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Time")).setPreferredWidth(width*("2019-05-28-14-13-16".length()));
-		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Time")).setMaxWidth(width*25);
-//		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Text")).setPreferredWidth(width*0);//response text,for search
-//		this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex("Text")).setMaxWidth(width*0);//response text,for search
+
+		Map<String,Integer> preferredWidths = new HashMap<String,Integer>();
+		preferredWidths.put("#",5);
+		preferredWidths.put("URL",25);
+		preferredWidths.put("Status",6);
+		preferredWidths.put("Length",10);
+		preferredWidths.put("Title",30);
+		preferredWidths.put("Comments",30);
+		preferredWidths.put("Time","2019-05-28-14-13-16".length());
+		preferredWidths.put("isChecked","isChecked".length());
+		preferredWidths.put("IP",30);
+		preferredWidths.put("CDN",30);
+		preferredWidths.put("Server",10);
+		for(String header:LineTableModel.getTitletList()){
+			try{//避免动态删除表字段时，出错
+				int multiNumber = preferredWidths.get(header);
+				this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex(header)).setPreferredWidth(width*multiNumber);
+			}catch (Exception e){
+
+			}
+		}
 		//this.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
 		this.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);//配合横向滚动条
 
 	}
-	
+
 	@Deprecated//据说自动调整行宽度，测试了一下没用啊
 	public void FitTableColumns(JTable myTable){
-		  JTableHeader header = myTable.getTableHeader();
-		     int rowCount = myTable.getRowCount();
-		     Enumeration columns = myTable.getColumnModel().getColumns();
-		     while(columns.hasMoreElements()){
-		         TableColumn column = (TableColumn)columns.nextElement();
-		         int col = header.getColumnModel().getColumnIndex(column.getIdentifier());
-		         int width = (int)myTable.getTableHeader().getDefaultRenderer()
-		                 .getTableCellRendererComponent(myTable, column.getIdentifier()
-		                         , false, false, -1, col).getPreferredSize().getWidth();
-		         for(int row = 0; row<rowCount; row++){
-		             int preferedWidth = (int)myTable.getCellRenderer(row, col).getTableCellRendererComponent(myTable,
-		               myTable.getValueAt(row, col), false, false, row, col).getPreferredSize().getWidth();
-		             width = Math.max(width, preferedWidth);
-		         }
-		         header.setResizingColumn(column); // 此行很重要
-		         column.setWidth(width+myTable.getIntercellSpacing().width);
-		     }
+		JTableHeader header = myTable.getTableHeader();
+		int rowCount = myTable.getRowCount();
+		Enumeration columns = myTable.getColumnModel().getColumns();
+		while(columns.hasMoreElements()){
+			TableColumn column = (TableColumn)columns.nextElement();
+			int col = header.getColumnModel().getColumnIndex(column.getIdentifier());
+			int width = (int)myTable.getTableHeader().getDefaultRenderer()
+					.getTableCellRendererComponent(myTable, column.getIdentifier()
+							, false, false, -1, col).getPreferredSize().getWidth();
+			for(int row = 0; row<rowCount; row++){
+				int preferedWidth = (int)myTable.getCellRenderer(row, col).getTableCellRendererComponent(myTable,
+						myTable.getValueAt(row, col), false, false, row, col).getPreferredSize().getWidth();
+				width = Math.max(width, preferedWidth);
+			}
+			header.setResizingColumn(column); // 此行很重要
+			column.setWidth(width+myTable.getIntercellSpacing().width);
+		}
 	}
 
+	//TODO,还没弄明白
+	public void setColor(int inputRow) {
+		try {
+			DefaultTableCellRenderer dtcr = new DefaultTableCellRenderer() {
+				//重写getTableCellRendererComponent 方法
+				@Override
+				public Component getTableCellRendererComponent(JTable table,Object value, boolean isSelected, boolean hasFocus,int row, int column) {
+					Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+					if (row == 1) {
+						c.setBackground(Color.RED);
+					}
+					return c;
+				}
+			};
+			//对每行的每一个单元格
+			int columnCount = this.getColumnCount();
+			for (int i = 0; i < columnCount; i++) {
+				this.getColumn(this.getColumnName(i)).setCellRenderer(dtcr);
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
 	public void addClickSort() {//双击header头进行排序
 
@@ -188,42 +222,192 @@ public class LineTable extends JTable
 		});
 	}
 
-	public void search(String keywork) {
-		//rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + keywork));
+	//dork搜索和全数据包字符串搜索
+	public void search(String keyword) {
+		keyword = keyword.trim().toLowerCase();
+		if (Dork.isDorkString(keyword)) {
+			dorkSearch(keyword);
+		}else {
+			fullSearch(keyword);
+		}
+	}
 
+	public void fullSearch(String Inputkeyword) {
+		//rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + keyword));
+
+		Inputkeyword = Inputkeyword.trim().toLowerCase();
+		if (Inputkeyword.contains("\"") || Inputkeyword.contains("\'")){
+			//为了处理输入是"dork:12345"的情况，下面的这种写法其实不严谨，中间也可能有引号，不过应付一般的搜索足够了。
+			Inputkeyword = Inputkeyword.replaceAll("\"", "");
+			Inputkeyword = Inputkeyword.replaceAll("\'", "");
+		}
+		final String keyword = Inputkeyword;
 		final RowFilter filter = new RowFilter() {
 			@Override
 			public boolean include(Entry entry) {
 				//entry --- a non-null object that wraps the underlying object from the model
 				int row = (int) entry.getIdentifier();
-				LineEntry line = rowSorter.getModel().getLineEntries().get(row);
+				LineEntry line = rowSorter.getModel().getLineEntries().getValueAtIndex(row);
 
-				if (BurpExtender.getGui().getTitlePanel().rdbtnHideCheckedItems.isSelected()&& line.isChecked()) {//to hide checked lines
+				if (GUI.getTitlePanel().rdbtnHideCheckedItems.isSelected()&& line.isChecked()) {//to hide checked lines
 					if (selectedRow == row) {
 						selectedRow = row+1;
 					}
 					return false;
 				}
 
-				if (keywork.trim().length() == 0) {
+				if (keyword.length() == 0) {
+					return true;
+				}else {//全局搜索
+					if (new String(line.getRequest()).toLowerCase().contains(keyword)) {
+						return true;
+					}
+					if (new String(line.getResponse()).toLowerCase().contains(keyword)) {
+						return true;
+					}
+					if (new String(line.getUrl()).toLowerCase().contains(keyword)) {
+						return true;
+					}
+					if (new String(line.getIP()).toLowerCase().contains(keyword)) {
+						return true;
+					}
+					if (new String(line.getCDN()).toLowerCase().contains(keyword)) {
+						return true;
+					}
+					if (new String(line.getComment()).toLowerCase().contains(keyword)) {
+						return true;
+					}
+					if (selectedRow== row) {
+						selectedRow = row+1;
+					}
+					return false;
+				}
+			}
+		};
+		rowSorter.setRowFilter(filter);
+
+		try {
+			this.setRowSelectionInterval(selectedRow,selectedRow);
+		} catch (Exception e) {
+			//e.printStackTrace(stderr);//java.lang.IllegalArgumentException: Row index out of range
+		}
+
+	}
+
+	//支持部分类似google dork的搜索语法
+	//Host url header body request response comment
+	public void dorkSearch(String dorkString) {
+
+		dorkString = dorkString.toLowerCase().trim();
+
+		String[] arr = dorkString.split(":",2);//limit =2 分割成2份
+		String dork = arr[0].trim();
+		String keyword =  arr[1].trim();
+
+		final RowFilter filter = new RowFilter() {
+			@Override
+			public boolean include(Entry entry) {
+				//entry --- a non-null object that wraps the underlying object from the model
+				int row = (int) entry.getIdentifier();
+				LineEntry line = rowSorter.getModel().getLineEntries().getValueAtIndex(row);
+
+				if (GUI.getTitlePanel().rdbtnHideCheckedItems.isSelected()&& line.isChecked()) {//to hide checked lines
+					if (selectedRow == row) {
+						selectedRow = row+1;
+					}
+					return false;
+				}
+
+				if (dork.equalsIgnoreCase(Dork.HOST)) {
+					if (line.getHost().toLowerCase().contains(keyword)) {
+						return true;
+					}else {
+						return false;
+					}
+				}
+
+				if (dork.equalsIgnoreCase(Dork.URL)) {
+					if (line.getUrl().toLowerCase().contains(keyword)) {
+						return true;
+					}else {
+						return false;
+					}
+				}
+
+				if (dork.equalsIgnoreCase(Dork.REQUEST)) {
+					if (new String(line.getRequest()).toLowerCase().contains(keyword)) {
+						return true;
+					}else {
+						return false;
+					}
+				}
+
+				if (dork.equalsIgnoreCase(Dork.RESPONSE)) {
+					if (new String(line.getResponse()).toLowerCase().contains(keyword)) {
+						return true;
+					}else {
+						return false;
+					}
+				}
+
+				if (dork.equalsIgnoreCase(Dork.COMMENT)) {
+					if (line.getComment().toLowerCase().contains(keyword)) {
+						return true;
+					}else {
+						return false;
+					}
+				}
+				stderr.println("Unsupported dork: "+dork);
+				return false;
+			}
+		};
+		rowSorter.setRowFilter(filter);
+
+		try {
+			this.setRowSelectionInterval(selectedRow,selectedRow);
+		} catch (Exception e) {
+			//e.printStackTrace(stderr);//java.lang.IllegalArgumentException: Row index out of range
+		}
+	}
+
+	public void searchRegex(String regex) {		
+
+		final RowFilter filter = new RowFilter() {
+			@Override
+			public boolean include(Entry entry) {
+				//entry --- a non-null object that wraps the underlying object from the model
+				int row = (int) entry.getIdentifier();
+				LineEntry line = rowSorter.getModel().getLineEntries().getValueAtIndex(row);
+
+				if (GUI.getTitlePanel().rdbtnHideCheckedItems.isSelected()&& line.isChecked()) {//to hide checked lines
+					if (selectedRow == row) {
+						selectedRow = row+1;
+					}
+					return false;
+				}
+
+
+				Pattern pRegex = Pattern.compile(regex);
+
+				if (regex.trim().length() == 0) {
 					return true;
 				} else {
-					if (new String(line.getRequest()).toLowerCase().contains(keywork.toLowerCase())) {
+					if (pRegex.matcher(new String(line.getRequest()).toLowerCase()).find()) {
 						return true;
 					}
-					if (new String(line.getResponse()).toLowerCase().contains(keywork.toLowerCase())) {
+					if (pRegex.matcher(new String(line.getResponse()).toLowerCase()).find()) {
 						return true;
 					}
-					if (new String(line.getUrl()).toLowerCase().contains(keywork.toLowerCase())) {
+					if (pRegex.matcher(new String(line.getUrl()).toLowerCase()).find()) {
 						return true;
 					}
-					if (new String(line.getIP()).toLowerCase().contains(keywork.toLowerCase())) {
+					if (pRegex.matcher(new String(line.getIP()).toLowerCase()).find()) {
 						return true;
 					}
-					if (new String(line.getCDN()).toLowerCase().contains(keywork.toLowerCase())) {
+					if (pRegex.matcher(new String(line.getCDN()).toLowerCase()).find()) {
 						return true;
 					}
-					if (new String(line.getComment()).toLowerCase().contains(keywork.toLowerCase())) {
+					if (pRegex.matcher(new String(line.getComment()).toLowerCase()).find()) {
 						return true;
 					}
 					if (selectedRow== row) {
@@ -260,9 +444,9 @@ public class LineTable extends JTable
 					//int row = ((LineTable) e.getSource()).rowAtPoint(e.getPoint()); // 获得行位置
 					int col = ((LineTable) e.getSource()).columnAtPoint(e.getPoint()); // 获得列位置
 
-
-					if ((col < LineTable.this.getColumnModel().getColumnIndex("Comments"))) {//last column----comments
-						String host = LineTable.this.lineTableModel.getLineEntries().get(rows[0]).getHost();
+					LineEntry selecteEntry = LineTable.this.lineTableModel.getLineEntries().getValueAtIndex(rows[0]);
+					if ((col==0 )) {//双击index在google中搜索host。
+						String host = selecteEntry.getHost();
 						String url= "https://www.google.com/search?q=site%3A"+host;
 						try {
 							URI uri = new URI(url);
@@ -272,6 +456,13 @@ public class LineTable extends JTable
 							}
 						} catch (Exception e2) {
 							e2.printStackTrace();
+						}
+					}else if(col==1) {//双击url在浏览器中打开
+						try{
+							String url = selecteEntry.getUrl();
+							Commons.browserOpen(url,ToolPanel.getLineConfig().getBrowserPath());
+						}catch (Exception e1){
+							e1.printStackTrace(stderr);
 						}
 					}
 				}

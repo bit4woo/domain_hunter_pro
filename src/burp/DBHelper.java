@@ -10,10 +10,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.IntStream;
 
 import com.alibaba.fastjson.JSON;
+
+import Config.LineConfig;
 
 /*
 prepareStatement  //预编译方法，在有参数传入时用它
@@ -46,10 +49,7 @@ public class DBHelper {
 		this.dbFilePath = dbFilePath;
 		try {
 			conn = getConnection();
-			if (!tableExists("DOMAINObject")){
-				stdout.println("create tables");
-				createTable();
-			}
+			createTable();
 		} catch ( Exception e ) {
 			System.err.println( e.getClass().getName() + ": " + e.getMessage() );
 			//System.exit(0);//就是这个导致了整个burp的退出！！！！
@@ -60,21 +60,27 @@ public class DBHelper {
 		try {
 			conn = getConnection();
 			Statement stmt = conn.createStatement();
-			String sql = "CREATE TABLE DOMAINObject" +
-					"(ID INT PRIMARY KEY     NOT NULL," +
-					" NAME           TEXT    NOT NULL," +
-					" Content        TEXT    NOT NULL)";
-			stmt.executeUpdate(sql);
 
-			String sqlTitle = "CREATE TABLE Title" +
-					"(ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +//自动增长 https://www.sqlite.org/autoinc.html
-					" NAME           TEXT    NOT NULL," +
-					" Content        TEXT    NOT NULL)";
-			stmt.executeUpdate(sqlTitle);
+			if (!tableExists("DOMAINObject")){
+				String sql = "CREATE TABLE DOMAINObject" +
+						"(ID INT PRIMARY KEY     NOT NULL," +
+						" NAME           TEXT    NOT NULL," +
+						" Content        TEXT    NOT NULL)";
+				stmt.executeUpdate(sql);
+				System.out.println("Table created successfully");
+			}
+
+			if (!tableExists("Title") ){
+				String sqlTitle = "CREATE TABLE Title" +
+						"(ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +//自动增长 https://www.sqlite.org/autoinc.html
+						" NAME           TEXT    NOT NULL," +
+						" Content        TEXT    NOT NULL)";
+				stmt.executeUpdate(sqlTitle);
+				System.out.println("Table created successfully");
+			}
 
 			stmt.close();
 			conn.close();
-			System.out.println("Table created successfully");
 		} catch ( Exception e ) {
 			System.out.println("Table create failed");
 			e.printStackTrace(stderr);
@@ -127,7 +133,7 @@ public class DBHelper {
 		} catch (Exception ex) {
 			ex.printStackTrace(stderr);
 		} finally {
-			destroy();
+			//destroy();
 		}
 		return false;
 	}
@@ -176,7 +182,7 @@ public class DBHelper {
 			ResultSet res=pres.executeQuery();
 			while(res.next()){
 				String Content =res.getString("Content");//获取content部分的内容
-				return JSON.parseObject(Content,DomainObject.class);
+				return DomainObject.FromJson(Content);
 			}
 		} catch (Exception e) {
 			e.printStackTrace(stderr);
@@ -187,6 +193,7 @@ public class DBHelper {
 	}
 
 
+	//////////////////Title///////////////////////////////
 	public boolean addTitle(LineEntry entry){
 		try {
 			conn = getConnection();
@@ -211,14 +218,14 @@ public class DBHelper {
 
 
 
-	public boolean addTitles(List<LineEntry> lineEntries){
+	public boolean addTitles(LinkedHashMap<String,LineEntry> lineEntries){
 		try {
 			conn = getConnection();
 			String sql="insert into Title(NAME,Content) values(?,?)";
 			pres=conn.prepareStatement(sql);
-			for(int i=0;i<lineEntries.size();i++){
-				pres.setString(1, lineEntries.get(i).getUrl());
-				pres.setString(2,lineEntries.get(i).ToJson());
+			for(String key:lineEntries.keySet()){
+				pres.setString(1, key);
+				pres.setString(2,lineEntries.get(key).ToJson());
 				pres.addBatch();                                   //实现批量插入
 			}
 			int[] result = pres.executeBatch();                                   //批量插入到数据库中
@@ -237,8 +244,8 @@ public class DBHelper {
 	}
 
 
-	public List<LineEntry> getTitles(){
-		List<LineEntry> list=new ArrayList<LineEntry>();
+	public IndexedLinkedHashMap<String,LineEntry> getTitles(){
+		IndexedLinkedHashMap<String,LineEntry> lineEntriesMap=new IndexedLinkedHashMap<String,LineEntry>();
 		try {
 			conn = getConnection();
 			String sql="select * from Title";
@@ -247,18 +254,19 @@ public class DBHelper {
 			ResultSet res=pres.executeQuery();
 			while(res.next()){
 				String LineJson=res.getString("Content");
-				LineEntry entry = JSON.parseObject(LineJson,LineEntry.class);
-				list.add(entry);
+				LineEntry entry = LineEntry.FromJson(LineJson);
+				lineEntriesMap.put(entry.getUrl(), entry);
 			}
 		} catch (Exception e) {
 			e.printStackTrace(stderr);
 		} finally {
 			destroy();
 		}
-		return list;
+		System.out.println(lineEntriesMap.size() +" title lines found from DB file");
+		return lineEntriesMap;
 	}
 
-	@Deprecated
+	
 	public void updateTitle(LineEntry entry){
 		String sql="update Title SET Content=? where NAME=?";
 		//UPDATE Person SET FirstName = 'Fred' WHERE LastName = 'Wilson' 
@@ -302,7 +310,7 @@ public class DBHelper {
 		return false;
 	}
 
-	@Deprecated
+	
 	public void deleteTitle(LineEntry entry){
 		String sql="DELETE FROM Title where NAME= ?";
 		//DELETE FROM Person WHERE LastName = 'Wilson'  

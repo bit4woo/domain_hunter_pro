@@ -42,7 +42,7 @@ class ThreadSearhDomain{
 
 		plist = new ArrayList<DomainProducer>();
 
-		for (int i=0;i<=50;i++) {
+		for (int i=0;i<=20;i++) {
 			DomainProducer p = new DomainProducer(inputQueue,subDomainQueue,
 					similarDomainQueue,relatedDomainQueue,emailQueue,packageNameQueue,i);
 			p.start();
@@ -101,9 +101,9 @@ class ThreadSearhDomain{
 		stdout.println("threads stopped!");
 	}
 	
-	public static void main(String args[]) {//test
-		System.out.println(DomainProducer.grepDomain("http://www.jd.com/usr/www.baidu.com/xss.jd.com"));
-	}
+//	public static void main(String args[]) {//test
+//		System.out.println(DomainProducer.grepDomain("http://www.jd.com/usr/www.baidu.com/xss.jd.com"));
+//	}
 }
 
 /*
@@ -186,13 +186,13 @@ class DomainProducer extends Thread {//Producer do
 
 				if (type !=DomainObject.USELESS && protocol.equalsIgnoreCase("https")){//get related domains
 					if (!httpsQueue.contains(shortURL)) {//httpService checked or not
+						httpsQueue.put(shortURL);//必须先添加，否则执行在执行https链接的过程中，已经有很多请求通过检测进行相同的请求了。
 						Set<String> tmpDomains = CertInfo.getSANs(shortURL,DomainPanel.domainResult.fetchKeywordSet());
 						for (String domain:tmpDomains) {
 							if (!relatedDomainQueue.contains(domain)) {
 								relatedDomainQueue.add(domain);
 							}
 						}
-						httpsQueue.add(shortURL);
 					}
 				}
 				
@@ -205,7 +205,8 @@ class DomainProducer extends Thread {//Producer do
 						//classifyEmails(messageinfo);
 					}
 				}
-			} catch (Throwable error) {//java.lang.RuntimeException can't been catched, why?
+			} catch (Exception error) {
+				error.printStackTrace(BurpExtender.getStderr());
 			}
 		}
 	}
@@ -242,35 +243,106 @@ class DomainProducer extends Thread {//Producer do
 			//EmailQueue.addAll(emails);
 		}
 	}
+	
+	@Deprecated
+	public static String cleanResponse(String response) {
+		String[] toReplace = {"<em>","<b>","</b>","</em>","<strong>","</strong>","<wbr>","</wbr>",">", ":", "=", "<", "/", "\\", ";", "&", "%3A", "%3D", "%3C"};
+		
+		for (String item:toReplace) {
+			if (response.toLowerCase().contains(item)) {
+				response = response.replaceAll(item, "");
+			}
+		}
+		return response;
+	}
 
 	public static Set<String> grepDomain(String httpResponse) {
+		httpResponse = httpResponse.toLowerCase();
+		//httpResponse = cleanResponse(httpResponse);
 		Set<String> domains = new HashSet<>();
 		//"^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$"
 		final String DOMAIN_NAME_PATTERN = "([A-Za-z0-9-]{1,63}(?<!-)\\.)+[A-Za-z]{2,6}";
-		int counter =0;
-		while (httpResponse.contains("&#x") && counter<3) {// &#x html编码的特征
-			httpResponse = StringEscapeUtils.unescapeHtml4(httpResponse);
-			counter++;
+		
+		String[] lines = httpResponse.split("\r\n");
+		
+		for (String line:lines) {//分行进行提取，似乎可以提高成功率？
+			line = line.trim();
+			int counter =0;
+//			while (line.contains("&#x") && counter<3) {// &#x URF-8编码的特征，对于域名的提取不需要对它进行处理
+//				try {
+//					line = StringEscapeUtils.unescapeHtml4(line);
+//					counter++;
+//				}catch(Exception e) {
+//					e.printStackTrace(BurpExtender.getStderr());
+//					break;//即使出错，也要进行后续的查找
+//				}
+//			}
+			
+			counter = 0;
+			while (needURLConvert(line) && counter<3) {// %对应的URL编码
+				try {
+					line = URLDecoder.decode(line);
+					counter++;
+				}catch(Exception e) {
+					//e.printStackTrace(BurpExtender.getStderr());
+					break;//即使出错，也要进行后续的查找
+				}
+			}
+			//保险起见，再做一层处理
+			if (line.toLowerCase().contains("%2f")) {
+				line.replace("%2f"," ");
+			}
+			
+			if (line.toLowerCase().contains("%3a")) {
+				line.replace("%3a"," ");
+			}
+			
+			
+			
+			counter = 0;
+			while (needUnicodeConvert(line) && counter<3) {//unicode解码
+				try {
+					line = StringEscapeUtils.unescapeJava(line);
+					counter++;
+				}catch(Exception e) {
+					//e.printStackTrace(BurpExtender.getStderr());
+					break;//即使出错，也要进行后续的查找
+				}
+			}
+			
+			        
+			Pattern pDomainNameOnly = Pattern.compile(DOMAIN_NAME_PATTERN);
+			Matcher matcher = pDomainNameOnly.matcher(line);
+			while (matcher.find()) {//多次查找
+				domains.add(matcher.group());
+			}
 		}
 		
-		counter = 0;
-		while (httpResponse.contains("%") && counter<3) {// %对应的URL编码
-			httpResponse = URLDecoder.decode(httpResponse);
-			counter++;
-		}
-		
-		counter = 0;
-		while (httpResponse.contains("\\u00") && counter<3) {//unicode解码
-			httpResponse = StringEscapeUtils.unescapeJava(httpResponse);
-			counter++;
-		}
-		
-		Pattern pDomainNameOnly = Pattern.compile(DOMAIN_NAME_PATTERN);
-		Matcher matcher = pDomainNameOnly.matcher(httpResponse);
-		while (matcher.find()) {//多次查找
-			domains.add(matcher.group());
-		}
 		return domains;
+	}
+	
+	
+	
+	public static boolean needUnicodeConvert(String str) {
+		Pattern pattern = Pattern.compile("(\\\\u(\\p{XDigit}{4}))");
+		//Pattern pattern = Pattern.compile("(\\\\u([A-Fa-f0-9]{4}))");//和上面的效果一样
+		Matcher matcher = pattern.matcher(str.toLowerCase());
+		if (matcher.find() ){
+			return true;
+		}else {
+			return false;
+		}
+	}
+	
+	public static boolean needURLConvert(String str) {
+		Pattern pattern = Pattern.compile("(%(\\p{XDigit}{2}))");
+
+		Matcher matcher = pattern.matcher(str.toLowerCase());
+		if (matcher.find() ){
+			return true;
+		}else {
+			return false;
+		}
 	}
 	
 	@Deprecated
@@ -312,6 +384,9 @@ class DomainProducer extends Thread {//Producer do
                 				"                            $(\"#divInfo\").html(\"<b></b><span class=\\\"warntip_text\\\">ERP系统中信息不完整，请将邮箱地址、erp账户、手机号发送至itmail@jd.com邮箱中</span>\");//ERP系统中信息不完整，请联系邮件管理员!\r\n" + 
                 				"                        }"+"/* 2019-03-12 11:16:22 joya.js @issue to lijiwen@jd.com Thanks */\r\n" + 
                 						"try{window.fingerprint={},function t(){fingerprint.config={fpb_send_data:'body={\"appname\": \"jdwebm_hf\",\"jdkey\": \"\",\"whwswswws\": \"\",\"businness\": \"\",\"body\":";
-        System.out.println(grepEmail(aaa));
+        //System.out.println(grepEmail(aaa));
+        
+        String bbb="https%3A%2F%2F3pl.jd.com%2F";
+        System.out.println(needURLConvert(bbb));
     }
 }

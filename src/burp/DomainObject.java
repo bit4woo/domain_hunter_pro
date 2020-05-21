@@ -1,29 +1,36 @@
 package burp;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Set;
 
-import org.apache.commons.net.whois.WhoisClient;
-
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.google.common.net.InternetDomainName;
 
+/*
+ *注意，所有直接对DomainObject中数据的修改，都不会触发该tableChanged监听器。
+ *1、除非操作的逻辑中包含了firexxxx来主动通知监听器。比如DomainPanel.domainTableModel.fireTableChanged(null);
+ *2、或者主动调用显示和保存的函数直接完成，不经过监听器。
+	//GUI.getDomainPanel().showToDomainUI();
+	//DomainPanel.autoSave();
+ */
 public class DomainObject {
 	public String projectName = "";
 	public String uploadURL = "Input Upload URL Here";
 	public String summary = "";
-	public boolean autoAddRelatedToRoot = false; 
+	public boolean autoAddRelatedToRoot = false;
 
 	private LinkedHashMap<String,String> rootDomainMap = new LinkedHashMap<String,String>();
+	//private LinkedHashMap<String,String> rootBlackDomainMap = new LinkedHashMap<String,String>();
 	// LinkedHashMap to keep the insert order 
 	private Set<String> subnetSet = new HashSet<String>();
 	private Set<String> subDomainSet = new HashSet<String>();
 	private Set<String> similarDomainSet = new HashSet<String>();
 	private Set<String> relatedDomainSet = new HashSet<String>();
-	private Set<String> blackDomainSet = new HashSet<String>();
+	private Set<String> blackDomainSet = new HashSet<String>();//有效(能解析IP)但无用的域名，比如JD的网店域名；唯一的用处是用来聚合网段。
+	private HashMap<String,Integer> unkownDomainMap = new HashMap<String,Integer>();//记录域名和解析失败的次数，大于五次就从子域名中删除。
 	private Set<String> EmailSet = new HashSet<String>();
 	private Set<String> PackageNameSet = new HashSet<String>();
 
@@ -31,7 +38,8 @@ public class DomainObject {
 	public static int SIMILAR_DOMAIN=1;
 	public static int IP_ADDRESS=2;
 	public static int PACKAGE_NAME=3;
-	public static int USELESS =-1;
+	public static int USELESS = -1;
+	//public static int BLACKLIST = -2;
 
 
 	DomainObject(){
@@ -74,7 +82,7 @@ public class DomainObject {
 	public void setRootDomainMap(LinkedHashMap<String, String> rootDomainMap) {
 		this.rootDomainMap = rootDomainMap;
 	}
-	
+
 	public Set<String> getSubnetSet() {
 		return subnetSet;
 	}
@@ -139,8 +147,8 @@ public class DomainObject {
 		if (GUI.currentDBFile != null){
 			filename = GUI.currentDBFile.getName();
 		}
-		summary = String.format("     FileName:%s  Project:%s  Root-domain:%s  Related-domain:%s  Sub-domain:%s  Similar-domain:%s  ^_^",
-				filename, projectName, rootDomainMap.size(),relatedDomainSet.size(),subDomainSet.size(),similarDomainSet.size());
+		summary = String.format("  FileName:%s  Root-domain:%s  Related-domain:%s  Sub-domain:%s  Similar-domain:%s  ^_^",
+				filename, rootDomainMap.size(),relatedDomainSet.size(),subDomainSet.size(),similarDomainSet.size());
 		return summary;
 	}
 
@@ -153,19 +161,20 @@ public class DomainObject {
 	////////////////ser and deser///////////
 
 	public String ToJson() {
-		//return JSON.toJSONString(this);
+		return JSON.toJSONString(this);
 		//https://blog.csdn.net/qq_27093465/article/details/73277291
-		return JSONObject.toJSONString(this);
+		//return new Gson().toJson(this);
 	}
 
 
 	public  static DomainObject FromJson(String instanceString) {// throws Exception {
-		return JSON.parseObject(instanceString, DomainObject.class);
+		return JSON.parseObject(instanceString,DomainObject.class);
+		//return new Gson().fromJson(instanceString, DomainObject.class);
 	}
 
 
 	// below methods is self-defined, function name start with "fetch" to void fastjson parser error
-	
+
 	public String fetchSubnets() {
 		return String.join(System.lineSeparator(), subnetSet);
 	}
@@ -196,13 +205,32 @@ public class DomainObject {
 
 
 	public Set<String> fetchRootDomainSet() {
-		return rootDomainMap.keySet();
+		Set<String> result = new HashSet<String>();
+		for (String key:rootDomainMap.keySet()) {
+			if (!key.trim().toLowerCase().startsWith("[exclude]")) {
+				result.add(key.trim().toLowerCase());
+			}
+		}
+		return result;
+	}
+	
+	public Set<String> fetchRootBlackDomainSet() {
+		Set<String> result = new HashSet<String>();
+		for (String key:rootDomainMap.keySet()) {
+			if (key.trim().toLowerCase().startsWith("[exclude]")) {
+				result.add(key.trim().toLowerCase());
+			}
+		}
+		return result;
 	}
 
 	public Set<String> fetchKeywordSet(){
 		Set<String> result = new HashSet<String>();
 		for (String key:rootDomainMap.keySet()) {
-			result.add(rootDomainMap.get(key));
+			String value = rootDomainMap.get(key);
+			if (!value.trim().equals("")) {
+				result.add(rootDomainMap.get(key));
+			}
 		}
 		return result;
 	}
@@ -216,7 +244,7 @@ public class DomainObject {
 				//InternetDomainName.from(key).publicSuffix() //当不是com、cn等公共的域名结尾时，将返回空。
 				suffix = InternetDomainName.from(key).publicSuffix().toString();
 			} catch (Exception e) {
-				suffix = key.split(".",2)[1];//分割成2份
+				suffix = key.split("\\.",2)[1];//分割成2份
 			}
 			result.add(suffix);
 		}
@@ -229,8 +257,27 @@ public class DomainObject {
 		if (this.rootDomainMap.containsKey(key) && this.rootDomainMap.containsValue(value)) {
 			//do nothing
 		}else {
-			this.rootDomainMap.put(key,value);
+			this.rootDomainMap.put(key,value);//这个操作不会触发TableChanged事件。
 		}
+		//1\主动触发监听器，让监听器去执行数据的保存。
+		//DomainPanel.domainTableModel.fireTableChanged(null);
+		//2\或者主动调用显示和保存的函数直接完成，不经过监听器。
+		//GUI.getDomainPanel().showToDomainUI();
+		//DomainPanel.autoSave();
+	}
+
+	public void addToDomainOject(String domain){//仅用于鼠标右键，所以加了数据的展示和保存逻辑在里面
+		relatedDomainSet.add(domain);
+		relatedToRoot();
+		GUI.getDomainPanel().showToDomainUI();
+		DomainPanel.autoSave();
+	}
+
+	public void addToDomainOject(Set<String> domains){//仅用于鼠标右键，所以加了数据的展示和保存逻辑在里面
+		relatedDomainSet.addAll(domains);
+		relatedToRoot();
+		GUI.getDomainPanel().showToDomainUI();
+		DomainPanel.autoSave();
 	}
 
 	public void relatedToRoot() {
@@ -238,9 +285,14 @@ public class DomainObject {
 			for(String relatedDomain:this.relatedDomainSet) {
 				if (relatedDomain!=null && relatedDomain.contains(".")) {
 					String rootDomain =getRootDomain(relatedDomain);
-					String keyword = rootDomain.substring(0,rootDomain.indexOf("."));
-					if (!rootDomainMap.keySet().contains(rootDomain) && rootDomain != null) {
-						rootDomainMap.put(rootDomain,keyword);
+					if (rootDomain != null) {
+						if (fetchRootBlackDomainSet().contains("[exclude]"+rootDomain)){
+							continue;
+						}					
+						String keyword = rootDomain.substring(0,rootDomain.indexOf("."));
+						if (!rootDomainMap.keySet().contains(rootDomain) && rootDomain != null) {
+							rootDomainMap.put(rootDomain,keyword);
+						}
 					}
 					subDomainSet.add(relatedDomain);
 				}else {
@@ -284,36 +336,52 @@ public class DomainObject {
 	}
 
 	public int domainType(String domain) {
-
-		if (domain.endsWith(".")) {
-			domain = domain.substring(0,domain.length()-1);
+		if (domain.contains(":")) {//处理带有端口号的域名
+			domain = domain.substring(0,domain.indexOf(":"));
 		}
 
-		for (String rootdomain:fetchRootDomainSet()) {
-			if (rootdomain.contains(".")&&!rootdomain.endsWith(".")&&!rootdomain.startsWith("."))
-			{
-				if (domain.endsWith("."+rootdomain)||domain.equalsIgnoreCase(rootdomain)){
-					return DomainObject.SUB_DOMAIN;
+		try {
+			domain = domain.toLowerCase().trim();
+			if (domain.endsWith(".")) {
+				domain = domain.substring(0,domain.length()-1);
+			}
+
+			if (!domain.contains(".")) return DomainObject.USELESS;
+
+			if (Commons.isValidIP(domain)) {//https://202.77.129.30
+				return DomainObject.IP_ADDRESS;
+			}
+			
+			if (isInRootBlackDomain(domain)) {
+				return DomainObject.USELESS;
+			}
+
+			for (String rootdomain:fetchRootDomainSet()) {
+				if (rootdomain.contains(".")&&!rootdomain.endsWith(".")&&!rootdomain.startsWith("."))
+				{
+					if (domain.endsWith("."+rootdomain)||domain.equalsIgnoreCase(rootdomain)){
+						return DomainObject.SUB_DOMAIN;
+					}
 				}
 			}
-		}
 
-		for (String keyword:fetchKeywordSet()) {
-			if (!keyword.equals("") && domain.contains(keyword)) {
-				if (InternetDomainName.from(domain).hasPublicSuffix()) {//是否是以公开的 .com .cn等结尾的域名。//如果是以比如local结尾的域名，就不会被认可
-					return DomainObject.SIMILAR_DOMAIN;
-				}
+			for (String keyword:fetchKeywordSet()) {
+				if (!keyword.equals("") && domain.contains(keyword)) {
+					if (InternetDomainName.from(domain).hasPublicSuffix()) {//是否是以公开的 .com .cn等结尾的域名。//如果是以比如local结尾的域名，就不会被认可
+						return DomainObject.SIMILAR_DOMAIN;
+					}
 
-				if (fetchSuffixSet().contains(domain.substring(0, domain.indexOf(".")))){
-					return DomainObject.PACKAGE_NAME;
+					if (fetchSuffixSet().contains(domain.substring(0, domain.indexOf(".")))){
+						return DomainObject.PACKAGE_NAME;
+					}
 				}
 			}
-		}
 
-		if (Commons.isValidIP(domain)) {//https://202.77.129.30
-			return DomainObject.IP_ADDRESS;
+			return DomainObject.USELESS;
+		} catch (Exception e) {
+			e.printStackTrace(BurpExtender.getStderr());
+			return DomainObject.USELESS;
 		}
-		return DomainObject.USELESS;
 	}
 
 	public boolean isRelatedEmail(String email) {
@@ -324,22 +392,21 @@ public class DomainObject {
 		}
 		return false;
 	}
-
-	@Deprecated
-	public static String whois(String domainName) {
-		StringBuilder result = new StringBuilder("");
-
-		WhoisClient whois = new WhoisClient();
-		try {
-			//default is internic.net
-			whois.connect(WhoisClient.DEFAULT_HOST);
-			String whoisData1 = whois.query("=" + domainName);
-			result.append(whoisData1);
-			whois.disconnect();
-		} catch (Exception e) {
-			e.printStackTrace();
+	
+	public boolean isInRootBlackDomain(String domain) {
+		if (domain.contains(":")) {//处理带有端口号的域名
+			domain = domain.substring(0,domain.indexOf(":"));
 		}
-		return result.toString();
+		for (String rootdomain:fetchRootBlackDomainSet()) {
+			rootdomain = rootdomain.replace("[exclude]", "");
+			if (rootdomain.contains(".")&&!rootdomain.endsWith(".")&&!rootdomain.startsWith("."))
+			{
+				if (domain.endsWith("."+rootdomain)||domain.equalsIgnoreCase(rootdomain)){
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	public static void main(String args[]) {
@@ -352,16 +419,14 @@ public class DomainObject {
 		int type = new DomainObject("").domainType(Host);
 		System.out.println(type);*/
 
-		DomainObject xx = new DomainObject("");
-		xx.getRelatedDomainSet().add("xxx.baidu.com");
-		System.out.println(xx.getRelatedDomainSet());
+//		DomainObject xx = new DomainObject("");
+//		xx.getRelatedDomainSet().add("xxx.baidu.com");
+//		System.out.println(xx.getRelatedDomainSet());
 
 
 		//		System.out.println(InternetDomainName.from("www.jd.local").publicSuffix());
 		//		System.out.println(InternetDomainName.from("www.jd.local").topPrivateDomain());
 		//		System.out.println(whois("jd.ru"));
 	}
-
-
 
 }

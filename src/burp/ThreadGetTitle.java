@@ -1,6 +1,7 @@
 package burp;
 
 import java.io.PrintWriter;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,6 +12,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+
+import Config.LineConfig;
 
 //////////////////ThreadGetTitle block/////////////
 //no need to pass BurpExtender object to these class, IBurpExtenderCallbacks object is enough 
@@ -124,118 +127,33 @@ class Producer extends Thread {//Producer do
 				String host = domainQueue.take();
 				int leftTaskNum = domainQueue.size();
 
-				//第一步：IP解析
-				Set<String> IPSet = new HashSet<>();
-				Set<String> CDNSet = new HashSet<>();
-				if (Commons.isValidIP(host)) {
-					IPSet.add(host);
-					CDNSet.add("");
-				}else {
-					HashMap<String,Set<String>> result = Commons.dnsquery(host);
-					IPSet = result.get("IP");
-					CDNSet = result.get("CDN");
-				}
+				stdout.print(String.format("%s tasks left ",leftTaskNum));
 
-				if (IPSet.size() <= 0) {
-					continue;
-				}else {//默认过滤私有IP
-					String ip = new ArrayList<>(IPSet).get(0);
-					if (IPAddress.isPrivateIPv4(ip)) {
-						continue;
-					}
-				}
-
-
-
-				//第二步：对成功解析的host进行HTTP请求。
-				Getter getter = new Getter(helpers);
-				IHttpService http = helpers.buildHttpService(host,80,"http");
-				IHttpService https = helpers.buildHttpService(host,443,"https");
-
-				byte[] http_Request = helpers.buildHttpRequest(new URL(http.toString()));
-				String cookie = TitlePanel.getTextFieldCookie().getText().trim();
-				http_Request = buildCookieRequest(cookie,http_Request);
-				IHttpRequestResponse http_Messageinfo = callbacks.makeHttpRequest(http, http_Request);
-				//stdout.println("messageinfo"+JSONObject.toJSONString(messageinfo));
-				//这里有2种异常情况：1.请求失败（连IP都解析不了,已经通过第一步过滤了）；2.请求成功但是响应包为空（可以解析IP，比如内网域名）。
-				//第一种请求在这里就结束了，第二种情况的请求信息会传递到consumer中进行IP获取的操作。
-				byte[] http_Body = getter.getBody(false, http_Messageinfo);
-				int http_Status = getter.getStatusCode(http_Messageinfo);//当为第二种异常时，httpStatus == -1
-				int http_response_length = 0;
-				if (http_Body != null) {
-					http_response_length = http_Body.length;
-				}
-				
-				String location = getter.getHeaderValueOf(false, http_Messageinfo, "Location");
-
-				byte[] https_Request = helpers.buildHttpRequest(new URL(https.toString()));
-				https_Request = buildCookieRequest(cookie,https_Request);
-				IHttpRequestResponse https_Messageinfo = callbacks.makeHttpRequest(https, https_Request);
-				byte[] https_Body = getter.getBody(false, https_Messageinfo);
-				int https_Status = getter.getStatusCode(https_Messageinfo);//当为第二种异常时，httpStatus == -1
-				int https_response_length = 0;
-				if (https_Body != null) {
-					https_response_length = https_Body.length;
-				}
-
-				Set<IHttpRequestResponse> tmpSet = new HashSet<IHttpRequestResponse>();
-
-
-				//去重
-				//if (http_Status == https_Status && Arrays.equals(http_Body,https_Body)) {//parameters can be null,great
-				if (http_Status == https_Status && https_response_length == http_response_length) {//body长度相同就行了
-					tmpSet.add(http_Messageinfo);
-				}else if( 300 <= http_Status && http_Status <400 && location.equalsIgnoreCase(https.toString()+"/") ) {//redirect to https
-					tmpSet.add(https_Messageinfo);
-				}else {
-					tmpSet.add(http_Messageinfo);
-					tmpSet.add(https_Messageinfo);
-				}
-
+				Set<LineEntry> resultSet  = doGetTitle(host);
 				//根据请求有效性分类处理
-				Iterator<IHttpRequestResponse> it = tmpSet.iterator();
+				Iterator<LineEntry> it = resultSet.iterator();
 				while (it.hasNext()) {
-					IHttpRequestResponse item = it.next();
-
-					String url = item.getHttpService().toString();
-					int status = getter.getStatusCode(item);
-
-					if (item.getResponse() == null) {
-						stdout.println(String.format("%s tasks left || --- [%s] --- has no response",leftTaskNum,url));
-						TitlePanel.getTitleTableModel().addNewNoResponseDomain(host, IPSet);
-					}else if(status >= 500){
-						stdout.println(String.format("%s tasks left || --- [%s] --- status code >= 500",leftTaskNum,url));
-						TitlePanel.getTitleTableModel().addNewNoResponseDomain(host, IPSet);
-					}else {
-						byte[] byteBody = getter.getBody(false, item);
-						String body = new String(byteBody);
-
-						String URLAndbodyText = item.getHttpService().toString()+body;
-
-						LineEntry linefound = findHistory(url);
-						boolean isChecked = false;
-						String comment = "";
-						boolean isNew = true;
-
-						if (null != linefound) {
-							isChecked = linefound.isChecked();
-							comment = linefound.getComment();
-							//stderr.println(new String(linefound.getResponse()));
-							try {
-								String text = linefound.getUrl()+linefound.getBodyText();
-								if (text.equalsIgnoreCase(URLAndbodyText) && isChecked) {
-									isNew = false;
-								}
-							}catch(Exception err) {
-								err.printStackTrace(stderr);
+					LineEntry item = it.next();
+					String url = item.getUrl();
+					LineEntry linefound = findHistory(url);
+					if (null != linefound) {
+						item.setComment(linefound.getComment());
+						item.setLevel(linefound.getLevel());
+						try {
+							if (url.equalsIgnoreCase(linefound.getUrl()) && item.getBodyText().length() == linefound.getBodyText().length()) {
+								item.setChecked(linefound.isChecked());
+								item.setTime(linefound.getTime());
 							}
+						}catch(Exception err) {
+							err.printStackTrace(stderr);
 						}
-						BurpExtender.getGui().getTitlePanel().getTitleTableModel().addNewLineEntry(new LineEntry(item,isNew,isChecked,comment,IPSet,CDNSet));
-
-						//stdout.println(new LineEntry(messageinfo,true).ToJson());
-
-						stdout.println(String.format("%s tasks left || +++ [%s] +++ get title done",leftTaskNum,url));
 					}
+
+					TitlePanel.getTitleTableModel().addNewLineEntry(item);
+
+					//stdout.println(new LineEntry(messageinfo,true).ToJson());
+
+					stdout.println(String.format("+++ [%s] +++ get title done",url));
 				}
 			} catch (Exception error) {
 				error.printStackTrace(stderr);
@@ -245,57 +163,166 @@ class Producer extends Thread {//Producer do
 		}
 	}
 
-	public LineEntry findHistory(String url) {
-		List<LineEntry> HistoryLines = BurpExtender.getGui().getTitlePanel().getBackupLineEntries();
+	public static LineEntry findHistory(String url) {
+		IndexedLinkedHashMap<String,LineEntry> HistoryLines = GUI.getTitlePanel().getBackupLineEntries();
 		if (HistoryLines == null) return null;
-		for (LineEntry line:HistoryLines) {
-			line.setHelpers(helpers);
-			if (url.equalsIgnoreCase(line.getUrl())) {
-				return line;
+		LineEntry found = HistoryLines.get(url);
+		if (found != null) {
+			HistoryLines.replace(url,null);//不使用remove和put操作，避免//ConcurrentModificationException问题
+			//因为这2个操作都会让map的长度发生变化，从而导致问题
+			return found;
+		}
+		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
+		for (LineEntry line:HistoryLines.values()) {
+			if (line== null) {
+				continue;
 			}
-			
-			String protocol = url.trim().split("://")[0];
-			String host = url.trim().split("://")[1];
-			
-			String lineProtol = line.getUrl().split("://")[0];
-			List<String> lineHost = Arrays.asList(line.getIP().trim().split(","));
-			if (protocol.equalsIgnoreCase(lineProtol) && lineHost.contains(host)) {
-				return line;
+			line.setHelpers(helpers);
+			try{//根据host查找
+				String host = new URL(url).getHost();
+
+				List<String> lineHost = new ArrayList<>(Arrays.asList(line.getIP().trim().split(",")));
+				lineHost.add(line.getHost());
+				if (lineHost.contains(host)) {
+					//HistoryLines.remove(line.getUrl());//如果有相同URL的记录，就删除这个记录。//ConcurrentModificationException
+					HistoryLines.replace(url,null);
+					return line;
+				}
+			}catch (Exception e){
+				e.printStackTrace(BurpExtender.getStderr());
 			}
 		}
 		return null;
 	}
-	
-	public LineEntry findHistorynew(String url,String IP) {//TODO
-		List<LineEntry> HistoryLines = BurpExtender.getGui().getTitlePanel().getBackupLineEntries();
-		if (HistoryLines == null) return null;
-		for (LineEntry line:HistoryLines) {
-			line.setHelpers(helpers);
-			
-			String host = url.trim().split("://")[1];
-			
-			String lineHost= line.getUrl().split("://")[1];
-			List<String> lineIPList = Arrays.asList(line.getIP().trim().split(","));
-			lineIPList.add(lineHost);
-			if (lineIPList.contains(host) || lineIPList.contains(IP)) {
-				return line;
-			}
-		}
-		return null;
+
+	public static LineEntry doRequest(URL url) {
+		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
+		String cookie = TitlePanel.getCookie();
+
+		byte[] byteRequest = helpers.buildHttpRequest(url);//GET
+		byteRequest = Commons.buildCookieRequest(helpers,cookie,byteRequest);
+
+		IHttpService service = helpers.buildHttpService(url.getHost(),url.getPort(),url.getProtocol());
+		IHttpRequestResponse https_Messageinfo = callbacks.makeHttpRequest(service, byteRequest);
+		LineEntry Entry = new LineEntry(https_Messageinfo);
+		return Entry;
 	}
-	
-	
-	public byte[] buildCookieRequest(String cookie, byte[] request) {
-		if (cookie != null && !cookie.equals("")){
-			if (!cookie.startsWith("Cookie: ")){
-				cookie = "Cookie: "+cookie;
+
+	public static Set<LineEntry> doGetTitle(String host) throws MalformedURLException {
+
+		int httpPort = 80;
+		int httpsPort = 443;
+		Set<LineEntry> resultSet = new HashSet<LineEntry>();
+
+
+		if (host.contains(":")) {//处理带有端口号的域名
+			String port = host.substring(host.indexOf(":")+1,host.length());
+			host = host.substring(0,host.indexOf(":"));
+			if (port.length()>0) {
+				httpPort = Integer.parseInt(port);
+				httpsPort = httpPort;
 			}
-			List<String > newHeader = helpers.analyzeRequest(request).getHeaders();
-			int bodyOffset = helpers.analyzeRequest(request).getBodyOffset();
-			byte[] byte_body = Arrays.copyOfRange(request, bodyOffset, request.length);
-			newHeader.add(cookie);
-			request = helpers.buildHttpMessage(newHeader,byte_body);
 		}
-		return request;
+
+		URL httpURL = new URL(String.format("http://%s:%s/",host,httpPort));
+		URL httpsURL = new URL(String.format("https://%s:%s/",host,httpsPort));
+
+		//第一步：IP解析
+		Set<String> IPSet = new HashSet<>();
+		Set<String> CDNSet = new HashSet<>();
+
+		boolean isInPrivateNetwork = LineConfig.isPrivateNetworkWorkingModel(); 
+		if (Commons.isValidIP(host)) {//目标是一个IP
+			if (IPAddress.isPrivateIPv4(host) && !isInPrivateNetwork) {//外网模式，内网IP，直接返回。
+				return resultSet;
+			}else {
+				IPSet.add(host);
+				CDNSet.add("");
+			}
+		}else {//目标是域名
+			HashMap<String,Set<String>> result = Commons.dnsquery(host);
+			IPSet = result.get("IP");
+			CDNSet = result.get("CDN");
+
+			if (IPSet.size() <= 0) {
+				//TODO 是否应该移除无效域名？理清楚：无效域名，黑名单域名，无响应域名等情况。
+
+				return resultSet;
+			}else {//默认过滤私有IP
+				String ip = new ArrayList<>(IPSet).get(0);
+				if (IPAddress.isPrivateIPv4(ip) && !isInPrivateNetwork) {//外网模式，内网域名，仅仅显示域名和IP。
+					LineEntry entry = new LineEntry(host,IPSet);
+					entry.setTitle("Private IP");
+					resultSet.add(entry);
+					return resultSet;
+				}
+			}
+		}
+
+		//第二步：对成功解析的host进行HTTP请求。
+
+		//https://superuser.com/questions/1054724/how-to-make-firefox-ignore-all-ssl-certification-errors
+		//仍然改为先请求http，http不可用再请求https.避免浏览器中证书问题重复点击很麻烦
+
+		//do http request first
+		LineEntry httpEntry = doRequest(httpURL);
+		httpEntry.setIPWithSet(IPSet);
+		httpEntry.setCDNWithSet(CDNSet);
+		//stdout.println("messageinfo"+JSONObject.toJSONString(messageinfo));
+		//这里有2种异常情况：1.请求失败（连IP都解析不了,已经通过第一步过滤了）；2.请求成功但是响应包为空（可以解析IP，比如内网域名）。
+		//第一种请求在这里就结束了，第二种情况的请求信息会传递到consumer中进行IP获取的操作。
+		if (LineConfig.doFilter(httpEntry)) {	
+			String location = httpEntry.getHeaderValueOf(false,"Location");
+			if (location == null || !location.startsWith("https://"+host)) {//如果是跳转到https，还是请求https
+				resultSet.add(httpEntry);
+			}
+		}
+
+
+		//在http不可用，或者设置为不忽略https的情况下
+		if (resultSet.size() ==0 || !LineConfig.isIgnoreHttpsIfHttpOK()) {
+
+			LineEntry httpsEntry = doRequest(httpsURL);
+			httpsEntry.setIPWithSet(IPSet);
+			httpsEntry.setCDNWithSet(CDNSet);
+
+			boolean httpsOK = LineConfig.doFilter(httpsEntry);
+
+			if (httpsOK) {
+				resultSet.add(httpsEntry);
+			}
+		}
+
+
+		//do request for external port, 8000,8080, 
+
+		if (TitlePanel.getExternalPortList() != null && TitlePanel.getExternalPortList().size() != 0) {
+			for (int port: TitlePanel.getExternalPortList()) {
+
+				//do http request
+				URL ex_http = new URL("http://"+host+":"+port+"/");
+				LineEntry exhttpEntry = doRequest(ex_http);
+				exhttpEntry.setIPWithSet(IPSet);
+				exhttpEntry.setCDNWithSet(CDNSet);
+
+				if (LineConfig.doFilter(exhttpEntry)) {
+					resultSet.add(exhttpEntry);
+					continue;
+				}
+
+				//do https request
+				URL ex_https = new URL("https://"+host+":"+port+"/");
+				LineEntry exhttpsEntry = doRequest(ex_https);
+				exhttpsEntry.setIPWithSet(IPSet);
+				exhttpsEntry.setCDNWithSet(CDNSet);
+
+				if (LineConfig.doFilter(exhttpsEntry)) {
+					resultSet.add(exhttpsEntry);
+				}
+
+			}
+		}
+
+		return resultSet;
 	}
 }

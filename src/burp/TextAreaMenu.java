@@ -27,14 +27,14 @@ public class TextAreaMenu extends JPopupMenu {
         }
 
         List<String> selectedItems = Arrays.asList(selectedText.split(System.lineSeparator()));
-		JMenuItem googleSearchItem = new JMenuItem(new AbstractAction("Google It (double click)") {
+		JMenuItem googleSearchItem = new JMenuItem(new AbstractAction("Google It") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				if (selectedItems.size() >=50) {
 					return;
 				}
 				for (String item:selectedItems) {
-					String url= "https://www.google.com/search?q=%22"+item+"%22";
+					String url= "https://www.google.com/search?q=%22"+URLEncoder.encode(item)+"%22";
 					try {
 						Commons.browserOpen(url, null);
 					} catch (Exception e) {

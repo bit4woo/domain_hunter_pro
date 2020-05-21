@@ -1,8 +1,18 @@
 package burp;
 
-import java.awt.*;
+import java.awt.Component;
+import java.awt.Desktop;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.io.File;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,12 +22,15 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.swing.JOptionPane;
+import javax.swing.JTextArea;
 
 import org.apache.commons.net.util.SubnetUtils;
 import org.apache.commons.net.util.SubnetUtils.SubnetInfo;
-import org.xbill.DNS.ARecord;
-import org.xbill.DNS.Lookup;
-import org.xbill.DNS.Record;
+import org.xbill.DNS.*;
 
 public class Commons {
 
@@ -60,6 +73,10 @@ public class Commons {
 
 
 	public static boolean isValidIP (String ip) {
+		if (ip.contains(":")) {//处理带有端口号的域名
+			ip = ip.substring(0,ip.indexOf(":"));
+		}
+		
 		try {
 			if ( ip == null || ip.isEmpty() ) {
 				return false;
@@ -112,8 +129,8 @@ public class Commons {
 					//					System.out.println("getName "+ a.getName());
 					//					System.out.println(a);
 				}
-//				result.put("IP", IPset);
-//				result.put("CDN", CDNSet);
+				//				result.put("IP", IPset);
+				//				result.put("CDN", CDNSet);
 				//System.out.println(records);
 			}
 			result.put("IP", IPset);
@@ -126,7 +143,78 @@ public class Commons {
 		}
 	}
 
+	public static HashMap<String,Set<String>> dnsquery(String domain,String server) {
+		HashMap<String,Set<String>> result = new HashMap<String,Set<String>>();
+		try{
+			Lookup lookup = new Lookup(domain, org.xbill.DNS.Type.A);
+			Resolver resolver = new SimpleResolver(server);
+			lookup.setResolver(resolver);
+			lookup.run();
 
+			Set<String> IPset = new HashSet<String>();
+			Set<String> CDNSet = new HashSet<String>();
+			if(lookup.getResult() == Lookup.SUCCESSFUL){
+				Record[] records=lookup.getAnswers();
+				for (int i = 0; i < records.length; i++) {
+					ARecord a = (ARecord) records[i];
+					String ip = a.getAddress().getHostAddress();
+					String CName = a.getAddress().getHostName();
+					if (ip!=null) {
+						IPset.add(ip);
+					}
+					if (CName!=null) {
+						CDNSet.add(CName);
+					}
+				}
+			}
+			result.put("IP", IPset);
+			result.put("CDN", CDNSet);
+			return result;
+
+		}catch(Exception e){
+			e.printStackTrace();
+			return result;
+		}
+	}
+
+	public static Set<String> GetAuthoritativeNameServer(String domain) {
+		Set<String> NameServerSet = new HashSet<String>();
+		try{
+			Lookup lookup = new Lookup(domain, org.xbill.DNS.Type.NS);
+			lookup.run();
+
+			if(lookup.getResult() == Lookup.SUCCESSFUL){
+				Record[] records=lookup.getAnswers();
+				for (int i = 0; i < records.length; i++) {
+					NSRecord a = (NSRecord) records[i];
+					String server = a.getTarget().toString();
+					if (server!=null) {
+						NameServerSet.add(server);
+					}
+				}
+			}
+			return NameServerSet;
+
+		}catch(Exception e){
+			e.printStackTrace();
+			return NameServerSet;
+		}
+	}
+	
+	public static List<String> ZoneTransferCheck(String domain,String NameServer) {
+		List<String> Result = new ArrayList<String>();
+		try {
+			ZoneTransferIn zone = ZoneTransferIn.newAXFR(new Name(domain), NameServer, null);
+			zone.run();
+			Result = zone.getAXFR();
+			BurpExtender.getStdout().println("!!! "+NameServer+" is zoneTransfer vulnerable for domain "+domain+" !");
+			System.out.print(Result);
+		} catch (Exception e1) {
+			BurpExtender.getStdout().println(String.format("[Server:%s Domain:%s] %s", NameServer,domain,e1.getMessage()));
+		} 
+		return Result;
+	}
+	
 
 	//////////////////////////////////////////IP  subnet  CIDR/////////////////////////////////
 	/*
@@ -201,29 +289,66 @@ public class Commons {
 	public static Set<String> toIPSet (Set<String> subNets) {
 		Set<String> IPSet = new HashSet<String>();
 		for (String subnet:subNets) {
-			if (subnet.contains(":")) {
-				continue;//暂时先不处理IPv6,需要研究一下
-				//TODO
-			}
-			if (subnet.contains("/")){
-				SubnetUtils net = new SubnetUtils(subnet);
-				SubnetInfo xx = net.getInfo();
-				String[] ips = xx.getAllAddresses();
-				Set<String> resultIPs = new HashSet<>(Arrays.asList(ips));
-				resultIPs.add(xx.getNetworkAddress());
-				resultIPs.add(xx.getBroadcastAddress());
-				IPSet.addAll(resultIPs);
-			}else { //单IP
-				IPSet.add(subnet);
-			}
+			try {
+				if (subnet.contains(":")) {
+					continue;//暂时先不处理IPv6,需要研究一下
+					//TODO
+				}
+				if (subnet.contains("/")){
+					SubnetUtils net = new SubnetUtils(subnet);
+					SubnetInfo xx = net.getInfo();
+					String[] ips = xx.getAllAddresses();
+					Set<String> resultIPs = new HashSet<>(Arrays.asList(ips));
+					resultIPs.add(xx.getNetworkAddress());
+					resultIPs.add(xx.getBroadcastAddress());
+					IPSet.addAll(resultIPs);
+				}else if (subnet.contains("-")) {
+					String[] ips = subnet.split("-");
+					if (ips.length ==2) {
+						try {
+							String startip = ips[0].trim();
+							String endip = ips[1].trim();
+							//System.out.println(startip);
+							//System.out.println(endip);
+							//Converts a String that represents an IP to an int.
+							InetAddress i = InetAddress.getByName(startip);
+							int startIPInt= ByteBuffer.wrap(i.getAddress()).getInt();
 
+							if (endip.indexOf(".") == -1) {
+								endip = startip.substring(0,startip.lastIndexOf("."))+endip;
+								//System.out.println(endip);
+							}
+							InetAddress j = InetAddress.getByName(endip);
+							int endIPInt= ByteBuffer.wrap(j.getAddress()).getInt();
+
+							while (startIPInt <= endIPInt) {
+								//System.out.println(startIPInt);
+								startIPInt  = startIPInt+1;
+								//This convert an int representation of ip back to String
+								i= InetAddress.getByName(String.valueOf(startIPInt));
+								String ip= i.getHostAddress();
+								IPSet.add(ip);
+								continue;
+							}
+							//System.out.print(IPSet);
+						} catch (UnknownHostException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+				}else { //单IP
+					IPSet.add(subnet);
+				}
+			}catch(Exception e) {
+				e.printStackTrace(BurpExtender.getStderr());
+			}
 		}
 		return IPSet;
 	}
-	
+
 	public static String getNowTimeString() {
 		SimpleDateFormat simpleDateFormat = 
-                new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
+				new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
 		return simpleDateFormat.format(new Date());
 	}
 
@@ -245,37 +370,131 @@ public class Commons {
 				desktop.browse(uri);
 			}
 		}else {
-			Runtime runtime = Runtime.getRuntime();
-			runtime.exec(browser+" "+urlString);
-			//C:\Program Files\Mozilla Firefox\firefox.exe
-			//C:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe
+			String[] cmdArray = new String[] {browser,urlString};
+			
+			//runtime.exec(browser+" "+urlString);//当命令中有空格时会有问题
+			Runtime.getRuntime().exec(cmdArray);
 		}
 	}
 
+
+	public static byte[] buildCookieRequest(IExtensionHelpers helpers,String cookie, byte[] request) {
+		if (cookie != null && !cookie.equals("")){
+			if (!cookie.startsWith("Cookie: ")){
+				cookie = "Cookie: "+cookie;
+			}
+			List<String > newHeader = helpers.analyzeRequest(request).getHeaders();
+			int bodyOffset = helpers.analyzeRequest(request).getBodyOffset();
+			byte[] byte_body = Arrays.copyOfRange(request, bodyOffset, request.length);
+			newHeader.add(cookie);
+			request = helpers.buildHttpMessage(newHeader,byte_body);
+		}
+		return request;
+	}
+
+
+	public static List<Integer> Port_prompt(Component prompt, String str){
+		String defaultPorts = "8080,8000,8443";
+		String user_input = JOptionPane.showInputDialog(prompt, str,defaultPorts);
+		if (null == user_input || user_input.trim().equals("")) return  null; 
+		List<Integer> portList = new ArrayList<Integer>();
+		for (String port: user_input.trim().split(",")) {
+			int portint = Integer.parseInt(port);
+			portList.add(portint);
+		}
+		return portList;
+	}
+
+	public static boolean isWindows() {
+		String OS_NAME = System.getProperties().getProperty("os.name").toLowerCase();
+		if (OS_NAME.contains("windows")) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public static ArrayList<String> regexFind(String regex,String content) {
+		ArrayList<String> result = new ArrayList<String>();
+		Pattern pRegex = Pattern.compile(regex);
+		Matcher matcher = pRegex.matcher(content);
+		while (matcher.find()) {//多次查找
+			result.add(matcher.group());
+		}
+		return result;
+	}
+	
+	
+	public static void writeToClipboard(String text) {
+		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+		StringSelection selection = new StringSelection(text);
+		clipboard.setContents(selection, null);
+	}
+	
 	public static void main(String args[]) {
-		
-//		HashMap<String, Set<String>> result = dnsquery("www.baidu.com");
-//		System.out.println(result.get("IP").toString());
-		System.out.println(dnsquery("www.baidu111.com"));
-		 
-//		//System.out.println(new SubnetUtils("192.168.1.1/23").getInfo().getCidrSignature());
-//		
-//		Set<String> IPSet = new HashSet<String>();
-//		IPSet.add("192.168.1.225");
-///*		IPSet.add("192.168.1.128");
-//		IPSet.add("192.168.1.129");
-//		IPSet.add("192.168.1.155");
-//		IPSet.add("192.168.1.224");
-//		IPSet.add("192.168.1.130");*/
-//		Set<String> subnets = toSmallerSubNets(IPSet);
-//
-//		System.out.println(toIPSet(subnets));
-//		
-//		Set<String>  a= new HashSet();
-//		a.add("218.213.102.6/31");
-//		System.out.println(toIPSet(a));
-		Set<String> subnets = new HashSet<String>();
-		subnets.add("2402:db40:1::/48");
-		System.out.print(toIPSet(subnets));
+
+		//		HashMap<String, Set<String>> result = dnsquery("www.baidu.com");
+		//		System.out.println(result.get("IP").toString());
+		//System.out.println(dnsquery("www.baidu111.com"));
+
+		//		//System.out.println(new SubnetUtils("192.168.1.1/23").getInfo().getCidrSignature());
+		//		
+		//		Set<String> IPSet = new HashSet<String>();
+		//		IPSet.add("192.168.1.225");
+		///*		IPSet.add("192.168.1.128");
+		//		IPSet.add("192.168.1.129");
+		//		IPSet.add("192.168.1.155");
+		//		IPSet.add("192.168.1.224");
+		//		IPSet.add("192.168.1.130");*/
+		//		Set<String> subnets = toSmallerSubNets(IPSet);
+		//
+		//		System.out.println(toIPSet(subnets));
+		//		
+		//		Set<String>  a= new HashSet();
+		//		a.add("218.213.102.6/31");
+		//		System.out.println(toIPSet(a));
+//		Set<String> subnets = new HashSet<String>();
+//		subnets.add("2402:db40:1::/48");
+//		System.out.print(toIPSet(subnets));
+		//System.out.print(dnsquery("0g.jd.com"));
+		//System.out.print(GetAuthoritativeNameServer("jd.com"));
+		ZoneTransferCheck("sf-express.com","ns4.sf-express.com");
+	}
+	
+	/*
+	 *将形如 https://www.runoob.com的URL统一转换为
+	 * https://www.runoob.com:443/
+	 * 
+	 * 因为末尾的斜杠，影响URL类的equals的结果。
+	 * 而默认端口影响String格式的对比结果。
+	 */
+	
+	public static String formateURLString(String urlString) {
+        try {
+        	//urlString = "https://www.runoob.com";
+			URL url = new URL(urlString);
+			String host = url.getHost();
+			int port = url.getPort();
+			String path = url.getPath();
+			
+			if (port == -1) {
+				String newHost = url.getHost()+":"+url.getDefaultPort();
+				urlString = urlString.replace(host, newHost);
+			}
+			
+			if (path.equals("")) {
+				urlString = urlString+"/";
+			}
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+		return urlString;
+	}
+	
+	public static List<String> getLinesFromTextArea(JTextArea textarea){
+		//user input maybe use "\n" in windows, so the System.lineSeparator() not always works fine!
+		List<String> result = Arrays.asList(textarea.getText().replaceAll(" ","").replaceAll("\r\n", "\n").split("\n"));
+		result.remove("");
+		return result;
 	}
 }

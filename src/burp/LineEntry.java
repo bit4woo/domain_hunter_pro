@@ -1,18 +1,24 @@
 package burp;
 
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.annotation.JSONField;
+import com.ibm.icu.text.CharsetDetector;
+import com.ibm.icu.text.CharsetMatch;
 
 public class LineEntry {
+
+	public static final String Level_A = "A";
+	public static final String Level_B = "B";
+	public static final String Level_C = "C";
+
+	public static String systemCharSet = getSystemCharSet();
 
 	private int port =-1;
 	private String host = "";
@@ -21,45 +27,49 @@ public class LineEntry {
 
 	private byte[] request = {};
 	private byte[] response = {};
-	// request+response+httpService == IHttpRequestResponse
+	// request+response+httpService == IHttpRequestResponse,burp的划分方式
 
-	//used in UI,the fields to show
+	//used in UI,the fields to show,平常的划分方式
 	private String url = "";
 	private int statuscode = -1;
 	private int contentLength = -1;
-	private String MIMEtype = "";
 	private String title = "";
 	private String IP = "";
 	private String CDN = "";
 	private String webcontainer = "";
 	private String time = "";
 
-
-	@JSONField(serialize=false)
-	private String messageText = "";//use to search
-	@JSONField(serialize=false)
-	private String bodyText = "";//use to adjust the response changed or not
+	//Gson中，加了transient表示不序列号，是最简单的方法
+	//给不想被序列化的属性增加transient属性---java特性
+	private transient String messageText = "";//use to search
+	//private transient String bodyText = "";//use to adjust the response changed or not
 	//don't store these two field to reduce config file size.
 
-	//field for user 
-	private boolean isNew =true;
-	private boolean isChecked =true;
+	//field for user
+	private boolean isChecked =false;
+	private String Level = Level_C;
 	private String comment ="";
 
-	@JSONField(serialize=false)//表明不序列号该字段,messageinfo对象不能被fastjson成功序列化
-	private IHttpRequestResponse messageinfo;
+	private transient IHttpRequestResponse messageinfo;
 
 	//remove IHttpRequestResponse field ,replace with request+response+httpService(host port protocol). for convert to json.
 
-	@JSONField(serialize=false)//表明不序列号该字段
-	private BurpExtender burp;
-	@JSONField(serialize=false)
-	private IExtensionHelpers helpers;
-	@JSONField(serialize=false)
-	private IBurpExtenderCallbacks callbacks;
+	private transient BurpExtender burp;
+	private transient IExtensionHelpers helpers;
+	private transient IBurpExtenderCallbacks callbacks;
 
 	LineEntry(){
 
+	}
+
+	public LineEntry(String host,Set<String> IPset) {
+		this.host = host;
+		this.port = 80;
+		this.protocol ="http";
+
+		if (this.IP != null) {
+			this.IP = IPset.toString().replace("[", "").replace("]", "");
+		}
 	}
 
 	public LineEntry(IHttpRequestResponse messageinfo) {
@@ -75,7 +85,6 @@ public class LineEntry {
 		this.helpers = this.callbacks.getHelpers();
 		parse();
 
-		this.isNew = isNew;
 		this.isChecked = Checked;
 		this.comment = comment;
 	}
@@ -86,7 +95,6 @@ public class LineEntry {
 		this.helpers = this.callbacks.getHelpers();
 		parse();
 
-		this.isNew = isNew;
 		this.isChecked = Checked;
 		this.comment = comment;
 		if (this.IP != null) {
@@ -98,91 +106,61 @@ public class LineEntry {
 		}
 	}
 
-	@JSONField(serialize=false)//表明不序列号该字段
 	public String ToJson(){//注意函数名称，如果是get set开头，会被认为是Getter和Setter函数，会在序列化过程中被调用。
-		return JSONObject.toJSONString(this);
+		return JSON.toJSONString(this);
 	}
 
 	public static LineEntry FromJson(String json){//注意函数名称，如果是get set开头，会被认为是Getter和Setter函数，会在序列化过程中被调用。
 		return JSON.parseObject(json, LineEntry.class);
 	}
 
-	public void parse() {
+	private void parse() {
 		try {
-			IResponseInfo responseInfo = helpers.analyzeResponse(messageinfo.getResponse());
+
+			//time = Commons.getNowTimeString();//这是动态的，会跟随系统时间自动变化,why?--是因为之前LineTableModel的getValueAt函数每次都主动调用了该函数。
+
 			IHttpService service = this.messageinfo.getHttpService();
+
+			//url = service.toString();
+			url = helpers.analyzeRequest(messageinfo).getUrl().toString();//包含了默认端口
 			port = service.getPort();
 			host = service.getHost();
 			protocol = service.getProtocol();
 
-			request = messageinfo.getRequest();
-			response = messageinfo.getResponse();
-
-			Getter getter = new Getter(helpers);
-
-			messageText = new String(messageinfo.getRequest())+new String(messageinfo.getResponse());
-
-			statuscode = responseInfo.getStatusCode();
-
-			MIMEtype = responseInfo.getStatedMimeType();
-			if(MIMEtype == null) {
-				MIMEtype = responseInfo.getInferredMimeType();
+			if (messageinfo.getRequest() != null){
+				request = messageinfo.getRequest();
 			}
 
-			url = this.messageinfo.getHttpService().toString();
+			if (messageinfo.getResponse() != null){
+				response = messageinfo.getResponse();
+				IResponseInfo responseInfo = helpers.analyzeResponse(response);
+				statuscode = responseInfo.getStatusCode();
+
+				//				MIMEtype = responseInfo.getStatedMimeType();
+				//				if(MIMEtype == null) {
+				//					MIMEtype = responseInfo.getInferredMimeType();
+				//				}
 
 
-			webcontainer = getter.getHeaderValueOf(false, messageinfo, "Server");
+				Getter getter = new Getter(helpers);
+				messageText = new String(messageinfo.getRequest())+new String(response);
 
-			bodyText = new String(getter.getBody(false, messageinfo));
-			try{
-				contentLength = Integer.parseInt(getter.getHeaderValueOf(false, messageinfo, "Content-Length").trim());
-			}catch (Exception e){
-				if (contentLength==-1 && bodyText!=null) {
-					contentLength = bodyText.length();
+
+				webcontainer = getter.getHeaderValueOf(false, messageinfo, "Server");
+				byte[] byteBody = getter.getBody(false, messageinfo);
+				try{
+					contentLength = Integer.parseInt(getter.getHeaderValueOf(false, messageinfo, "Content-Length").trim());
+				}catch (Exception e){
+					if (contentLength==-1 && byteBody!=null) {
+						contentLength = byteBody.length;
+					}
 				}
+
+				title = fetchTitle(response);
+
 			}
-
-			Pattern p = Pattern.compile("<title(.*?)</title>");
-			//<title ng-bind="service.title">The Evolution of the Producer-Consumer Problem in Java - DZone Java</title>
-			Matcher m  = p.matcher(bodyText);
-			while ( m.find() ) {
-				title = m.group(0);
-			}
-			if (title.equals("")) {
-				Pattern ph = Pattern.compile("<title [.*?]>(.*?)</title>");
-				Matcher mh  = ph.matcher(bodyText);
-				while ( mh.find() ) {
-					title = mh.group(0);
-				}
-			}
-			if (title.equals("")) {
-				Pattern ph = Pattern.compile("<h[1-6]>(.*?)</h[1-6]>");
-				Matcher mh  = ph.matcher(bodyText);
-				while ( mh.find() ) {
-					title = mh.group(0);
-				}
-			}
-
-			/*
-			编码转没有成功，好像还引起了栈溢出....奇怪！
-			 */
-
-//			if (!title.equals("")){//编码转换
-//				String charSet = getResponseCharset(messageinfo);
-//				Charset systemCharset = Charset.defaultCharset();
-//				if (charSet != null){
-//					title = new String(title.getBytes(charSet),systemCharset);
-//				}
-//			}
-
-
-
-			time = Commons.getNowTimeString();//这是动态的，会跟随系统时间自动变化
-
-
 		}catch(Exception e) {
-			//e.printStackTrace(burp.stderr);
+			e.printStackTrace(BurpExtender.getStderr());
 		}
 	}
 
@@ -190,7 +168,10 @@ public class LineEntry {
 
 	}
 
-	public String getUrl() {
+	public String getUrl() {//为了格式统一，和查找匹配更精确，都包含了默认端口
+		if (url == null || url.equals("")) {
+			return protocol+"://"+host+":"+port+"/";
+		}
 		return url;
 	}
 
@@ -214,14 +195,6 @@ public class LineEntry {
 		this.contentLength = contentLength;
 	}
 
-	public String getMIMEtype() {
-		return MIMEtype;
-	}
-
-	public void setMIMEtype(String mIMEtype) {
-		MIMEtype = mIMEtype;
-	}
-
 	public String getTitle() {
 		return title;
 	}
@@ -238,6 +211,10 @@ public class LineEntry {
 		IP = iP;
 	}
 
+	public void setIPWithSet(Set<String> ipSet) {
+		IP = ipSet.toString().replace("[", "").replace("]", "");
+	}
+
 	public String getCDN() {
 		return CDN;
 	}
@@ -246,6 +223,9 @@ public class LineEntry {
 		CDN = cDN;
 	}
 
+	public void setCDNWithSet(Set<String> cDNSet) {
+		CDN = cDNSet.toString().replace("[", "").replace("]", "");
+	}
 	public String getWebcontainer() {
 		return webcontainer;
 	}
@@ -262,21 +242,6 @@ public class LineEntry {
 		this.time = time;
 	}
 
-	/*
-	 * public String getMessageText() { return messageText; }
-	 *
-	 * public void setMessageText(String messageText) { this.messageText =
-	 * messageText; }
-	 */
-
-
-	public boolean isNew() {
-		return isNew;
-	}
-
-	public void setNew(boolean isNew) {
-		this.isNew = isNew;
-	}
 
 	public IHttpRequestResponse getMessageinfo() {
 		//		if (messageinfo == null){
@@ -299,11 +264,8 @@ public class LineEntry {
 	}
 
 	public String getBodyText() {
-		IResponseInfo analyzeResponse = helpers.analyzeResponse(this.response);//java.lang.NullPointerException why???? 
-		// helpers will be null if this object is recovered from json.
-		//IResponseInfo analyzeResponse = helpers.analyzeResponse(this.getResponse()); 
-		int bodyOffset = analyzeResponse.getBodyOffset();
-		byte[] byte_body = Arrays.copyOfRange(this.response, bodyOffset, this.response.length);//not length-1
+		Getter getter = new Getter(BurpExtender.getCallbacks().getHelpers());
+		byte[] byte_body = getter.getBody(false, response);
 		return new String(byte_body);
 	}
 
@@ -314,26 +276,101 @@ Content-Type: text/html;charset=UTF-8
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <meta charset="utf-8">
 <script type="text/javascript" charset="utf-8" src="./resources/jrf-resource/js/jrf.min.js"></script>
- */
-	public String getResponseCharset(IHttpRequestResponse messageInfo){
+	 */
+	private String getResponseCharset(byte[] response){
 		Getter getter = new Getter(helpers);
-		String contentType = getter.getHeaderValueOf(false,messageInfo,"Content-Type");
-		String charSet = null;
-		if (contentType.toLowerCase().contains("charset=")){
-			charSet = contentType.toLowerCase().split("charset=")[1];
-		}else {
-			byte[] body = getter.getBody(false,messageInfo);
-			Pattern pDomainNameOnly = Pattern.compile("charset=(.*?)>");
-			Matcher matcher = pDomainNameOnly.matcher(new String(body));
-			if (matcher.find()) {
-				charSet = matcher.group(0).toLowerCase();
-				charSet = charSet.replace("\"","");
-				charSet = charSet.replace(">","");
-				charSet = charSet.replace("/","");
-				charSet = charSet.replace("charset=","");
+		String contentType = getter.getHeaderValueOf(false,response,"Content-Type");
+		String body = new String(getter.getBody(false,response));
+		String tmpcharSet = null;
+		
+		if (contentType != null){//1、尝试从contentTpye中获取
+			if (contentType.toLowerCase().contains("charset=")) {
+				tmpcharSet = contentType.toLowerCase().split("charset=")[1];
 			}
 		}
-		return charSet;
+		
+		if (tmpcharSet == null){//2、尝试从body中获取
+			Pattern pDomainNameOnly = Pattern.compile("charset=(.*?)>");
+			Matcher matcher = pDomainNameOnly.matcher(body);
+			if (matcher.find()) {
+				tmpcharSet = matcher.group(0).toLowerCase();
+				//				tmpcharSet = tmpcharSet.replace("\"","");
+				//				tmpcharSet = tmpcharSet.replace(">","");
+				//				tmpcharSet = tmpcharSet.replace("/","");
+				//				tmpcharSet = tmpcharSet.replace("charset=","");
+			}
+		}
+		
+		if (tmpcharSet == null){//3、尝试使用ICU4J进行编码的检测
+			CharsetDetector detector = new CharsetDetector();
+			detector.setText(response);
+			CharsetMatch cm = detector.detect();
+			tmpcharSet = cm.getName();
+		}
+		
+		tmpcharSet = tmpcharSet.toLowerCase().trim();
+		if (tmpcharSet.contains("utf8")){
+			tmpcharSet = "utf-8";
+		}else {
+			//常见的编码格式有ASCII、ANSI、GBK、GB2312、UTF-8、GB18030和UNICODE等。
+			List<String> commonCharSet = Arrays.asList("ASCII,ANSI,GBK,GB2312,UTF-8,GB18030,UNICODE,ISO-8859-1".toLowerCase().split(","));
+			for (String item:commonCharSet) {
+				if (tmpcharSet.contains(item)) {
+					tmpcharSet = item;
+				}
+			}
+		}
+		return tmpcharSet;
+	}
+
+	//https://javarevisited.blogspot.com/2012/01/get-set-default-character-encoding.html
+	private static String getSystemCharSet() {
+		return Charset.defaultCharset().toString();
+
+		//System.out.println(System.getProperty("file.encoding"));
+	}
+
+
+	public String covertCharSet(byte[] response) {
+		String originalCharSet = getResponseCharset(response);
+		//BurpExtender.getStderr().println(url+"---"+originalCharSet);
+
+		if (originalCharSet != null && !originalCharSet.equalsIgnoreCase(systemCharSet)) {
+			try {
+				byte[] newResponse = new String(response,originalCharSet).getBytes(systemCharSet);
+				return new String(newResponse,systemCharSet);
+			} catch (Exception e) {
+				e.printStackTrace(BurpExtender.getStderr());
+				BurpExtender.getStderr().print("title 编码转换失败");
+			}
+		}
+		return new String(response);
+	}
+
+	public String fetchTitle(byte[] response) {
+		String bodyText = covertCharSet(response);
+
+		Pattern p = Pattern.compile("<title(.*?)</title>");
+		//<title ng-bind="service.title">The Evolution of the Producer-Consumer Problem in Java - DZone Java</title>
+		Matcher m  = p.matcher(bodyText);
+		while ( m.find() ) {
+			title = m.group(0);
+		}
+		if (title.equals("")) {
+			Pattern ph = Pattern.compile("<title [.*?]>(.*?)</title>");
+			Matcher mh  = ph.matcher(bodyText);
+			while ( mh.find() ) {
+				title = mh.group(0);
+			}
+		}
+		if (title.equals("")) {
+			Pattern ph = Pattern.compile("<h[1-6]>(.*?)</h[1-6]>");
+			Matcher mh  = ph.matcher(bodyText);
+			while ( mh.find() ) {
+				title = mh.group(0);
+			}
+		}
+		return title;
 	}
 
 	public String getHeaderValueOf(boolean messageIsRequest,String headerName) {
@@ -362,10 +399,6 @@ Content-Type: text/html;charset=UTF-8
 			}
 		}
 		return null;
-	}
-
-	public void setBodyText(String bodyText) {
-		this.bodyText = bodyText;
 	}
 
 	public int getPort() {
@@ -416,6 +449,18 @@ Content-Type: text/html;charset=UTF-8
 		this.isChecked = isChecked;
 	}
 
+	public String getLevel() {
+		return Level;
+	}
+
+	public void setLevel(String level) {
+		if (level.equalsIgnoreCase(Level_A)
+				||level.equalsIgnoreCase(Level_B)
+				||level.equalsIgnoreCase(Level_C)) {
+			Level = level;
+		}
+	}
+
 	public String getComment() {
 		return comment;
 	}
@@ -440,10 +485,9 @@ Content-Type: text/html;charset=UTF-8
 	public static void main(String args[]) {
 		LineEntry x = new LineEntry();
 		x.setRequest("xxxxxx".getBytes());
-		System.out.println(JSON.toJSON(x));
-
-		System.out.println(JSON.toJSONString(x));
-		System.out.println(JSONObject.toJSONString(x));
-		System.out.println(JSONObject.toJSON(x));
+		//		System.out.println(yy);
+		System.out.println(getSystemCharSet());
+		System.out.println(System.getProperty("file.encoding"));
+		System.out.println(Charset.defaultCharset());
 	}
 }

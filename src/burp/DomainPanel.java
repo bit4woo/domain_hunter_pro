@@ -66,11 +66,17 @@ import com.google.common.io.Files;
 import com.google.common.net.InternetDomainName;
 
 import test.HTTPPost;
+
 /*
-以domainResult为核心的数据修改、数据保存和数据展示
+ *注意，所有直接对DomainObject中数据的修改，都不会触发该tableChanged监听器。
+ *1、除非操作的逻辑中包含了firexxxx来主动通知监听器。比如DomainPanel.domainTableModel.fireTableChanged(null);
+ *2、或者主动调用显示和保存的函数直接完成，不经过监听器。
+	//GUI.getDomainPanel().showToDomainUI();
+	//DomainPanel.autoSave();
  */
 public class DomainPanel extends JPanel {
 
+	private final JButton btnBrute;
 	private JRadioButton rdbtnAddRelatedToRoot;
 	private JTextField textFieldUploadURL;
 	private JButton btnSearch;
@@ -89,6 +95,8 @@ public class DomainPanel extends JPanel {
 	private JTable table;
 
 	private boolean listenerIsOn = true;
+	public static ThreadBruteDomain threadBruteDomain;
+	public static ThreadBruteDomainWithDNSServer2 threadBruteDomain2;
 
 	public static DomainObject getDomainResult() {
 		return domainResult;
@@ -102,7 +110,7 @@ public class DomainPanel extends JPanel {
 	protected static DefaultTableModel domainTableModel;
 	PrintWriter stdout;
 	PrintWriter stderr;
-	
+
 
 
 	public DomainPanel() {//构造函数
@@ -127,12 +135,62 @@ public class DomainPanel extends JPanel {
 		this.add(HeaderPanel, BorderLayout.NORTH);
 
 
-		JButton btnSaveDomainOnly = new JButton("Save Domain Only");
+		JButton btnSaveDomainOnly = new JButton("SaveDomainOnly");
 		btnSaveDomainOnly.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				saveDomainOnly();
 			}});
 		HeaderPanel.add(btnSaveDomainOnly);
+
+
+		btnBrute = new JButton("Brute");
+		btnBrute.setToolTipText("Do Brute for all root domains");
+		btnBrute.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+					//using SwingWorker to prevent blocking burp main UI.
+
+					@Override
+					protected Map doInBackground() throws Exception {
+
+						Set<String> rootDomains = domainResult.fetchRootDomainSet();
+						Set<String> keywords= domainResult.fetchKeywordSet();
+
+						//stderr.print(keywords.size());
+						//System.out.println(rootDomains.toString());
+						//System.out.println("xxx"+keywords.toString());
+						btnBrute.setEnabled(false);
+						//						threadBruteDomain = new ThreadBruteDomain(rootDomains);
+						//						threadBruteDomain.Do();
+						for (String rootDomain: rootDomains){
+							threadBruteDomain2 = new ThreadBruteDomainWithDNSServer2(rootDomain);
+							threadBruteDomain2.Do();
+						}
+
+
+						return null;
+					}
+					@Override
+					protected void done() {
+						try {
+							get();
+							showToDomainUI();
+							autoSave();
+							btnBrute.setEnabled(true);
+							stdout.println("~~~~~~~~~~~~~brute Done~~~~~~~~~~~~~");
+						} catch (Exception e) {
+							btnBrute.setEnabled(true);
+							e.printStackTrace(stderr);
+						}
+					}
+				};
+				worker.execute();
+			}
+		});
+
+		Component verticalStrut = Box.createVerticalStrut(20);
+		HeaderPanel.add(verticalStrut);
+		//HeaderPanel.add(btnBrute);
 
 
 		btnSearch = new JButton("Search");
@@ -174,8 +232,6 @@ public class DomainPanel extends JPanel {
 			}
 		});
 
-		Component verticalStrut = Box.createVerticalStrut(20);
-		HeaderPanel.add(verticalStrut);
 		HeaderPanel.add(btnSearch);
 
 		btnCrawl = new JButton("Crawl");
@@ -200,6 +256,7 @@ public class DomainPanel extends JPanel {
 						try {
 							get();
 							showToDomainUI();
+							autoSave();
 							btnCrawl.setEnabled(true);
 						} catch (Exception e) {
 							e.printStackTrace(stderr);
@@ -211,6 +268,32 @@ public class DomainPanel extends JPanel {
 		});
 		btnCrawl.setToolTipText("Crawl all subdomains recursively,This may take a long time and large Memory Usage!!!");
 		HeaderPanel.add(btnCrawl);
+
+
+
+
+		JButton btnZoneTransferCheck = new JButton("AXFR");
+		btnZoneTransferCheck.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+					@Override
+					protected Map doInBackground() throws Exception {
+						stdout.println("~~~~~~~~~~~~~Zone Transfer Checking~~~~~~~~~~~~~");
+						btnZoneTransferCheck.setEnabled(false);
+						ZoneTransferCheckAll();
+						return null;
+					}
+					@Override
+					protected void done() {
+						btnZoneTransferCheck.setEnabled(true);
+						stdout.println("~~~~~~~~~~~~~Zone Transfer Check Done~~~~~~~~~~~~~");
+					}
+				};
+				worker.execute();
+			}
+		});
+		HeaderPanel.add(btnZoneTransferCheck);
 
 		JButton btnImportDomain = new JButton("Import Domain");
 		btnImportDomain.addActionListener(new ActionListener() {
@@ -262,27 +345,17 @@ public class DomainPanel extends JPanel {
 			}
 		});
 		HeaderPanel.add(btnRenameProject);
-		
+
+
+
 		JButton btnBuckupDB = new JButton("Backup DB");
 		btnBuckupDB.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				File file = BurpExtender.getGui().getCurrentDBFile();
-//				if (System.getProperty("os.name").contains("Windows")) {
-//					String basedir = "C:\\";
-//				}else {
-//					
-//				}
-				File bakfile = new File(file.getAbsoluteFile().toString()+".bak"+Commons.getNowTimeString());
-				try {
-					FileUtils.copyFile(file, bakfile);
-				} catch (IOException e1) {
-					e1.printStackTrace(stderr);
-				} 
-		
+				DomainPanel.this.backupDB();
 			}
 		});
 		HeaderPanel.add(btnBuckupDB);
-		
+
 		JButton btnBgphenet = new JButton("bgp.he.net");
 		btnBgphenet.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -295,7 +368,7 @@ public class DomainPanel extends JPanel {
 			}
 		});
 		HeaderPanel.add(btnBgphenet);
-		
+
 		JButton btnIcp = new JButton("icp.chinaz.com");
 		btnIcp.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -349,10 +422,6 @@ public class DomainPanel extends JPanel {
 				worker.execute();
 			}
 		});
-		//HeaderPanel.add(btnUpload);
-
-		lblSummary = new JLabel("      ^_^");
-		HeaderPanel.add(lblSummary);
 
 
 		////////////////////////////////////target area///////////////////////////////////////////////////////
@@ -390,6 +459,12 @@ public class DomainPanel extends JPanel {
 				}
 				);
 		table.setModel(domainTableModel);
+
+		/*
+		 * 注意，所有直接对DomainObject中数据的修改，都不会触发该tableChanged监听器。
+		 * 除非操作的逻辑中包含了firexxxx来主动通知监听器。
+		 * DomainPanel.domainTableModel.fireTableChanged(null);
+		 */
 		domainTableModel.addTableModelListener(new TableModelListener(){
 			@Override
 			public void tableChanged(TableModelEvent e) {
@@ -463,6 +538,7 @@ public class DomainPanel extends JPanel {
 
 
 		JButton addButton = new JButton("Add");
+		addButton.setToolTipText("add Top-Level domain");
 		addButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
@@ -480,10 +556,35 @@ public class DomainPanel extends JPanel {
 
 				domainResult.AddToRootDomainMap(enteredRootDomain, keyword);
 				showToDomainUI();
-				//将会触发listener，然后自动保存。无需主动调用了。
+				autoSave();
 			}
 		});
 		ControlPanel.add(addButton);
+
+
+		JButton addButton1 = new JButton("Add+");
+		addButton1.setToolTipText("add Multiple-Level domain");
+		addButton1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
+				enteredRootDomain = enteredRootDomain.trim().toLowerCase();
+				if (enteredRootDomain.startsWith("http://") || enteredRootDomain.startsWith("https://")){
+					try {
+						URL url = new URL(enteredRootDomain);
+						enteredRootDomain = url.getHost();
+					} catch (Exception e2) {
+
+					}
+				}
+				//enteredRootDomain = InternetDomainName.from(enteredRootDomain).topPrivateDomain().toString();
+				String keyword = enteredRootDomain.substring(0,enteredRootDomain.indexOf("."));
+
+				domainResult.AddToRootDomainMap(enteredRootDomain, keyword);
+				showToDomainUI();
+				autoSave();
+			}
+		});
+		ControlPanel.add(addButton1);
 
 
 		JButton removeButton = new JButton("Remove");
@@ -501,6 +602,30 @@ public class DomainPanel extends JPanel {
 				for(int i=rowindexs.length-1;i>=0;i--){
 					domainTableModel.removeRow(rowindexs[i]);
 				}
+				// will trigger tableModel listener---due to "fireTableRowsDeleted" in removeRow
+				//domainResult.setRootDomainMap(getTableMap()); //no need any more because tableModel Listener
+			}
+		});
+
+		JButton blackButton = new JButton("Black");
+		ControlPanel.add(blackButton);
+		blackButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+
+				int[] rowindexs = table.getSelectedRows();
+				for (int i=0; i < rowindexs.length; i++){
+					rowindexs[i] = table.convertRowIndexToModel(rowindexs[i]);//转换为Model的索引，否则排序后索引不对应。
+				}
+				Arrays.sort(rowindexs);
+
+				domainTableModel = (DefaultTableModel) table.getModel();
+				for(int i=rowindexs.length-1;i>=0;i--){
+					String rootdomain = (String) domainTableModel.getValueAt(rowindexs[i], 0);
+					domainTableModel.removeRow(rowindexs[i]);
+					domainResult.AddToRootDomainMap("[exclude]"+rootdomain,"");
+				}
+				showToDomainUI();
+				autoSave();
 				// will trigger tableModel listener
 				//domainResult.setRootDomainMap(getTableMap()); //no need any more because tableModel Listener
 			}
@@ -517,20 +642,31 @@ public class DomainPanel extends JPanel {
 				Set<String> newSubDomainSet = new HashSet<>();
 				Set<String> newSimilarDomainSet = new HashSet<String>();
 				tmpDomains.addAll(domainResult.getSimilarDomainSet());
-				
+
 				for (String domain:tmpDomains) {
+					domain = domain.toLowerCase().trim();
+					if (domain.endsWith(".")) {
+						domain = domain.substring(0,domain.length()-1);
+					}
+
 					int type = domainResult.domainType(domain);
-					if (type == DomainObject.SUB_DOMAIN)
+					if (type == DomainObject.SUB_DOMAIN || type == DomainObject.IP_ADDRESS)
+						//包含手动添加的IP
 					{
 						newSubDomainSet.add(domain);
 					}else if (type == DomainObject.SIMILAR_DOMAIN) {
 						newSimilarDomainSet.add(domain);
 					}
 				}
-				
+
 				//相关域名中也可能包含子域名，子域名才是核心，要将它们加到子域名
 				tmpDomains = domainResult.getRelatedDomainSet();
 				for (String domain:tmpDomains) {
+					domain = domain.toLowerCase().trim();
+					if (domain.endsWith(".")) {
+						domain = domain.substring(0,domain.length()-1);
+					}
+
 					int type = domainResult.domainType(domain);
 					if (type == DomainObject.SUB_DOMAIN)
 					{
@@ -566,7 +702,9 @@ public class DomainPanel extends JPanel {
 				domainResult.autoAddRelatedToRoot = rdbtnAddRelatedToRoot.isSelected();
 				if (domainResult.autoAddRelatedToRoot) {
 					domainResult.relatedToRoot();
-					showToDomainUI();/*
+					showToDomainUI();
+					autoSave();
+					/*
 					Set<String> tableRootDomains = getColumnValues("Root Domain");
 					for(String relatedDomain:domainResult.relatedDomainSet) {
 			        	String rootDomain =InternetDomainName.from(relatedDomain).topPrivateDomain().toString();
@@ -593,14 +731,14 @@ public class DomainPanel extends JPanel {
 
 		///////////////////////////////textAreas///////////////////////////////////////////////////////
 
-JScrollPane ScrollPaneSubnets = new JScrollPane(); //1of4
-		
+		JScrollPane ScrollPaneSubnets = new JScrollPane(); //1of4
+
 		JScrollPane ScrollPaneRelatedDomains = new JScrollPane(); //2of4
-		JScrollPane ScrollPaneSubdomains = new JScrollPane(); 
+		JScrollPane ScrollPaneSubdomains = new JScrollPane();
 		JScrollPane ScrollPaneSimilarDomains = new JScrollPane();
-		JScrollPane ScrollPaneEmails = new JScrollPane(); 
+		JScrollPane ScrollPaneEmails = new JScrollPane();
 		JScrollPane ScrollPanePackageNames = new JScrollPane();
-		
+
 		split1of4.setRightComponent(ScrollPaneSubnets);
 
 		split2of4.setLeftComponent(ScrollPaneRelatedDomains);
@@ -690,7 +828,78 @@ JScrollPane ScrollPaneSubnets = new JScrollPane(); //1of4
 			}
 		});
 		footerPanel.add(lblNewLabel_2);
+		//HeaderPanel.add(btnUpload);
 
+		lblSummary = new JLabel("      ^_^");
+		footerPanel.add(lblSummary);
+		lblSummary.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				try {
+					String[] cmdArray = new String[] {"explorer.exe","\""+GUI.getCurrentDBFile().getParent()+"\""};
+					//stdout.println(GUI.getCurrentDBFile().getParent());
+					Runtime.getRuntime().exec(cmdArray);
+				} catch (Exception e2) {
+					e2.printStackTrace(stderr);
+				}
+			}
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				lblSummary.setForeground(Color.RED);
+			}
+			@Override
+			public void mouseExited(MouseEvent e) {
+				lblSummary.setForeground(Color.BLACK);
+			}
+		});
+
+
+		//搜索域名，但是效果不怎么好
+		//		JTextField textFieldSearch = new JTextField("");
+		//		textFieldSearch.addFocusListener(new FocusAdapter() {
+		//			@Override
+		//			public void focusGained(FocusEvent e) {
+		//				if (textFieldSearch.getText().equals("Input text to search")) {
+		//					textFieldSearch.setText("");
+		//				}
+		//			}
+		//			@Override
+		//			public void focusLost(FocusEvent e) {
+		//				/*
+		//				 * if (textFieldSearch.getText().equals("")) {
+		//				 * textFieldSearch.setText("Input text to search"); }
+		//				 */
+		//
+		//			}
+		//		});
+		//
+		//		textFieldSearch.addActionListener(new ActionListener() {
+		//			public void actionPerformed(ActionEvent e) {
+		//				String keyword = textFieldSearch.getText().trim();
+		//				domainPanelSearch(keyword);
+		//			}
+		//			
+		//			public void domainPanelSearch(String keyword) {
+		//				try {
+		//					Highlighter h = textAreaSubdomains.getHighlighter();
+		//					h.removeAllHighlights();
+		//					int pos = textAreaSubdomains.getText().indexOf(keyword, 0);
+		//					h.addHighlight(pos ,
+		//					               pos  + keyword.length(),
+		//					               DefaultHighlighter.DefaultPainter);
+		//					textAreaRelatedDomains = new JTextArea();
+		//					textAreaSubdomains = new JTextArea();
+		//					textAreaSimilarDomains = new JTextArea();
+		//					textAreaEmails = new JTextArea();
+		//					textAreaPackages = new JTextArea();
+		//				} catch (BadLocationException e) {
+		//					e.printStackTrace(stderr);
+		//				}
+		//			}
+		//		});
+		//
+		//		textFieldSearch.setColumns(30);
+		//		footerPanel.add(textFieldSearch);
 	}
 
 	public void showToDomainUI() {
@@ -713,8 +922,10 @@ JScrollPane ScrollPaneSubnets = new JScrollPane(); //1of4
 		lblSummary.setText(domainResult.getSummary());
 		rdbtnAddRelatedToRoot.setSelected(domainResult.autoAddRelatedToRoot);
 
-		stdout.println("Load Domain Panel Data Done");
+		System.out.println("Load Domain Panel Data Done, "+domainResult.getSummary());
+		stdout.println("Load Domain Panel Data Done, "+domainResult.getSummary());
 		listenerIsOn = true;
+
 	}
 
 
@@ -725,13 +936,34 @@ JScrollPane ScrollPaneSubnets = new JScrollPane(); //1of4
 	public Map<String, Set<String>> search(Set<String> rootdomains, Set<String> keywords){
 		IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
 		IHttpRequestResponse[] messages = callbacks.getSiteMap(null);
-		
+
 		List<IHttpRequestResponse> AllMessages = new ArrayList<IHttpRequestResponse>();
 		AllMessages.addAll(Arrays.asList(messages));
 		AllMessages.addAll(collectPackageNameMessages());//包含错误回显的请求响应消息
-		
+
 		new ThreadSearhDomain(AllMessages).Do();
 		return null;
+	}
+
+	public void ZoneTransferCheckAll() {
+		for (String rootDomain:domainResult.fetchRootDomainSet()) {
+			Set<String> NS = Commons.GetAuthoritativeNameServer(rootDomain);
+			for (String Server:NS) {
+				//stdout.println("checking [Server: "+Server+" Domain: "+rootDomain+"]");
+				List<String> Records = Commons.ZoneTransferCheck(rootDomain, Server);
+				if (Records.size() > 0) {
+					try {
+						//stdout.println("!!! "+Server+" is zoneTransfer vulnerable for domain "+rootDomain+" !");
+						File file = new File(rootDomain+"-ZoneTransfer-"+Commons.getNowTimeString()+".txt");
+						file.createNewFile();
+						FileUtils.writeLines(file, Records);
+						stdout.println("!!! Records saved to "+file.getAbsolutePath());
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+				}
+			}
+		}
 	}
 
 	public static Set<String> collectEmails() {
@@ -756,8 +988,8 @@ JScrollPane ScrollPaneSubnets = new JScrollPane(); //1of4
 		}
 		return Emails;
 	}
-	
-	
+
+
 	public static Set<IHttpRequestResponse> collectPackageNameMessages() {
 		Set<IHttpRequestResponse> PackageNameMessages = new HashSet<>();
 		IScanIssue[]  issues =  BurpExtender.getCallbacks().getScanIssues(null);
@@ -901,8 +1133,9 @@ JScrollPane ScrollPaneSubnets = new JScrollPane(); //1of4
 	/*
     自动保存，根据currentDBFile，如果currentDBFile为空或者不存在，就提示选择文件。
 	 */
-	public void autoSave(){
-		File file = BurpExtender.getGui().getCurrentDBFile();
+	public static void autoSave(){
+		BurpExtender.getGui();
+		File file = GUI.getCurrentDBFile();
 		if (file == null){
 			file = BurpExtender.getGui().dbfc.dialog(false);
 			GUI.setCurrentDBFile(file);
@@ -956,5 +1189,16 @@ JScrollPane ScrollPaneSubnets = new JScrollPane(); //1of4
 		Set<String> domainList = new HashSet<>(Arrays.asList(textarea.getText().replaceAll(" ","").replaceAll("\r\n", "\n").split("\n")));
 		domainList.remove("");
 		return domainList;
+	}
+
+	public static void backupDB(){
+		File file = BurpExtender.getGui().getCurrentDBFile();
+		File bakfile = new File(file.getAbsoluteFile().toString()+".bak"+Commons.getNowTimeString());
+		try {
+			FileUtils.copyFile(file, bakfile);
+			BurpExtender.getStdout().println("DB File Backed Up:"+bakfile.getAbsolutePath());
+		} catch (IOException e1) {
+			e1.printStackTrace(BurpExtender.getStderr());
+		}
 	}
 }
