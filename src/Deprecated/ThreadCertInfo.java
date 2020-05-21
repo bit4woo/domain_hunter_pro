@@ -1,7 +1,7 @@
 package Deprecated;
 
-import burp.CertInfo;
 import burp.Commons;
+import domain.CertInfo;
 
 import java.util.HashMap;
 import java.util.HashSet;

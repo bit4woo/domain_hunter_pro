@@ -16,7 +16,10 @@ import java.util.stream.IntStream;
 
 import com.alibaba.fastjson.JSON;
 
-import Config.LineConfig;
+import Tools.LineConfig;
+import domain.DomainObject;
+import title.IndexedLinkedHashMap;
+import title.LineEntry;
 
 /*
 prepareStatement  //预编译方法，在有参数传入时用它
@@ -362,13 +365,13 @@ public class DBHelper {
 //		DomainObject yyyy = new DomainObject("yyyy");
 //		helper.saveDomainObject(yyyy);
 
-		LineEntry aaa = new LineEntry();
-		aaa.setUrl("www.baidu.com");
-
-		LineEntry bbb = new LineEntry();
-		aaa.setUrl("www.jd.com");
-
-		helper.addTitle(aaa);
-		helper.addTitle(bbb);
+//		LineEntry aaa = new LineEntry();
+//		aaa.setUrl("www.baidu.com");
+//
+//		LineEntry bbb = new LineEntry();
+//		aaa.setUrl("www.jd.com");
+//
+//		helper.addTitle(aaa);
+//		helper.addTitle(bbb);
 	}
 }

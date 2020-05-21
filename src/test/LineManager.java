@@ -3,8 +3,8 @@ package test;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 
-import Config.LineConfig;
-import burp.LineEntry;
+import Tools.LineConfig;
+import title.LineEntry;
 
 public class LineManager{
     private final LineConfig config;

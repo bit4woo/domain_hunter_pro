@@ -7,6 +7,10 @@ import java.util.List;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 
+import GUI.GUI;
+import domain.DomainPanel;
+import title.LineEntryMenuForBurp;
+
 public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListener,IContextMenuFactory{
 	/**
 	 *
@@ -100,12 +104,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		if (gui.getTitlePanel().getThreadGetTitle() != null) {
 			gui.getTitlePanel().getThreadGetTitle().stopThreads();//maybe null
 		}//必须要先结束线程，否则获取数据的操作根本无法结束，因为线程一直通过sync占用资源
-		if (DomainPanel.threadBruteDomain != null){
-			DomainPanel.threadBruteDomain.stopThreads();
-		}
-		if (DomainPanel.threadBruteDomain2 != null){
-			DomainPanel.threadBruteDomain2.stopThreads();
-		}
+		
 		gui.saveDBfilepathToExtension();
 		gui.getProjectMenu().remove();
 

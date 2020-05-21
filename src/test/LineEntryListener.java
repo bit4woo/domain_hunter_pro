@@ -1,6 +1,6 @@
 package test;
 
-import burp.LineEntry;
+import title.LineEntry;
 
 /**
  * Created by corey on 21/08/17.
