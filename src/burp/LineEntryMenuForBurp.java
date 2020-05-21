@@ -255,7 +255,7 @@ public class LineEntryMenuForBurp{
 
 				if (entries.size() > 0) {
 					for (LineEntry entry:entries) {
-						entry.setChecked(true);
+						entry.setCheckStatus(LineEntry.CheckStatus_UnChecked);
 						int index = TitlePanel.getTitleTableModel().getLineEntries().IndexOfKey(entry.getUrl());
 						stdout.println("$$$ "+entry.getUrl()+" updated");
 						TitlePanel.getTitleTableModel().fireTableRowsUpdated(index,index);//主动通知更新，否则不会写入数据库!!!
@@ -290,7 +290,7 @@ public class LineEntryMenuForBurp{
 					try{
 						IHttpRequestResponse[] messages = invocation.getSelectedMessages();
 						Getter getter = new Getter(helpers);
-						if (messages[0] ==null) {
+						if (messages== null || messages.length == 0 ||messages[0] ==null) {
 							return null;
 						}
 						URL fullurl = getter.getFullURL(messages[0]);
@@ -418,7 +418,7 @@ public class LineEntryMenuForBurp{
 			String host = message.getHttpService().getHost();
 			LineEntry entry = new LineEntry(message);
 			entry.setComment("Manual-Saved");
-			entry.setChecked(true);
+			entry.setCheckStatus(LineEntry.CheckStatus_UnChecked);
 			TitlePanel.getTitleTableModel().addNewLineEntry(entry); //add request
 			DomainPanel.getDomainResult().addToDomainOject(host); //add domain
 		}

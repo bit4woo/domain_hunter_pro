@@ -141,7 +141,7 @@ class Producer extends Thread {//Producer do
 						item.setLevel(linefound.getLevel());
 						try {
 							if (url.equalsIgnoreCase(linefound.getUrl()) && item.getBodyText().length() == linefound.getBodyText().length()) {
-								item.setChecked(linefound.isChecked());
+								item.setCheckStatus(linefound.getCheckStatus());
 								item.setTime(linefound.getTime());
 							}
 						}catch(Exception err) {

@@ -222,6 +222,23 @@ public class LineTable extends JTable
 		});
 	}
 
+	public static boolean entryNeedToShow(LineEntry entry) {
+
+		if (TitlePanel.rdbtnCheckedItems.isSelected()&& entry.statusIsChecked()) {
+			return true;
+		}
+
+		if (TitlePanel.rdbtnCheckingItems.isSelected()&& entry.getCheckStatus() == LineEntry.CheckStatus_Checking) {
+			return true;
+		}
+
+		if (TitlePanel.rdbtnUnCheckedItems.isSelected()&& entry.getCheckStatus() == LineEntry.CheckStatus_UnChecked) {
+			return true;
+		}
+
+		return false;
+	}
+
 	//dork搜索和全数据包字符串搜索
 	public void search(String keyword) {
 		keyword = keyword.trim().toLowerCase();
@@ -249,7 +266,8 @@ public class LineTable extends JTable
 				int row = (int) entry.getIdentifier();
 				LineEntry line = rowSorter.getModel().getLineEntries().getValueAtIndex(row);
 
-				if (GUI.getTitlePanel().rdbtnHideCheckedItems.isSelected()&& line.isChecked()) {//to hide checked lines
+				//第一层判断，根据按钮状态进行判断，如果为true，进行后面的逻辑判断，false直接返回。
+				if (!entryNeedToShow(line)) {
 					if (selectedRow == row) {
 						selectedRow = row+1;
 					}
@@ -311,7 +329,7 @@ public class LineTable extends JTable
 				int row = (int) entry.getIdentifier();
 				LineEntry line = rowSorter.getModel().getLineEntries().getValueAtIndex(row);
 
-				if (GUI.getTitlePanel().rdbtnHideCheckedItems.isSelected()&& line.isChecked()) {//to hide checked lines
+				if (!entryNeedToShow(line)) {
 					if (selectedRow == row) {
 						selectedRow = row+1;
 					}
@@ -379,13 +397,12 @@ public class LineTable extends JTable
 				int row = (int) entry.getIdentifier();
 				LineEntry line = rowSorter.getModel().getLineEntries().getValueAtIndex(row);
 
-				if (GUI.getTitlePanel().rdbtnHideCheckedItems.isSelected()&& line.isChecked()) {//to hide checked lines
+				if (!entryNeedToShow(line)) {
 					if (selectedRow == row) {
 						selectedRow = row+1;
 					}
 					return false;
 				}
-
 
 				Pattern pRegex = Pattern.compile(regex);
 

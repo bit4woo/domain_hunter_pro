@@ -14,9 +14,13 @@ import com.ibm.icu.text.CharsetMatch;
 
 public class LineEntry {
 
-	public static final String Level_A = "A";
+	public static final String Level_A = "Important";
 	public static final String Level_B = "B";
 	public static final String Level_C = "C";
+
+	public static final String CheckStatus_UnChecked = "UnChecked";
+	public static final String CheckStatus_Checked = "Checked";
+	public static final String CheckStatus_Checking = "Checking";
 
 	public static String systemCharSet = getSystemCharSet();
 
@@ -46,7 +50,8 @@ public class LineEntry {
 	//don't store these two field to reduce config file size.
 
 	//field for user
-	private boolean isChecked =false;
+	private transient boolean isChecked =false;
+	private String CheckStatus =CheckStatus_UnChecked;
 	private String Level = Level_C;
 	private String comment ="";
 
@@ -282,13 +287,13 @@ Content-Type: text/html;charset=UTF-8
 		String contentType = getter.getHeaderValueOf(false,response,"Content-Type");
 		String body = new String(getter.getBody(false,response));
 		String tmpcharSet = null;
-		
+
 		if (contentType != null){//1、尝试从contentTpye中获取
 			if (contentType.toLowerCase().contains("charset=")) {
 				tmpcharSet = contentType.toLowerCase().split("charset=")[1];
 			}
 		}
-		
+
 		if (tmpcharSet == null){//2、尝试从body中获取
 			Pattern pDomainNameOnly = Pattern.compile("charset=(.*?)>");
 			Matcher matcher = pDomainNameOnly.matcher(body);
@@ -300,14 +305,14 @@ Content-Type: text/html;charset=UTF-8
 				//				tmpcharSet = tmpcharSet.replace("charset=","");
 			}
 		}
-		
+
 		if (tmpcharSet == null){//3、尝试使用ICU4J进行编码的检测
 			CharsetDetector detector = new CharsetDetector();
 			detector.setText(response);
 			CharsetMatch cm = detector.detect();
 			tmpcharSet = cm.getName();
 		}
-		
+
 		tmpcharSet = tmpcharSet.toLowerCase().trim();
 		if (tmpcharSet.contains("utf8")){
 			tmpcharSet = "utf-8";
@@ -441,12 +446,36 @@ Content-Type: text/html;charset=UTF-8
 		this.response = response;
 	}
 
-	public boolean isChecked() {
-		return isChecked;
+	//程序中不再需要使用 isChecked函数（Checked属性的getter），完全移除
+	@Deprecated//在反序列化时，还会需要这个函数，唯一的使用点。
+	public void setChecked(boolean isChecked) {
+		//如果是旧数据，将这个值设置到新的属性，为了向下兼容需要保留这个函数。
+		try {
+			if (isChecked) {
+				CheckStatus = CheckStatus_Checked;
+			}else {
+				CheckStatus = CheckStatus_UnChecked;
+			}
+		} catch (Exception e) {
+			
+		}
+		this.isChecked = isChecked;
 	}
 
-	public void setChecked(boolean isChecked) {
-		this.isChecked = isChecked;
+	public boolean statusIsChecked() {
+		if (CheckStatus == CheckStatus_Checked) {
+			return true;
+		}
+		return false;
+	}
+	
+	public String getCheckStatus() {
+		return CheckStatus;
+	}
+
+	//反序列化时，如果没有这个属性是不会调用这个函数的。
+	public void setCheckStatus(String checkStatus) {
+		CheckStatus = checkStatus;
 	}
 
 	public String getLevel() {

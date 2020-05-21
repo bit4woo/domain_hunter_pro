@@ -45,7 +45,10 @@ public class TitlePanel extends JPanel {
 	private static LineTable titleTable;
 	private JLabel lblSummaryOfTitle;
 	private static String cookie;
-	public  JRadioButton rdbtnHideCheckedItems;
+	public static JRadioButton rdbtnUnCheckedItems;
+	public static JRadioButton rdbtnCheckingItems;
+	public static JRadioButton rdbtnCheckedItems;
+	
 	//add table and tablemodel to GUI
 	private static LineTableModel titleTableModel = new LineTableModel();
 	PrintWriter stdout;
@@ -361,16 +364,38 @@ public class TitlePanel extends JPanel {
 		});
 		buttonPanel.add(buttonSearch);
 
-		rdbtnHideCheckedItems = new JRadioButton("Hide Checked");
-		rdbtnHideCheckedItems.setSelected(true);
-		rdbtnHideCheckedItems.addActionListener(new ActionListener() {
+		rdbtnUnCheckedItems = new JRadioButton("UnChecked");
+		rdbtnUnCheckedItems.setSelected(true);
+		rdbtnUnCheckedItems.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String keyword = textFieldSearch.getText().trim();
 				titleTable.search(keyword);
 				//lineTable.getModel().unHideLines();
 			}
 		});
-		buttonPanel.add(rdbtnHideCheckedItems);
+		buttonPanel.add(rdbtnUnCheckedItems);
+		
+		rdbtnCheckingItems = new JRadioButton("Checking");
+		rdbtnCheckingItems.setSelected(true);
+		rdbtnCheckingItems.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String keyword = textFieldSearch.getText().trim();
+				titleTable.search(keyword);
+				//lineTable.getModel().unHideLines();
+			}
+		});
+		buttonPanel.add(rdbtnCheckingItems);
+		
+		rdbtnCheckedItems = new JRadioButton("Checked");
+		rdbtnCheckedItems.setSelected(false);
+		rdbtnCheckedItems.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String keyword = textFieldSearch.getText().trim();
+				titleTable.search(keyword);
+				//lineTable.getModel().unHideLines();
+			}
+		});
+		buttonPanel.add(rdbtnCheckedItems);
 
 		lblSummaryOfTitle = new JLabel("^_^");
 		buttonPanel.add(lblSummaryOfTitle);

@@ -191,7 +191,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		int all = lineEntries.size();
 		int checked = 0;
 		for (LineEntry lineEntrie:lineEntries.values()) {
-			if (lineEntrie.isChecked()) {
+			if (lineEntrie.statusIsChecked()) {
 				checked ++;
 			}
 		}
@@ -223,7 +223,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			return boolean.class;//id
 		}
 		if (columnIndex == titletList.indexOf("isChecked")) {
-			return boolean.class;//id
+			return String.class;//id
 		}
 		return String.class;
 		
@@ -348,7 +348,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			Arrays.sort(rows); //升序
 			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
 				LineEntry checked = lineEntries.getValueAtIndex(rows[i]);
-				checked.setChecked(true);
+				checked.setCheckStatus(LineEntry.CheckStatus_UnChecked);
 				//				lineEntries.remove(rows[i]);
 				//				lineEntries.add(rows[i], checked);
 				//				//https://stackoverflow.com/questions/4352885/how-do-i-update-the-element-at-a-certain-position-in-an-arraylist
@@ -456,7 +456,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			return entry.getTime();
 		}
 		if (columnIndex == titletList.indexOf("isChecked")){
-			return entry.isChecked();
+			return entry.getCheckStatus();
 		}
 		if (columnIndex == titletList.indexOf("Level")){
 			return entry.getLevel();
