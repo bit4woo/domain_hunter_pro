@@ -18,6 +18,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingWorker;
 
+import GUI.LineEntryMenuForBurp;
 import Tools.ToolPanel;
 import burp.BurpExtender;
 import burp.Commons;

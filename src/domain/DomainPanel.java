@@ -920,7 +920,7 @@ public class DomainPanel extends JPanel {
 			domainTableModel.addRow(new Object[]{entry.getKey(),entry.getValue()});
 		}
 
-		textFieldUploadURL.setText(domainResult.uploadURL);
+		//textFieldUploadURL.setText(domainResult.uploadURL);
 		textAreaSubnets.setText(domainResult.fetchSubnets());
 		textAreaSubdomains.setText(domainResult.fetchSubDomains());
 		textAreaSimilarDomains.setText(domainResult.fetchSimilarDomains());

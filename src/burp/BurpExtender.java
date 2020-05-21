@@ -8,8 +8,8 @@ import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 
 import GUI.GUI;
+import GUI.LineEntryMenuForBurp;
 import domain.DomainPanel;
-import title.LineEntryMenuForBurp;
 
 public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListener,IContextMenuFactory{
 	/**

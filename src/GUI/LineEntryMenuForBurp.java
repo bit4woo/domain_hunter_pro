@@ -1,4 +1,4 @@
-package title;
+package GUI;
 
 
 import java.awt.event.ActionEvent;
@@ -18,7 +18,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 
-import GUI.RunnerGUI;
 import Tools.LineConfig;
 import Tools.ToolPanel;
 import burp.BurpExtender;
@@ -28,6 +27,9 @@ import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
 import domain.DomainObject;
 import domain.DomainPanel;
+import title.LineEntry;
+import title.LineTable;
+import title.TitlePanel;
 
 public class LineEntryMenuForBurp{
 
