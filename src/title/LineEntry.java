@@ -29,6 +29,12 @@ public class LineEntry {
 	public static final String CheckStatus_UnChecked = "UnChecked";
 	public static final String CheckStatus_Checked = "Checked";
 	public static final String CheckStatus_Checking = "Checking";
+	
+	public static final String Tag_Manager = "管理端";
+	public static final String Tag_UserEnd = "用户端";
+	public static final String Tag_TestEnvironment = "测试环境";
+	public static final String Tag_Useless = "无用";
+	public static final String Tag_MoreDig = "需复测"; //需要定期review的网站
 
 	public static String systemCharSet = getSystemCharSet();
 
