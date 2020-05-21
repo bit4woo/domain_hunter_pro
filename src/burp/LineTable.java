@@ -228,11 +228,11 @@ public class LineTable extends JTable
 			return true;
 		}
 
-		if (TitlePanel.rdbtnCheckingItems.isSelected()&& entry.getCheckStatus() == LineEntry.CheckStatus_Checking) {
-			return true;
+		if (TitlePanel.rdbtnCheckingItems.isSelected()&& entry.getCheckStatus().equals(LineEntry.CheckStatus_Checking)) {
+			return true;//小心 == 和 equals的区别，之前这里使用 ==就导致了checking状态的条目的消失。
 		}
 
-		if (TitlePanel.rdbtnUnCheckedItems.isSelected()&& entry.getCheckStatus() == LineEntry.CheckStatus_UnChecked) {
+		if (TitlePanel.rdbtnUnCheckedItems.isSelected()&& entry.getCheckStatus().equals(LineEntry.CheckStatus_UnChecked)) {
 			return true;
 		}
 
