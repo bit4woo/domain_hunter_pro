@@ -206,7 +206,7 @@ public class LineEntryMenu extends JPopupMenu {
 		JMenuItem checkingItem = new JMenuItem(new AbstractAction("Set As Checking") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				TitlePanel.getTitleTableModel().checkingRows(rows);			
+				TitlePanel.getTitleTableModel().updateRowsStatus(rows,LineEntry.CheckStatus_Checking);			
 				java.util.List<String> urls = lineTable.getModel().getURLs(rows);
 				IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
 				for(String url:urls) {
@@ -225,7 +225,7 @@ public class LineEntryMenu extends JPopupMenu {
 		JMenuItem checkedItem = new JMenuItem(new AbstractAction("Set As Checked") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				BurpExtender.getGui().getTitlePanel().getTitleTableModel().updateRows(rows);
+				BurpExtender.getGui().getTitlePanel().getTitleTableModel().updateRowsStatus(rows,LineEntry.CheckStatus_Checked);
 				//				if (BurpExtender.rdbtnHideCheckedItems.isSelected()) {//实现自动隐藏，为了避免误操作，不启用
 				//					String keyword = BurpExtender.textFieldSearch.getText().trim();
 				//					lineTable.search(keyword);

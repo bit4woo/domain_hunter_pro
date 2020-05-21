@@ -1,6 +1,5 @@
 package burp;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
@@ -14,7 +13,7 @@ import com.ibm.icu.text.CharsetMatch;
 
 public class LineEntry {
 
-	public static final String Level_A = "Important";
+	public static final String Level_A = "A";
 	public static final String Level_B = "B";
 	public static final String Level_C = "C";
 

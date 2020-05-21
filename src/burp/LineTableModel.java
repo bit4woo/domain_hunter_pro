@@ -122,6 +122,143 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		this.ListenerIsOn = listenerIsOn;
 	}
 
+
+	////////////////////// extend AbstractTableModel////////////////////////////////
+
+	@Override
+	public int getColumnCount()
+	{
+		return titletList.size();//the one is the request String + response String,for search
+	}
+
+	@Override
+	public Class<?> getColumnClass(int columnIndex)
+	{
+
+		if (columnIndex == titletList.indexOf("#")) {
+			return Integer.class;//id
+		}
+		if (columnIndex == titletList.indexOf("Status")) {
+			return Integer.class;//id
+		}
+		if (columnIndex == titletList.indexOf("Length")) {
+			return Integer.class;//id
+		}
+		if (columnIndex == titletList.indexOf("isNew")) {
+			return boolean.class;//id
+		}
+		if (columnIndex == titletList.indexOf("isChecked")) {
+			return String.class;//id
+		}
+		return String.class;
+		
+		
+		
+//		
+//		switch(columnIndex)
+//		{	
+//			case 0:
+//				return Integer.class;//id
+//			case 2:
+//				return Integer.class;//Status
+//			case 3:
+//				return Integer.class;//Length
+//			case 11:
+//				return boolean.class;//isNew
+//			case 12:
+//				return boolean.class;//isChecked
+//			default:
+//				return String.class;
+//		}//0-id, 1-url,2-status, 3-length,4-mimetype,5-server, 6-title, 7-ip, 8-cdn, 9-comments, 10-time, 11-isnew, 12-ischecked
+
+	}
+
+	@Override
+	public int getRowCount()
+	{
+		return lineEntries.size();
+	}
+
+	//define header of table???
+	@Override
+	public String getColumnName(int columnIndex) {
+		if (columnIndex >= 0 && columnIndex <= titletList.size()) {
+			return titletList.get(columnIndex);
+		}else {
+			return "";
+		}
+	}
+
+	@Override
+	public boolean isCellEditable(int rowIndex, int columnIndex) {
+		if (titletList.get(columnIndex).equals("Comments")) {//可以编辑comment
+			return true;
+		}else {
+			return false;
+		}
+	}
+	
+
+	@Override
+	public Object getValueAt(int rowIndex, int columnIndex)
+	{
+		LineEntry entry = lineEntries.getValueAtIndex(rowIndex);
+		//entry.parse();---
+		//"#", "URL", "Status", "Length", "Server","Title", "IP", "CDN", "Comments","Time","isChecked"};
+		if (columnIndex == titletList.indexOf("#")) {
+			return rowIndex;
+		}
+		if (columnIndex == titletList.indexOf("URL")){
+			return entry.getUrl();
+		}
+		if (columnIndex == titletList.indexOf("Status")){
+			return entry.getStatuscode();
+		}
+		if (columnIndex == titletList.indexOf("Length")){
+			return entry.getContentLength();
+		}
+		if (columnIndex == titletList.indexOf("Server")){
+			return entry.getWebcontainer();
+		}
+		if (columnIndex == titletList.indexOf("Title")){
+			return entry.getTitle();
+		}
+		if (columnIndex == titletList.indexOf("IP")){
+			return entry.getIP();
+		}
+		if (columnIndex == titletList.indexOf("CDN")){
+			return entry.getCDN();
+		}
+		if (columnIndex == titletList.indexOf("Comments")){
+			return entry.getComment();
+		}
+		if (columnIndex == titletList.indexOf("Time")){
+			return entry.getTime();
+		}
+		if (columnIndex == titletList.indexOf("isChecked")){
+			return entry.getCheckStatus();
+		}
+		if (columnIndex == titletList.indexOf("Level")){
+			return entry.getLevel();
+		}
+		return "";
+	}
+
+
+	@Override
+	public void setValueAt(Object value, int row, int col) {
+		LineEntry entry = lineEntries.getValueAtIndex(row);
+		if (col == titletList.indexOf("Comments")){
+			String valueStr = ((String) value).trim();
+			//if (valueStr.equals("")) return;
+			entry.setComment(valueStr);
+			fireTableCellUpdated(row, col);
+		}
+	}
+	//////////////////////extend AbstractTableModel////////////////////////////////
+	
+	
+	
 	public void clear(boolean syncToFile) {
 //		if (syncToFile){
 //			this.setListenerIsOn(true);
@@ -198,80 +335,8 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		return String.format(" [ALL:%s Unchecked:%s]",all,all-checked);
 	}
 
-	////////////////////// extend AbstractTableModel////////////////////////////////
-
-	@Override
-	public int getColumnCount()
-	{
-		return titletList.size();//the one is the request String + response String,for search
-	}
-
-	@Override
-	public Class<?> getColumnClass(int columnIndex)
-	{
-
-		if (columnIndex == titletList.indexOf("#")) {
-			return Integer.class;//id
-		}
-		if (columnIndex == titletList.indexOf("Status")) {
-			return Integer.class;//id
-		}
-		if (columnIndex == titletList.indexOf("Length")) {
-			return Integer.class;//id
-		}
-		if (columnIndex == titletList.indexOf("isNew")) {
-			return boolean.class;//id
-		}
-		if (columnIndex == titletList.indexOf("isChecked")) {
-			return String.class;//id
-		}
-		return String.class;
-		
-		
-		
-//		
-//		switch(columnIndex)
-//		{	
-//			case 0:
-//				return Integer.class;//id
-//			case 2:
-//				return Integer.class;//Status
-//			case 3:
-//				return Integer.class;//Length
-//			case 11:
-//				return boolean.class;//isNew
-//			case 12:
-//				return boolean.class;//isChecked
-//			default:
-//				return String.class;
-//		}//0-id, 1-url,2-status, 3-length,4-mimetype,5-server, 6-title, 7-ip, 8-cdn, 9-comments, 10-time, 11-isnew, 12-ischecked
-
-	}
-
-	@Override
-	public int getRowCount()
-	{
-		return lineEntries.size();
-	}
-
-	//define header of table???
-	@Override
-	public String getColumnName(int columnIndex) {
-		if (columnIndex >= 0 && columnIndex <= titletList.size()) {
-			return titletList.get(columnIndex);
-		}else {
-			return "";
-		}
-	}
-
-	@Override
-	public boolean isCellEditable(int rowIndex, int columnIndex) {
-		if (titletList.get(columnIndex).equals("Comments")) {//可以编辑comment
-			return true;
-		}else {
-			return false;
-		}
-	}
+	
+	///////////////////多个行内容的增删查改/////////////////////////////////
 
 	public List<String> getHosts(int[] rows) {
 		synchronized (lineEntries) {
@@ -324,8 +389,6 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	//如果使用了tableModelListener,就需要注意：在监听事件中去执行具体动作，这里只是起通知作用！！！！
 	尤其是改变了lineEntries数量的操作！index将发生改变。
 	 */
-
-
 	public void removeRows(int[] rows) {
 		synchronized (lineEntries) {
 			//because thread let the delete action not in order, so we must loop in here.
@@ -341,14 +404,14 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	}
 
 
-	public void updateRows(int[] rows) {
+	public void updateRowsStatus(int[] rows,String status) {
 		synchronized (lineEntries) {
 			//because thread let the delete action not in order, so we must loop in here.
 			//list length and index changed after every remove.the origin index not point to right item any more.
 			Arrays.sort(rows); //升序
 			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
 				LineEntry checked = lineEntries.getValueAtIndex(rows[i]);
-				checked.setCheckStatus(LineEntry.CheckStatus_Checked);
+				checked.setCheckStatus(status);
 				//				lineEntries.remove(rows[i]);
 				//				lineEntries.add(rows[i], checked);
 				//				//https://stackoverflow.com/questions/4352885/how-do-i-update-the-element-at-a-certain-position-in-an-arraylist
@@ -358,17 +421,6 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			}
 			//this.fireTableRowsUpdated(rows[0], rows[rows.length-1]);
 			//最好还是一行一行地触发监听事件，因为自定义排序后的行号可能不是连续的，如果用批量触发，会做很多无用功，导致操作变慢。
-		}
-	}
-	
-	public void checkingRows(int[] rows) {
-		synchronized (lineEntries) {
-			Arrays.sort(rows); //升序
-			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
-				LineEntry checked = lineEntries.getValueAtIndex(rows[i]);
-				checked.setCheckStatus(LineEntry.CheckStatus_Checking);
-				this.fireTableRowsUpdated(rows[i], rows[i]);
-			}
 		}
 	}
 	
@@ -429,64 +481,8 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			}
 		}
 	}
+	///////////////////多个行内容的增删查改/////////////////////////////////
 
-	@Override
-	public Object getValueAt(int rowIndex, int columnIndex)
-	{
-		LineEntry entry = lineEntries.getValueAtIndex(rowIndex);
-		//entry.parse();---
-		//"#", "URL", "Status", "Length", "Server","Title", "IP", "CDN", "Comments","Time","isChecked"};
-		if (columnIndex == titletList.indexOf("#")) {
-			return rowIndex;
-		}
-		if (columnIndex == titletList.indexOf("URL")){
-			return entry.getUrl();
-		}
-		if (columnIndex == titletList.indexOf("Status")){
-			return entry.getStatuscode();
-		}
-		if (columnIndex == titletList.indexOf("Length")){
-			return entry.getContentLength();
-		}
-		if (columnIndex == titletList.indexOf("Server")){
-			return entry.getWebcontainer();
-		}
-		if (columnIndex == titletList.indexOf("Title")){
-			return entry.getTitle();
-		}
-		if (columnIndex == titletList.indexOf("IP")){
-			return entry.getIP();
-		}
-		if (columnIndex == titletList.indexOf("CDN")){
-			return entry.getCDN();
-		}
-		if (columnIndex == titletList.indexOf("Comments")){
-			return entry.getComment();
-		}
-		if (columnIndex == titletList.indexOf("Time")){
-			return entry.getTime();
-		}
-		if (columnIndex == titletList.indexOf("isChecked")){
-			return entry.getCheckStatus();
-		}
-		if (columnIndex == titletList.indexOf("Level")){
-			return entry.getLevel();
-		}
-		return "";
-	}
-
-
-	@Override
-	public void setValueAt(Object value, int row, int col) {
-		LineEntry entry = lineEntries.getValueAtIndex(row);
-		if (col == titletList.indexOf("Comments")){
-			String valueStr = ((String) value).trim();
-			//if (valueStr.equals("")) return;
-			entry.setComment(valueStr);
-			fireTableCellUpdated(row, col);
-		}
-	}
-	//////////////////////extend AbstractTableModel////////////////////////////////
 
 	public void addNewLineEntry(LineEntry lineEntry){
 		if (lineEntry == null) {
