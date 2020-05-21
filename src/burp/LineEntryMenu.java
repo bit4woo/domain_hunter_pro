@@ -5,6 +5,7 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.io.PrintWriter;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -202,6 +203,24 @@ public class LineEntryMenu extends JPopupMenu {
 			}
 		});
 		
+		JMenuItem checkingItem = new JMenuItem(new AbstractAction("Set As Checking") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				TitlePanel.getTitleTableModel().checkingRows(rows);			
+				java.util.List<String> urls = lineTable.getModel().getURLs(rows);
+				IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
+				for(String url:urls) {
+					URL shortUrl;
+					try {
+						shortUrl = new URL(url);
+						callbacks.includeInScope(shortUrl);
+					} catch (MalformedURLException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		});
+		
 
 		JMenuItem checkedItem = new JMenuItem(new AbstractAction("Set As Checked") {
 			@Override
@@ -344,6 +363,7 @@ public class LineEntryMenu extends JPopupMenu {
 
 		this.addSeparator();
 		
+		this.add(checkingItem);
 		this.add(checkedItem);
 		this.add(levelMenu);
 		this.add(batchAddCommentsItem);

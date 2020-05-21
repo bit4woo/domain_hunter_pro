@@ -348,7 +348,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			Arrays.sort(rows); //升序
 			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
 				LineEntry checked = lineEntries.getValueAtIndex(rows[i]);
-				checked.setCheckStatus(LineEntry.CheckStatus_UnChecked);
+				checked.setCheckStatus(LineEntry.CheckStatus_Checked);
 				//				lineEntries.remove(rows[i]);
 				//				lineEntries.add(rows[i], checked);
 				//				//https://stackoverflow.com/questions/4352885/how-do-i-update-the-element-at-a-certain-position-in-an-arraylist
@@ -358,6 +358,17 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			}
 			//this.fireTableRowsUpdated(rows[0], rows[rows.length-1]);
 			//最好还是一行一行地触发监听事件，因为自定义排序后的行号可能不是连续的，如果用批量触发，会做很多无用功，导致操作变慢。
+		}
+	}
+	
+	public void checkingRows(int[] rows) {
+		synchronized (lineEntries) {
+			Arrays.sort(rows); //升序
+			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
+				LineEntry checked = lineEntries.getValueAtIndex(rows[i]);
+				checked.setCheckStatus(LineEntry.CheckStatus_Checking);
+				this.fireTableRowsUpdated(rows[i], rows[i]);
+			}
 		}
 	}
 	
