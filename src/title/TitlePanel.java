@@ -59,9 +59,17 @@ public class TitlePanel extends JPanel {
 	PrintWriter stderr;
 	private ThreadGetTitle threadGetTitle;
 	private IndexedLinkedHashMap<String,LineEntry> BackupLineEntries;
-	private History searchHistory = new History(10);
+	private static History searchHistory = new History(10);
 	private static List<Integer> externalPortList;
 	private static JTextField textFieldSearch;
+
+	public static History getSearchHistory() {
+		return searchHistory;
+	}
+
+	public void setSearchHistory(History searchHistory) {
+		this.searchHistory = searchHistory;
+	}
 
 	public static JTextField getTextFieldSearch() {
 		return textFieldSearch;
@@ -307,7 +315,7 @@ public class TitlePanel extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				String keyword = textFieldSearch.getText().trim();
 				titleTable.search(keyword);
-				searchHistory.addRecord(keyword);//记录搜索历史
+				//searchHistory.addRecord(keyword);//记录搜索历史
 			}
 		});
 
@@ -363,7 +371,7 @@ public class TitlePanel extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				String keyword = textFieldSearch.getText().trim();
 				titleTable.search(keyword);
-				searchHistory.addRecord(keyword);
+				//searchHistory.addRecord(keyword);
 				digStatus();
 			}
 		});

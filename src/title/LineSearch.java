@@ -2,6 +2,8 @@ package title;
 
 import java.util.regex.Pattern;
 
+import burp.BurpExtender;
+
 public class LineSearch {
 	
 	//根据状态过滤
@@ -56,6 +58,10 @@ public class LineSearch {
 			return true;
 		}
 		
+		if (dork.equalsIgnoreCase(SearchDork.REGEX.toString())) {
+			return regexFilte(line,keyword);
+		}
+		
 		//BurpExtender.getStdout().println(dork+":"+SearchDork.HOST.toString());
 		if (dork.equalsIgnoreCase(SearchDork.HOST.toString())) {
 			if (line.getHost().toLowerCase().contains(keyword)) {
@@ -97,13 +103,11 @@ public class LineSearch {
 			}
 		}
 		
-		if (dork.equalsIgnoreCase(SearchDork.REGEX.toString())) {
-			return regexFilte(line,keyword);
-		}
 		return false;
 	}
 	
 	public static boolean regexFilte(LineEntry line,String regex) {
+		//BurpExtender.getStdout().println("regexFilte: "+regex);
 		Pattern pRegex = Pattern.compile(regex);
 
 		if (regex.trim().length() == 0) {
@@ -131,4 +135,13 @@ public class LineSearch {
 		}
 	}
 	
+	
+	public static void main(String args[]) {
+		String webpack_PATTERN = "app\\.([0-9a-z])*\\.js";//后文有小写转换
+		System.out.println(webpack_PATTERN);
+		
+		System.out.println("regex:app\\.([0-9a-z])*\\.js");
+		
+		System.out.println(SearchDork.REGEX.toString()+":"+webpack_PATTERN);
+	}
 }

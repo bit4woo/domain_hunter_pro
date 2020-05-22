@@ -38,9 +38,8 @@ public class SearchMenu extends JPopupMenu {
 		JMenuItem webpackItemPc = new JMenuItem(new AbstractAction("webpack-pc:   pc\\.([0-9a-z])*\\.js") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				//String webpack_PATTERN = "pc\\.([0-9a-z])*\\.js";//后文有小写转换
-
-				TitlePanel.getTextFieldSearch().setText("regex:pc\\.([0-9a-z])*\\.js");
+				String webpack_PATTERN = "pc\\.([0-9a-z])*\\.js";//后文有小写转换
+				TitlePanel.getTextFieldSearch().setText(SearchDork.REGEX.toString()+":"+webpack_PATTERN);
 				TitlePanel.getTitleTable().search(TitlePanel.getTextFieldSearch().getText());
 			}
 		});
@@ -50,8 +49,11 @@ public class SearchMenu extends JPopupMenu {
 		JMenuItem webpackItemApp = new JMenuItem(new AbstractAction("webpack-app:   app\\.([0-9a-z])*\\.js") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				//String webpack_PATTERN = "app\\.([0-9a-z])*\\.js";//后文有小写转换
-				TitlePanel.getTextFieldSearch().setText("regex:app\\.([0-9a-z])*\\.js");
+				String webpack_PATTERN = "app\\.([0-9a-z])*\\.js";//后文有小写转换
+				//TitlePanel.getTextFieldSearch().setText("regex:app\\.([0-9a-z])*\\.js");
+				//stdout.println("regex:app\\.([0-9a-z])*\\.js");
+				//stdout.println(SearchDork.REGEX.toString()+":"+webpack_PATTERN);
+				TitlePanel.getTextFieldSearch().setText(SearchDork.REGEX.toString()+":"+webpack_PATTERN);
 				TitlePanel.getTitleTable().search(TitlePanel.getTextFieldSearch().getText());
 			}
 		});
@@ -61,7 +63,7 @@ public class SearchMenu extends JPopupMenu {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				String webpack_PATTERN = "index\\.([0-9a-z])*\\.js";//后文有小写转换
-				TitlePanel.getTextFieldSearch().setText("regex:app\\.([0-9a-z])*\\.js");
+				TitlePanel.getTextFieldSearch().setText(SearchDork.REGEX.toString()+":"+webpack_PATTERN);
 				TitlePanel.getTitleTable().search(TitlePanel.getTextFieldSearch().getText());
 			}
 		});
@@ -73,8 +75,8 @@ public class SearchMenu extends JPopupMenu {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				//根据webpack知识，文件名是可以变的，但是通常会在文件名中加入hash字段（文件名.hash.js），所以用这个正则 
-				//String webpack_PATTERN = "([a-z])*\\.([0-9a-z])*\\.js";//后文有小写转换
-				TitlePanel.getTextFieldSearch().setText("regex:([a-z])*\\.([0-9a-z])*\\.js");
+				String webpack_PATTERN = "([a-z])*\\.([0-9a-z])*\\.js";//后文有小写转换
+				TitlePanel.getTextFieldSearch().setText(SearchDork.REGEX.toString()+":"+webpack_PATTERN);
 				TitlePanel.getTitleTable().search(TitlePanel.getTextFieldSearch().getText());
 			}
 		});
@@ -84,8 +86,8 @@ public class SearchMenu extends JPopupMenu {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				//根据webpack知识，文件名是可以变的，但是通常会在文件名中加入hash字段（文件名.hash.js），所以用这个正则 
-				//String webpack_PATTERN = "([0-9a-z])*\\.js";//后文有小写转换
-				TitlePanel.getTextFieldSearch().setText("regex:([0-9a-z])*\\.js");
+				String webpack_PATTERN = "([0-9a-z])*\\.js";//后文有小写转换
+				TitlePanel.getTextFieldSearch().setText(SearchDork.REGEX.toString()+":"+webpack_PATTERN);
 				TitlePanel.getTitleTable().search(TitlePanel.getTextFieldSearch().getText());
 			}
 		});

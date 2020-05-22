@@ -92,7 +92,7 @@ public class LineEntryMenu extends JPopupMenu {
 			public void actionPerformed(ActionEvent actionEvent) {
 		
 				String host = lineTable.getModel().getLineEntries().getValueAtIndex(rows[0]).getHost();
-				TitlePanel.getTextFieldSearch().setText("host:"+host);
+				TitlePanel.getTextFieldSearch().setText(SearchDork.HOST.toString()+":"+host);
 			}
 		});
 

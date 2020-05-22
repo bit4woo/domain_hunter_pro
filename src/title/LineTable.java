@@ -249,7 +249,7 @@ public class LineTable extends JTable
 				}
 
 				if (SearchDork.isDork(dork)) {
-					stdout.println("do dork search,dork:"+dork+"   keyword:"+keyword);
+					//stdout.println("do dork search,dork:"+dork+"   keyword:"+keyword);
 					return LineSearch.dorkFilte(line,dork,keyword);
 				}else {
 					return LineSearch.textFilte(line,keyword);
@@ -257,6 +257,7 @@ public class LineTable extends JTable
 			}
 		};
 		rowSorter.setRowFilter(filter);
+		TitlePanel.getSearchHistory().addRecord(keyword);//记录搜索历史
 	}
 
 	//双击进行google搜索和双击浏览器打开url
