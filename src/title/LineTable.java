@@ -13,7 +13,6 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -26,7 +25,6 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableRowSorter;
 
-import Tools.Dork;
 import Tools.ToolPanel;
 import burp.BurpExtender;
 import burp.Commons;
@@ -50,9 +48,6 @@ public class LineTable extends JTable
 	public JSplitPane getTableAndDetailSplitPane() {
 		return tableAndDetailSplitPane;
 	}
-
-
-	private int selectedRow = this.getSelectedRow();//to identify the selected row after search or hide lines
 
 	public LineTable(LineTableModel lineTableModel)
 	{
@@ -183,6 +178,7 @@ public class LineTable extends JTable
 	}
 
 	//TODO,还没弄明白
+	@Deprecated
 	public void setColor(int inputRow) {
 		try {
 			DefaultTableCellRenderer dtcr = new DefaultTableCellRenderer() {
@@ -226,34 +222,7 @@ public class LineTable extends JTable
 		});
 	}
 
-	public static boolean entryNeedToShow(LineEntry entry) {
-
-		if (TitlePanel.rdbtnCheckedItems.isSelected()&& entry.statusIsChecked()) {
-			return true;
-		}
-
-		if (TitlePanel.rdbtnCheckingItems.isSelected()&& entry.getCheckStatus().equals(LineEntry.CheckStatus_Checking)) {
-			return true;//小心 == 和 equals的区别，之前这里使用 ==就导致了checking状态的条目的消失。
-		}
-
-		if (TitlePanel.rdbtnUnCheckedItems.isSelected()&& entry.getCheckStatus().equals(LineEntry.CheckStatus_UnChecked)) {
-			return true;
-		}
-
-		return false;
-	}
-
-	//dork搜索和全数据包字符串搜索
-	public void search(String keyword) {
-		keyword = keyword.trim().toLowerCase();
-		if (Dork.isDorkString(keyword)) {
-			dorkSearch(keyword);
-		}else {
-			fullSearch(keyword);
-		}
-	}
-
-	public void fullSearch(String Inputkeyword) {
+	public void search(String Inputkeyword) {
 		//rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + keyword));
 
 		Inputkeyword = Inputkeyword.trim().toLowerCase();
@@ -262,7 +231,11 @@ public class LineTable extends JTable
 			Inputkeyword = Inputkeyword.replaceAll("\"", "");
 			Inputkeyword = Inputkeyword.replaceAll("\'", "");
 		}
-		final String keyword = Inputkeyword;
+
+		String dork = SearchDork.grepDork(Inputkeyword);
+		String keyword =  SearchDork.grepKeyword(Inputkeyword);
+
+		//stdout.println("dork:"+dork+"   keyword:"+keyword);
 		final RowFilter filter = new RowFilter() {
 			@Override
 			public boolean include(Entry entry) {
@@ -271,183 +244,22 @@ public class LineTable extends JTable
 				LineEntry line = rowSorter.getModel().getLineEntries().getValueAtIndex(row);
 
 				//第一层判断，根据按钮状态进行判断，如果为true，进行后面的逻辑判断，false直接返回。
-				if (!entryNeedToShow(line)) {
-					if (selectedRow == row) {
-						selectedRow = row+1;
-					}
+				if (!LineSearch.entryNeedToShow(line)) {
 					return false;
 				}
 
-				if (keyword.length() == 0) {
-					return true;
-				}else {//全局搜索
-					if (new String(line.getRequest()).toLowerCase().contains(keyword)) {
-						return true;
-					}
-					if (new String(line.getResponse()).toLowerCase().contains(keyword)) {
-						return true;
-					}
-					if (new String(line.getUrl()).toLowerCase().contains(keyword)) {
-						return true;
-					}
-					if (new String(line.getIP()).toLowerCase().contains(keyword)) {
-						return true;
-					}
-					if (new String(line.getCDN()).toLowerCase().contains(keyword)) {
-						return true;
-					}
-					if (new String(line.getComment()).toLowerCase().contains(keyword)) {
-						return true;
-					}
-					if (selectedRow== row) {
-						selectedRow = row+1;
-					}
-					return false;
+				if (SearchDork.isDork(dork)) {
+					stdout.println("do dork search,dork:"+dork+"   keyword:"+keyword);
+					return LineSearch.dorkFilte(line,dork,keyword);
+				}else {
+					return LineSearch.textFilte(line,keyword);
 				}
 			}
 		};
 		rowSorter.setRowFilter(filter);
-
-		try {
-			this.setRowSelectionInterval(selectedRow,selectedRow);
-		} catch (Exception e) {
-			//e.printStackTrace(stderr);//java.lang.IllegalArgumentException: Row index out of range
-		}
-
 	}
 
-	//支持部分类似google dork的搜索语法
-	//Host url header body request response comment
-	public void dorkSearch(String dorkString) {
-
-		dorkString = dorkString.toLowerCase().trim();
-
-		String[] arr = dorkString.split(":",2);//limit =2 分割成2份
-		String dork = arr[0].trim();
-		String keyword =  arr[1].trim();
-
-		final RowFilter filter = new RowFilter() {
-			@Override
-			public boolean include(Entry entry) {
-				//entry --- a non-null object that wraps the underlying object from the model
-				int row = (int) entry.getIdentifier();
-				LineEntry line = rowSorter.getModel().getLineEntries().getValueAtIndex(row);
-
-				if (!entryNeedToShow(line)) {
-					if (selectedRow == row) {
-						selectedRow = row+1;
-					}
-					return false;
-				}
-
-				if (dork.equalsIgnoreCase(Dork.HOST)) {
-					if (line.getHost().toLowerCase().contains(keyword)) {
-						return true;
-					}else {
-						return false;
-					}
-				}
-
-				if (dork.equalsIgnoreCase(Dork.URL)) {
-					if (line.getUrl().toLowerCase().contains(keyword)) {
-						return true;
-					}else {
-						return false;
-					}
-				}
-
-				if (dork.equalsIgnoreCase(Dork.REQUEST)) {
-					if (new String(line.getRequest()).toLowerCase().contains(keyword)) {
-						return true;
-					}else {
-						return false;
-					}
-				}
-
-				if (dork.equalsIgnoreCase(Dork.RESPONSE)) {
-					if (new String(line.getResponse()).toLowerCase().contains(keyword)) {
-						return true;
-					}else {
-						return false;
-					}
-				}
-
-				if (dork.equalsIgnoreCase(Dork.COMMENT)) {
-					if (line.getComment().toLowerCase().contains(keyword)) {
-						return true;
-					}else {
-						return false;
-					}
-				}
-				stderr.println("Unsupported dork: "+dork);
-				return false;
-			}
-		};
-		rowSorter.setRowFilter(filter);
-
-		try {
-			this.setRowSelectionInterval(selectedRow,selectedRow);
-		} catch (Exception e) {
-			//e.printStackTrace(stderr);//java.lang.IllegalArgumentException: Row index out of range
-		}
-	}
-
-	public void searchRegex(String regex) {		
-
-		final RowFilter filter = new RowFilter() {
-			@Override
-			public boolean include(Entry entry) {
-				//entry --- a non-null object that wraps the underlying object from the model
-				int row = (int) entry.getIdentifier();
-				LineEntry line = rowSorter.getModel().getLineEntries().getValueAtIndex(row);
-
-				if (!entryNeedToShow(line)) {
-					if (selectedRow == row) {
-						selectedRow = row+1;
-					}
-					return false;
-				}
-
-				Pattern pRegex = Pattern.compile(regex);
-
-				if (regex.trim().length() == 0) {
-					return true;
-				} else {
-					if (pRegex.matcher(new String(line.getRequest()).toLowerCase()).find()) {
-						return true;
-					}
-					if (pRegex.matcher(new String(line.getResponse()).toLowerCase()).find()) {
-						return true;
-					}
-					if (pRegex.matcher(new String(line.getUrl()).toLowerCase()).find()) {
-						return true;
-					}
-					if (pRegex.matcher(new String(line.getIP()).toLowerCase()).find()) {
-						return true;
-					}
-					if (pRegex.matcher(new String(line.getCDN()).toLowerCase()).find()) {
-						return true;
-					}
-					if (pRegex.matcher(new String(line.getComment()).toLowerCase()).find()) {
-						return true;
-					}
-					if (selectedRow== row) {
-						selectedRow = row+1;
-					}
-					return false;
-				}
-			}
-		};
-		rowSorter.setRowFilter(filter);
-
-		try {
-			this.setRowSelectionInterval(selectedRow,selectedRow);
-		} catch (Exception e) {
-			//e.printStackTrace(stderr);//java.lang.IllegalArgumentException: Row index out of range
-		}
-
-	}
-
+	//双击进行google搜索和双击浏览器打开url
 	public void registerListeners(){
 		LineTable.this.setRowSelectionAllowed(true);
 		this.addMouseListener( new MouseAdapter()

@@ -1,4 +1,4 @@
-package Tools;
+package Deprecated;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -6,7 +6,8 @@ import java.util.Arrays;
 import java.util.List;
 
 //String dorkWords = "Host url request response comment";//header body 
-public class Dork {
+@Deprecated //枚举类是更好的实现方式
+public class DorkDeprecated {
 	public final static String HOST = "host";
 	public final static String URL = "url";
 	public final static String REQUEST = "request";
@@ -26,14 +27,14 @@ public class Dork {
 
 	private static List<String> getDorkValues() throws Exception{
 		// 获取实体类的所有属性，返回Field数组  
-		Field[] fields = Dork.class.getDeclaredFields();
+		Field[] fields = DorkDeprecated.class.getDeclaredFields();
 
 		List<String> dorkValues = new ArrayList<String>();
 		for (Field field : fields) {
 			
 			if (field.getGenericType().toString().equals("class java.lang.String")) {// 如果type是类类型，则前面包含"class "，后面跟类名  
 				//String varName = field.getName();// 对于每个属性，获取属性名
-				String value = (String)field.get(Dork.class);//获取属性值
+				String value = (String)field.get(DorkDeprecated.class);//获取属性值
 				dorkValues.add(value);
 			}
 		}
