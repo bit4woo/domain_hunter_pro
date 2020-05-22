@@ -18,7 +18,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 
-import Tools.LineConfig;
 import Tools.ToolPanel;
 import burp.BurpExtender;
 import burp.Getter;
@@ -59,7 +58,7 @@ public class LineEntryMenuForBurp{
 		JMenuItem addCommentToDomainHunter = new JMenuItem("^_^ Add Comment");
 		addCommentToDomainHunter.addActionListener(new addComment(invocation));
 
-		JMenuItem setAsChecked = new JMenuItem("^_^ Set Host As Checked");
+		JMenuItem setAsChecked = new JMenuItem("^_^ Check Done");
 		setAsChecked.addActionListener(new setAsChecked(invocation));
 
 		//list.add(createLevelMenu(invocation));//这是导致右键菜单反应慢的根源，因为在每次在构造右键菜单时都要执行一遍tilte的查找。
@@ -72,7 +71,7 @@ public class LineEntryMenuForBurp{
 		 */
 
 		//替换方案2：
-		JMenu setLevelAs2 = new JMenu("^_^ Set Host Level As");
+		JMenu setLevelAs2 = new JMenu("^_^ Set Level As");
 		setAsChecked.addActionListener(new setLevelAsActionListener(invocation,setLevelAs2));
 		
 		
@@ -104,7 +103,6 @@ public class LineEntryMenuForBurp{
 		String[] MainMenu = {LineEntry.Level_A, LineEntry.Level_B, LineEntry.Level_C};
 		for(int i = 0; i < MainMenu.length; i++){
 			JMenuItem item = new JMenuItem(MainMenu[i]);
-
 			item.addActionListener(new ActionListener() {
 
 				@Override
@@ -268,7 +266,7 @@ public class LineEntryMenuForBurp{
 					for (LineEntry entry:entries) {
 						entry.setCheckStatus(LineEntry.CheckStatus_Checked);
 						int index = TitlePanel.getTitleTableModel().getLineEntries().IndexOfKey(entry.getUrl());
-						stdout.println("$$$ "+entry.getUrl()+" updated");
+						stdout.println("$$$ "+entry.getUrl()+"status has been set to "+LineEntry.CheckStatus_Checked);
 						TitlePanel.getTitleTableModel().fireTableRowsUpdated(index,index);//主动通知更新，否则不会写入数据库!!!
 					}
 				}

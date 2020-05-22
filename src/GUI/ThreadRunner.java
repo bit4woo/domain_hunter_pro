@@ -166,6 +166,8 @@ class RunnerProducer extends Thread {//Producer do
 				int leftTaskNum = lineEntryQueue.size();
 				stdout.println(String.format("%s tasks left, Runner Checking: %s",leftTaskNum,line.getHost()));
 
+				//stdout.println(httpService.toString());
+				//stdout.println(new String(neRequest));
 				IHttpRequestResponse messageinfo = callbacks.makeHttpRequest(httpService, neRequest);
 				if (messageinfo !=null) {
 					byte[] response = messageinfo.getResponse();

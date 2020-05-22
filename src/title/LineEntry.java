@@ -30,11 +30,11 @@ public class LineEntry {
 	public static final String CheckStatus_Checked = "Checked";
 	public static final String CheckStatus_Checking = "Checking";
 	
-	public static final String Tag_Manager = "管理端";
-	public static final String Tag_UserEnd = "用户端";
-	public static final String Tag_TestEnvironment = "测试环境";
-	public static final String Tag_Useless = "无用";
-	public static final String Tag_MoreDig = "需复测"; //需要定期review的网站
+//	public static final String Tag_Manager = "管理端";
+//	public static final String Tag_UserEnd = "用户端";
+//	public static final String Tag_TestEnvironment = "测试环境";
+//	public static final String Tag_Useless = "无用";
+//	public static final String Tag_MoreDig = "需复测"; //需要定期review的网站
 
 	public static String systemCharSet = getSystemCharSet();
 
@@ -470,6 +470,9 @@ Content-Type: text/html;charset=UTF-8
 			}else {
 				CheckStatus = CheckStatus_UnChecked;
 			}
+			//DBHelper dbHelper = new DBHelper(GUI.currentDBFile.toString());
+			//dbHelper.updateTitle(this);
+			//不能在这里就进行写入，可能对象的属性都还没设置全呢，会导致数据丢失
 		} catch (Exception e) {
 			
 		}
