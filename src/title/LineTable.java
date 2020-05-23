@@ -52,6 +52,18 @@ public class LineTable extends JTable
 		return tableAndDetailSplitPane;
 	}
 
+	//将选中的行（图形界面的行）转换为Model中的行数（数据队列中的index）.因为图形界面排序等操作会导致图像和数据队列的index不是线性对应的。
+	public int[] SelectedRowsToModelRows(int[] SelectedRows) {
+
+		int[] rows = SelectedRows;
+		for (int i=0; i < rows.length; i++){
+			rows[i] = convertRowIndexToModel(rows[i]);//转换为Model的索引，否则排序后索引不对应〿
+		}
+		Arrays.sort(rows);//升序
+
+		return rows;
+	}
+
 	public LineTable(LineTableModel lineTableModel)
 	{
 		//super(lineTableModel);//这个方法创建的表没有header
@@ -225,6 +237,7 @@ public class LineTable extends JTable
 		});
 	}
 
+	//搜索功能函数
 	public void search(String Inputkeyword) {
 		//rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + keyword));
 		History.getInstance().addRecord(Inputkeyword);//记录搜索历史,单例模式
@@ -263,7 +276,7 @@ public class LineTable extends JTable
 		rowSorter.setRowFilter(filter);
 	}
 
-	//双击进行google搜索和双击浏览器打开url
+	//双击进行google搜索、双击浏览器打开url、双击切换Check状态
 	public void registerListeners(){
 		LineTable.this.setRowSelectionAllowed(true);
 		this.addMouseListener( new MouseAdapter()
@@ -271,12 +284,7 @@ public class LineTable extends JTable
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2){//左键双击
-					int[] rows = getSelectedRows();
-
-					for (int i=0; i < rows.length; i++){
-						rows[i] = convertRowIndexToModel(rows[i]);//转换为Model的索引，否则排序后索引不对应〿
-					}
-					Arrays.sort(rows);//升序
+					int[] rows = SelectedRowsToModelRows(getSelectedRows());
 
 					//int row = ((LineTable) e.getSource()).rowAtPoint(e.getPoint()); // 获得行位置
 					int col = ((LineTable) e.getSource()).columnAtPoint(e.getPoint()); // 获得列位置
@@ -301,22 +309,27 @@ public class LineTable extends JTable
 						}catch (Exception e1){
 							e1.printStackTrace(stderr);
 						}
+					}else if (col == LineTableModel.getTitletList().indexOf("isChecked")) {
+						try{
+							//LineTable.this.lineTableModel.updateRowsStatus(rows,LineEntry.CheckStatus_Checked);//处理多行
+							selecteEntry.setCheckStatus(LineEntry.CheckStatus_Checked);
+							stdout.println("$$$ "+selecteEntry.getUrl()+" status has been set to "+LineEntry.CheckStatus_Checked);
+							LineTable.this.lineTableModel.fireTableRowsUpdated(rows[0], rows[0]);
+						}catch (Exception e1){
+							e1.printStackTrace(stderr);
+						}
 					}
 				}
 			}
 
-			@Override
+			@Override//title表格中的鼠标右键菜单
 			public void mouseReleased( MouseEvent e ){
 				if ( SwingUtilities.isRightMouseButton( e )){
 					if (e.isPopupTrigger() && e.getComponent() instanceof JTable ) {
 						//getSelectionModel().setSelectionInterval(rows[0], rows[1]);
 						int[] rows = getSelectedRows();
 						if (rows.length>0){
-							for (int i=0; i < rows.length; i++){
-								rows[i] = convertRowIndexToModel(rows[i]);//转换为Model的索引，否则排序后索引不对应〿
-							}
-							Arrays.sort(rows);//升序
-
+							rows = SelectedRowsToModelRows(getSelectedRows());
 							new LineEntryMenu(LineTable.this, rows).show(e.getComponent(), e.getX(), e.getY());
 						}else{//在table的空白处显示右键菜单
 							//https://stackoverflow.com/questions/8903040/right-click-mouselistener-on-whole-jtable-component

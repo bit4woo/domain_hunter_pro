@@ -235,7 +235,7 @@ public class LineEntryMenu extends JPopupMenu {
 		JMenuItem checkedItem = new JMenuItem(new AbstractAction("Check Done") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				BurpExtender.getGui().getTitlePanel().getTitleTableModel().updateRowsStatus(rows,LineEntry.CheckStatus_Checked);
+				TitlePanel.getTitleTableModel().updateRowsStatus(rows,LineEntry.CheckStatus_Checked);
 				//				if (BurpExtender.rdbtnHideCheckedItems.isSelected()) {//实现自动隐藏，为了避免误操作，不启用
 				//					String keyword = BurpExtender.textFieldSearch.getText().trim();
 				//					lineTable.search(keyword);
