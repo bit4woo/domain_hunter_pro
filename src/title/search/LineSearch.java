@@ -1,8 +1,10 @@
-package title;
+package title.search;
 
 import java.util.regex.Pattern;
 
 import burp.BurpExtender;
+import title.LineEntry;
+import title.TitlePanel;
 
 public class LineSearch {
 	

@@ -40,6 +40,7 @@ import burp.BurpExtender;
 import burp.Commons;
 import burp.IPAddress;
 import domain.DomainPanel;
+import title.search.SearchTextField;
 
 public class TitlePanel extends JPanel {
 
@@ -61,17 +62,9 @@ public class TitlePanel extends JPanel {
 	PrintWriter stderr;
 	private ThreadGetTitle threadGetTitle;
 	private IndexedLinkedHashMap<String,LineEntry> BackupLineEntries;
-	private static History searchHistory = new History(10);
+	
 	private static List<Integer> externalPortList;
 	private static JTextField textFieldSearch;
-
-	public static History getSearchHistory() {
-		return searchHistory;
-	}
-
-	public void setSearchHistory(History searchHistory) {
-		this.searchHistory = searchHistory;
-	}
 
 	public static JTextField getTextFieldSearch() {
 		return textFieldSearch;
@@ -295,105 +288,8 @@ public class TitlePanel extends JPanel {
 			}
 		});
 
-		textFieldSearch = new JTextField("");
-		textFieldSearch.addFocusListener(new FocusAdapter() {
-			@Override
-			public void focusGained(FocusEvent e) {
-				if (textFieldSearch.getText().equals("Input text to search")) {
-					textFieldSearch.setText("");
-				}
-			}
-			@Override
-			public void focusLost(FocusEvent e) {
-				/*
-				 * if (textFieldSearch.getText().equals("")) {
-				 * textFieldSearch.setText("Input text to search"); }
-				 */
-
-			}
-		});
-
-		textFieldSearch.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				String keyword = textFieldSearch.getText().trim();
-				titleTable.search(keyword);
-				//searchHistory.addRecord(keyword);//记录搜索历史
-			}
-		});
-
-		textFieldSearch.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2){//左键双击
-				}
-				if (e.getButton() == MouseEvent.BUTTON3) {//鼠标右键
-					// 弹出菜单
-					SearchMenu sm = new SearchMenu();
-					sm.show(textFieldSearch, e.getX(), e.getY());
-				}
-			}
-		});
-
-
-		textFieldSearch.addKeyListener(new KeyAdapter(){
-			public void keyPressed(KeyEvent e)
-			{
-				if (e.getKeyCode()==KeyEvent.VK_KP_UP || e.getKeyCode() == KeyEvent.VK_UP)//上键
-				{
-					try {
-						String record = searchHistory.moveUP();
-						if (record != null) {
-							textFieldSearch.setText(record);
-						}
-					} catch (Exception ex) {
-						ex.printStackTrace(stderr);
-					}
-				}
-
-				if (e.getKeyCode() == KeyEvent.VK_KP_DOWN || e.getKeyCode() == KeyEvent.VK_DOWN){
-					try {
-						String record = searchHistory.moveDown();
-						if (record != null) {
-							textFieldSearch.setText(record);
-						}
-					} catch (Exception ex) {
-						ex.printStackTrace(stderr);
-					}
-				}
-
-			}
-		});
-
-		textFieldSearch.addMouseWheelListener(new MouseWheelListener(){
-
-			@Override
-			public void mouseWheelMoved(MouseWheelEvent e) {
-				if(e.getWheelRotation()==1){
-					try {
-						String record = searchHistory.moveUP();
-						if (record != null) {
-							textFieldSearch.setText(record);
-						}
-					} catch (Exception ex) {
-						ex.printStackTrace(stderr);
-					}
-					//System.out.println("滑轮向前。。。。");
-				}
-				if(e.getWheelRotation()==-1){
-					try {
-						String record = searchHistory.moveDown();
-						if (record != null) {
-							textFieldSearch.setText(record);
-						}
-					} catch (Exception ex) {
-						ex.printStackTrace(stderr);
-					}
-					//System.out.println("滑轮向后....");
-				}
-			}
-
-		});
-		textFieldSearch.setColumns(30);
+		
+		textFieldSearch = new SearchTextField().Create("");
 		buttonPanel.add(textFieldSearch);
 
 

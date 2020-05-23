@@ -1,4 +1,4 @@
-package title;
+package title.search;
 
 public enum SearchDork {
 

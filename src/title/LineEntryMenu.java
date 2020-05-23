@@ -24,6 +24,7 @@ import burp.BurpExtender;
 import burp.Commons;
 import burp.Getter;
 import burp.IBurpExtenderCallbacks;
+import title.search.SearchDork;
 
 public class LineEntryMenu extends JPopupMenu {
 

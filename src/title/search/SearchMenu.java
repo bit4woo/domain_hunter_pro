@@ -1,4 +1,4 @@
-package title;
+package title.search;
 
 import java.awt.event.ActionEvent;
 import java.io.PrintWriter;
@@ -6,6 +6,8 @@ import java.io.PrintWriter;
 import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+
+import title.TitlePanel;
 
 public class SearchMenu extends JPopupMenu {
 

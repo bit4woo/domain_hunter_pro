@@ -1,12 +1,18 @@
-package title;
+package title.search;
 
 import java.util.Vector;
 
 public class History {
-	public Vector<String> historyVector;
-	int currentPosition = -1;//没有内容时的指针位置
-	int size;
-	public History(int size){
+	private Vector<String> historyVector;
+	private int currentPosition = -1;//没有内容时的指针位置
+	private int size;
+    private static final History singleton = new History(10);
+
+    public static History getInstance() {
+        return singleton;
+    }
+	
+	private History(int size){
 		this.size = size;
 		historyVector = new Vector<String>(this.size);
 	}

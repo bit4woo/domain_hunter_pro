@@ -29,6 +29,9 @@ import Tools.ToolPanel;
 import burp.BurpExtender;
 import burp.Commons;
 import burp.IMessageEditor;
+import title.search.History;
+import title.search.LineSearch;
+import title.search.SearchDork;
 
 public class LineTable extends JTable
 {
@@ -224,7 +227,7 @@ public class LineTable extends JTable
 
 	public void search(String Inputkeyword) {
 		//rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + keyword));
-		TitlePanel.getSearchHistory().addRecord(Inputkeyword);//记录搜索历史
+		History.getInstance().addRecord(Inputkeyword);//记录搜索历史,单例模式
 
 		Inputkeyword = Inputkeyword.trim().toLowerCase();
 		if (Inputkeyword.contains("\"") || Inputkeyword.contains("\'")){
