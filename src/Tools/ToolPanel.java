@@ -239,7 +239,7 @@ public class ToolPanel extends JPanel {
 		JButton btnRegexGrep = new JButton("Regex Grep");
 		btnRegexGrep.setEnabled(false);
 		threeFourthPanel.add(btnRegexGrep);
-		btnGrep.addActionListener(new ActionListener() {
+		btnRegexGrep.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {

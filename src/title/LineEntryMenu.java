@@ -212,7 +212,7 @@ public class LineEntryMenu extends JPopupMenu {
 			}
 		});
 		
-		JMenuItem checkingItem = new JMenuItem(new AbstractAction(LineEntry.CheckStatus_Checking) {//checking
+		JMenuItem checkingItem = new JMenuItem(new AbstractAction("Checking") {//checking
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				TitlePanel.getTitleTableModel().updateRowsStatus(rows,LineEntry.CheckStatus_Checking);			
@@ -231,7 +231,7 @@ public class LineEntryMenu extends JPopupMenu {
 		});
 		
 
-		JMenuItem checkedItem = new JMenuItem(new AbstractAction(LineEntry.CheckStatus_Checked) {
+		JMenuItem checkedItem = new JMenuItem(new AbstractAction("Check Done") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				BurpExtender.getGui().getTitlePanel().getTitleTableModel().updateRowsStatus(rows,LineEntry.CheckStatus_Checked);

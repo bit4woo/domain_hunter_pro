@@ -73,7 +73,7 @@ public class GUI extends JFrame {
 		toolPanel = new ToolPanel();
 		tabbedWrapper.addTab("Domains", null, domainPanel, null);
 		tabbedWrapper.addTab("Titles", null, titlePanel, null);
-		tabbedWrapper.addTab("Config", null,toolPanel,null);
+		tabbedWrapper.addTab("Tools", null,toolPanel,null);
 
 		projectMenu = new ProjectMenu(this);
 		projectMenu.Add();
