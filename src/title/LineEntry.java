@@ -27,7 +27,7 @@ public class LineEntry {
 	public static final String Level_C = "一般";
 
 	public static final String CheckStatus_UnChecked = "UnChecked";
-	public static final String CheckStatus_Checked = "Checked";
+	public static final String CheckStatus_Checked = "Done";
 	public static final String CheckStatus_Checking = "Checking";
 	
 //	public static final String Tag_Manager = "管理端";

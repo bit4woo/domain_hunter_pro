@@ -13,6 +13,8 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -330,8 +332,7 @@ public class TitlePanel extends JPanel {
 					sm.show(textFieldSearch, e.getX(), e.getY());
 				}
 			}
-		}
-				);
+		});
 
 
 		textFieldSearch.addKeyListener(new KeyAdapter(){
@@ -362,6 +363,36 @@ public class TitlePanel extends JPanel {
 
 			}
 		});
+
+		textFieldSearch.addMouseWheelListener(new MouseWheelListener(){
+
+			@Override
+			public void mouseWheelMoved(MouseWheelEvent e) {
+				if(e.getWheelRotation()==1){
+					try {
+						String record = searchHistory.moveUP();
+						if (record != null) {
+							textFieldSearch.setText(record);
+						}
+					} catch (Exception ex) {
+						ex.printStackTrace(stderr);
+					}
+					//System.out.println("滑轮向前。。。。");
+				}
+				if(e.getWheelRotation()==-1){
+					try {
+						String record = searchHistory.moveDown();
+						if (record != null) {
+							textFieldSearch.setText(record);
+						}
+					} catch (Exception ex) {
+						ex.printStackTrace(stderr);
+					}
+					//System.out.println("滑轮向后....");
+				}
+			}
+
+		});
 		textFieldSearch.setColumns(30);
 		buttonPanel.add(textFieldSearch);
 
@@ -377,7 +408,7 @@ public class TitlePanel extends JPanel {
 		});
 		buttonPanel.add(buttonSearch);
 
-		rdbtnUnCheckedItems = new JRadioButton("UnChecked");
+		rdbtnUnCheckedItems = new JRadioButton(LineEntry.CheckStatus_UnChecked);
 		rdbtnUnCheckedItems.setSelected(true);
 		rdbtnUnCheckedItems.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -388,7 +419,7 @@ public class TitlePanel extends JPanel {
 		});
 		buttonPanel.add(rdbtnUnCheckedItems);
 
-		rdbtnCheckingItems = new JRadioButton("Checking");
+		rdbtnCheckingItems = new JRadioButton(LineEntry.CheckStatus_Checking);
 		rdbtnCheckingItems.setSelected(true);
 		rdbtnCheckingItems.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -399,7 +430,7 @@ public class TitlePanel extends JPanel {
 		});
 		buttonPanel.add(rdbtnCheckingItems);
 
-		rdbtnCheckedItems = new JRadioButton("Checked");
+		rdbtnCheckedItems = new JRadioButton(LineEntry.CheckStatus_Checked);
 		rdbtnCheckedItems.setSelected(false);
 		rdbtnCheckedItems.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {

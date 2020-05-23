@@ -224,6 +224,7 @@ public class LineTable extends JTable
 
 	public void search(String Inputkeyword) {
 		//rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + keyword));
+		TitlePanel.getSearchHistory().addRecord(Inputkeyword);//记录搜索历史
 
 		Inputkeyword = Inputkeyword.trim().toLowerCase();
 		if (Inputkeyword.contains("\"") || Inputkeyword.contains("\'")){
@@ -257,7 +258,6 @@ public class LineTable extends JTable
 			}
 		};
 		rowSorter.setRowFilter(filter);
-		TitlePanel.getSearchHistory().addRecord(keyword);//记录搜索历史
 	}
 
 	//双击进行google搜索和双击浏览器打开url
