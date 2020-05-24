@@ -20,7 +20,7 @@ import burp.Commons;
 	//GUI.getDomainPanel().showToDomainUI();
 	//DomainPanel.autoSave();
  */
-public class DomainObject {
+public class DomainManager {
 	public String projectName = "";
 	public String uploadURL = "Input Upload URL Here";
 	public String summary = "";
@@ -46,11 +46,11 @@ public class DomainObject {
 	//public static int BLACKLIST = -2;
 
 
-	DomainObject(){
+	DomainManager(){
 		//to resolve "default constructor not found" error
 	}
 
-	public DomainObject(String projectName){
+	public DomainManager(String projectName){
 		this.projectName = projectName;
 	}
 
@@ -171,8 +171,8 @@ public class DomainObject {
 	}
 
 
-	public  static DomainObject FromJson(String instanceString) {// throws Exception {
-		return JSON.parseObject(instanceString,DomainObject.class);
+	public  static DomainManager FromJson(String instanceString) {// throws Exception {
+		return JSON.parseObject(instanceString,DomainManager.class);
 		//return new Gson().fromJson(instanceString, DomainObject.class);
 	}
 
@@ -350,21 +350,21 @@ public class DomainObject {
 				domain = domain.substring(0,domain.length()-1);
 			}
 
-			if (!domain.contains(".")) return DomainObject.USELESS;
+			if (!domain.contains(".")) return DomainManager.USELESS;
 
 			if (Commons.isValidIP(domain)) {//https://202.77.129.30
-				return DomainObject.IP_ADDRESS;
+				return DomainManager.IP_ADDRESS;
 			}
 			
 			if (isInRootBlackDomain(domain)) {
-				return DomainObject.USELESS;
+				return DomainManager.USELESS;
 			}
 
 			for (String rootdomain:fetchRootDomainSet()) {
 				if (rootdomain.contains(".")&&!rootdomain.endsWith(".")&&!rootdomain.startsWith("."))
 				{
 					if (domain.endsWith("."+rootdomain)||domain.equalsIgnoreCase(rootdomain)){
-						return DomainObject.SUB_DOMAIN;
+						return DomainManager.SUB_DOMAIN;
 					}
 				}
 			}
@@ -372,19 +372,19 @@ public class DomainObject {
 			for (String keyword:fetchKeywordSet()) {
 				if (!keyword.equals("") && domain.contains(keyword)) {
 					if (InternetDomainName.from(domain).hasPublicSuffix()) {//是否是以公开的 .com .cn等结尾的域名。//如果是以比如local结尾的域名，就不会被认可
-						return DomainObject.SIMILAR_DOMAIN;
+						return DomainManager.SIMILAR_DOMAIN;
 					}
 
 					if (fetchSuffixSet().contains(domain.substring(0, domain.indexOf(".")))){
-						return DomainObject.PACKAGE_NAME;
+						return DomainManager.PACKAGE_NAME;
 					}
 				}
 			}
 
-			return DomainObject.USELESS;
+			return DomainManager.USELESS;
 		} catch (Exception e) {
 			e.printStackTrace(BurpExtender.getStderr());
-			return DomainObject.USELESS;
+			return DomainManager.USELESS;
 		}
 	}
 

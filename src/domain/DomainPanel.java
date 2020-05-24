@@ -102,15 +102,15 @@ public class DomainPanel extends JPanel {
 
 	private boolean listenerIsOn = true;
 
-	public static DomainObject getDomainResult() {
+	public static DomainManager getDomainResult() {
 		return domainResult;
 	}
 
-	public static void setDomainResult(DomainObject domainResult) {
+	public static void setDomainResult(DomainManager domainResult) {
 		DomainPanel.domainResult = domainResult;
 	}
 
-	public static DomainObject domainResult = null;//getter setter
+	public static DomainManager domainResult = null;//getter setter
 	public static DefaultTableModel domainTableModel;
 	PrintWriter stdout;
 	PrintWriter stderr;
@@ -313,9 +313,9 @@ public class DomainPanel extends JPanel {
 						for (String line:lines) {
 							line = line.trim();
 							int type =  domainResult.domainType(line);
-							if (type == DomainObject.SUB_DOMAIN) {
+							if (type == DomainManager.SUB_DOMAIN) {
 								domainResult.getSubDomainSet().add(line);
-							}else if(type == DomainObject.SIMILAR_DOMAIN) {
+							}else if(type == DomainManager.SIMILAR_DOMAIN) {
 								domainResult.getSimilarDomainSet().add(line);
 							}else {
 								stdout.println("import skip "+line);
@@ -658,11 +658,11 @@ public class DomainPanel extends JPanel {
 					}
 
 					int type = domainResult.domainType(domain);
-					if (type == DomainObject.SUB_DOMAIN || type == DomainObject.IP_ADDRESS)
+					if (type == DomainManager.SUB_DOMAIN || type == DomainManager.IP_ADDRESS)
 						//包含手动添加的IP
 					{
 						newSubDomainSet.add(domain);
-					}else if (type == DomainObject.SIMILAR_DOMAIN) {
+					}else if (type == DomainManager.SIMILAR_DOMAIN) {
 						newSimilarDomainSet.add(domain);
 					}
 				}
@@ -676,7 +676,7 @@ public class DomainPanel extends JPanel {
 					}
 
 					int type = domainResult.domainType(domain);
-					if (type == DomainObject.SUB_DOMAIN)
+					if (type == DomainManager.SUB_DOMAIN)
 					{
 						newSubDomainSet.add(domain);
 					}

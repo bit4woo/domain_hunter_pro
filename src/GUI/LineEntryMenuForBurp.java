@@ -24,7 +24,7 @@ import burp.Getter;
 import burp.IContextMenuInvocation;
 import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
-import domain.DomainObject;
+import domain.DomainManager;
 import domain.DomainPanel;
 import title.LineEntry;
 import title.LineTable;
@@ -416,7 +416,7 @@ public class LineEntryMenuForBurp{
 			domains.add(host);
 		}
 
-		DomainObject domainResult = DomainPanel.getDomainResult();
+		DomainManager domainResult = DomainPanel.getDomainResult();
 		domainResult.addToDomainOject(domains);
 		DomainPanel.autoSave();
 	}

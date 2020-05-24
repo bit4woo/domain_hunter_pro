@@ -17,7 +17,7 @@ import java.util.stream.IntStream;
 import com.alibaba.fastjson.JSON;
 
 import Tools.LineConfig;
-import domain.DomainObject;
+import domain.DomainManager;
 import title.IndexedLinkedHashMap;
 import title.LineEntry;
 
@@ -141,7 +141,7 @@ public class DBHelper {
 		return false;
 	}
 
-	public boolean saveDomainObject(DomainObject domainResult){
+	public boolean saveDomainObject(DomainManager domainResult){
 		try {
 			conn = getConnection();
 			pres = conn.prepareStatement("select * From DOMAINObject");
@@ -177,7 +177,7 @@ public class DBHelper {
 	/*
 	 * 从数据库中读出存入的对象
 	 */
-	public DomainObject getDomainObj(){
+	public DomainManager getDomainObj(){
 		try {
 			String sql="select * from DOMAINObject";
 			conn = getConnection();
@@ -185,7 +185,7 @@ public class DBHelper {
 			ResultSet res=pres.executeQuery();
 			while(res.next()){
 				String Content =res.getString("Content");//获取content部分的内容
-				return DomainObject.FromJson(Content);
+				return DomainManager.FromJson(Content);
 			}
 		} catch (Exception e) {
 			e.printStackTrace(stderr);

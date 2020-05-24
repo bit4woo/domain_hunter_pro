@@ -2,7 +2,7 @@ package GUI;
 
 import javax.swing.*;
 
-import domain.DomainObject;
+import domain.DomainManager;
 import domain.DomainPanel;
 
 import java.awt.*;
@@ -56,7 +56,7 @@ public class ProjectMenu{
             @Override
             public void actionPerformed(ActionEvent actionEvent) {//实质就是save一个空的项目
                 File file = gui.dbfc.dialog(false);//通过保存对话指定文件，这会是一个空文件。
-                DomainPanel.setDomainResult(new DomainObject(file.getName()));
+                DomainPanel.setDomainResult(new DomainManager(file.getName()));
                 gui.saveData(file.toString(),true);
                 gui.LoadData(file.toString());//然后加载，就是一个新的空项目了。
                 GUI.setCurrentDBFile(file);

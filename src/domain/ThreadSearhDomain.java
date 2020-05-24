@@ -180,18 +180,18 @@ class DomainProducer extends Thread {//Producer do
 				//callbacks.printOutput(keywords.toString());
 				int type = DomainPanel.domainResult.domainType(Host);
 				//callbacks.printOutput(Host+":"+type);
-				if (type == DomainObject.SUB_DOMAIN)
+				if (type == DomainManager.SUB_DOMAIN)
 				{	
 					if (!subDomainQueue.contains(Host)) {
 						subDomainQueue.add(Host);
 					}
-				}else if (type == DomainObject.SIMILAR_DOMAIN) {
+				}else if (type == DomainManager.SIMILAR_DOMAIN) {
 					if (!similarDomainQueue.contains(Host)) {
 						similarDomainQueue.add(Host);
 					}
 				}
 
-				if (type !=DomainObject.USELESS && protocol.equalsIgnoreCase("https")){//get related domains
+				if (type !=DomainManager.USELESS && protocol.equalsIgnoreCase("https")){//get related domains
 					if (!httpsQueue.contains(shortURL)) {//httpService checked or not
 						httpsQueue.put(shortURL);//必须先添加，否则执行在执行https链接的过程中，已经有很多请求通过检测进行相同的请求了。
 						Set<String> tmpDomains = CertInfo.getSANs(shortURL,DomainPanel.domainResult.fetchKeywordSet());
@@ -203,7 +203,7 @@ class DomainProducer extends Thread {//Producer do
 					}
 				}
 				
-				if (type != DomainObject.USELESS) {//grep domains from response and classify
+				if (type != DomainManager.USELESS) {//grep domains from response and classify
 					if (urlString.endsWith(".gif") ||urlString.endsWith(".jpg")
 							|| urlString.endsWith(".png") ||urlString.endsWith(".css")) {
 						
@@ -224,13 +224,13 @@ class DomainProducer extends Thread {//Producer do
 			Set<String> domains = DomainProducer.grepDomain(new String(response));
 			for (String domain:domains) {
 				int type = DomainPanel.domainResult.domainType(domain);
-				if (type == DomainObject.SUB_DOMAIN)
+				if (type == DomainManager.SUB_DOMAIN)
 				{
 					subDomainQueue.add(domain);
 					
-				}else if (type == DomainObject.SIMILAR_DOMAIN) {
+				}else if (type == DomainManager.SIMILAR_DOMAIN) {
 					similarDomainQueue.add(domain);
-				}else if (type == DomainObject.PACKAGE_NAME) {
+				}else if (type == DomainManager.PACKAGE_NAME) {
 					packageNameQueue.add(domain);
 				}
 			}
