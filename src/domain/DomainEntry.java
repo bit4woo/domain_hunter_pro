@@ -6,6 +6,9 @@ public class DomainEntry {
 	private String fromDomain;
 	private String fromUrl;
 	private String business;//域名所属的业务名称
+	private String foundTime;//域名的发现时间，新发现的域名需重点关注。
+	private String resolveFailedTimes;//解析失败的次数，多次解析失败的域名是否需要移除呢？
+	private String isBlack;//这个域名是否是很名单的
 	
 	
 	public String getDomain() {

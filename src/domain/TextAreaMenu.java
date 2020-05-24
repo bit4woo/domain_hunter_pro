@@ -11,9 +11,12 @@ import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.JTabbedPane;
 
 import burp.BurpExtender;
 import burp.Commons;
+import title.TitlePanel;
+import title.search.SearchDork;
 
 public class TextAreaMenu extends JPopupMenu {
 
@@ -28,8 +31,23 @@ public class TextAreaMenu extends JPopupMenu {
             stdout = new PrintWriter(System.out, true);
             stderr = new PrintWriter(System.out, true);
         }
-
+        
         List<String> selectedItems = Arrays.asList(selectedText.split(System.lineSeparator()));
+        
+        JMenuItem goToItem = new JMenuItem(new AbstractAction("Go To Tilte") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				
+				JTabbedPane aa= (JTabbedPane) BurpExtender.getGui().getContentPane();
+				aa.setSelectedIndex(1);
+				//只会影响Domain Hunter中的选中，当选中的是proxy，使用这个方法并不能自动切换到domain hunter。
+				//stdout.println(BurpExtender.getGui().getRootPane().getName());//null
+				
+				TitlePanel.getTextFieldSearch().setText(SearchDork.HOST.toString()+":"+selectedItems.get(0));
+			}
+		});
+        this.add(goToItem);
+
 		JMenuItem googleSearchItem = new JMenuItem(new AbstractAction("Google It") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
