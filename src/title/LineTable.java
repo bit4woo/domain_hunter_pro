@@ -154,7 +154,7 @@ public class LineTable extends JTable
 		preferredWidths.put("Title",30);
 		preferredWidths.put("Comments",30);
 		preferredWidths.put("Time","2019-05-28-14-13-16".length());
-		preferredWidths.put("isChecked","isChecked".length());
+		preferredWidths.put("isChecked"," isChecked ".length());
 		preferredWidths.put("IP",30);
 		preferredWidths.put("CDN",30);
 		preferredWidths.put("Server",10);

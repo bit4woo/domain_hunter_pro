@@ -439,6 +439,8 @@ public class TitlePanel extends JPanel {
 			titleTableModel.fireTableRowsInserted(0, row-1);
 		}
 		titleTableModel.setListenerIsOn(true);
+		System.out.println(row+" title entries loaded from database file");
+		stdout.println(row+" title entries loaded from database file");
 		digStatus();
 		TitlePanel.getTitleTable().search("");// hide checked items
 	}

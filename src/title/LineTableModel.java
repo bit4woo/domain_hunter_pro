@@ -337,7 +337,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		int all = lineEntries.size();
 		int checked = 0;
 		for (LineEntry lineEntrie:lineEntries.values()) {
-			if (lineEntrie.statusIsChecked()) {
+			if (lineEntrie.getCheckStatus().equals(LineEntry.CheckStatus_Checked)) {
 				checked ++;
 			}
 		}

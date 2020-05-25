@@ -10,8 +10,13 @@ public class LineSearch {
 	
 	//根据状态过滤
 	public static boolean entryNeedToShow(LineEntry entry) {
+		if (!(TitlePanel.rdbtnCheckedItems.isSelected()||TitlePanel.rdbtnCheckingItems.isSelected()||TitlePanel.rdbtnUnCheckedItems.isSelected())) {
+			//全部未选中时，全部返回。一来为了满足用户习惯全部未选择时全部返回，
+			//二来是为了解决之前乱改CheckStatus常理带来的bug，之前CheckStatus_Checked == "Checked",现在CheckStatus_Checked== "done"导致选中checked的时候，Checked的那部分就不会被显示出来。
+			return true;
+		}
 
-		if (TitlePanel.rdbtnCheckedItems.isSelected()&& entry.statusIsChecked()) {
+		if (TitlePanel.rdbtnCheckedItems.isSelected()&& entry.getCheckStatus().equals(LineEntry.CheckStatus_Checked)) {
 			return true;
 		}
 
@@ -54,6 +59,7 @@ public class LineSearch {
 
 	//支持部分类似google dork的搜索语法
 	//Host url header body request response comment
+	//host:www.baidu.com ----host是dork,www.baidu.com是keyword
 	public static boolean dorkFilte(LineEntry line,String dork,String keyword) {
 		
 		if (keyword.length() == 0) {
