@@ -83,7 +83,8 @@ public class ProjectMenu{
         openMenu.setToolTipText("Open Domain Hunter Project File");
         menuButton.add(openMenu);
         
-        //导入db文件，将数据和当前DB文件进行合并。domain Panel中的内容是集合的合并，title中的内容是新增和覆盖（如果存在的话）
+        //导入db文件，将数据和当前DB文件进行合并。domain Panel中的内容是集合的合并,无需考虑覆盖问题;
+        //title中的内容是新增和覆盖（如果存在的话），这里是导入的会覆盖当前的。
         JMenuItem ImportMenu = new JMenuItem(new AbstractAction("Import") {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
