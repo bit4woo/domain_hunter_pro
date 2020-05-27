@@ -161,7 +161,7 @@ public class LineConfig {
 	}
 
 	/*
-	 * 能通过过滤器返回true，否则返回false。
+	 * 能通过过滤器返回true，否则返回false。判断是否是有用的记录。
 	 */
 	public static boolean doFilter(LineEntry entry) {
 		
@@ -175,6 +175,12 @@ public class LineConfig {
 			return false;
 		}
 		
+		if (entry.getStatuscode() == 400) {//400 The plain HTTP request was sent to HTTPS port
+			stdout.println(String.format("--- [%s] --- status code == 400",entry.getUrl()));
+			return false;
+		}
+		
+		/*
 		if (null != blacklistStatusCodeSet && blacklistStatusCodeSet.size()>0) {
 			if (blacklistStatusCodeSet.contains(Integer.toString(entry.getStatuscode()))) {
 				stdout.println(String.format("--- [%s] --- due to status code black list",entry.getUrl()));
@@ -211,11 +217,12 @@ public class LineConfig {
 		}
 		
 		//放到最后，其他匹配项可能更常用
-//		if (null != blacklistHostSet && blacklistHostSet.size()>0) {
-//			if (blacklistHostSet.contains(entry.getHost())) {
-//				return false;
-//			}
-//		}
+		if (null != blacklistHostSet && blacklistHostSet.size()>0) {
+			if (blacklistHostSet.contains(entry.getHost())) {
+				return false;
+			}
+		}
+ */
 		
 		return true;
 	}
