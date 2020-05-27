@@ -2,7 +2,8 @@ package title.search;
 
 public enum SearchDork {
 
-	HOST("host"),
+	HOST("HOST"),
+	PORT("PORT"),
 	URL("URL"),
 	REQUEST("REQUEST"),
 	RESPONSE("RESPONSE"),
