@@ -278,6 +278,44 @@ public class LineEntryMenu extends JPopupMenu {
 				}
 			}
 		});
+		
+		JMenuItem SendToRepeater = new JMenuItem(new AbstractAction("Send To Repeater") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+					//using SwingWorker to prevent blocking burp main UI.
+
+					@Override
+					protected Map doInBackground() throws Exception {
+						IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
+						for (int row: rows){
+							LineEntry entry = lineTable.getModel().getLineEntries().getValueAtIndex(row);
+							String host =entry.getHost();
+							int port = entry.getPort();
+							String protocol = entry.getProtocol();
+							boolean useHttps =false;
+							if (protocol.equalsIgnoreCase("https")) {
+								useHttps =true;
+							}
+							byte[] request = entry.getRequest();
+
+							String tabCaption = row+"DH";
+							callbacks.sendToRepeater(
+									host,
+									port,
+									useHttps,
+									request,
+									tabCaption);
+						}
+						return null;
+					}
+					@Override
+					protected void done() {
+					}
+				};
+				worker.execute();
+			}
+		});
 
 
 		JMenuItem SendToRepeaterWithCookieItem = new JMenuItem(new AbstractAction("Send To Repeater With Cookie") {
@@ -341,7 +379,6 @@ public class LineEntryMenu extends JPopupMenu {
 			}
 		});
 
-
 		JMenuItem blackListItem = new JMenuItem(new AbstractAction("Delete And Add To Black List") {//need to show dialog to confirm
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -383,6 +420,7 @@ public class LineEntryMenu extends JPopupMenu {
 		this.add(copyHostItem);
 		this.add(copyURLItem);
 		this.add(copyLocationURLItem);
+		this.add(SendToRepeater);
 		this.add(SendToRepeaterWithCookieItem);
 		
 		this.addSeparator();
