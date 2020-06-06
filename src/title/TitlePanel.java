@@ -349,7 +349,7 @@ public class TitlePanel extends JPanel {
 	 */
 	public void getAllTitle(){
 		//是否在目标的内网中
-		int user_input = JOptionPane.showConfirmDialog(null, "Do you want request private IP addresses?","Chose work model",JOptionPane.YES_NO_OPTION);
+		int user_input = JOptionPane.showConfirmDialog(null, "Do you want request [PRIVATE] ip addresses?","Chose work model",JOptionPane.YES_NO_OPTION);
 		if (JOptionPane.YES_OPTION == user_input) {
 			LineConfig.setPrivateNetworkWorkingModel(true);
 		}else {
