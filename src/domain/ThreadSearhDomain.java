@@ -27,12 +27,14 @@ public class ThreadSearhDomain{
 	private List<DomainProducer> plist;
 	
 	private static IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();//静态变量，burp插件的逻辑中，是可以保证它被初始化的。;
-    public PrintWriter stdout = new PrintWriter(callbacks.getStdout(), true);
-    public PrintWriter stderr = new PrintWriter(callbacks.getStderr(), true);
+    public PrintWriter stdout;
+    public PrintWriter stderr;
     public IExtensionHelpers helpers = callbacks.getHelpers();
 	
 	public ThreadSearhDomain(List<IHttpRequestResponse> messages) {
 		this.messages = messages;
+		stdout = BurpExtender.getStdout();
+		stderr = BurpExtender.getStderr();
 	}
 
 	public void Do(){

@@ -50,12 +50,14 @@
 
 		<resources>
 			<resource>
-				<directory>resources</directory>
+				<!-- https://stackoverflow.com/questions/4509309/in-maven-how-can-i-include-non-java-src-files-in-the-same-place-in-the-output-ja -->
+				<!-- 打包后的路径在jar包的根目录 -->
+				<directory>src/resources</directory> <!-- 路径 -->
 				<includes>
 					<include>*.txt</include>  <!--保证dict.txt打包到jar中 -->
+					<include>*.xml</include>  <!-- 保证log4j2.xml打包进去 -->
 				</includes>
 				<excludes>
-					<exclude>*.xml</exclude>  <!--过滤xml与yaml文件 -->
 					<exclude>*.yaml</exclude>
 				</excludes>
 			</resource>
@@ -146,6 +148,13 @@
 			<groupId>com.ibm.icu</groupId>
 			<artifactId>icu4j</artifactId>
 			<version>66.1</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core -->
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+			<version>2.13.0</version>
 		</dependency>
 
 	</dependencies>

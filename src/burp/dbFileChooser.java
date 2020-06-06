@@ -1,13 +1,19 @@
 package burp;
 
-import javax.swing.*;
-import javax.swing.filechooser.FileFilter;
 import java.io.File;
+
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.swing.filechooser.FileFilter;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 public class dbFileChooser extends JFileChooser {
 
     JFileChooser fc;
+    private static final Logger log=LogManager.getLogger(dbFileChooser.class);
 
     public dbFileChooser() {
         this.fc =  new JFileChooser();
@@ -60,6 +66,7 @@ public class dbFileChooser extends JFileChooser {
             return null;
         }catch (Exception e){
             e.printStackTrace();
+            log.error(e);
             return null;
         }
     }

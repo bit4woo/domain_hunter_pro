@@ -9,14 +9,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.IntStream;
 
-import com.alibaba.fastjson.JSON;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import Tools.LineConfig;
 import domain.DomainManager;
 import title.IndexedLinkedHashMap;
 import title.LineEntry;
@@ -31,8 +30,7 @@ public class DBHelper {
 	private PreparedStatement pres;                                      //PreparedStatement对象
 	private String dbFilePath;
 
-
-	private static IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();//静态变量，burp插件的逻辑中，是可以保证它被初始化的。;
+	private static final Logger log=LogManager.getLogger(DBHelper.class);
 	public PrintWriter stdout;
 	public PrintWriter stderr;
 	/**
@@ -42,19 +40,14 @@ public class DBHelper {
 	 * @throws SQLException
 	 */
 	public DBHelper(String dbFilePath){
-		try{
-			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
-			stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
-		}catch (Exception e){
-			stdout = new PrintWriter(System.out, true);
-			stderr = new PrintWriter(System.out, true);
-		}
+
 		this.dbFilePath = dbFilePath;
 		try {
 			conn = getConnection();
 			createTable();
 		} catch ( Exception e ) {
 			System.err.println( e.getClass().getName() + ": " + e.getMessage() );
+			log.error(e);
 			//System.exit(0);//就是这个导致了整个burp的退出！！！！
 		}
 	}
@@ -71,6 +64,7 @@ public class DBHelper {
 						" Content        TEXT    NOT NULL)";
 				stmt.executeUpdate(sql);
 				System.out.println("Table created successfully");
+				log.info("Table created successfully");
 			}
 
 			if (!tableExists("Title") ){
@@ -80,6 +74,7 @@ public class DBHelper {
 						" Content        TEXT    NOT NULL)";
 				stmt.executeUpdate(sqlTitle);
 				System.out.println("Table created successfully");
+				log.info("Table created successfully");
 			}
 
 			stmt.close();
@@ -87,6 +82,7 @@ public class DBHelper {
 		} catch ( Exception e ) {
 			System.out.println("Table create failed");
 			e.printStackTrace(stderr);
+			log.error(e);
 		}
 
 	}

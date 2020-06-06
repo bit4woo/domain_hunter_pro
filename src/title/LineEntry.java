@@ -7,6 +7,9 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.alibaba.fastjson.JSON;
 import com.ibm.icu.text.CharsetDetector;
 import com.ibm.icu.text.CharsetMatch;
@@ -21,7 +24,7 @@ import burp.IRequestInfo;
 import burp.IResponseInfo;
 
 public class LineEntry {
-
+	private static final Logger log=LogManager.getLogger(LineEntry.class);
 	public static final String Level_A = "重要";
 	public static final String Level_B = "无用";
 	public static final String Level_C = "一般";
@@ -108,7 +111,8 @@ public class LineEntry {
 		this.comment = comment;
 	}
 
-	public LineEntry(IHttpRequestResponse messageinfo,boolean isNew,String CheckStatus,String comment,Set<String> IPset,Set<String> CDNset) {
+	@Deprecated
+	private LineEntry(IHttpRequestResponse messageinfo,boolean isNew,String CheckStatus,String comment,Set<String> IPset,Set<String> CDNset) {
 		this.messageinfo = messageinfo;
 		this.callbacks = BurpExtender.getCallbacks();
 		this.helpers = this.callbacks.getHelpers();
@@ -180,6 +184,7 @@ public class LineEntry {
 			}
 		}catch(Exception e) {
 			e.printStackTrace(BurpExtender.getStderr());
+			log.error(e);
 		}
 	}
 
@@ -360,6 +365,7 @@ Content-Type: text/html;charset=UTF-8
 				return new String(newResponse,systemCharSet);
 			} catch (Exception e) {
 				e.printStackTrace(BurpExtender.getStderr());
+				log.error(e);
 				BurpExtender.getStderr().print("title 编码转换失败");
 			}
 		}

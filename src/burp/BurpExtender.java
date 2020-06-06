@@ -7,6 +7,9 @@ import java.util.List;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import GUI.GUI;
 import GUI.LineEntryMenuForBurp;
 import domain.DomainPanel;
@@ -24,25 +27,24 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	private static GUI gui;
 	public static final String Extension_Setting_Name_DB_File = "domain-Hunter-pro-db-path";
 	public static final String Extension_Setting_Name_Line_Config = "domain-Hunter-pro-line-config";
-
-
-	private static void flushStd(){
-		try{
-			stdout = new PrintWriter(callbacks.getStdout(), true);
-			stderr = new PrintWriter(callbacks.getStderr(), true);
-		}catch (Exception e){
-			stdout = new PrintWriter(System.out, true);
-			stderr = new PrintWriter(System.out, true);
-		}
-	}
+	private static final Logger log=LogManager.getLogger(BurpExtender.class);
 
 	public static PrintWriter getStdout() {
-		flushStd();//不同的时候调用这个参数，可能得到不同的值
+		//不同的时候调用这个参数，可能得到不同的值
+		try{
+			stdout = new PrintWriter(callbacks.getStdout(), true);
+		}catch (Exception e){
+			stdout = new PrintWriter(System.out, true);
+		}
 		return stdout;
 	}
 
 	public static PrintWriter getStderr() {
-		flushStd();
+		try{
+			stderr = new PrintWriter(callbacks.getStderr(), true);
+		}catch (Exception e){
+			stderr = new PrintWriter(System.out, true);
+		}
 		return stderr;
 	}
 
@@ -68,7 +70,8 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	@Override
 	public void registerExtenderCallbacks(IBurpExtenderCallbacks callbacks)
 	{
-		flushStd();
+		getStdout();
+		getStderr();
 		stdout.println(ExtenderName);
 		stdout.println(github);
 		BurpExtender.callbacks = callbacks;
