@@ -2,7 +2,9 @@
 
 1. 梳理Domain的处理逻辑，尤其是无效域名，黑名单域名，等
 
+### maven使用
 
+mvn dependency:analyze 找出没有使用的包
 
 
 

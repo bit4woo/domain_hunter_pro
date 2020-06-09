@@ -177,6 +177,40 @@ public class ToolPanel extends JPanel {
 
 		});
 
+		JButton rows2List = new JButton("Rows To List");
+		threeFourthPanel.add(rows2List);
+		rows2List.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					List<String> content = Commons.getLinesFromTextArea(inputTextArea);					
+					outputTextArea.setText(content.toString());
+				} catch (Exception e1) {
+					outputTextArea.setText(e1.getMessage());
+				}
+			}
+
+		});
+		
+		JButton rows2Array = new JButton("Rows To Array");
+		threeFourthPanel.add(rows2Array);
+		rows2Array.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					List<String> content = Commons.getLinesFromTextArea(inputTextArea);
+					for (int i=0;i<content.size();i++) {
+						content.set(i, "\""+content.get(i)+"\"");
+					}
+					
+					outputTextArea.setText(String.join(",", content));
+				} catch (Exception e1) {
+					outputTextArea.setText(e1.getMessage());
+				}
+			}
+
+		});
+		
 
 		JButton btnGrep = new JButton("grep json");
 		threeFourthPanel.add(btnGrep);
