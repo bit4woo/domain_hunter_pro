@@ -164,7 +164,8 @@ class RunnerProducer extends Thread {//Producer do
 				byte[] neRequest = helpers.buildHttpMessage(getter.headerMapToHeaderList(headers), body);
 
 				int leftTaskNum = lineEntryQueue.size();
-				stdout.println(String.format("%s tasks left, Runner Checking: %s",leftTaskNum,line.getHost()));
+				String fullurl = helpers.analyzeRequest(neRequest).getUrl().toString();
+				stdout.println(String.format("%s tasks left, Runner Checking: %s",leftTaskNum,fullurl));
 
 				//stdout.println(httpService.toString());
 				//stdout.println(new String(neRequest));
