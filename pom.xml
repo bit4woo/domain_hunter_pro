@@ -14,6 +14,12 @@
 			<id>jitpack.io</id>
 			<url>https://jitpack.io</url>
 		</repository>
+
+		<repository>
+			<id>alimaven</id>
+			<name>aliyun maven</name>
+			<url>http://maven.aliyun.com/nexus/content/groups/public/</url>
+		</repository>
 	</repositories>
 
 	<build>
@@ -24,6 +30,7 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.8.1</version>
 				<configuration>
+					<!-- 这是JDK的版本 -->
 					<source>1.8</source>
 					<target>1.8</target>
 				</configuration>
