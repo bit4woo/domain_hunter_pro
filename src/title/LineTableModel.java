@@ -532,9 +532,8 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	}
 
 	/*
-	 * find all lineEntries base host
+	 * find all lineEntries base host，当需要对整个主机的所有服务进行操作时用这个方法
 	 */
-	@Deprecated
 	public List<LineEntry> findLineEntriesByHost(String host) {//
 		if (lineEntries == null) return null;
 		List<LineEntry> result = new ArrayList<LineEntry>();
@@ -552,7 +551,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	}
 	
 	/*
-	 * find all lineEntries base host and port
+	 * find all lineEntries base host and port，通常根据IP+端口来确定一个服务。
 	 */
 	public List<LineEntry> findLineEntriesByHostAndPort(String host,int port) {//
 		if (lineEntries == null) return null;

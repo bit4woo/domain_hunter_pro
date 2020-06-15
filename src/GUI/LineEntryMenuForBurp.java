@@ -226,6 +226,32 @@ public class LineEntryMenuForBurp{
 		}
 	}
 
+	//@Deprecated //似乎也没有太大必要，暂时先不用了
+	public class addCommentForHost implements ActionListener{
+		private IContextMenuInvocation invocation;
+		addCommentForHost(IContextMenuInvocation invocation) {
+			this.invocation  = invocation;
+		}
+		@Override
+		public void actionPerformed(ActionEvent e)
+		{
+			//还是要简化逻辑，如果找不到就不执行！
+			try{
+				IHttpRequestResponse[] messages = invocation.getSelectedMessages();
+				List<LineEntry> entries = TitlePanel.getTitleTableModel().findLineEntriesByHost(messages[0].getHttpService().getHost());
+				
+				if (entries.size() > 0) {
+					for (LineEntry entry:entries) {
+						//addCommentForLine(entry);
+					}
+				}
+			}
+			catch (Exception e1)
+			{
+				e1.printStackTrace(stderr);
+			}
+		}
+	}
 
 
 	public class setAsChecked implements ActionListener{
@@ -237,26 +263,6 @@ public class LineEntryMenuForBurp{
 		public void actionPerformed(ActionEvent e)
 		{
 			try{
-//				IHttpRequestResponse[] messages = invocation.getSelectedMessages();
-//				Getter getter = new Getter(helpers);
-//				URL fullurl = getter.getFullURL(messages[0]);
-//				LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(fullurl.toString());
-//				if (entry == null) {
-//					URL shortUrl = getter.getShortURL(messages[0]);
-//					if(!fullurl.equals(shortUrl)) {
-//						entry = TitlePanel.getTitleTableModel().findLineEntry(shortUrl.toString());
-//					}
-//				}
-//
-//				if (entry != null) {
-//					int index = TitlePanel.getTitleTableModel().getLineEntries().IndexOfKey(entry.getUrl());
-//					entry.setChecked(true);
-//					stdout.println("$$$ "+entry.getUrl()+" updated");
-//					TitlePanel.getTitleTableModel().fireTableRowsUpdated(index,index);//主动通知更新，否则不会写入数据库!!!
-//				}
-				
-				
-				
 				IHttpRequestResponse[] messages = invocation.getSelectedMessages();
 				Getter getter = new Getter(helpers);
 				String host = getter.getHost(messages[0]);
