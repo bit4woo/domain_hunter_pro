@@ -1,6 +1,7 @@
 package Deprecated;
 
 import burp.*;
+import domain.DomainPanel;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;

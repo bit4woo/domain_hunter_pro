@@ -1,9 +1,14 @@
-新的需求：
-1.添加备注，双击事件已经被占用，应当判断列表区域
-2.high怎么搞
-3.添加条数统计，特别是已完成和未完成的
+### 新的需求TODO List：
+
+1. 梳理Domain的处理逻辑，尤其是无效域名，黑名单域名，等
+
+### maven使用
+
+mvn dependency:analyze 找出没有使用的包
 
 
+
+### 编程经验
 
 个人理解只要该成员方法不需要与非static的成员打交道，就可以使用static。换句话说，只要该方法的执行与对象本身的状态没有关系，就可以使用static.
 
@@ -14,6 +19,7 @@
 
 正则表示表达式的运用
 
+```
 ArrayList<String> result = new ArrayList<String>();
 //主要目的是找url        path: '/admin/menu',
 String webpack_PATTERN = "([0-9a-z])*"; //TODO 正则表达不正确
@@ -23,3 +29,5 @@ Matcher matcher = pRegex.matcher(content);
 while (matcher.find()) {//多次查找
 	result.add(matcher.group());
 }
+```
+
