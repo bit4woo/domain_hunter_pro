@@ -534,6 +534,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	/*
 	 * find all lineEntries base host
 	 */
+	@Deprecated
 	public List<LineEntry> findLineEntriesByHost(String host) {//
 		if (lineEntries == null) return null;
 		List<LineEntry> result = new ArrayList<LineEntry>();
@@ -541,6 +542,25 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			try{//根据host查找
 				URL URL = new URL(urlkey);
 				if (URL.getHost().equalsIgnoreCase(host)) {
+					result.add(lineEntries.get(urlkey));
+				}
+			}catch (Exception e){
+				e.printStackTrace(BurpExtender.getStderr());
+			}
+		}
+		return result;
+	}
+	
+	/*
+	 * find all lineEntries base host and port
+	 */
+	public List<LineEntry> findLineEntriesByHostAndPort(String host,int port) {//
+		if (lineEntries == null) return null;
+		List<LineEntry> result = new ArrayList<LineEntry>();
+		for (String urlkey:lineEntries.keySet()) {
+			try{//根据host查找
+				URL URL = new URL(urlkey);
+				if (URL.getHost().equalsIgnoreCase(host) && URL.getPort() == port) {
 					result.add(lineEntries.get(urlkey));
 				}
 			}catch (Exception e){

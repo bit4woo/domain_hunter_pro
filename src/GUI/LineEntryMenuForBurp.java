@@ -260,7 +260,8 @@ public class LineEntryMenuForBurp{
 				IHttpRequestResponse[] messages = invocation.getSelectedMessages();
 				Getter getter = new Getter(helpers);
 				String host = getter.getHost(messages[0]);
-				List<LineEntry> entries = TitlePanel.getTitleTableModel().findLineEntriesByHost(host);
+				int port = messages[0].getHttpService().getPort();
+				List<LineEntry> entries = TitlePanel.getTitleTableModel().findLineEntriesByHostAndPort(host,port);
 
 				if (entries.size() > 0) {
 					for (LineEntry entry:entries) {
