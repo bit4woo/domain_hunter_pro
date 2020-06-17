@@ -3,6 +3,7 @@ package Tools;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Desktop;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -148,13 +149,16 @@ public class ToolPanel extends JPanel {
 		//四分之三部分放一个panel，里面放操作按钮
 		JPanel threeFourthPanel = new JPanel();
 		RightOfCenter.setLeftComponent(threeFourthPanel);
+		threeFourthPanel.setLayout(new FlowLayout());
+		//https://stackoverflow.com/questions/5709690/how-do-i-make-this-flowlayout-wrap-within-its-jsplitpane
+		threeFourthPanel.setMinimumSize(new Dimension(0, 0));//为了让button自动换行
 
 		JButton btnOpenurls = new JButton("OpenURLs");
 		threeFourthPanel.add(btnOpenurls);
 		btnOpenurls.addActionListener(new ActionListener() {
 			List<String> urls = new ArrayList<>();
 			Iterator<String> it = urls.iterator();
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (inputTextAreaChanged) {//default is true
@@ -191,7 +195,7 @@ public class ToolPanel extends JPanel {
 			}
 
 		});
-		
+
 		JButton rows2Array = new JButton("Rows To Array");
 		threeFourthPanel.add(rows2Array);
 		rows2Array.addActionListener(new ActionListener() {
@@ -202,7 +206,7 @@ public class ToolPanel extends JPanel {
 					for (int i=0;i<content.size();i++) {
 						content.set(i, "\""+content.get(i)+"\"");
 					}
-					
+
 					outputTextArea.setText(String.join(",", content));
 				} catch (Exception e1) {
 					outputTextArea.setText(e1.getMessage());
@@ -210,9 +214,9 @@ public class ToolPanel extends JPanel {
 			}
 
 		});
-		
 
-		JButton btnGrep = new JButton("grep json");
+
+		JButton btnGrep = new JButton("Grep Json");
 		threeFourthPanel.add(btnGrep);
 		btnGrep.addActionListener(new ActionListener() {
 			@Override
@@ -240,8 +244,8 @@ public class ToolPanel extends JPanel {
 			}
 
 		});
-		
-		JButton btnLine = new JButton("grep line");
+
+		JButton btnLine = new JButton("Grep Line");
 		threeFourthPanel.add(btnLine);
 		btnLine.addActionListener(new ActionListener() {
 			@Override
@@ -265,6 +269,55 @@ public class ToolPanel extends JPanel {
 				} catch (Exception e1) {
 					outputTextArea.setText(e1.getMessage());
 					//e1.printStackTrace(stderr);
+				}
+			}
+		});
+
+
+		JButton btnAddPrefix = new JButton("Add Prefix");
+		threeFourthPanel.add(btnAddPrefix);
+		btnAddPrefix.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					String toAdd = JOptionPane.showInputDialog("prefix to add", null);
+					ArrayList<String> result = new ArrayList<String>();
+					if (toAdd == null) {
+						return;
+					} else {
+						List<String> content = Commons.getLinesFromTextArea(inputTextArea);
+						for (String item:content) {
+							item = toAdd.trim()+item;
+							result.add(item); 
+						}
+						outputTextArea.setText(String.join(System.lineSeparator(), result));
+					}
+				} catch (Exception e1) {
+					outputTextArea.setText(e1.getMessage());
+				}
+			}
+		});
+		
+		JButton btnAddsuffix = new JButton("Add Suffix");
+		threeFourthPanel.add(btnAddsuffix);
+		btnAddsuffix.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					String toAdd = JOptionPane.showInputDialog("suffix to add", null);
+					ArrayList<String> result = new ArrayList<String>();
+					if (toAdd == null) {
+						return;
+					} else {
+						List<String> content = Commons.getLinesFromTextArea(inputTextArea);
+						for (String item:content) {
+							item = item+toAdd.trim();
+							result.add(item);
+						}
+						outputTextArea.setText(String.join(System.lineSeparator(), result));
+					}
+				} catch (Exception e1) {
+					outputTextArea.setText(e1.getMessage());
 				}
 			}
 		});
@@ -300,6 +353,38 @@ public class ToolPanel extends JPanel {
 
 		});
 
+		JButton btnIPsToCIDR = new JButton("IPs To CIDR");
+		threeFourthPanel.add(btnIPsToCIDR);
+		btnIPsToCIDR.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					List<String> IPs = Commons.getLinesFromTextArea(inputTextArea);
+					Set<String> subnets = Commons.toSmallerSubNets(new HashSet<String>(IPs));
+					outputTextArea.setText(String.join(System.lineSeparator(), subnets));
+				} catch (Exception e1) {
+					outputTextArea.setText(e1.getMessage());
+					e1.printStackTrace(stderr);
+				}
+			}
+		});
+
+		JButton btnCIDRToIPs = new JButton("CIDR To IPs");
+		threeFourthPanel.add(btnCIDRToIPs);
+		btnCIDRToIPs.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					List<String> subnets = Commons.getLinesFromTextArea(inputTextArea);
+					List<String> IPs = Commons.toIPList(subnets);// 当前所有title结果计算出的IP集合
+					outputTextArea.setText(String.join(System.lineSeparator(), IPs));
+				} catch (Exception e1) {
+					outputTextArea.setText(e1.getMessage());
+					e1.printStackTrace(stderr);
+				}
+			}
+		});
+
 		JPanel fourFourthPanel = new JPanel();
 		RightOfCenter.setRightComponent(fourFourthPanel);
 		JLabel lblNewLabel = new JLabel("Browser Path:");
@@ -309,7 +394,7 @@ public class ToolPanel extends JPanel {
 		fourFourthPanel.add(BrowserPath);
 		BrowserPath.setColumns(50);
 		BrowserPath.getDocument().addDocumentListener(new textFieldListener());
-		
+
 		showItemsInOne = new JRadioButton("show items in one");
 		fourFourthPanel.add(showItemsInOne);
 		showItemsInOne.addActionListener(new ActionListener() {
@@ -384,7 +469,7 @@ public class ToolPanel extends JPanel {
 			inputTextAreaChanged = true;
 		}
 	}
-	
+
 	class textFieldListener implements DocumentListener {
 
 		@Override

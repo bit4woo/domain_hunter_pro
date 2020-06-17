@@ -288,6 +288,13 @@ public class Commons {
 	 */
 	public static Set<String> toIPSet (Set<String> subNets) {
 		Set<String> IPSet = new HashSet<String>();
+		List<String> result = toIPList(new ArrayList<>(subNets));
+		IPSet.addAll(result);
+		return IPSet;
+	}
+	
+	public static List<String> toIPList (List<String> subNets) {
+		List<String> IPSet = new ArrayList<String>();
 		for (String subnet:subNets) {
 			try {
 				if (subnet.contains(":")) {
@@ -298,10 +305,9 @@ public class Commons {
 					SubnetUtils net = new SubnetUtils(subnet);
 					SubnetInfo xx = net.getInfo();
 					String[] ips = xx.getAllAddresses();
-					Set<String> resultIPs = new HashSet<>(Arrays.asList(ips));
-					resultIPs.add(xx.getNetworkAddress());
-					resultIPs.add(xx.getBroadcastAddress());
-					IPSet.addAll(resultIPs);
+					IPSet.add(xx.getNetworkAddress());//.0
+					IPSet.addAll(Arrays.asList(ips));
+					IPSet.add(xx.getBroadcastAddress());//.255
 				}else if (subnet.contains("-")) {
 					String[] ips = subnet.split("-");
 					if (ips.length ==2) {
