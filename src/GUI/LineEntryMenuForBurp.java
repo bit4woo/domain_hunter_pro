@@ -275,6 +275,7 @@ public class LineEntryMenuForBurp{
 						int index = TitlePanel.getTitleTableModel().getLineEntries().IndexOfKey(entry.getUrl());
 						stdout.println("$$$ "+entry.getUrl()+"status has been set to "+LineEntry.CheckStatus_Checked);
 						TitlePanel.getTitleTableModel().fireTableRowsUpdated(index,index);//主动通知更新，否则不会写入数据库!!!
+						//这里不用一次fire多个行，否则还得去查找index,会花费更多时间。
 					}
 				}
 			}

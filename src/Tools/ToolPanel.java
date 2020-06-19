@@ -54,9 +54,10 @@ public class ToolPanel extends JPanel {
 	PrintWriter stderr;
 	private JTextField BrowserPath;
 	private JTextArea inputTextArea;
+	private JTextArea outputTextArea;
+	
 	public boolean inputTextAreaChanged = true;
 	public static JRadioButton showItemsInOne;
-	private JTextArea outputTextArea;
 	private static LineConfig lineConfig;
 
 	public static LineConfig getLineConfig() {
@@ -274,20 +275,21 @@ public class ToolPanel extends JPanel {
 		});
 
 
-		JButton btnAddPrefix = new JButton("Add Prefix");
+		JButton btnAddPrefix = new JButton("Add Prefix/Suffix");
 		threeFourthPanel.add(btnAddPrefix);
 		btnAddPrefix.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
-					String toAdd = JOptionPane.showInputDialog("prefix to add", null);
+					String toAddPrefix = JOptionPane.showInputDialog("prefix to add", null);
+					String toAddSuffix = JOptionPane.showInputDialog("suffix to add", null);
 					ArrayList<String> result = new ArrayList<String>();
-					if (toAdd == null) {
+					if (toAddPrefix == null && toAddSuffix == null) {
 						return;
 					} else {
 						List<String> content = Commons.getLinesFromTextArea(inputTextArea);
 						for (String item:content) {
-							item = toAdd.trim()+item;
+							item = toAddPrefix.trim()+item+toAddSuffix.trim();
 							result.add(item); 
 						}
 						outputTextArea.setText(String.join(System.lineSeparator(), result));
@@ -298,30 +300,6 @@ public class ToolPanel extends JPanel {
 			}
 		});
 		
-		JButton btnAddsuffix = new JButton("Add Suffix");
-		threeFourthPanel.add(btnAddsuffix);
-		btnAddsuffix.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				try {
-					String toAdd = JOptionPane.showInputDialog("suffix to add", null);
-					ArrayList<String> result = new ArrayList<String>();
-					if (toAdd == null) {
-						return;
-					} else {
-						List<String> content = Commons.getLinesFromTextArea(inputTextArea);
-						for (String item:content) {
-							item = item+toAdd.trim();
-							result.add(item);
-						}
-						outputTextArea.setText(String.join(System.lineSeparator(), result));
-					}
-				} catch (Exception e1) {
-					outputTextArea.setText(e1.getMessage());
-				}
-			}
-		});
-
 
 		JButton btnRegexGrep = new JButton("Regex Grep");
 		btnRegexGrep.setEnabled(false);
