@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -119,16 +120,35 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 							dbHelper.deleteTitle(lineEntries.get(key));
 							lineEntries.remove(key);
 						}
-						 */
-
-						List<LineEntry> entries = new ArrayList<LineEntry>();
-						for (int i = rowstart; i <= rowend; i++) {
+						*/
+						 
+						/*
+						//必须从高位index进行删除，否则删除的对象会和预期不一致！！！
+						//这里还是有问题，删除完成后，显示数据的getValueAt函数会数组越界！why???
+						//TODO 奇诡的bug
+						List<String> urls = new ArrayList<String>();
+						for (int i = rowend; i >= rowstart; i--) {
 							String key = lineEntries.getKeyAtIndex(i);
-							LineEntry entry = lineEntries.get(key);
-							entries.add(entry);
-							lineEntries.remove(key);
+							urls.add(key);
+							lineEntries.remove(key);//删除tableModel中的元素。
+							stdout.println("### "+key+" deleted");
 						}
-						dbHelper.deleteTitles(entries);
+						dbHelper.deleteTitlesByUrl(urls);//删除数据库中的元素
+						*/
+						
+						
+						
+						List<String> urls = new ArrayList<String>();
+						for (int i = rowend; i >= rowstart; i--) {
+							String key = lineEntries.getKeyAtIndex(i);
+							urls.add(key);
+						}
+						dbHelper.deleteTitlesByUrl(urls);//删除数据库中的元素
+						for(String url:urls) {
+							lineEntries.remove(url);//删除tableModel中的元素。
+							stdout.println("### "+url+" deleted");
+						}
+						
 
 					} else {
 						//System.out.println("此事件是由其他原因触发");
@@ -539,7 +559,10 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	//为了同时fire多个不连续的行，自行实现这个方法。
 	private void fireDeleted(int[] rows) {
 		List<int[]> slice = IntArraySlice.slice(rows);
+		//必须逆序，从高位index开始删除，否则删除的对象和预期不一致！！！
+		Collections.reverse(slice);
 		for(int[] sli:slice) {
+			System.out.println(Arrays.toString(sli));
 			this.fireTableRowsDeleted(sli[0], sli[sli.length-1]);
 		}
 	}
@@ -547,6 +570,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	private void fireUpdated(int[] rows) {
 		List<int[]> slice = IntArraySlice.slice(rows);
 		for(int[] sli:slice) {
+			System.out.println(Arrays.toString(sli));
 			this.fireTableRowsUpdated(sli[0], sli[sli.length-1]);
 		}
 	}

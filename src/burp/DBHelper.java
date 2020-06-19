@@ -9,6 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -26,8 +27,8 @@ createStatement  //在固定语句时可以用它
 它们都对应2种语句执行方法 executeQuery - select  \executeUpdate - insert、update、delete
  */
 public class DBHelper {
-	private Connection conn = null;                                      //连接
-	private PreparedStatement pres = null;                                    //PreparedStatement对象
+	private Connection conn = null;       //连接
+	private PreparedStatement pres = null;  //PreparedStatement对象
 	private ResultSet rs = null;
 	private String dbFilePath;
 
@@ -92,13 +93,15 @@ public class DBHelper {
 	}
 
 	//何时创建连接，何时关闭连接呢？最佳实践是怎样的？
-	private Connection getConnection() throws SQLException{
+	private Connection getConnection() throws SQLException, ClassNotFoundException{
 		if (conn == null || conn.isClosed()){
-			//Class.forName("org.sqlite.JDBC"); //https://docs.oracle.com/javase/tutorial/jdbc/basics/connecting.html#drivermanager
+			Class.forName("org.sqlite.JDBC"); //https://docs.oracle.com/javase/tutorial/jdbc/basics/connecting.html#drivermanager
 			//JDBC 4.0以前需要这个语句来加载驱动，现在不需要了 
 			if (new File(dbFilePath).exists()){
 				conn = DriverManager.getConnection("jdbc:sqlite:"+dbFilePath);
 			}else {
+				System.out.println("DB file not found");
+				stderr.println("DB file not found");
 				log.error("DB file not found");
 			}
 		}
@@ -137,7 +140,7 @@ public class DBHelper {
 	public boolean saveDomainObject(DomainManager domainResult){
 		try {
 			conn = getConnection();
-			/*
+			
 			pres = conn.prepareStatement("select * From DOMAINObject");
 			rs = pres.executeQuery();
 			String sql = "";
@@ -146,10 +149,9 @@ public class DBHelper {
 			}else{
 				sql = "insert into DOMAINObject(ID,NAME,Content) values(1,?,?)";
 			}
-			*/
 			
-			//让新增和更新的逻辑在一个语句中完成，减少查询。
-			String sql = "insert into DOMAINObject(ID,NAME,Content) values(1,?,?) ON DUPLICATE KEY UPDATE NAME=VALUES(NAME),Content=VALUES(Content)";
+			//让新增和更新的逻辑在一个语句中完成，减少查询。这是mysql中的语句，sqlit中不存在。
+			//String sql = "insert into DOMAINObject(ID,NAME,Content) values(1,?,?) ON DUPLICATE KEY UPDATE NAME=VALUES(NAME),Content=VALUES(Content)";
 			String name = domainResult.getProjectName();
 			String content  = domainResult.ToJson();
 			pres=conn.prepareStatement(sql);//预编译
@@ -298,9 +300,10 @@ public class DBHelper {
 			}
 			int[] result = pres.executeBatch();                                   //批量插入到数据库中
 			if ( IntStream.of(result).sum() == lineEntries.size()){
-				System.out.println("update titles successfully");
+				System.out.println("update titles successfully: "+lineEntries.size());
 				return true;
 			}else {
+				System.out.println("update titles failed");
 				return false;
 			}
 		} catch (Exception e) {
@@ -331,19 +334,28 @@ public class DBHelper {
 	}
 
 	public boolean deleteTitles(List<LineEntry> lineEntries){
+		List<String> urls = new ArrayList<String>();
+		for(LineEntry entry:lineEntries) {
+			urls.add(entry.getUrl());
+		}
+		return deleteTitlesByUrl(urls);
+	}
+	
+	
+	public boolean deleteTitlesByUrl(List<String> urls){
 		String sql="DELETE FROM Title where NAME= ?";
 		//DELETE FROM Person WHERE LastName = 'Wilson'
 
 		try {
 			conn = getConnection();
 			pres=conn.prepareStatement(sql);
-			for(LineEntry entry:lineEntries){
-				pres.setString(1, entry.getUrl());
+			for(String url:urls){
+				pres.setString(1, url);
 				pres.addBatch();                                   //实现批量插入
 			}
 			int[] result = pres.executeBatch();                                   //批量插入到数据库中
-			if ( IntStream.of(result).sum() == lineEntries.size()){
-				System.out.println("delete titles successfully");
+			if ( IntStream.of(result).sum() == urls.size()){
+				System.out.println("delete titles successfully: "+urls.size());
 				return true;
 			}else {
 				return false;
