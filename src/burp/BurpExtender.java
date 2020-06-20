@@ -1,18 +1,15 @@
 package burp;
 
-import java.awt.Component;
-import java.io.PrintWriter;
-import java.util.List;
-
-import javax.swing.JMenuItem;
-import javax.swing.SwingUtilities;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import GUI.GUI;
 import GUI.LineEntryMenuForBurp;
 import domain.DomainPanel;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import javax.swing.*;
+import java.awt.*;
+import java.io.PrintWriter;
+import java.util.List;
 
 public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListener,IContextMenuFactory{
 	/**
@@ -72,13 +69,14 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	{
 		getStdout();
 		getStderr();
-		stdout.println(ExtenderName);
+		String verison = getClass().getPackage().getImplementationVersion();
+		stdout.println(ExtenderName+" "+verison);
 		stdout.println(github);
 		BurpExtender.callbacks = callbacks;
 		helpers = callbacks.getHelpers();
 		callbacks.setExtensionName(ExtenderName); //插件名称
 		callbacks.registerExtensionStateListener(this);
-		callbacks.registerContextMenuFactory(this);		
+		callbacks.registerContextMenuFactory(this);
 
 		gui = new GUI();
 
@@ -97,7 +95,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		if (content != null && content.endsWith(".db")) {
 			gui.LoadData(content);
 		}
-		
+
 		gui.getToolPanel().loadConfig();
 
 	}
@@ -107,7 +105,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		if (gui.getTitlePanel().getThreadGetTitle() != null) {
 			gui.getTitlePanel().getThreadGetTitle().stopThreads();//maybe null
 		}//必须要先结束线程，否则获取数据的操作根本无法结束，因为线程一直通过sync占用资源
-		
+
 		gui.saveDBfilepathToExtension();
 		gui.getProjectMenu().remove();
 
@@ -130,7 +128,4 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 
 		return new LineEntryMenuForBurp().createMenuItemsForBurp(invocation);
 	}
-
-
-
 }
