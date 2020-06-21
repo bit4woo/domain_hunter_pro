@@ -7,7 +7,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.bit4woo.burp</groupId>
 	<artifactId>domain_hunter_pro</artifactId>
-	<version>20200521</version>
+	<version>v20200521</version>
 
 	<repositories>
 		<repository>
@@ -43,13 +43,6 @@
 					<descriptorRefs>
 						<descriptorRef>jar-with-dependencies</descriptorRef>
 					</descriptorRefs>
-					<archive>
-						<manifest>
-							<addDefaultImplementationEntries>
-								true
-							</addDefaultImplementationEntries>
-						</manifest>
-					</archive>
 				</configuration>
 				<executions>
 					<execution>
@@ -180,6 +173,13 @@
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
 			<version>2.13.0</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.beanshell/bsh -->
+		<dependency>
+			<groupId>org.beanshell</groupId>
+			<artifactId>bsh</artifactId>
+			<version>2.0b5</version>
 		</dependency>
 
 	</dependencies>

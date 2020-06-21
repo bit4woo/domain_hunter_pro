@@ -2,6 +2,7 @@ package burp;
 
 import GUI.GUI;
 import GUI.LineEntryMenuForBurp;
+import bsh.This;
 import domain.DomainPanel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,8 +20,9 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	private static IBurpExtenderCallbacks callbacks;
 	private static PrintWriter stdout;
 	private static PrintWriter stderr;
-	private static String ExtenderName = "Domain Hunter Pro by bit4woo";
-	private String ExtenderNameWithVersion = getExtenderNameWithVersion();
+	private static String ExtenderName = "Domain Hunter Pro";
+	private static String Version =  This.class.getPackage().getImplementationVersion();
+	private static String Author = "by bit4woo";
 	private static String github = "https://github.com/bit4woo/domain_hunter_pro";
 	private static GUI gui;
 	public static final String Extension_Setting_Name_DB_File = "domain-Hunter-pro-db-path";
@@ -62,13 +64,9 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		return ExtenderName;
 	}
 
-	public String getExtenderNameWithVersion(){
-		String version = "v"+getClass().getPackage().getImplementationVersion()+" by bit4woo";
-		if (version != null){
-			String NameWithVersion = ExtenderName.replace("by bit4woo",version);
-			return NameWithVersion;
-		}
-		return ExtenderName;
+	//name+version+author
+	public static String getFullExtenderName(){
+		return ExtenderName+" "+Version+" "+Author;
 	}
 
 	private IExtensionHelpers helpers;
@@ -79,11 +77,11 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	{
 		getStdout();
 		getStderr();
-		stdout.println(ExtenderNameWithVersion);
+		stdout.println(getFullExtenderName());
 		stdout.println(github);
 		BurpExtender.callbacks = callbacks;
 		helpers = callbacks.getHelpers();
-		callbacks.setExtensionName(ExtenderNameWithVersion); //插件名称
+		callbacks.setExtensionName(getFullExtenderName()); //插件名称
 		callbacks.registerExtensionStateListener(this);
 		callbacks.registerContextMenuFactory(this);
 
