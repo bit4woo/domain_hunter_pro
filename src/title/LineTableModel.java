@@ -122,10 +122,10 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 						}
 						*/
 						 
-						/*
+
 						//必须从高位index进行删除，否则删除的对象会和预期不一致！！！
 						//这里还是有问题，删除完成后，显示数据的getValueAt函数会数组越界！why???
-						//TODO 奇诡的bug
+						//TODO 奇诡的bug,后面在家测试又没问题，难道是当时打包没有使用mvn clean导致了没有使用到最新的代码？
 						List<String> urls = new ArrayList<String>();
 						for (int i = rowend; i >= rowstart; i--) {
 							String key = lineEntries.getKeyAtIndex(i);
@@ -134,10 +134,10 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 							stdout.println("### "+key+" deleted");
 						}
 						dbHelper.deleteTitlesByUrl(urls);//删除数据库中的元素
-						*/
+
 						
 						
-						
+						/*
 						List<String> urls = new ArrayList<String>();
 						for (int i = rowend; i >= rowstart; i--) {
 							String key = lineEntries.getKeyAtIndex(i);
@@ -148,6 +148,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 							lineEntries.remove(url);//删除tableModel中的元素。
 							stdout.println("### "+url+" deleted");
 						}
+						 */
 						
 
 					} else {
