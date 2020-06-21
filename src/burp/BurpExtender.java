@@ -75,12 +75,14 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	@Override
 	public void registerExtenderCallbacks(IBurpExtenderCallbacks callbacks)
 	{
+		BurpExtender.callbacks = callbacks;
+		helpers = callbacks.getHelpers();
+
 		getStdout();
 		getStderr();
 		stdout.println(getFullExtenderName());
 		stdout.println(github);
-		BurpExtender.callbacks = callbacks;
-		helpers = callbacks.getHelpers();
+
 		callbacks.setExtensionName(getFullExtenderName()); //插件名称
 		callbacks.registerExtensionStateListener(this);
 		callbacks.registerContextMenuFactory(this);

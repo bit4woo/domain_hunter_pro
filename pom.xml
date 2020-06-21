@@ -46,7 +46,7 @@
 					<archive>
 						<manifest>
 							<addDefaultImplementationEntries>
-								true
+								true<!--for getVersion from pom.xml-->
 							</addDefaultImplementationEntries>
 						</manifest>
 					</archive>
