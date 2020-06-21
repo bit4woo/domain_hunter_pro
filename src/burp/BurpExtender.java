@@ -20,6 +20,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	private static PrintWriter stdout;
 	private static PrintWriter stderr;
 	private static String ExtenderName = "Domain Hunter Pro by bit4woo";
+	private String ExtenderNameWithVersion = getExtenderNameWithVersion();
 	private static String github = "https://github.com/bit4woo/domain_hunter_pro";
 	private static GUI gui;
 	public static final String Extension_Setting_Name_DB_File = "domain-Hunter-pro-db-path";
@@ -49,16 +50,25 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		return callbacks;
 	}
 
-	public static String getExtenderName() {
-		return ExtenderName;
-	}
-
 	public static String getGithub() {
 		return github;
 	}
 
 	public static GUI getGui() {
 		return gui;
+	}
+
+	public static String getExtenderName() {
+		return ExtenderName;
+	}
+
+	public String getExtenderNameWithVersion(){
+		String version = "v"+getClass().getPackage().getImplementationVersion()+" by bit4woo";
+		if (version != null){
+			String NameWithVersion = ExtenderName.replace("by bit4woo",version);
+			return NameWithVersion;
+		}
+		return ExtenderName;
 	}
 
 	private IExtensionHelpers helpers;
@@ -69,12 +79,11 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	{
 		getStdout();
 		getStderr();
-		String verison = getClass().getPackage().getImplementationVersion();
-		stdout.println(ExtenderName+" "+verison);
+		stdout.println(ExtenderNameWithVersion);
 		stdout.println(github);
 		BurpExtender.callbacks = callbacks;
 		helpers = callbacks.getHelpers();
-		callbacks.setExtensionName(ExtenderName); //插件名称
+		callbacks.setExtensionName(ExtenderNameWithVersion); //插件名称
 		callbacks.registerExtensionStateListener(this);
 		callbacks.registerContextMenuFactory(this);
 
