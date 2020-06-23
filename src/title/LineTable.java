@@ -276,13 +276,14 @@ public class LineTable extends JTable
 		rowSorter.setRowFilter(filter);
 	}
 
-	//双击进行google搜索、双击浏览器打开url、双击切换Check状态
+	
 	public void registerListeners(){
 		LineTable.this.setRowSelectionAllowed(true);
 		this.addMouseListener( new MouseAdapter()
 		{
 			@Override
 			public void mouseClicked(MouseEvent e) {
+				//双击进行google搜索、双击浏览器打开url、双击切换Check状态
 				if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2){//左键双击
 					int[] rows = SelectedRowsToModelRows(getSelectedRows());
 
