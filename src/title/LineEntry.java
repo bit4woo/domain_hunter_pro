@@ -361,6 +361,7 @@ Content-Type: text/html;charset=UTF-8
 
 		if (originalCharSet != null && !originalCharSet.equalsIgnoreCase(systemCharSet)) {
 			try {
+				System.out.println("正将编码从"+originalCharSet+"转换为"+systemCharSet+"[windows系统编码]");
 				byte[] newResponse = new String(response,originalCharSet).getBytes(systemCharSet);
 				return new String(newResponse,systemCharSet);
 			} catch (Exception e) {

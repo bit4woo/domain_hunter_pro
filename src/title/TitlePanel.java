@@ -35,6 +35,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 
+import GUI.GUI;
 import Tools.LineConfig;
 import burp.BurpExtender;
 import burp.Commons;
@@ -240,6 +241,7 @@ public class TitlePanel extends JPanel {
 		});
 		buttonPanel.add(btnGetSubnet);
 
+		/*
 		//通过tableModelListener实现自动保存后，无需这个模块了
 		JButton btnSaveState = new JButton("Save");
 		btnSaveState.addActionListener(new ActionListener() {
@@ -263,7 +265,7 @@ public class TitlePanel extends JPanel {
 		btnSaveState.setToolTipText("Save Data To DataBase");
 		//buttonPanel.add(btnSaveState);
 
-
+		
 		InputMap inputMap1 = btnSaveState.getInputMap(JButton.WHEN_IN_FOCUSED_WINDOW);
 		KeyStroke Save = KeyStroke.getKeyStroke(KeyEvent.VK_S,ActionEvent.CTRL_MASK); //Ctrl+S
 		inputMap1.put(Save, "Save");
@@ -287,8 +289,18 @@ public class TitlePanel extends JPanel {
 				worker.execute();
 			}
 		});
-
+		*/
 		
+		JButton btnStop = new JButton("Stop");
+		btnStop.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (GUI.getTitlePanel().getThreadGetTitle() != null) {
+					GUI.getTitlePanel().getThreadGetTitle().stopThreads();
+				}
+			}
+		});
+		buttonPanel.add(btnStop);
+
 		textFieldSearch = new SearchTextField().Create("");
 		buttonPanel.add(textFieldSearch);
 

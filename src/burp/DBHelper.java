@@ -42,12 +42,15 @@ public class DBHelper {
 	 * @throws SQLException
 	 */
 	public DBHelper(String dbFilePath){
+		stdout = BurpExtender.getStdout();
+		stderr = BurpExtender.getStderr();
 
 		this.dbFilePath = dbFilePath;
 		try {
 			createTable();
 		} catch ( Exception e ) {
-			System.err.println( e.getClass().getName() + ": " + e.getMessage() );
+			e.printStackTrace();
+			e.printStackTrace(stderr);
 			log.error(e);
 			//System.exit(0);//就是这个导致了整个burp的退出！！！！
 		}
@@ -80,6 +83,7 @@ public class DBHelper {
 			}
 		} catch ( Exception e ) {
 			System.out.println("Table create failed");
+			e.printStackTrace();
 			e.printStackTrace(stderr);
 			log.error(e);
 		}finally{
@@ -130,6 +134,7 @@ public class DBHelper {
 				return false;
 			}
 		} catch (Exception ex) {
+			ex.printStackTrace();
 			ex.printStackTrace(stderr);
 		} finally {
 			//destroy();
@@ -167,6 +172,7 @@ public class DBHelper {
 				return false;
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			e.printStackTrace(stderr);
 		} finally {
 			destroy();
@@ -188,6 +194,7 @@ public class DBHelper {
 				return DomainManager.FromJson(Content);
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			e.printStackTrace(stderr);
 		} finally {
 			destroy();
@@ -212,6 +219,7 @@ public class DBHelper {
 				return false;
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			e.printStackTrace(stderr);
 		} finally {
 			destroy();
@@ -239,6 +247,7 @@ public class DBHelper {
 				return false;
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			e.printStackTrace(stderr);
 		} finally {
 			destroy();
@@ -261,6 +270,7 @@ public class DBHelper {
 				lineEntriesMap.put(entry.getUrl(), entry);
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			e.printStackTrace(stderr);
 		} finally {
 			destroy();
@@ -281,6 +291,7 @@ public class DBHelper {
 			pres.setString(2, entry.getUrl());
 			pres.executeUpdate();
 		} catch (Exception e) {
+			e.printStackTrace();
 			e.printStackTrace(stderr);
 		}finally {
 			destroy();
@@ -307,6 +318,7 @@ public class DBHelper {
 				return false;
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			e.printStackTrace(stderr);
 		}finally {
 			destroy();
@@ -327,6 +339,7 @@ public class DBHelper {
 			//Statement.execute(String sql) method which is mainly intended to perform database queries.
 			//To execute INSERT/UPDATE/DELETE statements it's recommended the use of Statement.executeUpdate() method instead.
 		} catch (Exception e) {
+			e.printStackTrace();
 			e.printStackTrace(stderr);
 		} finally {
 			destroy();
@@ -361,6 +374,7 @@ public class DBHelper {
 				return false;
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			e.printStackTrace(stderr);
 		} finally {
 			destroy();

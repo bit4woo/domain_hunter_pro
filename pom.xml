@@ -7,18 +7,12 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.bit4woo.burp</groupId>
 	<artifactId>domain_hunter_pro</artifactId>
-	<version>v20200521</version>
+	<version>20200521</version>
 
 	<repositories>
 		<repository>
 			<id>jitpack.io</id>
 			<url>https://jitpack.io</url>
-		</repository>
-
-		<repository>
-			<id>alimaven</id>
-			<name>aliyun maven</name>
-			<url>http://maven.aliyun.com/nexus/content/groups/public/</url>
 		</repository>
 	</repositories>
 
