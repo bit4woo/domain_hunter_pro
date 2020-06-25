@@ -287,6 +287,14 @@ public class ToolPanel extends JPanel {
 					if (toAddPrefix == null && toAddSuffix == null) {
 						return;
 					} else {
+						if (toAddPrefix == null) {
+							toAddPrefix = "";
+						}
+						
+						if (toAddSuffix == null) {
+							toAddSuffix = "";
+						}
+						
 						List<String> content = Commons.getLinesFromTextArea(inputTextArea);
 						for (String item:content) {
 							item = toAddPrefix.trim()+item+toAddSuffix.trim();
