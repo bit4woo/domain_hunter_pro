@@ -5,6 +5,7 @@ public enum SearchDork {
 	HOST("HOST"),
 	PORT("PORT"),
 	URL("URL"),
+	STATUS("STATUS"),
 	REQUEST("REQUEST"),
 	RESPONSE("RESPONSE"),
 	COMMENT("COMMENT"),

@@ -86,6 +86,14 @@ public class LineSearch {
 				return false;
 			}
 		}
+		
+		if (dork.equalsIgnoreCase(SearchDork.STATUS.toString())) {
+			if (line.getStatuscode() == Integer.parseInt(keyword)) {
+				return true;
+			}else {
+				return false;
+			}
+		}
 
 		if (dork.equalsIgnoreCase(SearchDork.URL.toString())) {
 			if (line.getUrl().toLowerCase().contains(keyword)) {
