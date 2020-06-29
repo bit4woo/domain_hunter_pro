@@ -12,6 +12,7 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.JScrollPane;
@@ -319,6 +320,14 @@ public class LineTable extends JTable
 						}catch (Exception e1){
 							e1.printStackTrace(stderr);
 						}
+					}else if (col == LineTableModel.getTitletList().indexOf("Level")) {
+						String currentLevel = selecteEntry.getLevel();
+						List<String> tmpList = Arrays.asList(LineEntry.LevelArray);
+						int index = tmpList.indexOf(currentLevel);
+						String newLevel = tmpList.get((index+1)%3);
+						selecteEntry.setLevel(newLevel);
+						stdout.println(String.format("$$$ %s updated [level-->%s]",selecteEntry.getUrl(),newLevel));
+						LineTable.this.lineTableModel.fireTableRowsUpdated(rows[0], rows[0]);
 					}
 				}
 			}

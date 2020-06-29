@@ -256,7 +256,7 @@ public class LineEntryMenu extends JPopupMenu {
 				while(Comments.trim().equals("")){
 					Comments = JOptionPane.showInputDialog("Comments", null).trim();
 				}
-				BurpExtender.getGui().getTitlePanel().getTitleTableModel().updateComments(rows,Comments);
+				TitlePanel.getTitleTableModel().updateComments(rows,Comments);
 			}
 		});
 
