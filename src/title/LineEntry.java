@@ -64,7 +64,7 @@ public class LineEntry {
 
 	//Gson中，加了transient表示不序列号，是最简单的方法
 	//给不想被序列化的属性增加transient属性---java特性
-	private transient String messageText = "";//use to search
+	//private transient String messageText = "";//use to search
 	//private transient String bodyText = "";//use to adjust the response changed or not
 	//don't store these two field to reduce config file size.
 
@@ -78,7 +78,6 @@ public class LineEntry {
 
 	//remove IHttpRequestResponse field ,replace with request+response+httpService(host port protocol). for convert to json.
 
-	private transient BurpExtender burp;
 	private transient IExtensionHelpers helpers;
 	private transient IBurpExtenderCallbacks callbacks;
 
@@ -168,8 +167,6 @@ public class LineEntry {
 
 
 				Getter getter = new Getter(helpers);
-				messageText = new String(messageinfo.getRequest())+new String(response);
-
 
 				webcontainer = getter.getHeaderValueOf(false, messageinfo, "Server");
 				byte[] byteBody = getter.getBody(false, messageinfo);
@@ -398,6 +395,7 @@ Content-Type: text/html;charset=UTF-8
 				title = mh.group(0);
 			}
 		}
+		title = title.replaceAll("<.*?>", "");
 		return title;
 	}
 
