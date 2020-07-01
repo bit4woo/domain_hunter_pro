@@ -34,7 +34,7 @@ import burp.IPAddress;
  *
  */
 
-class Producer extends Thread {//Producer do
+public class Producer extends Thread {//Producer do
 	private final BlockingQueue<String> domainQueue;//use to store domains
 	private int threadNo;
 	private boolean stopflag = false;

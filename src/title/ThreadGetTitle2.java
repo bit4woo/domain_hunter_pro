@@ -11,8 +11,8 @@ import burp.BurpExtender;
 import burp.IBurpExtenderCallbacks;
 import burp.IExtensionHelpers;
 
-//////////////////ThreadGetTitle block/////////////
-//no need to pass BurpExtender object to these class, IBurpExtenderCallbacks object is enough 
+//尝试暴力终止各个子线程。
+//TODO
 public class ThreadGetTitle2 extends Thread{
 	private Set<String> domains;
 	private List<Producer> plist;
