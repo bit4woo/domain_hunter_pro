@@ -11,9 +11,9 @@ import burp.BurpExtender;
 import burp.IBurpExtenderCallbacks;
 import burp.IExtensionHelpers;
 
-//////////////////ThreadGetTitle block/////////////
-//no need to pass BurpExtender object to these class, IBurpExtenderCallbacks object is enough 
-public class ThreadGetTitle{
+//尝试暴力终止各个子线程。
+//TODO
+public class ThreadGetTitleWithForceStop extends Thread{
 	private Set<String> domains;
 	private List<Producer> plist;
 
@@ -22,11 +22,12 @@ public class ThreadGetTitle{
 	public PrintWriter stderr = new PrintWriter(callbacks.getStderr(), true);
 	public IExtensionHelpers helpers = callbacks.getHelpers();
 
-	public ThreadGetTitle(Set<String> domains) {
+	public ThreadGetTitleWithForceStop(Set<String> domains) {
 		this.domains = domains;
 	}
 
-	public void Do(){
+	@Override
+	public void run(){
 		stdout.println("~~~~~~~~~~~~~Start threading Get Title~~~~~~~~~~~~~ total task number: "+domains.size());
 		BlockingQueue<String> domainQueue = new LinkedBlockingQueue<String>();//use to store domains
 		domainQueue.addAll(domains);
@@ -36,26 +37,20 @@ public class ThreadGetTitle{
 		for (int i=0;i<=50;i++) {
 			Producer p = new Producer(domainQueue,i);
 			//Producer p = new Producer(callbacks,domainQueue,sharedQueue,i);
+			p.setDaemon(true);//将子线程设置为守护线程，会随着主线程的结束而立即结束
 			p.start();
 			plist.add(p);
 		}
-
-		long waitTime = 0; 
-		while(true) {//to wait all threads exit.
-			if (domainQueue.isEmpty() && isAllProductorFinished()) {
-				stdout.println("~~~~~~~~~~~~~Get Title Done~~~~~~~~~~~~~");
-				break;
-			}else if(domainQueue.isEmpty() && waitTime >=10*60*1000){
-				stdout.println("~~~~~~~~~~~~~Get Title Done(force exits due to time out)~~~~~~~~~~~~~");
-				break;
-			}else {
-				try {
-					Thread.sleep(60*1000);//1分钟
-					waitTime =waitTime+60*1000;
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-				continue;//unnecessary
+		
+		for (Producer p:plist) {
+			try {
+				p.join();
+				//让主线程等待各个子线程执行完成，才会结束。
+				//https://www.cnblogs.com/zheaven/p/12054044.html
+			} catch (InterruptedException e) {
+				stdout.println("force stop received");
+				e.printStackTrace();
+				break;//必须跳出循环，否则只是不再等待其中的一个线程，还会继续等待其他线程
 			}
 		}
 		return;
@@ -81,6 +76,11 @@ public class ThreadGetTitle{
 		for (Producer p:plist) {
 			p.stopThread();
 		}
-		stdout.println("~~~~~~~~~~~~~All stop message sent! wait them to exit~~~~~~~~~~~~~");
+		stdout.println("~~~~~~~~~~~~~send stop message to all sub-threads, wait them to exit!~~~~~~~~~~~~~");
+	}
+	
+	public void forceStopThreads() {
+		this.interrupt();//将子线程都设置为守护线程，会随着主线程的结束而立即结束
+		stdout.println("~~~~~~~~~~~~~force stop main thread,all sub-threads will exit!~~~~~~~~~~~~~");
 	}
 }

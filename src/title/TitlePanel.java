@@ -61,7 +61,7 @@ public class TitlePanel extends JPanel {
 	private static LineTableModel titleTableModel = new LineTableModel();
 	PrintWriter stdout;
 	PrintWriter stderr;
-	private ThreadGetTitle threadGetTitle;
+	private ThreadGetTitleWithForceStop threadGetTitle;
 	private IndexedLinkedHashMap<String,LineEntry> BackupLineEntries;
 	
 	private static List<Integer> externalPortList;
@@ -84,7 +84,7 @@ public class TitlePanel extends JPanel {
 		return titleTableModel;
 	}
 
-	public ThreadGetTitle getThreadGetTitle() {
+	public ThreadGetTitleWithForceStop getThreadGetTitle() {
 		return threadGetTitle;
 	}
 
@@ -294,8 +294,9 @@ public class TitlePanel extends JPanel {
 		JButton btnStop = new JButton("Stop");
 		btnStop.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if (GUI.getTitlePanel().getThreadGetTitle() != null) {
-					GUI.getTitlePanel().getThreadGetTitle().stopThreads();
+				int result = JOptionPane.showConfirmDialog(null,"Are you sure to [Force Stop] all theads ?");
+				if (GUI.getTitlePanel().getThreadGetTitle() != null && result == JOptionPane.YES_OPTION) {
+					GUI.getTitlePanel().getThreadGetTitle().forceStopThreads();
 				}
 			}
 		});
@@ -386,8 +387,10 @@ public class TitlePanel extends JPanel {
 		//		TitlePanel.externalPortList = Commons.Port_prompt(null,"External Ports To Run");
 		//		stdout.println("external ports: "+ externalPortList);
 
-		threadGetTitle = new ThreadGetTitle(domains);
-		threadGetTitle.Do();
+//		threadGetTitle = new ThreadGetTitle(domains);
+//		threadGetTitle.Do();
+		threadGetTitle = new ThreadGetTitleWithForceStop(domains);
+		threadGetTitle.start();
 
 	}
 
@@ -395,8 +398,8 @@ public class TitlePanel extends JPanel {
 	public void getExtendTitle(){
 		Set<String> extendIPSet = titleTableModel.GetExtendIPSet();
 		stdout.println(extendIPSet.size()+" extend IP Address founded"+extendIPSet);
-		threadGetTitle = new ThreadGetTitle(extendIPSet);
-		threadGetTitle.Do();
+		threadGetTitle = new ThreadGetTitleWithForceStop(extendIPSet);
+		threadGetTitle.start();
 
 		//转移手动保存的结果
 		for (LineEntry entry:BackupLineEntries.values()) {
