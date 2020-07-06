@@ -4,8 +4,10 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Desktop;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -23,6 +25,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -36,6 +39,9 @@ import javax.swing.border.LineBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import org.apache.commons.text.StringEscapeUtils;
+
+import GUI.GUI;
 import burp.BurpExtender;
 import burp.Commons;
 
@@ -86,6 +92,24 @@ public class ToolPanel extends JPanel {
 		lineConfig.setShowItemsInOne(showItemsInOne.isSelected());
 		String config = lineConfig.ToJson();
 		BurpExtender.getCallbacks().saveExtensionSetting(BurpExtender.Extension_Setting_Name_Line_Config, config);
+	}
+	
+	
+	/**
+	 * Launch the application.
+	 */
+	public static void main(String[] args) {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					JFrame frame = new JFrame();
+					frame.setVisible(true);
+					frame.setContentPane(new ToolPanel());
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
 	}
 
 	public ToolPanel() {
@@ -364,6 +388,34 @@ public class ToolPanel extends JPanel {
 					List<String> subnets = Commons.getLinesFromTextArea(inputTextArea);
 					List<String> IPs = Commons.toIPList(subnets);// 当前所有title结果计算出的IP集合
 					outputTextArea.setText(String.join(System.lineSeparator(), IPs));
+				} catch (Exception e1) {
+					outputTextArea.setText(e1.getMessage());
+					e1.printStackTrace(stderr);
+				}
+			}
+		});
+		
+		JButton unescapeJava = new JButton("unescapeJava");
+		threeFourthPanel.add(unescapeJava);
+		unescapeJava.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					outputTextArea.setText(StringEscapeUtils.unescapeJava(inputTextArea.getText()));
+				} catch (Exception e1) {
+					outputTextArea.setText(e1.getMessage());
+					e1.printStackTrace(stderr);
+				}
+			}
+		});
+		
+		JButton unescapeHTML = new JButton("unescapeHTML");
+		threeFourthPanel.add(unescapeHTML);
+		unescapeHTML.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					outputTextArea.setText(StringEscapeUtils.unescapeHtml4(inputTextArea.getText()));
 				} catch (Exception e1) {
 					outputTextArea.setText(e1.getMessage());
 					e1.printStackTrace(stderr);
