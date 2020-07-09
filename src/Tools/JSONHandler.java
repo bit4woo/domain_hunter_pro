@@ -62,10 +62,7 @@ public class JSONHandler {
 					result.add(value);
 				}
 				
-				// if it's jsonobject or jsonarray
-				if (isJSONObject(value) || isJSONArray(value)) {
-					result.addAll(grepValueFromJson(value,toFind));
-				}
+				result.addAll(grepValueFromJson(value,toFind));
 			}
 		}else if(isJSONArray(jsonString)){
 			//JSONArray中每个元素都是JSON
@@ -75,7 +72,7 @@ public class JSONHandler {
 				result.addAll(grepValueFromJson(item,toFind));
 			}
 		}else {
-			throw new Exception("wrong json formate");
+			//boolean string number--do nothing
 		}
 		return result;
 	}
