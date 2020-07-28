@@ -549,22 +549,26 @@ public class DomainPanel extends JPanel {
 		addButton.setToolTipText("add Top-Level domain");
 		addButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
-				enteredRootDomain = enteredRootDomain.trim().toLowerCase();
-				if (enteredRootDomain.startsWith("http://") || enteredRootDomain.startsWith("https://")){
-					try {
-						URL url = new URL(enteredRootDomain);
-						enteredRootDomain = url.getHost();
-					} catch (Exception e2) {
+				if (domainResult == null) {
+					JOptionPane.showMessageDialog(null,"you should create project db file first");
+				}else {
+					String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
+					enteredRootDomain = enteredRootDomain.trim().toLowerCase();
+					if (enteredRootDomain.startsWith("http://") || enteredRootDomain.startsWith("https://")){
+						try {
+							URL url = new URL(enteredRootDomain);
+							enteredRootDomain = url.getHost();
+						} catch (Exception e2) {
 
+						}
 					}
+					enteredRootDomain = InternetDomainName.from(enteredRootDomain).topPrivateDomain().toString();
+					String keyword = enteredRootDomain.substring(0,enteredRootDomain.indexOf("."));
+					
+					domainResult.AddToRootDomainMap(enteredRootDomain, keyword);
+					showToDomainUI();
+					autoSave();
 				}
-				enteredRootDomain = InternetDomainName.from(enteredRootDomain).topPrivateDomain().toString();
-				String keyword = enteredRootDomain.substring(0,enteredRootDomain.indexOf("."));
-
-				domainResult.AddToRootDomainMap(enteredRootDomain, keyword);
-				showToDomainUI();
-				autoSave();
 			}
 		});
 		ControlPanel.add(addButton);
@@ -574,22 +578,26 @@ public class DomainPanel extends JPanel {
 		addButton1.setToolTipText("add Multiple-Level domain");
 		addButton1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
-				enteredRootDomain = enteredRootDomain.trim().toLowerCase();
-				if (enteredRootDomain.startsWith("http://") || enteredRootDomain.startsWith("https://")){
-					try {
-						URL url = new URL(enteredRootDomain);
-						enteredRootDomain = url.getHost();
-					} catch (Exception e2) {
+				if (domainResult == null) {
+					JOptionPane.showMessageDialog(null,"you should create project db file first");
+				}else {
+					String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
+					enteredRootDomain = enteredRootDomain.trim().toLowerCase();
+					if (enteredRootDomain.startsWith("http://") || enteredRootDomain.startsWith("https://")){
+						try {
+							URL url = new URL(enteredRootDomain);
+							enteredRootDomain = url.getHost();
+						} catch (Exception e2) {
 
+						}
 					}
+					//enteredRootDomain = InternetDomainName.from(enteredRootDomain).topPrivateDomain().toString();
+					String keyword = enteredRootDomain.substring(0,enteredRootDomain.indexOf("."));
+					
+					domainResult.AddToRootDomainMap(enteredRootDomain, keyword);
+					showToDomainUI();
+					autoSave();
 				}
-				//enteredRootDomain = InternetDomainName.from(enteredRootDomain).topPrivateDomain().toString();
-				String keyword = enteredRootDomain.substring(0,enteredRootDomain.indexOf("."));
-
-				domainResult.AddToRootDomainMap(enteredRootDomain, keyword);
-				showToDomainUI();
-				autoSave();
 			}
 		});
 		ControlPanel.add(addButton1);
