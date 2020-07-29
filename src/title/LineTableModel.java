@@ -601,7 +601,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			}
 			lineEntries.put(key,lineEntry);
 			int newsize = lineEntries.size();
-			int index = lineEntries.IndexOfKey(lineEntry.getUrl());
+			int index = lineEntries.IndexOfKey(key);
 			if (oldsize == newsize) {//覆盖
 				fireTableRowsUpdated(index, index);
 			}else {//新增

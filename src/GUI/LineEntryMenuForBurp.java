@@ -18,6 +18,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 
+import com.google.common.hash.HashCode;
+
 import Tools.ToolPanel;
 import burp.BurpExtender;
 import burp.Getter;
@@ -145,18 +147,7 @@ public class LineEntryMenuForBurp{
 		{
 			try{
 				IHttpRequestResponse[] messages = invocation.getSelectedMessages();
-				Getter getter = new Getter(helpers);
-				URL fullurl = getter.getFullURL(messages[0]);
-				LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(fullurl.toString());
-				if (entry != null) {
-					int user_input = JOptionPane.showConfirmDialog(null, "Do you want to overwrite?","Item already exist",JOptionPane.YES_NO_OPTION);
-					if (JOptionPane.YES_OPTION == user_input) {
-						addToRequest(messages);
-					}
-				}else {
-					addToRequest(messages);
-				}
-				
+				addToRequest(messages);
 			}
 			catch (Exception e1)
 			{
@@ -432,12 +423,24 @@ public class LineEntryMenuForBurp{
 
 	public static void addToRequest(IHttpRequestResponse[] messages) {
 		for(IHttpRequestResponse message:messages) {
-			String host = message.getHttpService().getHost();
+			String hashKey = HashCode.fromBytes(message.getRequest()).toString();
+			LineEntry manualEntry = TitlePanel.getTitleTableModel().findLineEntry(hashKey);
+			
 			LineEntry entry = new LineEntry(message);
 			entry.setComment("Manual-Saved");
 			entry.setCheckStatus(LineEntry.CheckStatus_UnChecked);
 			entry.setManualSaved(true);
-			TitlePanel.getTitleTableModel().addNewLineEntry(entry); //add request
+			
+			if (manualEntry != null) {
+				int user_input = JOptionPane.showConfirmDialog(null, "Do you want to overwrite?","Item already exist",JOptionPane.YES_NO_OPTION);
+				if (JOptionPane.YES_OPTION == user_input) {
+					TitlePanel.getTitleTableModel().addNewLineEntry(entry); //add request
+				}
+			}else {
+				TitlePanel.getTitleTableModel().addNewLineEntry(entry); //add request
+			}
+			
+			String host = message.getHttpService().getHost();
 			DomainPanel.getDomainResult().addToDomainOject(host); //add domain
 		}
 	}
