@@ -436,6 +436,7 @@ public class LineEntryMenuForBurp{
 			LineEntry entry = new LineEntry(message);
 			entry.setComment("Manual-Saved");
 			entry.setCheckStatus(LineEntry.CheckStatus_UnChecked);
+			entry.setManualSaved(true);
 			TitlePanel.getTitleTableModel().addNewLineEntry(entry); //add request
 			DomainPanel.getDomainResult().addToDomainOject(host); //add domain
 		}

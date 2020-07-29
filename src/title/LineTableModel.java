@@ -14,6 +14,8 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 
+import com.google.common.hash.HashCode;
+
 import GUI.GUI;
 import burp.BurpExtender;
 import burp.Commons;
@@ -591,7 +593,13 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			//				ListenerIsOn = true;
 			//			}
 			int oldsize = lineEntries.size();
-			lineEntries.put(lineEntry.getUrl(),lineEntry);
+			String key;
+			if (lineEntry.isManualSaved()) {
+				key = HashCode.fromBytes(lineEntry.getRequest()).toString();//根据请求包计算key值，避免被put方法覆盖。
+			}else {
+				key = lineEntry.getUrl();
+			}
+			lineEntries.put(key,lineEntry);
 			int newsize = lineEntries.size();
 			int index = lineEntries.IndexOfKey(lineEntry.getUrl());
 			if (oldsize == newsize) {//覆盖

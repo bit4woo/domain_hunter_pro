@@ -110,6 +110,8 @@ public class Producer extends Thread {//Producer do
 			//因为这2个操作都会让map的长度发生变化，从而导致问题
 			return found;
 		}
+		
+		//根据host进行查找的逻辑，不会导致手动保存的条目被替换为null，因为手动保存的条目IP列表为空
 		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
 		for (LineEntry line:HistoryLines.values()) {
 			if (line== null) {

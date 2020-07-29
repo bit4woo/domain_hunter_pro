@@ -175,7 +175,7 @@ class RunnerProducer extends Thread {//Producer do
 					if (response != null) {
 						String responseBody = new String(response);
 						if (responseBody.toLowerCase().contains(keyword)) {
-							runnerTableModel.addNewLineEntry(new LineEntry(messageinfo,false,LineEntry.CheckStatus_UnChecked,"Runner"));
+							runnerTableModel.addNewLineEntry(new LineEntry(messageinfo,LineEntry.CheckStatus_UnChecked,"Runner"));
 						}
 					}
 				}

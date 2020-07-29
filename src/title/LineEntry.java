@@ -11,6 +11,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.alibaba.fastjson.JSON;
+import com.google.common.hash.HashCode;
 import com.ibm.icu.text.CharsetDetector;
 import com.ibm.icu.text.CharsetMatch;
 
@@ -73,6 +74,7 @@ public class LineEntry {
 	private String CheckStatus =CheckStatus_UnChecked;
 	private String Level = Level_C;
 	private String comment ="";
+	private boolean isManualSaved = false;
 
 	private transient IHttpRequestResponse messageinfo;
 
@@ -102,7 +104,7 @@ public class LineEntry {
 		parse();
 	}
 
-	public LineEntry(IHttpRequestResponse messageinfo,boolean isNew,String CheckStatus,String comment) {
+	public LineEntry(IHttpRequestResponse messageinfo,String CheckStatus,String comment) {
 		this.messageinfo = messageinfo;
 		this.callbacks = BurpExtender.getCallbacks();
 		this.helpers = this.callbacks.getHelpers();
@@ -515,6 +517,14 @@ Content-Type: text/html;charset=UTF-8
 		this.comment = comment;
 	}
 
+	public boolean isManualSaved() {
+		return isManualSaved;
+	}
+
+	public void setManualSaved(boolean isManualSaved) {
+		this.isManualSaved = isManualSaved;
+	}
+
 	public IExtensionHelpers getHelpers() {
 		return helpers;
 	}
@@ -541,5 +551,7 @@ Content-Type: text/html;charset=UTF-8
 		System.out.println(entry.getCheckStatus());
 		System.out.println(entry.getLevel());
 		System.out.println(entry.getTime());
+		String key = HashCode.fromBytes(entry.getRequest()).toString();
+		System.out.println(key);
 	}
 }
