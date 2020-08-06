@@ -65,6 +65,7 @@ public class ToolPanel extends JPanel {
 	public boolean inputTextAreaChanged = true;
 	public static JRadioButton showItemsInOne;
 	private static LineConfig lineConfig;
+	public static JRadioButton ignoreHTTPS;
 
 	public static LineConfig getLineConfig() {
 		return lineConfig;
@@ -440,6 +441,10 @@ public class ToolPanel extends JPanel {
 				lineConfig.setShowItemsInOne(showItemsInOne.isSelected());
 			}
 		});
+		
+		ignoreHTTPS = new JRadioButton("Ignore HTTPS if HTTP is OK");
+		fourFourthPanel.add(ignoreHTTPS);
+		ignoreHTTPS.setSelected(true);
 
 		///////////////////////////FooterPanel//////////////////
 
