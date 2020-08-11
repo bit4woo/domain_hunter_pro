@@ -176,6 +176,7 @@ public class TitlePanel extends JPanel {
 		});
 		buttonPanel.add(btnGettitle);
 
+		/*
 		JButton btnGetExtendtitle = new JButton("Get Extend Title");
 		btnGetExtendtitle.setToolTipText("Get title of the host that in same subnet,you should do this after get domain title done!");
 		btnGetExtendtitle.setEnabled(true);//default is false,only true after "get title" is done.
@@ -203,6 +204,35 @@ public class TitlePanel extends JPanel {
 			}
 		});
 		buttonPanel.add(btnGetExtendtitle);
+		*/
+		
+		JButton btnGettitleOfJustNewFound = new JButton("GetTitleOfNewDomain");
+		btnGettitleOfJustNewFound.setToolTipText("Just get title of new found subdomains");
+		btnGettitleOfJustNewFound.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+					@Override
+					protected Map doInBackground() throws Exception {
+						btnGettitleOfJustNewFound.setEnabled(false);
+						getTitleOfNewDomain();
+						btnGettitleOfJustNewFound.setEnabled(true);
+						return new HashMap<String, String>();
+						//no use ,the return.
+					}
+					@Override
+					protected void done() {
+						try {
+							btnGettitleOfJustNewFound.setEnabled(true);
+						} catch (Exception e) {
+							e.printStackTrace(stderr);
+						}
+					}
+				};
+				worker.execute();
+			}
+		});
+		buttonPanel.add(btnGettitleOfJustNewFound);
+		
 
 		JButton btnGetSubnet = new JButton("Get Subnet");
 		btnGetSubnet.setEnabled(true);
@@ -392,6 +422,7 @@ public class TitlePanel extends JPanel {
 		threadGetTitle = new ThreadGetTitleWithForceStop(domains);
 		threadGetTitle.start();
 
+		getExtendTitle();//获取所有IP的title！
 	}
 
 
@@ -412,6 +443,29 @@ public class TitlePanel extends JPanel {
 		}
 	}
 
+	/*
+	 * 获取新发现域名的title
+	 */
+	public void getTitleOfNewDomain(){
+		//是否在目标的内网中
+		int user_input = JOptionPane.showConfirmDialog(null, "Do you want request [PRIVATE] ip addresses?","Chose work model",JOptionPane.YES_NO_OPTION);
+		if (JOptionPane.YES_OPTION == user_input) {
+			LineConfig.setPrivateNetworkWorkingModel(true);
+		}else {
+			LineConfig.setPrivateNetworkWorkingModel(false);
+		}
+
+		inputCookie();//如果用户点击cancel，就不会进行后续步骤，why?
+
+		DomainPanel.backupDB();
+		Set<String> domains = new HashSet<>();//新建一个对象，直接赋值后的删除操作，实质是对domainResult的操作。
+		domains.addAll(DomainPanel.getDomainResult().getNewAndNotGetTitleDomainSet());
+		//remove domains in black list
+		domains.removeAll(DomainPanel.getDomainResult().getBlackDomainSet());
+
+		threadGetTitle = new ThreadGetTitleWithForceStop(domains);
+		threadGetTitle.start();
+	}
 
 
 	public String getSubnet(boolean isCurrent,boolean justPulic){

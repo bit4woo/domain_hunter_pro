@@ -24,6 +24,7 @@ import burp.BurpExtender;
 import burp.Commons;
 import burp.Getter;
 import burp.IBurpExtenderCallbacks;
+import domain.DomainPanel;
 import title.search.SearchDork;
 
 public class LineEntryMenu extends JPopupMenu {
@@ -393,6 +394,31 @@ public class LineEntryMenu extends JPopupMenu {
 		});
 		blackListItem.setToolTipText("will not get title from next time");
 
+		JMenuItem IpBlackListItem = new JMenuItem(new AbstractAction("Add IP To Black List") {//need to show dialog to confirm
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				int result = JOptionPane.showConfirmDialog(null,"Are you sure to add these IP items To BLACK LIST ?");
+				if (result == JOptionPane.YES_OPTION) {
+					lineTable.getModel().addIPBlackList(rows);
+				}else {
+					return;
+				}
+			}
+		});
+		IpBlackListItem.setToolTipText("will not get title from next time");
+		
+		JMenuItem SubnetBlackListItem = new JMenuItem(new AbstractAction("Add C Subnet To Black List") {//need to show dialog to confirm
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				int result = JOptionPane.showConfirmDialog(null,"Are you sure to add these subnets To BLACK LIST ?");
+				if (result == JOptionPane.YES_OPTION) {
+					lineTable.getModel().addSubnetBlackList(rows);
+				}else {
+					return;
+				}
+			}
+		});
+		SubnetBlackListItem.setToolTipText("will not get title from next time");
 
 
 		this.add(itemNumber);

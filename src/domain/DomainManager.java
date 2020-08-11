@@ -34,9 +34,12 @@ public class DomainManager {
 	private Set<String> similarDomainSet = new HashSet<String>();
 	private Set<String> relatedDomainSet = new HashSet<String>();
 	private Set<String> blackDomainSet = new HashSet<String>();//有效(能解析IP)但无用的域名，比如JD的网店域名；唯一的用处是用来聚合网段。
+	private Set<String> blackIPOrNetSet = new HashSet<String>();//IP或网段黑名单，用于get Title前的资产排除。
 	private HashMap<String,Integer> unkownDomainMap = new HashMap<String,Integer>();//记录域名和解析失败的次数，大于五次就从子域名中删除。
 	private Set<String> EmailSet = new HashSet<String>();
 	private Set<String> PackageNameSet = new HashSet<String>();
+	
+	private Set<String> newAndNotGetTitleDomainSet = new HashSet<String>();
 
 	public static int SUB_DOMAIN=0;
 	public static int SIMILAR_DOMAIN=1;
@@ -130,6 +133,14 @@ public class DomainManager {
 	}
 
 
+	public Set<String> getBlackIPOrNetSet() {
+		return blackIPOrNetSet;
+	}
+
+	public void setBlackIPOrNetSet(Set<String> blackIPOrNetSet) {
+		this.blackIPOrNetSet = blackIPOrNetSet;
+	}
+
 	public Set<String> getEmailSet() {
 		return EmailSet;
 	}
@@ -144,6 +155,14 @@ public class DomainManager {
 
 	public void setPackageNameSet(Set<String> packageNameSet) {
 		PackageNameSet = packageNameSet;
+	}
+
+	public Set<String> getNewAndNotGetTitleDomainSet() {
+		return newAndNotGetTitleDomainSet;
+	}
+
+	public void setNewAndNotGetTitleDomainSet(Set<String> newAndNotGetTitleDomainSet) {
+		this.newAndNotGetTitleDomainSet = newAndNotGetTitleDomainSet;
 	}
 
 	public String getSummary() {

@@ -2,6 +2,7 @@ package title;
 
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -228,8 +229,18 @@ public class LineEntry {
 		this.title = title;
 	}
 
+	//IPString 222.79.64.33, 124.225.183.63
 	public String getIP() {
 		return IP;
+	}
+	
+	//return IP 的集合
+	public Set<String> fetchIPSet() {
+		Set<String> result = new HashSet<String>();
+		for (String ip: IP.split(",")) {
+			result.add(ip.trim());
+		}
+		return result;
 	}
 
 	public void setIP(String iP) {

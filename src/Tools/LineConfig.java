@@ -88,7 +88,7 @@ public class LineConfig {
 	}
 
 	public static void setIgnoreHttpsIfHttpOK(boolean ignoreHttpsIfHttpOK) {
-		LineConfig.ignoreHttpsIfHttpOK = ignoreHttpsIfHttpOK;
+		//ToolPanel.ignoreHTTPS.setSelected(ignoreHttpsIfHttpOK);
 	}
 
 	public static boolean isPrivateNetworkWorkingModel() {

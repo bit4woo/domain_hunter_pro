@@ -12,7 +12,7 @@ public class SubDomainEntry {
 	private String business;//域名所属的业务名称
 	private String foundTime;//域名的发现时间，新发现的域名需重点关注。
 	private String resolveFailedTimes;//解析失败的次数，多次解析失败的域名是否需要移除呢？
-	private String isBlack;//这个域名是否是很名单的
+	private String isBlack;//这个域名是否是黑名单的
 	
 	//内网域名，外网域名
 	//出现频率太高的域名，这类域名被很多人反复测试了，不需要关注 HighFrequencyDomain，但不太好界定

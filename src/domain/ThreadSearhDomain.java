@@ -87,7 +87,7 @@ public class ThreadSearhDomain{
 		newSubdomains.addAll(DomainPanel.getDomainResult().getSubDomainSet());
 		
 		newSubdomains.removeAll(oldSubdomains);
-		
+		DomainPanel.getDomainResult().getNewAndNotGetTitleDomainSet().addAll(newSubdomains);
 		stdout.println(String.format("~~~~~~~~~~~~~%s subdomains added!~~~~~~~~~~~~~",newSubdomains.size()));
 		stdout.println(String.join(System.lineSeparator(), newSubdomains));
 

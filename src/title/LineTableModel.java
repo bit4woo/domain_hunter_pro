@@ -368,7 +368,10 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		subnets.addAll(DomainPanel.getDomainResult().getSubnetSet());//确定的IP网段，用户自己输入的
 		Set<String> CSubNetIPs = Commons.toIPSet(subnets);// 当前所有title结果计算出的IP集合
 
-		CSubNetIPs.removeAll(getIPSet());
+		CSubNetIPs.removeAll(IPsOfDomain);//删除域名对应的IP
+		
+		Set<String> blackIPSet = Commons.toIPSet(DomainPanel.getDomainResult().getBlackIPOrNetSet());
+		CSubNetIPs.removeAll(blackIPSet);//删除黑名单中的IP
 
 		return CSubNetIPs;
 	}
@@ -556,6 +559,23 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 				//this.fireTableRowsDeleted(rows[i], rows[i]);
 			}
 			fireDeleted(rows);
+		}
+	}
+	
+	public void addIPBlackList(int[] rows) {
+		for (int i=rows.length-1;i>=0 ;i-- ) {
+			Set<String> IPs = lineEntries.getValueAtIndex(rows[i]).fetchIPSet();
+			DomainPanel.getDomainResult().getBlackIPOrNetSet().addAll(IPs);
+			stdout.println("### "+IPs.toString()+" added to black list");
+		}
+	}
+	
+	public void addSubnetBlackList(int[] rows) {
+		for (int i=rows.length-1;i>=0 ;i-- ) {
+			Set<String> IPs = lineEntries.getValueAtIndex(rows[i]).fetchIPSet();
+			Set<String> subnets = Commons.toClassCSubNets(IPs);
+			DomainPanel.getDomainResult().getBlackIPOrNetSet().addAll(subnets);
+			stdout.println("### "+subnets.toString()+" added to black list");
 		}
 	}
 

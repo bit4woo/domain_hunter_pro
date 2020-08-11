@@ -1193,6 +1193,10 @@ public class DomainPanel extends JPanel {
 	}
 
 	public void saveTextAreas(){
+		
+		HashSet<String> oldSubdomains = new HashSet<String>();
+		oldSubdomains.addAll(DomainPanel.getDomainResult().getSubDomainSet());
+		
 		domainResult.setSubnetSet(getSetFromTextArea(textAreaSubnets));
 		domainResult.setRelatedDomainSet(getSetFromTextArea(textAreaRelatedDomains));
 		domainResult.setSubDomainSet(getSetFromTextArea(textAreaSubdomains));
@@ -1200,6 +1204,15 @@ public class DomainPanel extends JPanel {
 		domainResult.setEmailSet(getSetFromTextArea(textAreaEmails));
 		domainResult.setPackageNameSet(getSetFromTextArea(textAreaPackages));
 		domainResult.getSummary();
+		
+		//用于存储新增的域名到一个临时集合
+		HashSet<String> newSubdomains = new HashSet<String>();
+		newSubdomains.addAll(DomainPanel.getDomainResult().getSubDomainSet());
+		
+		newSubdomains.removeAll(oldSubdomains);
+		DomainPanel.getDomainResult().getNewAndNotGetTitleDomainSet().addAll(newSubdomains);
+		stdout.println(String.format("~~~~~~~~~~~~~%s subdomains added!~~~~~~~~~~~~~",newSubdomains.size()));
+		stdout.println(String.join(System.lineSeparator(), newSubdomains));
 	}
 
 	public static Set<String> getSetFromTextArea(JTextArea textarea){

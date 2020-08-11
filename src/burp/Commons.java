@@ -220,7 +220,7 @@ public class Commons {
 	/*
 	To Class C Network
 	 */
-	private static Set<String> toClassCSubNets(Set<String> IPSet) {
+	public static Set<String> toClassCSubNets(Set<String> IPSet) {
 		Set<String> subNets= new HashSet<String>();
 		Set<String> smallSubNets= new HashSet<String>();
 		for (String ip:IPSet) {
