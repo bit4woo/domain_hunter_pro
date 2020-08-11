@@ -380,7 +380,7 @@ public class LineEntryMenu extends JPopupMenu {
 			}
 		});
 
-		JMenuItem blackListItem = new JMenuItem(new AbstractAction("Delete And Add To Black List") {//need to show dialog to confirm
+		JMenuItem blackListItem = new JMenuItem(new AbstractAction("Add Domain To Black List And Delete") {//need to show dialog to confirm
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				int result = JOptionPane.showConfirmDialog(null,"Are you sure to DELETE these items and Add To BLACK LIST ?");
@@ -453,6 +453,8 @@ public class LineEntryMenu extends JPopupMenu {
 		
 		this.add(removeItem);
 		this.add(blackListItem);
+		this.add(IpBlackListItem);
+		this.add(SubnetBlackListItem);
 
 	}
 }
