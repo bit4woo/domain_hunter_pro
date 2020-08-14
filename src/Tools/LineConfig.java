@@ -88,7 +88,7 @@ public class LineConfig {
 	}
 
 	public static void setIgnoreHttpsIfHttpOK(boolean ignoreHttpsIfHttpOK) {
-		//ToolPanel.ignoreHTTPS.setSelected(ignoreHttpsIfHttpOK);
+		ToolPanel.ignoreHTTPS.setSelected(ignoreHttpsIfHttpOK);
 	}
 
 	public static boolean isPrivateNetworkWorkingModel() {
@@ -168,13 +168,19 @@ public class LineConfig {
 		PrintWriter stderr = BurpExtender.getStderr();
 		
 		//default requirement
-		if (entry.getStatuscode() <=0 || entry.getStatuscode() >=500) {
-			stdout.println(String.format("--- [%s] --- status code >= 500 or no response",entry.getUrl()));
+		if (entry.getStatuscode() <=0 ) {
+			stdout.println(String.format("--- [%s] --- no response",entry.getUrl()));
 			TitlePanel.getTitleTableModel().addNewNoResponseDomain(entry.getHost(), entry.getIP());
 			return false;
 		}
 		
-		if (entry.getStatuscode() == 400) {//400 The plain HTTP request was sent to HTTPS port
+		if (entry.getStatuscode() >=500 && ToolPanel.ignoreHTTPStaus500.isSelected()) {
+			stdout.println(String.format("--- [%s] --- status code >= 500",entry.getUrl()));
+			TitlePanel.getTitleTableModel().addNewNoResponseDomain(entry.getHost(), entry.getIP());
+			return false;
+		}
+		
+		if (entry.getStatuscode() == 400 && ToolPanel.ignoreHTTPStaus400.isSelected()) {//400 The plain HTTP request was sent to HTTPS port
 			stdout.println(String.format("--- [%s] --- status code == 400",entry.getUrl()));
 			return false;
 		}

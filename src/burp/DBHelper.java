@@ -16,6 +16,8 @@ import java.util.stream.IntStream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.sqlite.SQLiteErrorCode;
+import org.sqlite.SQLiteException;
 
 import domain.DomainManager;
 import title.IndexedLinkedHashMap;
@@ -204,7 +206,8 @@ public class DBHelper {
 
 
 	//////////////////Title///////////////////////////////
-	public boolean addTitle(LineEntry entry){
+	//https://stackoverflow.com/questions/964207/sqlite-exception-sqlite-busy
+	public synchronized boolean addTitle(LineEntry entry){
 		try {
 			conn = getConnection();
 			String sql="insert into Title(NAME,Content) values(?,?)";
@@ -218,6 +221,11 @@ public class DBHelper {
 			}else {
 				return false;
 			}
+		} catch(SQLiteException e) {
+			if (e.getErrorCode() == SQLiteErrorCode.SQLITE_BUSY.code) {
+				log.error("SQLITE_BUSY The database file is locked when add "+entry.getUrl());
+			}
+			e.printStackTrace(stderr);
 		} catch (Exception e) {
 			e.printStackTrace();
 			e.printStackTrace(stderr);
@@ -229,7 +237,7 @@ public class DBHelper {
 
 
 
-	public boolean addTitles(LinkedHashMap<String,LineEntry> lineEntries){
+	public synchronized boolean addTitles(LinkedHashMap<String,LineEntry> lineEntries){
 		try {
 			conn = getConnection();
 			String sql="insert into Title(NAME,Content) values(?,?)";
@@ -246,6 +254,11 @@ public class DBHelper {
 			}else {
 				return false;
 			}
+		} catch(SQLiteException e) {
+			if (e.getErrorCode() == SQLiteErrorCode.SQLITE_BUSY.code) {
+				log.error("SQLITE_BUSY The database file is locked when call addTitles()");
+			}
+			e.printStackTrace(stderr);
 		} catch (Exception e) {
 			e.printStackTrace();
 			e.printStackTrace(stderr);
@@ -280,7 +293,7 @@ public class DBHelper {
 	}
 
 
-	public void updateTitle(LineEntry entry){
+	public synchronized void updateTitle(LineEntry entry){
 		String sql="update Title SET Content=? where NAME=?";
 		//UPDATE Person SET FirstName = 'Fred' WHERE LastName = 'Wilson' 
 
@@ -290,6 +303,11 @@ public class DBHelper {
 			pres.setString(1, entry.ToJson());
 			pres.setString(2, entry.getUrl());
 			pres.executeUpdate();
+		} catch(SQLiteException e) {
+			if (e.getErrorCode() == SQLiteErrorCode.SQLITE_BUSY.code) {
+				log.error("SQLITE_BUSY The database file is locked when call addTitles()");
+			}
+			e.printStackTrace(stderr);
 		} catch (Exception e) {
 			e.printStackTrace();
 			e.printStackTrace(stderr);
@@ -298,7 +316,7 @@ public class DBHelper {
 		}
 	}
 
-	public boolean updateTitles(List<LineEntry> lineEntries){
+	public synchronized boolean updateTitles(List<LineEntry> lineEntries){
 		try {
 			conn = getConnection();
 			String sql="update Title SET Content=? where NAME=?";
@@ -317,6 +335,11 @@ public class DBHelper {
 				System.out.println("update titles failed");
 				return false;
 			}
+		} catch(SQLiteException e) {
+			if (e.getErrorCode() == SQLiteErrorCode.SQLITE_BUSY.code) {
+				log.error("SQLITE_BUSY The database file is locked when call addTitles()");
+			}
+			e.printStackTrace(stderr);
 		} catch (Exception e) {
 			e.printStackTrace();
 			e.printStackTrace(stderr);
@@ -327,7 +350,7 @@ public class DBHelper {
 	}
 
 
-	public void deleteTitle(LineEntry entry){
+	public synchronized void deleteTitle(LineEntry entry){
 		String sql="DELETE FROM Title where NAME= ?";
 		//DELETE FROM Person WHERE LastName = 'Wilson'  
 
@@ -338,6 +361,11 @@ public class DBHelper {
 			pres.executeUpdate();
 			//Statement.execute(String sql) method which is mainly intended to perform database queries.
 			//To execute INSERT/UPDATE/DELETE statements it's recommended the use of Statement.executeUpdate() method instead.
+		} catch(SQLiteException e) {
+			if (e.getErrorCode() == SQLiteErrorCode.SQLITE_BUSY.code) {
+				log.error("SQLITE_BUSY The database file is locked when call addTitles()");
+			}
+			e.printStackTrace(stderr);
 		} catch (Exception e) {
 			e.printStackTrace();
 			e.printStackTrace(stderr);
@@ -346,7 +374,7 @@ public class DBHelper {
 		}
 	}
 
-	public boolean deleteTitles(List<LineEntry> lineEntries){
+	public synchronized boolean deleteTitles(List<LineEntry> lineEntries){
 		List<String> urls = new ArrayList<String>();
 		for(LineEntry entry:lineEntries) {
 			urls.add(entry.getUrl());
@@ -355,7 +383,7 @@ public class DBHelper {
 	}
 	
 	
-	public boolean deleteTitlesByUrl(List<String> urls){
+	public synchronized boolean deleteTitlesByUrl(List<String> urls){
 		String sql="DELETE FROM Title where NAME= ?";
 		//DELETE FROM Person WHERE LastName = 'Wilson'
 
@@ -373,6 +401,11 @@ public class DBHelper {
 			}else {
 				return false;
 			}
+		} catch(SQLiteException e) {
+			if (e.getErrorCode() == SQLiteErrorCode.SQLITE_BUSY.code) {
+				log.error("SQLITE_BUSY The database file is locked when call addTitles()");
+			}
+			e.printStackTrace(stderr);
 		} catch (Exception e) {
 			e.printStackTrace();
 			e.printStackTrace(stderr);

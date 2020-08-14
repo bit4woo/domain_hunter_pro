@@ -66,6 +66,8 @@ public class ToolPanel extends JPanel {
 	public static JRadioButton showItemsInOne;
 	private static LineConfig lineConfig;
 	public static JRadioButton ignoreHTTPS;
+	public static JRadioButton ignoreHTTPStaus500;
+	public static JRadioButton ignoreHTTPStaus400;
 
 	public static LineConfig getLineConfig() {
 		return lineConfig;
@@ -445,7 +447,15 @@ public class ToolPanel extends JPanel {
 		ignoreHTTPS = new JRadioButton("Ignore HTTPS if HTTP is OK");
 		fourFourthPanel.add(ignoreHTTPS);
 		ignoreHTTPS.setSelected(true);
+		
+		ignoreHTTPStaus500 = new JRadioButton("Ignore items which Status >= 500");
+		fourFourthPanel.add(ignoreHTTPStaus500);
+		ignoreHTTPStaus500.setSelected(true);
 
+		ignoreHTTPStaus400 = new JRadioButton("Ignore http Status 400(The plain HTTP request was sent to HTTPS port)");
+		fourFourthPanel.add(ignoreHTTPStaus400);
+		ignoreHTTPStaus400.setSelected(true);
+		
 		///////////////////////////FooterPanel//////////////////
 
 
