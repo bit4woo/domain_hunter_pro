@@ -64,7 +64,6 @@ public class TitlePanel extends JPanel {
 	private ThreadGetTitleWithForceStop threadGetTitle;
 	private IndexedLinkedHashMap<String,LineEntry> BackupLineEntries;
 	
-	private static List<Integer> externalPortList;
 	private static JTextField textFieldSearch;
 
 	public static JTextField getTextFieldSearch() {
@@ -90,14 +89,6 @@ public class TitlePanel extends JPanel {
 
 	public IndexedLinkedHashMap<String,LineEntry> getBackupLineEntries() {
 		return BackupLineEntries;
-	}
-
-	public static List<Integer> getExternalPortList() {
-		return externalPortList;
-	}
-
-	public static void setExternalPortList(List<Integer> externalPortList) {
-		TitlePanel.externalPortList = externalPortList;
 	}
 
 	public TitlePanel() {//构造函数

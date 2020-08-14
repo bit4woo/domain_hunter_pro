@@ -14,6 +14,7 @@ import java.util.concurrent.BlockingQueue;
 
 import GUI.GUI;
 import Tools.LineConfig;
+import Tools.ToolPanel;
 import burp.BurpExtender;
 import burp.Commons;
 import burp.IBurpExtenderCallbacks;
@@ -235,9 +236,9 @@ public class Producer extends Thread {//Producer do
 
 
 		//do request for external port, 8000,8080, 
-
-		if (TitlePanel.getExternalPortList() != null && TitlePanel.getExternalPortList().size() != 0) {
-			for (int port: TitlePanel.getExternalPortList()) {
+		Set<String> ExternalPorts = ToolPanel.getExternalPortSet();
+		if (ExternalPorts.size() != 0) {
+			for (String port: ExternalPorts) {
 
 				//do http request
 				URL ex_http = new URL("http://"+host+":"+port+"/");

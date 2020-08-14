@@ -7,7 +7,9 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.Frame;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -41,7 +43,6 @@ import javax.swing.event.DocumentListener;
 
 import org.apache.commons.text.StringEscapeUtils;
 
-import GUI.GUI;
 import burp.BurpExtender;
 import burp.Commons;
 
@@ -59,9 +60,10 @@ public class ToolPanel extends JPanel {
 	PrintWriter stdout;
 	PrintWriter stderr;
 	private JTextField BrowserPath;
+	public static JTextField PortList;
 	private JTextArea inputTextArea;
 	private JTextArea outputTextArea;
-	
+
 	public boolean inputTextAreaChanged = true;
 	public static JRadioButton showItemsInOne;
 	private static LineConfig lineConfig;
@@ -96,8 +98,8 @@ public class ToolPanel extends JPanel {
 		String config = lineConfig.ToJson();
 		BurpExtender.getCallbacks().saveExtensionSetting(BurpExtender.Extension_Setting_Name_Line_Config, config);
 	}
-	
-	
+
+
 	/**
 	 * Launch the application.
 	 */
@@ -317,11 +319,11 @@ public class ToolPanel extends JPanel {
 						if (toAddPrefix == null) {
 							toAddPrefix = "";
 						}
-						
+
 						if (toAddSuffix == null) {
 							toAddSuffix = "";
 						}
-						
+
 						List<String> content = Commons.getLinesFromTextArea(inputTextArea);
 						for (String item:content) {
 							item = toAddPrefix.trim()+item+toAddSuffix.trim();
@@ -334,7 +336,7 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		});
-		
+
 
 		JButton btnRegexGrep = new JButton("Regex Grep");
 		btnRegexGrep.setEnabled(false);
@@ -397,7 +399,7 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		});
-		
+
 		JButton unescapeJava = new JButton("unescapeJava");
 		threeFourthPanel.add(unescapeJava);
 		unescapeJava.addActionListener(new ActionListener() {
@@ -411,7 +413,7 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		});
-		
+
 		JButton unescapeHTML = new JButton("unescapeHTML");
 		threeFourthPanel.add(unescapeHTML);
 		unescapeHTML.addActionListener(new ActionListener() {
@@ -428,34 +430,120 @@ public class ToolPanel extends JPanel {
 
 		JPanel fourFourthPanel = new JPanel();
 		RightOfCenter.setRightComponent(fourFourthPanel);
-		JLabel lblNewLabel = new JLabel("Browser Path:");
-		fourFourthPanel.add(lblNewLabel);
+		GridBagLayout gbl_fourFourthPanel = new GridBagLayout();
+		gbl_fourFourthPanel.columnWidths = new int[]{215, 215, 0};
+		gbl_fourFourthPanel.rowHeights = new int[]{27, 27, 27, 27, 27, 27, 0};
+		gbl_fourFourthPanel.columnWeights = new double[]{0.0, 0.0, Double.MIN_VALUE};
+		gbl_fourFourthPanel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		fourFourthPanel.setLayout(gbl_fourFourthPanel);
 
+		JLabel lblNewLabel = new JLabel("Browser Path:");
+		GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
+		gbc_lblNewLabel.fill = GridBagConstraints.BOTH;
+		gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
+		gbc_lblNewLabel.gridx = 0;
+		gbc_lblNewLabel.gridy = 0;
+		fourFourthPanel.add(lblNewLabel, gbc_lblNewLabel);
 		BrowserPath = new JTextField();
-		fourFourthPanel.add(BrowserPath);
+		GridBagConstraints gbc_BrowserPath = new GridBagConstraints();
+		gbc_BrowserPath.fill = GridBagConstraints.BOTH;
+		gbc_BrowserPath.insets = new Insets(0, 0, 5, 0);
+		gbc_BrowserPath.gridx = 1;
+		gbc_BrowserPath.gridy = 0;
+		fourFourthPanel.add(BrowserPath, gbc_BrowserPath);
 		BrowserPath.setColumns(50);
 		BrowserPath.getDocument().addDocumentListener(new textFieldListener());
 
+
+		JLabel lblExternalPorts = new JLabel("External Port:");
+		GridBagConstraints gbc_lblExternalPorts = new GridBagConstraints();
+		gbc_lblExternalPorts.fill = GridBagConstraints.BOTH;
+		gbc_lblExternalPorts.insets = new Insets(0, 0, 5, 5);
+		gbc_lblExternalPorts.gridx = 0;
+		gbc_lblExternalPorts.gridy = 1;
+		fourFourthPanel.add(lblExternalPorts, gbc_lblExternalPorts);
+		PortList = new JTextField();
+		GridBagConstraints gbc_PortList = new GridBagConstraints();
+		gbc_PortList.fill = GridBagConstraints.BOTH;
+		gbc_PortList.insets = new Insets(0, 0, 5, 0);
+		gbc_PortList.gridx = 1;
+		gbc_PortList.gridy = 1;
+		fourFourthPanel.add(PortList, gbc_PortList);
+		PortList.setColumns(50);
+		PortList.setToolTipText("eg.: 8080,8088");
+
+		JLabel label_1 = new JLabel("");
+		GridBagConstraints gbc_label_1 = new GridBagConstraints();
+		gbc_label_1.fill = GridBagConstraints.BOTH;
+		gbc_label_1.insets = new Insets(0, 0, 5, 5);
+		gbc_label_1.gridx = 0;
+		gbc_label_1.gridy = 2;
+		fourFourthPanel.add(label_1, gbc_label_1);
+
+
 		showItemsInOne = new JRadioButton("show items in one");
-		fourFourthPanel.add(showItemsInOne);
+		GridBagConstraints gbc_showItemsInOne = new GridBagConstraints();
+		gbc_showItemsInOne.fill = GridBagConstraints.BOTH;
+		gbc_showItemsInOne.insets = new Insets(0, 0, 5, 0);
+		gbc_showItemsInOne.gridx = 1;
+		gbc_showItemsInOne.gridy = 2;
+		fourFourthPanel.add(showItemsInOne, gbc_showItemsInOne);
 		showItemsInOne.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				lineConfig.setShowItemsInOne(showItemsInOne.isSelected());
 			}
 		});
-		
+
+		JLabel label_2 = new JLabel("");
+		GridBagConstraints gbc_label_2 = new GridBagConstraints();
+		gbc_label_2.fill = GridBagConstraints.BOTH;
+		gbc_label_2.insets = new Insets(0, 0, 5, 5);
+		gbc_label_2.gridx = 0;
+		gbc_label_2.gridy = 3;
+		fourFourthPanel.add(label_2, gbc_label_2);
+
 		ignoreHTTPS = new JRadioButton("Ignore HTTPS if HTTP is OK");
-		fourFourthPanel.add(ignoreHTTPS);
+		GridBagConstraints gbc_ignoreHTTPS = new GridBagConstraints();
+		gbc_ignoreHTTPS.fill = GridBagConstraints.BOTH;
+		gbc_ignoreHTTPS.insets = new Insets(0, 0, 5, 0);
+		gbc_ignoreHTTPS.gridx = 1;
+		gbc_ignoreHTTPS.gridy = 3;
+		fourFourthPanel.add(ignoreHTTPS, gbc_ignoreHTTPS);
 		ignoreHTTPS.setSelected(true);
-		
+
+		JLabel label_3 = new JLabel("");
+		GridBagConstraints gbc_label_3 = new GridBagConstraints();
+		gbc_label_3.fill = GridBagConstraints.BOTH;
+		gbc_label_3.insets = new Insets(0, 0, 5, 5);
+		gbc_label_3.gridx = 0;
+		gbc_label_3.gridy = 4;
+		fourFourthPanel.add(label_3, gbc_label_3);
+
 		ignoreHTTPStaus500 = new JRadioButton("Ignore items which Status >= 500");
-		fourFourthPanel.add(ignoreHTTPStaus500);
+		GridBagConstraints gbc_ignoreHTTPStaus500 = new GridBagConstraints();
+		gbc_ignoreHTTPStaus500.fill = GridBagConstraints.BOTH;
+		gbc_ignoreHTTPStaus500.insets = new Insets(0, 0, 5, 0);
+		gbc_ignoreHTTPStaus500.gridx = 1;
+		gbc_ignoreHTTPStaus500.gridy = 4;
+		fourFourthPanel.add(ignoreHTTPStaus500, gbc_ignoreHTTPStaus500);
 		ignoreHTTPStaus500.setSelected(true);
 
+		JLabel label_4 = new JLabel("");
+		GridBagConstraints gbc_label_4 = new GridBagConstraints();
+		gbc_label_4.fill = GridBagConstraints.BOTH;
+		gbc_label_4.insets = new Insets(0, 0, 0, 5);
+		gbc_label_4.gridx = 0;
+		gbc_label_4.gridy = 5;
+		fourFourthPanel.add(label_4, gbc_label_4);
+
 		ignoreHTTPStaus400 = new JRadioButton("Ignore http Status 400(The plain HTTP request was sent to HTTPS port)");
-		fourFourthPanel.add(ignoreHTTPStaus400);
+		GridBagConstraints gbc_ignoreHTTPStaus400 = new GridBagConstraints();
+		gbc_ignoreHTTPStaus400.fill = GridBagConstraints.BOTH;
+		gbc_ignoreHTTPStaus400.gridx = 1;
+		gbc_ignoreHTTPStaus400.gridy = 5;
+		fourFourthPanel.add(ignoreHTTPStaus400, gbc_ignoreHTTPStaus400);
 		ignoreHTTPStaus400.setSelected(true);
-		
+
 		///////////////////////////FooterPanel//////////////////
 
 
@@ -499,6 +587,21 @@ public class ToolPanel extends JPanel {
 		Set<String> domainList = new HashSet<>(Arrays.asList(textarea.getText().replaceAll(" ","").replaceAll("\r\n", "\n").split("\n")));
 		domainList.remove("");
 		return domainList;
+	}
+
+	public static HashSet<String> getExternalPortSet(){
+		String input = PortList.getText();
+		HashSet<String> result = new HashSet<String>();
+		for (String item:input.split(",")) {
+			item = item.trim();
+			try {
+				Integer.parseInt(item);
+				result.add(item);
+			}catch(Exception e) {
+
+			}
+		}
+		return result;
 	}
 
 
