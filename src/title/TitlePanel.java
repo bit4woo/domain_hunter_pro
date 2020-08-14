@@ -176,7 +176,7 @@ public class TitlePanel extends JPanel {
 		});
 		buttonPanel.add(btnGettitle);
 
-		/*
+		
 		JButton btnGetExtendtitle = new JButton("Get Extend Title");
 		btnGetExtendtitle.setToolTipText("Get title of the host that in same subnet,you should do this after get domain title done!");
 		btnGetExtendtitle.setEnabled(true);//default is false,only true after "get title" is done.
@@ -204,7 +204,7 @@ public class TitlePanel extends JPanel {
 			}
 		});
 		buttonPanel.add(btnGetExtendtitle);
-		*/
+		
 		
 		JButton btnGettitleOfJustNewFound = new JButton("GetTitleOfNewDomain");
 		btnGettitleOfJustNewFound.setToolTipText("Just get title of new found subdomains");
@@ -422,7 +422,6 @@ public class TitlePanel extends JPanel {
 		threadGetTitle = new ThreadGetTitleWithForceStop(domains);
 		threadGetTitle.start();
 
-		getExtendTitle();//获取所有IP的title！
 	}
 
 
