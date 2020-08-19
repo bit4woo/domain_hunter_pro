@@ -1,18 +1,24 @@
 package burp;
 
-import GUI.GUI;
-import GUI.LineEntryMenuForBurp;
-import bsh.This;
-import domain.DomainPanel;
+import java.awt.Component;
+import java.io.PrintWriter;
+import java.util.List;
+import java.util.Set;
+
+import javax.swing.JMenuItem;
+import javax.swing.SwingUtilities;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.swing.*;
-import java.awt.*;
-import java.io.PrintWriter;
-import java.util.List;
+import GUI.GUI;
+import GUI.LineEntryMenuForBurp;
+import bsh.This;
+import domain.DomainManager;
+import domain.DomainPanel;
+import domain.DomainProducer;
 
-public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListener,IContextMenuFactory{
+public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListener,IContextMenuFactory,IHttpListener{
 	/**
 	 *
 	 */
@@ -86,6 +92,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		callbacks.setExtensionName(getFullExtenderName()); //插件名称
 		callbacks.registerExtensionStateListener(this);
 		callbacks.registerContextMenuFactory(this);
+		callbacks.registerHttpListener(this);//主动根据流量收集信息
 
 		gui = new GUI();
 
@@ -134,7 +141,73 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 
 	@Override
 	public List<JMenuItem> createMenuItems(IContextMenuInvocation invocation) {
-
 		return new LineEntryMenuForBurp().createMenuItemsForBurp(invocation);
+	}
+
+	@Override
+	public void processHttpMessage(int toolFlag, boolean messageIsRequest, IHttpRequestResponse messageInfo) {
+		//stdout.println("processHttpMessage called when messageIsRequest="+messageIsRequest);
+		if (toolFlag == IBurpExtenderCallbacks.TOOL_PROXY) {
+			try {
+				Getter getter = new Getter(helpers);
+				if (messageIsRequest) {
+					IHttpService httpservice = messageInfo.getHttpService();
+					String Host = httpservice.getHost();
+
+					int hostType = DomainPanel.domainResult.domainType(Host);
+					if (hostType == DomainManager.SUB_DOMAIN)
+					{	
+						if (!DomainPanel.domainResult.getSubDomainSet().contains(Host)) {
+							DomainPanel.domainResult.getNewAndNotGetTitleDomainSet().add(Host);
+						}
+					}else if (hostType == DomainManager.SIMILAR_DOMAIN) {
+						if (!DomainPanel.domainResult.getSimilarDomainSet().contains(Host)) {
+							DomainPanel.domainResult.getSimilarDomainSet().add(Host);
+						}
+					}
+
+				}else {//response
+					
+					IHttpService httpservice = messageInfo.getHttpService();
+					String urlString = getter.getFullURL(messageInfo).toString();
+
+					String Host = httpservice.getHost();
+					
+					int hostType = DomainPanel.domainResult.domainType(Host);
+					if (hostType != DomainManager.USELESS) {//grep domains from response and classify
+						if (urlString.endsWith(".gif") ||urlString.endsWith(".jpg")
+								|| urlString.endsWith(".png") ||urlString.endsWith(".css")) {
+
+						}else {
+							classifyDomains(messageInfo);
+						}
+					}
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+				stderr.print(e.getStackTrace());
+			}
+		}
+
+	}
+	
+	public void classifyDomains(IHttpRequestResponse messageinfo) {
+		byte[] response = messageinfo.getResponse();
+		if (response != null) {
+			Set<String> domains = DomainProducer.grepDomain(new String(response));
+			for (String domain:domains) {
+				int type = DomainPanel.domainResult.domainType(domain);
+				if (type == DomainManager.SUB_DOMAIN)
+				{
+					if (!DomainPanel.domainResult.getSubDomainSet().contains(domain)) {
+						DomainPanel.domainResult.getNewAndNotGetTitleDomainSet().add(domain);
+					}
+				}else if (type == DomainManager.SIMILAR_DOMAIN) {
+					DomainPanel.domainResult.getSimilarDomainSet().add(domain);
+				}else if (type == DomainManager.PACKAGE_NAME) {
+					DomainPanel.domainResult.getPackageNameSet().add(domain);
+				}
+			}
+		}
 	}
 }
