@@ -159,7 +159,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 					{	
 						if (!DomainPanel.domainResult.getSubDomainSet().contains(Host)) {
 							DomainPanel.domainResult.getNewAndNotGetTitleDomainSet().add(Host);
-							stdout.println("new domain found: "+ domain);
+							stdout.println("new domain found: "+ Host);
 						}
 					}else if (hostType == DomainManager.SIMILAR_DOMAIN) {
 						if (!DomainPanel.domainResult.getSimilarDomainSet().contains(Host)) {
