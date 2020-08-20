@@ -159,13 +159,13 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 					{	
 						if (!DomainPanel.domainResult.getSubDomainSet().contains(Host)) {
 							DomainPanel.domainResult.getNewAndNotGetTitleDomainSet().add(Host);
+							stdout.println("new domain found: "+ domain);
 						}
 					}else if (hostType == DomainManager.SIMILAR_DOMAIN) {
 						if (!DomainPanel.domainResult.getSimilarDomainSet().contains(Host)) {
 							DomainPanel.domainResult.getSimilarDomainSet().add(Host);
 						}
 					}
-
 				}else {//response
 					
 					IHttpService httpservice = messageInfo.getHttpService();
@@ -188,7 +188,6 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 				stderr.print(e.getStackTrace());
 			}
 		}
-
 	}
 	
 	public void classifyDomains(IHttpRequestResponse messageinfo) {
@@ -201,6 +200,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 				{
 					if (!DomainPanel.domainResult.getSubDomainSet().contains(domain)) {
 						DomainPanel.domainResult.getNewAndNotGetTitleDomainSet().add(domain);
+						stdout.println("new domain found: "+ domain);
 					}
 				}else if (type == DomainManager.SIMILAR_DOMAIN) {
 					DomainPanel.domainResult.getSimilarDomainSet().add(domain);
