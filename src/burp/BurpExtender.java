@@ -147,6 +147,8 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	@Override
 	public void processHttpMessage(int toolFlag, boolean messageIsRequest, IHttpRequestResponse messageInfo) {
 		//stdout.println("processHttpMessage called when messageIsRequest="+messageIsRequest);
+		
+		boolean dataChanged =false;
 		if (toolFlag == IBurpExtenderCallbacks.TOOL_PROXY) {
 			try {
 				Getter getter = new Getter(helpers);
@@ -161,10 +163,12 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 								&& !DomainPanel.domainResult.getNewAndNotGetTitleDomainSet().contains(Host)) {
 							DomainPanel.domainResult.getNewAndNotGetTitleDomainSet().add(Host);
 							stdout.println("new domain found: "+ Host);
+							dataChanged = true;
 						}
 					}else if (hostType == DomainManager.SIMILAR_DOMAIN) {
 						if (!DomainPanel.domainResult.getSimilarDomainSet().contains(Host)) {
 							DomainPanel.domainResult.getSimilarDomainSet().add(Host);
+							dataChanged = true;
 						}
 					}
 				}else {//response
@@ -180,18 +184,22 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 								|| urlString.endsWith(".png") ||urlString.endsWith(".css")) {
 
 						}else {
-							classifyDomains(messageInfo);
+							dataChanged = classifyDomains(messageInfo);
 						}
 					}
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
-				stderr.print(e.getStackTrace());
+				e.printStackTrace(stderr);
 			}
+		}
+		
+		if (dataChanged) {
+			DomainPanel.autoSave();
 		}
 	}
 	
-	public void classifyDomains(IHttpRequestResponse messageinfo) {
+	public boolean classifyDomains(IHttpRequestResponse messageinfo) {
+		boolean dataChanged = false;
 		byte[] response = messageinfo.getResponse();
 		if (response != null) {
 			Set<String> domains = DomainProducer.grepDomain(new String(response));
@@ -203,13 +211,22 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 							&& !DomainPanel.domainResult.getNewAndNotGetTitleDomainSet().contains(domain)) {
 						DomainPanel.domainResult.getNewAndNotGetTitleDomainSet().add(domain);
 						stdout.println("new domain found: "+ domain);
+						dataChanged = true;
 					}
 				}else if (type == DomainManager.SIMILAR_DOMAIN) {
-					DomainPanel.domainResult.getSimilarDomainSet().add(domain);
+					if (!DomainPanel.domainResult.getSimilarDomainSet().contains(domain)){
+						DomainPanel.domainResult.getSimilarDomainSet().add(domain);
+						dataChanged = true;
+					}
+					
 				}else if (type == DomainManager.PACKAGE_NAME) {
-					DomainPanel.domainResult.getPackageNameSet().add(domain);
+					if (!DomainPanel.domainResult.getPackageNameSet().contains(domain)){
+						DomainPanel.domainResult.getPackageNameSet().add(domain);
+						dataChanged = true;
+					}
 				}
 			}
 		}
+		return dataChanged;
 	}
 }

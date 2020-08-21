@@ -60,6 +60,8 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
@@ -73,6 +75,7 @@ import burp.IBurpExtenderCallbacks;
 import burp.IHttpRequestResponse;
 import burp.IHttpService;
 import burp.IScanIssue;
+import burp.dbFileChooser;
 
 /*
  *注意，所有直接对DomainObject中数据的修改，都不会触发该tableChanged监听器。
@@ -101,6 +104,7 @@ public class DomainPanel extends JPanel {
 	private JTable table;
 
 	private boolean listenerIsOn = true;
+	private static final Logger log=LogManager.getLogger(DomainPanel.class);
 
 	public static DomainManager getDomainResult() {
 		return domainResult;
@@ -1160,6 +1164,7 @@ public class DomainPanel extends JPanel {
 		}
 		DBHelper dbHelper = new DBHelper(file.toString());
 		boolean success = dbHelper.saveDomainObject(domainResult);
+		log.info("domain data saved");
 	}
 
 	/*
