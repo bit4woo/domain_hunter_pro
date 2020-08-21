@@ -157,7 +157,8 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 					int hostType = DomainPanel.domainResult.domainType(Host);
 					if (hostType == DomainManager.SUB_DOMAIN)
 					{	
-						if (!DomainPanel.domainResult.getSubDomainSet().contains(Host)) {
+						if (!DomainPanel.domainResult.getSubDomainSet().contains(Host) 
+								&& !DomainPanel.domainResult.getNewAndNotGetTitleDomainSet().contains(Host)) {
 							DomainPanel.domainResult.getNewAndNotGetTitleDomainSet().add(Host);
 							stdout.println("new domain found: "+ Host);
 						}
@@ -198,7 +199,8 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 				int type = DomainPanel.domainResult.domainType(domain);
 				if (type == DomainManager.SUB_DOMAIN)
 				{
-					if (!DomainPanel.domainResult.getSubDomainSet().contains(domain)) {
+					if (!DomainPanel.domainResult.getSubDomainSet().contains(domain)
+							&& !DomainPanel.domainResult.getNewAndNotGetTitleDomainSet().contains(domain)) {
 						DomainPanel.domainResult.getNewAndNotGetTitleDomainSet().add(domain);
 						stdout.println("new domain found: "+ domain);
 					}
