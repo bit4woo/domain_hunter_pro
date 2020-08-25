@@ -60,7 +60,8 @@ public class Commons {
 		extendset.add(".gif");
 		extendset.add(".jpg");
 		extendset.add(".png");
-		extendset.add(".css");
+		extendset.add(".css");//gif,jpg,png,css,woff
+		extendset.add(".woff");
 		Iterator<String> iter = extendset.iterator();
 		while (iter.hasNext()) {
 			if(urlpath.endsWith(iter.next().toString())) {//if no next(), this loop will not break out

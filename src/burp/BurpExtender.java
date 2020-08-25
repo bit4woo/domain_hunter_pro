@@ -3,10 +3,12 @@ package burp;
 import java.awt.Component;
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -146,8 +148,29 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 
 	@Override
 	public void processHttpMessage(int toolFlag, boolean messageIsRequest, IHttpRequestResponse messageInfo) {
-		//stdout.println("processHttpMessage called when messageIsRequest="+messageIsRequest);
-		
+
+		//		Date now = new Date();
+		SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+			//using SwingWorker to void slow down proxy http response time.
+
+			@Override
+			protected Map doInBackground() throws Exception {
+				findDomainInTraffic(toolFlag,messageIsRequest,messageInfo);
+				return null;
+			}
+			@Override
+			protected void done() {
+			}
+		};
+		worker.execute();
+		//findDomainInTraffic(toolFlag,messageIsRequest,messageInfo);
+		//		Date now1 = new Date();
+		//		stderr.println("takes time to finish find domain: "+(now1.getTime()-now.getTime()));
+
+	}
+
+
+	public void findDomainInTraffic(int toolFlag, boolean messageIsRequest, IHttpRequestResponse messageInfo){
 		boolean dataChanged =false;
 		if (toolFlag == IBurpExtenderCallbacks.TOOL_PROXY) {
 			try {
@@ -172,16 +195,16 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 						}
 					}
 				}else {//response
-					
+
 					IHttpService httpservice = messageInfo.getHttpService();
-					String urlString = getter.getFullURL(messageInfo).toString();
+					String urlString = getter.getFullURL(messageInfo).getFile();
 
 					String Host = httpservice.getHost();
-					
+
 					int hostType = DomainPanel.domainResult.domainType(Host);
 					if (hostType != DomainManager.USELESS) {//grep domains from response and classify
 						if (urlString.endsWith(".gif") ||urlString.endsWith(".jpg")
-								|| urlString.endsWith(".png") ||urlString.endsWith(".css")) {
+								|| urlString.endsWith(".png") ||urlString.endsWith(".css")||urlString.endsWith(".woff")) {
 
 						}else {
 							dataChanged = classifyDomains(messageInfo);
@@ -192,12 +215,12 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 				e.printStackTrace(stderr);
 			}
 		}
-		
+
 		if (dataChanged) {
 			DomainPanel.autoSave();
 		}
 	}
-	
+
 	public boolean classifyDomains(IHttpRequestResponse messageinfo) {
 		boolean dataChanged = false;
 		byte[] response = messageinfo.getResponse();
@@ -218,7 +241,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 						DomainPanel.domainResult.getSimilarDomainSet().add(domain);
 						dataChanged = true;
 					}
-					
+
 				}else if (type == DomainManager.PACKAGE_NAME) {
 					if (!DomainPanel.domainResult.getPackageNameSet().contains(domain)){
 						DomainPanel.domainResult.getPackageNameSet().add(domain);
