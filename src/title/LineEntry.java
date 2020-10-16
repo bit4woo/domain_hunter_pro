@@ -409,6 +409,13 @@ Content-Type: text/html;charset=UTF-8
 			}
 		}
 		title = title.replaceAll("<.*?>", "");
+		
+		if (statuscode == 302 || statuscode == 301) {
+			String Locationurl = getHeaderValueOf(false,"Location");
+			if (null != Locationurl) {
+				title  = title +" --> "+Locationurl;
+			}
+		}
 		return title;
 	}
 
