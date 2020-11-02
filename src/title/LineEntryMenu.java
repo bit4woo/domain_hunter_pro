@@ -24,7 +24,6 @@ import burp.BurpExtender;
 import burp.Commons;
 import burp.Getter;
 import burp.IBurpExtenderCallbacks;
-import domain.DomainPanel;
 import title.search.SearchDork;
 
 public class LineEntryMenu extends JPopupMenu {
@@ -50,7 +49,7 @@ public class LineEntryMenu extends JPopupMenu {
 				//lineTable.setColor(1);
 			}
 		});
-		*/
+		 */
 
 		JMenuItem googleSearchItem = new JMenuItem(new AbstractAction("Seach on Google (double click index)") {
 			@Override
@@ -88,11 +87,11 @@ public class LineEntryMenu extends JPopupMenu {
 				}
 			}
 		});
-		
+
 		JMenuItem SearchOnHunterItem = new JMenuItem(new AbstractAction("Seach On Hunter") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-		
+
 				String host = lineTable.getModel().getLineEntries().getValueAtIndex(rows[0]).getHost();
 				TitlePanel.getTextFieldSearch().setText(SearchDork.HOST.toString()+":"+host);
 			}
@@ -187,10 +186,10 @@ public class LineEntryMenu extends JPopupMenu {
 		JMenuItem doActiveScan = new JMenuItem(new AbstractAction("Do Active Scan") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				try{
-					IndexedLinkedHashMap<String,LineEntry> entries = lineTable.getModel().getLineEntries();
-					IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
-					for (int i=rows.length-1;i>=0 ;i-- ) {
+				IndexedLinkedHashMap<String,LineEntry> entries = lineTable.getModel().getLineEntries();
+				IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
+				for (int i=rows.length-1;i>=0 ;i-- ) {
+					try{
 						LineEntry entry = entries.getValueAtIndex(rows[i]);
 
 						String host = entry.getHost();
@@ -206,14 +205,14 @@ public class LineEntryMenu extends JPopupMenu {
 						callbacks.includeInScope(new URL(entry.getUrl()));
 						callbacks.doActiveScan(host, port, useHttps, request);
 					}
-				}
-				catch (Exception e1)
-				{
-					e1.printStackTrace(stderr);
+					catch (Exception e1)
+					{
+						e1.printStackTrace(stderr);
+					}
 				}
 			}
 		});
-		
+
 		JMenuItem checkingItem = new JMenuItem(new AbstractAction("Checking") {//checking
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -231,7 +230,7 @@ public class LineEntryMenu extends JPopupMenu {
 				}
 			}
 		});
-		
+
 
 		JMenuItem checkedItem = new JMenuItem(new AbstractAction("Check Done") {
 			@Override
@@ -279,7 +278,7 @@ public class LineEntryMenu extends JPopupMenu {
 				}
 			}
 		});
-		
+
 		JMenuItem SendToRepeater = new JMenuItem(new AbstractAction("Send To Repeater") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -406,7 +405,7 @@ public class LineEntryMenu extends JPopupMenu {
 			}
 		});
 		IpBlackListItem.setToolTipText("will not get title from next time");
-		
+
 		JMenuItem SubnetBlackListItem = new JMenuItem(new AbstractAction("Add C Subnet To Black List") {//need to show dialog to confirm
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -426,20 +425,20 @@ public class LineEntryMenu extends JPopupMenu {
 		this.add(checkedItem);
 		this.add(levelMenu);
 		this.add(batchAddCommentsItem);
-		
+
 		this.addSeparator();
-		
+
 		this.add(addHostsToScope);
 		this.add(doActiveScan);
 		this.add(doPortScan);
 		this.add(dirSearchItem);
 
 		this.addSeparator();
-		
+
 		this.add(googleSearchItem);
 		this.add(SearchOnGithubItem);
 		this.add(SearchOnHunterItem);
-		
+
 		this.addSeparator();
 
 		this.add(openURLwithBrowserItem);
@@ -448,9 +447,9 @@ public class LineEntryMenu extends JPopupMenu {
 		this.add(copyLocationURLItem);
 		this.add(SendToRepeater);
 		this.add(SendToRepeaterWithCookieItem);
-		
+
 		this.addSeparator();
-		
+
 		this.add(removeItem);
 		this.add(blackListItem);
 		this.add(IpBlackListItem);
