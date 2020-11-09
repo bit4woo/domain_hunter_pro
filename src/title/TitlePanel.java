@@ -149,7 +149,7 @@ public class TitlePanel extends JPanel {
 					protected Map doInBackground() throws Exception {
 						btnGettitle.setEnabled(false);
 						getAllTitle();
-						btnGettitle.setEnabled(true);
+						//btnGettitle.setEnabled(true);
 						return new HashMap<String, String>();
 						//no use ,the return.
 					}
@@ -178,7 +178,7 @@ public class TitlePanel extends JPanel {
 					protected Map doInBackground() throws Exception {
 						btnGetExtendtitle.setEnabled(false);
 						getExtendTitle();
-						btnGetExtendtitle.setEnabled(true);
+						//btnGetExtendtitle.setEnabled(true);
 						return new HashMap<String, String>();
 						//no use ,the return.
 					}

@@ -53,7 +53,8 @@ public class ThreadGetTitleWithForceStop extends Thread{
 				break;//必须跳出循环，否则只是不再等待其中的一个线程，还会继续等待其他线程
 			}
 		}
-		return;
+
+		stdout.println("all producer threads started");
 	}
 
 	boolean isAllProductorFinished(){
