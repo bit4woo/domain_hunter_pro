@@ -61,7 +61,7 @@ public class TitlePanel extends JPanel {
 	private static LineTableModel titleTableModel = new LineTableModel();
 	PrintWriter stdout;
 	PrintWriter stderr;
-	private ThreadGetTitleWithForceStop threadGetTitle;
+	public static ThreadGetTitleWithForceStop threadGetTitle;
 	private IndexedLinkedHashMap<String,LineEntry> BackupLineEntries;
 	
 	private static JTextField textFieldSearch;
@@ -81,10 +81,6 @@ public class TitlePanel extends JPanel {
 
 	public static LineTableModel getTitleTableModel() {
 		return titleTableModel;
-	}
-
-	public ThreadGetTitleWithForceStop getThreadGetTitle() {
-		return threadGetTitle;
 	}
 
 	public IndexedLinkedHashMap<String,LineEntry> getBackupLineEntries() {
@@ -316,8 +312,8 @@ public class TitlePanel extends JPanel {
 		btnStop.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				int result = JOptionPane.showConfirmDialog(null,"Are you sure to [Force Stop] all theads ?");
-				if (GUI.getTitlePanel().getThreadGetTitle() != null && result == JOptionPane.YES_OPTION) {
-					GUI.getTitlePanel().getThreadGetTitle().forceStopThreads();
+				if (threadGetTitle != null && result == JOptionPane.YES_OPTION){
+					threadGetTitle.interrupt();
 				}
 			}
 		});
@@ -410,6 +406,9 @@ public class TitlePanel extends JPanel {
 
 //		threadGetTitle = new ThreadGetTitle(domains);
 //		threadGetTitle.Do();
+		if (threadGetTitle != null){
+			threadGetTitle.interrupt();
+		}
 		threadGetTitle = new ThreadGetTitleWithForceStop(domains);
 		threadGetTitle.start();
 
@@ -419,6 +418,9 @@ public class TitlePanel extends JPanel {
 	public void getExtendTitle(){
 		Set<String> extendIPSet = titleTableModel.GetExtendIPSet();
 		stdout.println(extendIPSet.size()+" extend IP Address founded"+extendIPSet);
+		if (threadGetTitle != null){
+			threadGetTitle.interrupt();
+		}
 		threadGetTitle = new ThreadGetTitleWithForceStop(extendIPSet);
 		threadGetTitle.start();
 
@@ -453,6 +455,9 @@ public class TitlePanel extends JPanel {
 		//remove domains in black list
 		domains.removeAll(DomainPanel.getDomainResult().getBlackDomainSet());
 
+		if (threadGetTitle != null){
+			threadGetTitle.interrupt();
+		}
 		threadGetTitle = new ThreadGetTitleWithForceStop(domains);
 		threadGetTitle.start();
 	}

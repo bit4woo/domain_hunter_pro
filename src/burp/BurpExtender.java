@@ -19,6 +19,7 @@ import bsh.This;
 import domain.DomainManager;
 import domain.DomainPanel;
 import domain.DomainProducer;
+import title.TitlePanel;
 
 public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListener,IContextMenuFactory,IHttpListener{
 	/**
@@ -120,8 +121,8 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 
 	@Override
 	public void extensionUnloaded() {
-		if (GUI.getTitlePanel().getThreadGetTitle() != null) {
-			GUI.getTitlePanel().getThreadGetTitle().stopThreads();//maybe null
+		if (TitlePanel.threadGetTitle != null) {
+			TitlePanel.threadGetTitle.interrupt();//maybe null
 		}//必须要先结束线程，否则获取数据的操作根本无法结束，因为线程一直通过sync占用资源
 
 		gui.saveDBfilepathToExtension();
