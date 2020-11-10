@@ -465,7 +465,7 @@ public class DomainPanel extends JPanel {
 					//{"1", "1","1"},
 				},
 				new String[] {
-						"Root Domain", "Keyword","Comment"//, "Source"
+						"Root Domain", "Keyword"//,"Comment"//, "Source"
 				}
 				);
 		table.setModel(domainTableModel);
