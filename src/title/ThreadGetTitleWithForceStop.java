@@ -11,8 +11,6 @@ import burp.BurpExtender;
 import burp.IBurpExtenderCallbacks;
 import burp.IExtensionHelpers;
 
-//尝试暴力终止各个子线程。
-//TODO
 public class ThreadGetTitleWithForceStop extends Thread{
 	private Set<String> domains;
 	private List<Producer> plist;
@@ -21,6 +19,7 @@ public class ThreadGetTitleWithForceStop extends Thread{
 	public PrintWriter stdout = new PrintWriter(callbacks.getStdout(), true);
 	public PrintWriter stderr = new PrintWriter(callbacks.getStderr(), true);
 	public IExtensionHelpers helpers = callbacks.getHelpers();
+	public static boolean AllProductorFinished = true;
 
 	public ThreadGetTitleWithForceStop(Set<String> domains) {
 		this.domains = domains;
@@ -29,6 +28,7 @@ public class ThreadGetTitleWithForceStop extends Thread{
 	@Override
 	public void run(){
 		stdout.println("~~~~~~~~~~~~~Start threading Get Title~~~~~~~~~~~~~ total task number: "+domains.size());
+		AllProductorFinished = false;
 		BlockingQueue<String> domainQueue = new LinkedBlockingQueue<String>();//use to store domains
 		domainQueue.addAll(domains);
 
@@ -54,23 +54,12 @@ public class ThreadGetTitleWithForceStop extends Thread{
 			}
 		}
 
-		stdout.println("all producer threads started");
+		stdout.println("all producer threads finished");
+		AllProductorFinished = true;
 	}
 
 	boolean isAllProductorFinished(){
-		int i = 0;
-		for (Producer p:plist) {
-			if(p.isAlive()) {
-				i = i+1;
-			}
-		}
-		if (i>0){
-			stdout.println( "~~~~~~~~~~~~~"+i +" productors are still alive~~~~~~~~~~~~~");
-			return false;
-		}else{
-			stdout.println( "~~~~~~~~~~~~~All productor threads exited ~~~~~~~~~~~~~");
-			return true;
-		}
+		return AllProductorFinished;
 	}
 
 	public void stopThreads() {

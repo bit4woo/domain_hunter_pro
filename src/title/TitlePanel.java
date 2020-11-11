@@ -313,7 +313,7 @@ public class TitlePanel extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				int result = JOptionPane.showConfirmDialog(null,"Are you sure to [Force Stop] all theads ?");
 				if (threadGetTitle != null && result == JOptionPane.YES_OPTION){
-					threadGetTitle.interrupt();
+					threadGetTitle.forceStopThreads();
 				}
 			}
 		});

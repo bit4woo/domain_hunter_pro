@@ -349,12 +349,17 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		for(LineEntry line:lineEntries.values()) {
 			String IPString = line.getIP();
 			if (IPString == null || IPString.length() <7) continue;//处理保存的请求，没有IP的情况
-			String[] linetext = line.getIP().split(", ");
-			result.addAll(Arrays.asList(linetext));
+			String[] linetext = line.getIP().split(",");
+			for (String ip:linetext){
+				ip = Commons.ipClean(ip);
+				result.add(ip);
+			}
 		}
 
 		for(Set<String> IPSet:noResponseDomain.values()) {
-			result.addAll(IPSet);
+			for (String ip:IPSet){
+				result.add(ip.trim());
+			}
 		}
 		return result;
 	}
