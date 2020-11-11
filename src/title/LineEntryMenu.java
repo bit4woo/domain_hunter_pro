@@ -92,22 +92,26 @@ public class LineEntryMenu extends JPopupMenu {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				LineEntry firstEntry = lineTable.getModel().getLineEntries().getValueAtIndex(rows[0]);
+				String columnName = lineTable.getColumnName(column);
 
-				if (lineTable.getColumnName(column).equalsIgnoreCase("Status")){
+				if (columnName.equalsIgnoreCase("Status")){
 					int status = firstEntry.getStatuscode();
 					TitlePanel.getTextFieldSearch().setText(SearchDork.STATUS.toString()+":"+status);
-				}else if (lineTable.getColumnName(column).equalsIgnoreCase("length")){
+				}else if (columnName.equalsIgnoreCase("length")){
 					int length = firstEntry.getContentLength();
 					TitlePanel.getTextFieldSearch().setText(length+"");
-				}else if (lineTable.getColumnName(column).equalsIgnoreCase("title")){
+				}else if (columnName.equalsIgnoreCase("title")){
 					String title = firstEntry.getTitle();
 					TitlePanel.getTextFieldSearch().setText(title);
-				}else if (lineTable.getColumnName(column).equalsIgnoreCase("comments")){
+				}else if (columnName.equalsIgnoreCase("comments")){
 					String comment = firstEntry.getComment();
 					TitlePanel.getTextFieldSearch().setText(SearchDork.COMMENT.toString()+":"+comment);
-				}else if (lineTable.getColumnName(column).equalsIgnoreCase("IP")){
+				}else if (columnName.equalsIgnoreCase("IP")){
 					String ip = firstEntry.getIP();
 					TitlePanel.getTextFieldSearch().setText(ip);
+				}else if (columnName.equalsIgnoreCase("CDN")){
+					String cdn = firstEntry.getCDN();
+					TitlePanel.getTextFieldSearch().setText(cdn);
 				}else {
 					String host = firstEntry.getHost();
 					TitlePanel.getTextFieldSearch().setText(SearchDork.HOST.toString()+":"+host);
