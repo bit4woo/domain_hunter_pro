@@ -126,8 +126,6 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 						 
 
 						//必须从高位index进行删除，否则删除的对象会和预期不一致！！！
-						//这里还是有问题，删除完成后，显示数据的getValueAt函数会数组越界！why???
-						//TODO 奇诡的bug,后面在家测试又没问题，难道是当时打包没有使用mvn clean导致了没有使用到最新的代码？
 						List<String> urls = new ArrayList<String>();
 						for (int i = rowend; i >= rowstart; i--) {
 							String key = lineEntries.getKeyAtIndex(i);
@@ -587,10 +585,10 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	private void fireDeleted(int[] rows) {
 		List<int[]> slice = IntArraySlice.slice(rows);
 		//必须逆序，从高位index开始删除，否则删除的对象和预期不一致！！！
-		Collections.reverse(slice);
+		//上面得到的顺序就是从高位开始的
 		for(int[] sli:slice) {
 			System.out.println(Arrays.toString(sli));
-			this.fireTableRowsDeleted(sli[0], sli[sli.length-1]);
+			this.fireTableRowsDeleted(sli[sli.length-1],sli[0]);//这里传入的值必须是地位数在前面，高位数在后面
 		}
 	}
 

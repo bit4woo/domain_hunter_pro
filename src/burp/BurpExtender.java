@@ -201,14 +201,15 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 					String urlString = getter.getFullURL(messageInfo).getFile();
 
 					String Host = httpservice.getHost();
+					if (Host != null) {
+						int hostType = DomainPanel.domainResult.domainType(Host);
+						if (hostType != DomainManager.USELESS) {//grep domains from response and classify
+							if (urlString.endsWith(".gif") ||urlString.endsWith(".jpg")
+									|| urlString.endsWith(".png") ||urlString.endsWith(".css")||urlString.endsWith(".woff")) {
 
-					int hostType = DomainPanel.domainResult.domainType(Host);
-					if (hostType != DomainManager.USELESS) {//grep domains from response and classify
-						if (urlString.endsWith(".gif") ||urlString.endsWith(".jpg")
-								|| urlString.endsWith(".png") ||urlString.endsWith(".css")||urlString.endsWith(".woff")) {
-
-						}else {
-							dataChanged = classifyDomains(messageInfo);
+							}else {
+								dataChanged = classifyDomains(messageInfo);
+							}
 						}
 					}
 				}
