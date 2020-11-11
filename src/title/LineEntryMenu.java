@@ -34,7 +34,7 @@ public class LineEntryMenu extends JPopupMenu {
 	private static final long serialVersionUID = 1L;
 	PrintWriter stdout = BurpExtender.getStdout();
 	PrintWriter stderr = BurpExtender.getStderr();
-	LineEntryMenu(final LineTable lineTable, final int[] rows){
+	LineEntryMenu(final LineTable lineTable, final int[] rows,final int column){
 
 		JMenuItem itemNumber = new JMenuItem(new AbstractAction(rows.length+" Items Selected") {
 			@Override
@@ -91,9 +91,27 @@ public class LineEntryMenu extends JPopupMenu {
 		JMenuItem SearchOnHunterItem = new JMenuItem(new AbstractAction("Seach On Hunter") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
+				LineEntry firstEntry = lineTable.getModel().getLineEntries().getValueAtIndex(rows[0]);
 
-				String host = lineTable.getModel().getLineEntries().getValueAtIndex(rows[0]).getHost();
-				TitlePanel.getTextFieldSearch().setText(SearchDork.HOST.toString()+":"+host);
+				if (lineTable.getColumnName(column).equalsIgnoreCase("Status")){
+					int status = firstEntry.getStatuscode();
+					TitlePanel.getTextFieldSearch().setText(SearchDork.STATUS.toString()+":"+status);
+				}else if (lineTable.getColumnName(column).equalsIgnoreCase("length")){
+					int length = firstEntry.getContentLength();
+					TitlePanel.getTextFieldSearch().setText(length+"");
+				}else if (lineTable.getColumnName(column).equalsIgnoreCase("title")){
+					String title = firstEntry.getTitle();
+					TitlePanel.getTextFieldSearch().setText(title);
+				}else if (lineTable.getColumnName(column).equalsIgnoreCase("comments")){
+					String comment = firstEntry.getComment();
+					TitlePanel.getTextFieldSearch().setText(SearchDork.COMMENT.toString()+":"+comment);
+				}else if (lineTable.getColumnName(column).equalsIgnoreCase("IP")){
+					String ip = firstEntry.getIP();
+					TitlePanel.getTextFieldSearch().setText(ip);
+				}else {
+					String host = firstEntry.getHost();
+					TitlePanel.getTextFieldSearch().setText(SearchDork.HOST.toString()+":"+host);
+				}
 			}
 		});
 

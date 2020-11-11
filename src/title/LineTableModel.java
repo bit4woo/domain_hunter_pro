@@ -93,8 +93,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 					if (type == TableModelEvent.INSERT) {//插入事件使用批量方法好像不行，都是一个个插入的，每次都会触发
 						//从使用场景来看也无需使用批量
 						for (int i = rowstart; i <= rowend; i++) {
-							String key = lineEntries.getKeyAtIndex(i);
-							dbHelper.addTitle(lineEntries.get(key));
+							dbHelper.addTitle(lineEntries.getValueAtIndex(i));
 						}
 					} else if (type == TableModelEvent.UPDATE) {
 						/*
@@ -108,8 +107,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 
 						List<LineEntry> entries = new ArrayList<LineEntry>();
 						for (int i = rowstart; i <= rowend; i++) {
-							String key = lineEntries.getKeyAtIndex(i);
-							LineEntry entry = lineEntries.get(key);
+							LineEntry entry = lineEntries.getValueAtIndex(i);
 							entry.setTime(Commons.getNowTimeString());
 							entries.add(entry);
 						}
@@ -128,10 +126,10 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 						//必须从高位index进行删除，否则删除的对象会和预期不一致！！！
 						List<String> urls = new ArrayList<String>();
 						for (int i = rowend; i >= rowstart; i--) {
-							String key = lineEntries.getKeyAtIndex(i);
-							urls.add(key);
-							lineEntries.remove(key);//删除tableModel中的元素。
-							stdout.println("### "+key+" deleted");
+							String url = lineEntries.getValueAtIndex(i).getUrl();
+							urls.add(url);
+							lineEntries.removeByIndex(i);//删除tableModel中的元素。
+							stdout.println("### "+url+" deleted");
 						}
 						dbHelper.deleteTitlesByUrl(urls);//删除数据库中的元素
 
@@ -406,8 +404,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			List<String> hosts = new ArrayList<>();
 
 			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
-				String key = lineEntries.getKeyAtIndex(rows[i]);
-				String host = lineEntries.get(key).getHost();
+				String host = lineEntries.getValueAtIndex(rows[i]).getHost();
 				hosts.add(host);
 			}
 			return hosts;
@@ -421,8 +418,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			List<String> urls = new ArrayList<>();
 
 			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
-				String key = lineEntries.getKeyAtIndex(rows[i]);
-				String url = lineEntries.get(key).getUrl();
+				String url = lineEntries.getValueAtIndex(rows[i]).getUrl();
 				urls.add(url);
 			}
 			return urls;
