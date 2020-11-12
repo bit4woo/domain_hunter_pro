@@ -674,11 +674,10 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	public List<LineEntry> findLineEntriesByHostAndPort(String host,int port) {//
 		if (lineEntries == null) return null;
 		List<LineEntry> result = new ArrayList<LineEntry>();
-		for (String urlkey:lineEntries.keySet()) {
+		for (LineEntry value:lineEntries.values()) {
 			try{//根据host查找
-				URL URL = new URL(urlkey);
-				if (URL.getHost().equalsIgnoreCase(host) && URL.getPort() == port) {
-					result.add(lineEntries.get(urlkey));
+				if (value.getHost().equalsIgnoreCase(host) && value.getPort() == port) {
+					result.add(lineEntries.get(value.getUrl()));
 				}
 			}catch (Exception e){
 				e.printStackTrace(BurpExtender.getStderr());
