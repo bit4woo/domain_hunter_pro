@@ -208,7 +208,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 									|| urlString.endsWith(".png") ||urlString.endsWith(".css")||urlString.endsWith(".woff")) {
 
 							}else {
-								dataChanged = classifyDomains(messageInfo);
+								dataChanged = grepDomains(messageInfo);
 							}
 						}
 					}
@@ -223,10 +223,10 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		}
 	}
 
-	public boolean classifyDomains(IHttpRequestResponse messageinfo) {
+	public boolean grepDomains(IHttpRequestResponse messageinfo) {
 		boolean dataChanged = false;
 		byte[] response = messageinfo.getResponse();
-		if (response != null) {
+		if (response != null) {//为什么只需要从response中提取？请求包中包含的域名多来自于referer、host、参数，参数中的域名多少已经被访问过的。
 			Set<String> domains = DomainProducer.grepDomain(new String(response));
 			for (String domain:domains) {
 				int type = DomainPanel.domainResult.domainType(domain);
