@@ -337,6 +337,88 @@ public class ToolPanel extends JPanel {
 			}
 		});
 
+		JButton btnRemovePrefix = new JButton("Remove Prefix/Suffix");
+		threeFourthPanel.add(btnRemovePrefix);
+		btnRemovePrefix.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					String Prefix = JOptionPane.showInputDialog("prefix to remove", null);
+					String Suffix = JOptionPane.showInputDialog("suffix to remove", null);
+					ArrayList<String> result = new ArrayList<String>();
+					if (Prefix == null && Suffix == null) {
+						return;
+					} else {
+						if (Prefix == null) {
+							Prefix = "";
+						}
+
+						if (Suffix == null) {
+							Suffix = "";
+						}
+
+						List<String> content = Commons.getLinesFromTextArea(inputTextArea);
+						for (String item:content) {
+							if (item.startsWith(Prefix)) {
+								item = item.replaceFirst(Prefix, "");
+							}
+							if (item.endsWith(Suffix)) {
+								item = reverse(item).replaceFirst(reverse(Suffix), "");
+								item = reverse(item);
+							}
+							result.add(item); 
+						}
+						inputTextArea.setText(String.join(System.lineSeparator(), result));
+					}
+				} catch (Exception e1) {
+					inputTextArea.setText(e1.getMessage());
+					e1.printStackTrace(stderr);
+				}
+			}
+
+			public String reverse(String str) {
+				if (str == null) {
+					return null;
+				}
+				return new StringBuffer(str).reverse().toString();
+			}
+		});
+
+
+		JButton btnReplace = new JButton("ReplaceFirst");
+		threeFourthPanel.add(btnReplace);
+		btnReplace.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					String replace = JOptionPane.showInputDialog("regex (from)", null);
+					String to = JOptionPane.showInputDialog("replacement (to)", null);
+					ArrayList<String> result = new ArrayList<String>();
+					if (replace == null && to == null) {
+						return;
+					} else {
+						if (replace == null) {
+							replace = "";
+						}
+
+						if (to == null) {
+							to = "";
+						}
+
+						List<String> content = Commons.getLinesFromTextArea(inputTextArea);
+						for (String item:content) {
+							item = item.replaceFirst(replace,to);
+							result.add(item); 
+						}
+						inputTextArea.setText(String.join(System.lineSeparator(), result));
+					}
+				} catch (Exception e1) {
+					inputTextArea.setText(e1.getMessage());
+					e1.printStackTrace(stderr);
+				}
+			}
+		});
+
 
 		JButton btnRegexGrep = new JButton("Regex Grep");
 		btnRegexGrep.setEnabled(false);
