@@ -368,10 +368,10 @@ public class ToolPanel extends JPanel {
 							}
 							result.add(item); 
 						}
-						inputTextArea.setText(String.join(System.lineSeparator(), result));
+						outputTextArea.setText(String.join(System.lineSeparator(), result));
 					}
 				} catch (Exception e1) {
-					inputTextArea.setText(e1.getMessage());
+					outputTextArea.setText(e1.getMessage());
 					e1.printStackTrace(stderr);
 				}
 			}
@@ -410,10 +410,10 @@ public class ToolPanel extends JPanel {
 							item = item.replaceFirst(replace,to);
 							result.add(item); 
 						}
-						inputTextArea.setText(String.join(System.lineSeparator(), result));
+						outputTextArea.setText(String.join(System.lineSeparator(), result));
 					}
 				} catch (Exception e1) {
-					inputTextArea.setText(e1.getMessage());
+					outputTextArea.setText(e1.getMessage());
 					e1.printStackTrace(stderr);
 				}
 			}
