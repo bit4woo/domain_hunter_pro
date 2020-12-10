@@ -878,6 +878,7 @@ public class DomainPanel extends JPanel {
 			@Override
 			public void mouseEntered(MouseEvent e) {
 				lblSummary.setForeground(Color.RED);
+				lblSummary.setToolTipText(GUI.getCurrentDBFile().toString());
 			}
 			@Override
 			public void mouseExited(MouseEvent e) {
