@@ -162,20 +162,20 @@ class RunnerProducer extends Thread {//Producer do
 				byte[] body = getter.getBody(true, request);
 
 				byte[] neRequest = helpers.buildHttpMessage(getter.headerMapToHeaderList(headers), body);
-
 				int leftTaskNum = lineEntryQueue.size();
-				String fullurl = helpers.analyzeRequest(neRequest).getUrl().toString();
-				stdout.println(String.format("%s tasks left, Runner Checking: %s",leftTaskNum,fullurl));
 
 				//stdout.println(httpService.toString());
 				//stdout.println(new String(neRequest));
 				IHttpRequestResponse messageinfo = callbacks.makeHttpRequest(httpService, neRequest);
+				String fullurl = helpers.analyzeRequest(messageinfo).getUrl().toString();
+				stdout.println(String.format("%s tasks left, Runner Checking: %s",leftTaskNum,fullurl));
+				
 				if (messageinfo !=null) {
 					byte[] response = messageinfo.getResponse();
 					if (response != null) {
 						String responseBody = new String(response);
 						if (responseBody.toLowerCase().contains(keyword)) {
-							runnerTableModel.addNewLineEntry(new LineEntry(messageinfo,false,LineEntry.CheckStatus_UnChecked,"Runner"));
+							runnerTableModel.addNewLineEntry(new LineEntry(messageinfo,LineEntry.CheckStatus_UnChecked,"Runner"));
 						}
 					}
 				}

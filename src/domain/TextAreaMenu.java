@@ -91,5 +91,25 @@ public class TextAreaMenu extends JPopupMenu {
 		});
 
 		this.add(SearchOnGithubItem);
+		
+		JMenuItem addTosubdomain = new JMenuItem(new AbstractAction("Add To Sub-domain") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				if (selectedItems.size() >=50) {
+					return;
+				}
+				DomainManager domainResult = DomainPanel.getDomainResult();
+				for (String item:selectedItems) {
+					try {
+						domainResult.addToDomainOject(item);
+					} catch (Exception e2) {
+						e2.printStackTrace(stderr);
+					}
+				}
+				DomainPanel.autoSave();
+			}
+		});
+		
+		this.add(addTosubdomain);
 	}
 }

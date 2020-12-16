@@ -12,6 +12,7 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.JScrollPane;
@@ -276,13 +277,14 @@ public class LineTable extends JTable
 		rowSorter.setRowFilter(filter);
 	}
 
-	//双击进行google搜索、双击浏览器打开url、双击切换Check状态
+	
 	public void registerListeners(){
 		LineTable.this.setRowSelectionAllowed(true);
 		this.addMouseListener( new MouseAdapter()
 		{
 			@Override
 			public void mouseClicked(MouseEvent e) {
+				//双击进行google搜索、双击浏览器打开url、双击切换Check状态
 				if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2){//左键双击
 					int[] rows = SelectedRowsToModelRows(getSelectedRows());
 
@@ -318,6 +320,14 @@ public class LineTable extends JTable
 						}catch (Exception e1){
 							e1.printStackTrace(stderr);
 						}
+					}else if (col == LineTableModel.getTitletList().indexOf("Level")) {
+						String currentLevel = selecteEntry.getLevel();
+						List<String> tmpList = Arrays.asList(LineEntry.LevelArray);
+						int index = tmpList.indexOf(currentLevel);
+						String newLevel = tmpList.get((index+1)%3);
+						selecteEntry.setLevel(newLevel);
+						stdout.println(String.format("$$$ %s updated [level-->%s]",selecteEntry.getUrl(),newLevel));
+						LineTable.this.lineTableModel.fireTableRowsUpdated(rows[0], rows[0]);
 					}
 				}
 			}
@@ -328,9 +338,10 @@ public class LineTable extends JTable
 					if (e.isPopupTrigger() && e.getComponent() instanceof JTable ) {
 						//getSelectionModel().setSelectionInterval(rows[0], rows[1]);
 						int[] rows = getSelectedRows();
+						int col = ((LineTable) e.getSource()).columnAtPoint(e.getPoint()); // 获得列位置
 						if (rows.length>0){
 							rows = SelectedRowsToModelRows(getSelectedRows());
-							new LineEntryMenu(LineTable.this, rows).show(e.getComponent(), e.getX(), e.getY());
+							new LineEntryMenu(LineTable.this, rows, col).show(e.getComponent(), e.getX(), e.getY());
 						}else{//在table的空白处显示右键菜单
 							//https://stackoverflow.com/questions/8903040/right-click-mouselistener-on-whole-jtable-component
 							//new LineEntryMenu(_this).show(e.getComponent(), e.getX(), e.getY());

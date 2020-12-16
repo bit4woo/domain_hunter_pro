@@ -11,10 +11,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import GUI.GUI;
 import Tools.LineConfig;
+import Tools.ToolPanel;
 import burp.BurpExtender;
 import burp.Commons;
 import burp.IBurpExtenderCallbacks;
@@ -23,80 +23,11 @@ import burp.IHttpRequestResponse;
 import burp.IHttpService;
 import burp.IPAddress;
 
-//////////////////ThreadGetTitle block/////////////
-//no need to pass BurpExtender object to these class, IBurpExtenderCallbacks object is enough 
-public class ThreadGetTitle{
-	private Set<String> domains;
-	private List<Producer> plist;
-
-	private static IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();//静态变量，burp插件的逻辑中，是可以保证它被初始化的。;
-	public PrintWriter stdout = new PrintWriter(callbacks.getStdout(), true);
-	public PrintWriter stderr = new PrintWriter(callbacks.getStderr(), true);
-	public IExtensionHelpers helpers = callbacks.getHelpers();
-
-	public ThreadGetTitle(Set<String> domains) {
-		this.domains = domains;
-	}
-
-	public void Do(){
-		stdout.println("~~~~~~~~~~~~~Start threading Get Title~~~~~~~~~~~~~ total task number: "+domains.size());
-		BlockingQueue<String> domainQueue = new LinkedBlockingQueue<String>();//use to store domains
-		domainQueue.addAll(domains);
-
-		plist = new ArrayList<Producer>();
-
-		for (int i=0;i<=50;i++) {
-			Producer p = new Producer(domainQueue,i);
-			//Producer p = new Producer(callbacks,domainQueue,sharedQueue,i);
-			p.start();
-			plist.add(p);
-		}
-
-		long waitTime = 0; 
-		while(true) {//to wait all threads exit.
-			if (domainQueue.isEmpty() && isAllProductorFinished()) {
-				stdout.println("~~~~~~~~~~~~~Get Title Done~~~~~~~~~~~~~");
-				break;
-			}else if(domainQueue.isEmpty() && waitTime >=10*60*1000){
-				stdout.println("~~~~~~~~~~~~~Get Title Done(force exits due to time out)~~~~~~~~~~~~~");
-				break;
-			}else {
-				try {
-					Thread.sleep(60*1000);//1分钟
-					waitTime =waitTime+60*1000;
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-				continue;//unnecessary
-			}
-		}
-
-		return;
-	}
-
-	boolean isAllProductorFinished(){
-		int i = 0;
-		for (Producer p:plist) {
-			if(p.isAlive()) {
-				i = i+1;
-			}
-		}
-		if (i>0){
-			stdout.println( "~~~~~~~~~~~~~"+i +" productors are still alive~~~~~~~~~~~~~");
-			return false;
-		}else{
-			stdout.println( "~~~~~~~~~~~~~All productor threads exited ~~~~~~~~~~~~~");
-			return true;
-		}
-	}
-
-	public void stopThreads() {
-		for (Producer p:plist) {
-			p.stopThread();
-		}
-		stdout.println("~~~~~~~~~~~~~All stop message sent! wait them to exit~~~~~~~~~~~~~");
-	}
-}
+/** 
+* @author bit4woo
+* @github https://github.com/bit4woo 
+* @version CreateTime：Jun 25, 2020 2:35:31 PM 
+*/
 
 /*
  * do request use method of burp
@@ -104,7 +35,7 @@ public class ThreadGetTitle{
  *
  */
 
-class Producer extends Thread {//Producer do
+public class Producer extends Thread {//Producer do
 	private final BlockingQueue<String> domainQueue;//use to store domains
 	private int threadNo;
 	private boolean stopflag = false;
@@ -180,6 +111,8 @@ class Producer extends Thread {//Producer do
 			//因为这2个操作都会让map的长度发生变化，从而导致问题
 			return found;
 		}
+		
+		//根据host进行查找的逻辑，不会导致手动保存的条目被替换为null，因为手动保存的条目IP列表为空
 		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
 		for (LineEntry line:HistoryLines.values()) {
 			if (line== null) {
@@ -303,9 +236,9 @@ class Producer extends Thread {//Producer do
 
 
 		//do request for external port, 8000,8080, 
-
-		if (TitlePanel.getExternalPortList() != null && TitlePanel.getExternalPortList().size() != 0) {
-			for (int port: TitlePanel.getExternalPortList()) {
+		Set<String> ExternalPorts = ToolPanel.getExternalPortSet();
+		if (ExternalPorts.size() != 0) {
+			for (String port: ExternalPorts) {
 
 				//do http request
 				URL ex_http = new URL("http://"+host+":"+port+"/");

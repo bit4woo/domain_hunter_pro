@@ -2,6 +2,7 @@ package title;
 
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -11,6 +12,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.alibaba.fastjson.JSON;
+import com.google.common.hash.HashCode;
 import com.ibm.icu.text.CharsetDetector;
 import com.ibm.icu.text.CharsetMatch;
 
@@ -29,15 +31,17 @@ public class LineEntry {
 	public static final String Level_B = "无用";
 	public static final String Level_C = "一般";
 
+	public static final String[] LevelArray = {LineEntry.Level_A, LineEntry.Level_B, LineEntry.Level_C};
+
 	public static final String CheckStatus_UnChecked = "UnChecked";
 	public static final String CheckStatus_Checked = "Done";
 	public static final String CheckStatus_Checking = "Checking";
-	
-//	public static final String Tag_Manager = "管理端";
-//	public static final String Tag_UserEnd = "用户端";
-//	public static final String Tag_TestEnvironment = "测试环境";
-//	public static final String Tag_Useless = "无用";
-//	public static final String Tag_MoreDig = "需复测"; //需要定期review的网站
+
+	//	public static final String Tag_Manager = "管理端";
+	//	public static final String Tag_UserEnd = "用户端";
+	//	public static final String Tag_TestEnvironment = "测试环境";
+	//	public static final String Tag_Useless = "无用";
+	//	public static final String Tag_MoreDig = "需复测"; //需要定期review的网站
 
 	public static String systemCharSet = getSystemCharSet();
 
@@ -62,7 +66,7 @@ public class LineEntry {
 
 	//Gson中，加了transient表示不序列号，是最简单的方法
 	//给不想被序列化的属性增加transient属性---java特性
-	private transient String messageText = "";//use to search
+	//private transient String messageText = "";//use to search
 	//private transient String bodyText = "";//use to adjust the response changed or not
 	//don't store these two field to reduce config file size.
 
@@ -71,12 +75,12 @@ public class LineEntry {
 	private String CheckStatus =CheckStatus_UnChecked;
 	private String Level = Level_C;
 	private String comment ="";
+	private boolean isManualSaved = false;
 
 	private transient IHttpRequestResponse messageinfo;
 
 	//remove IHttpRequestResponse field ,replace with request+response+httpService(host port protocol). for convert to json.
 
-	private transient BurpExtender burp;
 	private transient IExtensionHelpers helpers;
 	private transient IBurpExtenderCallbacks callbacks;
 
@@ -101,7 +105,7 @@ public class LineEntry {
 		parse();
 	}
 
-	public LineEntry(IHttpRequestResponse messageinfo,boolean isNew,String CheckStatus,String comment) {
+	public LineEntry(IHttpRequestResponse messageinfo,String CheckStatus,String comment) {
 		this.messageinfo = messageinfo;
 		this.callbacks = BurpExtender.getCallbacks();
 		this.helpers = this.callbacks.getHelpers();
@@ -166,8 +170,6 @@ public class LineEntry {
 
 
 				Getter getter = new Getter(helpers);
-				messageText = new String(messageinfo.getRequest())+new String(response);
-
 
 				webcontainer = getter.getHeaderValueOf(false, messageinfo, "Server");
 				byte[] byteBody = getter.getBody(false, messageinfo);
@@ -227,8 +229,18 @@ public class LineEntry {
 		this.title = title;
 	}
 
+	//IPString 222.79.64.33, 124.225.183.63
 	public String getIP() {
 		return IP;
+	}
+	
+	//return IP 的集合
+	public Set<String> fetchIPSet() {
+		Set<String> result = new HashSet<String>();
+		for (String ip: IP.split(",")) {
+			result.add(ip.trim());
+		}
+		return result;
 	}
 
 	public void setIP(String iP) {
@@ -361,6 +373,7 @@ Content-Type: text/html;charset=UTF-8
 
 		if (originalCharSet != null && !originalCharSet.equalsIgnoreCase(systemCharSet)) {
 			try {
+				System.out.println("正将编码从"+originalCharSet+"转换为"+systemCharSet+"[windows系统编码]");
 				byte[] newResponse = new String(response,originalCharSet).getBytes(systemCharSet);
 				return new String(newResponse,systemCharSet);
 			} catch (Exception e) {
@@ -393,6 +406,14 @@ Content-Type: text/html;charset=UTF-8
 			Matcher mh  = ph.matcher(bodyText);
 			while ( mh.find() ) {
 				title = mh.group(0);
+			}
+		}
+		title = title.replaceAll("<.*?>", "");
+		
+		if (statuscode == 302 || statuscode == 301) {
+			String Locationurl = getHeaderValueOf(false,"Location");
+			if (null != Locationurl) {
+				title  = title +" --> "+Locationurl;
 			}
 		}
 		return title;
@@ -480,11 +501,11 @@ Content-Type: text/html;charset=UTF-8
 			//dbHelper.updateTitle(this);
 			//不能在这里就进行写入，可能对象的属性都还没设置全呢，会导致数据丢失
 		} catch (Exception e) {
-			
+
 		}
 		this.isChecked = isChecked;
 	}
-	
+
 	public String getCheckStatus() {
 		return CheckStatus;
 	}
@@ -514,6 +535,14 @@ Content-Type: text/html;charset=UTF-8
 		this.comment = comment;
 	}
 
+	public boolean isManualSaved() {
+		return isManualSaved;
+	}
+
+	public void setManualSaved(boolean isManualSaved) {
+		this.isManualSaved = isManualSaved;
+	}
+
 	public IExtensionHelpers getHelpers() {
 		return helpers;
 	}
@@ -528,17 +557,19 @@ Content-Type: text/html;charset=UTF-8
 	}
 
 	public static void main(String args[]) {
-//		LineEntry x = new LineEntry();
-//		x.setRequest("xxxxxx".getBytes());
-//		//		System.out.println(yy);
-//		System.out.println(getSystemCharSet());
-//		System.out.println(System.getProperty("file.encoding"));
-//		System.out.println(Charset.defaultCharset());
-		
+		//		LineEntry x = new LineEntry();
+		//		x.setRequest("xxxxxx".getBytes());
+		//		//		System.out.println(yy);
+		//		System.out.println(getSystemCharSet());
+		//		System.out.println(System.getProperty("file.encoding"));
+		//		System.out.println(Charset.defaultCharset());
+
 		String item = "{\"bodyText\":\"<!DOCTYPE html PUBLIC \\\"-//W3C//DTD XHTML 1.0 Strict//EN\\\" \\\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\\\">\\r\\n<html xmlns=\\\"http://www.w3.org/1999/xhtml\\\">\\r\\n<head>\\r\\n<meta http-equiv=\\\"Content-Type\\\" content=\\\"text/html; charset=iso-8859-1\\\" />\\r\\n<title>IIS Windows Server</title>\\r\\n<style type=\\\"text/css\\\">\\r\\n<!--\\r\\nbody {\\r\\n\\tcolor:#000000;\\r\\n\\tbackground-color:#0072C6;\\r\\n\\tmargin:0;\\r\\n}\\r\\n\\r\\n#container {\\r\\n\\tmargin-left:auto;\\r\\n\\tmargin-right:auto;\\r\\n\\ttext-align:center;\\r\\n\\t}\\r\\n\\r\\na img {\\r\\n\\tborder:none;\\r\\n}\\r\\n\\r\\n-->\\r\\n</style>\\r\\n</head>\\r\\n<body>\\r\\n<div id=\\\"container\\\">\\r\\n<a href=\\\"http://go.microsoft.com/fwlink/?linkid=66138&amp;clcid=0x409\\\"><img src=\\\"iis-85.png\\\" alt=\\\"IIS\\\" width=\\\"960\\\" height=\\\"600\\\" /></a>\\r\\n</div>\\r\\n</body>\\r\\n</html>\",\"cDN\":\"\",\"checkStatus\":\"Checked\",\"comment\":\"\",\"contentLength\":701,\"host\":\"193.112.174.9\",\"iP\":\"193.112.174.9\",\"level\":\"一般\",\"port\":80,\"protocol\":\"http\",\"request\":\"R0VUIC8gSFRUUC8xLjENCkhvc3Q6IDE5My4xMTIuMTc0LjkNCkFjY2VwdC1FbmNvZGluZzogZ3ppcCwgZGVmbGF0ZQ0KQWNjZXB0OiAqLyoNCkFjY2VwdC1MYW5ndWFnZTogZW4NClVzZXItQWdlbnQ6IE1vemlsbGEvNS4wIChXaW5kb3dzIE5UIDEwLjA7IFdpbjY0OyB4NjQpIEFwcGxlV2ViS2l0LzUzNy4zNiAoS0hUTUwsIGxpa2UgR2Vja28pIENocm9tZS84MC4wLjM5ODcuMTMyIFNhZmFyaS81MzcuMzYNCkNvbm5lY3Rpb246IGNsb3NlDQoNCg==\",\"response\":\"SFRUUC8xLjEgMjAwIE9LDQpDb250ZW50LVR5cGU6IHRleHQvaHRtbA0KTGFzdC1Nb2RpZmllZDogVGh1LCAyOCBGZWIgMjAxOSAwOTozMzoyNyBHTVQNCkFjY2VwdC1SYW5nZXM6IGJ5dGVzDQpFVGFnOiAiYTg3ZGI4YTg0OGNmZDQxOjAiDQpWYXJ5OiBBY2NlcHQtRW5jb2RpbmcNClNlcnZlcjogTWljcm9zb2Z0LUlJUy84LjUNClgtUG93ZXJlZC1CeTogQVNQLk5FVA0KRGF0ZTogV2VkLCAxMyBNYXkgMjAyMCAxMDoyNDowNyBHTVQNCkNvbm5lY3Rpb246IGNsb3NlDQpDb250ZW50LUxlbmd0aDogNzAxDQoNCjwhRE9DVFlQRSBodG1sIFBVQkxJQyAiLS8vVzNDLy9EVEQgWEhUTUwgMS4wIFN0cmljdC8vRU4iICJodHRwOi8vd3d3LnczLm9yZy9UUi94aHRtbDEvRFREL3hodG1sMS1zdHJpY3QuZHRkIj4NCjxodG1sIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hodG1sIj4NCjxoZWFkPg0KPG1ldGEgaHR0cC1lcXVpdj0iQ29udGVudC1UeXBlIiBjb250ZW50PSJ0ZXh0L2h0bWw7IGNoYXJzZXQ9aXNvLTg4NTktMSIgLz4NCjx0aXRsZT5JSVMgV2luZG93cyBTZXJ2ZXI8L3RpdGxlPg0KPHN0eWxlIHR5cGU9InRleHQvY3NzIj4NCjwhLS0NCmJvZHkgew0KCWNvbG9yOiMwMDAwMDA7DQoJYmFja2dyb3VuZC1jb2xvcjojMDA3MkM2Ow0KCW1hcmdpbjowOw0KfQ0KDQojY29udGFpbmVyIHsNCgltYXJnaW4tbGVmdDphdXRvOw0KCW1hcmdpbi1yaWdodDphdXRvOw0KCXRleHQtYWxpZ246Y2VudGVyOw0KCX0NCg0KYSBpbWcgew0KCWJvcmRlcjpub25lOw0KfQ0KDQotLT4NCjwvc3R5bGU+DQo8L2hlYWQ+DQo8Ym9keT4NCjxkaXYgaWQ9ImNvbnRhaW5lciI+DQo8YSBocmVmPSJodHRwOi8vZ28ubWljcm9zb2Z0LmNvbS9md2xpbmsvP2xpbmtpZD02NjEzOCZhbXA7Y2xjaWQ9MHg0MDkiPjxpbWcgc3JjPSJpaXMtODUucG5nIiBhbHQ9IklJUyIgd2lkdGg9Ijk2MCIgaGVpZ2h0PSI2MDAiIC8+PC9hPg0KPC9kaXY+DQo8L2JvZHk+DQo8L2h0bWw+\",\"statuscode\":200,\"time\":\"2020-05-22-11-07-45\",\"title\":\"<title>IIS Windows Server</title>\",\"url\":\"http://193.112.174.9:80/\",\"webcontainer\":\"Microsoft-IIS/8.5\"}";
 		LineEntry entry = LineEntry.FromJson(item);
 		System.out.println(entry.getCheckStatus());
 		System.out.println(entry.getLevel());
 		System.out.println(entry.getTime());
+		String key = HashCode.fromBytes(entry.getRequest()).toString();
+		System.out.println(key);
 	}
 }

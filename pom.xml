@@ -7,18 +7,12 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.bit4woo.burp</groupId>
 	<artifactId>domain_hunter_pro</artifactId>
-	<version>20200521</version>
+	<version>20200811</version>
 
 	<repositories>
 		<repository>
 			<id>jitpack.io</id>
 			<url>https://jitpack.io</url>
-		</repository>
-
-		<repository>
-			<id>alimaven</id>
-			<name>aliyun maven</name>
-			<url>http://maven.aliyun.com/nexus/content/groups/public/</url>
 		</repository>
 	</repositories>
 
@@ -43,6 +37,13 @@
 					<descriptorRefs>
 						<descriptorRef>jar-with-dependencies</descriptorRef>
 					</descriptorRefs>
+					<archive>
+						<manifest>
+							<addDefaultImplementationEntries>
+								true<!--for getVersion from pom.xml-->
+							</addDefaultImplementationEntries>
+						</manifest>
+					</archive>
 				</configuration>
 				<executions>
 					<execution>
@@ -135,8 +136,9 @@
 		<dependency>
 			<groupId>org.xerial</groupId>
 			<artifactId>sqlite-jdbc</artifactId>
-			<version>3.27.2.1</version>
+			<version>3.31.1</version>
 		</dependency>
+
 
 		<!-- https://mvnrepository.com/artifact/commons-net/commons-net -->
 		<dependency>
@@ -172,6 +174,13 @@
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
 			<version>2.13.0</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.beanshell/bsh -->
+		<dependency>
+			<groupId>org.beanshell</groupId>
+			<artifactId>bsh</artifactId>
+			<version>2.0b5</version>
 		</dependency>
 
 	</dependencies>

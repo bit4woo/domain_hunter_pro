@@ -35,6 +35,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 
+import GUI.GUI;
 import Tools.LineConfig;
 import burp.BurpExtender;
 import burp.Commons;
@@ -60,10 +61,9 @@ public class TitlePanel extends JPanel {
 	private static LineTableModel titleTableModel = new LineTableModel();
 	PrintWriter stdout;
 	PrintWriter stderr;
-	private ThreadGetTitle threadGetTitle;
+	public static ThreadGetTitleWithForceStop threadGetTitle;
 	private IndexedLinkedHashMap<String,LineEntry> BackupLineEntries;
 	
-	private static List<Integer> externalPortList;
 	private static JTextField textFieldSearch;
 
 	public static JTextField getTextFieldSearch() {
@@ -83,20 +83,8 @@ public class TitlePanel extends JPanel {
 		return titleTableModel;
 	}
 
-	public ThreadGetTitle getThreadGetTitle() {
-		return threadGetTitle;
-	}
-
 	public IndexedLinkedHashMap<String,LineEntry> getBackupLineEntries() {
 		return BackupLineEntries;
-	}
-
-	public static List<Integer> getExternalPortList() {
-		return externalPortList;
-	}
-
-	public static void setExternalPortList(List<Integer> externalPortList) {
-		TitlePanel.externalPortList = externalPortList;
 	}
 
 	public TitlePanel() {//构造函数
@@ -157,7 +145,7 @@ public class TitlePanel extends JPanel {
 					protected Map doInBackground() throws Exception {
 						btnGettitle.setEnabled(false);
 						getAllTitle();
-						btnGettitle.setEnabled(true);
+						//btnGettitle.setEnabled(true);
 						return new HashMap<String, String>();
 						//no use ,the return.
 					}
@@ -175,6 +163,7 @@ public class TitlePanel extends JPanel {
 		});
 		buttonPanel.add(btnGettitle);
 
+		
 		JButton btnGetExtendtitle = new JButton("Get Extend Title");
 		btnGetExtendtitle.setToolTipText("Get title of the host that in same subnet,you should do this after get domain title done!");
 		btnGetExtendtitle.setEnabled(true);//default is false,only true after "get title" is done.
@@ -185,7 +174,7 @@ public class TitlePanel extends JPanel {
 					protected Map doInBackground() throws Exception {
 						btnGetExtendtitle.setEnabled(false);
 						getExtendTitle();
-						btnGetExtendtitle.setEnabled(true);
+						//btnGetExtendtitle.setEnabled(true);
 						return new HashMap<String, String>();
 						//no use ,the return.
 					}
@@ -202,6 +191,35 @@ public class TitlePanel extends JPanel {
 			}
 		});
 		buttonPanel.add(btnGetExtendtitle);
+		
+		
+		JButton btnGettitleOfJustNewFound = new JButton("GetTitleOfNewDomain");
+		btnGettitleOfJustNewFound.setToolTipText("Just get title of new found subdomains");
+		btnGettitleOfJustNewFound.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+					@Override
+					protected Map doInBackground() throws Exception {
+						btnGettitleOfJustNewFound.setEnabled(false);
+						getTitleOfNewDomain();
+						btnGettitleOfJustNewFound.setEnabled(true);
+						return new HashMap<String, String>();
+						//no use ,the return.
+					}
+					@Override
+					protected void done() {
+						try {
+							btnGettitleOfJustNewFound.setEnabled(true);
+						} catch (Exception e) {
+							e.printStackTrace(stderr);
+						}
+					}
+				};
+				worker.execute();
+			}
+		});
+		buttonPanel.add(btnGettitleOfJustNewFound);
+		
 
 		JButton btnGetSubnet = new JButton("Get Subnet");
 		btnGetSubnet.setEnabled(true);
@@ -240,6 +258,7 @@ public class TitlePanel extends JPanel {
 		});
 		buttonPanel.add(btnGetSubnet);
 
+		/*
 		//通过tableModelListener实现自动保存后，无需这个模块了
 		JButton btnSaveState = new JButton("Save");
 		btnSaveState.addActionListener(new ActionListener() {
@@ -263,7 +282,7 @@ public class TitlePanel extends JPanel {
 		btnSaveState.setToolTipText("Save Data To DataBase");
 		//buttonPanel.add(btnSaveState);
 
-
+		
 		InputMap inputMap1 = btnSaveState.getInputMap(JButton.WHEN_IN_FOCUSED_WINDOW);
 		KeyStroke Save = KeyStroke.getKeyStroke(KeyEvent.VK_S,ActionEvent.CTRL_MASK); //Ctrl+S
 		inputMap1.put(Save, "Save");
@@ -287,8 +306,19 @@ public class TitlePanel extends JPanel {
 				worker.execute();
 			}
 		});
-
+		*/
 		
+		JButton btnStop = new JButton("Stop");
+		btnStop.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				int result = JOptionPane.showConfirmDialog(null,"Are you sure to [Force Stop] all theads ?");
+				if (threadGetTitle != null && result == JOptionPane.YES_OPTION){
+					threadGetTitle.forceStopThreads();
+				}
+			}
+		});
+		buttonPanel.add(btnStop);
+
 		textFieldSearch = new SearchTextField().Create("");
 		buttonPanel.add(textFieldSearch);
 
@@ -374,8 +404,13 @@ public class TitlePanel extends JPanel {
 		//		TitlePanel.externalPortList = Commons.Port_prompt(null,"External Ports To Run");
 		//		stdout.println("external ports: "+ externalPortList);
 
-		threadGetTitle = new ThreadGetTitle(domains);
-		threadGetTitle.Do();
+//		threadGetTitle = new ThreadGetTitle(domains);
+//		threadGetTitle.Do();
+		if (threadGetTitle != null){
+			threadGetTitle.interrupt();
+		}
+		threadGetTitle = new ThreadGetTitleWithForceStop(domains);
+		threadGetTitle.start();
 
 	}
 
@@ -383,8 +418,11 @@ public class TitlePanel extends JPanel {
 	public void getExtendTitle(){
 		Set<String> extendIPSet = titleTableModel.GetExtendIPSet();
 		stdout.println(extendIPSet.size()+" extend IP Address founded"+extendIPSet);
-		threadGetTitle = new ThreadGetTitle(extendIPSet);
-		threadGetTitle.Do();
+		if (threadGetTitle != null){
+			threadGetTitle.interrupt();
+		}
+		threadGetTitle = new ThreadGetTitleWithForceStop(extendIPSet);
+		threadGetTitle.start();
 
 		//转移手动保存的结果
 		for (LineEntry entry:BackupLineEntries.values()) {
@@ -397,6 +435,32 @@ public class TitlePanel extends JPanel {
 		}
 	}
 
+	/*
+	 * 获取新发现域名的title
+	 */
+	public void getTitleOfNewDomain(){
+		//是否在目标的内网中
+		int user_input = JOptionPane.showConfirmDialog(null, "Do you want request [PRIVATE] ip addresses?","Chose work model",JOptionPane.YES_NO_OPTION);
+		if (JOptionPane.YES_OPTION == user_input) {
+			LineConfig.setPrivateNetworkWorkingModel(true);
+		}else {
+			LineConfig.setPrivateNetworkWorkingModel(false);
+		}
+
+		inputCookie();//如果用户点击cancel，就不会进行后续步骤，why?
+
+		DomainPanel.backupDB();
+		Set<String> domains = new HashSet<>();//新建一个对象，直接赋值后的删除操作，实质是对domainResult的操作。
+		domains.addAll(DomainPanel.getDomainResult().getNewAndNotGetTitleDomainSet());
+		//remove domains in black list
+		domains.removeAll(DomainPanel.getDomainResult().getBlackDomainSet());
+
+		if (threadGetTitle != null){
+			threadGetTitle.interrupt();
+		}
+		threadGetTitle = new ThreadGetTitleWithForceStop(domains);
+		threadGetTitle.start();
+	}
 
 
 	public String getSubnet(boolean isCurrent,boolean justPulic){

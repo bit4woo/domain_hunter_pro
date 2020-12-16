@@ -27,9 +27,16 @@ public class IndexedLinkedHashMap<K,V> extends LinkedHashMap<K,V> {
         return returnValue;
     }
 
-    public K getKeyAtIndex(int i) {
-        return (K) al_Index.get(i);
+    public V removeByIndex(int index) {
+        K key = (K) al_Index.get(index);
+        V returnValue = super.remove(key);
+        al_Index.remove(key);
+        return returnValue;
     }
+
+//    public K getKeyAtIndex(int i) {
+//        return (K) al_Index.get(i);
+//    }
     
     public V getValueAtIndex(int i){
         return (V) super.get(al_Index.get(i));
@@ -39,7 +46,7 @@ public class IndexedLinkedHashMap<K,V> extends LinkedHashMap<K,V> {
         return al_Index.indexOf(key);
     }
     
-    public static void main(String args[]) {
+    public static void main(String[] args) {
     	IndexedLinkedHashMap aaa = new IndexedLinkedHashMap();
     	aaa.put("1", "a");
     	aaa.put("2", "b");
@@ -48,9 +55,12 @@ public class IndexedLinkedHashMap<K,V> extends LinkedHashMap<K,V> {
     	aaa.put("5", "e");
     	aaa.put("6", "f");
     	aaa.put("7", "g");
-    	
-    	System.out.print(aaa.IndexOfKey("4"));
+        aaa.put("7", "x");
+
+
+    	System.out.println("index of 4: "+aaa.IndexOfKey("4"));
     	aaa.remove("2");
-    	System.out.print(aaa.IndexOfKey("4"));
+        aaa.put("7", "x");
+    	System.out.println("index of 4: "+aaa.IndexOfKey("4"));
     }
 }

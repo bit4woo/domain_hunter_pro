@@ -34,7 +34,7 @@ public class LineEntryMenu extends JPopupMenu {
 	private static final long serialVersionUID = 1L;
 	PrintWriter stdout = BurpExtender.getStdout();
 	PrintWriter stderr = BurpExtender.getStderr();
-	LineEntryMenu(final LineTable lineTable, final int[] rows){
+	LineEntryMenu(final LineTable lineTable, final int[] rows,final int column){
 
 		JMenuItem itemNumber = new JMenuItem(new AbstractAction(rows.length+" Items Selected") {
 			@Override
@@ -49,7 +49,7 @@ public class LineEntryMenu extends JPopupMenu {
 				//lineTable.setColor(1);
 			}
 		});
-		*/
+		 */
 
 		JMenuItem googleSearchItem = new JMenuItem(new AbstractAction("Seach on Google (double click index)") {
 			@Override
@@ -87,13 +87,35 @@ public class LineEntryMenu extends JPopupMenu {
 				}
 			}
 		});
-		
+
 		JMenuItem SearchOnHunterItem = new JMenuItem(new AbstractAction("Seach On Hunter") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-		
-				String host = lineTable.getModel().getLineEntries().getValueAtIndex(rows[0]).getHost();
-				TitlePanel.getTextFieldSearch().setText(SearchDork.HOST.toString()+":"+host);
+				LineEntry firstEntry = lineTable.getModel().getLineEntries().getValueAtIndex(rows[0]);
+				String columnName = lineTable.getColumnName(column);
+
+				if (columnName.equalsIgnoreCase("Status")){
+					int status = firstEntry.getStatuscode();
+					TitlePanel.getTextFieldSearch().setText(SearchDork.STATUS.toString()+":"+status);
+				}else if (columnName.equalsIgnoreCase("length")){
+					int length = firstEntry.getContentLength();
+					TitlePanel.getTextFieldSearch().setText(length+"");
+				}else if (columnName.equalsIgnoreCase("title")){
+					String title = firstEntry.getTitle();
+					TitlePanel.getTextFieldSearch().setText(title);
+				}else if (columnName.equalsIgnoreCase("comments")){
+					String comment = firstEntry.getComment();
+					TitlePanel.getTextFieldSearch().setText(SearchDork.COMMENT.toString()+":"+comment);
+				}else if (columnName.equalsIgnoreCase("IP")){
+					String ip = firstEntry.getIP();
+					TitlePanel.getTextFieldSearch().setText(ip);
+				}else if (columnName.equalsIgnoreCase("CDN")){
+					String cdn = firstEntry.getCDN();
+					TitlePanel.getTextFieldSearch().setText(cdn);
+				}else {
+					String host = firstEntry.getHost();
+					TitlePanel.getTextFieldSearch().setText(SearchDork.HOST.toString()+":"+host);
+				}
 			}
 		});
 
@@ -186,10 +208,10 @@ public class LineEntryMenu extends JPopupMenu {
 		JMenuItem doActiveScan = new JMenuItem(new AbstractAction("Do Active Scan") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				try{
-					IndexedLinkedHashMap<String,LineEntry> entries = lineTable.getModel().getLineEntries();
-					IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
-					for (int i=rows.length-1;i>=0 ;i-- ) {
+				IndexedLinkedHashMap<String,LineEntry> entries = lineTable.getModel().getLineEntries();
+				IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
+				for (int i=rows.length-1;i>=0 ;i-- ) {
+					try{
 						LineEntry entry = entries.getValueAtIndex(rows[i]);
 
 						String host = entry.getHost();
@@ -205,14 +227,14 @@ public class LineEntryMenu extends JPopupMenu {
 						callbacks.includeInScope(new URL(entry.getUrl()));
 						callbacks.doActiveScan(host, port, useHttps, request);
 					}
-				}
-				catch (Exception e1)
-				{
-					e1.printStackTrace(stderr);
+					catch (Exception e1)
+					{
+						e1.printStackTrace(stderr);
+					}
 				}
 			}
 		});
-		
+
 		JMenuItem checkingItem = new JMenuItem(new AbstractAction("Checking") {//checking
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -230,7 +252,7 @@ public class LineEntryMenu extends JPopupMenu {
 				}
 			}
 		});
-		
+
 
 		JMenuItem checkedItem = new JMenuItem(new AbstractAction("Check Done") {
 			@Override
@@ -256,7 +278,7 @@ public class LineEntryMenu extends JPopupMenu {
 				while(Comments.trim().equals("")){
 					Comments = JOptionPane.showInputDialog("Comments", null).trim();
 				}
-				BurpExtender.getGui().getTitlePanel().getTitleTableModel().updateComments(rows,Comments);
+				TitlePanel.getTitleTableModel().updateComments(rows,Comments);
 			}
 		});
 
@@ -278,7 +300,7 @@ public class LineEntryMenu extends JPopupMenu {
 				}
 			}
 		});
-		
+
 		JMenuItem SendToRepeater = new JMenuItem(new AbstractAction("Send To Repeater") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -379,7 +401,7 @@ public class LineEntryMenu extends JPopupMenu {
 			}
 		});
 
-		JMenuItem blackListItem = new JMenuItem(new AbstractAction("Delete And Add To Black List") {//need to show dialog to confirm
+		JMenuItem blackListItem = new JMenuItem(new AbstractAction("Add Domain To Black List And Delete") {//need to show dialog to confirm
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				int result = JOptionPane.showConfirmDialog(null,"Are you sure to DELETE these items and Add To BLACK LIST ?");
@@ -393,6 +415,31 @@ public class LineEntryMenu extends JPopupMenu {
 		});
 		blackListItem.setToolTipText("will not get title from next time");
 
+		JMenuItem IpBlackListItem = new JMenuItem(new AbstractAction("Add IP To Black List") {//need to show dialog to confirm
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				int result = JOptionPane.showConfirmDialog(null,"Are you sure to add these IP items To BLACK LIST ?");
+				if (result == JOptionPane.YES_OPTION) {
+					lineTable.getModel().addIPBlackList(rows);
+				}else {
+					return;
+				}
+			}
+		});
+		IpBlackListItem.setToolTipText("will not get title from next time");
+
+		JMenuItem SubnetBlackListItem = new JMenuItem(new AbstractAction("Add C Subnet To Black List") {//need to show dialog to confirm
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				int result = JOptionPane.showConfirmDialog(null,"Are you sure to add these subnets To BLACK LIST ?");
+				if (result == JOptionPane.YES_OPTION) {
+					lineTable.getModel().addSubnetBlackList(rows);
+				}else {
+					return;
+				}
+			}
+		});
+		SubnetBlackListItem.setToolTipText("will not get title from next time");
 
 
 		this.add(itemNumber);
@@ -400,20 +447,20 @@ public class LineEntryMenu extends JPopupMenu {
 		this.add(checkedItem);
 		this.add(levelMenu);
 		this.add(batchAddCommentsItem);
-		
+
 		this.addSeparator();
-		
+
 		this.add(addHostsToScope);
 		this.add(doActiveScan);
 		this.add(doPortScan);
 		this.add(dirSearchItem);
 
 		this.addSeparator();
-		
+
 		this.add(googleSearchItem);
 		this.add(SearchOnGithubItem);
 		this.add(SearchOnHunterItem);
-		
+
 		this.addSeparator();
 
 		this.add(openURLwithBrowserItem);
@@ -422,11 +469,13 @@ public class LineEntryMenu extends JPopupMenu {
 		this.add(copyLocationURLItem);
 		this.add(SendToRepeater);
 		this.add(SendToRepeaterWithCookieItem);
-		
+
 		this.addSeparator();
-		
+
 		this.add(removeItem);
 		this.add(blackListItem);
+		this.add(IpBlackListItem);
+		this.add(SubnetBlackListItem);
 
 	}
 }

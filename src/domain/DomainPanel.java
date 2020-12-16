@@ -12,8 +12,6 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -48,6 +46,7 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowSorter;
 import javax.swing.SortOrder;
+import javax.swing.SwingConstants;
 import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
@@ -60,6 +59,8 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
@@ -101,6 +102,7 @@ public class DomainPanel extends JPanel {
 	private JTable table;
 
 	private boolean listenerIsOn = true;
+	private static final Logger log=LogManager.getLogger(DomainPanel.class);
 
 	public static DomainManager getDomainResult() {
 		return domainResult;
@@ -409,7 +411,7 @@ public class DomainPanel extends JPanel {
 		});
 		//HeaderPanel.add(textFieldUploadURL);
 		textFieldUploadURL.setColumns(30);
-		
+
 
 
 		JButton btnUpload = new JButton("Upload");
@@ -429,7 +431,7 @@ public class DomainPanel extends JPanel {
 				worker.execute();
 			}
 		});
-		*/
+		 */
 
 
 		////////////////////////////////////target area///////////////////////////////////////////////////////
@@ -459,11 +461,11 @@ public class DomainPanel extends JPanel {
 		});
 
 		domainTableModel = new DefaultTableModel(
-				new Object[][] {
+				new Object[][][] {
 					//{"1", "1","1"},
 				},
 				new String[] {
-						"Root Domain", "Keyword"//, "Source"
+						"Root Domain", "Keyword"//,"Comment"//, "Source"
 				}
 				);
 		table.setModel(domainTableModel);
@@ -516,11 +518,17 @@ public class DomainPanel extends JPanel {
 		split1of4.setResizeWeight(0.7);
 		leftOfCenterSplitPane.setLeftComponent(split1of4);
 
-		JSplitPane TargetSplitPane = new JSplitPane();
-		TargetSplitPane.setResizeWeight(1.0);
-		TargetSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
-		TargetSplitPane.setLeftComponent(TargetPanel);
-		split1of4.setLeftComponent(TargetSplitPane);
+		JSplitPane split1of8 = new JSplitPane();
+		split1of8.setResizeWeight(1.0);
+		split1of8.setOrientation(JSplitPane.VERTICAL_SPLIT);
+		split1of8.setLeftComponent(TargetPanel);
+		split1of4.setLeftComponent(split1of8);
+
+
+		JSplitPane split2of8 = new JSplitPane();
+		split2of8.setOrientation(JSplitPane.VERTICAL_SPLIT);
+		split2of8.setResizeWeight(0.01);
+		split1of4.setRightComponent(split2of8);
 
 		JSplitPane split2of4 = new JSplitPane();//四分之二区域的分割者
 		split2of4.setResizeWeight(0.5);
@@ -541,32 +549,36 @@ public class DomainPanel extends JPanel {
 
 		JPanel ControlPanel = new JPanel();
 		ControlPanel.setBorder(new LineBorder(new Color(0, 0, 0)));
-		TargetSplitPane.setRightComponent(ControlPanel);
-		ControlPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+		split1of8.setRightComponent(ControlPanel);
 
 
 		JButton addButton = new JButton("Add");
 		addButton.setToolTipText("add Top-Level domain");
 		addButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
-				enteredRootDomain = enteredRootDomain.trim().toLowerCase();
-				if (enteredRootDomain.startsWith("http://") || enteredRootDomain.startsWith("https://")){
-					try {
-						URL url = new URL(enteredRootDomain);
-						enteredRootDomain = url.getHost();
-					} catch (Exception e2) {
+				if (domainResult == null) {
+					JOptionPane.showMessageDialog(null,"you should create project db file first");
+				}else {
+					String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
+					enteredRootDomain = enteredRootDomain.trim().toLowerCase();
+					if (enteredRootDomain.startsWith("http://") || enteredRootDomain.startsWith("https://")){
+						try {
+							URL url = new URL(enteredRootDomain);
+							enteredRootDomain = url.getHost();
+						} catch (Exception e2) {
 
+						}
 					}
-				}
-				enteredRootDomain = InternetDomainName.from(enteredRootDomain).topPrivateDomain().toString();
-				String keyword = enteredRootDomain.substring(0,enteredRootDomain.indexOf("."));
+					enteredRootDomain = InternetDomainName.from(enteredRootDomain).topPrivateDomain().toString();
+					String keyword = enteredRootDomain.substring(0,enteredRootDomain.indexOf("."));
 
-				domainResult.AddToRootDomainMap(enteredRootDomain, keyword);
-				showToDomainUI();
-				autoSave();
+					domainResult.AddToRootDomainMap(enteredRootDomain, keyword);
+					showToDomainUI();
+					autoSave();
+				}
 			}
 		});
+		ControlPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 		ControlPanel.add(addButton);
 
 
@@ -574,22 +586,26 @@ public class DomainPanel extends JPanel {
 		addButton1.setToolTipText("add Multiple-Level domain");
 		addButton1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
-				enteredRootDomain = enteredRootDomain.trim().toLowerCase();
-				if (enteredRootDomain.startsWith("http://") || enteredRootDomain.startsWith("https://")){
-					try {
-						URL url = new URL(enteredRootDomain);
-						enteredRootDomain = url.getHost();
-					} catch (Exception e2) {
+				if (domainResult == null) {
+					JOptionPane.showMessageDialog(null,"you should create project db file first");
+				}else {
+					String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
+					enteredRootDomain = enteredRootDomain.trim().toLowerCase();
+					if (enteredRootDomain.startsWith("http://") || enteredRootDomain.startsWith("https://")){
+						try {
+							URL url = new URL(enteredRootDomain);
+							enteredRootDomain = url.getHost();
+						} catch (Exception e2) {
 
+						}
 					}
-				}
-				//enteredRootDomain = InternetDomainName.from(enteredRootDomain).topPrivateDomain().toString();
-				String keyword = enteredRootDomain.substring(0,enteredRootDomain.indexOf("."));
+					//enteredRootDomain = InternetDomainName.from(enteredRootDomain).topPrivateDomain().toString();
+					String keyword = enteredRootDomain.substring(0,enteredRootDomain.indexOf("."));
 
-				domainResult.AddToRootDomainMap(enteredRootDomain, keyword);
-				showToDomainUI();
-				autoSave();
+					domainResult.AddToRootDomainMap(enteredRootDomain, keyword);
+					showToDomainUI();
+					autoSave();
+				}
 			}
 		});
 		ControlPanel.add(addButton1);
@@ -704,7 +720,12 @@ public class DomainPanel extends JPanel {
 		ControlPanel.add(btnCopy);
 
 
+		JPanel autoControlPanel = new JPanel();
+		autoControlPanel.setBorder(new LineBorder(new Color(0, 0, 0)));
+		split2of8.setLeftComponent(autoControlPanel);
+
 		rdbtnAddRelatedToRoot = new JRadioButton("Auto Add Related Domain To Root Domain");
+		rdbtnAddRelatedToRoot.setVerticalAlignment(SwingConstants.TOP);
 		rdbtnAddRelatedToRoot.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				domainResult.autoAddRelatedToRoot = rdbtnAddRelatedToRoot.isSelected();
@@ -713,31 +734,33 @@ public class DomainPanel extends JPanel {
 					showToDomainUI();
 					autoSave();
 					/*
-					Set<String> tableRootDomains = getColumnValues("Root Domain");
-					for(String relatedDomain:domainResult.relatedDomainSet) {
-			        	String rootDomain =InternetDomainName.from(relatedDomain).topPrivateDomain().toString();
-						String keyword = rootDomain.substring(0,rootDomain.indexOf("."));
-						if (!tableRootDomains.contains(rootDomain)) {
-							tableModel.addRow(new Object[]{rootDomain,keyword});
-						}
-						//after this, tableModelListener will auto update rootDomainMap.
-					}
+							Set<String> tableRootDomains = getColumnValues("Root Domain");
+							for(String relatedDomain:domainResult.relatedDomainSet) {
+					        	String rootDomain =InternetDomainName.from(relatedDomain).topPrivateDomain().toString();
+								String keyword = rootDomain.substring(0,rootDomain.indexOf("."));
+								if (!tableRootDomains.contains(rootDomain)) {
+									tableModel.addRow(new Object[]{rootDomain,keyword});
+								}
+								//after this, tableModelListener will auto update rootDomainMap.
+							}
 
-					for (String similarDomain:domainResult.similarDomainSet) {
-						String rootDomain =InternetDomainName.from(similarDomain).topPrivateDomain().toString();
-						if (domainResult.rootDomainMap.keySet().contains(rootDomain)) {
-							domainResult.subDomainSet.add(similarDomain);
-							domainResult.similarDomainSet.remove(similarDomain);
-						}
-					}*/
+							for (String similarDomain:domainResult.similarDomainSet) {
+								String rootDomain =InternetDomainName.from(similarDomain).topPrivateDomain().toString();
+								if (domainResult.rootDomainMap.keySet().contains(rootDomain)) {
+									domainResult.subDomainSet.add(similarDomain);
+									domainResult.similarDomainSet.remove(similarDomain);
+								}
+							}*/
 				}
 			}
 		});
+		autoControlPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 		rdbtnAddRelatedToRoot.setSelected(false);
-		ControlPanel.add(rdbtnAddRelatedToRoot);
+		autoControlPanel.add(rdbtnAddRelatedToRoot);
 
 
 		///////////////////////////////textAreas///////////////////////////////////////////////////////
+
 
 		JScrollPane ScrollPaneSubnets = new JScrollPane(); //1of4
 
@@ -747,7 +770,8 @@ public class DomainPanel extends JPanel {
 		JScrollPane ScrollPaneEmails = new JScrollPane();
 		JScrollPane ScrollPanePackageNames = new JScrollPane();
 
-		split1of4.setRightComponent(ScrollPaneSubnets);
+
+		split2of8.setRightComponent(ScrollPaneSubnets);
 
 		split2of4.setLeftComponent(ScrollPaneRelatedDomains);
 		split2of4.setRightComponent(ScrollPaneSubdomains);
@@ -854,6 +878,7 @@ public class DomainPanel extends JPanel {
 			@Override
 			public void mouseEntered(MouseEvent e) {
 				lblSummary.setForeground(Color.RED);
+				lblSummary.setToolTipText(GUI.getCurrentDBFile().toString());
 			}
 			@Override
 			public void mouseExited(MouseEvent e) {
@@ -1118,7 +1143,7 @@ public class DomainPanel extends JPanel {
 		}
 		return false;
 	}
-	*/
+	 */
 
 	/*
     单独保存域名信息到另外的文件
@@ -1152,6 +1177,7 @@ public class DomainPanel extends JPanel {
 		}
 		DBHelper dbHelper = new DBHelper(file.toString());
 		boolean success = dbHelper.saveDomainObject(domainResult);
+		log.info("domain data saved");
 	}
 
 	/*
@@ -1185,6 +1211,10 @@ public class DomainPanel extends JPanel {
 	}
 
 	public void saveTextAreas(){
+
+		HashSet<String> oldSubdomains = new HashSet<String>();
+		oldSubdomains.addAll(DomainPanel.getDomainResult().getSubDomainSet());
+
 		domainResult.setSubnetSet(getSetFromTextArea(textAreaSubnets));
 		domainResult.setRelatedDomainSet(getSetFromTextArea(textAreaRelatedDomains));
 		domainResult.setSubDomainSet(getSetFromTextArea(textAreaSubdomains));
@@ -1192,6 +1222,15 @@ public class DomainPanel extends JPanel {
 		domainResult.setEmailSet(getSetFromTextArea(textAreaEmails));
 		domainResult.setPackageNameSet(getSetFromTextArea(textAreaPackages));
 		domainResult.getSummary();
+
+		//用于存储新增的域名到一个临时集合
+		HashSet<String> newSubdomains = new HashSet<String>();
+		newSubdomains.addAll(DomainPanel.getDomainResult().getSubDomainSet());
+
+		newSubdomains.removeAll(oldSubdomains);
+		DomainPanel.getDomainResult().getNewAndNotGetTitleDomainSet().addAll(newSubdomains);
+		stdout.println(String.format("~~~~~~~~~~~~~%s subdomains added!~~~~~~~~~~~~~",newSubdomains.size()));
+		stdout.println(String.join(System.lineSeparator(), newSubdomains));
 	}
 
 	public static Set<String> getSetFromTextArea(JTextArea textarea){

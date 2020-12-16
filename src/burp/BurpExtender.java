@@ -3,18 +3,25 @@ package burp;
 import java.awt.Component;
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import GUI.GUI;
 import GUI.LineEntryMenuForBurp;
+import bsh.This;
+import domain.DomainManager;
 import domain.DomainPanel;
+import domain.DomainProducer;
+import title.TitlePanel;
 
-public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListener,IContextMenuFactory{
+public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListener,IContextMenuFactory,IHttpListener{
 	/**
 	 *
 	 */
@@ -22,7 +29,9 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	private static IBurpExtenderCallbacks callbacks;
 	private static PrintWriter stdout;
 	private static PrintWriter stderr;
-	private static String ExtenderName = "Domain Hunter Pro by bit4woo";
+	private static String ExtenderName = "Domain Hunter Pro";
+	private static String Version =  This.class.getPackage().getImplementationVersion();
+	private static String Author = "by bit4woo";
 	private static String github = "https://github.com/bit4woo/domain_hunter_pro";
 	private static GUI gui;
 	public static final String Extension_Setting_Name_DB_File = "domain-Hunter-pro-db-path";
@@ -52,10 +61,6 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		return callbacks;
 	}
 
-	public static String getExtenderName() {
-		return ExtenderName;
-	}
-
 	public static String getGithub() {
 		return github;
 	}
@@ -64,21 +69,33 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		return gui;
 	}
 
+	public static String getExtenderName() {
+		return ExtenderName;
+	}
+
+	//name+version+author
+	public static String getFullExtenderName(){
+		return ExtenderName+" "+Version+" "+Author;
+	}
+
 	private IExtensionHelpers helpers;
 
 	//插件加载过程中需要做的事
 	@Override
 	public void registerExtenderCallbacks(IBurpExtenderCallbacks callbacks)
 	{
-		getStdout();
-		getStderr();
-		stdout.println(ExtenderName);
-		stdout.println(github);
 		BurpExtender.callbacks = callbacks;
 		helpers = callbacks.getHelpers();
-		callbacks.setExtensionName(ExtenderName); //插件名称
+
+		getStdout();
+		getStderr();
+		stdout.println(getFullExtenderName());
+		stdout.println(github);
+
+		callbacks.setExtensionName(getFullExtenderName()); //插件名称
 		callbacks.registerExtensionStateListener(this);
-		callbacks.registerContextMenuFactory(this);		
+		callbacks.registerContextMenuFactory(this);
+		callbacks.registerHttpListener(this);//主动根据流量收集信息
 
 		gui = new GUI();
 
@@ -97,17 +114,17 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		if (content != null && content.endsWith(".db")) {
 			gui.LoadData(content);
 		}
-		
+
 		gui.getToolPanel().loadConfig();
 
 	}
 
 	@Override
 	public void extensionUnloaded() {
-		if (gui.getTitlePanel().getThreadGetTitle() != null) {
-			gui.getTitlePanel().getThreadGetTitle().stopThreads();//maybe null
+		if (TitlePanel.threadGetTitle != null) {
+			TitlePanel.threadGetTitle.interrupt();//maybe null
 		}//必须要先结束线程，否则获取数据的操作根本无法结束，因为线程一直通过sync占用资源
-		
+
 		gui.saveDBfilepathToExtension();
 		gui.getProjectMenu().remove();
 
@@ -127,10 +144,114 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 
 	@Override
 	public List<JMenuItem> createMenuItems(IContextMenuInvocation invocation) {
-
 		return new LineEntryMenuForBurp().createMenuItemsForBurp(invocation);
 	}
 
+	@Override
+	public void processHttpMessage(int toolFlag, boolean messageIsRequest, IHttpRequestResponse messageInfo) {
+
+		//		Date now = new Date();
+		SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+			//using SwingWorker to void slow down proxy http response time.
+
+			@Override
+			protected Map doInBackground() throws Exception {
+				findDomainInTraffic(toolFlag,messageIsRequest,messageInfo);
+				return null;
+			}
+			@Override
+			protected void done() {
+			}
+		};
+		worker.execute();
+		//findDomainInTraffic(toolFlag,messageIsRequest,messageInfo);
+		//		Date now1 = new Date();
+		//		stderr.println("takes time to finish find domain: "+(now1.getTime()-now.getTime()));
+
+	}
 
 
+	public void findDomainInTraffic(int toolFlag, boolean messageIsRequest, IHttpRequestResponse messageInfo){
+		boolean dataChanged =false;
+		if (toolFlag == IBurpExtenderCallbacks.TOOL_PROXY) {
+			try {
+				Getter getter = new Getter(helpers);
+				if (messageIsRequest) {
+					IHttpService httpservice = messageInfo.getHttpService();
+					String Host = httpservice.getHost();
+
+					int hostType = DomainPanel.domainResult.domainType(Host);
+					if (hostType == DomainManager.SUB_DOMAIN)
+					{	
+						if (!DomainPanel.domainResult.getSubDomainSet().contains(Host) 
+								&& !DomainPanel.domainResult.getNewAndNotGetTitleDomainSet().contains(Host)) {
+							DomainPanel.domainResult.getNewAndNotGetTitleDomainSet().add(Host);
+							stdout.println("new domain found: "+ Host);
+							dataChanged = true;
+						}
+					}else if (hostType == DomainManager.SIMILAR_DOMAIN) {
+						if (!DomainPanel.domainResult.getSimilarDomainSet().contains(Host)) {
+							DomainPanel.domainResult.getSimilarDomainSet().add(Host);
+							dataChanged = true;
+						}
+					}
+				}else {//response
+
+					IHttpService httpservice = messageInfo.getHttpService();
+					String urlString = getter.getFullURL(messageInfo).getFile();
+
+					String Host = httpservice.getHost();
+					if (Host != null) {
+						int hostType = DomainPanel.domainResult.domainType(Host);
+						if (hostType != DomainManager.USELESS) {//grep domains from response and classify
+							if (urlString.endsWith(".gif") ||urlString.endsWith(".jpg")
+									|| urlString.endsWith(".png") ||urlString.endsWith(".css")||urlString.endsWith(".woff")) {
+
+							}else {
+								dataChanged = grepDomains(messageInfo);
+							}
+						}
+					}
+				}
+			} catch (Exception e) {
+				e.printStackTrace(stderr);
+			}
+		}
+
+		if (dataChanged) {
+			DomainPanel.autoSave();
+		}
+	}
+
+	public boolean grepDomains(IHttpRequestResponse messageinfo) {
+		boolean dataChanged = false;
+		byte[] response = messageinfo.getResponse();
+		if (response != null) {//为什么只需要从response中提取？请求包中包含的域名多来自于referer、host、参数，参数中的域名多少已经被访问过的。
+			Set<String> domains = DomainProducer.grepDomain(new String(response));
+			for (String domain:domains) {
+				int type = DomainPanel.domainResult.domainType(domain);
+				if (type == DomainManager.SUB_DOMAIN)
+				{
+					if (!DomainPanel.domainResult.getSubDomainSet().contains(domain)
+							&& !DomainPanel.domainResult.getNewAndNotGetTitleDomainSet().contains(domain)) {
+						DomainPanel.domainResult.getNewAndNotGetTitleDomainSet().add(domain);
+						stdout.println("new domain found: "+ domain);
+						dataChanged = true;
+					}
+				}else if (type == DomainManager.SIMILAR_DOMAIN) {
+					if (!DomainPanel.domainResult.getSimilarDomainSet().contains(domain)){
+						DomainPanel.domainResult.getSimilarDomainSet().add(domain);
+						dataChanged = true;
+					}
+
+				}else if (type == DomainManager.PACKAGE_NAME) {
+					if (!DomainPanel.domainResult.getPackageNameSet().contains(domain)){
+						DomainPanel.domainResult.getPackageNameSet().add(domain);
+						dataChanged = true;
+					}
+				}
+			}
+		}
+		return dataChanged;
+	}
 }

@@ -3,8 +3,13 @@ package Tools;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Desktop;
+import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -22,6 +27,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -34,6 +40,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+
+import org.apache.commons.text.StringEscapeUtils;
 
 import burp.BurpExtender;
 import burp.Commons;
@@ -52,11 +60,16 @@ public class ToolPanel extends JPanel {
 	PrintWriter stdout;
 	PrintWriter stderr;
 	private JTextField BrowserPath;
+	public static JTextField PortList;
 	private JTextArea inputTextArea;
+	private JTextArea outputTextArea;
+
 	public boolean inputTextAreaChanged = true;
 	public static JRadioButton showItemsInOne;
-	private JTextArea outputTextArea;
 	private static LineConfig lineConfig;
+	public static JRadioButton ignoreHTTPS;
+	public static JRadioButton ignoreHTTPStaus500;
+	public static JRadioButton ignoreHTTPStaus400;
 
 	public static LineConfig getLineConfig() {
 		return lineConfig;
@@ -84,6 +97,24 @@ public class ToolPanel extends JPanel {
 		lineConfig.setShowItemsInOne(showItemsInOne.isSelected());
 		String config = lineConfig.ToJson();
 		BurpExtender.getCallbacks().saveExtensionSetting(BurpExtender.Extension_Setting_Name_Line_Config, config);
+	}
+
+
+	/**
+	 * Launch the application.
+	 */
+	public static void main(String[] args) {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					JFrame frame = new JFrame();
+					frame.setVisible(true);
+					frame.setContentPane(new ToolPanel());
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
 	}
 
 	public ToolPanel() {
@@ -148,13 +179,16 @@ public class ToolPanel extends JPanel {
 		//四分之三部分放一个panel，里面放操作按钮
 		JPanel threeFourthPanel = new JPanel();
 		RightOfCenter.setLeftComponent(threeFourthPanel);
+		threeFourthPanel.setLayout(new FlowLayout());
+		//https://stackoverflow.com/questions/5709690/how-do-i-make-this-flowlayout-wrap-within-its-jsplitpane
+		threeFourthPanel.setMinimumSize(new Dimension(0, 0));//为了让button自动换行
 
 		JButton btnOpenurls = new JButton("OpenURLs");
 		threeFourthPanel.add(btnOpenurls);
 		btnOpenurls.addActionListener(new ActionListener() {
 			List<String> urls = new ArrayList<>();
 			Iterator<String> it = urls.iterator();
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (inputTextAreaChanged) {//default is true
@@ -191,7 +225,7 @@ public class ToolPanel extends JPanel {
 			}
 
 		});
-		
+
 		JButton rows2Array = new JButton("Rows To Array");
 		threeFourthPanel.add(rows2Array);
 		rows2Array.addActionListener(new ActionListener() {
@@ -202,7 +236,7 @@ public class ToolPanel extends JPanel {
 					for (int i=0;i<content.size();i++) {
 						content.set(i, "\""+content.get(i)+"\"");
 					}
-					
+
 					outputTextArea.setText(String.join(",", content));
 				} catch (Exception e1) {
 					outputTextArea.setText(e1.getMessage());
@@ -210,9 +244,9 @@ public class ToolPanel extends JPanel {
 			}
 
 		});
-		
 
-		JButton btnGrep = new JButton("grep json");
+
+		JButton btnGrep = new JButton("Grep Json");
 		threeFourthPanel.add(btnGrep);
 		btnGrep.addActionListener(new ActionListener() {
 			@Override
@@ -240,8 +274,8 @@ public class ToolPanel extends JPanel {
 			}
 
 		});
-		
-		JButton btnLine = new JButton("grep line");
+
+		JButton btnLine = new JButton("Grep Line");
 		threeFourthPanel.add(btnLine);
 		btnLine.addActionListener(new ActionListener() {
 			@Override
@@ -265,6 +299,122 @@ public class ToolPanel extends JPanel {
 				} catch (Exception e1) {
 					outputTextArea.setText(e1.getMessage());
 					//e1.printStackTrace(stderr);
+				}
+			}
+		});
+
+
+		JButton btnAddPrefix = new JButton("Add Prefix/Suffix");
+		threeFourthPanel.add(btnAddPrefix);
+		btnAddPrefix.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					String toAddPrefix = JOptionPane.showInputDialog("prefix to add", null);
+					String toAddSuffix = JOptionPane.showInputDialog("suffix to add", null);
+					ArrayList<String> result = new ArrayList<String>();
+					if (toAddPrefix == null && toAddSuffix == null) {
+						return;
+					} else {
+						if (toAddPrefix == null) {
+							toAddPrefix = "";
+						}
+
+						if (toAddSuffix == null) {
+							toAddSuffix = "";
+						}
+
+						List<String> content = Commons.getLinesFromTextArea(inputTextArea);
+						for (String item:content) {
+							item = toAddPrefix.trim()+item+toAddSuffix.trim();
+							result.add(item); 
+						}
+						outputTextArea.setText(String.join(System.lineSeparator(), result));
+					}
+				} catch (Exception e1) {
+					outputTextArea.setText(e1.getMessage());
+				}
+			}
+		});
+
+		JButton btnRemovePrefix = new JButton("Remove Prefix/Suffix");
+		threeFourthPanel.add(btnRemovePrefix);
+		btnRemovePrefix.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					String Prefix = JOptionPane.showInputDialog("prefix to remove", null);
+					String Suffix = JOptionPane.showInputDialog("suffix to remove", null);
+					ArrayList<String> result = new ArrayList<String>();
+					if (Prefix == null && Suffix == null) {
+						return;
+					} else {
+						if (Prefix == null) {
+							Prefix = "";
+						}
+
+						if (Suffix == null) {
+							Suffix = "";
+						}
+
+						List<String> content = Commons.getLinesFromTextArea(inputTextArea);
+						for (String item:content) {
+							if (item.startsWith(Prefix)) {
+								item = item.replaceFirst(Prefix, "");
+							}
+							if (item.endsWith(Suffix)) {
+								item = reverse(item).replaceFirst(reverse(Suffix), "");
+								item = reverse(item);
+							}
+							result.add(item); 
+						}
+						outputTextArea.setText(String.join(System.lineSeparator(), result));
+					}
+				} catch (Exception e1) {
+					outputTextArea.setText(e1.getMessage());
+					e1.printStackTrace(stderr);
+				}
+			}
+
+			public String reverse(String str) {
+				if (str == null) {
+					return null;
+				}
+				return new StringBuffer(str).reverse().toString();
+			}
+		});
+
+
+		JButton btnReplace = new JButton("ReplaceFirst");
+		threeFourthPanel.add(btnReplace);
+		btnReplace.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					String replace = JOptionPane.showInputDialog("regex (from)", null);
+					String to = JOptionPane.showInputDialog("replacement (to)", null);
+					ArrayList<String> result = new ArrayList<String>();
+					if (replace == null && to == null) {
+						return;
+					} else {
+						if (replace == null) {
+							replace = "";
+						}
+
+						if (to == null) {
+							to = "";
+						}
+
+						List<String> content = Commons.getLinesFromTextArea(inputTextArea);
+						for (String item:content) {
+							item = item.replaceFirst(replace,to);
+							result.add(item); 
+						}
+						outputTextArea.setText(String.join(System.lineSeparator(), result));
+					}
+				} catch (Exception e1) {
+					outputTextArea.setText(e1.getMessage());
+					e1.printStackTrace(stderr);
 				}
 			}
 		});
@@ -300,23 +450,181 @@ public class ToolPanel extends JPanel {
 
 		});
 
+		JButton btnIPsToCIDR = new JButton("IPs To CIDR");
+		threeFourthPanel.add(btnIPsToCIDR);
+		btnIPsToCIDR.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					List<String> IPs = Commons.getLinesFromTextArea(inputTextArea);
+					Set<String> subnets = Commons.toSmallerSubNets(new HashSet<String>(IPs));
+					outputTextArea.setText(String.join(System.lineSeparator(), subnets));
+				} catch (Exception e1) {
+					outputTextArea.setText(e1.getMessage());
+					e1.printStackTrace(stderr);
+				}
+			}
+		});
+
+		JButton btnCIDRToIPs = new JButton("CIDR To IPs");
+		threeFourthPanel.add(btnCIDRToIPs);
+		btnCIDRToIPs.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					List<String> subnets = Commons.getLinesFromTextArea(inputTextArea);
+					List<String> IPs = Commons.toIPList(subnets);// 当前所有title结果计算出的IP集合
+					outputTextArea.setText(String.join(System.lineSeparator(), IPs));
+				} catch (Exception e1) {
+					outputTextArea.setText(e1.getMessage());
+					e1.printStackTrace(stderr);
+				}
+			}
+		});
+
+		JButton unescapeJava = new JButton("unescapeJava");
+		threeFourthPanel.add(unescapeJava);
+		unescapeJava.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					outputTextArea.setText(StringEscapeUtils.unescapeJava(inputTextArea.getText()));
+				} catch (Exception e1) {
+					outputTextArea.setText(e1.getMessage());
+					e1.printStackTrace(stderr);
+				}
+			}
+		});
+
+		JButton unescapeHTML = new JButton("unescapeHTML");
+		threeFourthPanel.add(unescapeHTML);
+		unescapeHTML.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					outputTextArea.setText(StringEscapeUtils.unescapeHtml4(inputTextArea.getText()));
+				} catch (Exception e1) {
+					outputTextArea.setText(e1.getMessage());
+					e1.printStackTrace(stderr);
+				}
+			}
+		});
+
 		JPanel fourFourthPanel = new JPanel();
 		RightOfCenter.setRightComponent(fourFourthPanel);
-		JLabel lblNewLabel = new JLabel("Browser Path:");
-		fourFourthPanel.add(lblNewLabel);
+		GridBagLayout gbl_fourFourthPanel = new GridBagLayout();
+		gbl_fourFourthPanel.columnWidths = new int[]{215, 215, 0};
+		gbl_fourFourthPanel.rowHeights = new int[]{27, 27, 27, 27, 27, 27, 0};
+		gbl_fourFourthPanel.columnWeights = new double[]{0.0, 0.0, Double.MIN_VALUE};
+		gbl_fourFourthPanel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		fourFourthPanel.setLayout(gbl_fourFourthPanel);
 
+		JLabel lblNewLabel = new JLabel("Browser Path:");
+		GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
+		gbc_lblNewLabel.fill = GridBagConstraints.BOTH;
+		gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
+		gbc_lblNewLabel.gridx = 0;
+		gbc_lblNewLabel.gridy = 0;
+		fourFourthPanel.add(lblNewLabel, gbc_lblNewLabel);
 		BrowserPath = new JTextField();
-		fourFourthPanel.add(BrowserPath);
+		GridBagConstraints gbc_BrowserPath = new GridBagConstraints();
+		gbc_BrowserPath.fill = GridBagConstraints.BOTH;
+		gbc_BrowserPath.insets = new Insets(0, 0, 5, 0);
+		gbc_BrowserPath.gridx = 1;
+		gbc_BrowserPath.gridy = 0;
+		fourFourthPanel.add(BrowserPath, gbc_BrowserPath);
 		BrowserPath.setColumns(50);
 		BrowserPath.getDocument().addDocumentListener(new textFieldListener());
-		
+
+
+		JLabel lblExternalPorts = new JLabel("External Port:");
+		GridBagConstraints gbc_lblExternalPorts = new GridBagConstraints();
+		gbc_lblExternalPorts.fill = GridBagConstraints.BOTH;
+		gbc_lblExternalPorts.insets = new Insets(0, 0, 5, 5);
+		gbc_lblExternalPorts.gridx = 0;
+		gbc_lblExternalPorts.gridy = 1;
+		fourFourthPanel.add(lblExternalPorts, gbc_lblExternalPorts);
+		PortList = new JTextField();
+		GridBagConstraints gbc_PortList = new GridBagConstraints();
+		gbc_PortList.fill = GridBagConstraints.BOTH;
+		gbc_PortList.insets = new Insets(0, 0, 5, 0);
+		gbc_PortList.gridx = 1;
+		gbc_PortList.gridy = 1;
+		fourFourthPanel.add(PortList, gbc_PortList);
+		PortList.setColumns(50);
+		PortList.setToolTipText("eg.: 8080,8088");
+
+		JLabel label_1 = new JLabel("");
+		GridBagConstraints gbc_label_1 = new GridBagConstraints();
+		gbc_label_1.fill = GridBagConstraints.BOTH;
+		gbc_label_1.insets = new Insets(0, 0, 5, 5);
+		gbc_label_1.gridx = 0;
+		gbc_label_1.gridy = 2;
+		fourFourthPanel.add(label_1, gbc_label_1);
+
+
 		showItemsInOne = new JRadioButton("show items in one");
-		fourFourthPanel.add(showItemsInOne);
+		GridBagConstraints gbc_showItemsInOne = new GridBagConstraints();
+		gbc_showItemsInOne.fill = GridBagConstraints.BOTH;
+		gbc_showItemsInOne.insets = new Insets(0, 0, 5, 0);
+		gbc_showItemsInOne.gridx = 1;
+		gbc_showItemsInOne.gridy = 2;
+		fourFourthPanel.add(showItemsInOne, gbc_showItemsInOne);
 		showItemsInOne.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				lineConfig.setShowItemsInOne(showItemsInOne.isSelected());
 			}
 		});
+
+		JLabel label_2 = new JLabel("");
+		GridBagConstraints gbc_label_2 = new GridBagConstraints();
+		gbc_label_2.fill = GridBagConstraints.BOTH;
+		gbc_label_2.insets = new Insets(0, 0, 5, 5);
+		gbc_label_2.gridx = 0;
+		gbc_label_2.gridy = 3;
+		fourFourthPanel.add(label_2, gbc_label_2);
+
+		ignoreHTTPS = new JRadioButton("Ignore HTTPS if HTTP is OK");
+		GridBagConstraints gbc_ignoreHTTPS = new GridBagConstraints();
+		gbc_ignoreHTTPS.fill = GridBagConstraints.BOTH;
+		gbc_ignoreHTTPS.insets = new Insets(0, 0, 5, 0);
+		gbc_ignoreHTTPS.gridx = 1;
+		gbc_ignoreHTTPS.gridy = 3;
+		fourFourthPanel.add(ignoreHTTPS, gbc_ignoreHTTPS);
+		ignoreHTTPS.setSelected(true);
+
+		JLabel label_3 = new JLabel("");
+		GridBagConstraints gbc_label_3 = new GridBagConstraints();
+		gbc_label_3.fill = GridBagConstraints.BOTH;
+		gbc_label_3.insets = new Insets(0, 0, 5, 5);
+		gbc_label_3.gridx = 0;
+		gbc_label_3.gridy = 4;
+		fourFourthPanel.add(label_3, gbc_label_3);
+
+		ignoreHTTPStaus500 = new JRadioButton("Ignore items which Status >= 500");
+		GridBagConstraints gbc_ignoreHTTPStaus500 = new GridBagConstraints();
+		gbc_ignoreHTTPStaus500.fill = GridBagConstraints.BOTH;
+		gbc_ignoreHTTPStaus500.insets = new Insets(0, 0, 5, 0);
+		gbc_ignoreHTTPStaus500.gridx = 1;
+		gbc_ignoreHTTPStaus500.gridy = 4;
+		fourFourthPanel.add(ignoreHTTPStaus500, gbc_ignoreHTTPStaus500);
+		ignoreHTTPStaus500.setSelected(true);
+
+		JLabel label_4 = new JLabel("");
+		GridBagConstraints gbc_label_4 = new GridBagConstraints();
+		gbc_label_4.fill = GridBagConstraints.BOTH;
+		gbc_label_4.insets = new Insets(0, 0, 0, 5);
+		gbc_label_4.gridx = 0;
+		gbc_label_4.gridy = 5;
+		fourFourthPanel.add(label_4, gbc_label_4);
+
+		ignoreHTTPStaus400 = new JRadioButton("Ignore http Status 400(The plain HTTP request was sent to HTTPS port)");
+		GridBagConstraints gbc_ignoreHTTPStaus400 = new GridBagConstraints();
+		gbc_ignoreHTTPStaus400.fill = GridBagConstraints.BOTH;
+		gbc_ignoreHTTPStaus400.gridx = 1;
+		gbc_ignoreHTTPStaus400.gridy = 5;
+		fourFourthPanel.add(ignoreHTTPStaus400, gbc_ignoreHTTPStaus400);
+		ignoreHTTPStaus400.setSelected(true);
 
 		///////////////////////////FooterPanel//////////////////
 
@@ -363,6 +671,21 @@ public class ToolPanel extends JPanel {
 		return domainList;
 	}
 
+	public static HashSet<String> getExternalPortSet(){
+		String input = PortList.getText();
+		HashSet<String> result = new HashSet<String>();
+		for (String item:input.split(",")) {
+			item = item.trim();
+			try {
+				Integer.parseInt(item);
+				result.add(item);
+			}catch(Exception e) {
+
+			}
+		}
+		return result;
+	}
+
 
 	class textAreaListener implements DocumentListener {
 
@@ -384,7 +707,7 @@ public class ToolPanel extends JPanel {
 			inputTextAreaChanged = true;
 		}
 	}
-	
+
 	class textFieldListener implements DocumentListener {
 
 		@Override

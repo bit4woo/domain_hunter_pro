@@ -20,7 +20,6 @@ public class LineConfig {
 	private static Set<String> blacklistIPSet = new HashSet<String>(); 
 	private static Set<String> blacklistCDNSet = new HashSet<String>(); 
 	private static Set<String> blacklistWebContainerSet = new HashSet<String>(); 
-	private static boolean ignoreHttpsIfHttpOK =true;
 	private static boolean isPrivateNetworkWorkingModel = false;//默认外网模式
 	//对于内外网域名或IP的处理分为2种情况：
 	//1、外网模式，即在自己公司挖掘别人公司的漏洞。这个是时候收集到的域名如果是解析到私有IP的，仅仅显示就可以了；如果是私有IP地址则直接忽略。
@@ -85,11 +84,11 @@ public class LineConfig {
 	}
 
 	public static boolean isIgnoreHttpsIfHttpOK() {
-		return ignoreHttpsIfHttpOK;
+		return ToolPanel.ignoreHTTPS.isSelected();
 	}
 
 	public static void setIgnoreHttpsIfHttpOK(boolean ignoreHttpsIfHttpOK) {
-		LineConfig.ignoreHttpsIfHttpOK = ignoreHttpsIfHttpOK;
+		ToolPanel.ignoreHTTPS.setSelected(ignoreHttpsIfHttpOK);
 	}
 
 	public static boolean isPrivateNetworkWorkingModel() {
@@ -169,13 +168,19 @@ public class LineConfig {
 		PrintWriter stderr = BurpExtender.getStderr();
 		
 		//default requirement
-		if (entry.getStatuscode() <=0 || entry.getStatuscode() >=500) {
-			stdout.println(String.format("--- [%s] --- status code >= 500 or no response",entry.getUrl()));
+		if (entry.getStatuscode() <=0 ) {
+			stdout.println(String.format("--- [%s] --- no response",entry.getUrl()));
 			TitlePanel.getTitleTableModel().addNewNoResponseDomain(entry.getHost(), entry.getIP());
 			return false;
 		}
 		
-		if (entry.getStatuscode() == 400) {//400 The plain HTTP request was sent to HTTPS port
+		if (entry.getStatuscode() >=500 && ToolPanel.ignoreHTTPStaus500.isSelected()) {
+			stdout.println(String.format("--- [%s] --- status code >= 500",entry.getUrl()));
+			TitlePanel.getTitleTableModel().addNewNoResponseDomain(entry.getHost(), entry.getIP());
+			return false;
+		}
+		
+		if (entry.getStatuscode() == 400 && ToolPanel.ignoreHTTPStaus400.isSelected()) {//400 The plain HTTP request was sent to HTTPS port
 			stdout.println(String.format("--- [%s] --- status code == 400",entry.getUrl()));
 			return false;
 		}
