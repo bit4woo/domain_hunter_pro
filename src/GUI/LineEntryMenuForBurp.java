@@ -464,15 +464,13 @@ public class LineEntryMenuForBurp{
 			if (entry != null) {//存在相同URL的记录
 				int user_input = JOptionPane.showConfirmDialog(null, "Do you want to overwrite?","Item already exist",JOptionPane.YES_NO_CANCEL_OPTION);
 				if (JOptionPane.YES_OPTION == user_input) {
-					TitlePanel.getTitleTableModel().addNewLineEntry(entry); //add request，覆盖
+					TitlePanel.getTitleTableModel().addNewLineEntry(newEntry); //add request，覆盖
 				}else if(JOptionPane.NO_OPTION == user_input){//不覆盖,修改后新增
-					entry.setUrl(entry.getUrl()+"#"+System.currentTimeMillis());
-					TitlePanel.getTitleTableModel().addNewLineEntry(entry); //add request，修改URL(加#时间戳)后新增
-				}else {//cancel,do nothing
-					
-				}
+					newEntry.setUrl(entry.getUrl()+"#"+System.currentTimeMillis());
+					TitlePanel.getTitleTableModel().addNewLineEntry(newEntry); //add request，修改URL(加#时间戳)后新增
+				}//cancel,do nothing
 			}else {//不存在相同记录，直接新增
-				TitlePanel.getTitleTableModel().addNewLineEntry(entry); //add request，新增
+				TitlePanel.getTitleTableModel().addNewLineEntry(newEntry); //add request，新增
 			}
 			
 			String host = message.getHttpService().getHost();
