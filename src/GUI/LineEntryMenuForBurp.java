@@ -1,6 +1,5 @@
 package GUI;
 
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -22,6 +21,7 @@ import com.google.common.hash.HashCode;
 
 import Tools.ToolPanel;
 import burp.BurpExtender;
+import burp.Commons;
 import burp.Getter;
 import burp.IContextMenuInvocation;
 import burp.IExtensionHelpers;
@@ -35,7 +35,7 @@ import title.TitlePanel;
 public class LineEntryMenuForBurp{
 
 	public PrintWriter stderr = BurpExtender.getStderr();
-	public IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
+	public static IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
 	public PrintWriter stdout = BurpExtender.getStdout();
 
 
@@ -185,6 +185,12 @@ public class LineEntryMenuForBurp{
 		}
 	}
 
+	/*
+	 * 如果能找到与全URL匹配的记录，就更新这个全URL对应的记录，即精确匹配。
+	 * 如果找不到，这对这个URL对应的service记录进行更新，即更新所有这个service下的URL
+	 * 
+	 *  实现时，先通过service查找记录，避免2次全查。减少等待时间。
+	 */
 	public class addComment implements ActionListener{
 		private IContextMenuInvocation invocation;
 		addComment(IContextMenuInvocation invocation) {
@@ -197,17 +203,26 @@ public class LineEntryMenuForBurp{
 			try{
 				IHttpRequestResponse[] messages = invocation.getSelectedMessages();
 				Getter getter = new Getter(helpers);
-				URL fullurl = getter.getFullURL(messages[0]);
-				LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(fullurl.toString());
-				if (entry == null) {
-					URL shortUrl = getter.getShortURL(messages[0]);
-					if(!fullurl.equals(shortUrl)) {
-						entry = TitlePanel.getTitleTableModel().findLineEntry(shortUrl.toString());
+				
+				String host = messages[0].getHttpService().getHost();
+				int port = messages[0].getHttpService().getPort();
+				
+				List<LineEntry> entries = TitlePanel.getTitleTableModel().findLineEntriesByHostAndPort(host, port);
+				
+				if (entries.size() == 0) {
+					
+				}else if (entries.size() == 1){
+					addCommentForLine(entries.get(0));
+				}else {
+					URL fullurl = getter.getFullURL(messages[0]);
+					LineEntry entry = findLineEntryByFullUrl(entries,fullurl.toString());
+					if (entry != null) {
+						addCommentForLine(entry);
+					}else {
+						for (LineEntry item:entries) {
+							addCommentForLine(item);
+						}
 					}
-				}
-
-				if (entry != null) {
-					addCommentForLine(entry);
 				}
 			}
 			catch (Exception e1)
@@ -217,7 +232,7 @@ public class LineEntryMenuForBurp{
 		}
 	}
 
-	//@Deprecated //似乎也没有太大必要，暂时先不用了
+	@Deprecated //似乎也没有太大必要，暂时先不用了
 	public class addCommentForHost implements ActionListener{
 		private IContextMenuInvocation invocation;
 		addCommentForHost(IContextMenuInvocation invocation) {
@@ -229,7 +244,8 @@ public class LineEntryMenuForBurp{
 			//还是要简化逻辑，如果找不到就不执行！
 			try{
 				IHttpRequestResponse[] messages = invocation.getSelectedMessages();
-				List<LineEntry> entries = TitlePanel.getTitleTableModel().findLineEntriesByHost(messages[0].getHttpService().getHost());
+				List<LineEntry> entries = TitlePanel.getTitleTableModel().findLineEntriesByHostAndPort(messages[0].getHttpService().getHost()
+						,messages[0].getHttpService().getPort());
 				
 				if (entries.size() > 0) {
 					for (LineEntry entry:entries) {
@@ -384,6 +400,16 @@ public class LineEntryMenuForBurp{
 			}
 		}
 	}
+	
+	public static LineEntry findLineEntryByFullUrl(List<LineEntry> lineEntries, String url) {
+		url = Commons.formateURLString(url);
+		for(LineEntry item:lineEntries) {
+			if (item.getUrl().equals(url)) {
+				return item;
+			}
+		}
+		return null;
+	}
 
 
 	public static void addCommentForLine(LineEntry entry) {
@@ -423,25 +449,35 @@ public class LineEntryMenuForBurp{
 
 	public static void addToRequest(IHttpRequestResponse[] messages) {
 		for(IHttpRequestResponse message:messages) {
-			String hashKey = HashCode.fromBytes(message.getRequest()).toString();
-			LineEntry manualEntry = TitlePanel.getTitleTableModel().findLineEntry(hashKey);
+			//当时为啥要用这个key来存储新增的Request？URL地址一样而数据包不一样的情况？
+			//String hashKey = HashCode.fromBytes(message.getRequest()).toString();
+
+			Getter getter = new Getter(helpers);
+			URL fullurl = getter.getFullURL(message);
+			LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(fullurl.toString());
 			
-			LineEntry entry = new LineEntry(message);
-			entry.setComment("Manual-Saved");
-			entry.setCheckStatus(LineEntry.CheckStatus_UnChecked);
-			entry.setManualSaved(true);
+			LineEntry newEntry = new LineEntry(message);
+			newEntry.setComment("Manual-Saved");
+			newEntry.setCheckStatus(LineEntry.CheckStatus_UnChecked);
+			newEntry.setManualSaved(true);
 			
-			if (manualEntry != null) {
-				int user_input = JOptionPane.showConfirmDialog(null, "Do you want to overwrite?","Item already exist",JOptionPane.YES_NO_OPTION);
+			if (entry != null) {//存在相同URL的记录
+				int user_input = JOptionPane.showConfirmDialog(null, "Do you want to overwrite?","Item already exist",JOptionPane.YES_NO_CANCEL_OPTION);
 				if (JOptionPane.YES_OPTION == user_input) {
-					TitlePanel.getTitleTableModel().addNewLineEntry(entry); //add request
+					TitlePanel.getTitleTableModel().addNewLineEntry(entry); //add request，覆盖
+				}else if(JOptionPane.NO_OPTION == user_input){//不覆盖,修改后新增
+					entry.setUrl(entry.getUrl()+"#"+System.currentTimeMillis());
+					TitlePanel.getTitleTableModel().addNewLineEntry(entry); //add request，修改URL(加#时间戳)后新增
+				}else {//cancel,do nothing
+					
 				}
-			}else {
-				TitlePanel.getTitleTableModel().addNewLineEntry(entry); //add request
+			}else {//不存在相同记录，直接新增
+				TitlePanel.getTitleTableModel().addNewLineEntry(entry); //add request，新增
 			}
 			
 			String host = message.getHttpService().getHost();
 			DomainPanel.getDomainResult().addToDomainOject(host); //add domain
+			
 		}
 	}
 }

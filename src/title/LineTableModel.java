@@ -604,7 +604,6 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 
 	///////////////////多个行内容的增删查改/////////////////////////////////
 
-
 	public void addNewLineEntry(LineEntry lineEntry){
 		if (lineEntry == null) {
 			return;
@@ -616,12 +615,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			//				ListenerIsOn = true;
 			//			}
 			int oldsize = lineEntries.size();
-			String key;
-			if (lineEntry.isManualSaved()) {
-				key = HashCode.fromBytes(lineEntry.getRequest()).toString();//根据请求包计算key值，避免被put方法覆盖。
-			}else {
-				key = lineEntry.getUrl();
-			}
+			String key = lineEntry.getUrl();
 			lineEntries.put(key,lineEntry);
 			int newsize = lineEntries.size();
 			int index = lineEntries.IndexOfKey(key);
@@ -651,7 +645,9 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 
 	/*
 	 * find all lineEntries base host，当需要对整个主机的所有服务进行操作时用这个方法
+	 * 正确的范围是一个service，即Host+port，弃用这个函数
 	 */
+	@Deprecated
 	public List<LineEntry> findLineEntriesByHost(String host) {//
 		if (lineEntries == null) return null;
 		List<LineEntry> result = new ArrayList<LineEntry>();
@@ -672,8 +668,9 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	 * find all lineEntries base host and port，通常根据IP+端口来确定一个服务。
 	 */
 	public List<LineEntry> findLineEntriesByHostAndPort(String host,int port) {//
-		if (lineEntries == null) return null;
+		
 		List<LineEntry> result = new ArrayList<LineEntry>();
+		if (lineEntries == null) return result;
 		for (LineEntry value:lineEntries.values()) {
 			try{//根据host查找
 				if (value.getHost().equalsIgnoreCase(host) && value.getPort() == port) {
