@@ -53,6 +53,9 @@ public class LineSearch {
 			if (new String(line.getComment()).toLowerCase().contains(keyword)) {
 				return true;
 			}
+			if (line.getTitle().toLowerCase().contains(keyword)) {
+				return true;
+			}
 			return false;
 		}
 	}
@@ -161,11 +164,14 @@ public class LineSearch {
 	
 	
 	public static void main(String args[]) {
-		String webpack_PATTERN = "app\\.([0-9a-z])*\\.js";//后文有小写转换
-		System.out.println(webpack_PATTERN);
+		String title = "标题";
+		System.out.println(title.toLowerCase().contains("标题"));
 		
-		System.out.println("regex:app\\.([0-9a-z])*\\.js");
-		
-		System.out.println(SearchDork.REGEX.toString()+":"+webpack_PATTERN);
+//		String webpack_PATTERN = "app\\.([0-9a-z])*\\.js";//后文有小写转换
+//		System.out.println(webpack_PATTERN);
+//		
+//		System.out.println("regex:app\\.([0-9a-z])*\\.js");
+//		
+//		System.out.println(SearchDork.REGEX.toString()+":"+webpack_PATTERN);
 	}
 }
