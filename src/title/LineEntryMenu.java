@@ -28,13 +28,14 @@ import title.search.SearchDork;
 
 public class LineEntryMenu extends JPopupMenu {
 
-	/**
-	 * 
-	 */
+
 	private static final long serialVersionUID = 1L;
 	PrintWriter stdout = BurpExtender.getStdout();
 	PrintWriter stderr = BurpExtender.getStderr();
-	LineEntryMenu(final LineTable lineTable, final int[] rows,final int column){
+	private static LineTable lineTable;
+	
+	LineEntryMenu(final LineTable lineTable, final int[] rows,final int columnIndex){
+		this.lineTable = lineTable;
 
 		JMenuItem itemNumber = new JMenuItem(new AbstractAction(rows.length+" Items Selected") {
 			@Override
@@ -58,13 +59,36 @@ public class LineEntryMenu extends JPopupMenu {
 					return;
 				}
 				for (int row:rows) {
-					String host = lineTable.getModel().getLineEntries().getValueAtIndex(row).getHost();
-					String url= "https://www.google.com/search?q=site%3A"+host;
+					LineEntry firstEntry = lineTable.getModel().getLineEntries().getValueAtIndex(row);
+					String searchContent = getValue(firstEntry,columnIndex);
+					String url= "https://www.google.com/search?q="+searchContent;
 					try {
 						Commons.browserOpen(url, null);
 					} catch (Exception e) {
 						e.printStackTrace(stderr);
 					}
+				}
+			}
+			
+			public String getValue(LineEntry firstEntry,int columnIndex) {
+				
+				String columnName = lineTable.getColumnName(columnIndex);
+				
+				if (columnName.equalsIgnoreCase("title")){
+					String title = firstEntry.getTitle();
+					return "intitle:"+title;
+				}else if (columnName.equalsIgnoreCase("comments")){
+					String comment = firstEntry.getComment();
+					return comment;
+				}else if (columnName.equalsIgnoreCase("IP")){
+					String ip = firstEntry.getIP();
+					return ip;
+				}else if (columnName.equalsIgnoreCase("CDN")){
+					String cdn = firstEntry.getCDN();
+					return cdn;
+				}else {
+					String host = firstEntry.getHost();
+					return "site:"+host;
 				}
 			}
 		});
@@ -77,8 +101,9 @@ public class LineEntryMenu extends JPopupMenu {
 					return;
 				}
 				for (int row:rows) {
-					String host = lineTable.getModel().getLineEntries().getValueAtIndex(row).getHost();
-					String url= "https://github.com/search?q=%22"+host+"%22+%22jdbc.url%22&type=Code";
+					LineEntry firstEntry = lineTable.getModel().getLineEntries().getValueAtIndex(row);
+					String searchContent = getValue(firstEntry,columnIndex);
+					String url= "https://github.com/search?q=%22"+searchContent+"%22+%22jdbc.url%22&type=Code";
 					try {
 						Commons.browserOpen(url, null);
 					} catch (Exception e) {
@@ -86,13 +111,78 @@ public class LineEntryMenu extends JPopupMenu {
 					}
 				}
 			}
+			
+			public String getValue(LineEntry firstEntry,int columnIndex) {
+				
+				String columnName = lineTable.getColumnName(columnIndex);
+				
+				if (columnName.equalsIgnoreCase("title")){
+					String title = firstEntry.getTitle();
+					return title;
+				}else if (columnName.equalsIgnoreCase("comments")){
+					String comment = firstEntry.getComment();
+					return comment;
+				}else if (columnName.equalsIgnoreCase("IP")){
+					String ip = firstEntry.getIP();
+					return ip;
+				}else if (columnName.equalsIgnoreCase("CDN")){
+					String cdn = firstEntry.getCDN();
+					return cdn;
+				}else {
+					String host = firstEntry.getHost();
+					return host;
+				}
+			}
+		});
+		
+		JMenuItem SearchOnFoFaItem = new JMenuItem(new AbstractAction("Seach On FoFa") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				
+				if (rows.length >=50) {
+					return;
+				}
+				for (int row:rows) {
+					LineEntry firstEntry = lineTable.getModel().getLineEntries().getValueAtIndex(row);
+					String searchContent = getValue(firstEntry,columnIndex);
+					String url= "https://fofa.so/result?q=%22"+searchContent+"%22";
+					try {
+						Commons.browserOpen(url, null);
+					} catch (Exception e) {
+						e.printStackTrace(stderr);
+					}
+				}
+			}
+			
+			public String getValue(LineEntry firstEntry,int columnIndex) {
+				
+				String columnName = lineTable.getColumnName(columnIndex);
+				
+				if (columnName.equalsIgnoreCase("title")){
+					String title = firstEntry.getTitle();
+					return title;
+				}else if (columnName.equalsIgnoreCase("comments")){
+					String comment = firstEntry.getComment();
+					return comment;
+				}else if (columnName.equalsIgnoreCase("IP")){
+					String ip = firstEntry.getIP();
+					return ip;
+				}else if (columnName.equalsIgnoreCase("CDN")){
+					String cdn = firstEntry.getCDN();
+					return cdn;
+				}else {
+					String host = firstEntry.getHost();
+					return host;
+				}
+			}
+			
 		});
 
 		JMenuItem SearchOnHunterItem = new JMenuItem(new AbstractAction("Seach On Hunter") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				LineEntry firstEntry = lineTable.getModel().getLineEntries().getValueAtIndex(rows[0]);
-				String columnName = lineTable.getColumnName(column);
+				String columnName = lineTable.getColumnName(columnIndex);
 
 				if (columnName.equalsIgnoreCase("Status")){
 					int status = firstEntry.getStatuscode();
@@ -460,6 +550,7 @@ public class LineEntryMenu extends JPopupMenu {
 		this.add(googleSearchItem);
 		this.add(SearchOnGithubItem);
 		this.add(SearchOnHunterItem);
+		this.add(SearchOnFoFaItem);
 
 		this.addSeparator();
 
@@ -478,4 +569,5 @@ public class LineEntryMenu extends JPopupMenu {
 		this.add(SubnetBlackListItem);
 
 	}
+
 }
