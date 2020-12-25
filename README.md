@@ -1,5 +1,13 @@
 # domain hunter pro
 
+你还在用Excel进行目标管理吗？
+
+你还在为收集目标的信息而烦恼吗？
+
+你还在不停地复制粘贴吗？
+
+那么来试试 [domain hunter pro](https://github.com/bit4woo/domain_hunter_pro) 吧！方便快捷的目标管理、自动化的信息收集、与burp无缝衔接、与外部安全工具联动...
+
 ## 功能介绍
 
 ### Domains tab：目标管理和信息收集
