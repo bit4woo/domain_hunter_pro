@@ -183,6 +183,16 @@ public class ToolPanel extends JPanel {
 		//https://stackoverflow.com/questions/5709690/how-do-i-make-this-flowlayout-wrap-within-its-jsplitpane
 		threeFourthPanel.setMinimumSize(new Dimension(0, 0));//为了让button自动换行
 
+		JButton btnFindDomains = new JButton("Find Domains");
+		threeFourthPanel.add(btnFindDomains);
+		btnFindDomains.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String content = inputTextArea.getText();
+				BurpExtender.grepDomains(content);
+			}
+		});
+		
 		JButton btnOpenurls = new JButton("OpenURLs");
 		threeFourthPanel.add(btnOpenurls);
 		btnOpenurls.addActionListener(new ActionListener() {
