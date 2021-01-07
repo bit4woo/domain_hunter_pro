@@ -12,7 +12,6 @@ import java.net.URL;
 
 import org.apache.commons.io.FileUtils;
 
-import Tools.LineConfig;
 import Tools.ToolPanel;
 import burp.BurpExtender;
 import burp.Commons;
@@ -53,7 +52,7 @@ class NmapScanAction implements ActionListener{
 				nmapPath = "\""+nmapPath+"\"";
 			}
 			
-			String command = nmapPath+" -v -A -p 1-65535 "+host.trim();
+			String command = nmapPath+" -sS -p 0-65535 --open -T4 -v "+host.trim();
 
 			//将命令写入剪切板
 			Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -61,11 +60,10 @@ class NmapScanAction implements ActionListener{
 			clipboard.setContents(selection, null);
 			
 			File batFile = new File(basedir,"Nmap-latest-command.bat");
-			if (!batFile.exists()) {
-			    batFile.createNewFile();
-			}
+			batFile.deleteOnExit();
+			batFile.createNewFile();
 			
-			FileUtils.writeByteArrayToFile(batFile, command.toString().getBytes());
+			FileUtils.writeByteArrayToFile(batFile, command.getBytes());
 			return batFile.getAbsolutePath();
 		} catch (IOException e) {
 			e.printStackTrace(BurpExtender.getStderr());
@@ -88,6 +86,7 @@ class NmapScanAction implements ActionListener{
 		return command;
 	}
 	
-	public static void main(String[] args){
+	public static void main(String[] args) throws IOException {
+		Process process = Runtime.getRuntime().exec("cmd /c start notepad.exe");
 	}
 }
