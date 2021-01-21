@@ -83,7 +83,7 @@ public class LineConfig {
 		LineConfig.blacklistWebContainerSet = blacklistWebContainerSet;
 	}
 
-	public static boolean isIgnoreHttpsIfHttpOK() {
+	public static boolean isIgnoreHttpsOrHttpIfOneOK() {
 		return ToolPanel.ignoreHTTPS.isSelected();
 	}
 

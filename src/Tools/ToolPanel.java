@@ -70,6 +70,7 @@ public class ToolPanel extends JPanel {
 	public static JRadioButton ignoreHTTPS;
 	public static JRadioButton ignoreHTTPStaus500;
 	public static JRadioButton ignoreHTTPStaus400;
+	public static JRadioButton ignoreWrongCAHost;
 	private JTextField textFieldPortScanner;
 	private JTextField textFieldDirSearch;
 
@@ -633,7 +634,7 @@ public class ToolPanel extends JPanel {
 		gbc_label_2.gridy = 5;
 		fourFourthPanel.add(label_2, gbc_label_2);
 
-		ignoreHTTPS = new JRadioButton("Ignore HTTPS if HTTP is OK");
+		ignoreHTTPS = new JRadioButton("Ignore HTTPS if HTTP is OK || Ignore HTTP if HTTPS is OK");
 		GridBagConstraints gbc_ignoreHTTPS = new GridBagConstraints();
 		gbc_ignoreHTTPS.fill = GridBagConstraints.BOTH;
 		gbc_ignoreHTTPS.insets = new Insets(0, 0, 5, 0);
@@ -675,6 +676,14 @@ public class ToolPanel extends JPanel {
 		gbc_ignoreHTTPStaus400.gridy = 7;
 		fourFourthPanel.add(ignoreHTTPStaus400, gbc_ignoreHTTPStaus400);
 		ignoreHTTPStaus400.setSelected(true);
+		
+		ignoreWrongCAHost = new JRadioButton("Ignore Host that is IP Address and Certificate authority not match)");
+		ignoreWrongCAHost.setSelected(true);
+		GridBagConstraints gbc_ignoreWrongCAHost = new GridBagConstraints();
+		gbc_ignoreWrongCAHost.insets = new Insets(0, 0, 5, 0);
+		gbc_ignoreWrongCAHost.gridx = 1;
+		gbc_ignoreWrongCAHost.gridy = 8;
+		fourFourthPanel.add(ignoreWrongCAHost, gbc_ignoreWrongCAHost);
 
 		///////////////////////////FooterPanel//////////////////
 

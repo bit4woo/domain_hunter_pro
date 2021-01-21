@@ -55,7 +55,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	PrintWriter stderr;
 
 	private static final String[] standardTitles = new String[] {
-			"#", "URL", "Status", "Length", "Title","Comments","isChecked","Level","Time","IP", "CDN","Server"};
+			"#", "URL", "Status", "Length", "Title","Comments","isChecked","Level","Time","IP", "CDN|CertInfo","Server"};
 	private static List<String> titletList = new ArrayList<>(Arrays.asList(standardTitles));
 	//为了实现动态表结构
 	public static List<String> getTitletList() {
@@ -278,7 +278,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		if (columnIndex == titletList.indexOf("IP")){
 			return entry.getIP();
 		}
-		if (columnIndex == titletList.indexOf("CDN")){
+		if (columnIndex == titletList.indexOf("CDN|CertInfo")){
 			return entry.getCDN();
 		}
 		if (columnIndex == titletList.indexOf("Comments")){

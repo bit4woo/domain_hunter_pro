@@ -22,6 +22,8 @@ import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
 import burp.IHttpService;
 import burp.IPAddress;
+import domain.CertInfo;
+import domain.DomainPanel;
 
 /** 
 * @author bit4woo
@@ -136,6 +138,7 @@ public class Producer extends Thread {//Producer do
 		return null;
 	}
 
+	//Just do request
 	public static LineEntry doRequest(URL url) {
 		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
 		String cookie = TitlePanel.getCookie();
@@ -154,7 +157,6 @@ public class Producer extends Thread {//Producer do
 		int httpPort = 80;
 		int httpsPort = 443;
 		Set<LineEntry> resultSet = new HashSet<LineEntry>();
-
 
 		if (host.contains(":")) {//处理带有端口号的域名
 			String port = host.substring(host.indexOf(":")+1,host.length());
@@ -179,6 +181,19 @@ public class Producer extends Thread {//Producer do
 			}else {
 				IPSet.add(host);
 				CDNSet.add("");
+				if (ToolPanel.ignoreWrongCAHost.isSelected()) {
+					try {
+						Set<String> certDomains = CertInfo.getSANs(httpsURL.toString(),DomainPanel.domainResult.fetchKeywordSet());
+						if (certDomains.size() ==0) {
+							//在host是IP的情况下，证书不匹配，整改host都不需要再处理了。
+							return resultSet;
+						}else {//主机是host的情况下，将证书中的域名写入CDN字段，
+							CDNSet = certDomains;
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
 			}
 		}else {//目标是域名
 			HashMap<String,Set<String>> result = Commons.dnsquery(host);
@@ -221,7 +236,7 @@ public class Producer extends Thread {//Producer do
 
 
 		//在http不可用，或者设置为不忽略https的情况下
-		if (resultSet.size() ==0 || !LineConfig.isIgnoreHttpsIfHttpOK()) {
+		if (resultSet.size() ==0 || !LineConfig.isIgnoreHttpsOrHttpIfOneOK()) {
 
 			LineEntry httpsEntry = doRequest(httpsURL);
 			httpsEntry.setIPWithSet(IPSet);
@@ -260,10 +275,8 @@ public class Producer extends Thread {//Producer do
 				if (LineConfig.doFilter(exhttpsEntry)) {
 					resultSet.add(exhttpsEntry);
 				}
-
 			}
 		}
-
 		return resultSet;
 	}
 }
