@@ -26,10 +26,10 @@ import domain.CertInfo;
 import domain.DomainPanel;
 
 /** 
-* @author bit4woo
-* @github https://github.com/bit4woo 
-* @version CreateTime：Jun 25, 2020 2:35:31 PM 
-*/
+ * @author bit4woo
+ * @github https://github.com/bit4woo 
+ * @version CreateTime：Jun 25, 2020 2:35:31 PM 
+ */
 
 /*
  * do request use method of burp
@@ -113,7 +113,7 @@ public class Producer extends Thread {//Producer do
 			//因为这2个操作都会让map的长度发生变化，从而导致问题
 			return found;
 		}
-		
+
 		//根据host进行查找的逻辑，不会导致手动保存的条目被替换为null，因为手动保存的条目IP列表为空
 		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
 		for (LineEntry line:HistoryLines.values()) {
@@ -182,16 +182,12 @@ public class Producer extends Thread {//Producer do
 				IPSet.add(host);
 				CDNSet.add("");
 				if (ToolPanel.ignoreWrongCAHost.isSelected()) {
-					try {
-						Set<String> certDomains = CertInfo.getSANs(httpsURL.toString(),DomainPanel.domainResult.fetchKeywordSet());
-						if (certDomains.size() ==0) {
-							//在host是IP的情况下，证书不匹配，整改host都不需要再处理了。
-							return resultSet;
-						}else {//主机是host的情况下，将证书中的域名写入CDN字段，
-							CDNSet = certDomains;
-						}
-					} catch (Exception e) {
-						e.printStackTrace();
+					Set<String> certDomains = CertInfo.isTarget(httpsURL.toString(),DomainPanel.domainResult.fetchKeywordSet());
+					if (null !=certDomains && certDomains.isEmpty()) {//只有成功获取证书，并且匹配集合为空，才能完全确定不是目标
+						//在host是IP的情况下，证书不匹配，整改host都不需要再处理了。
+						return resultSet;
+					}else {//主机是host的情况下，将证书中的域名写入CDN字段，
+						CDNSet = certDomains;
 					}
 				}
 			}
