@@ -677,10 +677,18 @@ public class ToolPanel extends JPanel {
 		fourFourthPanel.add(ignoreHTTPStaus400, gbc_ignoreHTTPStaus400);
 		ignoreHTTPStaus400.setSelected(true);
 		
+		JLabel label_5 = new JLabel("");
+		GridBagConstraints gbc_label_5 = new GridBagConstraints();
+		gbc_label_5.insets = new Insets(0, 0, 5, 5);
+		gbc_label_5.gridx = 0;
+		gbc_label_5.gridy = 8;
+		fourFourthPanel.add(label_5, gbc_label_5);
+		
 		ignoreWrongCAHost = new JRadioButton("Ignore Host that is IP Address and Certificate authority not match)");
 		ignoreWrongCAHost.setSelected(true);
 		GridBagConstraints gbc_ignoreWrongCAHost = new GridBagConstraints();
 		gbc_ignoreWrongCAHost.insets = new Insets(0, 0, 5, 0);
+		gbc_ignoreWrongCAHost.fill = GridBagConstraints.BOTH;
 		gbc_ignoreWrongCAHost.gridx = 1;
 		gbc_ignoreWrongCAHost.gridy = 8;
 		fourFourthPanel.add(ignoreWrongCAHost, gbc_ignoreWrongCAHost);
