@@ -15,6 +15,7 @@ import org.apache.logging.log4j.Logger;
 
 import GUI.GUI;
 import GUI.LineEntryMenuForBurp;
+import Tools.ToolPanel;
 import bsh.This;
 import domain.DomainManager;
 import domain.DomainPanel;
@@ -144,7 +145,11 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 
 	@Override
 	public List<JMenuItem> createMenuItems(IContextMenuInvocation invocation) {
-		return new LineEntryMenuForBurp().createMenuItemsForBurp(invocation);
+		if (ToolPanel.DisplayContextMenuOfBurp.isSelected()) {
+			return new LineEntryMenuForBurp().createMenuItemsForBurp(invocation);
+		}else {
+			return null;
+		}
 	}
 
 	@Override

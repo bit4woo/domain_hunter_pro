@@ -71,8 +71,10 @@ public class ToolPanel extends JPanel {
 	public static JRadioButton ignoreHTTPStaus500;
 	public static JRadioButton ignoreHTTPStaus400;
 	public static JRadioButton ignoreWrongCAHost;
+	public static JRadioButton DisplayContextMenuOfBurp;
 	private JTextField textFieldPortScanner;
 	private JTextField textFieldDirSearch;
+	
 
 	public static LineConfig getLineConfig() {
 		return lineConfig;
@@ -684,7 +686,7 @@ public class ToolPanel extends JPanel {
 		gbc_label_5.gridy = 8;
 		fourFourthPanel.add(label_5, gbc_label_5);
 		
-		ignoreWrongCAHost = new JRadioButton("Ignore Host that is IP Address and Certificate authority not match)");
+		ignoreWrongCAHost = new JRadioButton("Ignore Host that is IP Address and Certificate authority not match");
 		ignoreWrongCAHost.setSelected(true);
 		GridBagConstraints gbc_ignoreWrongCAHost = new GridBagConstraints();
 		gbc_ignoreWrongCAHost.insets = new Insets(0, 0, 5, 0);
@@ -692,6 +694,22 @@ public class ToolPanel extends JPanel {
 		gbc_ignoreWrongCAHost.gridx = 1;
 		gbc_ignoreWrongCAHost.gridy = 8;
 		fourFourthPanel.add(ignoreWrongCAHost, gbc_ignoreWrongCAHost);
+		
+		JLabel label_6 = new JLabel("");
+		GridBagConstraints gbc_label_6 = new GridBagConstraints();
+		gbc_label_6.insets = new Insets(0, 0, 0, 5);
+		gbc_label_6.gridx = 0;
+		gbc_label_6.gridy = 9;
+		fourFourthPanel.add(label_6, gbc_label_6);
+		
+		DisplayContextMenuOfBurp = new JRadioButton("Display Context Menu Of Burp");
+		DisplayContextMenuOfBurp.setSelected(true);
+		GridBagConstraints gbc_DisplayContextMenuOfBurp = new GridBagConstraints();
+		gbc_DisplayContextMenuOfBurp.insets = new Insets(0, 0, 5, 0);
+		gbc_DisplayContextMenuOfBurp.fill = GridBagConstraints.BOTH;
+		gbc_DisplayContextMenuOfBurp.gridx = 1;
+		gbc_DisplayContextMenuOfBurp.gridy = 9;
+		fourFourthPanel.add(DisplayContextMenuOfBurp, gbc_DisplayContextMenuOfBurp);
 
 		///////////////////////////FooterPanel//////////////////
 
