@@ -33,9 +33,9 @@ class DirSearchAction implements ActionListener{
 			java.util.List<String> urls = lineTable.getModel().getURLs(rows);
 			String textUrls = String.join(System.lineSeparator(), urls);
 			
-			String targetfile = URLsToFile(textUrls);
+//			String targetfile = URLsToFile(textUrls);TODO
 
-			String batFilePathString  = genbatFile(targetfile);
+			String batFilePathString  = genbatFile(textUrls);
 			String command = dirSearchCommand(batFilePathString);
 			Process process = Runtime.getRuntime().exec(command);
 		}
@@ -48,6 +48,7 @@ class DirSearchAction implements ActionListener{
 	/*
 	 * 请求包存入文件
 	 */
+	@Deprecated
 	public String URLsToFile(String urls) {
 		try {
 

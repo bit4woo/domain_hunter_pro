@@ -342,7 +342,7 @@ public class ToolPanel extends JPanel {
 
 						List<String> content = Commons.getLinesFromTextArea(inputTextArea);
 						for (String item:content) {
-							item = toAddPrefix.trim()+item+toAddSuffix.trim();
+							item = toAddPrefix+item+toAddSuffix;
 							result.add(item); 
 						}
 						outputTextArea.setText(String.join(System.lineSeparator(), result));
