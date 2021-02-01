@@ -6,8 +6,12 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -31,13 +35,11 @@ class DirSearchAction implements ActionListener{
 	public void actionPerformed(ActionEvent actionEvent) {
 		try{
 			java.util.List<String> urls = lineTable.getModel().getURLs(rows);
-			String textUrls = String.join(System.lineSeparator(), urls);
-			
-//			String targetfile = URLsToFile(textUrls);TODO
-
-			String batFilePathString  = genbatFile(textUrls);
-			String command = dirSearchCommand(batFilePathString);
-			Process process = Runtime.getRuntime().exec(command);
+			for(String url:urls) {
+				String batFilePathString  = genbatFile(url);
+				String command = dirSearchCommand(batFilePathString);
+				Process process = Runtime.getRuntime().exec(command);
+			}
 		}
 		catch (Exception e1)
 		{
@@ -68,11 +70,11 @@ class DirSearchAction implements ActionListener{
 		}
 	}
 	
-	public static String genbatFile(String targetFilePath) {
+	public static String genbatFile(String url) {
 		try {
 			String basedir = (String) System.getProperties().get("java.io.tmpdir");
 			
-			String command = ToolPanel.getLineConfig().getPython3Path()+" "+ToolPanel.getLineConfig().getDirSearchPath()+" -L "+targetFilePath+" -e jsp";
+			String command = ToolPanel.getLineConfig().getPython3Path()+" "+ToolPanel.getLineConfig().getDirSearchPath()+" -u "+url+" -e jsp";
 
 			//将命令写入剪切板
 			Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -109,9 +111,10 @@ class DirSearchAction implements ActionListener{
 	
 	public static void main(String[] args){
 		try {
-			//String command = "C:\\Python37\\python.exe D:\\github\\dirsearch\\dirsearch.py -L C:\\Users\\01374214\\AppData\\Local\\Temp\\Target.0820-180114.txt -e jsp";
-			String batFilePathString  = genbatFile("C:\\Users\\01374214\\AppData\\Local\\Temp\\Target.0820-180114.txt");
+			//String command = "C:\\Python37\\python.exe D:\\github\\dirsearch\\dirsearch.py -L C:\\Users\\111\\AppData\\Local\\Temp\\Target.0820-180114.txt -e jsp";
+			String batFilePathString  = genbatFile("C:\\Users\\111\\AppData\\Local\\Temp\\Target.0820-180114.txt");
 			String command = dirSearchCommand(batFilePathString);
+			command = "start cmd.exe /k ls";
 			Process process = Runtime.getRuntime().exec(command);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
