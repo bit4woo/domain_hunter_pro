@@ -15,6 +15,7 @@ import javax.swing.border.EmptyBorder;
 import burp.IHttpRequestResponse;
 import title.LineTable;
 import title.LineTableModel;
+import javax.swing.JLabel;
 
 public class RunnerGUI extends JFrame {
 
@@ -24,11 +25,12 @@ public class RunnerGUI extends JFrame {
 	private JPanel RunnerPanel;
 	
 	
-	private static LineTableModel runnerTableModel = new LineTableModel();
-	private static LineTable runnerTable = new LineTable(runnerTableModel);
-	private static ThreadRunner runner;
-	private static IHttpRequestResponse messageInfo;
-	private static String keyword;
+	private LineTableModel runnerTableModel = new LineTableModel();
+	private LineTable runnerTable = new LineTable(runnerTableModel);
+	private ThreadRunner runner;
+	private ThreadDirBruter bruter;
+	private IHttpRequestResponse messageInfo;
+	public JLabel lblStatus;
 	
 	public JPanel getRunnerPanel() {
 		return RunnerPanel;
@@ -62,44 +64,36 @@ public class RunnerGUI extends JFrame {
 		ResponsePanel = responsePanel;
 	}
 
-	public static LineTableModel getRunnerTableModel() {
+	public LineTableModel getRunnerTableModel() {
 		return runnerTableModel;
 	}
 
-	public static void setRunnerTableModel(LineTableModel runnerTableModel) {
-		RunnerGUI.runnerTableModel = runnerTableModel;
+	public void setRunnerTableModel(LineTableModel runnerTableModel) {
+		this.runnerTableModel = runnerTableModel;
 	}
 
-	public static LineTable getRunnerTable() {
+	public LineTable getRunnerTable() {
 		return runnerTable;
 	}
 
-	public static void setRunnerTable(LineTable runnerTable) {
-		RunnerGUI.runnerTable = runnerTable;
+	public void setRunnerTable(LineTable runnerTable) {
+		this.runnerTable = runnerTable;
 	}
 
-	public static ThreadRunner getRunner() {
+	public ThreadRunner getRunner() {
 		return runner;
 	}
 
-	public static void setRunner(ThreadRunner runner) {
-		RunnerGUI.runner = runner;
+	public void setRunner(ThreadRunner runner) {
+		this.runner = runner;
 	}
 
-	public static IHttpRequestResponse getMessageInfo() {
+	public IHttpRequestResponse getMessageInfo() {
 		return messageInfo;
 	}
 
-	public static void setMessageInfo(IHttpRequestResponse messageInfo) {
-		RunnerGUI.messageInfo = messageInfo;
-	}
-
-	public static String getKeyword() {
-		return keyword;
-	}
-
-	public static void setKeyword(String keyword) {
-		RunnerGUI.keyword = keyword;
+	public void setMessageInfo(IHttpRequestResponse messageInfo) {
+		this.messageInfo = messageInfo;
 	}
 
 	/**
@@ -119,15 +113,7 @@ public class RunnerGUI extends JFrame {
 	}
 
 	
-	public String getKeywordFromUI() {
-		String responseKeyword = JOptionPane.showInputDialog("Response Keyword", null);
-		while(responseKeyword.trim().equals("")){
-			responseKeyword = JOptionPane.showInputDialog("Response Keyword", null);
-		}
-		responseKeyword = responseKeyword.trim();
-		this.keyword = responseKeyword;
-		return keyword;
-	}
+
 
 	
 	/**
@@ -143,12 +129,14 @@ public class RunnerGUI extends JFrame {
 		RunnerPanel.setLayout(new BorderLayout(0, 0));
 		setContentPane(RunnerPanel);//for test
 		
+		lblStatus = new JLabel("Status");
+		RunnerPanel.add(lblStatus, BorderLayout.NORTH);
+		
 		//RunnerPanel.add(splitPane, BorderLayout.CENTER);
 	}
 	
 	
 	public RunnerGUI(IHttpRequestResponse messageInfo) {
-		getKeywordFromUI();
 		this.messageInfo = messageInfo;
 		
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -160,6 +148,9 @@ public class RunnerGUI extends JFrame {
 		RunnerPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		RunnerPanel.setLayout(new BorderLayout(0, 0));
 		setContentPane(RunnerPanel);//for test
+		
+		lblStatus = new JLabel("Status");
+		RunnerPanel.add(lblStatus, BorderLayout.NORTH);
 		
 		RunnerPanel.add(runnerTable.getTableAndDetailSplitPane(), BorderLayout.CENTER);
 		//frame.getRootPane().add(runnerTable.getSplitPane(), BorderLayout.CENTER);
@@ -175,7 +166,13 @@ public class RunnerGUI extends JFrame {
 			public void windowClosing(WindowEvent e) {
 				// TODO 关闭多线程
 				runnerTableModel.clear(false);
-				runner.stopThreads();
+				if (runner !=null) {
+					runner.stopThreads();
+				}
+				
+				if (bruter != null) {
+					bruter.stopThreads();
+				}
 			}
 
 			@Override
@@ -211,12 +208,15 @@ public class RunnerGUI extends JFrame {
 		setBounds(100, 100, 1000, 500);
 		
 		//准备工作
-		
-		begainRun();
 	}
 	
 	public void begainRun() {
-		runner = new ThreadRunner(messageInfo);
+		runner = new ThreadRunner(this,messageInfo);
 		runner.Do();
+	}
+	
+	public void begainDirBrute() {
+		bruter = new ThreadDirBruter(this,messageInfo);
+		bruter.Do();
 	}
 }

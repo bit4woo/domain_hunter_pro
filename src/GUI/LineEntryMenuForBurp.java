@@ -17,8 +17,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 
-import com.google.common.hash.HashCode;
-
 import Tools.ToolPanel;
 import burp.BurpExtender;
 import burp.Commons;
@@ -50,6 +48,9 @@ public class LineEntryMenuForBurp{
 
 		JMenuItem runWithSamePathItem = new JMenuItem("^_^ Run Targets with this path");
 		runWithSamePathItem.addActionListener(new runWithSamePath(invocation));
+		
+		JMenuItem doDirBruteItem = new JMenuItem("^_^ Do Dir Brute");
+		doDirBruteItem.addActionListener(new doDirBrute(invocation));
 
 		JMenuItem addDomainToDomainHunter = new JMenuItem("^_^ Add Domain");
 		addDomainToDomainHunter.addActionListener(new addHostToRootDomain(invocation));
@@ -85,6 +86,7 @@ public class LineEntryMenuForBurp{
 		JMenuItemList.add(addCommentToDomainHunter);
 		
 		JMenuItemList.add(addDomainToDomainHunter);
+		JMenuItemList.add(doDirBruteItem);
 		JMenuItemList.add(runWithSamePathItem);
 		
 		
@@ -175,6 +177,37 @@ public class LineEntryMenuForBurp{
 					IHttpRequestResponse messageInfo =messages[0];
 
 					RunnerGUI runnergui = new RunnerGUI(messageInfo);
+					runnergui.begainRun();
+					return null;
+				}
+				@Override
+				protected void done() {
+				}
+			};
+			worker.execute();
+		}
+	}
+	
+	
+	public class doDirBrute implements ActionListener{
+		private IContextMenuInvocation invocation;
+		doDirBrute(IContextMenuInvocation invocation) {
+			this.invocation  = invocation;
+		}
+		@Override
+		public void actionPerformed(ActionEvent e)
+		{
+			SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+				//using SwingWorker to prevent blocking burp main UI.
+
+				@Override
+				protected Map doInBackground() throws Exception {
+
+					IHttpRequestResponse[] messages = invocation.getSelectedMessages();
+					IHttpRequestResponse messageInfo =messages[0];
+
+					RunnerGUI runnergui = new RunnerGUI(messageInfo);
+					runnergui.begainDirBrute();
 					return null;
 				}
 				@Override

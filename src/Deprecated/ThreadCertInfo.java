@@ -1,8 +1,5 @@
 package Deprecated;
 
-import burp.Commons;
-import domain.CertInfo;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -12,6 +9,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+
+import domain.CertInfo;
 
 //不再需要这个类了
 @Deprecated
@@ -53,7 +52,7 @@ public class ThreadCertInfo implements Callable<Set<String>>{
     
     @Override
     public Set<String> call() throws Exception{
-		Set<String> tmpDomains = CertInfo.getSANs(url,domainKeywords);
+		Set<String> tmpDomains = CertInfo.getSANsbyKeyword(url,domainKeywords);
 		return tmpDomains;
     }
 	
@@ -115,6 +114,6 @@ public class ThreadCertInfo implements Callable<Set<String>>{
 		}
         }
         
-        System.out.println(Commons.set2string(Domains));
+//        System.out.println(Commons.set2string(Domains));
       }
 }

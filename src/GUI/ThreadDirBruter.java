@@ -1,6 +1,10 @@
 package GUI;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -8,6 +12,8 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.swing.JOptionPane;
+
+import org.apache.commons.io.FileUtils;
 
 import burp.BurpExtender;
 import burp.Getter;
@@ -21,9 +27,9 @@ import title.TitlePanel;
 
 //////////////////ThreadGetTitle block/////////////
 //no need to pass BurpExtender object to these class, IBurpExtenderCallbacks object is enough 
-public class ThreadRunner{
+public class ThreadDirBruter{
 	private IHttpRequestResponse messageInfo;
-	private List<RunnerProducer> plist;
+	private List<DirBruterProducer> plist;
 
 	private static IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();//静态变量，burp插件的逻辑中，是可以保证它被初始化的。;
 	public PrintWriter stdout = new PrintWriter(callbacks.getStdout(), true);
@@ -31,40 +37,43 @@ public class ThreadRunner{
 	public IExtensionHelpers helpers = callbacks.getHelpers();
 	private RunnerGUI runnerGUI;
 
-	public ThreadRunner(RunnerGUI runnerGUI, IHttpRequestResponse messageInfo) {
+	public ThreadDirBruter(RunnerGUI runnerGUI,IHttpRequestResponse messageInfo) {
 		this.runnerGUI = runnerGUI;
 		this.messageInfo = messageInfo;
 	}
 	
-	public String getKeywordFromUI() {
-		String responseKeyword = JOptionPane.showInputDialog("Response Keyword", null);
-		while(responseKeyword.trim().equals("")){
-			responseKeyword = JOptionPane.showInputDialog("Response Keyword", null);
-		}
-		responseKeyword = responseKeyword.trim();
-		return responseKeyword;
-	}
 
 	public void Do(){
-		String keywords = getKeywordFromUI();
-		BlockingQueue<LineEntry> lineEntryQueue = new LinkedBlockingQueue<LineEntry>();//use to store domains
-		lineEntryQueue.addAll(TitlePanel.getTitleTableModel().getLineEntries().values());
-		stdout.println("~~~~~~~~~~~~~Start threading Runner~~~~~~~~~~~~~ total task number: "+lineEntryQueue.size());
+		BlockingQueue<String> pathDict = new LinkedBlockingQueue<String>();
+		try {
+			InputStream dictInputStream = ThreadDirBruter.class.getClass().getResourceAsStream("/dict.txt");
+			//Commons.buildInDictToFile(dictInputStream,"copyOfBuildinDict.txt");
+			File copyFile = new File(".copyOfBuildinPathDict.txt");
+			FileUtils.copyToFile(dictInputStream,copyFile);
+			copyFile.deleteOnExit();//这是在程序退出时删除文件，临时文件的用法
+			DictReader reader = new DictReader(copyFile.toString(),pathDict);
+			reader.start();
+		} catch (IOException e1) {
+			e1.printStackTrace(stderr);
+			return;
+		}
+		
+		stdout.println("~~~~~~~~~~~~~Start threading Runner~~~~~~~~~~~~~ total task number: "+pathDict.size());
 
-		plist = new ArrayList<RunnerProducer>();
+		plist = new ArrayList<DirBruterProducer>();
 
 		for (int i=0;i<=50;i++) {
-			RunnerProducer p = new RunnerProducer(runnerGUI.getRunnerTableModel(),lineEntryQueue,messageInfo, keywords, i);
+			DirBruterProducer p = new DirBruterProducer(runnerGUI.getRunnerTableModel(),pathDict,messageInfo, i);
 			p.start();
 			plist.add(p);
 		}
 
 		long waitTime = 0;
 		while(true) {//to wait all threads exit.
-			if (lineEntryQueue.isEmpty() && isAllProductorFinished()) {
+			if (pathDict.isEmpty() && isAllProductorFinished()) {
 				stdout.println("~~~~~~~~~~~~~Get Title Done~~~~~~~~~~~~~");
 				break;
-			}else if(lineEntryQueue.isEmpty() && waitTime >=10*60*1000){
+			}else if(pathDict.isEmpty() && waitTime >=10*60*1000){
 				stdout.println("~~~~~~~~~~~~~Get Title Done(force exits due to time out)~~~~~~~~~~~~~");
 				break;
 			}else {
@@ -83,7 +92,7 @@ public class ThreadRunner{
 
 	boolean isAllProductorFinished(){
 		int i = 0;
-		for (RunnerProducer p:plist) {
+		for (DirBruterProducer p:plist) {
 			if(p.isAlive()) {
 				i = i+1;
 			}
@@ -98,10 +107,12 @@ public class ThreadRunner{
 	}
 
 	public void stopThreads() {
-		for (RunnerProducer p:plist) {
-			p.stopThread();
+		if (plist != null) {
+			for (DirBruterProducer p:plist) {
+				p.stopThread();
+			}
+			stdout.println("~~~~~~~~~~~~~All stop message sent! wait them to exit~~~~~~~~~~~~~");
 		}
-		stdout.println("~~~~~~~~~~~~~All stop message sent! wait them to exit~~~~~~~~~~~~~");
 	}
 }
 
@@ -111,8 +122,8 @@ public class ThreadRunner{
  *
  */
 
-class RunnerProducer extends Thread {//Producer do
-	private final BlockingQueue<LineEntry> lineEntryQueue;//use to store domains
+class DirBruterProducer extends Thread {//Producer do
+	private final BlockingQueue<String> pathDict;//use to store domains
 	private int threadNo;
 	private boolean stopflag = false;
 
@@ -122,31 +133,24 @@ class RunnerProducer extends Thread {//Producer do
 	public IExtensionHelpers helpers = callbacks.getHelpers();
 
 	private Getter getter;
-	private byte[] request;
-	private byte[] response;
-	private String protocol;
-	private String host;
-	private int port;
+	private String shorturl;
+	private IHttpService service;
 
 	LineTableModel runnerTableModel;
-	String keyword;
 
-	public RunnerProducer(LineTableModel runnerTableModel,BlockingQueue<LineEntry> lineEntryQueue,IHttpRequestResponse messageInfo, String keyword, int threadNo) {
+	public DirBruterProducer(LineTableModel runnerTableModel,BlockingQueue<String> pathDict,IHttpRequestResponse messageInfo, int threadNo) {
 		this.runnerTableModel = runnerTableModel;
 		this.runnerTableModel.setListenerIsOn(false);//否则数据会写入title的数据库
 		this.threadNo = threadNo;
-		this.lineEntryQueue = lineEntryQueue;
-		this.keyword = keyword;
+		this.pathDict = pathDict;
 		stopflag= false;
 
 		//为了避免原始messageinfo的改变导致影响后续获取headers等参数，先完成解析存储下来。
 		//而且也可以避免多线程下getter时常getHeaderMap的结果为空的情况！！！
 		//虽然减少了getter的次数，但是还是每个线程执行了一次，目前看来没有出错，因为线程的启动是顺序执行的！
 		getter = new Getter(helpers);
-		request = messageInfo.getRequest();
-		response = messageInfo.getResponse();
-		protocol = messageInfo.getHttpService().getProtocol();
-		port = messageInfo.getHttpService().getPort();
+		service = messageInfo.getHttpService();
+		shorturl = service.toString();
 	}
 
 	public void stopThread() {
@@ -157,42 +161,30 @@ class RunnerProducer extends Thread {//Producer do
 	public void run() {
 		while(true){
 			try {
-				if (lineEntryQueue.isEmpty() || stopflag) {
+				if (pathDict.isEmpty() || stopflag) {
 					//stdout.println(threadNo+" Producer exited");
 					break;
 				}
 				//只需要从line中获取host信息就可以了，其他信息都应该和当前的请求一致！
-				LineEntry line = lineEntryQueue.take();
-				String host = line.getHost();
-
-				IHttpService httpService = helpers.buildHttpService(host, port, protocol);
-
-				LinkedHashMap<String, String> headers = getter.getHeaderMap(true, request);
-				if ((protocol.toLowerCase().equals("http")&&port==80) || (protocol.toLowerCase().equals("https")&&port==443)) {
-					headers.put("Host", host);
-				}else {
-					headers.put("Host", host+":"+port);//update host of request header
+				String path = pathDict.take();
+				if (path.startsWith("/")){
+					path = path.replaceFirst("/", "");
 				}
-				byte[] body = getter.getBody(true, request);
-
-				byte[] neRequest = helpers.buildHttpMessage(getter.headerMapToHeaderList(headers), body);
-				int leftTaskNum = lineEntryQueue.size();
-
-				//stdout.println(httpService.toString());
-				//stdout.println(new String(neRequest));
-				IHttpRequestResponse messageinfo = callbacks.makeHttpRequest(httpService, neRequest);
+				
+				URL url = new URL(shorturl+path);
+				IHttpRequestResponse messageinfo = callbacks.makeHttpRequest(service, helpers.buildHttpRequest(url));
 				String fullurl = helpers.analyzeRequest(messageinfo).getUrl().toString();
+				int leftTaskNum = pathDict.size();
 				stdout.println(String.format("%s tasks left, Runner Checking: %s",leftTaskNum,fullurl));
 				
 				if (messageinfo !=null) {
 					byte[] response = messageinfo.getResponse();
 					if (response != null) {
 						String responseBody = new String(response);
-						if (responseBody.toLowerCase().contains(keyword)) {
-							runnerTableModel.addNewLineEntry(new LineEntry(messageinfo,LineEntry.CheckStatus_UnChecked,"Runner"));
-						}
+						runnerTableModel.addNewLineEntry(new LineEntry(messageinfo,LineEntry.CheckStatus_UnChecked,"dirBruter"));
 					}
 				}
+
 			}catch (Exception e) {
 				e.printStackTrace(stderr);
 			}
