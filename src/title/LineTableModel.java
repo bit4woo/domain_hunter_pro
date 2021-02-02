@@ -589,7 +589,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		//上面得到的顺序就是从高位开始的
 		for(int[] sli:slice) {
 			System.out.println(Arrays.toString(sli));
-			this.fireTableRowsDeleted(sli[sli.length-1],sli[0]);//这里传入的值必须是地位数在前面，高位数在后面
+			this.fireTableRowsDeleted(sli[sli.length-1],sli[0]);//这里传入的值必须是低位数在前面，高位数在后面
 		}
 	}
 
@@ -597,7 +597,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		List<int[]> slice = IntArraySlice.slice(rows);
 		for(int[] sli:slice) {
 			System.out.println(Arrays.toString(sli));
-			this.fireTableRowsUpdated(sli[0], sli[sli.length-1]);
+			this.fireTableRowsUpdated(sli[sli.length-1],sli[0]);//同上，修复更新多个记录时的错误
 		}
 	}
 

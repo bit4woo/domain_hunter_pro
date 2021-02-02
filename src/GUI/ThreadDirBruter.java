@@ -6,12 +6,9 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-
-import javax.swing.JOptionPane;
 
 import org.apache.commons.io.FileUtils;
 
@@ -23,7 +20,6 @@ import burp.IHttpRequestResponse;
 import burp.IHttpService;
 import title.LineEntry;
 import title.LineTableModel;
-import title.TitlePanel;
 
 //////////////////ThreadGetTitle block/////////////
 //no need to pass BurpExtender object to these class, IBurpExtenderCallbacks object is enough 
