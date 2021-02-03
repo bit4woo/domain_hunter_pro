@@ -74,6 +74,7 @@ public class ToolPanel extends JPanel {
 	public static JRadioButton DisplayContextMenuOfBurp;
 	private JTextField textFieldPortScanner;
 	private JTextField textFieldDirSearch;
+	public static JTextField textFieldDirBruteDict;
 	
 
 	public static LineConfig getLineConfig() {
@@ -92,6 +93,7 @@ public class ToolPanel extends JPanel {
 		BrowserPath.setText(lineConfig.getBrowserPath());
 		textFieldPortScanner.setText(lineConfig.getNmapPath());
 		textFieldDirSearch.setText(lineConfig.getDirSearchPath());
+		textFieldDirBruteDict.setText(lineConfig.getBruteDict());
 		showItemsInOne.setSelected(lineConfig.isShowItemsInOne());
 	}
 
@@ -530,9 +532,9 @@ public class ToolPanel extends JPanel {
 		RightOfCenter.setRightComponent(fourFourthPanel);
 		GridBagLayout gbl_fourFourthPanel = new GridBagLayout();
 		gbl_fourFourthPanel.columnWidths = new int[]{215, 215, 0};
-		gbl_fourFourthPanel.rowHeights = new int[]{27, 0, 0, 27, 27, 27, 27, 27, 0, 0, 0};
+		gbl_fourFourthPanel.rowHeights = new int[]{27, 0, 0, 27, 0, 27, 27, 27, 27, 0, 0, 0};
 		gbl_fourFourthPanel.columnWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
-		gbl_fourFourthPanel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gbl_fourFourthPanel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		fourFourthPanel.setLayout(gbl_fourFourthPanel);
 
 		JLabel lblNewLabel = new JLabel("Browser Path:");
@@ -605,13 +607,32 @@ public class ToolPanel extends JPanel {
 		fourFourthPanel.add(PortList, gbc_PortList);
 		PortList.setColumns(50);
 		PortList.setToolTipText("eg.: 8080,8088");
+		
+		JLabel lblDirBruteDict = new JLabel("Dir Brute Dict:");
+		GridBagConstraints gbc_lblDirBruteDict = new GridBagConstraints();
+		gbc_lblDirBruteDict.anchor = GridBagConstraints.WEST;
+		gbc_lblDirBruteDict.insets = new Insets(0, 0, 5, 5);
+		gbc_lblDirBruteDict.gridx = 0;
+		gbc_lblDirBruteDict.gridy = 4;
+		fourFourthPanel.add(lblDirBruteDict, gbc_lblDirBruteDict);
+		
+		textFieldDirBruteDict = new JTextField();
+		textFieldDirBruteDict.setToolTipText("path of dict");
+		textFieldDirBruteDict.setColumns(50);
+		textFieldDirBruteDict.getDocument().addDocumentListener(new textFieldListener());
+		GridBagConstraints gbc_textFieldDirBruteDict = new GridBagConstraints();
+		gbc_textFieldDirBruteDict.insets = new Insets(0, 0, 5, 0);
+		gbc_textFieldDirBruteDict.fill = GridBagConstraints.HORIZONTAL;
+		gbc_textFieldDirBruteDict.gridx = 1;
+		gbc_textFieldDirBruteDict.gridy = 4;
+		fourFourthPanel.add(textFieldDirBruteDict, gbc_textFieldDirBruteDict);
 
 		JLabel label_1 = new JLabel("");
 		GridBagConstraints gbc_label_1 = new GridBagConstraints();
 		gbc_label_1.fill = GridBagConstraints.BOTH;
 		gbc_label_1.insets = new Insets(0, 0, 5, 5);
 		gbc_label_1.gridx = 0;
-		gbc_label_1.gridy = 4;
+		gbc_label_1.gridy = 5;
 		fourFourthPanel.add(label_1, gbc_label_1);
 
 
@@ -620,7 +641,7 @@ public class ToolPanel extends JPanel {
 		gbc_showItemsInOne.fill = GridBagConstraints.BOTH;
 		gbc_showItemsInOne.insets = new Insets(0, 0, 5, 0);
 		gbc_showItemsInOne.gridx = 1;
-		gbc_showItemsInOne.gridy = 4;
+		gbc_showItemsInOne.gridy = 5;
 		fourFourthPanel.add(showItemsInOne, gbc_showItemsInOne);
 		showItemsInOne.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -633,7 +654,7 @@ public class ToolPanel extends JPanel {
 		gbc_label_2.fill = GridBagConstraints.BOTH;
 		gbc_label_2.insets = new Insets(0, 0, 5, 5);
 		gbc_label_2.gridx = 0;
-		gbc_label_2.gridy = 5;
+		gbc_label_2.gridy = 6;
 		fourFourthPanel.add(label_2, gbc_label_2);
 
 		ignoreHTTPS = new JRadioButton("Ignore HTTPS if HTTP is OK || Ignore HTTP if HTTPS is OK");
@@ -641,7 +662,7 @@ public class ToolPanel extends JPanel {
 		gbc_ignoreHTTPS.fill = GridBagConstraints.BOTH;
 		gbc_ignoreHTTPS.insets = new Insets(0, 0, 5, 0);
 		gbc_ignoreHTTPS.gridx = 1;
-		gbc_ignoreHTTPS.gridy = 5;
+		gbc_ignoreHTTPS.gridy = 6;
 		fourFourthPanel.add(ignoreHTTPS, gbc_ignoreHTTPS);
 		ignoreHTTPS.setSelected(true);
 
@@ -650,7 +671,7 @@ public class ToolPanel extends JPanel {
 		gbc_label_3.fill = GridBagConstraints.BOTH;
 		gbc_label_3.insets = new Insets(0, 0, 5, 5);
 		gbc_label_3.gridx = 0;
-		gbc_label_3.gridy = 6;
+		gbc_label_3.gridy = 7;
 		fourFourthPanel.add(label_3, gbc_label_3);
 
 		ignoreHTTPStaus500 = new JRadioButton("Ignore items which Status >= 500");
@@ -658,7 +679,7 @@ public class ToolPanel extends JPanel {
 		gbc_ignoreHTTPStaus500.fill = GridBagConstraints.BOTH;
 		gbc_ignoreHTTPStaus500.insets = new Insets(0, 0, 5, 0);
 		gbc_ignoreHTTPStaus500.gridx = 1;
-		gbc_ignoreHTTPStaus500.gridy = 6;
+		gbc_ignoreHTTPStaus500.gridy = 7;
 		fourFourthPanel.add(ignoreHTTPStaus500, gbc_ignoreHTTPStaus500);
 		ignoreHTTPStaus500.setSelected(true);
 
@@ -667,7 +688,7 @@ public class ToolPanel extends JPanel {
 		gbc_label_4.fill = GridBagConstraints.BOTH;
 		gbc_label_4.insets = new Insets(0, 0, 5, 5);
 		gbc_label_4.gridx = 0;
-		gbc_label_4.gridy = 7;
+		gbc_label_4.gridy = 8;
 		fourFourthPanel.add(label_4, gbc_label_4);
 
 		ignoreHTTPStaus400 = new JRadioButton("Ignore http Status 400(The plain HTTP request was sent to HTTPS port)");
@@ -675,7 +696,7 @@ public class ToolPanel extends JPanel {
 		gbc_ignoreHTTPStaus400.insets = new Insets(0, 0, 5, 0);
 		gbc_ignoreHTTPStaus400.fill = GridBagConstraints.BOTH;
 		gbc_ignoreHTTPStaus400.gridx = 1;
-		gbc_ignoreHTTPStaus400.gridy = 7;
+		gbc_ignoreHTTPStaus400.gridy = 8;
 		fourFourthPanel.add(ignoreHTTPStaus400, gbc_ignoreHTTPStaus400);
 		ignoreHTTPStaus400.setSelected(true);
 		
@@ -683,7 +704,7 @@ public class ToolPanel extends JPanel {
 		GridBagConstraints gbc_label_5 = new GridBagConstraints();
 		gbc_label_5.insets = new Insets(0, 0, 5, 5);
 		gbc_label_5.gridx = 0;
-		gbc_label_5.gridy = 8;
+		gbc_label_5.gridy = 9;
 		fourFourthPanel.add(label_5, gbc_label_5);
 		
 		ignoreWrongCAHost = new JRadioButton("Ignore Host that is IP Address and Certificate authority not match");
@@ -692,23 +713,22 @@ public class ToolPanel extends JPanel {
 		gbc_ignoreWrongCAHost.insets = new Insets(0, 0, 5, 0);
 		gbc_ignoreWrongCAHost.fill = GridBagConstraints.BOTH;
 		gbc_ignoreWrongCAHost.gridx = 1;
-		gbc_ignoreWrongCAHost.gridy = 8;
+		gbc_ignoreWrongCAHost.gridy = 9;
 		fourFourthPanel.add(ignoreWrongCAHost, gbc_ignoreWrongCAHost);
 		
 		JLabel label_6 = new JLabel("");
 		GridBagConstraints gbc_label_6 = new GridBagConstraints();
 		gbc_label_6.insets = new Insets(0, 0, 0, 5);
 		gbc_label_6.gridx = 0;
-		gbc_label_6.gridy = 9;
+		gbc_label_6.gridy = 10;
 		fourFourthPanel.add(label_6, gbc_label_6);
 		
 		DisplayContextMenuOfBurp = new JRadioButton("Display Context Menu Of Burp");
 		DisplayContextMenuOfBurp.setSelected(true);
 		GridBagConstraints gbc_DisplayContextMenuOfBurp = new GridBagConstraints();
-		gbc_DisplayContextMenuOfBurp.insets = new Insets(0, 0, 5, 0);
 		gbc_DisplayContextMenuOfBurp.fill = GridBagConstraints.BOTH;
 		gbc_DisplayContextMenuOfBurp.gridx = 1;
-		gbc_DisplayContextMenuOfBurp.gridy = 9;
+		gbc_DisplayContextMenuOfBurp.gridy = 10;
 		fourFourthPanel.add(DisplayContextMenuOfBurp, gbc_DisplayContextMenuOfBurp);
 
 		///////////////////////////FooterPanel//////////////////
@@ -771,7 +791,7 @@ public class ToolPanel extends JPanel {
 		return result;
 	}
 
-
+	//保存文本框的数据
 	class textAreaListener implements DocumentListener {
 
 		@Override
@@ -793,12 +813,14 @@ public class ToolPanel extends JPanel {
 		}
 	}
 
+	//保存各个路径设置参数，自动保存的listener
 	class textFieldListener implements DocumentListener {
 		
 		public void save() {
 			File browser = new File(BrowserPath.getText().trim());
 			File portScanner = new File(textFieldPortScanner.getText().trim());
 			File dirSearch = new File(textFieldDirSearch.getText().trim());
+			File bruteDict = new File(textFieldDirBruteDict.getText().trim());
 			if (browser.exists()) {
 				lineConfig.setBrowserPath(browser.getAbsolutePath());
 			}
@@ -807,6 +829,9 @@ public class ToolPanel extends JPanel {
 			}
 			if (dirSearch.exists()) {
 				lineConfig.setDirSearchPath(dirSearch.getAbsolutePath());
+			}
+			if (bruteDict.exists()) {
+				lineConfig.setBruteDict(bruteDict.getAbsolutePath());
 			}
 		}
 

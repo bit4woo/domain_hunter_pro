@@ -31,7 +31,7 @@ public class DictReader extends Thread{
 				}
 				List<String> tmp = readline.next(10000,"");
 				if (tmp.size() == 0) {
-					log.info("字典文件"+filePath+"读取完成");
+					log.info("read dict file: "+filePath+" done");
 					break;
 				}else {
 					for (String item:tmp) {
