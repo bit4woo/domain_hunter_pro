@@ -314,7 +314,11 @@ public class LineTable extends JTable
 					}else if (col == LineTableModel.getTitletList().indexOf("isChecked")) {
 						try{
 							//LineTable.this.lineTableModel.updateRowsStatus(rows,LineEntry.CheckStatus_Checked);//处理多行
-							selecteEntry.setCheckStatus(LineEntry.CheckStatus_Checked);
+							String currentStatus= selecteEntry.getCheckStatus();
+							List<String> tmpList = Arrays.asList(LineEntry.CheckStatusArray);
+							int index = tmpList.indexOf(currentStatus);
+							String newStatus = tmpList.get((index+1)%3);
+							selecteEntry.setCheckStatus(newStatus);
 							stdout.println("$$$ "+selecteEntry.getUrl()+" status has been set to "+LineEntry.CheckStatus_Checked);
 							LineTable.this.lineTableModel.fireTableRowsUpdated(rows[0], rows[0]);
 						}catch (Exception e1){

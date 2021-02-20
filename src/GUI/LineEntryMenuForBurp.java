@@ -86,7 +86,7 @@ public class LineEntryMenuForBurp{
 		JMenuItemList.add(addCommentToDomainHunter);
 		
 		JMenuItemList.add(addDomainToDomainHunter);
-		JMenuItemList.add(doDirBruteItem);
+		//JMenuItemList.add(doDirBruteItem);
 		JMenuItemList.add(runWithSamePathItem);
 		
 		
