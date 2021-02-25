@@ -19,6 +19,7 @@ import java.io.PrintWriter;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -27,6 +28,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -41,6 +43,7 @@ import javax.swing.border.LineBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.text.StringEscapeUtils;
 
 import burp.BurpExtender;
@@ -516,14 +519,45 @@ public class ToolPanel extends JPanel {
 
 		JButton unescapeHTML = new JButton("unescapeHTML");
 		threeFourthPanel.add(unescapeHTML);
-		unescapeHTML.addActionListener(new ActionListener() {
+		
+		JButton Base64ToFile = new JButton("Base64ToFile");
+		threeFourthPanel.add(Base64ToFile);
+		Base64ToFile.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
-					outputTextArea.setText(StringEscapeUtils.unescapeHtml4(inputTextArea.getText()));
+					byte[] payloadBytes = Base64.getDecoder().decode(inputTextArea.getText());
+					File downloadFile = saveDialog();
+					if (downloadFile!= null) {
+						FileUtils.writeByteArrayToFile(downloadFile, payloadBytes);
+					}
 				} catch (Exception e1) {
 					outputTextArea.setText(e1.getMessage());
 					e1.printStackTrace(stderr);
+				}
+			}
+			
+			public File saveDialog() {
+				try {
+					JFileChooser fc =  new JFileChooser();
+					if (fc.getCurrentDirectory() != null) {
+						fc = new JFileChooser(fc.getCurrentDirectory());
+					}else {
+						fc = new JFileChooser();
+					}
+
+					fc.setDialogType(JFileChooser.CUSTOM_DIALOG);
+
+					int action = fc.showSaveDialog(null);
+
+					if(action==JFileChooser.APPROVE_OPTION){
+						File file=fc.getSelectedFile();
+						return file;
+					}
+					return null;
+				}catch (Exception e){
+					e.printStackTrace();
+					return null;
 				}
 			}
 		});
