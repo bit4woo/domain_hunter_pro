@@ -561,6 +561,33 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		});
+		
+		JButton splitButton = new JButton("split");
+		threeFourthPanel.add(splitButton);
+		splitButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String separator = JOptionPane.showInputDialog("input separator", null);
+				if (separator != null && !separator.trim().equals("")) {
+					String text = inputTextArea.getText();
+					String[] items = text.split(separator);
+					outputTextArea.setText(String.join(System.lineSeparator(), items));
+				}
+			}
+		});
+		
+		JButton combineButton = new JButton("combine");
+		threeFourthPanel.add(combineButton);
+		combineButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String separator = JOptionPane.showInputDialog("input connect char", null);
+				if (separator != null && !separator.trim().equals("")) {
+					List<String> items = Commons.getLinesFromTextArea(inputTextArea);
+					outputTextArea.setText(String.join(separator, items));
+				}
+			}
+		});
 
 		JPanel fourFourthPanel = new JPanel();
 		RightOfCenter.setRightComponent(fourFourthPanel);
