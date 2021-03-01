@@ -52,7 +52,7 @@ public class LineEntryMenu extends JPopupMenu {
 		});
 		 */
 
-		JMenuItem googleSearchItem = new JMenuItem(new AbstractAction("Seach on Google (double click index)") {
+		JMenuItem googleSearchItem = new JMenuItem(new AbstractAction("Seach On Google (double click index)") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				if (rows.length >=50) {
