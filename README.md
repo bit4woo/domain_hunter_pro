@@ -8,11 +8,15 @@
 
 那么来试试 [domain hunter pro](https://github.com/bit4woo/domain_hunter_pro) 吧！方便快捷的目标管理、自动化的信息收集、与burp无缝衔接、与外部安全工具联动...
 
-这是一个帮组 SRC白帽子、安全测试工程师提高效率的工具!
+这是一个帮助 SRC白帽子、安全测试工程师提高效率的工具！
 
-# 作者
+我mmmark 师傅的御用工具之一！
+
+# 作者和贡献者
 
 [bit4woo](https://github.com/bit4woo)
+
+mmmark （很多核心思路都来自他宝贵的实战经验！）
 
 ## 功能介绍
 
