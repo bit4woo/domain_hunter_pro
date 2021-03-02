@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import javax.swing.JOptionPane;
+
 import burp.BurpExtender;
 import burp.Getter;
 import burp.IBurpExtenderCallbacks;
@@ -27,12 +29,24 @@ public class ThreadRunner{
 	public PrintWriter stdout = new PrintWriter(callbacks.getStdout(), true);
 	public PrintWriter stderr = new PrintWriter(callbacks.getStderr(), true);
 	public IExtensionHelpers helpers = callbacks.getHelpers();
+	private RunnerGUI runnerGUI;
 
-	public ThreadRunner(IHttpRequestResponse messageInfo) {
+	public ThreadRunner(RunnerGUI runnerGUI, IHttpRequestResponse messageInfo) {
+		this.runnerGUI = runnerGUI;
 		this.messageInfo = messageInfo;
+	}
+	
+	public String getKeywordFromUI() {
+		String responseKeyword = JOptionPane.showInputDialog("Response Keyword", null);
+		while(responseKeyword.trim().equals("")){
+			responseKeyword = JOptionPane.showInputDialog("Response Keyword", null);
+		}
+		responseKeyword = responseKeyword.trim();
+		return responseKeyword;
 	}
 
 	public void Do(){
+		String keywords = getKeywordFromUI();
 		BlockingQueue<LineEntry> lineEntryQueue = new LinkedBlockingQueue<LineEntry>();//use to store domains
 		lineEntryQueue.addAll(TitlePanel.getTitleTableModel().getLineEntries().values());
 		stdout.println("~~~~~~~~~~~~~Start threading Runner~~~~~~~~~~~~~ total task number: "+lineEntryQueue.size());
@@ -40,7 +54,7 @@ public class ThreadRunner{
 		plist = new ArrayList<RunnerProducer>();
 
 		for (int i=0;i<=50;i++) {
-			RunnerProducer p = new RunnerProducer(RunnerGUI.getRunnerTableModel(),lineEntryQueue,messageInfo, RunnerGUI.getKeyword(), i);
+			RunnerProducer p = new RunnerProducer(runnerGUI.getRunnerTableModel(),lineEntryQueue,messageInfo, keywords, i);
 			p.start();
 			plist.add(p);
 		}
@@ -63,7 +77,7 @@ public class ThreadRunner{
 				continue;//unnecessary
 			}
 		}
-
+		runnerGUI.lblStatus.setText("finished");
 		return;
 	}
 

@@ -29,10 +29,9 @@ public class LineConfig {
 	private String dirSearchPath = "D:\\github\\dirsearch\\dirsearch.py";
 	private String browserPath = "C:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe";
 	private String nmapPath ="D:\\Program Files (x86)\\Nmap\\nmap.exe";
+	private String bruteDict ="D:\\github\\webdirscan\\dict\\dict.txt";
 	private String toolPanelText = "";
 	private boolean showItemsInOne = false;
-
-
 
 	
 	public static int getMaximumEntries() {
@@ -83,7 +82,7 @@ public class LineConfig {
 		LineConfig.blacklistWebContainerSet = blacklistWebContainerSet;
 	}
 
-	public static boolean isIgnoreHttpsIfHttpOK() {
+	public static boolean isIgnoreHttpsOrHttpIfOneOK() {
 		return ToolPanel.ignoreHTTPS.isSelected();
 	}
 
@@ -129,6 +128,14 @@ public class LineConfig {
 
 	public void setNmapPath(String nmapPath) {
 		this.nmapPath = nmapPath;
+	}
+
+	public String getBruteDict() {
+		return bruteDict;
+	}
+
+	public void setBruteDict(String bruteDict) {
+		this.bruteDict = bruteDict;
 	}
 
 	public String getToolPanelText() {

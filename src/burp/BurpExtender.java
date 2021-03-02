@@ -15,6 +15,7 @@ import org.apache.logging.log4j.Logger;
 
 import GUI.GUI;
 import GUI.LineEntryMenuForBurp;
+import Tools.ToolPanel;
 import bsh.This;
 import domain.DomainManager;
 import domain.DomainPanel;
@@ -144,7 +145,11 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 
 	@Override
 	public List<JMenuItem> createMenuItems(IContextMenuInvocation invocation) {
-		return new LineEntryMenuForBurp().createMenuItemsForBurp(invocation);
+		if (ToolPanel.DisplayContextMenuOfBurp.isSelected()) {
+			return new LineEntryMenuForBurp().createMenuItemsForBurp(invocation);
+		}else {
+			return null;
+		}
 	}
 
 	@Override
@@ -208,7 +213,10 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 									|| urlString.endsWith(".png") ||urlString.endsWith(".css")||urlString.endsWith(".woff")) {
 
 							}else {
-								dataChanged = grepDomains(messageInfo);
+								byte[] resp = messageInfo.getResponse();
+								if (null != resp) {
+									dataChanged = grepDomains(new String(resp));
+								}
 							}
 						}
 					}
@@ -223,11 +231,10 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		}
 	}
 
-	public boolean grepDomains(IHttpRequestResponse messageinfo) {
+	public static boolean grepDomains(String text) {
 		boolean dataChanged = false;
-		byte[] response = messageinfo.getResponse();
-		if (response != null) {//为什么只需要从response中提取？请求包中包含的域名多来自于referer、host、参数，参数中的域名多少已经被访问过的。
-			Set<String> domains = DomainProducer.grepDomain(new String(response));
+		if (text != null) {//为什么只需要从response中提取？请求包中包含的域名多来自于referer、host、参数，参数中的域名多少已经被访问过的。
+			Set<String> domains = DomainProducer.grepDomain(text);
 			for (String domain:domains) {
 				int type = DomainPanel.domainResult.domainType(domain);
 				if (type == DomainManager.SUB_DOMAIN)

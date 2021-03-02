@@ -36,6 +36,8 @@ public class LineEntry {
 	public static final String CheckStatus_UnChecked = "UnChecked";
 	public static final String CheckStatus_Checked = "Done";
 	public static final String CheckStatus_Checking = "Checking";
+	
+	public static final String[] CheckStatusArray = {LineEntry.CheckStatus_UnChecked, LineEntry.CheckStatus_Checking,LineEntry.CheckStatus_Checked};
 
 	//	public static final String Tag_Manager = "管理端";
 	//	public static final String Tag_UserEnd = "用户端";

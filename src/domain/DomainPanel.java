@@ -975,6 +975,7 @@ public class DomainPanel extends JPanel {
 		AllMessages.addAll(collectPackageNameMessages());//包含错误回显的请求响应消息
 
 		new ThreadSearhDomain(AllMessages).Do();
+		//DomainPanel.autoSave();//每次搜索完成都应该进行一次保存,放在Do()函数中实现
 		return null;
 	}
 

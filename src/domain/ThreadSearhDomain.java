@@ -82,7 +82,9 @@ public class ThreadSearhDomain{
 		DomainPanel.getDomainResult().getNewAndNotGetTitleDomainSet().addAll(newSubdomains);
 		stdout.println(String.format("~~~~~~~~~~~~~%s subdomains added!~~~~~~~~~~~~~",newSubdomains.size()));
 		stdout.println(String.join(System.lineSeparator(), newSubdomains));
-
+		if (newSubdomains.size()>0){
+			DomainPanel.autoSave();//进行一次主动保存
+		}
 		return;
 	}
 

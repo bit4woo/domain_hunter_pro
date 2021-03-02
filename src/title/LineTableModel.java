@@ -55,7 +55,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	PrintWriter stderr;
 
 	private static final String[] standardTitles = new String[] {
-			"#", "URL", "Status", "Length", "Title","Comments","isChecked","Level","Time","IP", "CDN","Server"};
+			"#", "URL", "Status", "Length", "Title","Comments","isChecked","Level","Time","IP", "CDN|CertInfo","Server"};
 	private static List<String> titletList = new ArrayList<>(Arrays.asList(standardTitles));
 	//为了实现动态表结构
 	public static List<String> getTitletList() {
@@ -278,7 +278,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		if (columnIndex == titletList.indexOf("IP")){
 			return entry.getIP();
 		}
-		if (columnIndex == titletList.indexOf("CDN")){
+		if (columnIndex == titletList.indexOf("CDN|CertInfo")){
 			return entry.getCDN();
 		}
 		if (columnIndex == titletList.indexOf("Comments")){
@@ -589,7 +589,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		//上面得到的顺序就是从高位开始的
 		for(int[] sli:slice) {
 			System.out.println(Arrays.toString(sli));
-			this.fireTableRowsDeleted(sli[sli.length-1],sli[0]);//这里传入的值必须是地位数在前面，高位数在后面
+			this.fireTableRowsDeleted(sli[sli.length-1],sli[0]);//这里传入的值必须是低位数在前面，高位数在后面
 		}
 	}
 
@@ -597,7 +597,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		List<int[]> slice = IntArraySlice.slice(rows);
 		for(int[] sli:slice) {
 			System.out.println(Arrays.toString(sli));
-			this.fireTableRowsUpdated(sli[0], sli[sli.length-1]);
+			this.fireTableRowsUpdated(sli[sli.length-1],sli[0]);//同上，修复更新多个记录时的错误
 		}
 	}
 

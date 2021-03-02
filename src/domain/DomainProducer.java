@@ -93,7 +93,7 @@ public class DomainProducer extends Thread {//Producer do
 				if (type !=DomainManager.USELESS && protocol.equalsIgnoreCase("https")){//get related domains
 					if (!httpsQueue.contains(shortURL)) {//httpService checked or not
 						httpsQueue.put(shortURL);//必须先添加，否则执行在执行https链接的过程中，已经有很多请求通过检测进行相同的请求了。
-						Set<String> tmpDomains = CertInfo.getSANs(shortURL,DomainPanel.domainResult.fetchKeywordSet());
+						Set<String> tmpDomains = CertInfo.getSANsbyKeyword(shortURL,DomainPanel.domainResult.fetchKeywordSet());
 						for (String domain:tmpDomains) {
 							if (!relatedDomainQueue.contains(domain)) {
 								relatedDomainQueue.add(domain);
