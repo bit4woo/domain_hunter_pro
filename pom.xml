@@ -40,7 +40,7 @@
 					<archive>
 						<manifest>
 							<addDefaultImplementationEntries>
-								true<!--for getVersion from pom.xml-->
+								true<!--for getVersion from pom.xml -->
 							</addDefaultImplementationEntries>
 						</manifest>
 					</archive>
@@ -116,11 +116,13 @@
 
 
 		<!-- to get root domain -->
+		<!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>19.0</version>
+			<version>30.1-jre</version>
 		</dependency>
+
 
 		<!-- <dependency> <groupId>com.github.kevinsawicki</groupId> <artifactId>http-request</artifactId> 
 			<version>6.0</version> </dependency> -->
