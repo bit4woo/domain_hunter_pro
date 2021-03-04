@@ -78,6 +78,7 @@ public class ToolPanel extends JPanel {
 	private JTextField textFieldPortScanner;
 	private JTextField textFieldDirSearch;
 	public static JTextField textFieldDirBruteDict;
+	private JTextField textFieldPython;
 	
 
 	public static LineConfig getLineConfig() {
@@ -96,6 +97,7 @@ public class ToolPanel extends JPanel {
 		BrowserPath.setText(lineConfig.getBrowserPath());
 		textFieldPortScanner.setText(lineConfig.getNmapPath());
 		textFieldDirSearch.setText(lineConfig.getDirSearchPath());
+		textFieldPython.setText(lineConfig.getPython3Path());
 		textFieldDirBruteDict.setText(lineConfig.getBruteDict());
 		showItemsInOne.setSelected(lineConfig.isShowItemsInOne());
 	}
@@ -503,7 +505,7 @@ public class ToolPanel extends JPanel {
 			}
 		});
 
-		JButton unescapeJava = new JButton("unescapeJava");
+		JButton unescapeJava = new JButton("UnescapeJava");
 		threeFourthPanel.add(unescapeJava);
 		unescapeJava.addActionListener(new ActionListener() {
 			@Override
@@ -517,7 +519,7 @@ public class ToolPanel extends JPanel {
 			}
 		});
 
-		JButton unescapeHTML = new JButton("unescapeHTML");
+		JButton unescapeHTML = new JButton("UnescapeHTML");
 		threeFourthPanel.add(unescapeHTML);
 		
 		JButton Base64ToFile = new JButton("Base64ToFile");
@@ -562,7 +564,7 @@ public class ToolPanel extends JPanel {
 			}
 		});
 		
-		JButton splitButton = new JButton("split");
+		JButton splitButton = new JButton("Split");
 		threeFourthPanel.add(splitButton);
 		splitButton.addActionListener(new ActionListener() {
 			@Override
@@ -576,7 +578,7 @@ public class ToolPanel extends JPanel {
 			}
 		});
 		
-		JButton combineButton = new JButton("combine");
+		JButton combineButton = new JButton("Combine");
 		threeFourthPanel.add(combineButton);
 		combineButton.addActionListener(new ActionListener() {
 			@Override
@@ -593,9 +595,9 @@ public class ToolPanel extends JPanel {
 		RightOfCenter.setRightComponent(fourFourthPanel);
 		GridBagLayout gbl_fourFourthPanel = new GridBagLayout();
 		gbl_fourFourthPanel.columnWidths = new int[]{215, 215, 0};
-		gbl_fourFourthPanel.rowHeights = new int[]{27, 0, 0, 27, 0, 27, 27, 27, 27, 0, 0, 0};
+		gbl_fourFourthPanel.rowHeights = new int[]{27, 0, 0, 0, 27, 0, 27, 27, 27, 27, 0, 0, 0};
 		gbl_fourFourthPanel.columnWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
-		gbl_fourFourthPanel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gbl_fourFourthPanel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		fourFourthPanel.setLayout(gbl_fourFourthPanel);
 
 		JLabel lblNewLabel = new JLabel("Browser Path:");
@@ -633,12 +635,29 @@ public class ToolPanel extends JPanel {
 		gbc_textFieldPortScanner.gridy = 1;
 		fourFourthPanel.add(textFieldPortScanner, gbc_textFieldPortScanner);
 		
+		JLabel lblPythonPath = new JLabel("Python3 Path:");
+		GridBagConstraints gbc_lblPythonPath = new GridBagConstraints();
+		gbc_lblPythonPath.anchor = GridBagConstraints.WEST;
+		gbc_lblPythonPath.insets = new Insets(0, 0, 5, 5);
+		gbc_lblPythonPath.gridx = 0;
+		gbc_lblPythonPath.gridy = 2;
+		fourFourthPanel.add(lblPythonPath, gbc_lblPythonPath);
+		
+		textFieldPython = new JTextField();
+		textFieldPython.setColumns(50);
+		GridBagConstraints gbc_textFieldPython = new GridBagConstraints();
+		gbc_textFieldPython.insets = new Insets(0, 0, 5, 0);
+		gbc_textFieldPython.fill = GridBagConstraints.HORIZONTAL;
+		gbc_textFieldPython.gridx = 1;
+		gbc_textFieldPython.gridy = 2;
+		fourFourthPanel.add(textFieldPython, gbc_textFieldPython);
+		
 		JLabel lblDirSearch = new JLabel("DirSearch Path:");
 		GridBagConstraints gbc_lblDirSearch = new GridBagConstraints();
 		gbc_lblDirSearch.anchor = GridBagConstraints.WEST;
 		gbc_lblDirSearch.insets = new Insets(0, 0, 5, 5);
 		gbc_lblDirSearch.gridx = 0;
-		gbc_lblDirSearch.gridy = 2;
+		gbc_lblDirSearch.gridy = 3;
 		fourFourthPanel.add(lblDirSearch, gbc_lblDirSearch);
 		
 		textFieldDirSearch = new JTextField();
@@ -648,7 +667,7 @@ public class ToolPanel extends JPanel {
 		gbc_textFieldDirSearch.insets = new Insets(0, 0, 5, 0);
 		gbc_textFieldDirSearch.fill = GridBagConstraints.HORIZONTAL;
 		gbc_textFieldDirSearch.gridx = 1;
-		gbc_textFieldDirSearch.gridy = 2;
+		gbc_textFieldDirSearch.gridy = 3;
 		fourFourthPanel.add(textFieldDirSearch, gbc_textFieldDirSearch);
 
 
@@ -657,14 +676,14 @@ public class ToolPanel extends JPanel {
 		gbc_lblExternalPorts.fill = GridBagConstraints.BOTH;
 		gbc_lblExternalPorts.insets = new Insets(0, 0, 5, 5);
 		gbc_lblExternalPorts.gridx = 0;
-		gbc_lblExternalPorts.gridy = 3;
+		gbc_lblExternalPorts.gridy = 4;
 		fourFourthPanel.add(lblExternalPorts, gbc_lblExternalPorts);
 		PortList = new JTextField();
 		GridBagConstraints gbc_PortList = new GridBagConstraints();
 		gbc_PortList.fill = GridBagConstraints.BOTH;
 		gbc_PortList.insets = new Insets(0, 0, 5, 0);
 		gbc_PortList.gridx = 1;
-		gbc_PortList.gridy = 3;
+		gbc_PortList.gridy = 4;
 		fourFourthPanel.add(PortList, gbc_PortList);
 		PortList.setColumns(50);
 		PortList.setToolTipText("eg.: 8080,8088");
@@ -674,7 +693,7 @@ public class ToolPanel extends JPanel {
 		gbc_lblDirBruteDict.anchor = GridBagConstraints.WEST;
 		gbc_lblDirBruteDict.insets = new Insets(0, 0, 5, 5);
 		gbc_lblDirBruteDict.gridx = 0;
-		gbc_lblDirBruteDict.gridy = 4;
+		gbc_lblDirBruteDict.gridy = 5;
 		fourFourthPanel.add(lblDirBruteDict, gbc_lblDirBruteDict);
 		
 		textFieldDirBruteDict = new JTextField();
@@ -685,7 +704,7 @@ public class ToolPanel extends JPanel {
 		gbc_textFieldDirBruteDict.insets = new Insets(0, 0, 5, 0);
 		gbc_textFieldDirBruteDict.fill = GridBagConstraints.HORIZONTAL;
 		gbc_textFieldDirBruteDict.gridx = 1;
-		gbc_textFieldDirBruteDict.gridy = 4;
+		gbc_textFieldDirBruteDict.gridy = 5;
 		fourFourthPanel.add(textFieldDirBruteDict, gbc_textFieldDirBruteDict);
 
 		JLabel label_1 = new JLabel("");
@@ -693,7 +712,7 @@ public class ToolPanel extends JPanel {
 		gbc_label_1.fill = GridBagConstraints.BOTH;
 		gbc_label_1.insets = new Insets(0, 0, 5, 5);
 		gbc_label_1.gridx = 0;
-		gbc_label_1.gridy = 5;
+		gbc_label_1.gridy = 6;
 		fourFourthPanel.add(label_1, gbc_label_1);
 
 
@@ -702,7 +721,7 @@ public class ToolPanel extends JPanel {
 		gbc_showItemsInOne.fill = GridBagConstraints.BOTH;
 		gbc_showItemsInOne.insets = new Insets(0, 0, 5, 0);
 		gbc_showItemsInOne.gridx = 1;
-		gbc_showItemsInOne.gridy = 5;
+		gbc_showItemsInOne.gridy = 6;
 		fourFourthPanel.add(showItemsInOne, gbc_showItemsInOne);
 		showItemsInOne.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -715,7 +734,7 @@ public class ToolPanel extends JPanel {
 		gbc_label_2.fill = GridBagConstraints.BOTH;
 		gbc_label_2.insets = new Insets(0, 0, 5, 5);
 		gbc_label_2.gridx = 0;
-		gbc_label_2.gridy = 6;
+		gbc_label_2.gridy = 7;
 		fourFourthPanel.add(label_2, gbc_label_2);
 
 		ignoreHTTPS = new JRadioButton("Ignore HTTPS if HTTP is OK || Ignore HTTP if HTTPS is OK");
@@ -723,7 +742,7 @@ public class ToolPanel extends JPanel {
 		gbc_ignoreHTTPS.fill = GridBagConstraints.BOTH;
 		gbc_ignoreHTTPS.insets = new Insets(0, 0, 5, 0);
 		gbc_ignoreHTTPS.gridx = 1;
-		gbc_ignoreHTTPS.gridy = 6;
+		gbc_ignoreHTTPS.gridy = 7;
 		fourFourthPanel.add(ignoreHTTPS, gbc_ignoreHTTPS);
 		ignoreHTTPS.setSelected(true);
 
@@ -732,7 +751,7 @@ public class ToolPanel extends JPanel {
 		gbc_label_3.fill = GridBagConstraints.BOTH;
 		gbc_label_3.insets = new Insets(0, 0, 5, 5);
 		gbc_label_3.gridx = 0;
-		gbc_label_3.gridy = 7;
+		gbc_label_3.gridy = 8;
 		fourFourthPanel.add(label_3, gbc_label_3);
 
 		ignoreHTTPStaus500 = new JRadioButton("Ignore items which Status >= 500");
@@ -740,7 +759,7 @@ public class ToolPanel extends JPanel {
 		gbc_ignoreHTTPStaus500.fill = GridBagConstraints.BOTH;
 		gbc_ignoreHTTPStaus500.insets = new Insets(0, 0, 5, 0);
 		gbc_ignoreHTTPStaus500.gridx = 1;
-		gbc_ignoreHTTPStaus500.gridy = 7;
+		gbc_ignoreHTTPStaus500.gridy = 8;
 		fourFourthPanel.add(ignoreHTTPStaus500, gbc_ignoreHTTPStaus500);
 		ignoreHTTPStaus500.setSelected(true);
 
@@ -749,7 +768,7 @@ public class ToolPanel extends JPanel {
 		gbc_label_4.fill = GridBagConstraints.BOTH;
 		gbc_label_4.insets = new Insets(0, 0, 5, 5);
 		gbc_label_4.gridx = 0;
-		gbc_label_4.gridy = 8;
+		gbc_label_4.gridy = 9;
 		fourFourthPanel.add(label_4, gbc_label_4);
 
 		ignoreHTTPStaus400 = new JRadioButton("Ignore http Status 400(The plain HTTP request was sent to HTTPS port)");
@@ -757,7 +776,7 @@ public class ToolPanel extends JPanel {
 		gbc_ignoreHTTPStaus400.insets = new Insets(0, 0, 5, 0);
 		gbc_ignoreHTTPStaus400.fill = GridBagConstraints.BOTH;
 		gbc_ignoreHTTPStaus400.gridx = 1;
-		gbc_ignoreHTTPStaus400.gridy = 8;
+		gbc_ignoreHTTPStaus400.gridy = 9;
 		fourFourthPanel.add(ignoreHTTPStaus400, gbc_ignoreHTTPStaus400);
 		ignoreHTTPStaus400.setSelected(true);
 		
@@ -765,7 +784,7 @@ public class ToolPanel extends JPanel {
 		GridBagConstraints gbc_label_5 = new GridBagConstraints();
 		gbc_label_5.insets = new Insets(0, 0, 5, 5);
 		gbc_label_5.gridx = 0;
-		gbc_label_5.gridy = 9;
+		gbc_label_5.gridy = 10;
 		fourFourthPanel.add(label_5, gbc_label_5);
 		
 		ignoreWrongCAHost = new JRadioButton("Ignore Host that is IP Address and Certificate authority not match");
@@ -774,14 +793,14 @@ public class ToolPanel extends JPanel {
 		gbc_ignoreWrongCAHost.insets = new Insets(0, 0, 5, 0);
 		gbc_ignoreWrongCAHost.fill = GridBagConstraints.BOTH;
 		gbc_ignoreWrongCAHost.gridx = 1;
-		gbc_ignoreWrongCAHost.gridy = 9;
+		gbc_ignoreWrongCAHost.gridy = 10;
 		fourFourthPanel.add(ignoreWrongCAHost, gbc_ignoreWrongCAHost);
 		
 		JLabel label_6 = new JLabel("");
 		GridBagConstraints gbc_label_6 = new GridBagConstraints();
 		gbc_label_6.insets = new Insets(0, 0, 0, 5);
 		gbc_label_6.gridx = 0;
-		gbc_label_6.gridy = 10;
+		gbc_label_6.gridy = 11;
 		fourFourthPanel.add(label_6, gbc_label_6);
 		
 		DisplayContextMenuOfBurp = new JRadioButton("Display Context Menu Of Burp");
@@ -789,7 +808,7 @@ public class ToolPanel extends JPanel {
 		GridBagConstraints gbc_DisplayContextMenuOfBurp = new GridBagConstraints();
 		gbc_DisplayContextMenuOfBurp.fill = GridBagConstraints.BOTH;
 		gbc_DisplayContextMenuOfBurp.gridx = 1;
-		gbc_DisplayContextMenuOfBurp.gridy = 10;
+		gbc_DisplayContextMenuOfBurp.gridy = 11;
 		fourFourthPanel.add(DisplayContextMenuOfBurp, gbc_DisplayContextMenuOfBurp);
 
 		///////////////////////////FooterPanel//////////////////
@@ -880,6 +899,7 @@ public class ToolPanel extends JPanel {
 		public void save() {
 			File browser = new File(BrowserPath.getText().trim());
 			File portScanner = new File(textFieldPortScanner.getText().trim());
+			File python3 = new File(textFieldPython.getText().trim());
 			File dirSearch = new File(textFieldDirSearch.getText().trim());
 			File bruteDict = new File(textFieldDirBruteDict.getText().trim());
 			if (browser.exists()) {
@@ -893,6 +913,9 @@ public class ToolPanel extends JPanel {
 			}
 			if (bruteDict.exists()) {
 				lineConfig.setBruteDict(bruteDict.getAbsolutePath());
+			}
+			if (python3.exists()) {
+				lineConfig.setPython3Path(python3.getAbsolutePath());
 			}
 		}
 
