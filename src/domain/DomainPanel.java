@@ -988,7 +988,7 @@ public class DomainPanel extends JPanel {
 				if (Records.size() > 0) {
 					try {
 						//stdout.println("!!! "+Server+" is zoneTransfer vulnerable for domain "+rootDomain+" !");
-						File file = new File(rootDomain+"-ZoneTransfer-"+Commons.getNowTimeString()+".txt");
+						File file = new File(Server+"-ZoneTransfer-"+Commons.getNowTimeString()+".txt");
 						file.createNewFile();
 						FileUtils.writeLines(file, Records);
 						stdout.println("!!! Records saved to "+file.getAbsolutePath());

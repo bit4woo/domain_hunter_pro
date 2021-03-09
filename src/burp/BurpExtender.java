@@ -178,7 +178,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 
 	public void findDomainInTraffic(int toolFlag, boolean messageIsRequest, IHttpRequestResponse messageInfo){
 		boolean dataChanged =false;
-		if (toolFlag == IBurpExtenderCallbacks.TOOL_PROXY) {
+		if (toolFlag == IBurpExtenderCallbacks.TOOL_PROXY && DomainPanel.domainResult != null) {
 			try {
 				Getter getter = new Getter(helpers);
 				if (messageIsRequest) {
