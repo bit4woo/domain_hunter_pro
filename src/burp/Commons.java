@@ -371,6 +371,12 @@ public class Commons {
 				new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
 		return simpleDateFormat.format(new Date());
 	}
+	
+	public static String TimeToString(long time) {
+		SimpleDateFormat simpleDateFormat = 
+				new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		return simpleDateFormat.format(time);
+	}
 
 
 	public static void browserOpen(Object url,String browser) throws Exception{

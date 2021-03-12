@@ -23,6 +23,7 @@ import java.util.Base64;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -38,6 +39,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.event.DocumentEvent;
@@ -48,6 +50,7 @@ import org.apache.commons.text.StringEscapeUtils;
 
 import burp.BurpExtender;
 import burp.Commons;
+import domain.CertInfo;
 
 /*
  * 所有配置的修改，界面的操作，都立即写入LineConfig对象，如有必要保存到磁盘，再调用一次SaveConfig函数，思路要清晰
@@ -79,7 +82,7 @@ public class ToolPanel extends JPanel {
 	private JTextField textFieldDirSearch;
 	public static JTextField textFieldDirBruteDict;
 	private JTextField textFieldPython;
-	
+
 
 	public static LineConfig getLineConfig() {
 		return lineConfig;
@@ -205,7 +208,7 @@ public class ToolPanel extends JPanel {
 				BurpExtender.grepDomains(content);
 			}
 		});
-		
+
 		JButton btnOpenurls = new JButton("OpenURLs");
 		threeFourthPanel.add(btnOpenurls);
 		btnOpenurls.addActionListener(new ActionListener() {
@@ -232,6 +235,40 @@ public class ToolPanel extends JPanel {
 				}
 			}
 
+		});
+
+		JButton btnCertTime = new JButton("GetCertTime");
+		btnCertTime.setToolTipText("get out-of-service time of Cert");
+		threeFourthPanel.add(btnCertTime);
+		btnCertTime.addActionListener(new ActionListener() {
+			List<String> urls = new ArrayList<>();
+			ArrayList<String> result = new ArrayList<String>();
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+					//using SwingWorker to prevent blocking burp main UI.
+					@Override
+					protected Map doInBackground() throws Exception {
+						urls = Arrays.asList(lineConfig.getToolPanelText().replaceAll(" ","").replaceAll("\r\n", "\n").split("\n"));
+						Iterator<String> it = urls.iterator();
+						while(it.hasNext()) {
+							String url = it.next();
+							String time = CertInfo.getCertTime(url);
+							result.add(url+" "+time);
+							System.out.println(url+" "+time);
+						}
+						outputTextArea.setText(String.join(System.lineSeparator(), result));
+						return null;
+					}
+					@Override
+					protected void done() {
+						btnCertTime.setEnabled(true);
+						stdout.println("~~~~~~~~~~~~~Search Done~~~~~~~~~~~~~");
+					}
+				};
+				worker.execute();
+			}
 		});
 
 		JButton rows2List = new JButton("Rows To List");
@@ -521,7 +558,7 @@ public class ToolPanel extends JPanel {
 
 		JButton unescapeHTML = new JButton("UnescapeHTML");
 		threeFourthPanel.add(unescapeHTML);
-		
+
 		JButton Base64ToFile = new JButton("Base64ToFile");
 		threeFourthPanel.add(Base64ToFile);
 		Base64ToFile.addActionListener(new ActionListener() {
@@ -538,7 +575,7 @@ public class ToolPanel extends JPanel {
 					e1.printStackTrace(stderr);
 				}
 			}
-			
+
 			public File saveDialog() {
 				try {
 					JFileChooser fc =  new JFileChooser();
@@ -563,7 +600,7 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		});
-		
+
 		JButton splitButton = new JButton("Split");
 		threeFourthPanel.add(splitButton);
 		splitButton.addActionListener(new ActionListener() {
@@ -577,7 +614,7 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		});
-		
+
 		JButton combineButton = new JButton("Combine");
 		threeFourthPanel.add(combineButton);
 		combineButton.addActionListener(new ActionListener() {
@@ -616,7 +653,7 @@ public class ToolPanel extends JPanel {
 		fourFourthPanel.add(BrowserPath, gbc_BrowserPath);
 		BrowserPath.setColumns(50);
 		BrowserPath.getDocument().addDocumentListener(new textFieldListener());
-		
+
 		JLabel lblPortScanner = new JLabel("PortScanner Path:");
 		GridBagConstraints gbc_lblPortScanner = new GridBagConstraints();
 		gbc_lblPortScanner.anchor = GridBagConstraints.WEST;
@@ -624,7 +661,7 @@ public class ToolPanel extends JPanel {
 		gbc_lblPortScanner.gridx = 0;
 		gbc_lblPortScanner.gridy = 1;
 		fourFourthPanel.add(lblPortScanner, gbc_lblPortScanner);
-		
+
 		textFieldPortScanner = new JTextField();
 		textFieldPortScanner.setColumns(50);
 		textFieldPortScanner.getDocument().addDocumentListener(new textFieldListener());
@@ -634,7 +671,7 @@ public class ToolPanel extends JPanel {
 		gbc_textFieldPortScanner.gridx = 1;
 		gbc_textFieldPortScanner.gridy = 1;
 		fourFourthPanel.add(textFieldPortScanner, gbc_textFieldPortScanner);
-		
+
 		JLabel lblPythonPath = new JLabel("Python3 Path:");
 		GridBagConstraints gbc_lblPythonPath = new GridBagConstraints();
 		gbc_lblPythonPath.anchor = GridBagConstraints.WEST;
@@ -642,7 +679,7 @@ public class ToolPanel extends JPanel {
 		gbc_lblPythonPath.gridx = 0;
 		gbc_lblPythonPath.gridy = 2;
 		fourFourthPanel.add(lblPythonPath, gbc_lblPythonPath);
-		
+
 		textFieldPython = new JTextField();
 		textFieldPython.setColumns(50);
 		GridBagConstraints gbc_textFieldPython = new GridBagConstraints();
@@ -651,7 +688,7 @@ public class ToolPanel extends JPanel {
 		gbc_textFieldPython.gridx = 1;
 		gbc_textFieldPython.gridy = 2;
 		fourFourthPanel.add(textFieldPython, gbc_textFieldPython);
-		
+
 		JLabel lblDirSearch = new JLabel("DirSearch Path:");
 		GridBagConstraints gbc_lblDirSearch = new GridBagConstraints();
 		gbc_lblDirSearch.anchor = GridBagConstraints.WEST;
@@ -659,7 +696,7 @@ public class ToolPanel extends JPanel {
 		gbc_lblDirSearch.gridx = 0;
 		gbc_lblDirSearch.gridy = 3;
 		fourFourthPanel.add(lblDirSearch, gbc_lblDirSearch);
-		
+
 		textFieldDirSearch = new JTextField();
 		textFieldDirSearch.setColumns(50);
 		textFieldDirSearch.getDocument().addDocumentListener(new textFieldListener());
@@ -687,7 +724,7 @@ public class ToolPanel extends JPanel {
 		fourFourthPanel.add(PortList, gbc_PortList);
 		PortList.setColumns(50);
 		PortList.setToolTipText("eg.: 8080,8088");
-		
+
 		JLabel lblDirBruteDict = new JLabel("Dir Brute Dict:");
 		GridBagConstraints gbc_lblDirBruteDict = new GridBagConstraints();
 		gbc_lblDirBruteDict.anchor = GridBagConstraints.WEST;
@@ -695,7 +732,7 @@ public class ToolPanel extends JPanel {
 		gbc_lblDirBruteDict.gridx = 0;
 		gbc_lblDirBruteDict.gridy = 5;
 		fourFourthPanel.add(lblDirBruteDict, gbc_lblDirBruteDict);
-		
+
 		textFieldDirBruteDict = new JTextField();
 		textFieldDirBruteDict.setToolTipText("path of dict");
 		textFieldDirBruteDict.setColumns(50);
@@ -779,14 +816,14 @@ public class ToolPanel extends JPanel {
 		gbc_ignoreHTTPStaus400.gridy = 9;
 		fourFourthPanel.add(ignoreHTTPStaus400, gbc_ignoreHTTPStaus400);
 		ignoreHTTPStaus400.setSelected(true);
-		
+
 		JLabel label_5 = new JLabel("");
 		GridBagConstraints gbc_label_5 = new GridBagConstraints();
 		gbc_label_5.insets = new Insets(0, 0, 5, 5);
 		gbc_label_5.gridx = 0;
 		gbc_label_5.gridy = 10;
 		fourFourthPanel.add(label_5, gbc_label_5);
-		
+
 		ignoreWrongCAHost = new JRadioButton("Ignore Host that is IP Address and Certificate authority not match");
 		ignoreWrongCAHost.setSelected(false);
 		GridBagConstraints gbc_ignoreWrongCAHost = new GridBagConstraints();
@@ -795,14 +832,14 @@ public class ToolPanel extends JPanel {
 		gbc_ignoreWrongCAHost.gridx = 1;
 		gbc_ignoreWrongCAHost.gridy = 10;
 		fourFourthPanel.add(ignoreWrongCAHost, gbc_ignoreWrongCAHost);
-		
+
 		JLabel label_6 = new JLabel("");
 		GridBagConstraints gbc_label_6 = new GridBagConstraints();
 		gbc_label_6.insets = new Insets(0, 0, 0, 5);
 		gbc_label_6.gridx = 0;
 		gbc_label_6.gridy = 11;
 		fourFourthPanel.add(label_6, gbc_label_6);
-		
+
 		DisplayContextMenuOfBurp = new JRadioButton("Display Context Menu Of Burp");
 		DisplayContextMenuOfBurp.setSelected(true);
 		GridBagConstraints gbc_DisplayContextMenuOfBurp = new GridBagConstraints();
@@ -895,7 +932,7 @@ public class ToolPanel extends JPanel {
 
 	//保存各个路径设置参数，自动保存的listener
 	class textFieldListener implements DocumentListener {
-		
+
 		public void save() {
 			File browser = new File(BrowserPath.getText().trim());
 			File portScanner = new File(textFieldPortScanner.getText().trim());

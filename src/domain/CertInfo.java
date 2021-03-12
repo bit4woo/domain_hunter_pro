@@ -18,6 +18,8 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+import burp.Commons;
+
 public class CertInfo {
 	private static TrustManager myX509TrustManager = new X509TrustManager() { 
 
@@ -98,6 +100,35 @@ public class CertInfo {
 		return tmpSet;
 	}
 
+	private static long getDateRange(Certificate[] certs) {
+		if (certs ==null) {return -1;}
+		for (Certificate cert:certs) {
+			if(cert instanceof X509Certificate) {
+				X509Certificate cer = (X509Certificate ) cert;
+				try {
+					long day = cer.getNotAfter().getTime();
+					return day;
+				} catch (Exception e) {
+					throw e;
+				}
+			}
+		}
+		return -1;
+	}
+
+	public static String getCertTime(String url) {
+		try {
+			if (url.startsWith("https://")){
+				Certificate[] certs = getCerts(url);
+				long outtime = getDateRange(certs);//过期时间
+				return Commons.TimeToString(outtime);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
 	/*
 	 * 根据证书主体来获取所有证书域名。证书主体域名必须包含关键词，否则任务是CDN证书，不获取其中的域名
 	 */
@@ -170,9 +201,11 @@ public class CertInfo {
 			//			System.out.println(getSANsbyKeyword("https://browser.taobao.com/",set));
 			//System.out.println(getSANs("https://open.163.com","163.com"));
 			//System.out.println(getSANs("https://open.163.com"));
-			System.out.println(isTarget("https://111.202.65.185/",set));
-			System.out.println(isTarget("https://www.baidu.com/",set));
-			System.out.println(isTarget("https://120.52.148.166/",set));
+			//			System.out.println(isTarget("https://111.202.65.185/",set));
+			//			System.out.println(isTarget("https://www.baidu.com/",set));
+			//			System.out.println(isTarget("https://120.52.148.166/",set));
+
+			System.out.println(getCertTime("https://www.baidu.com/"));
 
 
 		} catch (Exception e) {
