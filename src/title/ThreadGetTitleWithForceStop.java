@@ -19,14 +19,17 @@ public class ThreadGetTitleWithForceStop extends Thread{
 	public PrintWriter stdout = new PrintWriter(callbacks.getStdout(), true);
 	public PrintWriter stderr = new PrintWriter(callbacks.getStderr(), true);
 	public IExtensionHelpers helpers = callbacks.getHelpers();
+	private int threadNumber;
 	public static boolean AllProductorFinished = true;
 
-	public ThreadGetTitleWithForceStop(Set<String> domains) {
+	public ThreadGetTitleWithForceStop(Set<String> domains,int threadNumber) {
 		this.domains = domains;
+		this.threadNumber = threadNumber;
 	}
 
 	@Override
 	public void run(){
+		stdout.println(String.format("~~~~~~~~~~~~~use %s threads~~~~~~~~~~~~~",threadNumber));
 		stdout.println("~~~~~~~~~~~~~Start threading Get Title~~~~~~~~~~~~~ total task number: "+domains.size());
 		AllProductorFinished = false;
 		BlockingQueue<String> domainQueue = new LinkedBlockingQueue<String>();//use to store domains
@@ -34,14 +37,14 @@ public class ThreadGetTitleWithForceStop extends Thread{
 
 		plist = new ArrayList<Producer>();
 
-		for (int i=0;i<=50;i++) {
+		for (int i=0;i<=threadNumber;i++) {
 			Producer p = new Producer(domainQueue,i);
 			//Producer p = new Producer(callbacks,domainQueue,sharedQueue,i);
 			p.setDaemon(true);//将子线程设置为守护线程，会随着主线程的结束而立即结束
 			p.start();
 			plist.add(p);
 		}
-		
+
 		for (Producer p:plist) {
 			try {
 				p.join();
@@ -68,7 +71,7 @@ public class ThreadGetTitleWithForceStop extends Thread{
 		}
 		stdout.println("~~~~~~~~~~~~~send stop message to all sub-threads, wait them to exit!~~~~~~~~~~~~~");
 	}
-	
+
 	public void forceStopThreads() {
 		this.interrupt();//将子线程都设置为守护线程，会随着主线程的结束而立即结束
 		stdout.println("~~~~~~~~~~~~~force stop main thread,all sub-threads will exit!~~~~~~~~~~~~~");

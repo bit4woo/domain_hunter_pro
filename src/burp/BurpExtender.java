@@ -116,7 +116,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 			gui.LoadData(content);
 		}
 
-		gui.getToolPanel().loadConfig();
+		gui.getToolPanel().loadConfigToGUI();
 
 	}
 
@@ -129,7 +129,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		gui.saveDBfilepathToExtension();
 		gui.getProjectMenu().remove();
 
-		gui.getToolPanel().saveConfig();
+		gui.getToolPanel().saveConfigToDisk();
 		DomainPanel.autoSave();//域名面板自动保存逻辑有点复杂，退出前再自动保存一次
 	}
 

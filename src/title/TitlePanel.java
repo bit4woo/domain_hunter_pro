@@ -7,35 +7,21 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.swing.AbstractAction;
-import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
-import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 
-import GUI.GUI;
 import Tools.LineConfig;
 import burp.BurpExtender;
 import burp.Commons;
@@ -63,7 +49,7 @@ public class TitlePanel extends JPanel {
 	PrintWriter stderr;
 	public static ThreadGetTitleWithForceStop threadGetTitle;
 	private IndexedLinkedHashMap<String,LineEntry> BackupLineEntries;
-	
+
 	private static JTextField textFieldSearch;
 
 	public static JTextField getTextFieldSearch() {
@@ -163,7 +149,7 @@ public class TitlePanel extends JPanel {
 		});
 		buttonPanel.add(btnGettitle);
 
-		
+
 		JButton btnGetExtendtitle = new JButton("Get Extend Title");
 		btnGetExtendtitle.setToolTipText("Get title of the host that in same subnet,you should do this after get domain title done!");
 		btnGetExtendtitle.setEnabled(true);//default is false,only true after "get title" is done.
@@ -191,8 +177,8 @@ public class TitlePanel extends JPanel {
 			}
 		});
 		buttonPanel.add(btnGetExtendtitle);
-		
-		
+
+
 		JButton btnGettitleOfJustNewFound = new JButton("GetTitleOfNewDomain");
 		btnGettitleOfJustNewFound.setToolTipText("Just get title of new found subdomains");
 		btnGettitleOfJustNewFound.addActionListener(new ActionListener() {
@@ -219,7 +205,7 @@ public class TitlePanel extends JPanel {
 			}
 		});
 		buttonPanel.add(btnGettitleOfJustNewFound);
-		
+
 
 		JButton btnGetSubnet = new JButton("Get Subnet");
 		btnGetSubnet.setEnabled(true);
@@ -282,7 +268,7 @@ public class TitlePanel extends JPanel {
 		btnSaveState.setToolTipText("Save Data To DataBase");
 		//buttonPanel.add(btnSaveState);
 
-		
+
 		InputMap inputMap1 = btnSaveState.getInputMap(JButton.WHEN_IN_FOCUSED_WINDOW);
 		KeyStroke Save = KeyStroke.getKeyStroke(KeyEvent.VK_S,ActionEvent.CTRL_MASK); //Ctrl+S
 		inputMap1.put(Save, "Save");
@@ -306,8 +292,8 @@ public class TitlePanel extends JPanel {
 				worker.execute();
 			}
 		});
-		*/
-		
+		 */
+
 		JButton btnStop = new JButton("Stop");
 		btnStop.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -404,12 +390,13 @@ public class TitlePanel extends JPanel {
 		//		TitlePanel.externalPortList = Commons.Port_prompt(null,"External Ports To Run");
 		//		stdout.println("external ports: "+ externalPortList);
 
-//		threadGetTitle = new ThreadGetTitle(domains);
-//		threadGetTitle.Do();
+		//		threadGetTitle = new ThreadGetTitle(domains);
+		//		threadGetTitle.Do();
 		if (threadGetTitle != null){
 			threadGetTitle.interrupt();
 		}
-		threadGetTitle = new ThreadGetTitleWithForceStop(domains);
+		int threadNum = inputThreadNumber();
+		threadGetTitle = new ThreadGetTitleWithForceStop(domains,threadNum);
 		threadGetTitle.start();
 
 	}
@@ -421,7 +408,8 @@ public class TitlePanel extends JPanel {
 		if (threadGetTitle != null){
 			threadGetTitle.interrupt();
 		}
-		threadGetTitle = new ThreadGetTitleWithForceStop(extendIPSet);
+		int threadNum = inputThreadNumber();
+		threadGetTitle = new ThreadGetTitleWithForceStop(extendIPSet,threadNum);
 		threadGetTitle.start();
 
 		//转移手动保存的结果
@@ -458,7 +446,8 @@ public class TitlePanel extends JPanel {
 		if (threadGetTitle != null){
 			threadGetTitle.interrupt();
 		}
-		threadGetTitle = new ThreadGetTitleWithForceStop(domains);
+		int threadNum = inputThreadNumber();
+		threadGetTitle = new ThreadGetTitleWithForceStop(domains,threadNum);
 		threadGetTitle.start();
 	}
 
@@ -523,5 +512,17 @@ public class TitlePanel extends JPanel {
 	//burp.Producer.doRequest(URL)
 	public static void inputCookie() {
 		cookie = JOptionPane.showInputDialog("Input cookie OR Leave it blank", null).trim();
+	}
+
+	public static int inputThreadNumber() {
+		while (true) {
+			try {
+				String threads = JOptionPane.showInputDialog("How many threads do you want to use", "50").trim();
+				int number = Integer.parseInt(threads);
+				return number;
+			}catch (Exception e) {
+				continue;
+			}
+		}
 	}
 }
