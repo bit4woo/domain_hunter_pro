@@ -141,7 +141,7 @@ public class Producer extends Thread {//Producer do
 	//Just do request
 	public static LineEntry doRequest(URL url) {
 		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
-		String cookie = TitlePanel.getCookie();
+		String cookie = TitlePanel.tempConfig.getCookie();
 
 		byte[] byteRequest = helpers.buildHttpRequest(url);//GET
 		byteRequest = Commons.buildCookieRequest(helpers,cookie,byteRequest);
@@ -174,7 +174,7 @@ public class Producer extends Thread {//Producer do
 		Set<String> IPSet = new HashSet<>();
 		Set<String> CDNSet = new HashSet<>();
 
-		boolean isInPrivateNetwork = LineConfig.isPrivateNetworkWorkingModel(); 
+		boolean isInPrivateNetwork = TitlePanel.tempConfig.isHandlePriavte();
 		if (Commons.isValidIP(host)) {//目标是一个IP
 			if (IPAddress.isPrivateIPv4(host) && !isInPrivateNetwork) {//外网模式，内网IP，直接返回。
 				return resultSet;

@@ -142,6 +142,7 @@ public class DomainPanel extends JPanel {
 
 
 		JButton btnSaveDomainOnly = new JButton("SaveDomainOnly");
+		btnSaveDomainOnly.setToolTipText("Only save data in Domain Panel");
 		btnSaveDomainOnly.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				saveDomainOnly();
@@ -280,6 +281,7 @@ public class DomainPanel extends JPanel {
 
 
 		JButton btnZoneTransferCheck = new JButton("AXFR");
+		btnZoneTransferCheck.setToolTipText("Zone Transfer Check");
 		btnZoneTransferCheck.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 
@@ -362,32 +364,6 @@ public class DomainPanel extends JPanel {
 			}
 		});
 		HeaderPanel.add(btnBuckupDB);
-
-		JButton btnBgphenet = new JButton("bgp.he.net");
-		btnBgphenet.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				String url= "https://bgp.he.net/";
-				try {
-					Commons.browserOpen(url,null);
-				} catch (Exception e1) {
-					e1.printStackTrace(stderr);
-				}
-			}
-		});
-		HeaderPanel.add(btnBgphenet);
-
-		JButton btnIcp = new JButton("icp.chinaz.com");
-		btnIcp.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				String url= "http://icp.chinaz.com/";
-				try {
-					Commons.browserOpen(url,null);
-				} catch (Exception e1) {
-					e1.printStackTrace(stderr);
-				}
-			}
-		});
-		HeaderPanel.add(btnIcp);
 
 		Component verticalStrut_1 = Box.createVerticalStrut(20);
 		HeaderPanel.add(verticalStrut_1);

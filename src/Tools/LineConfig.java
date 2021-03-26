@@ -1,7 +1,6 @@
 package Tools;
 
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -13,14 +12,13 @@ import title.TitlePanel;
 
 public class LineConfig {
 	private static int MaximumEntries = 1000;//控制显示的条目数，减少内存占用
-	
+
 	//跑title时根据各字段过滤某些条目
 	//private static Set<String> blacklistHostSet = new HashSet<String>(); //其实不需要
 	private static Set<String> blacklistStatusCodeSet = new HashSet<String>(); 
 	private static Set<String> blacklistIPSet = new HashSet<String>(); 
 	private static Set<String> blacklistCDNSet = new HashSet<String>(); 
 	private static Set<String> blacklistWebContainerSet = new HashSet<String>(); 
-	private static boolean isPrivateNetworkWorkingModel = false;//默认外网模式
 	//对于内外网域名或IP的处理分为2种情况：
 	//1、外网模式，即在自己公司挖掘别人公司的漏洞。这个是时候收集到的域名如果是解析到私有IP的，仅仅显示就可以了；如果是私有IP地址则直接忽略。
 	//2、内网模式，即在自己公司挖掘自己公司的漏洞。这个时候所有域名一视同仁，全部和外网域名一样进行请求并获取title，因为内网的IP也是可以访问的。
@@ -33,7 +31,7 @@ public class LineConfig {
 	private String toolPanelText = "";
 	private boolean showItemsInOne = false;
 
-	
+
 	public static int getMaximumEntries() {
 		return MaximumEntries;
 	}
@@ -41,14 +39,14 @@ public class LineConfig {
 	public void setMaximumEntries(int maximumEntries) {
 		MaximumEntries = maximumEntries;
 	}
-	
-//	public static Set<String> getBlacklistHostSet() {
-//		return blacklistHostSet;
-//	}
-//
-//	public static void setBlacklistHostSet(Set<String> blacklistHostSet) {
-//		LineConfig.blacklistHostSet = blacklistHostSet;
-//	}
+
+	//	public static Set<String> getBlacklistHostSet() {
+	//		return blacklistHostSet;
+	//	}
+	//
+	//	public static void setBlacklistHostSet(Set<String> blacklistHostSet) {
+	//		LineConfig.blacklistHostSet = blacklistHostSet;
+	//	}
 
 	public static Set<String> getBlacklistStatusCodeSet() {
 		return blacklistStatusCodeSet;
@@ -90,14 +88,6 @@ public class LineConfig {
 		ToolPanel.ignoreHTTPS.setSelected(ignoreHttpsIfHttpOK);
 	}
 
-	public static boolean isPrivateNetworkWorkingModel() {
-		return isPrivateNetworkWorkingModel;
-	}
-
-	public static void setPrivateNetworkWorkingModel(boolean isPrivateNetworkWorkingModel) {
-		LineConfig.isPrivateNetworkWorkingModel = isPrivateNetworkWorkingModel;
-	}
-	
 	public String getPython3Path() {
 		return python3Path;
 	}
@@ -170,28 +160,28 @@ public class LineConfig {
 	 * 能通过过滤器返回true，否则返回false。判断是否是有用的记录。
 	 */
 	public static boolean doFilter(LineEntry entry) {
-		
+
 		PrintWriter stdout = BurpExtender.getStdout();
 		PrintWriter stderr = BurpExtender.getStderr();
-		
+
 		//default requirement
 		if (entry.getStatuscode() <=0 ) {
 			stdout.println(String.format("--- [%s] --- no response",entry.getUrl()));
 			TitlePanel.getTitleTableModel().addNewNoResponseDomain(entry.getHost(), entry.getIP());
 			return false;
 		}
-		
+
 		if (entry.getStatuscode() >=500 && ToolPanel.ignoreHTTPStaus500.isSelected()) {
 			stdout.println(String.format("--- [%s] --- status code >= 500",entry.getUrl()));
 			TitlePanel.getTitleTableModel().addNewNoResponseDomain(entry.getHost(), entry.getIP());
 			return false;
 		}
-		
+
 		if (entry.getStatuscode() == 400 && ToolPanel.ignoreHTTPStaus400.isSelected()) {//400 The plain HTTP request was sent to HTTPS port
 			stdout.println(String.format("--- [%s] --- status code == 400",entry.getUrl()));
 			return false;
 		}
-		
+
 		/*
 		if (null != blacklistStatusCodeSet && blacklistStatusCodeSet.size()>0) {
 			if (blacklistStatusCodeSet.contains(Integer.toString(entry.getStatuscode()))) {
@@ -199,7 +189,7 @@ public class LineConfig {
 				return false;
 			}
 		}
-		
+
 		if (null != blacklistIPSet && blacklistIPSet.size()>0) {
 			for (String IP:entry.getIP().split(",")) {
 				if (blacklistIPSet.contains(IP.trim())) {
@@ -208,7 +198,7 @@ public class LineConfig {
 				}
 			}
 		}
-		
+
 		if (null != blacklistCDNSet && blacklistCDNSet.size()>0) {
 			String cdn = entry.getCDN();
 			if (null != cdn && !cdn.trim().equals("")) {
@@ -220,23 +210,23 @@ public class LineConfig {
 				}
 			}
 		}		
-		
+
 		if (null != blacklistWebContainerSet && blacklistWebContainerSet.size()>0) {
 			if (blacklistWebContainerSet.contains(entry.getWebcontainer())) {
 				stdout.println(String.format("--- [%s] --- due to web container black list",entry.getUrl()));
 				return false;
 			}
 		}
-		
+
 		//放到最后，其他匹配项可能更常用
 		if (null != blacklistHostSet && blacklistHostSet.size()>0) {
 			if (blacklistHostSet.contains(entry.getHost())) {
 				return false;
 			}
 		}
- */
-		
+		 */
+
 		return true;
 	}
-	
+
 }

@@ -22,7 +22,6 @@ import javax.swing.JTextField;
 import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 
-import Tools.LineConfig;
 import burp.BurpExtender;
 import burp.Commons;
 import burp.IPAddress;
@@ -38,7 +37,6 @@ public class TitlePanel extends JPanel {
 	private JPanel buttonPanel;
 	private static LineTable titleTable;
 	private JLabel lblSummaryOfTitle;
-	private static String cookie;
 	public static JRadioButton rdbtnUnCheckedItems;
 	public static JRadioButton rdbtnCheckingItems;
 	public static JRadioButton rdbtnCheckedItems;
@@ -48,6 +46,7 @@ public class TitlePanel extends JPanel {
 	PrintWriter stdout;
 	PrintWriter stderr;
 	public static ThreadGetTitleWithForceStop threadGetTitle;
+	public static GetTitleTempConfig tempConfig; //每次获取title过程中的配置。
 	private IndexedLinkedHashMap<String,LineEntry> BackupLineEntries;
 
 	private static JTextField textFieldSearch;
@@ -364,17 +363,9 @@ public class TitlePanel extends JPanel {
 	 * 根据所有已知域名获取title
 	 */
 	public void getAllTitle(){
-		//是否在目标的内网中
-		int user_input = JOptionPane.showConfirmDialog(null, "Do you want request [PRIVATE] ip addresses?","Chose work model",JOptionPane.YES_NO_OPTION);
-		if (JOptionPane.YES_OPTION == user_input) {
-			LineConfig.setPrivateNetworkWorkingModel(true);
-		}else {
-			LineConfig.setPrivateNetworkWorkingModel(false);
-		}
-
-		inputCookie();//如果用户点击cancel，就不会进行后续步骤，why?
-
+		tempConfig = new GetTitleTempConfig();
 		DomainPanel.backupDB();
+
 		Set<String> domains = new HashSet<>();//新建一个对象，直接赋值后的删除操作，实质是对domainResult的操作。
 		domains.addAll(DomainPanel.getDomainResult().getSubDomainSet());
 		//remove domains in black list
@@ -385,31 +376,26 @@ public class TitlePanel extends JPanel {
 		//clear tableModel
 
 		titleTableModel.clear(true);//clear
-
-		//获取额外端口逻辑
-		//		TitlePanel.externalPortList = Commons.Port_prompt(null,"External Ports To Run");
-		//		stdout.println("external ports: "+ externalPortList);
-
-		//		threadGetTitle = new ThreadGetTitle(domains);
-		//		threadGetTitle.Do();
 		if (threadGetTitle != null){
 			threadGetTitle.interrupt();
 		}
-		int threadNum = inputThreadNumber();
-		threadGetTitle = new ThreadGetTitleWithForceStop(domains,threadNum);
-		threadGetTitle.start();
 
+		threadGetTitle = new ThreadGetTitleWithForceStop(domains,tempConfig.getThreadNumber());
+		threadGetTitle.start();
+		DomainPanel.getDomainResult().getNewAndNotGetTitleDomainSet().clear();
 	}
 
 
 	public void getExtendTitle(){
+		tempConfig = new GetTitleTempConfig();
+		DomainPanel.backupDB();
+
 		Set<String> extendIPSet = titleTableModel.GetExtendIPSet();
 		stdout.println(extendIPSet.size()+" extend IP Address founded"+extendIPSet);
 		if (threadGetTitle != null){
 			threadGetTitle.interrupt();
 		}
-		int threadNum = inputThreadNumber();
-		threadGetTitle = new ThreadGetTitleWithForceStop(extendIPSet,threadNum);
+		threadGetTitle = new ThreadGetTitleWithForceStop(extendIPSet,tempConfig.getThreadNumber());
 		threadGetTitle.start();
 
 		//转移手动保存的结果
@@ -427,17 +413,10 @@ public class TitlePanel extends JPanel {
 	 * 获取新发现域名的title
 	 */
 	public void getTitleOfNewDomain(){
-		//是否在目标的内网中
-		int user_input = JOptionPane.showConfirmDialog(null, "Do you want request [PRIVATE] ip addresses?","Chose work model",JOptionPane.YES_NO_OPTION);
-		if (JOptionPane.YES_OPTION == user_input) {
-			LineConfig.setPrivateNetworkWorkingModel(true);
-		}else {
-			LineConfig.setPrivateNetworkWorkingModel(false);
-		}
 
-		inputCookie();//如果用户点击cancel，就不会进行后续步骤，why?
-
+		tempConfig = new GetTitleTempConfig();
 		DomainPanel.backupDB();
+
 		Set<String> domains = new HashSet<>();//新建一个对象，直接赋值后的删除操作，实质是对domainResult的操作。
 		domains.addAll(DomainPanel.getDomainResult().getNewAndNotGetTitleDomainSet());
 		//remove domains in black list
@@ -446,9 +425,9 @@ public class TitlePanel extends JPanel {
 		if (threadGetTitle != null){
 			threadGetTitle.interrupt();
 		}
-		int threadNum = inputThreadNumber();
-		threadGetTitle = new ThreadGetTitleWithForceStop(domains,threadNum);
+		threadGetTitle = new ThreadGetTitleWithForceStop(domains,tempConfig.getThreadNumber());
 		threadGetTitle.start();
+		DomainPanel.getDomainResult().getNewAndNotGetTitleDomainSet().clear();
 	}
 
 
@@ -504,25 +483,4 @@ public class TitlePanel extends JPanel {
 		lblSummaryOfTitle.setText(status);
 	}
 
-	public static String getCookie() {
-		return cookie;
-	}
-
-	//cookie used at burp.Commons.buildCookieRequest(IExtensionHelpers, String, byte[])
-	//burp.Producer.doRequest(URL)
-	public static void inputCookie() {
-		cookie = JOptionPane.showInputDialog("Input cookie OR Leave it blank", null).trim();
-	}
-
-	public static int inputThreadNumber() {
-		while (true) {
-			try {
-				String threads = JOptionPane.showInputDialog("How many threads do you want to use", "50").trim();
-				int number = Integer.parseInt(threads);
-				return number;
-			}catch (Exception e) {
-				continue;
-			}
-		}
-	}
 }
