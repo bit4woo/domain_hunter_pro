@@ -2,13 +2,14 @@ package burp;
 
 import java.awt.Component;
 import java.io.PrintWriter;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,7 +18,6 @@ import GUI.GUI;
 import GUI.LineEntryMenuForBurp;
 import Tools.ToolPanel;
 import bsh.This;
-import domain.DomainManager;
 import domain.DomainPanel;
 import domain.DomainProducer;
 import title.TitlePanel;
@@ -38,6 +38,18 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	public static final String Extension_Setting_Name_DB_File = "domain-Hunter-pro-db-path";
 	public static final String Extension_Setting_Name_Line_Config = "domain-Hunter-pro-line-config";
 	private static final Logger log=LogManager.getLogger(BurpExtender.class);
+	private IExtensionHelpers helpers;
+
+	public static DomainProducer liveAnalysisTread;
+	public static BlockingQueue<IHttpRequestResponse> liveinputQueue = new LinkedBlockingQueue<IHttpRequestResponse>();
+	//use to store messageInfo of proxy live
+	public static BlockingQueue<IHttpRequestResponse> inputQueue = new LinkedBlockingQueue<IHttpRequestResponse>();
+	//use to store messageInfo
+	public static BlockingQueue<String> subDomainQueue = new LinkedBlockingQueue<String>();
+	public static BlockingQueue<String> similarDomainQueue = new LinkedBlockingQueue<String>();
+	public static BlockingQueue<String> relatedDomainQueue = new LinkedBlockingQueue<String>();
+	public static BlockingQueue<String> emailQueue = new LinkedBlockingQueue<String>();
+	public static BlockingQueue<String> packageNameQueue = new LinkedBlockingQueue<String>();
 
 	public static PrintWriter getStdout() {
 		//不同的时候调用这个参数，可能得到不同的值
@@ -79,7 +91,29 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		return ExtenderName+" "+Version+" "+Author;
 	}
 
-	private IExtensionHelpers helpers;
+
+	public static void QueueToResult() {
+		HashSet<String> oldSubdomains = new HashSet<String>();
+		oldSubdomains.addAll(DomainPanel.getDomainResult().getSubDomainSet());
+
+		DomainPanel.getDomainResult().getSubDomainSet().addAll(subDomainQueue);
+		DomainPanel.getDomainResult().getSimilarDomainSet().addAll(similarDomainQueue);
+		DomainPanel.getDomainResult().getRelatedDomainSet().addAll(relatedDomainQueue);
+		DomainPanel.getDomainResult().getEmailSet().addAll(emailQueue);
+		DomainPanel.getDomainResult().getPackageNameSet().addAll(packageNameQueue);
+
+		HashSet<String> newSubdomains = new HashSet<String>();
+		newSubdomains.addAll(DomainPanel.getDomainResult().getSubDomainSet());
+
+		newSubdomains.removeAll(oldSubdomains);
+		DomainPanel.getDomainResult().getNewAndNotGetTitleDomainSet().addAll(newSubdomains);
+
+		if (newSubdomains.size()>0){
+			stdout.println(String.format("~~~~~~~~~~~~~%s subdomains added!~~~~~~~~~~~~~",newSubdomains.size()));
+			stdout.println(String.join(System.lineSeparator(), newSubdomains));
+			DomainPanel.autoSave();//进行一次主动保存
+		}
+	}
 
 	//插件加载过程中需要做的事
 	@Override
@@ -118,10 +152,15 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 
 		gui.getToolPanel().loadConfigToGUI();
 
+		liveAnalysisTread = new DomainProducer(BurpExtender.liveinputQueue,BurpExtender.subDomainQueue,
+				BurpExtender.similarDomainQueue,BurpExtender.relatedDomainQueue,
+				BurpExtender.emailQueue,BurpExtender.packageNameQueue,9999);//必须是9999，才能保证流量进程不退出。
+		liveAnalysisTread.start();
 	}
 
 	@Override
 	public void extensionUnloaded() {
+		QueueToResult();
 		if (TitlePanel.threadGetTitle != null) {
 			TitlePanel.threadGetTitle.interrupt();//maybe null
 		}//必须要先结束线程，否则获取数据的操作根本无法结束，因为线程一直通过sync占用资源
@@ -136,7 +175,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	//ITab必须实现的两个方法
 	@Override
 	public String getTabCaption() {
-		return ("Domain Hunter Pro");
+		return (ExtenderName);
 	}
 	@Override
 	public Component getUiComponent() {
@@ -154,111 +193,21 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 
 	@Override
 	public void processHttpMessage(int toolFlag, boolean messageIsRequest, IHttpRequestResponse messageInfo) {
-
-		//		Date now = new Date();
-		SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-			//using SwingWorker to void slow down proxy http response time.
-
-			@Override
-			protected Map doInBackground() throws Exception {
-				findDomainInTraffic(toolFlag,messageIsRequest,messageInfo);
-				return null;
-			}
-			@Override
-			protected void done() {
-			}
-		};
-		worker.execute();
-		//findDomainInTraffic(toolFlag,messageIsRequest,messageInfo);
-		//		Date now1 = new Date();
-		//		stderr.println("takes time to finish find domain: "+(now1.getTime()-now.getTime()));
-
-	}
-
-
-	public void findDomainInTraffic(int toolFlag, boolean messageIsRequest, IHttpRequestResponse messageInfo){
-		boolean dataChanged =false;
-		if (toolFlag == IBurpExtenderCallbacks.TOOL_PROXY && DomainPanel.domainResult != null) {
-			try {
-				Getter getter = new Getter(helpers);
-				if (messageIsRequest) {
-					IHttpService httpservice = messageInfo.getHttpService();
-					String Host = httpservice.getHost();
-
-					int hostType = DomainPanel.domainResult.domainType(Host);
-					if (hostType == DomainManager.SUB_DOMAIN)
-					{	
-						if (!DomainPanel.domainResult.getSubDomainSet().contains(Host) 
-								&& !DomainPanel.domainResult.getNewAndNotGetTitleDomainSet().contains(Host)) {
-							DomainPanel.domainResult.getNewAndNotGetTitleDomainSet().add(Host);
-							stdout.println("new domain found: "+ Host);
-							dataChanged = true;
-						}
-					}else if (hostType == DomainManager.SIMILAR_DOMAIN) {
-						if (!DomainPanel.domainResult.getSimilarDomainSet().contains(Host)) {
-							DomainPanel.domainResult.getSimilarDomainSet().add(Host);
-							dataChanged = true;
-						}
-					}
-				}else {//response
-
-					IHttpService httpservice = messageInfo.getHttpService();
-					String urlString = getter.getFullURL(messageInfo).getFile();
-
-					String Host = httpservice.getHost();
-					if (Host != null) {
-						int hostType = DomainPanel.domainResult.domainType(Host);
-						if (hostType != DomainManager.USELESS) {//grep domains from response and classify
-							if (urlString.endsWith(".gif") ||urlString.endsWith(".jpg")
-									|| urlString.endsWith(".png") ||urlString.endsWith(".css")||urlString.endsWith(".woff")) {
-
-							}else {
-								byte[] resp = messageInfo.getResponse();
-								if (null != resp) {
-									dataChanged = grepDomains(new String(resp));
-								}
-							}
-						}
-					}
-				}
-			} catch (Exception e) {
-				e.printStackTrace(stderr);
-			}
+		if (toolFlag == IBurpExtenderCallbacks.TOOL_PROXY && !messageIsRequest) {
+			liveinputQueue.add(messageInfo);
 		}
 
-		if (dataChanged) {
-			DomainPanel.autoSave();
+		if ((new Date().getMinutes()) % 5 == 0) {
+			QueueToResult();
 		}
 	}
 
-	public static boolean grepDomains(String text) {
-		boolean dataChanged = false;
-		if (text != null) {//为什么只需要从response中提取？请求包中包含的域名多来自于referer、host、参数，参数中的域名多少已经被访问过的。
-			Set<String> domains = DomainProducer.grepDomain(text);
-			for (String domain:domains) {
-				int type = DomainPanel.domainResult.domainType(domain);
-				if (type == DomainManager.SUB_DOMAIN)
-				{
-					if (!DomainPanel.domainResult.getSubDomainSet().contains(domain)
-							&& !DomainPanel.domainResult.getNewAndNotGetTitleDomainSet().contains(domain)) {
-						DomainPanel.domainResult.getNewAndNotGetTitleDomainSet().add(domain);
-						stdout.println("new domain found: "+ domain);
-						dataChanged = true;
-					}
-				}else if (type == DomainManager.SIMILAR_DOMAIN) {
-					if (!DomainPanel.domainResult.getSimilarDomainSet().contains(domain)){
-						DomainPanel.domainResult.getSimilarDomainSet().add(domain);
-						dataChanged = true;
-					}
-
-				}else if (type == DomainManager.PACKAGE_NAME) {
-					if (!DomainPanel.domainResult.getPackageNameSet().contains(domain)){
-						DomainPanel.domainResult.getPackageNameSet().add(domain);
-						dataChanged = true;
-					}
-				}
+	public static void main(String[] args){
+		while (true){
+			int aaa = new Date().getMinutes();
+			if (aaa % 5 == 0) {
+				System.out.println(aaa);
 			}
 		}
-		return dataChanged;
 	}
 }

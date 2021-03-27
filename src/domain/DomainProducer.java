@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.text.StringEscapeUtils;
 
 import burp.BurpExtender;
-import burp.Getter;
+import burp.Commons;
 import burp.IBurpExtenderCallbacks;
 import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
@@ -59,11 +59,12 @@ public class DomainProducer extends Thread {//Producer do
 	@Override
 	public void run() {
 		while(true){
-			Getter getter = new Getter(helpers);
 			try {
-				if (inputQueue.isEmpty() || stopflag) {
-					//stdout.println("Producer break");
-					break;
+				if (threadNo!= 9999){//9999是流量进程，除非关闭，否则一直不退出。
+					if (inputQueue.isEmpty() || stopflag) {
+						//stdout.println("Producer break");
+						break;
+					}
 				}
 
 				IHttpRequestResponse messageinfo = inputQueue.take();
@@ -82,6 +83,7 @@ public class DomainProducer extends Thread {//Producer do
 				if (type == DomainManager.SUB_DOMAIN)
 				{	
 					if (!subDomainQueue.contains(Host)) {
+						stdout.print("new domain found: "+Host);
 						subDomainQueue.add(Host);
 					}
 				}else if (type == DomainManager.SIMILAR_DOMAIN) {
@@ -102,13 +104,10 @@ public class DomainProducer extends Thread {//Producer do
 					}
 				}
 
-				if (type != DomainManager.USELESS) {//grep domains from response and classify
-					if (urlString.endsWith(".gif") ||urlString.endsWith(".jpg")
-							|| urlString.endsWith(".png") ||urlString.endsWith(".css")) {
-
-					}else {
-						classifyDomains(messageinfo);
-						//classifyEmails(messageinfo);
+				if (type != DomainManager.USELESS && !Commons.uselessExtension(urlString)) {//grep domains from response and classify
+					byte[] response = messageinfo.getResponse();
+					if (response != null) {
+						classifyDomains(new String(response));
 					}
 				}
 			} catch (Exception error) {
@@ -117,16 +116,17 @@ public class DomainProducer extends Thread {//Producer do
 		}
 	}
 
-	public void classifyDomains(IHttpRequestResponse messageinfo) {
-		byte[] response = messageinfo.getResponse();
-		if (response != null) {
-			Set<String> domains = DomainProducer.grepDomain(new String(response));
+	public void classifyDomains(String content) {
+		if (content != null) {
+			Set<String> domains = DomainProducer.grepDomain(content);
 			for (String domain:domains) {
 				int type = DomainPanel.domainResult.domainType(domain);
 				if (type == DomainManager.SUB_DOMAIN)
 				{
-					subDomainQueue.add(domain);
-
+					if (!subDomainQueue.contains(domain)) {
+						stdout.print("new domain found: "+domain);
+						subDomainQueue.add(domain);
+					}
 				}else if (type == DomainManager.SIMILAR_DOMAIN) {
 					similarDomainQueue.add(domain);
 				}else if (type == DomainManager.PACKAGE_NAME) {

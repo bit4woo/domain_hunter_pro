@@ -638,6 +638,7 @@ public class DomainPanel extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				//to clear sub and similar domains
+				BurpExtender.QueueToResult();
 				Set<String> tmpDomains = domainResult.getSubDomainSet();
 				Set<String> newSubDomainSet = new HashSet<>();
 				Set<String> newSimilarDomainSet = new HashSet<String>();

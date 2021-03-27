@@ -230,7 +230,7 @@ public class ToolPanel extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				String content = inputTextArea.getText();
-				BurpExtender.grepDomains(content);
+				BurpExtender.liveAnalysisTread.classifyDomains(content);
 			}
 		});
 
