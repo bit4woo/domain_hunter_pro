@@ -82,6 +82,7 @@ public class GUI extends JFrame {
 
 	public boolean LoadData(String dbFilePath){
 		try {//这其中的异常会导致burp退出
+			BurpExtender.clearQueue();//更换DB文件前进行，否则Queue中会包含之前的数据。
 			System.out.println("=================================");
 			System.out.println("==Start Loading Data From: " + dbFilePath+"==");
 			stdout.println("==Start Loading Data From: " + dbFilePath+"==");

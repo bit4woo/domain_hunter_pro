@@ -91,6 +91,17 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		return ExtenderName+" "+Version+" "+Author;
 	}
 
+	//当更换DB文件时，需要清空。虽然不清空最终结果不受影响，但是输出内容会比较奇怪。
+	public static void clearQueue() {
+		liveinputQueue.clear();
+		inputQueue.clear();
+		
+		subDomainQueue.clear();
+		similarDomainQueue.clear();
+		relatedDomainQueue.clear();
+		emailQueue.clear();
+		packageNameQueue.clear();
+	}
 
 	public static void QueueToResult() {
 		HashSet<String> oldSubdomains = new HashSet<String>();
