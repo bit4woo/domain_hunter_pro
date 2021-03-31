@@ -5,6 +5,7 @@ import java.io.PrintWriter;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -95,7 +96,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	public static void clearQueue() {
 		liveinputQueue.clear();
 		inputQueue.clear();
-		
+
 		subDomainQueue.clear();
 		similarDomainQueue.clear();
 		relatedDomainQueue.clear();
@@ -103,15 +104,34 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		packageNameQueue.clear();
 	}
 
+	/*
+	使用这种方法从Queue中取数据，一来避免了主动clear的操作，二来避免在使用数据后，clear操作之前加进来的数据的丢失。
+	 */
+	public static void moveQueueToSet(BlockingQueue<String> queue, Set<String> resultSet){
+		while (!queue.isEmpty()){
+			try {
+				String item = queue.take();
+				resultSet.add(item);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 	public static void QueueToResult() {
 		HashSet<String> oldSubdomains = new HashSet<String>();
 		oldSubdomains.addAll(DomainPanel.getDomainResult().getSubDomainSet());
 
-		DomainPanel.getDomainResult().getSubDomainSet().addAll(subDomainQueue);
-		DomainPanel.getDomainResult().getSimilarDomainSet().addAll(similarDomainQueue);
-		DomainPanel.getDomainResult().getRelatedDomainSet().addAll(relatedDomainQueue);
-		DomainPanel.getDomainResult().getEmailSet().addAll(emailQueue);
-		DomainPanel.getDomainResult().getPackageNameSet().addAll(packageNameQueue);
+		moveQueueToSet(subDomainQueue,DomainPanel.getDomainResult().getSubDomainSet());
+		moveQueueToSet(similarDomainQueue,DomainPanel.getDomainResult().getSimilarDomainSet());
+		moveQueueToSet(relatedDomainQueue,DomainPanel.getDomainResult().getRelatedDomainSet());
+		moveQueueToSet(emailQueue,DomainPanel.getDomainResult().getEmailSet());
+		moveQueueToSet(packageNameQueue,DomainPanel.getDomainResult().getPackageNameSet());
+
+		//		DomainPanel.getDomainResult().getSubDomainSet().addAll(subDomainQueue);
+		//		DomainPanel.getDomainResult().getSimilarDomainSet().addAll(similarDomainQueue);
+		//		DomainPanel.getDomainResult().getRelatedDomainSet().addAll(relatedDomainQueue);
+		//		DomainPanel.getDomainResult().getEmailSet().addAll(emailQueue);
+		//		DomainPanel.getDomainResult().getPackageNameSet().addAll(packageNameQueue);
 
 		HashSet<String> newSubdomains = new HashSet<String>();
 		newSubdomains.addAll(DomainPanel.getDomainResult().getSubDomainSet());

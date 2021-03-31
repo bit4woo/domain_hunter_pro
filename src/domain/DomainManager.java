@@ -1,9 +1,12 @@
 package domain;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Set;
 
 import com.alibaba.fastjson.JSON;
@@ -38,7 +41,7 @@ public class DomainManager {
 	private HashMap<String,Integer> unkownDomainMap = new HashMap<String,Integer>();//记录域名和解析失败的次数，大于五次就从子域名中删除。
 	private Set<String> EmailSet = new HashSet<String>();
 	private Set<String> PackageNameSet = new HashSet<String>();
-	
+
 	private Set<String> newAndNotGetTitleDomainSet = new HashSet<String>();
 
 	public static int SUB_DOMAIN=0;
@@ -211,11 +214,15 @@ public class DomainManager {
 	}
 
 	public String fetchSubDomains() {
-		return String.join(System.lineSeparator(), subDomainSet);
+		List<String> tmplist= new ArrayList<>(subDomainSet);
+		Collections.sort(tmplist);
+		return String.join(System.lineSeparator(), tmplist);
 	}
 
 	public String fetchEmails() {
-		return String.join(System.lineSeparator(), EmailSet);
+		List<String> tmplist= new ArrayList<>(EmailSet);
+		Collections.sort(tmplist);
+		return String.join(System.lineSeparator(), tmplist);
 	}
 
 	public String fetchPackageNames() {
@@ -236,7 +243,7 @@ public class DomainManager {
 		}
 		return result;
 	}
-	
+
 	public Set<String> fetchRootBlackDomainSet() {
 		Set<String> result = new HashSet<String>();
 		for (String key:rootDomainMap.keySet()) {
@@ -374,7 +381,7 @@ public class DomainManager {
 			if (Commons.isValidIP(domain)) {//https://202.77.129.30
 				return DomainManager.IP_ADDRESS;
 			}
-			
+
 			if (isInRootBlackDomain(domain)) {
 				return DomainManager.USELESS;
 			}
@@ -415,7 +422,7 @@ public class DomainManager {
 		}
 		return false;
 	}
-	
+
 	public boolean isInRootBlackDomain(String domain) {
 		if (domain.contains(":")) {//处理带有端口号的域名
 			domain = domain.substring(0,domain.indexOf(":"));
@@ -442,9 +449,9 @@ public class DomainManager {
 		int type = new DomainObject("").domainType(Host);
 		System.out.println(type);*/
 
-//		DomainObject xx = new DomainObject("");
-//		xx.getRelatedDomainSet().add("xxx.baidu.com");
-//		System.out.println(xx.getRelatedDomainSet());
+		//		DomainObject xx = new DomainObject("");
+		//		xx.getRelatedDomainSet().add("xxx.baidu.com");
+		//		System.out.println(xx.getRelatedDomainSet());
 
 
 		//		System.out.println(InternetDomainName.from("www.jd.local").publicSuffix());
