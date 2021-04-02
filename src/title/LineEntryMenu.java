@@ -33,7 +33,7 @@ public class LineEntryMenu extends JPopupMenu {
 	PrintWriter stdout = BurpExtender.getStdout();
 	PrintWriter stderr = BurpExtender.getStderr();
 	private static LineTable lineTable;
-	
+
 	LineEntryMenu(final LineTable lineTable, final int[] rows,final int columnIndex){
 		this.lineTable = lineTable;
 
@@ -69,11 +69,11 @@ public class LineEntryMenu extends JPopupMenu {
 					}
 				}
 			}
-			
+
 			public String getValue(LineEntry firstEntry,int columnIndex) {
-				
+
 				String columnName = lineTable.getColumnName(columnIndex);
-				
+
 				if (columnName.equalsIgnoreCase("title")){
 					String title = firstEntry.getTitle();
 					return "intitle:"+title;
@@ -111,11 +111,11 @@ public class LineEntryMenu extends JPopupMenu {
 					}
 				}
 			}
-			
+
 			public String getValue(LineEntry firstEntry,int columnIndex) {
-				
+
 				String columnName = lineTable.getColumnName(columnIndex);
-				
+
 				if (columnName.equalsIgnoreCase("title")){
 					String title = firstEntry.getTitle();
 					return title;
@@ -134,11 +134,11 @@ public class LineEntryMenu extends JPopupMenu {
 				}
 			}
 		});
-		
+
 		JMenuItem SearchOnFoFaItem = new JMenuItem(new AbstractAction("Seach On FoFa") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				
+
 				if (rows.length >=50) {
 					return;
 				}
@@ -153,11 +153,11 @@ public class LineEntryMenu extends JPopupMenu {
 					}
 				}
 			}
-			
+
 			public String getValue(LineEntry firstEntry,int columnIndex) {
-				
+
 				String columnName = lineTable.getColumnName(columnIndex);
-				
+
 				if (columnName.equalsIgnoreCase("title")){
 					String title = firstEntry.getTitle();
 					return title;
@@ -175,7 +175,7 @@ public class LineEntryMenu extends JPopupMenu {
 					return host;
 				}
 			}
-			
+
 		});
 
 		JMenuItem SearchOnHunterItem = new JMenuItem(new AbstractAction("Seach On Hunter") {
@@ -209,7 +209,7 @@ public class LineEntryMenu extends JPopupMenu {
 			}
 		});
 
-		JMenuItem copyHostItem = new JMenuItem(new AbstractAction("Copy Domain Name") {
+		JMenuItem copyHostItem = new JMenuItem(new AbstractAction("Copy Host") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				try{
@@ -218,6 +218,24 @@ public class LineEntryMenu extends JPopupMenu {
 
 					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 					StringSelection selection = new StringSelection(textUrls);
+					clipboard.setContents(selection, null);
+				}
+				catch (Exception e1)
+				{
+					e1.printStackTrace(stderr);
+				}
+			}
+		});
+
+		JMenuItem copyHostAndPortItem = new JMenuItem(new AbstractAction("Copy Host:Port") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				try{
+					java.util.List<String> items = lineTable.getModel().getHostsAndPorts(rows);
+					String text = String.join(System.lineSeparator(), items);
+
+					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+					StringSelection selection = new StringSelection(text);
 					clipboard.setContents(selection, null);
 				}
 				catch (Exception e1)
@@ -556,6 +574,7 @@ public class LineEntryMenu extends JPopupMenu {
 
 		this.add(openURLwithBrowserItem);
 		this.add(copyHostItem);
+		this.add(copyHostAndPortItem);
 		this.add(copyURLItem);
 		this.add(copyLocationURLItem);
 		this.add(SendToRepeater);
