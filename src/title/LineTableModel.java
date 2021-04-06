@@ -55,7 +55,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	PrintWriter stderr;
 
 	private static final String[] standardTitles = new String[] {
-			"#", "URL", "Status", "Length", "Title","Comments","isChecked","Level","Time","IP", "CDN|CertInfo","Server"};
+			"#", "URL", "Status", "Length", "Title","Comments","Server","isChecked","Level","Time","IP", "CDN|CertInfo"};
 	private static List<String> titletList = new ArrayList<>(Arrays.asList(standardTitles));
 	//为了实现动态表结构
 	public static List<String> getTitletList() {
@@ -65,7 +65,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 
 	public LineTableModel(){
 
-		titletList.remove("Server");
+		//titletList.remove("Server");
 		//titletList.remove("Time");
 		try{
 			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
