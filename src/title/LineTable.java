@@ -337,7 +337,8 @@ public class LineTable extends JTable
 			}
 
 			@Override//title表格中的鼠标右键菜单
-			public void mouseReleased( MouseEvent e ){
+			public void mouseReleased( MouseEvent e ){//在windows中触发,因为isPopupTrigger在windows中是在鼠标释放是触发的，而在mac中，是鼠标点击时触发的。
+				//https://stackoverflow.com/questions/5736872/java-popup-trigger-in-linux
 				if ( SwingUtilities.isRightMouseButton( e )){
 					if (e.isPopupTrigger() && e.getComponent() instanceof JTable ) {
 						//getSelectionModel().setSelectionInterval(rows[0], rows[1]);
@@ -355,8 +356,8 @@ public class LineTable extends JTable
 			}
 
 			@Override
-			public void mousePressed(MouseEvent e) {
-				//no need
+			public void mousePressed(MouseEvent e) { //在mac中触发
+				mouseReleased(e);
 			}
 
 		});
