@@ -2,12 +2,12 @@
 <Configuration
 	xmlns="http://logging.apache.org/log4j/2.0/config">
 	<Properties>
-		<Property name="basePath">../../../../../../domain-hunter-pro.log
+		<Property name="basePath">${sys:user.home}/logs
 		</Property>
 	</Properties>
 	<Appenders>
 		<!-- File Appender -->
-		<File name="FILE" fileName="${basePath}/domainbruter.log"
+		<File name="FILE" fileName="${basePath}/domain-hunter-pro.log"
 			append="true">
 			<PatternLayout
 				pattern="%-5p | %d{yyyy-MM-dd HH:mm:ss} | [%t] %C{2} (%F:%L) - %m%n" />
