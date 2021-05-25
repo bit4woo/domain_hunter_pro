@@ -8,8 +8,11 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -453,8 +456,9 @@ public class TitlePanel extends JPanel {
 				}
 			}
 		}
-
-		return String.join(System.lineSeparator(), result);
+		List<String> tmplist= new ArrayList<>(result);
+		Collections.sort(tmplist);
+		return String.join(System.lineSeparator(), tmplist);
 	}
 
 	/*
