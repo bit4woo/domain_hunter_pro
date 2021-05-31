@@ -846,9 +846,7 @@ public class DomainPanel extends JPanel {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				try {
-					String[] cmdArray = new String[] {"explorer.exe","\""+GUI.getCurrentDBFile().getParent()+"\""};
-					//stdout.println(GUI.getCurrentDBFile().getParent());
-					Runtime.getRuntime().exec(cmdArray);
+					Commons.OpenFolder(GUI.getCurrentDBFile().getParent());
 				} catch (Exception e2) {
 					e2.printStackTrace(stderr);
 				}
