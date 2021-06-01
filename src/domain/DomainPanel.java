@@ -47,6 +47,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.RowSorter;
 import javax.swing.SortOrder;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
@@ -433,6 +434,41 @@ public class DomainPanel extends JPanel {
 					sortedMethod = null;
 					e1.printStackTrace(stderr);
 				}
+			}
+		});
+
+		table.addMouseListener(new MouseAdapter() {
+			@Override//表格中的鼠标右键菜单
+			public void mouseReleased( MouseEvent e ){//在windows中触发,因为isPopupTrigger在windows中是在鼠标释放是触发的，而在mac中，是鼠标点击时触发的。
+				//https://stackoverflow.com/questions/5736872/java-popup-trigger-in-linux
+				if ( SwingUtilities.isRightMouseButton( e )){
+					if (e.isPopupTrigger() && e.getComponent() instanceof JTable ) {
+						//getSelectionModel().setSelectionInterval(rows[0], rows[1]);
+						int[] rows = table.getSelectedRows();
+						int col = ((JTable) e.getSource()).columnAtPoint(e.getPoint()); // 获得列位置
+						if (rows.length>0){
+							rows = SelectedRowsToModelRows(table.getSelectedRows());
+							new RootDomainMenu(table, rows, col).show(e.getComponent(), e.getX(), e.getY());
+						}else{//在table的空白处显示右键菜单
+							//https://stackoverflow.com/questions/8903040/right-click-mouselistener-on-whole-jtable-component
+							//new LineEntryMenu(_this).show(e.getComponent(), e.getX(), e.getY());
+						}
+					}
+				}
+			}
+
+			@Override
+			public void mousePressed(MouseEvent e) { //在mac中触发
+				mouseReleased(e);
+			}
+
+			public int[] SelectedRowsToModelRows(int[] SelectedRows) {
+				int[] rows = SelectedRows;
+				for (int i=0; i < rows.length; i++){
+					rows[i] = table.convertRowIndexToModel(rows[i]);//转换为Model的索引，否则排序后索引不对应〿
+				}
+				Arrays.sort(rows);//升序
+				return rows;
 			}
 		});
 

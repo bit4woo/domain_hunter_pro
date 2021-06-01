@@ -219,6 +219,23 @@ public class DomainManager {
 		return String.join(System.lineSeparator(), tmplist);
 	}
 
+	public String fetchSubDomainsOf(String rootDomain) {
+		List<String> tmplist = new ArrayList<>();
+		if (domainType(rootDomain)==DomainManager.SUB_DOMAIN) {//判断是否有效rootDomain
+			if (!rootDomain.startsWith(".")) {
+				rootDomain = "."+rootDomain;
+			}
+			for (String item:subDomainSet) {
+				if(item.endsWith(rootDomain)) {
+					tmplist.add(item);
+				}
+			}
+			Collections.sort(tmplist);
+			return String.join(System.lineSeparator(), tmplist);
+		}
+		return "";
+	}
+
 	public String fetchEmails() {
 		List<String> tmplist= new ArrayList<>(EmailSet);
 		Collections.sort(tmplist);
