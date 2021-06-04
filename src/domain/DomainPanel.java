@@ -2,7 +2,6 @@ package domain;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.FlowLayout;
@@ -31,7 +30,6 @@ import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -71,6 +69,7 @@ import GUI.GUI;
 import burp.BurpExtender;
 import burp.Commons;
 import burp.DBHelper;
+import burp.HTTPPost;
 import burp.IBurpExtenderCallbacks;
 import burp.IHttpRequestResponse;
 import burp.IHttpService;
@@ -366,33 +365,37 @@ public class DomainPanel extends JPanel {
 		});
 		HeaderPanel.add(btnBuckupDB);
 
-		Component verticalStrut_1 = Box.createVerticalStrut(20);
-		HeaderPanel.add(verticalStrut_1);
-
-		/*
-		textFieldUploadURL = new JTextField("Input Upload URL Here");
-		textFieldUploadURL.addFocusListener(new FocusAdapter() {
-			@Override
-			public void focusGained(FocusEvent e) {
-				if (textFieldUploadURL.getText().equals("Input Upload URL Here")) {
-					textFieldUploadURL.setText("");
-				}
+		textFieldUploadURL = new JTextField();
+		textFieldUploadURL.setColumns(30);
+		textFieldUploadURL.setToolTipText("input upload url here");
+		HeaderPanel.add(textFieldUploadURL);
+		// Listen for changes in the text
+		textFieldUploadURL.getDocument().addDocumentListener(new DocumentListener() {
+			public void changedUpdate(DocumentEvent e) {
+				saveURL();
 			}
-			@Override
-			public void focusLost(FocusEvent e) {
-				if (textFieldUploadURL.getText().equals("")) {
-					textFieldUploadURL.setText("Input Upload URL Here");
-				}
+			public void removeUpdate(DocumentEvent e) {
+				saveURL();
+			}
+			public void insertUpdate(DocumentEvent e) {
+				saveURL();
+			}
 
+			public void saveURL() {
+				String url = textFieldUploadURL.getText();
+				try {
+					new URL(url);
+					domainResult.uploadURL = url;
+					autoSave();
+				}catch(Exception e) {
+
+				}
 			}
 		});
-		//HeaderPanel.add(textFieldUploadURL);
-		textFieldUploadURL.setColumns(30);
-
 
 
 		JButton btnUpload = new JButton("Upload");
-		btnUpload.setToolTipText("Do a single search from site map");
+		btnUpload.setToolTipText("upload data to Server");
 		btnUpload.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				SwingWorker<Boolean, Boolean> worker = new SwingWorker<Boolean, Boolean>() {
@@ -408,7 +411,8 @@ public class DomainPanel extends JPanel {
 				worker.execute();
 			}
 		});
-		 */
+		HeaderPanel.add(btnUpload);
+
 
 
 		////////////////////////////////////target area///////////////////////////////////////////////////////
@@ -874,7 +878,6 @@ public class DomainPanel extends JPanel {
 			}
 		});
 		footerPanel.add(lblNewLabel_2);
-		//HeaderPanel.add(btnUpload);
 
 		lblSummary = new JLabel("      ^_^");
 		footerPanel.add(lblSummary);
@@ -957,7 +960,7 @@ public class DomainPanel extends JPanel {
 			domainTableModel.addRow(new Object[]{entry.getKey(),entry.getValue()});
 		}
 
-		//textFieldUploadURL.setText(domainResult.uploadURL);
+		textFieldUploadURL.setText(domainResult.uploadURL);
 		textAreaSubnets.setText(domainResult.fetchSubnets());
 		textAreaSubdomains.setText(domainResult.fetchSubDomains());
 		textAreaSimilarDomains.setText(domainResult.fetchSimilarDomains());
@@ -1143,22 +1146,6 @@ public class DomainPanel extends JPanel {
 	}
 
 	/*
-	public Boolean upload(String url,String content) {
-		if ((url.toLowerCase().contains("http://") ||url.toLowerCase().contains("https://"))
-				&& content != null){
-			try {
-				HTTPPost.httpPostRequest(url,content);
-				return true;
-			} catch (IOException e) {
-				e.printStackTrace(stderr);
-				return false;
-			}
-		}
-		return false;
-	}
-	 */
-
-	/*
     单独保存域名信息到另外的文件
 	 */
 	public File saveDomainOnly() {
@@ -1262,5 +1249,18 @@ public class DomainPanel extends JPanel {
 		} catch (IOException e1) {
 			e1.printStackTrace(BurpExtender.getStderr());
 		}
+	}
+
+	public Boolean upload(String url,String jsonbody) {
+		if (url.toLowerCase().startsWith("http://") ||url.toLowerCase().startsWith("https://")){
+			try {
+				HTTPPost.httpPostRequest(url,jsonbody);
+				return true;
+			} catch (IOException e) {
+				e.printStackTrace(stderr);
+				return false;
+			}
+		}
+		return false;
 	}
 }
