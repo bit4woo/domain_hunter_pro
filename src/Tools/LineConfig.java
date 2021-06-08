@@ -7,6 +7,7 @@ import java.util.Set;
 import com.alibaba.fastjson.JSON;
 
 import burp.BurpExtender;
+import burp.Commons;
 import title.LineEntry;
 import title.TitlePanel;
 
@@ -22,7 +23,6 @@ public class LineConfig {
 	//对于内外网域名或IP的处理分为2种情况：
 	//1、外网模式，即在自己公司挖掘别人公司的漏洞。这个是时候收集到的域名如果是解析到私有IP的，仅仅显示就可以了；如果是私有IP地址则直接忽略。
 	//2、内网模式，即在自己公司挖掘自己公司的漏洞。这个时候所有域名一视同仁，全部和外网域名一样进行请求并获取title，因为内网的IP也是可以访问的。
-
 	private String python3Path = "C:\\Python37\\python.exe";
 	private String dirSearchPath = "D:\\github\\dirsearch\\dirsearch.py";
 	private String browserPath = "C:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe";
@@ -30,6 +30,15 @@ public class LineConfig {
 	private String bruteDict ="D:\\github\\webdirscan\\dict\\dict.txt";
 	private String toolPanelText = "";
 	private boolean showItemsInOne = false;
+	
+	LineConfig(){
+		if (Commons.isMac()) {
+			python3Path = "/usr/bin/python";
+			browserPath = "/Applications/Firefox.app/Contents/MacOS/firefox";
+			nmapPath ="/usr/local/bin/nmap";
+		}
+	}
+
 
 
 	public static int getMaximumEntries() {
