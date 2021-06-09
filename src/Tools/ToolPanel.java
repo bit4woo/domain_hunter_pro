@@ -51,6 +51,7 @@ import org.apache.commons.text.StringEscapeUtils;
 import burp.BurpExtender;
 import burp.Commons;
 import domain.CertInfo;
+import domain.DomainProducer;
 
 /*
  * 所有配置的修改，界面的操作，都立即写入LineConfig对象，如有必要保存到磁盘，再调用一次SaveConfig函数，思路要清晰
@@ -230,7 +231,11 @@ public class ToolPanel extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				String content = inputTextArea.getText();
-				BurpExtender.liveAnalysisTread.classifyDomains(content);
+				if (null != content) {
+					Set<String> domains = DomainProducer.grepDomain(content);
+					outputTextArea.setText(String.join(System.lineSeparator(), domains));
+					BurpExtender.liveAnalysisTread.classifyDomains(domains);
+				}
 			}
 		});
 

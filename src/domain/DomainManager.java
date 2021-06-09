@@ -383,22 +383,22 @@ public class DomainManager {
 	}
 
 	public int domainType(String domain) {
-		if (domain.contains(":")) {//处理带有端口号的域名
-			domain = domain.substring(0,domain.indexOf(":"));
-		}
-
 		try {
+			if (domain.contains(":")) {//处理带有端口号的域名
+				domain = domain.substring(0,domain.indexOf(":"));
+			}
+
 			domain = domain.toLowerCase().trim();
 			if (domain.endsWith(".")) {
 				domain = domain.substring(0,domain.length()-1);
 			}
 
-			if (!domain.contains(".")) return DomainManager.USELESS;
-
 			if (Commons.isValidIP(domain)) {//https://202.77.129.30
 				return DomainManager.IP_ADDRESS;
 			}
-
+			if (!Commons.isValidDomain(domain)) {
+				return DomainManager.USELESS;
+			}
 			if (isInRootBlackDomain(domain)) {
 				return DomainManager.USELESS;
 			}

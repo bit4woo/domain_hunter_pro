@@ -78,20 +78,7 @@ public class DomainProducer extends Thread {//Producer do
 
 				//callbacks.printOutput(rootdomains.toString());
 				//callbacks.printOutput(keywords.toString());
-				int type = DomainPanel.domainResult.domainType(Host);
-				//callbacks.printOutput(Host+":"+type);
-				if (type == DomainManager.SUB_DOMAIN)
-				{	
-					if (!subDomainQueue.contains(Host)) {
-						stdout.print("new domain found: "+Host);
-						subDomainQueue.add(Host);
-					}
-				}else if (type == DomainManager.SIMILAR_DOMAIN) {
-					if (!similarDomainQueue.contains(Host)) {
-						similarDomainQueue.add(Host);
-					}
-				}
-
+				int type = classifyDomain(Host);
 				if (type !=DomainManager.USELESS && protocol.equalsIgnoreCase("https")){//get related domains
 					if (!httpsQueue.contains(shortURL)) {//httpService checked or not
 						httpsQueue.put(shortURL);//必须先添加，否则执行在执行https链接的过程中，已经有很多请求通过检测进行相同的请求了。
@@ -107,7 +94,8 @@ public class DomainProducer extends Thread {//Producer do
 				if (type != DomainManager.USELESS && !Commons.uselessExtension(urlString)) {//grep domains from response and classify
 					byte[] response = messageinfo.getResponse();
 					if (response != null) {
-						classifyDomains(new String(response));
+						Set<String> domains = DomainProducer.grepDomain(new String(response));
+						classifyDomains(domains);
 					}
 				}
 			} catch (Exception error) {
@@ -116,24 +104,26 @@ public class DomainProducer extends Thread {//Producer do
 		}
 	}
 
-	public void classifyDomains(String content) {
-		if (content != null) {
-			Set<String> domains = DomainProducer.grepDomain(content);
-			for (String domain:domains) {
-				int type = DomainPanel.domainResult.domainType(domain);
-				if (type == DomainManager.SUB_DOMAIN)
-				{
-					if (!subDomainQueue.contains(domain)) {
-						stdout.print("new domain found: "+domain);
-						subDomainQueue.add(domain);
-					}
-				}else if (type == DomainManager.SIMILAR_DOMAIN) {
-					similarDomainQueue.add(domain);
-				}else if (type == DomainManager.PACKAGE_NAME) {
-					packageNameQueue.add(domain);
-				}
-			}
+	public void classifyDomains(Set<String> domains) {
+		for (String domain:domains) {
+			classifyDomain(domain);
 		}
+	}
+
+	public int classifyDomain(String domain) {
+		int type = DomainPanel.domainResult.domainType(domain);
+		if (type == DomainManager.SUB_DOMAIN)
+		{
+			if (!subDomainQueue.contains(domain)) {
+				stdout.print("new domain found: "+domain);
+				subDomainQueue.add(domain);
+			}
+		}else if (type == DomainManager.SIMILAR_DOMAIN) {
+			similarDomainQueue.add(domain);
+		}else if (type == DomainManager.PACKAGE_NAME) {
+			packageNameQueue.add(domain);
+		}
+		return type;
 	}
 
 	@Deprecated //从burp的Email addresses disclosed这个issue中提取，废弃这个
@@ -228,7 +218,8 @@ public class DomainProducer extends Thread {//Producer do
 		//httpResponse = cleanResponse(httpResponse);
 		Set<String> domains = new HashSet<>();
 		//"^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$"
-		final String DOMAIN_NAME_PATTERN = "([A-Za-z0-9-]{1,63}(?<!-)\\.)+[A-Za-z]{2,6}";
+		final String DOMAIN_NAME_PATTERN = "([A-Za-z0-9-*]{1,63}(?<!-)\\.)+[A-Za-z]{2,6}";
+		//加*号是为了匹配 类似 *.baidu.com的这种域名记录。
 
 		String[] lines = httpResponse.split("\r\n");
 
@@ -237,7 +228,11 @@ public class DomainProducer extends Thread {//Producer do
 			Pattern pDomainNameOnly = Pattern.compile(DOMAIN_NAME_PATTERN);
 			Matcher matcher = pDomainNameOnly.matcher(line);
 			while (matcher.find()) {//多次查找
-				domains.add(matcher.group());
+				String tmpDomain = matcher.group();
+				if (tmpDomain.startsWith("*.")) {
+					tmpDomain = tmpDomain.replaceFirst("\\*\\.","");//第一个参数是正则
+				}
+				domains.add(tmpDomain);
 			}
 		}
 		return domains;
@@ -282,7 +277,15 @@ public class DomainProducer extends Thread {//Producer do
 		return Emails;
 	}
 
-	public static void main(String args[]){
+	public static void main(String[] args) {
+		String tmpDomain = "*.baidu.com";
+		if (tmpDomain.startsWith("*.")) {
+			tmpDomain = tmpDomain.replaceFirst("\\*\\.","");//第一个参数是正则
+		}
+		System.out.println(tmpDomain);
+	}
+
+	public static void test(){
 		String aaa="  <div class=\"mod_confirm brandad_authority_failapply\">\n" +
 				"    <a href=\"javascript:;\" class=\"mod_confirm_close\"><i></i></a>\n" +
 				"    <div class=\"mod_confirm_hd\">申请开通账户权限</div>\n" +
