@@ -637,7 +637,7 @@ public class ToolPanel extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				String separator = JOptionPane.showInputDialog("input separator", null);
-				if (separator != null && !separator.trim().equals("")) {
+				if (separator != null) {//&& !separator.trim().equals("")有可能本来就是空格分割，所以不能有这个条件
 					String text = inputTextArea.getText();
 					String[] items = text.split(separator);
 					outputTextArea.setText(String.join(System.lineSeparator(), items));

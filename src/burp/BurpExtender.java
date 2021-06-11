@@ -146,6 +146,12 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		}
 	}
 
+	//TODO 是否有方法可以识别同名插件，即安装了2个一样的，但能在加载配置和显示菜单时进行区分。
+	//好像可以通过配置文件实现：配置文件中存储多个记录。
+	public void isNotAlone() {
+
+	}
+
 	//插件加载过程中需要做的事
 	@Override
 	public void registerExtenderCallbacks(IBurpExtenderCallbacks callbacks)
