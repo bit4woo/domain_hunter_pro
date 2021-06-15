@@ -651,7 +651,7 @@ public class ToolPanel extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				String separator = JOptionPane.showInputDialog("input connect char", null);
-				if (separator != null && !separator.trim().equals("")) {
+				if (separator != null) {// && !separator.trim().equals("")
 					List<String> items = Commons.getLinesFromTextArea(inputTextArea);
 					outputTextArea.setText(String.join(separator, items));
 				}
