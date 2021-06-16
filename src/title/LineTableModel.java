@@ -350,7 +350,11 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			String[] linetext = line.getIP().split(",");
 			for (String ip:linetext){
 				ip = Commons.ipClean(ip);
-				result.add(ip);
+				if (Commons.isValidIP(ip)){
+					result.add(ip);
+				}else {
+					System.out.println(ip + "invalid IP address, skip to handle it!");
+				}
 			}
 		}
 

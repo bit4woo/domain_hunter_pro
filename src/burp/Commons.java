@@ -89,12 +89,8 @@ public class Commons {
 		return matcher.matches();
 	}
 
-
+	//校验字符串是否是一个合格的IP地址
 	public static boolean isValidIP (String ip) {
-		if (ip.contains(":")) {//处理带有端口号的域名
-			ip = ip.substring(0,ip.indexOf(":"));
-		}
-
 		try {
 			if ( ip == null || ip.isEmpty() ) {
 				return false;
@@ -262,7 +258,7 @@ public class Commons {
 				for (String ip:IPSet) {
 					ip = ipClean(ip);
 					if (!Commons.isValidIP(ip)) {
-						System.out.println("invalid IP address, skip to handle it!");
+						System.out.println(ip+" invalid IP address, skip to handle it!");
 						continue;
 					}
 
@@ -301,7 +297,7 @@ public class Commons {
 				for (String ip:IPSet) {
 					ip = ipClean(ip);
 					if (!Commons.isValidIP(ip)) {
-						System.out.println("invalid IP address, skip to handle it!");
+						System.out.println(ip + "invalid IP address, skip to handle it!");
 						continue;
 					}
 					if (samllerNetwork.getInfo().isInRange(ip) || samllerNetwork.getInfo().getBroadcastAddress().equals(ip.trim()) || samllerNetwork.getInfo().getNetworkAddress().equals(ip.trim())){
