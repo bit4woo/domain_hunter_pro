@@ -36,7 +36,6 @@ public class LineEntryMenuForBurp{
 	public static IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
 	public PrintWriter stdout = BurpExtender.getStdout();
 
-
 	public List<JMenuItem> createMenuItemsForBurp(IContextMenuInvocation invocation) {
 		List<JMenuItem> JMenuItemList = new ArrayList<JMenuItem>();
 		/*
@@ -48,7 +47,7 @@ public class LineEntryMenuForBurp{
 
 		JMenuItem runWithSamePathItem = new JMenuItem("^_^ Run Targets with this path");
 		runWithSamePathItem.addActionListener(new runWithSamePath(invocation));
-		
+
 		JMenuItem doDirBruteItem = new JMenuItem("^_^ Do Dir Brute");
 		doDirBruteItem.addActionListener(new doDirBrute(invocation));
 
@@ -76,29 +75,42 @@ public class LineEntryMenuForBurp{
 		//替换方案2：
 		JMenu setLevelAs2 = new JMenu("^_^ Set Level As");
 		setAsChecked.addActionListener(new setLevelAsActionListener(invocation,setLevelAs2));
-		
-		
-		
+
+
+
 		JMenuItemList.add(setAsChecked);
 		JMenuItemList.add(setLevelAs2);
-		
+
 		JMenuItemList.add(addRequestToDomainHunter);
 		JMenuItemList.add(addCommentToDomainHunter);
-		
+
 		JMenuItemList.add(addDomainToDomainHunter);
 		//JMenuItemList.add(doDirBruteItem);
 		JMenuItemList.add(runWithSamePathItem);
-		
-		
+		if (BurpExtender.LoadedNumber >1) {
+
+		}
+
 		if (ToolPanel.showItemsInOne.isSelected()) {
 			ArrayList<JMenuItem> result = new ArrayList<JMenuItem>();
+
 			JMenu domainHunterPro = new JMenu("^_^ Domain Hunter Pro");
+			if (BurpExtender.LoadedNumber >1) {
+				String proName = DomainPanel.getDomainResult().getProjectName();
+				domainHunterPro.setText(String.format("^_^ Domain Hunter Pro [%s]",proName));
+			}
 			result.add(domainHunterPro);
 			for (JMenuItem item : JMenuItemList) {
 				domainHunterPro.add(item);
 			}
 			return result;
 		}else {
+			if (BurpExtender.LoadedNumber >1) {
+				String proName = DomainPanel.getDomainResult().getProjectName();
+				for (JMenuItem item : JMenuItemList) {
+					item.setText("^_^ "+proName+"-->"+item.getText().replace("^_^ ", ""));
+				}
+			}
 			return JMenuItemList;
 		}
 	}
@@ -187,8 +199,8 @@ public class LineEntryMenuForBurp{
 			worker.execute();
 		}
 	}
-	
-	
+
+
 	public class doDirBrute implements ActionListener{
 		private IContextMenuInvocation invocation;
 		doDirBrute(IContextMenuInvocation invocation) {
@@ -236,14 +248,14 @@ public class LineEntryMenuForBurp{
 			try{
 				IHttpRequestResponse[] messages = invocation.getSelectedMessages();
 				Getter getter = new Getter(helpers);
-				
+
 				String host = messages[0].getHttpService().getHost();
 				int port = messages[0].getHttpService().getPort();
-				
+
 				List<LineEntry> entries = TitlePanel.getTitleTableModel().findLineEntriesByHostAndPort(host, port);
-				
+
 				if (entries.size() == 0) {
-					
+
 				}else if (entries.size() == 1){
 					addCommentForLine(entries.get(0));
 				}else {
@@ -279,7 +291,7 @@ public class LineEntryMenuForBurp{
 				IHttpRequestResponse[] messages = invocation.getSelectedMessages();
 				List<LineEntry> entries = TitlePanel.getTitleTableModel().findLineEntriesByHostAndPort(messages[0].getHttpService().getHost()
 						,messages[0].getHttpService().getPort());
-				
+
 				if (entries.size() > 0) {
 					for (LineEntry entry:entries) {
 						//addCommentForLine(entry);
@@ -365,20 +377,20 @@ public class LineEntryMenuForBurp{
 						}else {
 							//topMenu.add(new JMenuItem("Null"));
 						}
-						
-						
-//						IHttpRequestResponse[] messages = invocation.getSelectedMessages();
-//						Getter getter = new Getter(helpers);
-//						if (messages[0] != null) {
-//							String host = getter.getHost(messages[0]);
-//							List<LineEntry> entries = TitlePanel.getTitleTableModel().findLineEntriesByHost(host);
-//							if (entries.size() > 0) {
-//								for (LineEntry entry:entries) {
-//									int index = TitlePanel.getTitleTable().getModel().getLineEntries().IndexOfKey(entry.getUrl());
-//									addLevelABC(topMenu,TitlePanel.getTitleTable(),new int[] {index});
-//								}
-//							}
-//						}
+
+
+						//						IHttpRequestResponse[] messages = invocation.getSelectedMessages();
+						//						Getter getter = new Getter(helpers);
+						//						if (messages[0] != null) {
+						//							String host = getter.getHost(messages[0]);
+						//							List<LineEntry> entries = TitlePanel.getTitleTableModel().findLineEntriesByHost(host);
+						//							if (entries.size() > 0) {
+						//								for (LineEntry entry:entries) {
+						//									int index = TitlePanel.getTitleTable().getModel().getLineEntries().IndexOfKey(entry.getUrl());
+						//									addLevelABC(topMenu,TitlePanel.getTitleTable(),new int[] {index});
+						//								}
+						//							}
+						//						}
 					}
 					catch (Exception e1)
 					{
@@ -395,7 +407,7 @@ public class LineEntryMenuForBurp{
 		}
 
 	}
-	
+
 	@Deprecated//该方案响应速度慢，弃用
 	public class setLevelAsMouseListener extends MouseAdapter{
 		private IContextMenuInvocation invocation;
@@ -433,7 +445,7 @@ public class LineEntryMenuForBurp{
 			}
 		}
 	}
-	
+
 	public static LineEntry findLineEntryByFullUrl(List<LineEntry> lineEntries, String url) {
 		url = Commons.formateURLString(url);
 		for(LineEntry item:lineEntries) {
@@ -488,12 +500,12 @@ public class LineEntryMenuForBurp{
 			Getter getter = new Getter(helpers);
 			URL fullurl = getter.getFullURL(message);
 			LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(fullurl.toString());
-			
+
 			LineEntry newEntry = new LineEntry(message);
 			newEntry.setComment("Manual-Saved");
 			newEntry.setCheckStatus(LineEntry.CheckStatus_UnChecked);
 			newEntry.setManualSaved(true);
-			
+
 			if (entry != null) {//存在相同URL的记录
 				int user_input = JOptionPane.showConfirmDialog(null, "Do you want to overwrite?","Item already exist",JOptionPane.YES_NO_CANCEL_OPTION);
 				if (JOptionPane.YES_OPTION == user_input) {
@@ -505,10 +517,10 @@ public class LineEntryMenuForBurp{
 			}else {//不存在相同记录，直接新增
 				TitlePanel.getTitleTableModel().addNewLineEntry(newEntry); //add request，新增
 			}
-			
+
 			String host = message.getHttpService().getHost();
 			DomainPanel.getDomainResult().addToDomainOject(host); //add domain
-			
+
 		}
 	}
 }

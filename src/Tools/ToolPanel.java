@@ -20,6 +20,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -333,6 +334,25 @@ public class ToolPanel extends JPanel {
 				}
 			}
 
+		});
+
+		JButton removeDuplicate = new JButton("Remove Duplicate");
+		threeFourthPanel.add(removeDuplicate);
+		removeDuplicate.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					List<String> content = Commons.getLinesFromTextArea(inputTextArea);
+					Set<String> contentSet = new HashSet<>(content);
+					List<String> tmplist= new ArrayList<>(contentSet);
+
+					Collections.sort(tmplist);
+					String output = String.join(System.lineSeparator(), tmplist);
+					outputTextArea.setText(output);
+				} catch (Exception e1) {
+					outputTextArea.setText(e1.getMessage());
+				}
+			}
 		});
 
 
@@ -774,6 +794,15 @@ public class ToolPanel extends JPanel {
 		gbc_textFieldDirBruteDict.gridy = 5;
 		fourFourthPanel.add(textFieldDirBruteDict, gbc_textFieldDirBruteDict);
 
+		DisplayContextMenuOfBurp = new JRadioButton("Display Context Menu Of Burp");
+		DisplayContextMenuOfBurp.setSelected(true);
+		GridBagConstraints gbc_DisplayContextMenuOfBurp = new GridBagConstraints();
+		gbc_DisplayContextMenuOfBurp.insets = new Insets(0, 0, 5, 0);
+		gbc_DisplayContextMenuOfBurp.fill = GridBagConstraints.BOTH;
+		gbc_DisplayContextMenuOfBurp.gridx = 1;
+		gbc_DisplayContextMenuOfBurp.gridy = 6;
+		fourFourthPanel.add(DisplayContextMenuOfBurp, gbc_DisplayContextMenuOfBurp);
+
 		JLabel label_1 = new JLabel("");
 		GridBagConstraints gbc_label_1 = new GridBagConstraints();
 		gbc_label_1.fill = GridBagConstraints.BOTH;
@@ -783,7 +812,7 @@ public class ToolPanel extends JPanel {
 		fourFourthPanel.add(label_1, gbc_label_1);
 
 
-		showItemsInOne = new JRadioButton("show items in one");
+		showItemsInOne = new JRadioButton("Display Context Menu Items In One");
 		GridBagConstraints gbc_showItemsInOne = new GridBagConstraints();
 		gbc_showItemsInOne.fill = GridBagConstraints.BOTH;
 		gbc_showItemsInOne.insets = new Insets(0, 0, 5, 0);
@@ -869,14 +898,6 @@ public class ToolPanel extends JPanel {
 		gbc_label_6.gridx = 0;
 		gbc_label_6.gridy = 12;
 		fourFourthPanel.add(label_6, gbc_label_6);
-
-		DisplayContextMenuOfBurp = new JRadioButton("Display Context Menu Of Burp");
-		DisplayContextMenuOfBurp.setSelected(true);
-		GridBagConstraints gbc_DisplayContextMenuOfBurp = new GridBagConstraints();
-		gbc_DisplayContextMenuOfBurp.fill = GridBagConstraints.BOTH;
-		gbc_DisplayContextMenuOfBurp.gridx = 1;
-		gbc_DisplayContextMenuOfBurp.gridy = 12;
-		fourFourthPanel.add(DisplayContextMenuOfBurp, gbc_DisplayContextMenuOfBurp);
 
 		///////////////////////////FooterPanel//////////////////
 

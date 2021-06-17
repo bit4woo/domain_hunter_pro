@@ -38,6 +38,8 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	private static GUI gui;
 	public static final String Extension_Setting_Name_DB_File = "domain-Hunter-pro-db-path";
 	public static final String Extension_Setting_Name_Line_Config = "domain-Hunter-pro-line-config";
+	public static final String Extension_Setting_Name_Loaded_Number = "domain-Hunter-pro-loaded-number";
+	//用于在配置中记录加载了多少个该插件，以区分显示右键菜单
 	private static final Logger log=LogManager.getLogger(BurpExtender.class);
 	private IExtensionHelpers helpers;
 
@@ -51,6 +53,8 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	public static BlockingQueue<String> relatedDomainQueue = new LinkedBlockingQueue<String>();
 	public static BlockingQueue<String> emailQueue = new LinkedBlockingQueue<String>();
 	public static BlockingQueue<String> packageNameQueue = new LinkedBlockingQueue<String>();
+	
+	public static int LoadedNumber;//加载的该插件的数量。
 
 	public static PrintWriter getStdout() {
 		//不同的时候调用这个参数，可能得到不同的值
@@ -168,7 +172,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		callbacks.registerExtensionStateListener(this);
 		callbacks.registerContextMenuFactory(this);
 		callbacks.registerHttpListener(this);//主动根据流量收集信息
-
+		
 		gui = new GUI();
 
 		SwingUtilities.invokeLater(new Runnable()
@@ -193,6 +197,30 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 				BurpExtender.similarDomainQueue,BurpExtender.relatedDomainQueue,
 				BurpExtender.emailQueue,BurpExtender.packageNameQueue,9999);//必须是9999，才能保证流量进程不退出。
 		liveAnalysisTread.start();
+		LoadedNumber = LoadedNumberPlus();
+	}
+	
+	//获取已加载的该插件的数量，并加一
+	public int LoadedNumberPlus() {
+		String number = callbacks.loadExtensionSetting(Extension_Setting_Name_Loaded_Number);
+		int num = 0;
+		if (number != null) {
+			num = Integer.parseInt(number);
+		}
+		if (num++ < 0) num=0;
+		callbacks.saveExtensionSetting(Extension_Setting_Name_Loaded_Number, num+"");
+		return num;
+	}
+	
+	public int LoadedNumberSub() {
+		String number = callbacks.loadExtensionSetting(Extension_Setting_Name_Loaded_Number);
+		int num = 0;
+		if (number != null) {
+			num = Integer.parseInt(number);
+		}
+		if (num-- < 0) num=0;
+		callbacks.saveExtensionSetting(Extension_Setting_Name_Loaded_Number, num+"");
+		return num;
 	}
 
 	@Override
@@ -207,6 +235,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 
 		gui.getToolPanel().saveConfigToDisk();
 		DomainPanel.autoSave();//域名面板自动保存逻辑有点复杂，退出前再自动保存一次
+		LoadedNumber = LoadedNumberSub();
 	}
 
 	//ITab必须实现的两个方法
