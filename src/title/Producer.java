@@ -29,7 +29,7 @@ import burp.IExtensionHelpers;
 public class Producer extends Thread {//Producer do
 	private final BlockingQueue<String> domainQueue;//use to store domains
 	private int threadNo;
-	private boolean stopflag = false;
+	private volatile boolean stopflag = false;
 
 	private static IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();//静态变量，burp插件的逻辑中，是可以保证它被初始化的。;
 	public PrintWriter stdout = new PrintWriter(callbacks.getStdout(), true);
