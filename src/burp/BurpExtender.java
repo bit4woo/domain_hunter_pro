@@ -189,6 +189,9 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		System.out.println(content);
 		if (content != null && content.endsWith(".db")) {
 			gui.LoadData(content);
+			String newName = String.format(BurpExtender.getFullExtenderName()+
+					" [%s]",DomainPanel.getDomainResult().getProjectName());
+			BurpExtender.getCallbacks().setExtensionName(newName); //插件名称
 		}
 
 		gui.getToolPanel().loadConfigToGUI();
