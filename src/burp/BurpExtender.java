@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.swing.JMenuItem;
@@ -122,7 +123,11 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		}
 	}
 	public static void QueueToResult() {
-		HashSet<String> oldSubdomains = new HashSet<String>();
+		//HashSet<String> oldSubdomains = new HashSet<String>();
+		CopyOnWriteArraySet<String> oldSubdomains = new CopyOnWriteArraySet<String>();
+		//java.util.ConcurrentModificationException 可能同时有其他线程在向subDomainSet中写数据，导致的这个错误。
+		//http://ifeve.com/java-copy-on-write/
+		//https://www.jianshu.com/p/c5b52927a61a
 		oldSubdomains.addAll(DomainPanel.getDomainResult().getSubDomainSet());
 
 		moveQueueToSet(subDomainQueue,DomainPanel.getDomainResult().getSubDomainSet());

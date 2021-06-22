@@ -125,6 +125,16 @@ public class ProjectMenu{
 		});
 		ImportMenu.setToolTipText("Import Project File(DB File)");
 		menuButton.add(ImportMenu);
+		
+		//TODO
+		JMenuItem detachMenu = new JMenuItem(new AbstractAction("Detach")
+		{
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				
+			}
+		});
+		menuButton.add(detachMenu);
 
 		/*
         JMenuItem saveMenu = new JMenuItem(new AbstractAction("Save as") {

@@ -148,7 +148,7 @@ public class DBHelper {
 		try {
 			conn = getConnection();
 			
-			pres = conn.prepareStatement("select * From DOMAINObject");
+			pres = conn.prepareStatement("select ID From DOMAINObject");//会比select * From DOMAINObject 要快吧
 			rs = pres.executeQuery();
 			String sql = "";
 			if (rs.next()){
