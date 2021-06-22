@@ -21,6 +21,7 @@ import Tools.ToolPanel;
 import burp.BurpExtender;
 import burp.Commons;
 import burp.Getter;
+import burp.HttpMessageCharSet;
 import burp.IContextMenuInvocation;
 import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
@@ -76,7 +77,8 @@ public class LineEntryMenuForBurp{
 		JMenu setLevelAs2 = new JMenu("^_^ Set Level As");
 		setAsChecked.addActionListener(new setLevelAsActionListener(invocation,setLevelAs2));
 
-
+		JMenuItem sendToToolPanel = new JMenuItem("^_^ Send To Tool Panel");
+		sendToToolPanel.addActionListener(new sendToToolPanel(invocation));
 
 		JMenuItemList.add(setAsChecked);
 		JMenuItemList.add(setLevelAs2);
@@ -87,9 +89,7 @@ public class LineEntryMenuForBurp{
 		JMenuItemList.add(addDomainToDomainHunter);
 		//JMenuItemList.add(doDirBruteItem);
 		JMenuItemList.add(runWithSamePathItem);
-		if (BurpExtender.LoadedNumber >1) {
-
-		}
+		JMenuItemList.add(sendToToolPanel);
 
 		if (ToolPanel.showItemsInOne.isSelected()) {
 			ArrayList<JMenuItem> result = new ArrayList<JMenuItem>();
@@ -200,6 +200,76 @@ public class LineEntryMenuForBurp{
 		}
 	}
 
+	public class sendToToolPanel implements ActionListener{
+		private IContextMenuInvocation invocation;
+		sendToToolPanel(IContextMenuInvocation invocation) {
+			this.invocation  = invocation;
+		}
+		@Override
+		public void actionPerformed(ActionEvent e)
+		{
+			SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+				//using SwingWorker to prevent blocking burp main UI.
+
+				@Override
+				protected Map doInBackground() throws Exception {
+					ToolPanel.inputTextArea.setText(getSelectedStringByBurp());
+					return null;
+				}
+				@Override
+				protected void done() {
+				}
+			};
+			worker.execute();
+		}
+		
+		public String getSelectedStringByBurp(){
+			String result = "";
+
+			IHttpRequestResponse[] messages = invocation.getSelectedMessages();
+
+			if (messages == null ) {
+				return result;
+			}
+
+			if (messages.length == 1) {
+				IHttpRequestResponse message = messages[0];
+				/////////////selected url/////////////////
+				byte[] source = null;
+
+
+				int context = invocation.getInvocationContext();
+				if (context==IContextMenuInvocation.CONTEXT_MESSAGE_EDITOR_REQUEST
+						|| context ==IContextMenuInvocation.CONTEXT_MESSAGE_VIEWER_REQUEST
+						|| context == IContextMenuInvocation.CONTEXT_PROXY_HISTORY
+						|| context == IContextMenuInvocation.CONTEXT_INTRUDER_ATTACK_RESULTS
+						|| context == IContextMenuInvocation.CONTEXT_SEARCH_RESULTS
+						|| context == IContextMenuInvocation.CONTEXT_TARGET_SITE_MAP_TABLE
+						|| context == IContextMenuInvocation.CONTEXT_TARGET_SITE_MAP_TREE) {
+					source = message.getRequest();
+				}else {
+					source = message.getResponse();
+				}
+
+				int[] selectedIndex = invocation.getSelectionBounds();//当数据包中有中文或其他宽字符的时候，这里的返回值不正确。已报bug。
+				//stdout.println(selectedIndex[0]+":"+selectedIndex[1]);
+				//这里的index应该是字符串的index，进行选中操作时对象应该是字符文本内容，无论是一个中文还是一个字母，都是一个文本字符。这就是我们通常的文本操作啊，之前是想多了。
+				//burp进行的byte和string之间的转换，没有考虑特定的编码，是一刀切的方式，所以将index用于byte序列上，就不能正确对应。
+
+				if(source!=null && selectedIndex !=null && selectedIndex[1]-selectedIndex[0]>=3) {
+					String originalCharSet = HttpMessageCharSet.getCharset(source);
+					String text;
+					try {
+						text = new String(source,originalCharSet);
+					}catch(Exception e) {
+						text = new String(source);
+					}
+					result = text.substring(selectedIndex[0], selectedIndex[1]);
+				}
+			}
+			return result;
+		}
+	}
 
 	public class doDirBrute implements ActionListener{
 		private IContextMenuInvocation invocation;

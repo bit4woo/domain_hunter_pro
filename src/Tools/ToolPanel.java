@@ -69,8 +69,8 @@ public class ToolPanel extends JPanel {
 	PrintWriter stderr;
 	private JTextField BrowserPath;
 	public static JTextField PortList;
-	private JTextArea inputTextArea;
-	private JTextArea outputTextArea;
+	public static JTextArea inputTextArea;
+	public static JTextArea outputTextArea;
 
 	public boolean inputTextAreaChanged = true;
 	public static JRadioButton showItemsInOne;
