@@ -10,7 +10,7 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Maven: net.portswigger.burp.extender:burp-extender-api:1.7.22" level="project" />
-    <orderEntry type="library" name="Maven: com.github.bit4woo:burp-api-common:v0.0.10" level="project" />
+    <orderEntry type="library" name="Maven: com.github.bit4woo:burp-api-common:v0.1.2" level="project" />
     <orderEntry type="library" name="Maven: com.alibaba:fastjson:1.2.62" level="project" />
     <orderEntry type="library" name="Maven: org.json:json:20190722" level="project" />
     <orderEntry type="library" name="Maven: com.google.guava:guava:30.1-jre" level="project" />

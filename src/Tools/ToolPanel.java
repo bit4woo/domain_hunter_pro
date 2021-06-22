@@ -240,6 +240,20 @@ public class ToolPanel extends JPanel {
 			}
 		});
 
+		JButton btnFindUrls = new JButton("Find URLs");
+		btnFindUrls.setToolTipText("only find entire URL");
+		threeFourthPanel.add(btnFindUrls);
+		btnFindUrls.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String content = inputTextArea.getText();
+				if (null != content) {
+					List<String> urls = DomainProducer.grepURL(content);
+					outputTextArea.setText(String.join(System.lineSeparator(), urls));
+				}
+			}
+		});
+
 		JButton btnOpenurls = new JButton("OpenURLs");
 		threeFourthPanel.add(btnOpenurls);
 		btnOpenurls.addActionListener(new ActionListener() {
@@ -455,53 +469,24 @@ public class ToolPanel extends JPanel {
 				try {
 					String Prefix = JOptionPane.showInputDialog("prefix to remove", null);
 					String Suffix = JOptionPane.showInputDialog("suffix to remove", null);
-					ArrayList<String> result = new ArrayList<String>();
-					if (Prefix == null && Suffix == null) {
-						return;
-					} else {
-						if (Prefix == null) {
-							Prefix = "";
-						}
-
-						if (Suffix == null) {
-							Suffix = "";
-						}
-
-						List<String> content = Commons.getLinesFromTextArea(inputTextArea);
-						for (String item:content) {
-							if (item.startsWith(Prefix)) {
-								item = item.replaceFirst(Prefix, "");
-							}
-							if (item.endsWith(Suffix)) {
-								item = reverse(item).replaceFirst(reverse(Suffix), "");
-								item = reverse(item);
-							}
-							result.add(item); 
-						}
-						outputTextArea.setText(String.join(System.lineSeparator(), result));
-					}
+					List<String> content = Commons.getLinesFromTextArea(inputTextArea);
+					List<String> result = Commons.removePrefixAndSuffix(content,Prefix,Suffix);
+					outputTextArea.setText(String.join(System.lineSeparator(), result));
 				} catch (Exception e1) {
 					outputTextArea.setText(e1.getMessage());
 					e1.printStackTrace(stderr);
 				}
 			}
-
-			public String reverse(String str) {
-				if (str == null) {
-					return null;
-				}
-				return new StringBuffer(str).reverse().toString();
-			}
 		});
 
 
-		JButton btnReplace = new JButton("ReplaceFirst");
+		JButton btnReplace = new JButton("ReplaceFirstStr");
 		threeFourthPanel.add(btnReplace);
 		btnReplace.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
-					String replace = JOptionPane.showInputDialog("regex (from)", null);
+					String replace = JOptionPane.showInputDialog("string (from)", null);
 					String to = JOptionPane.showInputDialog("replacement (to)", null);
 					ArrayList<String> result = new ArrayList<String>();
 					if (replace == null && to == null) {
@@ -515,6 +500,7 @@ public class ToolPanel extends JPanel {
 							to = "";
 						}
 
+						replace = Pattern.quote(replace);
 						List<String> content = Commons.getLinesFromTextArea(inputTextArea);
 						for (String item:content) {
 							item = item.replaceFirst(replace,to);

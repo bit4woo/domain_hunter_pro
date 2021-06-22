@@ -2,7 +2,10 @@ package domain;
 
 import java.io.PrintWriter;
 import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -11,6 +14,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.text.StringEscapeUtils;
 
+import Tools.PatternsFromAndroid;
 import burp.BurpExtender;
 import burp.Commons;
 import burp.IBurpExtenderCallbacks;
@@ -238,6 +242,59 @@ public class DomainProducer extends Thread {//Producer do
 		return domains;
 	}
 
+	//https://stackoverflow.com/questions/163360/regular-expression-to-match-urls-in-java
+	//https://github.com/aosp-mirror/platform_frameworks_base/blob/master/core/java/android/util/Patterns.java
+	public static List<String> grepURL(String httpResponse) {
+		httpResponse = httpResponse.toLowerCase();
+		Set<String> URLs = new HashSet<>();
+
+		String[] lines = httpResponse.split("\r\n");
+
+		//https://github.com/GerbenJavado/LinkFinder/blob/master/linkfinder.py
+		String regex_str = "(?:\"|')"
+				+ "("
+				+ "((?:[a-zA-Z]{1,10}://|//)[^\"'/]{1,}\\.[a-zA-Z]{2,}[^\"']{0,})"
+				+ "|"
+				+ "((?:/|\\.\\./|\\./)[^\"'><,;| *()(%%$^/\\\\\\[\\]][^\"'><,;|()]{1,})"
+				+ "|"
+				+ "([a-zA-Z0-9_\\-/]{1,}/[a-zA-Z0-9_\\-/]{1,}\\.(?:[a-zA-Z]{1,4}|action)(?:[\\?|/][^\"|']{0,}|))"
+				+ "|"
+				+ "([a-zA-Z0-9_\\-]{1,}\\.(?:php|asp|aspx|jsp|json|action|html|js|txt|xml)(?:\\?[^\"|']{0,}|))"
+				+ ")"
+				+ "(?:\"|')";
+
+		//regex_str = Pattern.quote(regex_str);
+		Pattern pt = Pattern.compile(regex_str);
+		for (String line:lines) {//分行进行提取，似乎可以提高成功率？PATH_AND_QUERY
+			line = decodeAll(line);
+			Matcher matcher = pt.matcher(line);
+			while (matcher.find()) {//多次查找
+				String url = matcher.group();
+				URLs.add(url);
+			}
+		}
+
+		//这部分提取的是含有协议头的完整URL地址
+		for (String line:lines) {
+			line = decodeAll(line);
+			Matcher matcher = PatternsFromAndroid.WEB_URL.matcher(line);
+			while (matcher.find()) {//多次查找
+				String url = matcher.group();
+				//即使是www.www也会被认为是URL（应该是被认作了主机名或文件名），所以必须过滤
+				if (url.toLowerCase().startsWith("http://")
+						||url.toLowerCase().startsWith("https://")
+						||url.toLowerCase().startsWith("rtsp://")
+						||url.toLowerCase().startsWith("ftp://")){
+					URLs.add(url);
+				}
+			}
+		}
+
+		List<String> tmplist= new ArrayList<>(URLs);
+		Collections.sort(tmplist);
+		tmplist = Commons.removePrefixAndSuffix(tmplist,"\"","\"");
+		return tmplist;
+	}
 
 
 	public static boolean needUnicodeConvert(String str) {

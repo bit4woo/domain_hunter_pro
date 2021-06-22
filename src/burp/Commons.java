@@ -570,6 +570,45 @@ public class Commons {
 		return result;
 	}
 	
+
+	public static List<String> removePrefixAndSuffix(List<String> input,String Prefix,String Suffix) {
+		ArrayList<String> result = new ArrayList<String>();
+		if (Prefix == null && Suffix == null) {
+			return result;
+		} else {
+			if (Prefix == null) {
+				Prefix = "";
+			}
+
+			if (Suffix == null) {
+				Suffix = "";
+			}
+
+			List<String> content = input;
+			for (String item:content) {
+				if (item.startsWith(Prefix)) {
+					//https://stackoverflow.com/questions/17225107/convert-java-string-to-string-compatible-with-a-regex-in-replaceall
+					String tmp = Pattern.quote(Prefix);//自动实现正则转义
+					item = item.replaceFirst(tmp, "");
+				}
+				if (item.endsWith(Suffix)) {
+					String tmp = Pattern.quote(reverse(Suffix));//自动实现正则转义
+					item = reverse(item).replaceFirst(tmp, "");
+					item = reverse(item);
+				}
+				result.add(item); 
+			}
+			return result;
+		}
+	}
+	
+	public static String reverse(String str) {
+		if (str == null) {
+			return null;
+		}
+		return new StringBuffer(str).reverse().toString();
+	}
+	
 	public static void test1() {
 		SubnetUtils net = new SubnetUtils("143.92.67.34/24");
 		System.out.println(net.getInfo().isInRange("143.92.67.34:6443"));
@@ -604,8 +643,14 @@ public class Commons {
 		Set<String> subnets1 = Commons.toSmallerSubNets(IPsOfDomain);
 		System.out.println(subnets1);
 	}
+	public static void test4() {
+		String Prefix = "\"";
+//		String Prefix = Pattern.quote("\"");
+		System.out.println(Prefix);
+		System.out.println("\"aaaa\"".replaceFirst(Prefix, ""));
+	}
 
 	public static void main(String args[]) {
-		test1();
+		test4();
 	}
 }
