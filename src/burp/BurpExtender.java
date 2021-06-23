@@ -20,6 +20,7 @@ import GUI.GUI;
 import GUI.LineEntryMenuForBurp;
 import Tools.ToolPanel;
 import bsh.This;
+import domain.DomainManager;
 import domain.DomainPanel;
 import domain.DomainProducer;
 import title.TitlePanel;
@@ -37,9 +38,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	private static String Author = "by bit4woo";
 	private static String github = "https://github.com/bit4woo/domain_hunter_pro";
 	private static GUI gui;
-	public static final String Extension_Setting_Name_DB_File = "domain-Hunter-pro-db-path";
 	public static final String Extension_Setting_Name_Line_Config = "domain-Hunter-pro-line-config";
-	public static final String Extension_Setting_Name_Loaded_Number = "domain-Hunter-pro-loaded-number";
 	//用于在配置中记录加载了多少个该插件，以区分显示右键菜单
 	private static final Logger log=LogManager.getLogger(BurpExtender.class);
 	private IExtensionHelpers helpers;
@@ -54,8 +53,6 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	public static BlockingQueue<String> relatedDomainQueue = new LinkedBlockingQueue<String>();
 	public static BlockingQueue<String> emailQueue = new LinkedBlockingQueue<String>();
 	public static BlockingQueue<String> packageNameQueue = new LinkedBlockingQueue<String>();
-	
-	public static int LoadedNumber;//加载的该插件的数量。
 
 	public static PrintWriter getStdout() {
 		//不同的时候调用这个参数，可能得到不同的值
@@ -97,6 +94,15 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		return ExtenderName+" "+Version+" "+Author;
 	}
 
+	public static void SetExtensionNameWithProject() {
+		if (RecentRecordManager.fetchLoadedNumber() >1) {
+			String projectName = DomainPanel.getDomainResult().getProjectName();
+			String newName = String.format(BurpExtender.getFullExtenderName()+
+					" [%s]",projectName);
+			BurpExtender.getCallbacks().setExtensionName(newName); //新插件名称
+		}
+	}
+
 	//当更换DB文件时，需要清空。虽然不清空最终结果不受影响，但是输出内容会比较奇怪。
 	public static void clearQueue() {
 		liveinputQueue.clear();
@@ -128,30 +134,33 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		//java.util.ConcurrentModificationException 可能同时有其他线程在向subDomainSet中写数据，导致的这个错误。
 		//http://ifeve.com/java-copy-on-write/
 		//https://www.jianshu.com/p/c5b52927a61a
-		oldSubdomains.addAll(DomainPanel.getDomainResult().getSubDomainSet());
+		DomainManager result= DomainPanel.getDomainResult();
+		if (result != null) {
+			oldSubdomains.addAll(result.getSubDomainSet());
 
-		moveQueueToSet(subDomainQueue,DomainPanel.getDomainResult().getSubDomainSet());
-		moveQueueToSet(similarDomainQueue,DomainPanel.getDomainResult().getSimilarDomainSet());
-		moveQueueToSet(relatedDomainQueue,DomainPanel.getDomainResult().getRelatedDomainSet());
-		moveQueueToSet(emailQueue,DomainPanel.getDomainResult().getEmailSet());
-		moveQueueToSet(packageNameQueue,DomainPanel.getDomainResult().getPackageNameSet());
+			moveQueueToSet(subDomainQueue,result.getSubDomainSet());
+			moveQueueToSet(similarDomainQueue,result.getSimilarDomainSet());
+			moveQueueToSet(relatedDomainQueue,result.getRelatedDomainSet());
+			moveQueueToSet(emailQueue,result.getEmailSet());
+			moveQueueToSet(packageNameQueue,result.getPackageNameSet());
 
-		//		DomainPanel.getDomainResult().getSubDomainSet().addAll(subDomainQueue);
-		//		DomainPanel.getDomainResult().getSimilarDomainSet().addAll(similarDomainQueue);
-		//		DomainPanel.getDomainResult().getRelatedDomainSet().addAll(relatedDomainQueue);
-		//		DomainPanel.getDomainResult().getEmailSet().addAll(emailQueue);
-		//		DomainPanel.getDomainResult().getPackageNameSet().addAll(packageNameQueue);
+			//		result.getSubDomainSet().addAll(subDomainQueue);
+			//		result.getSimilarDomainSet().addAll(similarDomainQueue);
+			//		result.getRelatedDomainSet().addAll(relatedDomainQueue);
+			//		result.getEmailSet().addAll(emailQueue);
+			//		result.getPackageNameSet().addAll(packageNameQueue);
 
-		HashSet<String> newSubdomains = new HashSet<String>();
-		newSubdomains.addAll(DomainPanel.getDomainResult().getSubDomainSet());
+			HashSet<String> newSubdomains = new HashSet<String>();
+			newSubdomains.addAll(result.getSubDomainSet());
 
-		newSubdomains.removeAll(oldSubdomains);
-		DomainPanel.getDomainResult().getNewAndNotGetTitleDomainSet().addAll(newSubdomains);
+			newSubdomains.removeAll(oldSubdomains);
+			result.getNewAndNotGetTitleDomainSet().addAll(newSubdomains);
 
-		if (newSubdomains.size()>0){
-			stdout.println(String.format("~~~~~~~~~~~~~%s subdomains added!~~~~~~~~~~~~~",newSubdomains.size()));
-			stdout.println(String.join(System.lineSeparator(), newSubdomains));
-			DomainPanel.autoSave();//进行一次主动保存
+			if (newSubdomains.size()>0){
+				stdout.println(String.format("~~~~~~~~~~~~~%s subdomains added!~~~~~~~~~~~~~",newSubdomains.size()));
+				stdout.println(String.join(System.lineSeparator(), newSubdomains));
+				DomainPanel.autoSave();//进行一次主动保存
+			}
 		}
 	}
 
@@ -177,7 +186,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		callbacks.registerExtensionStateListener(this);
 		callbacks.registerContextMenuFactory(this);
 		callbacks.registerHttpListener(this);//主动根据流量收集信息
-		
+
 		gui = new GUI();
 
 		SwingUtilities.invokeLater(new Runnable()
@@ -190,13 +199,11 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		});
 
 		//recovery save domain results from extensionSetting
-		String content = callbacks.loadExtensionSetting(Extension_Setting_Name_DB_File);//file name of db file
-		System.out.println(content);
-		if (content != null && content.endsWith(".db")) {
-			gui.LoadData(content);
-			String newName = String.format(BurpExtender.getFullExtenderName()+
-					" [%s]",DomainPanel.getDomainResult().getProjectName());
-			BurpExtender.getCallbacks().setExtensionName(newName); //插件名称
+		String dbFilePath = RecentRecordManager.extensionLoaded();
+		System.out.println(dbFilePath);
+		if (dbFilePath != null && dbFilePath.endsWith(".db")) {
+			gui.LoadData(dbFilePath);
+			SetExtensionNameWithProject();
 		}
 
 		gui.getToolPanel().loadConfigToGUI();
@@ -205,46 +212,23 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 				BurpExtender.similarDomainQueue,BurpExtender.relatedDomainQueue,
 				BurpExtender.emailQueue,BurpExtender.packageNameQueue,9999);//必须是9999，才能保证流量进程不退出。
 		liveAnalysisTread.start();
-		LoadedNumber = LoadedNumberPlus();
 	}
-	
-	//获取已加载的该插件的数量，并加一
-	public int LoadedNumberPlus() {
-		String number = callbacks.loadExtensionSetting(Extension_Setting_Name_Loaded_Number);
-		int num = 0;
-		if (number != null) {
-			num = Integer.parseInt(number);
-		}
-		if (num++ < 0) num=0;
-		callbacks.saveExtensionSetting(Extension_Setting_Name_Loaded_Number, num+"");
-		return num;
-	}
-	
-	public int LoadedNumberSub() {
-		String number = callbacks.loadExtensionSetting(Extension_Setting_Name_Loaded_Number);
-		int num = 0;
-		if (number != null) {
-			num = Integer.parseInt(number);
-		}
-		if (num-- < 0) num=0;
-		callbacks.saveExtensionSetting(Extension_Setting_Name_Loaded_Number, num+"");
-		return num;
-	}
+
 
 	@Override
 	public void extensionUnloaded() {
+		gui.getProjectMenu().remove();
 		QueueToResult();
 		if (TitlePanel.threadGetTitle != null) {
 			TitlePanel.threadGetTitle.interrupt();//maybe null
 		}//必须要先结束线程，否则获取数据的操作根本无法结束，因为线程一直通过sync占用资源
 
-		gui.saveDBfilepathToExtension();
-		gui.getProjectMenu().remove();
-
 		gui.getToolPanel().saveConfigToDisk();
 		DomainPanel.autoSave();//域名面板自动保存逻辑有点复杂，退出前再自动保存一次
-		LoadedNumber = LoadedNumberSub();
+		RecentRecordManager.extensionUnload(GUI.currentDBFile.toString());
 	}
+
+
 
 	//ITab必须实现的两个方法
 	@Override

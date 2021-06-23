@@ -1175,9 +1175,11 @@ public class DomainPanel extends JPanel {
 			file = BurpExtender.getGui().dbfc.dialog(false);
 			GUI.setCurrentDBFile(file);
 		}
-		DBHelper dbHelper = new DBHelper(file.toString());
-		boolean success = dbHelper.saveDomainObject(domainResult);
-		log.info("domain data saved");
+		if (file != null){
+			DBHelper dbHelper = new DBHelper(file.toString());
+			boolean success = dbHelper.saveDomainObject(domainResult);
+			log.info("domain data saved");
+		}
 	}
 
 	/*

@@ -12,6 +12,7 @@ import javax.swing.JMenuItem;
 
 import burp.BurpExtender;
 import burp.DBHelper;
+import burp.RecentRecordManager;
 import domain.DomainManager;
 import domain.DomainPanel;
 import title.IndexedLinkedHashMap;
@@ -67,9 +68,8 @@ public class ProjectMenu{
 					gui.saveData(file.toString(),true);
 					gui.LoadData(file.toString());//然后加载，就是一个新的空项目了。
 					GUI.setCurrentDBFile(file);
-					String newName = String.format(BurpExtender.getFullExtenderName()+
-							" [%s]",DomainPanel.getDomainResult().getProjectName());
-					BurpExtender.getCallbacks().setExtensionName(newName); //插件名称
+					BurpExtender.SetExtensionNameWithProject();
+					RecentRecordManager.newOrOpen();
 				}
 			}
 		});
@@ -83,9 +83,8 @@ public class ProjectMenu{
 				if (null != file) {
 					gui.LoadData(file.toString());
 					GUI.setCurrentDBFile(file);
-					String newName = String.format(BurpExtender.getFullExtenderName()+
-							" [%s]",DomainPanel.getDomainResult().getProjectName());
-					BurpExtender.getCallbacks().setExtensionName(newName); //插件名称
+					BurpExtender.SetExtensionNameWithProject();
+					RecentRecordManager.newOrOpen();
 				}
 			}
 		});

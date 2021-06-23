@@ -103,14 +103,6 @@ public class GUI extends JFrame {
 	}
 
 
-	public void saveDBfilepathToExtension() {
-		//to save domain result to extensionSetting
-		//仅仅存储sqllite数据库的名称,也就是domainResult的项目名称
-		if (currentDBFile != null)
-			BurpExtender.getCallbacks().saveExtensionSetting(BurpExtender.Extension_Setting_Name_DB_File, currentDBFile.getAbsolutePath());
-	}
-
-
 	/*
 	使用数据模型监听后，不需再自行单独保存当前项目了。
 	但是需要用于另存为，单独保存域名(和saveDomainOnly) 2个功能。
