@@ -1,4 +1,4 @@
-package burp;
+package Deprecated;
 
 import com.google.gson.Gson;
 
@@ -13,7 +13,7 @@ import java.util.List;
  * 4. extensionUnload ---> addRecored,LoadedNumber--
  */
 public class RecentModel {
-	private Stack<String> recentProjects = new Stack<>();
+	private Stack recentProjects = new Stack();
 	private int LoadedNumber = 0;//加载的该插件的数量。
 
 	//为了fastjson反序列化，必须要有这个函数
@@ -21,11 +21,11 @@ public class RecentModel {
 
 	}
 	//getter setter为了序列化
-	public Stack<String> getRecentProjects() {
+	public Stack getRecentProjects() {
 		return recentProjects;
 	}
 
-	public void setRecentProjects(Stack<String> recentProjects) {
+	public void setRecentProjects(Stack recentProjects) {
 		this.recentProjects = recentProjects;
 	}
 

@@ -57,6 +57,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
+import burp.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -65,15 +66,8 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import com.google.common.net.InternetDomainName;
 
+import Deprecated.RecentRecordManager;
 import GUI.GUI;
-import burp.BurpExtender;
-import burp.Commons;
-import burp.DBHelper;
-import burp.HTTPPost;
-import burp.IBurpExtenderCallbacks;
-import burp.IHttpRequestResponse;
-import burp.IHttpService;
-import burp.IScanIssue;
 
 /*
  *注意，所有直接对DomainObject中数据的修改，都不会触发该tableChanged监听器。
@@ -148,6 +142,13 @@ public class DomainPanel extends JPanel {
 				saveDomainOnly();
 			}});
 		HeaderPanel.add(btnSaveDomainOnly);
+
+		JButton cleanSave = new JButton("cleanSave");
+		cleanSave.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				RecentRecordManager.cleanSave();
+			}});
+		HeaderPanel.add(cleanSave);
 
 		/*
 		btnBrute = new JButton("Brute");
@@ -1169,7 +1170,6 @@ public class DomainPanel extends JPanel {
     自动保存，根据currentDBFile，如果currentDBFile为空或者不存在，就提示选择文件。
 	 */
 	public static void autoSave(){
-		BurpExtender.getGui();
 		File file = GUI.getCurrentDBFile();
 		if (file == null){
 			file = BurpExtender.getGui().dbfc.dialog(false);
@@ -1243,7 +1243,7 @@ public class DomainPanel extends JPanel {
 	}
 
 	public static void backupDB(){
-		File file = BurpExtender.getGui().getCurrentDBFile();
+		File file = GUI.getCurrentDBFile();
 		File bakfile = new File(file.getAbsoluteFile().toString()+".bak"+Commons.getNowTimeString());
 		try {
 			FileUtils.copyFile(file, bakfile);

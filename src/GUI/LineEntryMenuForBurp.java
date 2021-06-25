@@ -25,7 +25,6 @@ import burp.HttpMessageCharSet;
 import burp.IContextMenuInvocation;
 import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
-import burp.RecentRecordManager;
 import domain.DomainManager;
 import domain.DomainPanel;
 import title.LineEntry;
@@ -96,7 +95,7 @@ public class LineEntryMenuForBurp{
 			ArrayList<JMenuItem> result = new ArrayList<JMenuItem>();
 
 			JMenu domainHunterPro = new JMenu("^_^ Domain Hunter Pro");
-			if (RecentRecordManager.fetchLoadedNumber() >1) {
+			if (ProjectMenu.LoadedDomainHunterNumber() >1) {
 				String proName = DomainPanel.getDomainResult().getProjectName();
 				domainHunterPro.setText(String.format("^_^ Domain Hunter Pro [%s]",proName));
 			}
@@ -106,7 +105,7 @@ public class LineEntryMenuForBurp{
 			}
 			return result;
 		}else {
-			if (RecentRecordManager.fetchLoadedNumber() >1) {
+			if (ProjectMenu.LoadedDomainHunterNumber() >1) {
 				String proName = DomainPanel.getDomainResult().getProjectName();
 				for (JMenuItem item : JMenuItemList) {
 					item.setText("^_^ "+proName+"-->"+item.getText().replace("^_^ ", ""));

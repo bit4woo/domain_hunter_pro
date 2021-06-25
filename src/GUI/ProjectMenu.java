@@ -9,10 +9,10 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.MenuElement;
 
 import burp.BurpExtender;
 import burp.DBHelper;
-import burp.RecentRecordManager;
 import domain.DomainManager;
 import domain.DomainPanel;
 import title.IndexedLinkedHashMap;
@@ -42,6 +42,18 @@ public class ProjectMenu{
 		menuBar.remove(hunterMenu);
 		menuBar.repaint();
 	}
+	
+	public static int LoadedDomainHunterNumber() {
+		int num = 0;
+		JMenuBar menuBar = getBurpFrame().getJMenuBar();
+		int count = menuBar.getMenuCount();
+		for (int i =0;i<count;i++) {
+			if (menuBar.getMenu(i).getText().contains("Hunter")) {
+				num++;
+			}
+		}
+		return num;
+	}
 
 	public static JFrame getBurpFrame()
 	{
@@ -56,7 +68,7 @@ public class ProjectMenu{
 	}
 
 	public JMenu Menu() {
-		JMenu menuButton = new JMenu("Domainhunter");
+		JMenu menuButton = new JMenu("DomainHunter");
 
 		JMenuItem newMenu = new JMenuItem(new AbstractAction("New")
 		{
@@ -69,7 +81,7 @@ public class ProjectMenu{
 					gui.LoadData(file.toString());//然后加载，就是一个新的空项目了。
 					GUI.setCurrentDBFile(file);
 					BurpExtender.SetExtensionNameWithProject();
-					RecentRecordManager.newOrOpen();
+					BurpExtender.saveDBfilepathToExtension();
 				}
 			}
 		});
@@ -84,7 +96,7 @@ public class ProjectMenu{
 					gui.LoadData(file.toString());
 					GUI.setCurrentDBFile(file);
 					BurpExtender.SetExtensionNameWithProject();
-					RecentRecordManager.newOrOpen();
+					BurpExtender.saveDBfilepathToExtension();
 				}
 			}
 		});

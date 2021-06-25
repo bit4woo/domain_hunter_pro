@@ -144,7 +144,7 @@ public class DBHelper {
 		return false;
 	}
 
-	public boolean saveDomainObject(DomainManager domainResult){
+	public synchronized boolean saveDomainObject(DomainManager domainResult){
 		try {
 			conn = getConnection();
 			

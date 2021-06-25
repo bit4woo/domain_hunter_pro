@@ -1,14 +1,14 @@
-package burp;
+package Deprecated;
 
 import java.util.ArrayList;
 import java.util.List;
 
 //泛型会导致fastjson反序列化出错！！！！
-public class Stack<T> {
+public class Stack2<T> {
     //实现栈的List
     private List<Object> stack;
 
-    Stack() {
+    Stack2() {
         stack = new ArrayList<Object>(10);//初始容量为10
     }
 
@@ -47,7 +47,7 @@ public class Stack<T> {
 
 
     public static void main(String[] args) {
-        Stack<String> stack = new Stack<>();
+        Stack2<String> stack = new Stack2<>();
         System.out.println(stack.peek());
         System.out.println(stack.isEmpty());
         stack.push("java");

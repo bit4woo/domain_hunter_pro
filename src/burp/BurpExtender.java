@@ -18,6 +18,7 @@ import org.apache.logging.log4j.Logger;
 
 import GUI.GUI;
 import GUI.LineEntryMenuForBurp;
+import GUI.ProjectMenu;
 import Tools.ToolPanel;
 import bsh.This;
 import domain.DomainManager;
@@ -39,10 +40,9 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	private static String github = "https://github.com/bit4woo/domain_hunter_pro";
 	private static GUI gui;
 	public static final String Extension_Setting_Name_Line_Config = "domain-Hunter-pro-line-config";
+	public static final String Extension_Setting_Name_DB_File = "domain-Hunter-pro-db-file-path";
 	//用于在配置中记录加载了多少个该插件，以区分显示右键菜单
 	private static final Logger log=LogManager.getLogger(BurpExtender.class);
-	private IExtensionHelpers helpers;
-
 	public static DomainProducer liveAnalysisTread;
 	public static BlockingQueue<IHttpRequestResponse> liveinputQueue = new LinkedBlockingQueue<IHttpRequestResponse>();
 	//use to store messageInfo of proxy live
@@ -53,6 +53,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	public static BlockingQueue<String> relatedDomainQueue = new LinkedBlockingQueue<String>();
 	public static BlockingQueue<String> emailQueue = new LinkedBlockingQueue<String>();
 	public static BlockingQueue<String> packageNameQueue = new LinkedBlockingQueue<String>();
+	public static volatile boolean saveExecutedFlag = false;
 
 	public static PrintWriter getStdout() {
 		//不同的时候调用这个参数，可能得到不同的值
@@ -95,13 +96,28 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	}
 
 	public static void SetExtensionNameWithProject() {
-		if (RecentRecordManager.fetchLoadedNumber() >1) {
+		if (ProjectMenu.LoadedDomainHunterNumber()>=1) {
 			String projectName = DomainPanel.getDomainResult().getProjectName();
 			String newName = String.format(BurpExtender.getFullExtenderName()+
 					" [%s]",projectName);
 			BurpExtender.getCallbacks().setExtensionName(newName); //新插件名称
+			
+			//TODO 修改tab的title
+			//gui.getContentPane().setTitleAt(0, title);
 		}
 	}
+	
+	public static void saveDBfilepathToExtension() {
+		//to save domain result to extensionSetting
+		//仅仅存储sqllite数据库的名称,也就是domainResult的项目名称
+		if (GUI.currentDBFile != null)
+			BurpExtender.getCallbacks().saveExtensionSetting(BurpExtender.Extension_Setting_Name_DB_File, GUI.currentDBFile.getAbsolutePath());
+	}
+	
+	public static String loadDBfilepathFromExtension() {
+		return BurpExtender.getCallbacks().loadExtensionSetting(BurpExtender.Extension_Setting_Name_DB_File);
+	}
+	
 
 	//当更换DB文件时，需要清空。虽然不清空最终结果不受影响，但是输出内容会比较奇怪。
 	public static void clearQueue() {
@@ -175,7 +191,6 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	public void registerExtenderCallbacks(IBurpExtenderCallbacks callbacks)
 	{
 		BurpExtender.callbacks = callbacks;
-		helpers = callbacks.getHelpers();
 
 		getStdout();
 		getStderr();
@@ -198,9 +213,11 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 			}
 		});
 
+
+
 		//recovery save domain results from extensionSetting
-		String dbFilePath = RecentRecordManager.extensionLoaded();
-		System.out.println(dbFilePath);
+		String dbFilePath = loadDBfilepathFromExtension();
+		System.out.println("Database FileName From Extension Setting: "+dbFilePath);
 		if (dbFilePath != null && dbFilePath.endsWith(".db")) {
 			gui.LoadData(dbFilePath);
 			SetExtensionNameWithProject();
@@ -225,7 +242,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 
 		gui.getToolPanel().saveConfigToDisk();
 		DomainPanel.autoSave();//域名面板自动保存逻辑有点复杂，退出前再自动保存一次
-		RecentRecordManager.extensionUnload(GUI.currentDBFile.toString());
+		saveDBfilepathToExtension();
 	}
 
 
@@ -233,7 +250,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	//ITab必须实现的两个方法
 	@Override
 	public String getTabCaption() {
-		return (ExtenderName);
+		return (ExtenderName+ProjectMenu.LoadedDomainHunterNumber());
 	}
 	@Override
 	public Component getUiComponent() {
@@ -255,8 +272,12 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 			liveinputQueue.add(messageInfo);
 		}
 
-		if ((new Date().getMinutes()) % 5 == 0) {
+		if ((new Date().getMinutes()) % 5 == 0 && saveExecutedFlag == false) {
+			//这个条件可能导致同一分钟内可能被执行多次！所以加了一个flag
+			saveExecutedFlag = true;
 			QueueToResult();
+		}else {
+			saveExecutedFlag = false;
 		}
 	}
 
