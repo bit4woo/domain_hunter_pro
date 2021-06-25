@@ -95,7 +95,7 @@ public class LineEntryMenuForBurp{
 			ArrayList<JMenuItem> result = new ArrayList<JMenuItem>();
 
 			JMenu domainHunterPro = new JMenu("^_^ Domain Hunter Pro");
-			if (ProjectMenu.LoadedDomainHunterNumber() >1) {
+			if (!ProjectMenu.isAlone()) {
 				String proName = DomainPanel.getDomainResult().getProjectName();
 				domainHunterPro.setText(String.format("^_^ Domain Hunter Pro [%s]",proName));
 			}
@@ -105,7 +105,7 @@ public class LineEntryMenuForBurp{
 			}
 			return result;
 		}else {
-			if (ProjectMenu.LoadedDomainHunterNumber() >1) {
+			if (!ProjectMenu.isAlone()) {
 				String proName = DomainPanel.getDomainResult().getProjectName();
 				for (JMenuItem item : JMenuItemList) {
 					item.setText("^_^ "+proName+"-->"+item.getText().replace("^_^ ", ""));
@@ -222,7 +222,7 @@ public class LineEntryMenuForBurp{
 			};
 			worker.execute();
 		}
-		
+
 		public String getSelectedStringByBurp(){
 			String result = "";
 

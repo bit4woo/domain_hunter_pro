@@ -57,7 +57,6 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
-import burp.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -66,8 +65,15 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import com.google.common.net.InternetDomainName;
 
-import Deprecated.RecentRecordManager;
 import GUI.GUI;
+import burp.BurpExtender;
+import burp.Commons;
+import burp.DBHelper;
+import burp.HTTPPost;
+import burp.IBurpExtenderCallbacks;
+import burp.IHttpRequestResponse;
+import burp.IHttpService;
+import burp.IScanIssue;
 
 /*
  *注意，所有直接对DomainObject中数据的修改，都不会触发该tableChanged监听器。
@@ -143,12 +149,13 @@ public class DomainPanel extends JPanel {
 			}});
 		HeaderPanel.add(btnSaveDomainOnly);
 
-		JButton cleanSave = new JButton("cleanSave");
-		cleanSave.addActionListener(new ActionListener() {
+		JButton test = new JButton("test");
+		test.setToolTipText("Only save data in Domain Panel");
+		test.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				RecentRecordManager.cleanSave();
+				GUI.getProjectMenu().changeTabName("");
 			}});
-		HeaderPanel.add(cleanSave);
+		HeaderPanel.add(test);
 
 		/*
 		btnBrute = new JButton("Brute");

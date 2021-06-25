@@ -95,29 +95,32 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		return ExtenderName+" "+Version+" "+Author;
 	}
 
-	public static void SetExtensionNameWithProject() {
-		if (ProjectMenu.LoadedDomainHunterNumber()>=1) {
-			String projectName = DomainPanel.getDomainResult().getProjectName();
-			String newName = String.format(BurpExtender.getFullExtenderName()+
-					" [%s]",projectName);
-			BurpExtender.getCallbacks().setExtensionName(newName); //新插件名称
-			
-			//TODO 修改tab的title
-			//gui.getContentPane().setTitleAt(0, title);
+	public static void displayDBFileName() {
+		if (!ProjectMenu.isAlone()) {
+			if (GUI.currentDBFile !=null){
+				String newName = String.format(BurpExtender.getFullExtenderName()+
+						" [%s]",GUI.currentDBFile.getName());
+				BurpExtender.getCallbacks().setExtensionName(newName); //新插件名称
+
+				GUI.getProjectMenu().AddDBNameMenuItem(GUI.currentDBFile.getName());
+				GUI.getProjectMenu().AddDBNameTab(GUI.currentDBFile.getName());
+
+				//gui.repaint();
+			}
 		}
 	}
-	
+
 	public static void saveDBfilepathToExtension() {
 		//to save domain result to extensionSetting
 		//仅仅存储sqllite数据库的名称,也就是domainResult的项目名称
 		if (GUI.currentDBFile != null)
 			BurpExtender.getCallbacks().saveExtensionSetting(BurpExtender.Extension_Setting_Name_DB_File, GUI.currentDBFile.getAbsolutePath());
 	}
-	
+
 	public static String loadDBfilepathFromExtension() {
 		return BurpExtender.getCallbacks().loadExtensionSetting(BurpExtender.Extension_Setting_Name_DB_File);
 	}
-	
+
 
 	//当更换DB文件时，需要清空。虽然不清空最终结果不受影响，但是输出内容会比较奇怪。
 	public static void clearQueue() {
@@ -180,12 +183,6 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		}
 	}
 
-	//TODO 是否有方法可以识别同名插件，即安装了2个一样的，但能在加载配置和显示菜单时进行区分。
-	//好像可以通过配置文件实现：配置文件中存储多个记录。
-	public void isNotAlone() {
-
-	}
-
 	//插件加载过程中需要做的事
 	@Override
 	public void registerExtenderCallbacks(IBurpExtenderCallbacks callbacks)
@@ -213,14 +210,12 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 			}
 		});
 
-
-
 		//recovery save domain results from extensionSetting
 		String dbFilePath = loadDBfilepathFromExtension();
 		System.out.println("Database FileName From Extension Setting: "+dbFilePath);
 		if (dbFilePath != null && dbFilePath.endsWith(".db")) {
 			gui.LoadData(dbFilePath);
-			SetExtensionNameWithProject();
+			displayDBFileName();
 		}
 
 		gui.getToolPanel().loadConfigToGUI();
@@ -250,7 +245,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	//ITab必须实现的两个方法
 	@Override
 	public String getTabCaption() {
-		return (ExtenderName+ProjectMenu.LoadedDomainHunterNumber());
+		return (ExtenderName.replaceAll("_",""));
 	}
 	@Override
 	public Component getUiComponent() {

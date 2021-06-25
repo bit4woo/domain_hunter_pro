@@ -24,10 +24,10 @@ public class GUI extends JFrame {
 	protected PrintWriter stdout;
 	protected PrintWriter stderr;
 	public dbFileChooser dbfc = new dbFileChooser();
-	protected ProjectMenu projectMenu;
+	protected static ProjectMenu projectMenu;
 	private ToolPanel toolPanel;
 
-	public ProjectMenu getProjectMenu() {
+	public static ProjectMenu getProjectMenu() {
 		return projectMenu;
 	}
 
@@ -65,6 +65,7 @@ public class GUI extends JFrame {
 		}
 
 		JTabbedPane tabbedWrapper = new JTabbedPane();
+		tabbedWrapper.setName("DomainHunterPro");//需要在从burpFrame向下查找该插件时用到
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 1174, 497);
 		setContentPane(tabbedWrapper);
