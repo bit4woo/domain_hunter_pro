@@ -245,7 +245,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	//ITab必须实现的两个方法
 	@Override
 	public String getTabCaption() {
-		return (ExtenderName.replaceAll("_",""));
+		return (ExtenderName.replaceAll(" ",""));
 	}
 	@Override
 	public Component getUiComponent() {
