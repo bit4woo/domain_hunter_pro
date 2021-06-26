@@ -1,26 +1,16 @@
 package domain;
 
+import Tools.PatternsFromAndroid;
+import burp.*;
+import org.apache.commons.text.StringEscapeUtils;
+
 import java.io.PrintWriter;
 import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.apache.commons.text.StringEscapeUtils;
-
-import Tools.PatternsFromAndroid;
-import burp.BurpExtender;
-import burp.Commons;
-import burp.IBurpExtenderCallbacks;
-import burp.IExtensionHelpers;
-import burp.IHttpRequestResponse;
-import burp.IHttpService;
 
 public class DomainProducer extends Thread {//Producer do
 	private final BlockingQueue<IHttpRequestResponse> inputQueue;//use to store messageInfo
@@ -32,20 +22,20 @@ public class DomainProducer extends Thread {//Producer do
 	private BlockingQueue<String> httpsQueue = new LinkedBlockingQueue<>();//temp variable to identify checked https
 
 	private int threadNo;
-	private boolean stopflag = false;
+	private volatile boolean stopflag = false;
 
 	private static IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();//静态变量，burp插件的逻辑中，是可以保证它被初始化的。;
 	public PrintWriter stdout = new PrintWriter(callbacks.getStdout(), true);
 	public PrintWriter stderr = new PrintWriter(callbacks.getStderr(), true);
 	public IExtensionHelpers helpers = callbacks.getHelpers();
 
-	public DomainProducer(BlockingQueue<IHttpRequestResponse> inputQueue, 
-			BlockingQueue<String> subDomainQueue,
-			BlockingQueue<String> similarDomainQueue,
-			BlockingQueue<String> relatedDomainQueue,
-			BlockingQueue<String> EmailQueue,
-			BlockingQueue<String> packageNameQueue,
-			int threadNo) {
+	public DomainProducer(BlockingQueue<IHttpRequestResponse> inputQueue,
+						  BlockingQueue<String> subDomainQueue,
+						  BlockingQueue<String> similarDomainQueue,
+						  BlockingQueue<String> relatedDomainQueue,
+						  BlockingQueue<String> EmailQueue,
+						  BlockingQueue<String> packageNameQueue,
+						  int threadNo) {
 		this.threadNo = threadNo;
 		this.inputQueue = inputQueue;
 		this.subDomainQueue = subDomainQueue;
@@ -200,7 +190,7 @@ public class DomainProducer extends Thread {//Producer do
 		if (needUnicodeConvert(line)) {
 			while (true) {//unicode解码
 				try {
-					int oldlen = line.length();				
+					int oldlen = line.length();
 					line = StringEscapeUtils.unescapeJava(line);
 					int currentlen = line.length();
 					if (oldlen > currentlen) {
@@ -354,17 +344,17 @@ public class DomainProducer extends Thread {//Producer do
 				"      <a href=\"#\" class=\"mod_btn mod_btn_default reapply\">重新申请</a>\n" +
 				"      <a href=\"#\" class=\"mod_btn mod_btn_white mod_close_btn\">关闭</a>\n" +
 				"    </div>\n" +
-				"  </div>"+"            <div class=\"footer-menu-left\">\r\n" + 
-				"                <dl>\r\n" + 
-				"                    <dt>京东众创</dt>\r\n" + 
-				"                    <dd>客服电话 400-088-8816</dd>\r\n" + 
-				"                    <dd>客服邮箱 zcfw@jd.com</dd>\r\n" + 
-				"                </dl>\r\n" + 
-				"            </div>"+"                        if (result.Code == 8)\r\n" + 
-				"                        {\r\n" + 
-				"                            $(\"#divInfo\").show();\r\n" + 
-				"                            $(\"#divInfo\").html(\"<b></b><span class=\\\"warntip_text\\\">ERP系统中信息不完整，请将邮箱地址、erp账户、手机号发送至itmail@jd.com邮箱中</span>\");//ERP系统中信息不完整，请联系邮件管理员!\r\n" + 
-				"                        }"+"/* 2019-03-12 11:16:22 joya.js @issue to lijiwen@jd.com Thanks */\r\n" + 
+				"  </div>"+"            <div class=\"footer-menu-left\">\r\n" +
+				"                <dl>\r\n" +
+				"                    <dt>京东众创</dt>\r\n" +
+				"                    <dd>客服电话 400-088-8816</dd>\r\n" +
+				"                    <dd>客服邮箱 zcfw@jd.com</dd>\r\n" +
+				"                </dl>\r\n" +
+				"            </div>"+"                        if (result.Code == 8)\r\n" +
+				"                        {\r\n" +
+				"                            $(\"#divInfo\").show();\r\n" +
+				"                            $(\"#divInfo\").html(\"<b></b><span class=\\\"warntip_text\\\">ERP系统中信息不完整，请将邮箱地址、erp账户、手机号发送至itmail@jd.com邮箱中</span>\");//ERP系统中信息不完整，请联系邮件管理员!\r\n" +
+				"                        }"+"/* 2019-03-12 11:16:22 joya.js @issue to lijiwen@jd.com Thanks */\r\n" +
 				"try{window.fingerprint={},function t(){fingerprint.config={fpb_send_data:'body={\"appname\": \"jdwebm_hf\",\"jdkey\": \"\",\"whwswswws\": \"\",\"businness\": \"\",\"body\":";
 		//System.out.println(grepEmail(aaa));
 

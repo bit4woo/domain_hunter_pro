@@ -1,12 +1,25 @@
 package domain;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.Desktop;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.Toolkit;
+import GUI.GUI;
+import burp.*;
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
+import com.google.common.net.InternetDomainName;
+import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
+import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
@@ -19,61 +32,10 @@ import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Vector;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.swing.JButton;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTable;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
-import javax.swing.RowSorter;
-import javax.swing.SortOrder;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import com.google.common.base.Charsets;
-import com.google.common.io.Files;
-import com.google.common.net.InternetDomainName;
-
-import GUI.GUI;
-import burp.BurpExtender;
-import burp.Commons;
-import burp.DBHelper;
-import burp.HTTPPost;
-import burp.IBurpExtenderCallbacks;
-import burp.IHttpRequestResponse;
-import burp.IHttpService;
-import burp.IScanIssue;
 
 /*
  *注意，所有直接对DomainObject中数据的修改，都不会触发该tableChanged监听器。
@@ -149,6 +111,7 @@ public class DomainPanel extends JPanel {
 			}});
 		HeaderPanel.add(btnSaveDomainOnly);
 
+		/*
 		JButton test = new JButton("test");
 		test.setToolTipText("Only save data in Domain Panel");
 		test.addActionListener(new ActionListener() {
@@ -156,6 +119,8 @@ public class DomainPanel extends JPanel {
 				GUI.getProjectMenu().changeTabName("");
 			}});
 		HeaderPanel.add(test);
+
+		 */
 
 		/*
 		btnBrute = new JButton("Brute");
@@ -350,15 +315,38 @@ public class DomainPanel extends JPanel {
 		JButton btnRenameProject = new JButton("Rename Project");
 		btnRenameProject.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if (domainResult !=null){
+
+				if (domainResult !=null) {
 					String newProjectName = JOptionPane.showInputDialog("New Project Name", null).trim();
-					while(newProjectName.trim().equals("")){
+					while (newProjectName.trim().equals("")) {
 						newProjectName = JOptionPane.showInputDialog("New Project Name", null).trim();
 					}
 					domainResult.setProjectName(newProjectName);
+					GUI.displayProjectName();
 					autoSave();
-					lblSummary.setText(domainResult.getSummary());
 				}
+
+				/*重命名文件，开销太大不合适
+				if (GUI.getCurrentDBFile() !=null){
+					String newDBFileName = JOptionPane.showInputDialog("New Project Name", null).trim();
+					while(newDBFileName.trim().equals("")){
+						newDBFileName = JOptionPane.showInputDialog("New Project Name", null).trim();
+					}
+					if (!newDBFileName.endsWith(".db")){
+						newDBFileName = newDBFileName+".db";
+					}
+					File des = new File(GUI.getCurrentDBFile().getParent(),newDBFileName);
+					if (des.toString().equalsIgnoreCase(GUI.getCurrentDBFile().toString())) return;
+					try {
+						autoSave();
+						FileUtils.copyFile(GUI.getCurrentDBFile(),des);
+						BurpExtender.getGui().LoadData(des.toString());
+						FileUtils.deleteQuietly(GUI.getCurrentDBFile());
+					} catch (IOException ioException) {
+						ioException.printStackTrace();
+					}
+					lblSummary.setText(domainResult.getSummary());
+				}*/
 			}
 		});
 		HeaderPanel.add(btnRenameProject);
@@ -486,12 +474,12 @@ public class DomainPanel extends JPanel {
 
 		domainTableModel = new DefaultTableModel(
 				new Object[][][] {
-					//{"1", "1","1"},
+						//{"1", "1","1"},
 				},
 				new String[] {
 						"Root Domain", "Keyword"//,"Comment"//, "Source"
 				}
-				);
+		);
 		table.setModel(domainTableModel);
 
 		/*
@@ -686,7 +674,7 @@ public class DomainPanel extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				//to clear sub and similar domains
-				BurpExtender.QueueToResult();
+				DomainConsumer.QueueToResult();
 				domainResult.getEmailSet().addAll(collectEmails());
 				Set<String> tmpDomains = domainResult.getSubDomainSet();
 				Set<String> newSubDomainSet = new HashSet<>();
@@ -701,7 +689,7 @@ public class DomainPanel extends JPanel {
 
 					int type = domainResult.domainType(domain);
 					if (type == DomainManager.SUB_DOMAIN || type == DomainManager.IP_ADDRESS)
-						//包含手动添加的IP
+					//包含手动添加的IP
 					{
 						newSubDomainSet.add(domain);
 					}else if (type == DomainManager.SIMILAR_DOMAIN) {

@@ -1,13 +1,13 @@
 package domain;
 
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.List;
-
 import burp.BurpExtender;
 import burp.IBurpExtenderCallbacks;
 import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
+
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
 
 //////////////////ThreadGetTitle block/////////////
 //no need to pass BurpExtender object to these class, IBurpExtenderCallbacks object is enough 
@@ -55,7 +55,7 @@ public class ThreadSearhDomain{
 			}
 		}
 
-		BurpExtender.QueueToResult();
+		DomainConsumer.QueueToResult();
 		return;
 	}
 

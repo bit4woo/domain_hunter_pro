@@ -1,18 +1,5 @@
 package GUI;
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Frame;
-import java.awt.event.ActionEvent;
-import java.io.File;
-
-import javax.swing.AbstractAction;
-import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JTabbedPane;
-
 import burp.BurpExtender;
 import burp.DBHelper;
 import domain.DomainManager;
@@ -20,6 +7,11 @@ import domain.DomainPanel;
 import title.IndexedLinkedHashMap;
 import title.LineEntry;
 import title.TitlePanel;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.io.File;
 
 public class ProjectMenu{
 	GUI gui;
@@ -45,28 +37,33 @@ public class ProjectMenu{
 		menuBar.repaint();
 	}
 
-	public void AddDBNameMenuItem(String dbFileName){
-		if (null==dbFileName) return;
+	public void AddDBNameMenuItem(String name){
+		if (null==name) return;
 		String firstName = hunterMenu.getItem(0).getName();
 		if (firstName != null && firstName.equals("JustDisplayDBFileName")){
 			hunterMenu.remove(0);
 		}
-		JMenuItem nameItem = new JMenuItem(dbFileName);
+		JMenuItem nameItem = new JMenuItem("Project:"+name);
 		nameItem.setName("JustDisplayDBFileName");
 		nameItem.setEnabled(false);
+		nameItem.addActionListener(new AbstractAction(){
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				String filename = GUI.currentDBFile.getName();
+				int index = indexOfDomainHunter(filename);
+				Container ccc = getBurpFrame().getContentPane();
+				JTabbedPane ParentOfDomainHunter = (JTabbedPane) ccc.getComponent(0);//burpTabBar
+				ParentOfDomainHunter.setSelectedIndex(index);//设置为选中,还是无效，操作失败
+			}
+		});
 		hunterMenu.insert(nameItem,0);
 	}
 
-	public void AddDBNameTab(String dbFileName){
-		if (null == dbFileName) return;
+	public void AddDBNameTab(String name){
+		if (null == name) return;
 		JTabbedPane panel = ((JTabbedPane)gui.getContentPane());
-		if (panel.getTabCount() ==4){
-			panel.remove(3);
-		}
-
-		JMenuItem nameItem = new JMenuItem(dbFileName);
-		nameItem.setEnabled(false);
-		((JTabbedPane)gui.getContentPane()).addTab(dbFileName,null);
+		String newName = String.format("domain [%s]",name);
+		panel.setTitleAt(0,newName);
 	}
 
 	//修改之后不刷新，弃用
@@ -76,6 +73,7 @@ public class ProjectMenu{
 		JTabbedPane ParentOfDomainHunter = (JTabbedPane) ccc.getComponent(0);//burpTabBar
 		int n = ParentOfDomainHunter.getComponentCount();
 
+		//find index of current DomainHunter
 		for (int i=n-1;i>=0;i--){
 			Component tmp = ParentOfDomainHunter.getComponent(i);
 			if (tmp.getName().equals("DomainHunterPro")){
@@ -87,6 +85,24 @@ public class ProjectMenu{
 				}
 			}//domain.DomainPanel
 		}
+	}
+
+	public int indexOfDomainHunter(String dbFileName){
+		Container ccc = getBurpFrame().getContentPane();
+		JTabbedPane ParentOfDomainHunter = (JTabbedPane) ccc.getComponent(0);//burpTabBar
+		int n = ParentOfDomainHunter.getComponentCount();
+
+		//find index of current DomainHunter
+		for (int i=n-1;i>=0;i--){//倒序查找更快
+			Component tmp = ParentOfDomainHunter.getComponent(i);
+			if (tmp.getName().equals("DomainHunterPro")){
+				String tmpDbFile = ((GUI) tmp).currentDBFile.getName();
+				if (tmpDbFile.equals(dbFileName)){
+					return i;
+				}
+			}
+		}
+		return -1;
 	}
 
 	public static boolean isAlone() {
@@ -125,9 +141,6 @@ public class ProjectMenu{
 					DomainPanel.setDomainResult(new DomainManager(file.getName()));
 					gui.saveData(file.toString(),true);
 					gui.LoadData(file.toString());//然后加载，就是一个新的空项目了。
-					GUI.setCurrentDBFile(file);
-					BurpExtender.displayDBFileName();
-					BurpExtender.saveDBfilepathToExtension();
 				}
 			}
 		});
@@ -140,9 +153,6 @@ public class ProjectMenu{
 				File file = gui.dbfc.dialog(true);
 				if (null != file) {
 					gui.LoadData(file.toString());
-					GUI.setCurrentDBFile(file);
-					BurpExtender.displayDBFileName();
-					BurpExtender.saveDBfilepathToExtension();
 				}
 			}
 		});
