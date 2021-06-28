@@ -66,7 +66,7 @@ public class DomainConsumer extends Thread {
 		if (result != null) {
 			oldSubdomains.addAll(result.getSubDomainSet());
 
-			moveQueueToSet(BurpExtender.subDomainQueue,result.getSubDomainSet());
+			moveQueueToSet(BurpExtender.subDomainQueue,result.getSubDomainSet());//所有子域名还是都存在里面的，至少新发现的又单独存了一份，所以SubDomainSet一直都是最全的。
 			moveQueueToSet(BurpExtender.similarDomainQueue,result.getSimilarDomainSet());
 			moveQueueToSet(BurpExtender.relatedDomainQueue,result.getRelatedDomainSet());
 			moveQueueToSet(BurpExtender.emailQueue,result.getEmailSet());

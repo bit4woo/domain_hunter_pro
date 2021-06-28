@@ -12,6 +12,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 
 import burp.BurpExtender;
+import burp.Commons;
 
 public class RootDomainMenu extends JPopupMenu {
 
@@ -40,7 +41,22 @@ public class RootDomainMenu extends JPopupMenu {
 			}
 		});
 
+		JMenuItem whoisItem = new JMenuItem(new AbstractAction("Whois") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				for (int row:rows) {
+					String rootDomain = (String) rootDomainTable.getModel().getValueAt(row,0);
+					try {
+						Commons.browserOpen("https://whois.chinaz.com/"+rootDomain,null);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		});
+
 		this.add(getSubDomainsOf);
+		this.add(whoisItem);
 	}
 
 }

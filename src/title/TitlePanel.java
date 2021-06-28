@@ -370,6 +370,8 @@ public class TitlePanel extends JPanel {
 		DomainPanel.backupDB();
 
 		Set<String> domains = new HashSet<>();//新建一个对象，直接赋值后的删除操作，实质是对domainResult的操作。
+
+		//将新发现的域名也移动到子域名集合中，以便跑一次全量。 ---DomainConsumer.QueueToResult()中的逻辑已经保证了SubDomainSet一直是最全的。
 		domains.addAll(DomainPanel.getDomainResult().getSubDomainSet());
 		//remove domains in black list
 		domains.removeAll(DomainPanel.getDomainResult().getBlackDomainSet());
@@ -430,6 +432,7 @@ public class TitlePanel extends JPanel {
 		}
 		threadGetTitle = new ThreadGetTitleWithForceStop(domains,tempConfig.getThreadNumber());
 		threadGetTitle.start();
+		//清空新发现域名集合前，应该都添加到子域名集合中！！！---DomainConsumer.QueueToResult()中的逻辑已经保证了SubDomainSet一直是最全的。
 		DomainPanel.getDomainResult().getNewAndNotGetTitleDomainSet().clear();
 	}
 
