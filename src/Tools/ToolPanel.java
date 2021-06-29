@@ -253,6 +253,32 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		});
+		
+		JButton btnFindIP = new JButton("Find IP");
+		threeFourthPanel.add(btnFindIP);
+		btnFindIP.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String content = inputTextArea.getText();
+				if (null != content) {
+					List<String> iplist = DomainProducer.grepIP(content);
+					outputTextArea.setText(String.join(System.lineSeparator(), iplist));
+				}
+			}
+		});
+		
+		JButton btnFindIPAndPort = new JButton("Find IP:Port");
+		threeFourthPanel.add(btnFindIPAndPort);
+		btnFindIPAndPort.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String content = inputTextArea.getText();
+				if (null != content) {
+					List<String> iplist = DomainProducer.grepIPAndPort(content);
+					outputTextArea.setText(String.join(System.lineSeparator(), iplist));
+				}
+			}
+		});
 
 		JButton btnOpenurls = new JButton("OpenURLs");
 		threeFourthPanel.add(btnOpenurls);

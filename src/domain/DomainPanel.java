@@ -1167,6 +1167,7 @@ public class DomainPanel extends JPanel {
 	public static void autoSave(){
 		File file = GUI.getCurrentDBFile();
 		if (file == null){
+			if (null == DomainPanel.getDomainResult()) return;//有数据才弹对话框指定文件位置。
 			file = BurpExtender.getGui().dbfc.dialog(false);
 			GUI.setCurrentDBFile(file);
 		}

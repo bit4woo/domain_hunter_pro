@@ -15,7 +15,7 @@ import java.io.File;
 
 public class ProjectMenu{
 	GUI gui;
-	JMenu hunterMenu;
+	static JMenu hunterMenu;
 
 	public ProjectMenu(GUI gui){
 		this.gui = gui;
@@ -115,6 +115,15 @@ public class ProjectMenu{
 			}
 		}
 		return num<=1;
+	}
+	
+	//判断是否加载了新的项目，如果是就需要刷新显示的项目名称。
+	public static boolean needFreshDisplay() {
+		String firstName = hunterMenu.getItem(0).getName();
+		if (firstName != null && firstName.equals("JustDisplayDBFileName")){
+			return true;
+		}
+		return false;
 	}
 
 	public static JFrame getBurpFrame()

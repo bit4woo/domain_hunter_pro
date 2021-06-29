@@ -286,7 +286,42 @@ public class DomainProducer extends Thread {//Producer do
 		return tmplist;
 	}
 
+	public static List<String> grepIP(String httpResponse) {
+		Set<String> IPSet = new HashSet<>();
+		String[] lines = httpResponse.split("\r\n");
 
+		for (String line:lines) {
+			Matcher matcher = PatternsFromAndroid.IP_ADDRESS.matcher(line);
+			while (matcher.find()) {//多次查找
+				String tmpIP = matcher.group();
+				IPSet.add(tmpIP);
+			}
+		}
+		
+		List<String> tmplist= new ArrayList<>(IPSet);
+		Collections.sort(tmplist);		
+		return tmplist;
+	}
+	
+	public static List<String> grepIPAndPort(String httpResponse) {
+		Set<String> IPSet = new HashSet<>();
+		String[] lines = httpResponse.split("\r\n");
+
+		for (String line:lines) {
+			String pattern = "\\d{1,3}(?:\\.\\d{1,3}){3}(?::\\d{1,5})?";
+			Pattern pt = Pattern.compile(pattern);
+			Matcher matcher = pt.matcher(line);
+			while (matcher.find()) {//多次查找
+				String tmpIP = matcher.group();
+				IPSet.add(tmpIP);
+			}
+		}
+		
+		List<String> tmplist= new ArrayList<>(IPSet);
+		Collections.sort(tmplist);		
+		return tmplist;
+	}
+	
 	public static boolean needUnicodeConvert(String str) {
 		Pattern pattern = Pattern.compile("(\\\\u(\\p{XDigit}{4}))");
 		//Pattern pattern = Pattern.compile("(\\\\u([A-Fa-f0-9]{4}))");//和上面的效果一样
