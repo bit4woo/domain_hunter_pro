@@ -1,6 +1,7 @@
 package title;
 
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -66,7 +67,7 @@ public class LineEntry {
 	private String webcontainer = "";
 	private String time = "";
 
-	//Gson中，加了transient表示不序列号，是最简单的方法
+	//Gson中，加了transient表示不序列化，是最简单的方法
 	//给不想被序列化的属性增加transient属性---java特性
 	//private transient String messageText = "";//use to search
 	//private transient String bodyText = "";//use to adjust the response changed or not
@@ -252,11 +253,11 @@ public class LineEntry {
 	public void setIPWithSet(Set<String> ipSet) {
 		IP = ipSet.toString().replace("[", "").replace("]", "");
 	}
-
+	//用于序列化
 	public String getCDN() {
 		return CDN;
 	}
-
+	//用于序列化
 	public void setCDN(String cDN) {
 		CDN = cDN;
 	}
@@ -264,6 +265,11 @@ public class LineEntry {
 	public void setCDNWithSet(Set<String> cDNSet) {
 		CDN = cDNSet.toString().replace("[", "").replace("]", "");
 	}
+	
+	public void setCertDomainWithSet(Set<String> certDomains) {
+		CDN += " | "+certDomains.toString().replace("[", "").replace("]", "");
+	}
+	
 	public String getWebcontainer() {
 		return webcontainer;
 	}
@@ -522,6 +528,35 @@ Content-Type: text/html;charset=UTF-8
 
 	public void setComment(String comment) {
 		this.comment = comment;
+	}
+	
+	public void addComment(String commentToAdd) {
+		String finalComment = this.getComment();
+		if (finalComment == null || finalComment.trim().equals("")){
+			finalComment = commentToAdd;
+		}else if(finalComment.contains(commentToAdd)){
+			//do nothing
+		}else {
+			finalComment = finalComment+","+commentToAdd;
+		}
+		this.setComment(finalComment);
+	}
+	
+	public void removeComment(String commentToRemove) {
+		String finalComment = this.getComment();
+		if (finalComment == null || finalComment.trim().equals("")){
+			return;
+		}else {
+			String[] comments = finalComment.split(finalComment);
+			List<String> result = new ArrayList<String>();
+			for (String comment:comments) {
+				if (!comment.equals(commentToRemove)) {
+					result.add(comment);
+				}
+			}
+			finalComment = String.join(",", result);
+		} 
+		this.setComment(finalComment);
 	}
 
 	public boolean isManualSaved() {

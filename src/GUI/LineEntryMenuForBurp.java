@@ -535,15 +535,7 @@ public class LineEntryMenuForBurp{
 			commentAdd = JOptionPane.showInputDialog("Comments", null).trim();
 		}
 		if (commentAdd != null) {
-			String comment = entry.getComment().trim();
-			if (comment == null || comment.equals("")) {
-				comment = commentAdd;
-			}else if(comment.contains(commentAdd)){
-				//do nothing
-			}else{
-				comment = comment+","+commentAdd;
-			}
-			entry.setComment(comment);
+			entry.addComment(commentAdd);
 			TitlePanel.getTitleTableModel().fireTableRowsUpdated(index,index);//主动通知更新，否则不会写入数据库!!!
 		}
 	}

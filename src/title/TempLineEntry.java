@@ -4,6 +4,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import Tools.LineConfig;
@@ -19,41 +20,82 @@ import domain.DomainPanel;
 
 public class TempLineEntry {
 	String host;
-	URL httpURL;
-	URL httpsURL;
+	int port;
+
+	URL defaultHttpUrl;
+	URL defaultHttpsUrl;
+
+	URL customPortHttpUrl;
+	URL customPortHttpsUrl;
+
+	List<URL> externalPortUrls = new ArrayList<>();
+
 	Set<String> IPSet = new HashSet<>();
 	Set<String> CDNSet = new HashSet<>();
+	Set<String> certDomains = new HashSet<>();
 
 	public TempLineEntry(String host){
-		this.host = host;
-		hostToURL(this.host);
-		GetIPAndCDN(this.host);
+		if (hostCheckAndParse(host)){
+			hostToURL(this.host);
+			GetIPAndCDN(this.host);
+			certDomains = getCertDomains();
+		}
 	}
 
 	public Set<LineEntry> getFinalLineEntry(){
+		if (host ==null) return new HashSet<>();//无效host直接返回
+
+		if (ToolPanel.ignoreWrongCAHost.isSelected()){
+			if (isTarget(certDomains, DomainPanel.domainResult.fetchKeywordSet())){
+				return new HashSet<>();
+			};
+		}
 		return doGetTitle();
 	}
 
+	//输入解析
+	private boolean hostCheckAndParse(String inputHost){
+		inputHost = inputHost.trim();
+
+		if (inputHost.contains(":")) {//处理带有端口号的域名
+			String tmpport = inputHost.substring(inputHost.indexOf(":") + 1);
+			port = Integer.parseInt(tmpport);
+			host = inputHost.substring(0, inputHost.indexOf(":"));
+		}else {
+			host = inputHost;
+			port = -1;
+		}
+
+		return Commons.isValidIP(host) || Commons.isValidDomain(host);
+	}
+
+	//将域名或IP拼接成URL
 	private void hostToURL(String host){
 		try{
-			if (host.contains(":")) {//处理带有端口号的域名
-				String port = host.substring(host.indexOf(":")+1);
-				host = host.substring(0,host.indexOf(":"));
+			defaultHttpUrl = new URL(String.format("http://%s:%s/",host,80));
+			defaultHttpsUrl = new URL(String.format("https://%s:%s/",host,443));
 
-				int tmpPort = Integer.parseInt(port);
-				if (tmpPort ==80){
-					httpURL = new URL(String.format("http://%s:%s/",host,tmpPort));
-				}else if(tmpPort== 443){
-					httpsURL = new URL(String.format("https://%s:%s/",host,tmpPort));
-				}else{
-					httpURL = new URL(String.format("http://%s:%s/",host,tmpPort));
-					httpsURL = new URL(String.format("https://%s:%s/",host,tmpPort));
+			if (port == -1 || port == 80 || port == 443){
+				//Nothing to do;
+			}else{
+				customPortHttpUrl = new URL(String.format("http://%s:%s/",host,port));
+				customPortHttpsUrl = new URL(String.format("https://%s:%s/",host,port));
+			}
+
+			//处理用户指定的端口，for external port, eg. 8000,8080,
+			Set<String> ExternalPorts = ToolPanel.getExternalPortSet();
+			if (ExternalPorts.size() != 0) {
+				for (String port: ExternalPorts) {
+					int tmpPort = Integer.parseInt(port);
+					if (tmpPort == 80 || tmpPort == 443) continue;
+					URL ex_http = new URL(String.format("http://%s:%s/",host,tmpPort));
+					URL ex_https = new URL(String.format("https://%s:%s/",host,tmpPort));
+					externalPortUrls.add(ex_https);
+					externalPortUrls.add(ex_http);
 				}
-			}else {
-				httpURL = new URL(String.format("http://%s:%s/",host,80));
-				httpsURL = new URL(String.format("https://%s:%s/",host,443));
 			}
 		}catch (Exception e){
+			e.printStackTrace();
 		}
 	}
 
@@ -67,21 +109,44 @@ public class TempLineEntry {
 			}else {
 				IPSet.add(host);
 				CDNSet.add("");
-				if (ToolPanel.ignoreWrongCAHost.isSelected() && null!=httpsURL){
-					Set<String> certDomains = CertInfo.isTarget(httpsURL.toString(), DomainPanel.domainResult.fetchKeywordSet());
-					if (null !=certDomains && certDomains.isEmpty()) {//只有成功获取证书，并且匹配集合为空，才能完全确定不是目标
-						//在host是IP的情况下，证书不匹配，整改host都不需要再处理了。
-						return;
-					}else {//主机是host的情况下，将证书中的域名写入CDN字段，
-						CDNSet = certDomains;
-					}
-				}
 			}
 		}else {//目标是域名
 			HashMap<String,Set<String>> result = Commons.dnsquery(host);
 			IPSet = result.get("IP");
 			CDNSet = result.get("CDN");
 		}
+	}
+
+	private Set<String> getCertDomains() {
+		try {
+			Set<String> certDomains = CertInfo.getAllSANs(defaultHttpsUrl.toString());
+			if (null == certDomains && customPortHttpsUrl != null) {
+				certDomains = CertInfo.getAllSANs(customPortHttpsUrl.toString());
+			}
+			return certDomains;
+		} catch (Exception e) {
+			return new HashSet<String>();
+		}
+	}
+
+	/*
+	 * 用于判断站点是否是我们的目标范围，原理是根据证书的所有域名中，是否有域名包含了关键词。
+	 * 为了避免漏掉有效目标，只有完全确定非目标的才排除！！！
+	 */
+	public static boolean isTarget(Set<String> certDomains,Set<String> domainKeywords) {
+		if (certDomains.isEmpty() || domainKeywords.isEmpty()
+				||certDomains ==null || domainKeywords == null) {//不能判断的，还是暂时认为是在目标中的。
+			return true;
+		}
+		for (String domain:certDomains) {
+			for (String domainKeyword:domainKeywords) {
+				if (domainKeyword.equals("")) continue;
+				if (domain.toLowerCase().contains(domainKeyword.toLowerCase())) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	private Set<LineEntry> doGetTitle(){
@@ -95,6 +160,7 @@ public class TempLineEntry {
 			if (IPAddress.isPrivateIPv4(ip) && !isInPrivateNetwork) {//外网模式，内网域名，仅仅显示域名和IP。
 				LineEntry entry = new LineEntry(host,IPSet);
 				entry.setTitle("Private IP");
+				addInfoToEntry(entry);
 				resultSet.add(entry);
 				return resultSet;
 			}
@@ -105,11 +171,15 @@ public class TempLineEntry {
 		//https://superuser.com/questions/1054724/how-to-make-firefox-ignore-all-ssl-certification-errors
 		//仍然改为先请求http，http不可用再请求https.避免浏览器中证书问题重复点击很麻烦
 
-		//do http request first
-		if (httpURL!=null){
-			LineEntry httpEntry = doRequest(httpURL);
-			httpEntry.setIPWithSet(IPSet);
-			httpEntry.setCDNWithSet(CDNSet);
+		//2.1 do http request first
+		try {
+			LineEntry httpEntry;
+			if (customPortHttpUrl !=null){
+				httpEntry = doRequest(customPortHttpUrl);
+			}else {
+				httpEntry = doRequest(defaultHttpUrl);
+			}
+			addInfoToEntry(httpEntry);
 			//stdout.println("messageinfo"+JSONObject.toJSONString(messageinfo));
 			//这里有2种异常情况：1.请求失败（连IP都解析不了,已经通过第一步过滤了）；2.请求成功但是响应包为空（可以解析IP，比如内网域名）。
 			//第一种请求在这里就结束了，第二种情况的请求信息会传递到consumer中进行IP获取的操作。
@@ -119,56 +189,56 @@ public class TempLineEntry {
 					resultSet.add(httpEntry);
 				}
 			}
+		} catch (Exception e) {
+			e.printStackTrace(BurpExtender.getStderr());
 		}
 
-		if (null != httpsURL){
-			//在http不可用，或者设置为不忽略https的情况下
+		//2.2 do https request:在http不可用，或者设置为不忽略https的情况下
+		try {
 			if (resultSet.size() ==0 || !LineConfig.isIgnoreHttpsOrHttpIfOneOK()) {
-
-				LineEntry httpsEntry = doRequest(httpsURL);
-				httpsEntry.setIPWithSet(IPSet);
-				httpsEntry.setCDNWithSet(CDNSet);
-
+				LineEntry httpsEntry;
+				if (null != customPortHttpsUrl){
+					httpsEntry = doRequest(customPortHttpsUrl);
+				}else {
+					httpsEntry = doRequest(defaultHttpsUrl);
+				}
+				addInfoToEntry(httpsEntry);
 				boolean httpsOK = LineConfig.doFilter(httpsEntry);
-
 				if (httpsOK) {
 					resultSet.add(httpsEntry);
 				}
 			}
+		} catch (Exception e) {
+			e.printStackTrace(BurpExtender.getStderr());
 		}
 
-		//do request for external port, 8000,8080,
-		Set<String> ExternalPorts = ToolPanel.getExternalPortSet();
-		if (ExternalPorts.size() != 0) {
-			for (String port: ExternalPorts) {
-
-				try{
-					//do http request
-					URL ex_http = new URL("http://"+host+":"+port+"/");
-					LineEntry exhttpEntry = doRequest(ex_http);
-					exhttpEntry.setIPWithSet(IPSet);
-					exhttpEntry.setCDNWithSet(CDNSet);
-
-					if (LineConfig.doFilter(exhttpEntry)) {
-						resultSet.add(exhttpEntry);
-						continue;
-					}
-
-					//do https request
-					URL ex_https = new URL("https://"+host+":"+port+"/");
-					LineEntry exhttpsEntry = doRequest(ex_https);
-					exhttpsEntry.setIPWithSet(IPSet);
-					exhttpsEntry.setCDNWithSet(CDNSet);
-
-					if (LineConfig.doFilter(exhttpsEntry)) {
-						resultSet.add(exhttpsEntry);
-					}
-				}catch (Exception e){
-
+		//2.3 do externalPort request
+		try {
+			for(URL url:externalPortUrls) {
+				LineEntry entry = doRequest(url);
+				boolean pass = LineConfig.doFilter(entry);
+				if (pass) {
+					addInfoToEntry(entry);
+					resultSet.add(entry);
 				}
 			}
+		} catch (Exception e) {
+			e.printStackTrace(BurpExtender.getStderr());
 		}
 		return resultSet;
+	}
+
+	private void addInfoToEntry(LineEntry entry) {
+		if (entry == null) return;
+		entry.setIPWithSet(IPSet);
+		entry.setCDNWithSet(CDNSet);
+		entry.setCertDomainWithSet(certDomains);
+		if (!isTarget(certDomains, DomainPanel.domainResult.fetchKeywordSet())){
+			entry.addComment("NotTargetBaseOnCertDomains");
+		}else{
+			entry.removeComment("NotTargetBaseOnCertDomains");
+		};
+		//TODO 多写一个字段、scopeTag来存储范围控制备注信息！比如在范围内，却不需要挖掘的资产；非目标范围资产等
 	}
 
 	//Just do request
@@ -183,5 +253,14 @@ public class TempLineEntry {
 		IHttpRequestResponse https_Messageinfo = BurpExtender.getCallbacks().makeHttpRequest(service, byteRequest);
 		LineEntry Entry = new LineEntry(https_Messageinfo);
 		return Entry;
+	}
+
+	public static void test(){
+		TempLineEntry tmp = new TempLineEntry("10.162.32.16:9100");
+		tmp.getFinalLineEntry();
+	}
+
+	public static void main(String[] args ){
+		test();
 	}
 }

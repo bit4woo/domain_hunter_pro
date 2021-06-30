@@ -163,34 +163,13 @@ public class CertInfo {
 	}
 
 
-	//get all SANs
+	//get all SANs ---证书中所有的域名信息
 	public static Set<String> getAllSANs(String aURL) throws Exception{
 		Certificate[] certs = getCerts(aURL);
 		return getAlternativeDomains(certs);
 	}
 
-	/*
-	 * 用于判断站点是否是我们的目标范围，原理是根据证书的所有域名中，是否有域名包含了关键词。
-	 * 为了避免漏掉有效目标，只有完全确定非目标的才排除！！！
-	 */
-	public static Set<String> isTarget(String aURL,Set<String> domainKeywords) {
-		try {
-			Set<String> domains = getAllSANs(aURL);
-			for (String domain:domains) {
-				for (String domainKeyword:domainKeywords) {
-					if (domain.toLowerCase().contains(domainKeyword.toLowerCase())) {
-						return domains;
-					}
-				}
-			}
-			return new HashSet<String>();
-		}catch (Exception e) {
-			//not sure,不确定的也认为是目标中的，避免漏掉有效目标
-			return null;
-		}
-	}
-
-	public static void main(String[] args) {
+	public static void test1() {
 		Set<String> set = new HashSet<>();
 		set.add("jd");
 		set.add("taobao");
@@ -211,5 +190,13 @@ public class CertInfo {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public static void test2() {
+		System.out.println("aaaa".contains(""));
+	}
+
+	public static void main(String[] args) {
+		test2();
 	}
 }

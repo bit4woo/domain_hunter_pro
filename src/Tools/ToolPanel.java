@@ -895,7 +895,7 @@ public class ToolPanel extends JPanel {
 		gbc_label_5.gridy = 11;
 		fourFourthPanel.add(label_5, gbc_label_5);
 
-		ignoreWrongCAHost = new JRadioButton("Ignore Host that is IP Address and Certificate authority not match");
+		ignoreWrongCAHost = new JRadioButton("Ignore Host that IP Address and Certificate Authority not match");
 		ignoreWrongCAHost.setSelected(false);
 		GridBagConstraints gbc_ignoreWrongCAHost = new GridBagConstraints();
 		gbc_ignoreWrongCAHost.insets = new Insets(0, 0, 5, 0);

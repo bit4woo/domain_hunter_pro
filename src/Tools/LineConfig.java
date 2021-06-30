@@ -173,6 +173,7 @@ public class LineConfig {
 		PrintWriter stdout = BurpExtender.getStdout();
 		PrintWriter stderr = BurpExtender.getStderr();
 
+		if (entry == null) return false;
 		//default requirement
 		if (entry.getStatuscode() <=0 ) {
 			stdout.println(String.format("--- [%s] --- no response",entry.getUrl()));

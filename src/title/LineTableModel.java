@@ -542,15 +542,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			Arrays.sort(rows); //升序
 			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
 				LineEntry checked = lineEntries.getValueAtIndex(rows[i]);
-				String commentToSet = checked.getComment();
-				if (commentToSet == null || commentToSet.trim().equals("")){
-					commentToSet = commentAdd;
-				}else if(commentToSet.contains(commentAdd)){
-					//do nothing
-				}else {
-					commentToSet = commentToSet+","+commentAdd;
-				}
-				checked.setComment(commentToSet);
+				checked.addComment(commentAdd);
 				//				lineEntries.remove(rows[i]);
 				//				lineEntries.add(rows[i], checked);
 				//				//https://stackoverflow.com/questions/4352885/how-do-i-update-the-element-at-a-certain-position-in-an-arraylist
