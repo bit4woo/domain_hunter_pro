@@ -28,23 +28,27 @@ import burp.IResponseInfo;
 
 public class LineEntry {
 	private static final Logger log=LogManager.getLogger(LineEntry.class);
-	public static final String Level_A = "重要";
-	public static final String Level_B = "无用";
-	public static final String Level_C = "一般";
-
-	public static final String[] LevelArray = {LineEntry.Level_A, LineEntry.Level_B, LineEntry.Level_C};
-
-	public static final String CheckStatus_UnChecked = "UnChecked";
-	public static final String CheckStatus_Checked = "Done";
-	public static final String CheckStatus_Checking = "Checking";
-	
-	public static final String[] CheckStatusArray = {LineEntry.CheckStatus_UnChecked, LineEntry.CheckStatus_Checking,LineEntry.CheckStatus_Checked};
+	public static final String AssetType_A = "重要目标";//像管理后台、统一登录等等一旦有漏洞就危害很高的系统。
+	public static final String AssetType_B = "无价值无需再挖";//像官网、首页等对信息收集、目标界定有用；但是对“挖漏洞”来说没有价值的记录。
+	public static final String AssetType_C = "未分类";//默认值，还未进行区分的资产或者普通价值资产
+	public static final String AssetType_D = "非目标资产";//非目标资产，通常跑网段都会出现这类资产。
 
 	//	public static final String Tag_Manager = "管理端";
 	//	public static final String Tag_UserEnd = "用户端";
 	//	public static final String Tag_TestEnvironment = "测试环境";
-	//	public static final String Tag_Useless = "无用";
-	//	public static final String Tag_MoreDig = "需复测"; //需要定期review的网站
+
+	public static final String[] AssetTypeArray = {LineEntry.AssetType_A, LineEntry.AssetType_B, LineEntry.AssetType_C, LineEntry.AssetType_D};
+
+	public static final String CheckStatus_UnChecked = "UnChecked";
+	public static final String CheckStatus_Checked = "Done";
+	public static final String CheckStatus_Checking = "Checking";
+	public static final String CheckStatus_MoreAction = "MoreAction";
+
+	public static final String[] CheckStatusArray = {LineEntry.CheckStatus_UnChecked, LineEntry.CheckStatus_Checking,
+			LineEntry.CheckStatus_Checked,LineEntry.CheckStatus_MoreAction};
+
+	public static final String NotTargetBaseOnCertInfo = "NotTargetBaseOnCertInfo";
+	public static final String NotTargetBaseOnBlackList = "NotTargetBaseOnBlackList";
 
 	public static String systemCharSet = getSystemCharSet();
 
@@ -76,7 +80,7 @@ public class LineEntry {
 	//field for user
 	private transient boolean isChecked =false;
 	private String CheckStatus =CheckStatus_UnChecked;
-	private String Level = Level_C;
+	private String AssetType = AssetType_C;
 	private String comment ="";
 	private boolean isManualSaved = false;
 
@@ -236,7 +240,7 @@ public class LineEntry {
 	public String getIP() {
 		return IP;
 	}
-	
+
 	//return IP 的集合
 	public Set<String> fetchIPSet() {
 		Set<String> result = new HashSet<String>();
@@ -265,11 +269,11 @@ public class LineEntry {
 	public void setCDNWithSet(Set<String> cDNSet) {
 		CDN = cDNSet.toString().replace("[", "").replace("]", "");
 	}
-	
+
 	public void setCertDomainWithSet(Set<String> certDomains) {
 		CDN += " | "+certDomains.toString().replace("[", "").replace("]", "");
 	}
-	
+
 	public String getWebcontainer() {
 		return webcontainer;
 	}
@@ -327,7 +331,7 @@ Content-Type: text/html;charset=UTF-8
 		Getter getter = new Getter(helpers);
 		String contentType = getter.getHeaderValueOf(isRequest,requestOrResponse,"Content-Type");
 		String tmpcharSet = "ISO-8859-1";//http post的默认编码
-		
+
 		if (contentType != null){//1、尝试从contentTpye中获取
 			if (contentType.toLowerCase().contains("charset=")) {
 				tmpcharSet = contentType.toLowerCase().split("charset=")[1];
@@ -349,7 +353,7 @@ Content-Type: text/html;charset=UTF-8
 				tmpcharSet = item;
 			}
 		}
-		
+
 		if (tmpcharSet.equals("utf8")) tmpcharSet = "utf-8";
 		return tmpcharSet;
 	}
@@ -404,7 +408,7 @@ Content-Type: text/html;charset=UTF-8
 			}
 		}
 		title = title.replaceAll("<.*?>", "");
-		
+
 		if (statuscode == 302 || statuscode == 301) {
 			String Locationurl = getHeaderValueOf(false,"Location");
 			if (null != Locationurl) {
@@ -510,15 +514,13 @@ Content-Type: text/html;charset=UTF-8
 		CheckStatus = checkStatus;
 	}
 
-	public String getLevel() {
-		return Level;
+	public String getAssetType() {
+		return AssetType;
 	}
 
-	public void setLevel(String level) {
-		if (level.equalsIgnoreCase(Level_A)
-				||level.equalsIgnoreCase(Level_B)
-				||level.equalsIgnoreCase(Level_C)) {
-			Level = level;
+	public void setAssetType(String AssetType) {
+		if (Arrays.asList(AssetTypeArray).contains(AssetType)) {
+			this.AssetType = AssetType;
 		}
 	}
 
@@ -529,34 +531,39 @@ Content-Type: text/html;charset=UTF-8
 	public void setComment(String comment) {
 		this.comment = comment;
 	}
-	
-	public void addComment(String commentToAdd) {
-		String finalComment = this.getComment();
-		if (finalComment == null || finalComment.trim().equals("")){
-			finalComment = commentToAdd;
-		}else if(finalComment.contains(commentToAdd)){
-			//do nothing
-		}else {
-			finalComment = finalComment+","+commentToAdd;
-		}
-		this.setComment(finalComment);
-	}
-	
-	public void removeComment(String commentToRemove) {
-		String finalComment = this.getComment();
-		if (finalComment == null || finalComment.trim().equals("")){
-			return;
-		}else {
-			String[] comments = finalComment.split(finalComment);
-			List<String> result = new ArrayList<String>();
+
+	private List<String> getCommentList() {
+		ArrayList<String> result = new ArrayList<String>();
+		if (comment == null || comment.trim().equals("")){
+			return result;
+		}else{
+			String[] comments = comment.split(",");
 			for (String comment:comments) {
-				if (!comment.equals(commentToRemove)) {
+				if (!result.contains(comment)) {
 					result.add(comment);
 				}
 			}
-			finalComment = String.join(",", result);
-		} 
-		this.setComment(finalComment);
+			return result;
+		}
+	}
+	public void addComment(String commentToAdd) {
+		if (commentToAdd ==null || commentToAdd.trim().equals("")) return;
+
+		List<String> comments = getCommentList();
+		if (!comments.contains(commentToAdd)) {
+			comments.add(commentToAdd);
+			this.setComment(String.join(",", comments));
+		}
+	}
+
+	public void removeComment(String commentToRemove) {
+		if (commentToRemove ==null || commentToRemove.trim().equals("")) return;
+
+		List<String> comments = getCommentList();
+		if (comments.contains(commentToRemove)) {
+			comments.remove(commentToRemove);
+			this.setComment(String.join(",", comments));
+		}
 	}
 
 	public boolean isManualSaved() {
@@ -588,10 +595,10 @@ Content-Type: text/html;charset=UTF-8
 		//		System.out.println(System.getProperty("file.encoding"));
 		//		System.out.println(Charset.defaultCharset());
 
-		String item = "{\"bodyText\":\"<!DOCTYPE html PUBLIC \\\"-//W3C//DTD XHTML 1.0 Strict//EN\\\" \\\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\\\">\\r\\n<html xmlns=\\\"http://www.w3.org/1999/xhtml\\\">\\r\\n<head>\\r\\n<meta http-equiv=\\\"Content-Type\\\" content=\\\"text/html; charset=iso-8859-1\\\" />\\r\\n<title>IIS Windows Server</title>\\r\\n<style type=\\\"text/css\\\">\\r\\n<!--\\r\\nbody {\\r\\n\\tcolor:#000000;\\r\\n\\tbackground-color:#0072C6;\\r\\n\\tmargin:0;\\r\\n}\\r\\n\\r\\n#container {\\r\\n\\tmargin-left:auto;\\r\\n\\tmargin-right:auto;\\r\\n\\ttext-align:center;\\r\\n\\t}\\r\\n\\r\\na img {\\r\\n\\tborder:none;\\r\\n}\\r\\n\\r\\n-->\\r\\n</style>\\r\\n</head>\\r\\n<body>\\r\\n<div id=\\\"container\\\">\\r\\n<a href=\\\"http://go.microsoft.com/fwlink/?linkid=66138&amp;clcid=0x409\\\"><img src=\\\"iis-85.png\\\" alt=\\\"IIS\\\" width=\\\"960\\\" height=\\\"600\\\" /></a>\\r\\n</div>\\r\\n</body>\\r\\n</html>\",\"cDN\":\"\",\"checkStatus\":\"Checked\",\"comment\":\"\",\"contentLength\":701,\"host\":\"193.112.174.9\",\"iP\":\"193.112.174.9\",\"level\":\"一般\",\"port\":80,\"protocol\":\"http\",\"request\":\"R0VUIC8gSFRUUC8xLjENCkhvc3Q6IDE5My4xMTIuMTc0LjkNCkFjY2VwdC1FbmNvZGluZzogZ3ppcCwgZGVmbGF0ZQ0KQWNjZXB0OiAqLyoNCkFjY2VwdC1MYW5ndWFnZTogZW4NClVzZXItQWdlbnQ6IE1vemlsbGEvNS4wIChXaW5kb3dzIE5UIDEwLjA7IFdpbjY0OyB4NjQpIEFwcGxlV2ViS2l0LzUzNy4zNiAoS0hUTUwsIGxpa2UgR2Vja28pIENocm9tZS84MC4wLjM5ODcuMTMyIFNhZmFyaS81MzcuMzYNCkNvbm5lY3Rpb246IGNsb3NlDQoNCg==\",\"response\":\"SFRUUC8xLjEgMjAwIE9LDQpDb250ZW50LVR5cGU6IHRleHQvaHRtbA0KTGFzdC1Nb2RpZmllZDogVGh1LCAyOCBGZWIgMjAxOSAwOTozMzoyNyBHTVQNCkFjY2VwdC1SYW5nZXM6IGJ5dGVzDQpFVGFnOiAiYTg3ZGI4YTg0OGNmZDQxOjAiDQpWYXJ5OiBBY2NlcHQtRW5jb2RpbmcNClNlcnZlcjogTWljcm9zb2Z0LUlJUy84LjUNClgtUG93ZXJlZC1CeTogQVNQLk5FVA0KRGF0ZTogV2VkLCAxMyBNYXkgMjAyMCAxMDoyNDowNyBHTVQNCkNvbm5lY3Rpb246IGNsb3NlDQpDb250ZW50LUxlbmd0aDogNzAxDQoNCjwhRE9DVFlQRSBodG1sIFBVQkxJQyAiLS8vVzNDLy9EVEQgWEhUTUwgMS4wIFN0cmljdC8vRU4iICJodHRwOi8vd3d3LnczLm9yZy9UUi94aHRtbDEvRFREL3hodG1sMS1zdHJpY3QuZHRkIj4NCjxodG1sIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hodG1sIj4NCjxoZWFkPg0KPG1ldGEgaHR0cC1lcXVpdj0iQ29udGVudC1UeXBlIiBjb250ZW50PSJ0ZXh0L2h0bWw7IGNoYXJzZXQ9aXNvLTg4NTktMSIgLz4NCjx0aXRsZT5JSVMgV2luZG93cyBTZXJ2ZXI8L3RpdGxlPg0KPHN0eWxlIHR5cGU9InRleHQvY3NzIj4NCjwhLS0NCmJvZHkgew0KCWNvbG9yOiMwMDAwMDA7DQoJYmFja2dyb3VuZC1jb2xvcjojMDA3MkM2Ow0KCW1hcmdpbjowOw0KfQ0KDQojY29udGFpbmVyIHsNCgltYXJnaW4tbGVmdDphdXRvOw0KCW1hcmdpbi1yaWdodDphdXRvOw0KCXRleHQtYWxpZ246Y2VudGVyOw0KCX0NCg0KYSBpbWcgew0KCWJvcmRlcjpub25lOw0KfQ0KDQotLT4NCjwvc3R5bGU+DQo8L2hlYWQ+DQo8Ym9keT4NCjxkaXYgaWQ9ImNvbnRhaW5lciI+DQo8YSBocmVmPSJodHRwOi8vZ28ubWljcm9zb2Z0LmNvbS9md2xpbmsvP2xpbmtpZD02NjEzOCZhbXA7Y2xjaWQ9MHg0MDkiPjxpbWcgc3JjPSJpaXMtODUucG5nIiBhbHQ9IklJUyIgd2lkdGg9Ijk2MCIgaGVpZ2h0PSI2MDAiIC8+PC9hPg0KPC9kaXY+DQo8L2JvZHk+DQo8L2h0bWw+\",\"statuscode\":200,\"time\":\"2020-05-22-11-07-45\",\"title\":\"<title>IIS Windows Server</title>\",\"url\":\"http://193.112.174.9:80/\",\"webcontainer\":\"Microsoft-IIS/8.5\"}";
+		String item = "{\"bodyText\":\"<!DOCTYPE html PUBLIC \\\"-//W3C//DTD XHTML 1.0 Strict//EN\\\" \\\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\\\">\\r\\n<html xmlns=\\\"http://www.w3.org/1999/xhtml\\\">\\r\\n<head>\\r\\n<meta http-equiv=\\\"Content-Type\\\" content=\\\"text/html; charset=iso-8859-1\\\" />\\r\\n<title>IIS Windows Server</title>\\r\\n<style type=\\\"text/css\\\">\\r\\n<!--\\r\\nbody {\\r\\n\\tcolor:#000000;\\r\\n\\tbackground-color:#0072C6;\\r\\n\\tmargin:0;\\r\\n}\\r\\n\\r\\n#container {\\r\\n\\tmargin-left:auto;\\r\\n\\tmargin-right:auto;\\r\\n\\ttext-align:center;\\r\\n\\t}\\r\\n\\r\\na img {\\r\\n\\tborder:none;\\r\\n}\\r\\n\\r\\n-->\\r\\n</style>\\r\\n</head>\\r\\n<body>\\r\\n<div id=\\\"container\\\">\\r\\n<a href=\\\"http://go.microsoft.com/fwlink/?linkid=66138&amp;clcid=0x409\\\"><img src=\\\"iis-85.png\\\" alt=\\\"IIS\\\" width=\\\"960\\\" height=\\\"600\\\" /></a>\\r\\n</div>\\r\\n</body>\\r\\n</html>\",\"cDN\":\"\",\"checkStatus\":\"Checked\",\"comment\":\"\",\"contentLength\":701,\"host\":\"193.112.174.9\",\"iP\":\"193.112.174.9\",\"AssetType\":\"一般\",\"port\":80,\"protocol\":\"http\",\"request\":\"R0VUIC8gSFRUUC8xLjENCkhvc3Q6IDE5My4xMTIuMTc0LjkNCkFjY2VwdC1FbmNvZGluZzogZ3ppcCwgZGVmbGF0ZQ0KQWNjZXB0OiAqLyoNCkFjY2VwdC1MYW5ndWFnZTogZW4NClVzZXItQWdlbnQ6IE1vemlsbGEvNS4wIChXaW5kb3dzIE5UIDEwLjA7IFdpbjY0OyB4NjQpIEFwcGxlV2ViS2l0LzUzNy4zNiAoS0hUTUwsIGxpa2UgR2Vja28pIENocm9tZS84MC4wLjM5ODcuMTMyIFNhZmFyaS81MzcuMzYNCkNvbm5lY3Rpb246IGNsb3NlDQoNCg==\",\"response\":\"SFRUUC8xLjEgMjAwIE9LDQpDb250ZW50LVR5cGU6IHRleHQvaHRtbA0KTGFzdC1Nb2RpZmllZDogVGh1LCAyOCBGZWIgMjAxOSAwOTozMzoyNyBHTVQNCkFjY2VwdC1SYW5nZXM6IGJ5dGVzDQpFVGFnOiAiYTg3ZGI4YTg0OGNmZDQxOjAiDQpWYXJ5OiBBY2NlcHQtRW5jb2RpbmcNClNlcnZlcjogTWljcm9zb2Z0LUlJUy84LjUNClgtUG93ZXJlZC1CeTogQVNQLk5FVA0KRGF0ZTogV2VkLCAxMyBNYXkgMjAyMCAxMDoyNDowNyBHTVQNCkNvbm5lY3Rpb246IGNsb3NlDQpDb250ZW50LUxlbmd0aDogNzAxDQoNCjwhRE9DVFlQRSBodG1sIFBVQkxJQyAiLS8vVzNDLy9EVEQgWEhUTUwgMS4wIFN0cmljdC8vRU4iICJodHRwOi8vd3d3LnczLm9yZy9UUi94aHRtbDEvRFREL3hodG1sMS1zdHJpY3QuZHRkIj4NCjxodG1sIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hodG1sIj4NCjxoZWFkPg0KPG1ldGEgaHR0cC1lcXVpdj0iQ29udGVudC1UeXBlIiBjb250ZW50PSJ0ZXh0L2h0bWw7IGNoYXJzZXQ9aXNvLTg4NTktMSIgLz4NCjx0aXRsZT5JSVMgV2luZG93cyBTZXJ2ZXI8L3RpdGxlPg0KPHN0eWxlIHR5cGU9InRleHQvY3NzIj4NCjwhLS0NCmJvZHkgew0KCWNvbG9yOiMwMDAwMDA7DQoJYmFja2dyb3VuZC1jb2xvcjojMDA3MkM2Ow0KCW1hcmdpbjowOw0KfQ0KDQojY29udGFpbmVyIHsNCgltYXJnaW4tbGVmdDphdXRvOw0KCW1hcmdpbi1yaWdodDphdXRvOw0KCXRleHQtYWxpZ246Y2VudGVyOw0KCX0NCg0KYSBpbWcgew0KCWJvcmRlcjpub25lOw0KfQ0KDQotLT4NCjwvc3R5bGU+DQo8L2hlYWQ+DQo8Ym9keT4NCjxkaXYgaWQ9ImNvbnRhaW5lciI+DQo8YSBocmVmPSJodHRwOi8vZ28ubWljcm9zb2Z0LmNvbS9md2xpbmsvP2xpbmtpZD02NjEzOCZhbXA7Y2xjaWQ9MHg0MDkiPjxpbWcgc3JjPSJpaXMtODUucG5nIiBhbHQ9IklJUyIgd2lkdGg9Ijk2MCIgaGVpZ2h0PSI2MDAiIC8+PC9hPg0KPC9kaXY+DQo8L2JvZHk+DQo8L2h0bWw+\",\"statuscode\":200,\"time\":\"2020-05-22-11-07-45\",\"title\":\"<title>IIS Windows Server</title>\",\"url\":\"http://193.112.174.9:80/\",\"webcontainer\":\"Microsoft-IIS/8.5\"}";
 		LineEntry entry = LineEntry.FromJson(item);
 		System.out.println(entry.getCheckStatus());
-		System.out.println(entry.getLevel());
+		System.out.println(entry.getAssetType());
 		System.out.println(entry.getTime());
 		String key = HashCode.fromBytes(entry.getRequest()).toString();
 		System.out.println(key);

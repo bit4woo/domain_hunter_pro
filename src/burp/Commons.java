@@ -116,6 +116,32 @@ public class Commons {
 			return false;
 		}
 	}
+	
+	@Deprecated
+	public static boolean isValidSubnet(String subnet) {
+		subnet = subnet.replaceAll(" ", "");
+		if (subnet.contains("/")) {
+			String[] parts = subnet.split("/");
+			if (parts.length ==2) {
+				String ippart = parts[0];
+				int num = Integer.parseInt(parts[1]);
+				if (isValidIP(ippart) && num>1 && num < 32) {
+					return true;
+				}
+			}
+		}
+		if (subnet.contains("-")) {//这里的方法不完整
+			String[] parts = subnet.split("-");
+			if (parts.length ==2) {
+				String ippart1 = parts[0];
+				String ippart2 = parts[1];
+				if (isValidIP(ippart1) && isValidIP(ippart2)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 
 	//http://www.xbill.org/dnsjava/dnsjava-current/examples.html
 	public static HashMap<String,Set<String>> dnsquery(String domain) {
@@ -338,64 +364,71 @@ public class Commons {
 		IPSet.addAll(result);
 		return IPSet;
 	}
+	
+	public static List<String> toIPList (String subnet) {
+		List<String> IPList = new ArrayList<String>();
+		try {
+			if (subnet.contains(":")) {
+				return IPList;//暂时先不处理IPv6,需要研究一下
+				//TODO
+			}
+			if (subnet.contains("/")){
+				SubnetUtils net = new SubnetUtils(subnet);
+				SubnetInfo xx = net.getInfo();
+				String[] ips = xx.getAllAddresses();
+				IPList.add(xx.getNetworkAddress());//.0
+				IPList.addAll(Arrays.asList(ips));
+				IPList.add(xx.getBroadcastAddress());//.255
+			}else if (subnet.contains("-")) {
+				String[] ips = subnet.split("-");
+				if (ips.length ==2) {
+					try {
+						String startip = ips[0].trim();
+						String endip = ips[1].trim();
+						//System.out.println(startip);
+						//System.out.println(endip);
+						//Converts a String that represents an IP to an int.
+						InetAddress i = InetAddress.getByName(startip);
+						int startIPInt= ByteBuffer.wrap(i.getAddress()).getInt();
+
+						if (endip.indexOf(".") == -1) {
+							endip = startip.substring(0,startip.lastIndexOf("."))+endip;
+							//System.out.println(endip);
+						}
+						InetAddress j = InetAddress.getByName(endip);
+						int endIPInt= ByteBuffer.wrap(j.getAddress()).getInt();
+
+						while (startIPInt <= endIPInt) {
+							//System.out.println(startIPInt);
+							startIPInt  = startIPInt+1;
+							//This convert an int representation of ip back to String
+							i= InetAddress.getByName(String.valueOf(startIPInt));
+							String ip= i.getHostAddress();
+							IPList.add(ip);
+							continue;
+						}
+						//System.out.print(IPSet);
+					} catch (UnknownHostException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}else { //单IP
+				IPList.add(subnet);
+			}
+		}catch(Exception e) {
+			e.printStackTrace(BurpExtender.getStderr());
+		}
+		
+		return IPList;
+	}
 
 	public static List<String> toIPList (List<String> subNets) {
-		List<String> IPSet = new ArrayList<String>();
+		List<String> IPList = new ArrayList<String>();
 		for (String subnet:subNets) {
-			try {
-				if (subnet.contains(":")) {
-					continue;//暂时先不处理IPv6,需要研究一下
-					//TODO
-				}
-				if (subnet.contains("/")){
-					SubnetUtils net = new SubnetUtils(subnet);
-					SubnetInfo xx = net.getInfo();
-					String[] ips = xx.getAllAddresses();
-					IPSet.add(xx.getNetworkAddress());//.0
-					IPSet.addAll(Arrays.asList(ips));
-					IPSet.add(xx.getBroadcastAddress());//.255
-				}else if (subnet.contains("-")) {
-					String[] ips = subnet.split("-");
-					if (ips.length ==2) {
-						try {
-							String startip = ips[0].trim();
-							String endip = ips[1].trim();
-							//System.out.println(startip);
-							//System.out.println(endip);
-							//Converts a String that represents an IP to an int.
-							InetAddress i = InetAddress.getByName(startip);
-							int startIPInt= ByteBuffer.wrap(i.getAddress()).getInt();
-
-							if (endip.indexOf(".") == -1) {
-								endip = startip.substring(0,startip.lastIndexOf("."))+endip;
-								//System.out.println(endip);
-							}
-							InetAddress j = InetAddress.getByName(endip);
-							int endIPInt= ByteBuffer.wrap(j.getAddress()).getInt();
-
-							while (startIPInt <= endIPInt) {
-								//System.out.println(startIPInt);
-								startIPInt  = startIPInt+1;
-								//This convert an int representation of ip back to String
-								i= InetAddress.getByName(String.valueOf(startIPInt));
-								String ip= i.getHostAddress();
-								IPSet.add(ip);
-								continue;
-							}
-							//System.out.print(IPSet);
-						} catch (UnknownHostException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-					}
-				}else { //单IP
-					IPSet.add(subnet);
-				}
-			}catch(Exception e) {
-				e.printStackTrace(BurpExtender.getStderr());
-			}
+			IPList.addAll(toIPList(subnet));
 		}
-		return IPSet;
+		return IPList;
 	}
 
 	public static String getNowTimeString() {
@@ -409,7 +442,6 @@ public class Commons {
 				new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		return simpleDateFormat.format(time);
 	}
-
 
 	public static void browserOpen(Object url,String browser) throws Exception{
 		String urlString = null;
@@ -649,8 +681,18 @@ public class Commons {
 		System.out.println(Prefix);
 		System.out.println("\"aaaa\"".replaceFirst(Prefix, ""));
 	}
+	
+	public static void test5() {
+		String aa = "10.12.12.12/";
+		System.out.println(aa.split("/").length);
+	}
+	
+	public static void test6() {
+		String aa = "10.  12. 12.12/";
+		System.out.println(aa.trim());
+	}
 
 	public static void main(String args[]) {
-		test4();
+		test6();
 	}
 }

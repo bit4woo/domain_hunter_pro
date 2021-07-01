@@ -43,6 +43,7 @@ public class TitlePanel extends JPanel {
 	public static JRadioButton rdbtnUnCheckedItems;
 	public static JRadioButton rdbtnCheckingItems;
 	public static JRadioButton rdbtnCheckedItems;
+	public static JRadioButton rdbtnMoreActionItems;
 
 	//add table and tablemodel to GUI
 	private static LineTableModel titleTableModel = new LineTableModel();
@@ -355,6 +356,16 @@ public class TitlePanel extends JPanel {
 		});
 		buttonPanel.add(rdbtnCheckedItems);
 
+		rdbtnMoreActionItems = new JRadioButton(LineEntry.CheckStatus_MoreAction);
+		rdbtnMoreActionItems.setSelected(false);
+		rdbtnMoreActionItems.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String keyword = textFieldSearch.getText().trim();
+				titleTable.search(keyword);
+			}
+		});
+		buttonPanel.add(rdbtnMoreActionItems);
+
 		lblSummaryOfTitle = new JLabel("^_^");
 		buttonPanel.add(lblSummaryOfTitle);
 		buttonPanel.setToolTipText(titleTableModel.getStatusSummary());
@@ -373,8 +384,8 @@ public class TitlePanel extends JPanel {
 
 		//将新发现的域名也移动到子域名集合中，以便跑一次全量。 ---DomainConsumer.QueueToResult()中的逻辑已经保证了SubDomainSet一直是最全的。
 		domains.addAll(DomainPanel.getDomainResult().getSubDomainSet());
-		//remove domains in black list
-		domains.removeAll(DomainPanel.getDomainResult().getBlackDomainSet());
+		//remove domains in black list that is not our target
+		//domains.removeAll(DomainPanel.getDomainResult().fetchNotTargetIPList());//无需移除，会标记出来的。
 
 		//backup to history
 		BackupLineEntries = titleTableModel.getLineEntries();
@@ -425,7 +436,7 @@ public class TitlePanel extends JPanel {
 		Set<String> domains = new HashSet<>();//新建一个对象，直接赋值后的删除操作，实质是对domainResult的操作。
 		domains.addAll(DomainPanel.getDomainResult().getNewAndNotGetTitleDomainSet());
 		//remove domains in black list
-		domains.removeAll(DomainPanel.getDomainResult().getBlackDomainSet());
+		//domains.removeAll(DomainPanel.getDomainResult().fetchNotTargetIPList());//无需移除，会标记出来的。
 
 		if (threadGetTitle != null){
 			threadGetTitle.interrupt();

@@ -18,6 +18,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingWorker;
 
+import GUI.GUI;
 import GUI.LineEntryMenuForBurp;
 import Tools.ToolPanel;
 import burp.BurpExtender;
@@ -361,6 +362,23 @@ public class LineEntryMenu extends JPopupMenu {
 			}
 		});
 
+		JMenuItem moreActionItem = new JMenuItem(new AbstractAction("Need More Action") {//checking
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				TitlePanel.getTitleTableModel().updateRowsStatus(rows,LineEntry.CheckStatus_Checking);			
+				java.util.List<String> urls = lineTable.getModel().getURLs(rows);
+				IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
+				for(String url:urls) {
+					URL shortUrl;
+					try {
+						shortUrl = new URL(url);
+						callbacks.includeInScope(shortUrl);
+					} catch (MalformedURLException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		});
 
 		JMenuItem checkedItem = new JMenuItem(new AbstractAction("Check Done") {
 			@Override
@@ -375,8 +393,8 @@ public class LineEntryMenu extends JPopupMenu {
 		});
 
 
-		JMenu levelMenu = new JMenu("Set Level As");
-		LineEntryMenuForBurp.addLevelABC(levelMenu, lineTable, rows);
+		JMenu assetTypeMenu = new JMenu("Set Asset Type As");
+		LineEntryMenuForBurp.addLevelABC(assetTypeMenu, lineTable, rows);
 
 
 		JMenuItem batchAddCommentsItem = new JMenuItem(new AbstractAction("Add Comments") {
@@ -496,6 +514,7 @@ public class LineEntryMenu extends JPopupMenu {
 			}
 		});
 
+		//单纯从title记录中删除
 		JMenuItem removeItem = new JMenuItem(new AbstractAction("Delete") {//need to show dialog to confirm
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -505,55 +524,44 @@ public class LineEntryMenu extends JPopupMenu {
 				}else {
 					return;
 				}
-				BurpExtender.getGui().titlePanel.digStatus();
+				GUI.titlePanel.digStatus();
 			}
 		});
 
-		JMenuItem blackListItem = new JMenuItem(new AbstractAction("Add Domain To Black List And Delete") {//need to show dialog to confirm
+		//认为资产不是目标资产，加入NotTargeIPSet
+		JMenuItem addToblackListItem = new JMenuItem(new AbstractAction("Add Host To NotTargeIPSet") {//need to show dialog to confirm
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				int result = JOptionPane.showConfirmDialog(null,"Are you sure to DELETE these items and Add To BLACK LIST ?");
+				int result = JOptionPane.showConfirmDialog(null,"Are you sure to ADD Host(Must Be IP) to NotTargetIPSet ?");
 				if (result == JOptionPane.YES_OPTION) {
-					lineTable.getModel().addBlackList(rows);
+					lineTable.getModel().addHostToNotTargetIPSet(rows);
 				}else {
 					return;
 				}
-				BurpExtender.getGui().titlePanel.digStatus();
+				GUI.titlePanel.digStatus();
 			}
 		});
-		blackListItem.setToolTipText("will not get title from next time");
+		addToblackListItem.setToolTipText("If host is IP address,will be added to NotTargetIPSet");
 
-		JMenuItem IpBlackListItem = new JMenuItem(new AbstractAction("Add IP To Black List") {//need to show dialog to confirm
+		JMenuItem removeFromBlackListItem = new JMenuItem(new AbstractAction("Remove Host From NotTargeIPSet") {//need to show dialog to confirm
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				int result = JOptionPane.showConfirmDialog(null,"Are you sure to add these IP items To BLACK LIST ?");
+				int result = JOptionPane.showConfirmDialog(null,"Are you sure to REMOVE these Host(Must Be IP) from NotTargetIPSet ?");
 				if (result == JOptionPane.YES_OPTION) {
-					lineTable.getModel().addIPBlackList(rows);
-				}else {
-					return;
-				}
-			}
-		});
-		IpBlackListItem.setToolTipText("will not get title from next time");
-
-		JMenuItem SubnetBlackListItem = new JMenuItem(new AbstractAction("Add C Subnet To Black List") {//need to show dialog to confirm
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-				int result = JOptionPane.showConfirmDialog(null,"Are you sure to add these subnets To BLACK LIST ?");
-				if (result == JOptionPane.YES_OPTION) {
-					lineTable.getModel().addSubnetBlackList(rows);
+					lineTable.getModel().removeHostFromNotTargetIPSet(rows);
 				}else {
 					return;
 				}
 			}
 		});
-		SubnetBlackListItem.setToolTipText("will not get title from next time");
+		removeFromBlackListItem.setToolTipText("If host is IP address,will be removed from NotTargetIPSet");
 
 
 		this.add(itemNumber);
 		this.add(checkingItem);
+		this.add(moreActionItem);
 		this.add(checkedItem);
-		this.add(levelMenu);
+		this.add(assetTypeMenu);
 		this.add(batchAddCommentsItem);
 
 		this.addSeparator();
@@ -583,10 +591,7 @@ public class LineEntryMenu extends JPopupMenu {
 		this.addSeparator();
 
 		this.add(removeItem);
-		this.add(blackListItem);
-		this.add(IpBlackListItem);
-		this.add(SubnetBlackListItem);
-
+		this.add(addToblackListItem);
+		this.add(removeFromBlackListItem);
 	}
-
 }

@@ -116,14 +116,14 @@ public class LineEntryMenuForBurp{
 	}
 
 	public static void addLevelABC(JMenu topMenu,final LineTable lineTable, final int[] rows){
-		String[] MainMenu = {LineEntry.Level_A, LineEntry.Level_B, LineEntry.Level_C};
+		String[] MainMenu = LineEntry.AssetTypeArray;
 		for(int i = 0; i < MainMenu.length; i++){
 			JMenuItem item = new JMenuItem(MainMenu[i]);
 			item.addActionListener(new ActionListener() {
 
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					lineTable.getModel().updateLevelofRows(rows,e.getActionCommand());
+					lineTable.getModel().updateAssetTypeOfRows(rows,e.getActionCommand());
 				}
 
 			});

@@ -36,8 +36,9 @@ public class DomainManager {
 	private Set<String> subDomainSet = new HashSet<String>();
 	private Set<String> similarDomainSet = new HashSet<String>();
 	private Set<String> relatedDomainSet = new HashSet<String>();
-	private Set<String> blackDomainSet = new HashSet<String>();//有效(能解析IP)但无用的域名，比如JD的网店域名；唯一的用处是用来聚合网段。
-	private Set<String> blackIPOrNetSet = new HashSet<String>();//IP或网段黑名单，用于get Title前的资产排除。
+	private Set<String> IsTargetButUselessDomainSet = new HashSet<String>();
+	//有效(能解析IP)但无用的域名，比如JD的网店域名、首页域名等对信息收集、聚合网段、目标界定有用，但是本身几乎不可能有漏洞的资产。
+	private Set<String> NotTargetIPSet = new HashSet<String>();//IP集合，那些非目标资产的IP集合。只存IP，不存网段。
 	private HashMap<String,Integer> unkownDomainMap = new HashMap<String,Integer>();//记录域名和解析失败的次数，大于五次就从子域名中删除。
 	private Set<String> EmailSet = new HashSet<String>();
 	private Set<String> PackageNameSet = new HashSet<String>();
@@ -125,23 +126,21 @@ public class DomainManager {
 		this.relatedDomainSet = relatedDomainSet;
 	}
 
-
-
-	public Set<String> getBlackDomainSet() {
-		return blackDomainSet;
+	public Set<String> getIsTargetButUselessDomainSet() {
+		return IsTargetButUselessDomainSet;
 	}
 
-	public void setBlackDomainSet(Set<String> blackDomainSet) {
-		this.blackDomainSet = blackDomainSet;
+	public void setIsTargetButUselessDomainSet(Set<String> isTargetButUselessDomainSet) {
+		IsTargetButUselessDomainSet = isTargetButUselessDomainSet;
 	}
 
 
-	public Set<String> getBlackIPOrNetSet() {
-		return blackIPOrNetSet;
+	public Set<String> getNotTargetIPSet() {
+		return NotTargetIPSet;
 	}
 
-	public void setBlackIPOrNetSet(Set<String> blackIPOrNetSet) {
-		this.blackIPOrNetSet = blackIPOrNetSet;
+	public void setNotTargetIPSet(Set<String> notTargetIPSet) {
+		NotTargetIPSet = notTargetIPSet;
 	}
 
 	public Set<String> getEmailSet() {
@@ -299,6 +298,26 @@ public class DomainManager {
 	}
 
 
+	//这种一般只会是IP类资产才会需要这样判断吧，域名类很容易确定是否属于目标
+	public boolean isTargetByBlackList(String HostIP) {
+		return !NotTargetIPSet.contains(HostIP);
+	}
+
+	/*
+	 * 用于判断站点是否是我们的目标范围，原理是根据证书的所有域名中，是否有域名包含了关键词。
+	 * 为了避免漏掉有效目标，只有完全确定非目标的才排除！！！
+	 */
+	public boolean isTargetByCertInfo(Set<String> certDomains) {
+		if (certDomains.isEmpty() || certDomains ==null) {//不能判断的，还是暂时认为是在目标中的。
+			return true;
+		}
+		for (String domain:certDomains) {
+			if (domainType(domain) == DomainManager.SUB_DOMAIN) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 	public void AddToRootDomainMap(String key,String value) {
 		if (this.rootDomainMap.containsKey(key) && this.rootDomainMap.containsValue(value)) {

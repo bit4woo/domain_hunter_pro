@@ -67,8 +67,10 @@ public class Producer extends Thread {//Producer do
 					String url = item.getUrl();
 					LineEntry linefound = findHistory(url);
 					if (null != linefound) {
-						item.setComment(linefound.getComment());
-						item.setLevel(linefound.getLevel());
+						linefound.removeComment(LineEntry.NotTargetBaseOnCertInfo);
+						linefound.removeComment(LineEntry.NotTargetBaseOnBlackList);
+						item.addComment(linefound.getComment());
+						item.setAssetType(linefound.getAssetType());
 						try {
 							if (url.equalsIgnoreCase(linefound.getUrl()) && item.getBodyText().length() == linefound.getBodyText().length()) {
 								item.setCheckStatus(linefound.getCheckStatus());

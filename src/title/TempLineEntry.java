@@ -16,9 +16,11 @@ import burp.IHttpRequestResponse;
 import burp.IHttpService;
 import burp.IPAddress;
 import domain.CertInfo;
+import domain.DomainManager;
 import domain.DomainPanel;
 
 public class TempLineEntry {
+	public static final String NotTargetBaseOnCertDomains = "NotTargetBaseOnCertDomains";
 	String host;
 	int port;
 
@@ -35,7 +37,8 @@ public class TempLineEntry {
 	Set<String> certDomains = new HashSet<>();
 
 	public TempLineEntry(String host){
-		if (hostCheckAndParse(host)){
+		DomainManager domainResult = DomainPanel.getDomainResult();
+		if (hostCheckAndParse(host) && domainResult != null){
 			hostToURL(this.host);
 			GetIPAndCDN(this.host);
 			certDomains = getCertDomains();
@@ -46,7 +49,7 @@ public class TempLineEntry {
 		if (host ==null) return new HashSet<>();//无效host直接返回
 
 		if (ToolPanel.ignoreWrongCAHost.isSelected()){
-			if (isTarget(certDomains, DomainPanel.domainResult.fetchKeywordSet())){
+			if (DomainPanel.getDomainResult().isTargetByCertInfo(certDomains)){
 				return new HashSet<>();
 			};
 		}
@@ -127,26 +130,6 @@ public class TempLineEntry {
 		} catch (Exception e) {
 			return new HashSet<String>();
 		}
-	}
-
-	/*
-	 * 用于判断站点是否是我们的目标范围，原理是根据证书的所有域名中，是否有域名包含了关键词。
-	 * 为了避免漏掉有效目标，只有完全确定非目标的才排除！！！
-	 */
-	public static boolean isTarget(Set<String> certDomains,Set<String> domainKeywords) {
-		if (certDomains.isEmpty() || domainKeywords.isEmpty()
-				||certDomains ==null || domainKeywords == null) {//不能判断的，还是暂时认为是在目标中的。
-			return true;
-		}
-		for (String domain:certDomains) {
-			for (String domainKeyword:domainKeywords) {
-				if (domainKeyword.equals("")) continue;
-				if (domain.toLowerCase().contains(domainKeyword.toLowerCase())) {
-					return true;
-				}
-			}
-		}
-		return false;
 	}
 
 	private Set<LineEntry> doGetTitle(){
@@ -233,12 +216,18 @@ public class TempLineEntry {
 		entry.setIPWithSet(IPSet);
 		entry.setCDNWithSet(CDNSet);
 		entry.setCertDomainWithSet(certDomains);
-		if (!isTarget(certDomains, DomainPanel.domainResult.fetchKeywordSet())){
-			entry.addComment("NotTargetBaseOnCertDomains");
+		if (DomainPanel.getDomainResult().isTargetByCertInfo(certDomains)){
+			entry.removeComment(LineEntry.NotTargetBaseOnCertInfo);
 		}else{
-			entry.removeComment("NotTargetBaseOnCertDomains");
+			entry.addComment(LineEntry.NotTargetBaseOnCertInfo);
 		};
-		//TODO 多写一个字段、scopeTag来存储范围控制备注信息！比如在范围内，却不需要挖掘的资产；非目标范围资产等
+		if (Commons.isValidIP(host)) {
+			if (DomainPanel.getDomainResult().isTargetByBlackList(host)){
+				entry.removeComment(LineEntry.NotTargetBaseOnBlackList);
+			}else{
+				entry.addComment(LineEntry.NotTargetBaseOnBlackList);
+			};
+		}
 	}
 
 	//Just do request

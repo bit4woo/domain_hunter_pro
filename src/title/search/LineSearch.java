@@ -10,7 +10,8 @@ public class LineSearch {
 	
 	//根据状态过滤
 	public static boolean entryNeedToShow(LineEntry entry) {
-		if (!(TitlePanel.rdbtnCheckedItems.isSelected()||TitlePanel.rdbtnCheckingItems.isSelected()||TitlePanel.rdbtnUnCheckedItems.isSelected())) {
+		if (!(TitlePanel.rdbtnCheckedItems.isSelected()||TitlePanel.rdbtnCheckingItems.isSelected()||
+				TitlePanel.rdbtnUnCheckedItems.isSelected()||TitlePanel.rdbtnMoreActionItems.isSelected())) {
 			//全部未选中时，全部返回。一来为了满足用户习惯全部未选择时全部返回，
 			//二来是为了解决之前乱改CheckStatus常理带来的bug，之前CheckStatus_Checked == "Checked",现在CheckStatus_Checked== "done"导致选中checked的时候，Checked的那部分就不会被显示出来。
 			return true;
@@ -25,6 +26,10 @@ public class LineSearch {
 		}
 
 		if (TitlePanel.rdbtnUnCheckedItems.isSelected()&& entry.getCheckStatus().equals(LineEntry.CheckStatus_UnChecked)) {
+			return true;
+		}
+		
+		if (TitlePanel.rdbtnMoreActionItems.isSelected()&& entry.getCheckStatus().equals(LineEntry.CheckStatus_MoreAction)) {
 			return true;
 		}
 
