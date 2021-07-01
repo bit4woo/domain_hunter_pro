@@ -7,6 +7,7 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.util.Arrays;
@@ -21,6 +22,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.RowFilter;
 import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
@@ -277,7 +279,7 @@ public class LineTable extends JTable
 		rowSorter.setRowFilter(filter);
 	}
 
-	
+
 	public void registerListeners(){
 		LineTable.this.setRowSelectionAllowed(true);
 		this.addMouseListener( new MouseAdapter()
@@ -359,8 +361,22 @@ public class LineTable extends JTable
 			public void mousePressed(MouseEvent e) { //在mac中触发
 				mouseReleased(e);
 			}
-
 		});
-
+		//鼠标移动到证书信息时，浮动显示完整内容
+		this.addMouseMotionListener(new MouseMotionAdapter() {
+			@Override
+			public void mouseMoved(MouseEvent evt) {
+				int row = TitlePanel.getTitleTable().rowAtPoint(evt.getPoint());
+				row = TitlePanel.getTitleTable().convertRowIndexToModel(row);
+				int colunm = TitlePanel.getTitleTable().columnAtPoint(evt.getPoint());
+				String informations = TitlePanel.getTitleTable().getValueAt(row, colunm).toString();
+				if (colunm == LineTableModel.getTitletList().indexOf("CDN|CertInfo")) {
+					if  (informations.length()>=15) {
+						TitlePanel.getTitleTable().setToolTipText(informations);
+						ToolTipManager.sharedInstance().setDismissDelay(5000);// 设置为5秒
+					}
+				}
+			}
+		});
 	}
 }

@@ -372,8 +372,8 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 
 		CSubNetIPs.removeAll(IPsOfDomain);//删除域名对应的IP
 
-		Set<String> blackIPSet = DomainPanel.getDomainResult().getNotTargetIPSet();
-		CSubNetIPs.removeAll(blackIPSet);//删除黑名单中的IP
+		//Set<String> blackIPSet = DomainPanel.getDomainResult().getNotTargetIPSet();
+		//CSubNetIPs.removeAll(blackIPSet);//删除黑名单中的IP
 
 		return CSubNetIPs;
 	}
