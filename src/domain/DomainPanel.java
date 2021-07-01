@@ -719,19 +719,18 @@ public class DomainPanel extends JPanel {
 				autoSave();
 			}
 		});
-
+		
+		/*
 		JButton btnCopy = new JButton("Copy");
 		btnCopy.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-
 				Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 				StringSelection selection = new StringSelection(domainResult.fetchRootDomains());
 				clipboard.setContents(selection, null);
-
 			}
 		});
 		btnCopy.setToolTipText("Copy Root Domains To ClipBoard");
-		ControlPanel.add(btnCopy);
+		ControlPanel.add(btnCopy);*/
 
 
 		JPanel autoControlPanel = new JPanel();
