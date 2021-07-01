@@ -426,6 +426,24 @@ public class LineEntryMenu extends JPopupMenu {
 				}
 			}
 		});
+		
+		JMenuItem copyCDNAndCertInfoItem = new JMenuItem(new AbstractAction("Copy CDN|CertInfo") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				try{
+					List<String> urls = lineTable.getModel().getCDNAndCertInfos(rows);
+					String textUrls = String.join(System.lineSeparator(), urls);
+
+					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+					StringSelection selection = new StringSelection(textUrls);
+					clipboard.setContents(selection, null);
+				}
+				catch (Exception e1)
+				{
+					e1.printStackTrace(stderr);
+				}
+			}
+		});
 
 		JMenuItem SendToRepeater = new JMenuItem(new AbstractAction("Send To Repeater") {
 			@Override
@@ -585,6 +603,7 @@ public class LineEntryMenu extends JPopupMenu {
 		this.add(copyHostAndPortItem);
 		this.add(copyURLItem);
 		this.add(copyLocationURLItem);
+		this.add(copyCDNAndCertInfoItem);
 		this.add(SendToRepeater);
 		this.add(SendToRepeaterWithCookieItem);
 

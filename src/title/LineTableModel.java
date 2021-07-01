@@ -456,6 +456,20 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			return urls;
 		}
 	}
+	
+	public List<String> getCDNAndCertInfos(int[] rows) {
+		synchronized (lineEntries) {
+			Arrays.sort(rows); //升序
+			List<String> results = new ArrayList<>();
+
+			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
+				LineEntry entry = lineEntries.getValueAtIndex(rows[i]);
+				String CDNAndCertInfo = entry.getCDN();
+				results.add(CDNAndCertInfo);
+			}
+			return results;
+		}
+	}
 
 	public int[] getIndexes(List<LineEntry> entries) {
 		int[] indexes = new int[entries.size()];
