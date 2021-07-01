@@ -317,9 +317,9 @@ public class LineTable extends JTable
 							String currentStatus= selecteEntry.getCheckStatus();
 							List<String> tmpList = Arrays.asList(LineEntry.CheckStatusArray);
 							int index = tmpList.indexOf(currentStatus);
-							String newStatus = tmpList.get((index+1)%3);
+							String newStatus = tmpList.get((index+1)%LineEntry.CheckStatusArray.length);
 							selecteEntry.setCheckStatus(newStatus);
-							stdout.println("$$$ "+selecteEntry.getUrl()+" status has been set to "+LineEntry.CheckStatus_Checked);
+							stdout.println("$$$ "+selecteEntry.getUrl()+" status has been set to "+newStatus);
 							LineTable.this.lineTableModel.fireTableRowsUpdated(rows[0], rows[0]);
 						}catch (Exception e1){
 							e1.printStackTrace(stderr);
