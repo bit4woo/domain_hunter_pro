@@ -1,10 +1,8 @@
 package title;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Desktop;
-import java.awt.Font;
-import java.awt.FontMetrics;
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
@@ -292,9 +290,10 @@ public class LineTable extends JTable
 
 					//int row = ((LineTable) e.getSource()).rowAtPoint(e.getPoint()); // 获得行位置
 					int col = ((LineTable) e.getSource()).columnAtPoint(e.getPoint()); // 获得列位置
+					int modelCol = LineTable.this.convertColumnIndexToModel(col);
 
 					LineEntry selecteEntry = LineTable.this.lineTableModel.getLineEntries().getValueAtIndex(rows[0]);
-					if ((col==0 )) {//双击index在google中搜索host。
+					if ((modelCol == LineTableModel.getTitletList().indexOf("URL") )) {//双击index在google中搜索host。
 						String host = selecteEntry.getHost();
 						String url= "https://www.google.com/search?q=site%3A"+host;
 						try {
@@ -306,14 +305,14 @@ public class LineTable extends JTable
 						} catch (Exception e2) {
 							e2.printStackTrace();
 						}
-					}else if(col==1) {//双击url在浏览器中打开
+					}else if(modelCol==LineTableModel.getTitletList().indexOf("URL")) {//双击url在浏览器中打开
 						try{
 							String url = selecteEntry.getUrl();
 							Commons.browserOpen(url,ToolPanel.getLineConfig().getBrowserPath());
 						}catch (Exception e1){
 							e1.printStackTrace(stderr);
 						}
-					}else if (col == LineTableModel.getTitletList().indexOf("isChecked")) {
+					}else if (modelCol == LineTableModel.getTitletList().indexOf("isChecked")) {
 						try{
 							//LineTable.this.lineTableModel.updateRowsStatus(rows,LineEntry.CheckStatus_Checked);//处理多行
 							String currentStatus= selecteEntry.getCheckStatus();
@@ -326,7 +325,7 @@ public class LineTable extends JTable
 						}catch (Exception e1){
 							e1.printStackTrace(stderr);
 						}
-					}else if (col == LineTableModel.getTitletList().indexOf("AssetType")) {
+					}else if (modelCol == LineTableModel.getTitletList().indexOf("AssetType")) {
 						String currentLevel = selecteEntry.getAssetType();
 						List<String> tmpList = Arrays.asList(LineEntry.AssetTypeArray);
 						int index = tmpList.indexOf(currentLevel);
@@ -334,6 +333,13 @@ public class LineTable extends JTable
 						selecteEntry.setAssetType(newLevel);
 						stdout.println(String.format("$$$ %s updated [AssetType-->%s]",selecteEntry.getUrl(),newLevel));
 						LineTable.this.lineTableModel.fireTableRowsUpdated(rows[0], rows[0]);
+					}else{//LineTableModel.getTitletList().indexOf("CDN|CertInfo")
+						//String value = TitlePanel.getTitleTable().getValueAt(rows[0], col).toString();//getValueAt会自行进行转化，调用的是原始Jtable中的getValueAt！！！
+						String value = LineTable.this.lineTableModel.getValueAt(rows[0],modelCol).toString();//这个调用的是我们自己实现的类中的getValueAt,不会自行转换！！！
+						//String CDNAndCertInfo = selecteEntry.getCDN();
+						Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+						StringSelection selection = new StringSelection(value);
+						clipboard.setContents(selection, null);
 					}
 				}
 			}
@@ -367,10 +373,16 @@ public class LineTable extends JTable
 			@Override
 			public void mouseMoved(MouseEvent evt) {
 				int row = TitlePanel.getTitleTable().rowAtPoint(evt.getPoint());
-				row = TitlePanel.getTitleTable().convertRowIndexToModel(row);
+				int modelRow = TitlePanel.getTitleTable().convertRowIndexToModel(row);
+
 				int colunm = TitlePanel.getTitleTable().columnAtPoint(evt.getPoint());
-				String informations = TitlePanel.getTitleTable().getValueAt(row, colunm).toString();
-				if (colunm == LineTableModel.getTitletList().indexOf("CDN|CertInfo")) {
+				int modelColunm = TitlePanel.getTitleTable().convertColumnIndexToModel(colunm);
+
+				String informations = TitlePanel.getTitleTable().getValueAt(row, colunm).toString();//getValueAt会自行进行转化，调用的是原始Jtable中的getValueAt！！！
+				//String value = LineTable.this.lineTableModel.getValueAt(rows[0],col).toString();//这个调用的是我们自己实现的类中的getValueAt,不会自行转换！！！
+				int headerIndex = LineTableModel.getTitletList().indexOf("CDN|CertInfo");
+
+				if (modelColunm == headerIndex) {
 					if  (informations.length()>=15) {
 						TitlePanel.getTitleTable().setToolTipText(informations);
 						ToolTipManager.sharedInstance().setDismissDelay(5000);// 设置为5秒

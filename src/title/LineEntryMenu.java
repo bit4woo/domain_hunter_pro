@@ -25,6 +25,7 @@ import burp.BurpExtender;
 import burp.Commons;
 import burp.Getter;
 import burp.IBurpExtenderCallbacks;
+import domain.DomainPanel;
 import title.search.SearchDork;
 
 public class LineEntryMenu extends JPopupMenu {
@@ -533,12 +534,33 @@ public class LineEntryMenu extends JPopupMenu {
 		});
 
 		//单纯从title记录中删除
-		JMenuItem removeItem = new JMenuItem(new AbstractAction("Delete") {//need to show dialog to confirm
+		JMenuItem removeItem = new JMenuItem(new AbstractAction("Delete This Entry") {//need to show dialog to confirm
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				int result = JOptionPane.showConfirmDialog(null,"Are you sure to DELETE these items ?");
 				if (result == JOptionPane.YES_OPTION) {
 					lineTable.getModel().removeRows(rows);
+				}else {
+					return;
+				}
+				GUI.titlePanel.digStatus();
+			}
+		});
+		
+		//单纯从title记录中删除
+		JMenuItem removeSubDomainItem = new JMenuItem(new AbstractAction("Delete Host From SubDomainSet") {//need to show dialog to confirm
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				int result = JOptionPane.showConfirmDialog(null,"Are you sure to DELETE these Hosts from SubDomainSet ?");
+				if (result == JOptionPane.YES_OPTION) {
+					//java.util.List<String> hosts = lineTable.getModel().getHosts(rows);//不包含端口，如果原始记录包含端口就删不掉
+					//如果有 domain domain:8888 两个记录，这种方式就会删错对象
+					java.util.List<String> hostAndPort = lineTable.getModel().getHostsAndPorts(rows);//包含端口，如果原始记录
+					for(String item:hostAndPort) {
+						if (!DomainPanel.domainResult.getSubDomainSet().remove(item)) {
+							DomainPanel.domainResult.getSubDomainSet().remove(item.split(":")[0]);
+						}
+					}
 				}else {
 					return;
 				}
@@ -610,6 +632,7 @@ public class LineEntryMenu extends JPopupMenu {
 		this.addSeparator();
 
 		this.add(removeItem);
+		this.add(removeSubDomainItem);
 		this.add(addToblackListItem);
 		this.add(removeFromBlackListItem);
 	}
