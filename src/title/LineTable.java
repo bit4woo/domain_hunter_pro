@@ -293,7 +293,7 @@ public class LineTable extends JTable
 					int modelCol = LineTable.this.convertColumnIndexToModel(col);
 
 					LineEntry selecteEntry = LineTable.this.lineTableModel.getLineEntries().getValueAtIndex(rows[0]);
-					if ((modelCol == LineTableModel.getTitletList().indexOf("URL") )) {//双击index在google中搜索host。
+					if ((modelCol == LineTableModel.getTitletList().indexOf("#") )) {//双击index在google中搜索host。
 						String host = selecteEntry.getHost();
 						String url= "https://www.google.com/search?q=site%3A"+host;
 						try {
@@ -367,22 +367,31 @@ public class LineTable extends JTable
 			public void mousePressed(MouseEvent e) { //在mac中触发
 				mouseReleased(e);
 			}
-		});
-		//鼠标移动到证书信息时，浮动显示完整内容
-		this.addMouseMotionListener(new MouseMotionAdapter() {
+
+			@Override
+			public void mouseEntered(MouseEvent e){
+				//displayCDNAndCertInfo(e);
+			}
+
 			@Override
 			public void mouseMoved(MouseEvent evt) {
+				//displayCDNAndCertInfo(evt);
+			}
+
+			//鼠标移动到证书信息时，浮动显示完整内容
+			@Deprecated //效果不是很好，弃用
+			public void displayCDNAndCertInfo(MouseEvent evt){
 				int row = TitlePanel.getTitleTable().rowAtPoint(evt.getPoint());
 				int modelRow = TitlePanel.getTitleTable().convertRowIndexToModel(row);
 
 				int colunm = TitlePanel.getTitleTable().columnAtPoint(evt.getPoint());
 				int modelColunm = TitlePanel.getTitleTable().convertColumnIndexToModel(colunm);
 
-				String informations = TitlePanel.getTitleTable().getValueAt(row, colunm).toString();//getValueAt会自行进行转化，调用的是原始Jtable中的getValueAt！！！
-				//String value = LineTable.this.lineTableModel.getValueAt(rows[0],col).toString();//这个调用的是我们自己实现的类中的getValueAt,不会自行转换！！！
 				int headerIndex = LineTableModel.getTitletList().indexOf("CDN|CertInfo");
 
 				if (modelColunm == headerIndex) {
+					String informations = TitlePanel.getTitleTable().getValueAt(row, colunm).toString();//getValueAt会自行进行转化，调用的是原始Jtable中的getValueAt！！！
+					//String value = LineTable.this.lineTableModel.getValueAt(rows[0],col).toString();//这个调用的是我们自己实现的类中的getValueAt,不会自行转换！！！
 					if  (informations.length()>=15) {
 						TitlePanel.getTitleTable().setToolTipText(informations);
 						ToolTipManager.sharedInstance().setDismissDelay(5000);// 设置为5秒
