@@ -243,15 +243,7 @@ public class LineTable extends JTable
 		//rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + keyword));
 		History.getInstance().addRecord(Inputkeyword);//记录搜索历史,单例模式
 
-		Inputkeyword = Inputkeyword.trim().toLowerCase();
-		if (Inputkeyword.contains("\"") || Inputkeyword.contains("\'")){
-			//为了处理输入是"dork:12345"的情况，下面的这种写法其实不严谨，中间也可能有引号，不过应付一般的搜索足够了。
-			Inputkeyword = Inputkeyword.replaceAll("\"", "");
-			Inputkeyword = Inputkeyword.replaceAll("\'", "");
-		}
-
-		String dork = SearchDork.grepDork(Inputkeyword);
-		String keyword =  SearchDork.grepKeyword(Inputkeyword);
+		String Input = Inputkeyword.trim();
 
 		//stdout.println("dork:"+dork+"   keyword:"+keyword);
 		final RowFilter filter = new RowFilter() {
@@ -266,11 +258,11 @@ public class LineTable extends JTable
 					return false;
 				}
 
-				if (SearchDork.isDork(dork)) {
+				if (SearchDork.isDork(Input)) {
 					//stdout.println("do dork search,dork:"+dork+"   keyword:"+keyword);
-					return LineSearch.dorkFilte(line,dork,keyword);
+					return LineSearch.dorkFilter(line,Input);
 				}else {
-					return LineSearch.textFilte(line,keyword);
+					return LineSearch.textFilter(line,Input);
 				}
 			}
 		};

@@ -208,6 +208,17 @@ public class LineEntry {
 		return url;
 	}
 
+	//返回通常意义上的URL格式，不包含默认端口。用于搜索
+	public String fetchUrlWithCommonFormate() {
+		String result = protocol+"://"+host;
+		if ((protocol.equalsIgnoreCase("http") && port == 80)
+			|| (protocol.equalsIgnoreCase("https") && port ==443)) {
+			return result+"/";
+		}else {
+			return result+":"+port+"/";
+		}
+	}
+
 	public void setUrl(String url) {
 		this.url = url;
 	}
