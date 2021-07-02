@@ -48,6 +48,7 @@ public class RootDomainMenu extends JPopupMenu {
 					String rootDomain = (String) rootDomainTable.getModel().getValueAt(row,0);
 					try {
 						Commons.browserOpen("https://whois.chinaz.com/"+rootDomain,null);
+						Commons.browserOpen("https://www.whois.com/whois/"+rootDomain,null);
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
