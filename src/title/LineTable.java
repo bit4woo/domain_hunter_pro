@@ -34,6 +34,7 @@ import title.search.History;
 import title.search.LineSearch;
 import title.search.SearchDork;
 
+
 public class LineTable extends JTable
 {
 	/**
@@ -51,6 +52,16 @@ public class LineTable extends JTable
 	private JSplitPane tableAndDetailSplitPane;//table area + detail area
 	public JSplitPane getTableAndDetailSplitPane() {
 		return tableAndDetailSplitPane;
+	}
+	
+	@Override//参考javax.swing.JTable中的函数，每次都有主动进行转换
+    public Object getValueAt(int row, int column) {
+        return getModel().getValueAt(convertRowIndexToModel(row),
+                                     convertColumnIndexToModel(column));
+    }
+	
+	public LineEntry getRowAt(int row) {
+		return getModel().getLineEntries().getValueAtIndex(convertRowIndexToModel(row));
 	}
 
 	//将选中的行（图形界面的行）转换为Model中的行数（数据队列中的index）.因为图形界面排序等操作会导致图像和数据队列的index不是线性对应的。
@@ -93,7 +104,8 @@ public class LineTable extends JTable
 	public void changeSelection(int row, int col, boolean toggle, boolean extend)
 	{
 		// show the log entry for the selected row
-		LineEntry Entry = this.lineTableModel.getLineEntries().getValueAtIndex(super.convertRowIndexToModel(row));
+		//LineEntry Entry = this.lineTableModel.getLineEntries().getValueAtIndex(super.convertRowIndexToModel(row));
+		LineEntry Entry = this.getRowAt(row);
 
 		requestViewer.setMessage(Entry.getRequest(), true);
 		responseViewer.setMessage(Entry.getResponse(), false);
@@ -326,8 +338,10 @@ public class LineTable extends JTable
 						stdout.println(String.format("$$$ %s updated [AssetType-->%s]",selecteEntry.getUrl(),newLevel));
 						LineTable.this.lineTableModel.fireTableRowsUpdated(rows[0], rows[0]);
 					}else{//LineTableModel.getTitletList().indexOf("CDN|CertInfo")
-						//String value = TitlePanel.getTitleTable().getValueAt(rows[0], col).toString();//getValueAt会自行进行转化，调用的是原始Jtable中的getValueAt！！！
-						String value = LineTable.this.lineTableModel.getValueAt(rows[0],modelCol).toString();//这个调用的是我们自己实现的类中的getValueAt,不会自行转换！！！
+						//String value = TitlePanel.getTitleTable().getValueAt(rows[0], col).toString();//rows[0]是转换过的，不能再转换
+						//调用的是原始Jtable中的getValueAt，它本质上也是调用model中的getValueAt，但是有一次转换的过程！！！
+						String value = LineTable.this.lineTableModel.getValueAt(rows[0],modelCol).toString();
+						//调用的是我们自己实现的TableModel类中的getValueAt,相比Jtable类中的同名方法，就少了一次转换的过程！！！
 						//String CDNAndCertInfo = selecteEntry.getCDN();
 						Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 						StringSelection selection = new StringSelection(value);
@@ -382,8 +396,10 @@ public class LineTable extends JTable
 				int headerIndex = LineTableModel.getTitletList().indexOf("CDN|CertInfo");
 
 				if (modelColunm == headerIndex) {
-					String informations = TitlePanel.getTitleTable().getValueAt(row, colunm).toString();//getValueAt会自行进行转化，调用的是原始Jtable中的getValueAt！！！
-					//String value = LineTable.this.lineTableModel.getValueAt(rows[0],col).toString();//这个调用的是我们自己实现的类中的getValueAt,不会自行转换！！！
+					String informations = TitlePanel.getTitleTable().getValueAt(row, colunm).toString();
+					//调用的是原始Jtable中的getValueAt，有一次自动转换行列index的过程！
+					//String value = LineTable.this.lineTableModel.getValueAt(modelRow,modelColunm).toString();
+					//调用的是我们自己实现TableModel类中的getValueAt,没有行列index自动转换！！！
 					if  (informations.length()>=15) {
 						TitlePanel.getTitleTable().setToolTipText(informations);
 						ToolTipManager.sharedInstance().setDismissDelay(5000);// 设置为5秒
