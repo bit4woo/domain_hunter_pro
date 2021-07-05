@@ -1,5 +1,6 @@
 package domain;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -393,6 +394,9 @@ public class DomainManager {
 
 	public static String getRootDomain(String inputDomain) {
 		try {
+			if (inputDomain.toLowerCase().startsWith("http://") || inputDomain.toLowerCase().startsWith("https://")) {
+				inputDomain = new URL(inputDomain).getHost();
+			}
 			String rootDomain =InternetDomainName.from(inputDomain).topPrivateDomain().toString();
 			return rootDomain;
 		}catch(Exception e) {
