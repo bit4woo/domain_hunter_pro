@@ -185,6 +185,18 @@ public class ToolPanel extends JPanel {
 
 		JLabel lblNewLabelNull = new JLabel("  ");
 		HeaderPanel.add(lblNewLabelNull);
+		
+		JButton outputToInput = new JButton("Input<----Output");
+		HeaderPanel.add(outputToInput);
+		outputToInput.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String content = outputTextArea.getText();
+				if (null != content) {
+					inputTextArea.setText(content);
+				}
+			}
+		});
 
 		//第一次分割，中间的大模块一分为二
 		JSplitPane CenterSplitPane = new JSplitPane();//中间的大模块，一分为二
