@@ -689,6 +689,15 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		});
+		
+		JButton toLowerCaseButton = new JButton("toLowerCase");
+		threeFourthPanel.add(toLowerCaseButton);
+		toLowerCaseButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				outputTextArea.setText(inputTextArea.getText().toLowerCase());
+			}
+		});
 
 		JPanel fourFourthPanel = new JPanel();
 		RightOfCenter.setRightComponent(fourFourthPanel);
