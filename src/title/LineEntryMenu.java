@@ -1,23 +1,5 @@
 package title;
 
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
-import java.io.PrintWriter;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.swing.AbstractAction;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPopupMenu;
-import javax.swing.SwingWorker;
-
 import GUI.GUI;
 import GUI.LineEntryMenuForBurp;
 import Tools.ToolPanel;
@@ -27,6 +9,18 @@ import burp.Getter;
 import burp.IBurpExtenderCallbacks;
 import domain.DomainPanel;
 import title.search.SearchDork;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.ActionEvent;
+import java.io.PrintWriter;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public class LineEntryMenu extends JPopupMenu {
 
