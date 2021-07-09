@@ -809,7 +809,7 @@ public class DomainPanel extends JPanel {
 		textAreaEmails.setColumns(10);
 		textAreaPackages.setColumns(10);
 
-		textAreaSubnets.setToolTipText("Subnets for certain");
+		textAreaSubnets.setToolTipText("Subnets/IP for certain");
 		textAreaRelatedDomains.setToolTipText("Related Domains");
 		textAreaSubdomains.setToolTipText("Sub Domains");
 		textAreaSimilarDomains.setToolTipText("Similar Domains");

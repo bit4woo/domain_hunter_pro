@@ -337,8 +337,12 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		if (rows-1 >=0)	fireTableRowsDeleted(0, rows-1);
 		this.setListenerIsOn(true);
 	}
-
-	private Set<String> getIPSet() {
+	
+	/**
+	 * 
+	 * @return 获取已成功获取title的Entry的IP地址集合
+	 */
+	private Set<String> getIPSetFromTitle() {
 		Set<String> result = new HashSet<String>();
 		//lineEntries.addAll(hidenLineEntries);
 		for(LineEntry line:lineEntries.values()) {
@@ -362,24 +366,39 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		}
 		return result;
 	}
-
+	
+	/**
+	 * 获取根据确定目标汇算出来的网段，减去已确定目标本身后，剩余的IP地址。
+	 * @return 扩展IP集合
+	 */
 	public Set<String> GetExtendIPSet() {
-		Set<String> IPsOfDomain = getIPSet();
+		Set<String> IPsOfDomain = getIPSetFromTitle();//title记录中的IP
 		//Set<String> CSubNetIPs = Commons.subNetsToIPSet(Commons.toSubNets(IPsOfDomain));
-		Set<String> subnets = Commons.toSmallerSubNets(IPsOfDomain);//当前所有title结果计算出的IP网段
-		subnets.addAll(DomainPanel.getDomainResult().getSubnetSet());//确定的IP网段，用户自己输入的
+		Set<String> IPsOfcertainSubnets = Commons.toIPSet(DomainPanel.getDomainResult().getSubnetSet());//用户配置的确定IP+网段
+		IPsOfDomain.addAll(IPsOfcertainSubnets);
+		
+		Set<String> subnets = Commons.toSmallerSubNets(IPsOfDomain);//当前所有title结果+确定IP/网段计算出的IP网段
+		
 		Set<String> CSubNetIPs = Commons.toIPSet(subnets);// 当前所有title结果计算出的IP集合
 
 		CSubNetIPs.removeAll(IPsOfDomain);//删除域名对应的IP
-
+		CSubNetIPs.removeAll(IPsOfcertainSubnets);
 		//Set<String> blackIPSet = DomainPanel.getDomainResult().getNotTargetIPSet();
 		//CSubNetIPs.removeAll(blackIPSet);//删除黑名单中的IP
 
 		return CSubNetIPs;
 	}
 
+	/**
+	 * 1、title记录中成功解析的IP地址集合
+	 * 2、用户指定的确信度很高的IP和网段的集合。
+	 * 将2者合并算成网段。
+	 * @return 根据确切目标算出的网段
+	 */
 	public Set<String> GetSubnets() {
-		Set<String> IPsOfDomain = getIPSet();
+		Set<String> IPsOfDomain = getIPSetFromTitle();//title记录中的IP
+		Set<String> IPsOfcertainSubnets = Commons.toIPSet(DomainPanel.getDomainResult().getSubnetSet());//用户配置的确定IP+网段
+		IPsOfDomain.addAll(IPsOfcertainSubnets);
 		//Set<String> CSubNetIPs = Commons.subNetsToIPSet(Commons.toSubNets(IPsOfDomain));
 		Set<String> subnets = Commons.toSmallerSubNets(IPsOfDomain);
 		return subnets;

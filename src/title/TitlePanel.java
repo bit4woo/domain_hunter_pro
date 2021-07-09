@@ -384,6 +384,7 @@ public class TitlePanel extends JPanel {
 
 		//将新发现的域名也移动到子域名集合中，以便跑一次全量。 ---DomainConsumer.QueueToResult()中的逻辑已经保证了SubDomainSet一直是最全的。
 		domains.addAll(DomainPanel.getDomainResult().getSubDomainSet());
+		domains.addAll(Commons.toIPSet(DomainPanel.getDomainResult().getSubnetSet()));//确定的IP网段，用户自己输入的
 		//remove domains in black list that is not our target
 		//domains.removeAll(DomainPanel.getDomainResult().fetchNotTargetIPList());//无需移除，会标记出来的。
 
@@ -451,11 +452,12 @@ public class TitlePanel extends JPanel {
 	public String getSubnet(boolean isCurrent,boolean justPulic){
 		//stdout.println(" "+isCurrent+justPulic);
 		Set<String> subnets;
-		if (isCurrent) {//获取的是现有可成功连接的IP集合
+		if (isCurrent) {//获取的是现有可成功连接的IP集合+用户指定的IP网段集合
 			subnets = titleTableModel.GetSubnets();
 		}else {//重新解析所有域名的IP
 			Set<String> IPsOfDomain = new ThreadGetSubnet(DomainPanel.getDomainResult().getSubDomainSet()).Do();
-			//Set<String> CSubNetIPs = Commons.subNetsToIPSet(Commons.toSubNets(IPsOfDomain));
+			Set<String> IPsOfcertainSubnets = Commons.toIPSet(DomainPanel.getDomainResult().getSubnetSet());//用户配置的确定IP+网段
+			IPsOfDomain.addAll(IPsOfcertainSubnets);
 			subnets = Commons.toSmallerSubNets(IPsOfDomain);
 		}
 
