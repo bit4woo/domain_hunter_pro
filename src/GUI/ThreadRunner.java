@@ -35,7 +35,7 @@ public class ThreadRunner{
 		this.runnerGUI = runnerGUI;
 		this.messageInfo = messageInfo;
 	}
-	
+
 	public String getKeywordFromUI() {
 		String responseKeyword = JOptionPane.showInputDialog("Response Keyword", null);
 		while(responseKeyword.trim().equals("")){
@@ -98,10 +98,12 @@ public class ThreadRunner{
 	}
 
 	public void stopThreads() {
-		for (RunnerProducer p:plist) {
-			p.stopThread();
+		if (plist != null) {
+			for (RunnerProducer p:plist) {
+				p.stopThread();
+			}
+			stdout.println("~~~~~~~~~~~~~All stop message sent! wait them to exit~~~~~~~~~~~~~");
 		}
-		stdout.println("~~~~~~~~~~~~~All stop message sent! wait them to exit~~~~~~~~~~~~~");
 	}
 }
 
@@ -183,7 +185,7 @@ class RunnerProducer extends Thread {//Producer do
 				IHttpRequestResponse messageinfo = callbacks.makeHttpRequest(httpService, neRequest);
 				String fullurl = helpers.analyzeRequest(messageinfo).getUrl().toString();
 				stdout.println(String.format("%s tasks left, Runner Checking: %s",leftTaskNum,fullurl));
-				
+
 				if (messageinfo !=null) {
 					byte[] response = messageinfo.getResponse();
 					if (response != null) {
