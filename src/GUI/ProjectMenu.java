@@ -27,7 +27,8 @@ public class ProjectMenu{
 			JMenuBar menuBar = getBurpFrame().getJMenuBar();
 			menuBar.add(hunterMenu, menuBar.getMenuCount() - 1);
 		}catch (Exception e){
-
+			e.printStackTrace();
+			e.printStackTrace(BurpExtender.getStderr());
 		}
 	}
 
