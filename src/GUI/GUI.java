@@ -106,19 +106,16 @@ public class GUI extends JFrame {
 
 	//显示项目名称，加载多个该插件时，进行区分，避免混淆
 	public static void displayProjectName() {
-		if (!ProjectMenu.isAlone() || ProjectMenu.needFreshDisplay()) {
-			if (DomainPanel.getDomainResult() !=null){
-				//String name = GUI.currentDBFile.getName();
-				String name = DomainPanel.getDomainResult().getProjectName();
-				String newName = String.format(BurpExtender.getFullExtenderName()+
-						" [%s]",name);
-				BurpExtender.getCallbacks().setExtensionName(newName); //新插件名称
-
-				GUI.getProjectMenu().AddDBNameMenuItem(name);
-				GUI.getProjectMenu().AddDBNameTab(name);
-
-				//gui.repaint();//NO need
-			}
+		if (DomainPanel.getDomainResult() !=null){
+			//String name = GUI.currentDBFile.getName();
+			String name = DomainPanel.getDomainResult().getProjectName();
+			String newName = String.format(BurpExtender.getFullExtenderName()+
+					" [%s]",name);
+			
+			BurpExtender.getCallbacks().setExtensionName(newName); //新插件名称
+			GUI.getProjectMenu().AddDBNameMenuItem(name);
+			GUI.getProjectMenu().AddDBNameTab(name);
+			//gui.repaint();//NO need
 		}
 	}
 

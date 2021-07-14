@@ -38,6 +38,10 @@ public class ProjectMenu{
 		menuBar.repaint();
 	}
 
+	/**
+	 * 最上面的项目菜单中显示项目名称
+	 * @param name
+	 */
 	public void AddDBNameMenuItem(String name){
 		if (null==name) return;
 		String firstName = hunterMenu.getItem(0).getName();
@@ -59,7 +63,11 @@ public class ProjectMenu{
 		});
 		hunterMenu.insert(nameItem,0);
 	}
-
+	
+	/**
+	 * Domain Panel显示项目名称
+	 * @param name
+	 */
 	public void AddDBNameTab(String name){
 		if (null == name) return;
 		JTabbedPane panel = ((JTabbedPane)gui.getContentPane());
@@ -119,6 +127,7 @@ public class ProjectMenu{
 	}
 	
 	//判断是否加载了新的项目，如果是就需要刷新显示的项目名称。
+	@Deprecated
 	public static boolean needFreshDisplay() {
 		String firstName = hunterMenu.getItem(0).getName();
 		if (firstName != null && firstName.equals("JustDisplayDBFileName")){
