@@ -29,7 +29,10 @@ public class LineConfig {
 	private String nmapPath ="D:\\Program Files (x86)\\Nmap\\nmap.exe";
 	private String bruteDict ="D:\\github\\webdirscan\\dict\\dict.txt";
 	private String toolPanelText = "";
+	private String elasticApiUrl = "http://10.12.72.55:9200/";
+	private String elasticUsernameAndPassword = "elastic:changeme";
 	private boolean showItemsInOne = false;
+	private boolean enableElastic = false;
 	
 	LineConfig(){
 		if (Commons.isMac()) {
@@ -145,6 +148,30 @@ public class LineConfig {
 		this.toolPanelText = toolPanelText;
 	}
 
+	public String getElasticApiUrl() {
+		return elasticApiUrl;
+	}
+
+
+
+	public void setElasticApiUrl(String elasticApiUrl) {
+		this.elasticApiUrl = elasticApiUrl;
+	}
+
+
+
+	public String getElasticUsernameAndPassword() {
+		return elasticUsernameAndPassword;
+	}
+
+
+
+	public void setElasticUsernameAndPassword(String elasticUsernameAndPassword) {
+		this.elasticUsernameAndPassword = elasticUsernameAndPassword;
+	}
+
+
+
 	public boolean isShowItemsInOne() {
 		return showItemsInOne;
 	}
@@ -152,6 +179,18 @@ public class LineConfig {
 	public void setShowItemsInOne(boolean showItemsInOne) {
 		this.showItemsInOne = showItemsInOne;
 	}
+
+	public boolean isEnableElastic() {
+		return enableElastic;
+	}
+
+
+
+	public void setEnableElastic(boolean enableElastic) {
+		this.enableElastic = enableElastic;
+	}
+
+
 
 	public String ToJson() {
 		return JSON.toJSONString(this);

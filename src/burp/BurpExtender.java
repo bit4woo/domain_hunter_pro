@@ -175,11 +175,15 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 
 	@Override
 	public void extensionUnloaded() {
-		GUI.getProjectMenu().remove();
-		stopLiveCapture();
-		if (TitlePanel.threadGetTitle != null) {
-			TitlePanel.threadGetTitle.interrupt();//maybe null
-		}//必须要先结束线程，否则获取数据的操作根本无法结束，因为线程一直通过sync占用资源
+		try {//避免这里错误导致保存逻辑的失效
+			GUI.getProjectMenu().remove();
+			stopLiveCapture();
+			if (TitlePanel.threadGetTitle != null) {
+				TitlePanel.threadGetTitle.interrupt();//maybe null
+			}//必须要先结束线程，否则获取数据的操作根本无法结束，因为线程一直通过sync占用资源
+		} catch (Exception e) {
+			e.printStackTrace(stderr);
+		}
 
 		gui.getToolPanel().saveConfigToDisk();
 		DomainPanel.autoSave();//域名面板自动保存逻辑有点复杂，退出前再自动保存一次

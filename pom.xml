@@ -191,5 +191,10 @@
 			<version>2.0b5</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.elasticsearch.client</groupId>
+			<artifactId>elasticsearch-rest-high-level-client</artifactId>
+			<version>7.13.3</version>
+		</dependency>
 	</dependencies>
 </project>

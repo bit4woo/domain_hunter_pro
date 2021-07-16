@@ -49,6 +49,7 @@ import javax.swing.event.DocumentListener;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.text.StringEscapeUtils;
 
+import GUI.JTextFieldHintListener;
 import burp.BurpExtender;
 import burp.Commons;
 import domain.CertInfo;
@@ -64,7 +65,7 @@ public class ToolPanel extends JPanel {
 
 	private JLabel lblNewLabel_2;
 
-	private boolean listenerIsOn = true;
+	private volatile boolean listenerIsOn = true;
 	PrintWriter stdout;
 	PrintWriter stderr;
 	private JTextField BrowserPath;
@@ -80,17 +81,22 @@ public class ToolPanel extends JPanel {
 	public static JRadioButton ignoreHTTPStaus400;
 	public static JRadioButton ignoreWrongCAHost;
 	public static JRadioButton DisplayContextMenuOfBurp;
-	private JTextField textFieldPortScanner;
-	private JTextField textFieldDirSearch;
+	public static JRadioButton rdbtnSaveTrafficTo;
+	public static JTextField textFieldPortScanner;
+	public static JTextField textFieldDirSearch;
 	public static JTextField textFieldDirBruteDict;
-	private JTextField textFieldPython;
-
+	public static JTextField textFieldPython;
+	public static JTextField textFieldElasticURL;
+	public static JTextField textFieldElasticUserPass;
 
 	public static LineConfig getLineConfig() {
 		return lineConfig;
 	}
 
-	//加载： 磁盘文件-->LineConfig对象--->具体控件的值
+	/**
+	 * 加载： 磁盘文件-->LineConfig对象--->具体控件的值
+	 * 注意对监听器的影响
+	 */
 	public void loadConfigToGUI() {
 		String content = BurpExtender.getCallbacks().loadExtensionSetting(BurpExtender.Extension_Setting_Name_Line_Config);
 		if (content == null) {
@@ -98,13 +104,23 @@ public class ToolPanel extends JPanel {
 		}else {
 			lineConfig = LineConfig.FromJson(content);
 		}
+		//这里的修改也会触发textFieldListener监听器。
+		//由于我们是多个组件共用一个保存逻辑，当前对一个组件设置值的时候，触发保存，从而导致整体数据的修改！！！
+		//所以和domain和title中一样，显示数据时关闭监听器。
+		listenerIsOn = false;
 		inputTextArea.setText(lineConfig.getToolPanelText());
+		
 		BrowserPath.setText(lineConfig.getBrowserPath());
 		textFieldPortScanner.setText(lineConfig.getNmapPath());
 		textFieldDirSearch.setText(lineConfig.getDirSearchPath());
 		textFieldPython.setText(lineConfig.getPython3Path());
 		textFieldDirBruteDict.setText(lineConfig.getBruteDict());
+		textFieldElasticURL.setText(lineConfig.getElasticApiUrl());
+		textFieldElasticUserPass.setText(lineConfig.getElasticUsernameAndPassword());
+		
 		showItemsInOne.setSelected(lineConfig.isShowItemsInOne());
+		rdbtnSaveTrafficTo.setSelected(lineConfig.isEnableElastic());
+		listenerIsOn = true;//显示完毕后打开监听器。
 	}
 
 
@@ -114,6 +130,8 @@ public class ToolPanel extends JPanel {
 		File python3 = new File(textFieldPython.getText().trim());
 		File dirSearch = new File(textFieldDirSearch.getText().trim());
 		File bruteDict = new File(textFieldDirBruteDict.getText().trim());
+		String elasticUrl = textFieldElasticURL.getText().trim();
+		String elasticUserAndPass = textFieldElasticUserPass.getText();
 		if (browser.exists()) {
 			lineConfig.setBrowserPath(browser.getAbsolutePath());
 		}
@@ -129,8 +147,11 @@ public class ToolPanel extends JPanel {
 		if (python3.exists()) {
 			lineConfig.setPython3Path(python3.getAbsolutePath());
 		}
+		lineConfig.setElasticApiUrl(elasticUrl); 
+		lineConfig.setElasticUsernameAndPassword(elasticUserAndPass);
 		lineConfig.setToolPanelText(inputTextArea.getText());
 		lineConfig.setShowItemsInOne(showItemsInOne.isSelected());
+		lineConfig.setEnableElastic(rdbtnSaveTrafficTo.isSelected());
 	}
 
 	//要不要主动获取一下所有控件的值呢？
@@ -715,9 +736,9 @@ public class ToolPanel extends JPanel {
 		RightOfCenter.setRightComponent(fourFourthPanel);
 		GridBagLayout gbl_fourFourthPanel = new GridBagLayout();
 		gbl_fourFourthPanel.columnWidths = new int[]{215, 215, 0};
-		gbl_fourFourthPanel.rowHeights = new int[]{27, 0, 0, 0, 27, 0, 0, 27, 27, 27, 27, 0, 0, 0};
+		gbl_fourFourthPanel.rowHeights = new int[]{27, 0, 0, 0, 27, 0, 0, 0, 0, 27, 27, 27, 27, 0, 0, 0, 0};
 		gbl_fourFourthPanel.columnWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
-		gbl_fourFourthPanel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gbl_fourFourthPanel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		fourFourthPanel.setLayout(gbl_fourFourthPanel);
 
 		JLabel lblNewLabel = new JLabel("Browser Path:");
@@ -826,6 +847,49 @@ public class ToolPanel extends JPanel {
 		gbc_textFieldDirBruteDict.gridx = 1;
 		gbc_textFieldDirBruteDict.gridy = 5;
 		fourFourthPanel.add(textFieldDirBruteDict, gbc_textFieldDirBruteDict);
+		
+		JLabel lblElasticURL = new JLabel("Elastic URL:");
+		GridBagConstraints gbc_lblElasticURL = new GridBagConstraints();
+		gbc_lblElasticURL.anchor = GridBagConstraints.WEST;
+		gbc_lblElasticURL.insets = new Insets(0, 0, 5, 5);
+		gbc_lblElasticURL.gridx = 0;
+		gbc_lblElasticURL.gridy = 6;
+		fourFourthPanel.add(lblElasticURL, gbc_lblElasticURL);
+		
+		textFieldElasticURL = new JTextField();
+		textFieldElasticURL.setToolTipText("URL of elastic API");
+		textFieldElasticURL.setText("http://10.12.72.55:9200/");
+		textFieldElasticURL.getDocument().addDocumentListener(new textFieldListener());
+		//textFieldElasticURL.addFocusListener(new JTextFieldHintListener(textFieldElasticURL,"http://10.12.72.55:9200/"));
+		//这个HintListener的操作，会触发DocumentListener的insertUpdate操作！
+		textFieldElasticURL.setColumns(50);
+		GridBagConstraints gbc_textField = new GridBagConstraints();
+		gbc_textField.insets = new Insets(0, 0, 5, 0);
+		gbc_textField.fill = GridBagConstraints.HORIZONTAL;
+		gbc_textField.gridx = 1;
+		gbc_textField.gridy = 6;
+		fourFourthPanel.add(textFieldElasticURL, gbc_textField);
+		
+		JLabel lblDirElasticUserPass = new JLabel("Elastic Username Password:");
+		GridBagConstraints gbc_lblDirElasticUserPass = new GridBagConstraints();
+		gbc_lblDirElasticUserPass.anchor = GridBagConstraints.WEST;
+		gbc_lblDirElasticUserPass.insets = new Insets(0, 0, 5, 5);
+		gbc_lblDirElasticUserPass.gridx = 0;
+		gbc_lblDirElasticUserPass.gridy = 7;
+		fourFourthPanel.add(lblDirElasticUserPass, gbc_lblDirElasticUserPass);
+		
+		textFieldElasticUserPass = new JTextField();
+		textFieldElasticUserPass.setText("elastic:changeme");
+		textFieldElasticUserPass.setToolTipText("username and password of elastic API");
+		textFieldElasticUserPass.getDocument().addDocumentListener(new textFieldListener());
+		//textFieldElasticUserPass.addFocusListener(new JTextFieldHintListener(textFieldElasticUserPass,"elastic:changeme"));
+		textFieldElasticUserPass.setColumns(50);
+		GridBagConstraints gbc_textField_1 = new GridBagConstraints();
+		gbc_textField_1.insets = new Insets(0, 0, 5, 0);
+		gbc_textField_1.fill = GridBagConstraints.HORIZONTAL;
+		gbc_textField_1.gridx = 1;
+		gbc_textField_1.gridy = 7;
+		fourFourthPanel.add(textFieldElasticUserPass, gbc_textField_1);
 
 		DisplayContextMenuOfBurp = new JRadioButton("Display Context Menu Of Burp");
 		DisplayContextMenuOfBurp.setSelected(true);
@@ -833,7 +897,7 @@ public class ToolPanel extends JPanel {
 		gbc_DisplayContextMenuOfBurp.insets = new Insets(0, 0, 5, 0);
 		gbc_DisplayContextMenuOfBurp.fill = GridBagConstraints.BOTH;
 		gbc_DisplayContextMenuOfBurp.gridx = 1;
-		gbc_DisplayContextMenuOfBurp.gridy = 6;
+		gbc_DisplayContextMenuOfBurp.gridy = 8;
 		fourFourthPanel.add(DisplayContextMenuOfBurp, gbc_DisplayContextMenuOfBurp);
 
 		JLabel label_1 = new JLabel("");
@@ -841,7 +905,7 @@ public class ToolPanel extends JPanel {
 		gbc_label_1.fill = GridBagConstraints.BOTH;
 		gbc_label_1.insets = new Insets(0, 0, 5, 5);
 		gbc_label_1.gridx = 0;
-		gbc_label_1.gridy = 7;
+		gbc_label_1.gridy = 9;
 		fourFourthPanel.add(label_1, gbc_label_1);
 
 
@@ -850,7 +914,7 @@ public class ToolPanel extends JPanel {
 		gbc_showItemsInOne.fill = GridBagConstraints.BOTH;
 		gbc_showItemsInOne.insets = new Insets(0, 0, 5, 0);
 		gbc_showItemsInOne.gridx = 1;
-		gbc_showItemsInOne.gridy = 7;
+		gbc_showItemsInOne.gridy = 9;
 		fourFourthPanel.add(showItemsInOne, gbc_showItemsInOne);
 		showItemsInOne.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -863,7 +927,7 @@ public class ToolPanel extends JPanel {
 		gbc_label_2.fill = GridBagConstraints.BOTH;
 		gbc_label_2.insets = new Insets(0, 0, 5, 5);
 		gbc_label_2.gridx = 0;
-		gbc_label_2.gridy = 8;
+		gbc_label_2.gridy = 10;
 		fourFourthPanel.add(label_2, gbc_label_2);
 
 		ignoreHTTPS = new JRadioButton("Ignore HTTPS if HTTP is OK || Ignore HTTP if HTTPS is OK");
@@ -871,7 +935,7 @@ public class ToolPanel extends JPanel {
 		gbc_ignoreHTTPS.fill = GridBagConstraints.BOTH;
 		gbc_ignoreHTTPS.insets = new Insets(0, 0, 5, 0);
 		gbc_ignoreHTTPS.gridx = 1;
-		gbc_ignoreHTTPS.gridy = 8;
+		gbc_ignoreHTTPS.gridy = 10;
 		fourFourthPanel.add(ignoreHTTPS, gbc_ignoreHTTPS);
 		ignoreHTTPS.setSelected(true);
 
@@ -880,7 +944,7 @@ public class ToolPanel extends JPanel {
 		gbc_label_3.fill = GridBagConstraints.BOTH;
 		gbc_label_3.insets = new Insets(0, 0, 5, 5);
 		gbc_label_3.gridx = 0;
-		gbc_label_3.gridy = 9;
+		gbc_label_3.gridy = 11;
 		fourFourthPanel.add(label_3, gbc_label_3);
 
 		ignoreHTTPStaus500 = new JRadioButton("Ignore items which Status >= 500");
@@ -888,7 +952,7 @@ public class ToolPanel extends JPanel {
 		gbc_ignoreHTTPStaus500.fill = GridBagConstraints.BOTH;
 		gbc_ignoreHTTPStaus500.insets = new Insets(0, 0, 5, 0);
 		gbc_ignoreHTTPStaus500.gridx = 1;
-		gbc_ignoreHTTPStaus500.gridy = 9;
+		gbc_ignoreHTTPStaus500.gridy = 11;
 		fourFourthPanel.add(ignoreHTTPStaus500, gbc_ignoreHTTPStaus500);
 		ignoreHTTPStaus500.setSelected(true);
 
@@ -897,7 +961,7 @@ public class ToolPanel extends JPanel {
 		gbc_label_4.fill = GridBagConstraints.BOTH;
 		gbc_label_4.insets = new Insets(0, 0, 5, 5);
 		gbc_label_4.gridx = 0;
-		gbc_label_4.gridy = 10;
+		gbc_label_4.gridy = 12;
 		fourFourthPanel.add(label_4, gbc_label_4);
 
 		ignoreHTTPStaus400 = new JRadioButton("Ignore http Status 400(The plain HTTP request was sent to HTTPS port)");
@@ -905,7 +969,7 @@ public class ToolPanel extends JPanel {
 		gbc_ignoreHTTPStaus400.insets = new Insets(0, 0, 5, 0);
 		gbc_ignoreHTTPStaus400.fill = GridBagConstraints.BOTH;
 		gbc_ignoreHTTPStaus400.gridx = 1;
-		gbc_ignoreHTTPStaus400.gridy = 10;
+		gbc_ignoreHTTPStaus400.gridy = 12;
 		fourFourthPanel.add(ignoreHTTPStaus400, gbc_ignoreHTTPStaus400);
 		ignoreHTTPStaus400.setSelected(true);
 
@@ -913,7 +977,7 @@ public class ToolPanel extends JPanel {
 		GridBagConstraints gbc_label_5 = new GridBagConstraints();
 		gbc_label_5.insets = new Insets(0, 0, 5, 5);
 		gbc_label_5.gridx = 0;
-		gbc_label_5.gridy = 11;
+		gbc_label_5.gridy = 13;
 		fourFourthPanel.add(label_5, gbc_label_5);
 
 		ignoreWrongCAHost = new JRadioButton("Ignore Host that IP Address and Certificate Authority not match");
@@ -922,14 +986,23 @@ public class ToolPanel extends JPanel {
 		gbc_ignoreWrongCAHost.insets = new Insets(0, 0, 5, 0);
 		gbc_ignoreWrongCAHost.fill = GridBagConstraints.BOTH;
 		gbc_ignoreWrongCAHost.gridx = 1;
-		gbc_ignoreWrongCAHost.gridy = 11;
+		gbc_ignoreWrongCAHost.gridy = 13;
 		fourFourthPanel.add(ignoreWrongCAHost, gbc_ignoreWrongCAHost);
+		
+		rdbtnSaveTrafficTo = new JRadioButton("Save traffic to Elastic");
+		rdbtnSaveTrafficTo.setSelected(false);
+		GridBagConstraints gbc_rdbtnSaveTrafficTo = new GridBagConstraints();
+		gbc_rdbtnSaveTrafficTo.anchor = GridBagConstraints.WEST;
+		gbc_rdbtnSaveTrafficTo.insets = new Insets(0, 0, 5, 0);
+		gbc_rdbtnSaveTrafficTo.gridx = 1;
+		gbc_rdbtnSaveTrafficTo.gridy = 14;
+		fourFourthPanel.add(rdbtnSaveTrafficTo, gbc_rdbtnSaveTrafficTo);
 
 		JLabel label_6 = new JLabel("");
 		GridBagConstraints gbc_label_6 = new GridBagConstraints();
 		gbc_label_6.insets = new Insets(0, 0, 0, 5);
 		gbc_label_6.gridx = 0;
-		gbc_label_6.gridy = 12;
+		gbc_label_6.gridy = 15;
 		fourFourthPanel.add(label_6, gbc_label_6);
 
 		///////////////////////////FooterPanel//////////////////
@@ -997,39 +1070,51 @@ public class ToolPanel extends JPanel {
 
 		@Override
 		public void removeUpdate(DocumentEvent e) {
-			lineConfig.setToolPanelText(inputTextArea.getText());
-			inputTextAreaChanged = true;
+			if (listenerIsOn) {
+				lineConfig.setToolPanelText(inputTextArea.getText());
+				inputTextAreaChanged = true;
+			}
 		}
 
 		@Override
 		public void insertUpdate(DocumentEvent e) {
-			lineConfig.setToolPanelText(inputTextArea.getText());
-			inputTextAreaChanged = true;
+			if (listenerIsOn) {
+				lineConfig.setToolPanelText(inputTextArea.getText());
+				inputTextAreaChanged = true;
+			}
 		}
 
 		@Override
 		public void changedUpdate(DocumentEvent arg0) {
-			lineConfig.setToolPanelText(inputTextArea.getText());
-			inputTextAreaChanged = true;
+			if (listenerIsOn) {
+				lineConfig.setToolPanelText(inputTextArea.getText());
+				inputTextAreaChanged = true;
+			}
 		}
 	}
 
 	//保存各个路径设置参数，自动保存的listener
 	class textFieldListener implements DocumentListener {
-
+	    
 		@Override
 		public void removeUpdate(DocumentEvent e) {
-			saveToConfigFromGUI();
+			if (listenerIsOn) {
+				saveToConfigFromGUI();
+			}
 		}
 
 		@Override
 		public void insertUpdate(DocumentEvent e) {
-			saveToConfigFromGUI();
+			if (listenerIsOn) {
+				saveToConfigFromGUI();
+			}
 		}
 
 		@Override
 		public void changedUpdate(DocumentEvent arg0) {
-			saveToConfigFromGUI();
+			if (listenerIsOn) {
+				saveToConfigFromGUI();
+			}
 		}
 	}
 }

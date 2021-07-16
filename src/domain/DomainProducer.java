@@ -1,16 +1,29 @@
 package domain;
 
-import Tools.PatternsFromAndroid;
-import burp.*;
-import org.apache.commons.text.StringEscapeUtils;
-
 import java.io.PrintWriter;
 import java.net.URLDecoder;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.commons.text.StringEscapeUtils;
+
+import Tools.PatternsFromAndroid;
+import Tools.ToolPanel;
+import burp.BurpExtender;
+import burp.Commons;
+import burp.IBurpExtenderCallbacks;
+import burp.IExtensionHelpers;
+import burp.IHttpRequestResponse;
+import burp.IHttpService;
+import title.LineEntry;
+import toElastic.ElasticClient;
 
 public class DomainProducer extends Thread {//Producer do
 	private final BlockingQueue<IHttpRequestResponse> inputQueue;//use to store messageInfo
@@ -30,12 +43,12 @@ public class DomainProducer extends Thread {//Producer do
 	public IExtensionHelpers helpers = callbacks.getHelpers();
 
 	public DomainProducer(BlockingQueue<IHttpRequestResponse> inputQueue,
-						  BlockingQueue<String> subDomainQueue,
-						  BlockingQueue<String> similarDomainQueue,
-						  BlockingQueue<String> relatedDomainQueue,
-						  BlockingQueue<String> EmailQueue,
-						  BlockingQueue<String> packageNameQueue,
-						  int threadNo) {
+			BlockingQueue<String> subDomainQueue,
+			BlockingQueue<String> similarDomainQueue,
+			BlockingQueue<String> relatedDomainQueue,
+			BlockingQueue<String> EmailQueue,
+			BlockingQueue<String> packageNameQueue,
+			int threadNo) {
 		this.threadNo = threadNo;
 		this.inputQueue = inputQueue;
 		this.subDomainQueue = subDomainQueue;
@@ -85,11 +98,25 @@ public class DomainProducer extends Thread {//Producer do
 					}
 				}
 
-				if (type != DomainManager.USELESS && !Commons.uselessExtension(urlString)) {//grep domains from response and classify
+				//对所有流量都进行抓取，这样可以发现更多域名，但同时也会有很多无用功，尤其是使用者同时挖掘多个目标的时候
+				if (!Commons.uselessExtension(urlString)) {//grep domains from response and classify
 					byte[] response = messageinfo.getResponse();
 					if (response != null) {
 						Set<String> domains = DomainProducer.grepDomain(new String(response));
 						classifyDomains(domains);
+					}
+				}
+				
+				if (ToolPanel.rdbtnSaveTrafficTo.isSelected()) {
+					if (type != DomainManager.USELESS && !Commons.uselessExtension(urlString)) {//grep domains from response and classify
+						if (threadNo == 9999) {
+							try {//写入elastic的逻辑，只对目标资产生效
+								LineEntry entry = new LineEntry(messageinfo);
+								ElasticClient.writeData(entry);
+							}catch(Exception e1) {
+								e1.printStackTrace(BurpExtender.getStderr());
+							}
+						}
 					}
 				}
 			} catch (Exception error) {
@@ -297,12 +324,12 @@ public class DomainProducer extends Thread {//Producer do
 				IPSet.add(tmpIP);
 			}
 		}
-		
+
 		List<String> tmplist= new ArrayList<>(IPSet);
 		Collections.sort(tmplist);		
 		return tmplist;
 	}
-	
+
 	public static List<String> grepIPAndPort(String httpResponse) {
 		Set<String> IPSet = new HashSet<>();
 		String[] lines = httpResponse.split("\r\n");
@@ -316,12 +343,12 @@ public class DomainProducer extends Thread {//Producer do
 				IPSet.add(tmpIP);
 			}
 		}
-		
+
 		List<String> tmplist= new ArrayList<>(IPSet);
 		Collections.sort(tmplist);		
 		return tmplist;
 	}
-	
+
 	public static boolean needUnicodeConvert(String str) {
 		Pattern pattern = Pattern.compile("(\\\\u(\\p{XDigit}{4}))");
 		//Pattern pattern = Pattern.compile("(\\\\u([A-Fa-f0-9]{4}))");//和上面的效果一样
