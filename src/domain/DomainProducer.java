@@ -253,6 +253,12 @@ public class DomainProducer extends Thread {//Producer do
 				if (tmpDomain.startsWith("*.")) {
 					tmpDomain = tmpDomain.replaceFirst("\\*\\.","");//第一个参数是正则
 				}
+				if (tmpDomain.toLowerCase().startsWith("252f")) {//url中的//的URL编码，上面的解码逻辑可能出错
+					tmpDomain = tmpDomain.replaceFirst("252f","");
+				}
+				if (tmpDomain.toLowerCase().startsWith("2f")) {
+					tmpDomain = tmpDomain.replaceFirst("2f","");
+				}
 				domains.add(tmpDomain);
 			}
 		}
@@ -387,11 +393,37 @@ public class DomainProducer extends Thread {//Producer do
 	}
 
 	public static void main(String[] args) {
+		test1();
+	}
+	public static void test2() {
 		String tmpDomain = "*.baidu.com";
 		if (tmpDomain.startsWith("*.")) {
 			tmpDomain = tmpDomain.replaceFirst("\\*\\.","");//第一个参数是正则
 		}
 		System.out.println(tmpDomain);
+	}
+	
+	public static void test1() {
+		String line = "\"%.@.\\\"xsrf\\\",";
+		System.out.println(needURLConvert(line));
+		if (needURLConvert(line)) {
+			while (true) {
+				try {
+					int oldlen = line.length();
+					line = URLDecoder.decode(line);
+					int currentlen = line.length();
+					if (oldlen > currentlen) {
+						continue;
+					}else {
+						break;
+					}
+				}catch(Exception e) {
+					e.printStackTrace();
+					break;//即使出错，也要进行后续的查找
+				}
+			}
+		}
+		System.out.println(line);
 	}
 
 	public static void test(){
