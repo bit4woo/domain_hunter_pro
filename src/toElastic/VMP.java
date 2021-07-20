@@ -51,7 +51,7 @@ public class VMP {
 	
 	public static boolean upload(String ApiUrl,HashMap<String, String> header,String jsonData) {
 		HttpRequest request = HttpRequest.post(ApiUrl);
-		request.useProxy("localhost", 8080);//注意burp启用HTTP2的功能，会影响返回包的解析
+		//request.useProxy("localhost", 8080);//注意burp启用HTTP2的功能，会影响返回包的解析
 		request.trustAllCerts();
 		request.headers(header);
 		
