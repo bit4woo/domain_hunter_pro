@@ -88,6 +88,7 @@ public class ToolPanel extends JPanel {
 	public static JTextField textFieldPython;
 	public static JTextField textFieldElasticURL;
 	public static JTextField textFieldElasticUserPass;
+	public static JTextField textFieldUploadApiToken;
 
 	public static LineConfig getLineConfig() {
 		return lineConfig;
@@ -117,6 +118,7 @@ public class ToolPanel extends JPanel {
 		textFieldDirBruteDict.setText(lineConfig.getBruteDict());
 		textFieldElasticURL.setText(lineConfig.getElasticApiUrl());
 		textFieldElasticUserPass.setText(lineConfig.getElasticUsernameAndPassword());
+		textFieldUploadApiToken.setText(lineConfig.getUploadApiToken());
 		
 		showItemsInOne.setSelected(lineConfig.isShowItemsInOne());
 		rdbtnSaveTrafficTo.setSelected(lineConfig.isEnableElastic());
@@ -149,6 +151,8 @@ public class ToolPanel extends JPanel {
 		}
 		lineConfig.setElasticApiUrl(elasticUrl); 
 		lineConfig.setElasticUsernameAndPassword(elasticUserAndPass);
+		lineConfig.setUploadApiToken(textFieldUploadApiToken.getText());
+		
 		lineConfig.setToolPanelText(inputTextArea.getText());
 		lineConfig.setShowItemsInOne(showItemsInOne.isSelected());
 		lineConfig.setEnableElastic(rdbtnSaveTrafficTo.isSelected());
@@ -160,6 +164,7 @@ public class ToolPanel extends JPanel {
 	public void saveConfigToDisk() {
 		saveToConfigFromGUI();
 		String config = lineConfig.ToJson();
+		BurpExtender.getCallbacks().saveExtensionSetting(BurpExtender.Extension_Setting_Name_Line_Config, null);
 		BurpExtender.getCallbacks().saveExtensionSetting(BurpExtender.Extension_Setting_Name_Line_Config, config);
 	}
 
@@ -736,9 +741,9 @@ public class ToolPanel extends JPanel {
 		RightOfCenter.setRightComponent(fourFourthPanel);
 		GridBagLayout gbl_fourFourthPanel = new GridBagLayout();
 		gbl_fourFourthPanel.columnWidths = new int[]{215, 215, 0};
-		gbl_fourFourthPanel.rowHeights = new int[]{27, 0, 0, 0, 27, 0, 0, 0, 0, 27, 27, 27, 27, 0, 0, 0, 0};
+		gbl_fourFourthPanel.rowHeights = new int[]{27, 0, 0, 0, 27, 0, 0, 0, 0, 0, 27, 27, 27, 27, 0, 0, 0, 0};
 		gbl_fourFourthPanel.columnWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
-		gbl_fourFourthPanel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gbl_fourFourthPanel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		fourFourthPanel.setLayout(gbl_fourFourthPanel);
 
 		JLabel lblNewLabel = new JLabel("Browser Path:");
@@ -863,12 +868,12 @@ public class ToolPanel extends JPanel {
 		//textFieldElasticURL.addFocusListener(new JTextFieldHintListener(textFieldElasticURL,"http://10.12.72.55:9200/"));
 		//这个HintListener的操作，会触发DocumentListener的insertUpdate操作！
 		textFieldElasticURL.setColumns(50);
-		GridBagConstraints gbc_textField = new GridBagConstraints();
-		gbc_textField.insets = new Insets(0, 0, 5, 0);
-		gbc_textField.fill = GridBagConstraints.HORIZONTAL;
-		gbc_textField.gridx = 1;
-		gbc_textField.gridy = 6;
-		fourFourthPanel.add(textFieldElasticURL, gbc_textField);
+		GridBagConstraints gbc_textFieldElasticURL = new GridBagConstraints();
+		gbc_textFieldElasticURL.insets = new Insets(0, 0, 5, 0);
+		gbc_textFieldElasticURL.fill = GridBagConstraints.HORIZONTAL;
+		gbc_textFieldElasticURL.gridx = 1;
+		gbc_textFieldElasticURL.gridy = 6;
+		fourFourthPanel.add(textFieldElasticURL, gbc_textFieldElasticURL);
 		
 		JLabel lblDirElasticUserPass = new JLabel("Elastic Username Password:");
 		GridBagConstraints gbc_lblDirElasticUserPass = new GridBagConstraints();
@@ -890,6 +895,25 @@ public class ToolPanel extends JPanel {
 		gbc_textField_1.gridx = 1;
 		gbc_textField_1.gridy = 7;
 		fourFourthPanel.add(textFieldElasticUserPass, gbc_textField_1);
+		
+		JLabel lblUploadAPIToken = new JLabel("Upload API Token:");
+		GridBagConstraints gbc_lblUploadAPIToken = new GridBagConstraints();
+		gbc_lblUploadAPIToken.anchor = GridBagConstraints.WEST;
+		gbc_lblUploadAPIToken.insets = new Insets(0, 0, 5, 5);
+		gbc_lblUploadAPIToken.gridx = 0;
+		gbc_lblUploadAPIToken.gridy = 8;
+		fourFourthPanel.add(lblUploadAPIToken, gbc_lblUploadAPIToken);
+		
+		textFieldUploadApiToken = new JTextField();
+		textFieldUploadApiToken.setToolTipText("token of upload api");
+		textFieldUploadApiToken.getDocument().addDocumentListener(new textFieldListener());
+		textFieldUploadApiToken.setColumns(50);
+		GridBagConstraints gbc_textFieldUploadApiToken = new GridBagConstraints();
+		gbc_textFieldUploadApiToken.insets = new Insets(0, 0, 5, 0);
+		gbc_textFieldUploadApiToken.fill = GridBagConstraints.HORIZONTAL;
+		gbc_textFieldUploadApiToken.gridx = 1;
+		gbc_textFieldUploadApiToken.gridy = 8;
+		fourFourthPanel.add(textFieldUploadApiToken, gbc_textFieldUploadApiToken);
 
 		DisplayContextMenuOfBurp = new JRadioButton("Display Context Menu Of Burp");
 		DisplayContextMenuOfBurp.setSelected(true);
@@ -897,7 +921,7 @@ public class ToolPanel extends JPanel {
 		gbc_DisplayContextMenuOfBurp.insets = new Insets(0, 0, 5, 0);
 		gbc_DisplayContextMenuOfBurp.fill = GridBagConstraints.BOTH;
 		gbc_DisplayContextMenuOfBurp.gridx = 1;
-		gbc_DisplayContextMenuOfBurp.gridy = 8;
+		gbc_DisplayContextMenuOfBurp.gridy = 9;
 		fourFourthPanel.add(DisplayContextMenuOfBurp, gbc_DisplayContextMenuOfBurp);
 
 		JLabel label_1 = new JLabel("");
@@ -905,7 +929,7 @@ public class ToolPanel extends JPanel {
 		gbc_label_1.fill = GridBagConstraints.BOTH;
 		gbc_label_1.insets = new Insets(0, 0, 5, 5);
 		gbc_label_1.gridx = 0;
-		gbc_label_1.gridy = 9;
+		gbc_label_1.gridy = 10;
 		fourFourthPanel.add(label_1, gbc_label_1);
 
 
@@ -914,7 +938,7 @@ public class ToolPanel extends JPanel {
 		gbc_showItemsInOne.fill = GridBagConstraints.BOTH;
 		gbc_showItemsInOne.insets = new Insets(0, 0, 5, 0);
 		gbc_showItemsInOne.gridx = 1;
-		gbc_showItemsInOne.gridy = 9;
+		gbc_showItemsInOne.gridy = 10;
 		fourFourthPanel.add(showItemsInOne, gbc_showItemsInOne);
 		showItemsInOne.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -927,7 +951,7 @@ public class ToolPanel extends JPanel {
 		gbc_label_2.fill = GridBagConstraints.BOTH;
 		gbc_label_2.insets = new Insets(0, 0, 5, 5);
 		gbc_label_2.gridx = 0;
-		gbc_label_2.gridy = 10;
+		gbc_label_2.gridy = 11;
 		fourFourthPanel.add(label_2, gbc_label_2);
 
 		ignoreHTTPS = new JRadioButton("Ignore HTTPS if HTTP is OK || Ignore HTTP if HTTPS is OK");
@@ -935,7 +959,7 @@ public class ToolPanel extends JPanel {
 		gbc_ignoreHTTPS.fill = GridBagConstraints.BOTH;
 		gbc_ignoreHTTPS.insets = new Insets(0, 0, 5, 0);
 		gbc_ignoreHTTPS.gridx = 1;
-		gbc_ignoreHTTPS.gridy = 10;
+		gbc_ignoreHTTPS.gridy = 11;
 		fourFourthPanel.add(ignoreHTTPS, gbc_ignoreHTTPS);
 		ignoreHTTPS.setSelected(true);
 
@@ -944,7 +968,7 @@ public class ToolPanel extends JPanel {
 		gbc_label_3.fill = GridBagConstraints.BOTH;
 		gbc_label_3.insets = new Insets(0, 0, 5, 5);
 		gbc_label_3.gridx = 0;
-		gbc_label_3.gridy = 11;
+		gbc_label_3.gridy = 12;
 		fourFourthPanel.add(label_3, gbc_label_3);
 
 		ignoreHTTPStaus500 = new JRadioButton("Ignore items which Status >= 500");
@@ -952,7 +976,7 @@ public class ToolPanel extends JPanel {
 		gbc_ignoreHTTPStaus500.fill = GridBagConstraints.BOTH;
 		gbc_ignoreHTTPStaus500.insets = new Insets(0, 0, 5, 0);
 		gbc_ignoreHTTPStaus500.gridx = 1;
-		gbc_ignoreHTTPStaus500.gridy = 11;
+		gbc_ignoreHTTPStaus500.gridy = 12;
 		fourFourthPanel.add(ignoreHTTPStaus500, gbc_ignoreHTTPStaus500);
 		ignoreHTTPStaus500.setSelected(true);
 
@@ -961,7 +985,7 @@ public class ToolPanel extends JPanel {
 		gbc_label_4.fill = GridBagConstraints.BOTH;
 		gbc_label_4.insets = new Insets(0, 0, 5, 5);
 		gbc_label_4.gridx = 0;
-		gbc_label_4.gridy = 12;
+		gbc_label_4.gridy = 13;
 		fourFourthPanel.add(label_4, gbc_label_4);
 
 		ignoreHTTPStaus400 = new JRadioButton("Ignore http Status 400(The plain HTTP request was sent to HTTPS port)");
@@ -969,7 +993,7 @@ public class ToolPanel extends JPanel {
 		gbc_ignoreHTTPStaus400.insets = new Insets(0, 0, 5, 0);
 		gbc_ignoreHTTPStaus400.fill = GridBagConstraints.BOTH;
 		gbc_ignoreHTTPStaus400.gridx = 1;
-		gbc_ignoreHTTPStaus400.gridy = 12;
+		gbc_ignoreHTTPStaus400.gridy = 13;
 		fourFourthPanel.add(ignoreHTTPStaus400, gbc_ignoreHTTPStaus400);
 		ignoreHTTPStaus400.setSelected(true);
 
@@ -977,7 +1001,7 @@ public class ToolPanel extends JPanel {
 		GridBagConstraints gbc_label_5 = new GridBagConstraints();
 		gbc_label_5.insets = new Insets(0, 0, 5, 5);
 		gbc_label_5.gridx = 0;
-		gbc_label_5.gridy = 13;
+		gbc_label_5.gridy = 14;
 		fourFourthPanel.add(label_5, gbc_label_5);
 
 		ignoreWrongCAHost = new JRadioButton("Ignore Host that IP Address and Certificate Authority not match");
@@ -986,7 +1010,7 @@ public class ToolPanel extends JPanel {
 		gbc_ignoreWrongCAHost.insets = new Insets(0, 0, 5, 0);
 		gbc_ignoreWrongCAHost.fill = GridBagConstraints.BOTH;
 		gbc_ignoreWrongCAHost.gridx = 1;
-		gbc_ignoreWrongCAHost.gridy = 13;
+		gbc_ignoreWrongCAHost.gridy = 14;
 		fourFourthPanel.add(ignoreWrongCAHost, gbc_ignoreWrongCAHost);
 		
 		rdbtnSaveTrafficTo = new JRadioButton("Save traffic to Elastic");
@@ -995,14 +1019,14 @@ public class ToolPanel extends JPanel {
 		gbc_rdbtnSaveTrafficTo.anchor = GridBagConstraints.WEST;
 		gbc_rdbtnSaveTrafficTo.insets = new Insets(0, 0, 5, 0);
 		gbc_rdbtnSaveTrafficTo.gridx = 1;
-		gbc_rdbtnSaveTrafficTo.gridy = 14;
+		gbc_rdbtnSaveTrafficTo.gridy = 15;
 		fourFourthPanel.add(rdbtnSaveTrafficTo, gbc_rdbtnSaveTrafficTo);
 
 		JLabel label_6 = new JLabel("");
 		GridBagConstraints gbc_label_6 = new GridBagConstraints();
 		gbc_label_6.insets = new Insets(0, 0, 0, 5);
 		gbc_label_6.gridx = 0;
-		gbc_label_6.gridy = 15;
+		gbc_label_6.gridy = 16;
 		fourFourthPanel.add(label_6, gbc_label_6);
 
 		///////////////////////////FooterPanel//////////////////

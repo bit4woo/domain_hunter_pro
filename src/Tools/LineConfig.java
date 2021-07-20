@@ -31,6 +31,7 @@ public class LineConfig {
 	private String toolPanelText = "";
 	private String elasticApiUrl = "http://10.12.72.55:9200/";
 	private String elasticUsernameAndPassword = "elastic:changeme";
+	private String uploadApiToken = "";
 	private boolean showItemsInOne = false;
 	private boolean enableElastic = false;
 	
@@ -168,6 +169,18 @@ public class LineConfig {
 
 	public void setElasticUsernameAndPassword(String elasticUsernameAndPassword) {
 		this.elasticUsernameAndPassword = elasticUsernameAndPassword;
+	}
+
+
+
+	public String getUploadApiToken() {
+		return uploadApiToken;
+	}
+
+
+
+	public void setUploadApiToken(String uploadApiToken) {
+		this.uploadApiToken = uploadApiToken;
 	}
 
 
