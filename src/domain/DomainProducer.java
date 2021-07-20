@@ -67,7 +67,13 @@ public class DomainProducer extends Thread {//Producer do
 	public void run() {
 		while(true){
 			try {
-				if (threadNo!= 9999){//9999是流量进程，除非关闭，否则一直不退出。
+				if (threadNo == 9999){//9999是流量进程，除非关闭，否则一直不退出。
+					if (DomainPanel.domainResult == null) {//当未加载项目时，暂时不处理
+						stdout.println("No project loaded,traffic anlaysis thread will do nothing!");
+						Thread.sleep(1*60*1000);
+						continue;
+					}
+				}else {
 					if (inputQueue.isEmpty() || stopflag) {
 						//stdout.println("Producer break");
 						break;
