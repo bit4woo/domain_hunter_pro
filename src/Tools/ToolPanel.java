@@ -40,6 +40,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
@@ -49,7 +50,6 @@ import javax.swing.event.DocumentListener;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.text.StringEscapeUtils;
 
-import GUI.JTextFieldHintListener;
 import burp.BurpExtender;
 import burp.Commons;
 import domain.CertInfo;
@@ -112,6 +112,10 @@ public class ToolPanel extends JPanel {
 		inputTextArea.setText(lineConfig.getToolPanelText());
 		
 		BrowserPath.setText(lineConfig.getBrowserPath());
+		
+		if (!lineConfig.getNmapPath().contains("{host}")) {//兼容新旧版本，
+			lineConfig.setNmapPath(LineConfig.defaultNmap);
+		}
 		textFieldPortScanner.setText(lineConfig.getNmapPath());
 		textFieldDirSearch.setText(lineConfig.getDirSearchPath());
 		textFieldPython.setText(lineConfig.getPython3Path());
@@ -127,30 +131,13 @@ public class ToolPanel extends JPanel {
 
 
 	public void saveToConfigFromGUI() {
-		File browser = new File(BrowserPath.getText().trim());
-		File portScanner = new File(textFieldPortScanner.getText().trim());
-		File python3 = new File(textFieldPython.getText().trim());
-		File dirSearch = new File(textFieldDirSearch.getText().trim());
-		File bruteDict = new File(textFieldDirBruteDict.getText().trim());
-		String elasticUrl = textFieldElasticURL.getText().trim();
-		String elasticUserAndPass = textFieldElasticUserPass.getText();
-		if (browser.exists()) {
-			lineConfig.setBrowserPath(browser.getAbsolutePath());
-		}
-		if (portScanner.exists()) {
-			lineConfig.setNmapPath(portScanner.getAbsolutePath());
-		}
-		if (dirSearch.exists()) {
-			lineConfig.setDirSearchPath(dirSearch.getAbsolutePath());
-		}
-		if (bruteDict.exists()) {
-			lineConfig.setBruteDict(bruteDict.getAbsolutePath());
-		}
-		if (python3.exists()) {
-			lineConfig.setPython3Path(python3.getAbsolutePath());
-		}
-		lineConfig.setElasticApiUrl(elasticUrl); 
-		lineConfig.setElasticUsernameAndPassword(elasticUserAndPass);
+		lineConfig.setBrowserPath(BrowserPath.getText());
+		lineConfig.setDirSearchPath(textFieldDirSearch.getText());
+		lineConfig.setBruteDict(textFieldDirBruteDict.getText());
+		lineConfig.setPython3Path(textFieldPython.getText());
+		lineConfig.setNmapPath(textFieldPortScanner.getText());
+		lineConfig.setElasticApiUrl(textFieldElasticURL.getText().trim());
+		lineConfig.setElasticUsernameAndPassword(textFieldElasticUserPass.getText());
 		lineConfig.setUploadApiToken(textFieldUploadApiToken.getText());
 		
 		lineConfig.setToolPanelText(inputTextArea.getText());
@@ -764,6 +751,14 @@ public class ToolPanel extends JPanel {
 		BrowserPath.getDocument().addDocumentListener(new textFieldListener());
 
 		JLabel lblPortScanner = new JLabel("PortScanner Path:");
+		lblPortScanner.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2){//左键双击
+					textFieldPortScanner.setText(LineConfig.defaultNmap);
+				}
+			}
+		});
 		GridBagConstraints gbc_lblPortScanner = new GridBagConstraints();
 		gbc_lblPortScanner.anchor = GridBagConstraints.WEST;
 		gbc_lblPortScanner.insets = new Insets(0, 0, 5, 5);

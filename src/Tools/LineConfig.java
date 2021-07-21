@@ -23,10 +23,17 @@ public class LineConfig {
 	//对于内外网域名或IP的处理分为2种情况：
 	//1、外网模式，即在自己公司挖掘别人公司的漏洞。这个是时候收集到的域名如果是解析到私有IP的，仅仅显示就可以了；如果是私有IP地址则直接忽略。
 	//2、内网模式，即在自己公司挖掘自己公司的漏洞。这个时候所有域名一视同仁，全部和外网域名一样进行请求并获取title，因为内网的IP也是可以访问的。
-	private String python3Path = "C:\\Python37\\python.exe";
+	public static final String winDefaultPython = "C:\\Python37\\python.exe";
+	public static final String winDefaultBrowserPath = "C:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe";
+	public static final String defaultNmap = "nmap -Pn -sT -sV --min-rtt-timeout 1ms "
+			+ "--max-rtt-timeout 1000ms --max-retries 0 --max-scan-delay 0 --min-rate 3000 {host}";
+	public static final String macDefaultPython = "/usr/bin/python";
+	public static final String macDefaultBrowserPath = "/Applications/Firefox.app/Contents/MacOS/firefox";
+	
+	private String python3Path = winDefaultPython;
 	private String dirSearchPath = "D:\\github\\dirsearch\\dirsearch.py";
 	private String browserPath = "C:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe";
-	private String nmapPath ="D:\\Program Files (x86)\\Nmap\\nmap.exe";
+	private String nmapPath =defaultNmap;
 	private String bruteDict ="D:\\github\\webdirscan\\dict\\dict.txt";
 	private String toolPanelText = "";
 	private String elasticApiUrl = "http://10.12.72.55:9200/";
@@ -37,12 +44,12 @@ public class LineConfig {
 	
 	LineConfig(){
 		if (Commons.isMac()) {
-			python3Path = "/usr/bin/python";
-			browserPath = "/Applications/Firefox.app/Contents/MacOS/firefox";
-			nmapPath ="/usr/local/bin/nmap";
+			python3Path = macDefaultPython;
+			browserPath = macDefaultBrowserPath;
 		}
 	}
 
+	
 
 
 	public static int getMaximumEntries() {

@@ -48,11 +48,7 @@ class NmapScanAction implements ActionListener{
 			String basedir = (String) System.getProperties().get("java.io.tmpdir");
 			
 			String nmapPath = ToolPanel.getLineConfig().getNmapPath();
-			if (nmapPath.contains(" ")) {//如果路径中包含空格，需要引号
-				nmapPath = "\""+nmapPath+"\"";
-			}
-			
-			String command = nmapPath+" -sS -p 0-65535 --open -T4 -v "+host.trim();
+			String command = nmapPath.replace("{host}", host.trim());
 
 			//将命令写入剪切板
 			Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -63,6 +59,9 @@ class NmapScanAction implements ActionListener{
 			batFile.deleteOnExit();
 			batFile.createNewFile();
 			
+			if (Commons.isMac()){//这样才能弹出窗口
+				command = String.format("osascript -e 'tell app \"Terminal\" to do script \"%s\"'",command);
+			}
 			FileUtils.writeByteArrayToFile(batFile, command.getBytes());
 			return batFile.getAbsolutePath();
 		} catch (IOException e) {
@@ -86,7 +85,9 @@ class NmapScanAction implements ActionListener{
 		return command;
 	}
 	
-	public static void main(String[] args) throws IOException {
-		Process process = Runtime.getRuntime().exec("cmd /c start notepad.exe");
+	public static void main(String[] args) throws IOException, InterruptedException {
+		//Process process = Runtime.getRuntime().exec("cmd /c start notepad.exe");
+		Process process = Runtime.getRuntime().exec("/bin/sh /var/folders/z4/tnb4kh8s60x0361sg4qdw2gh0000gy/T/Nmap-latest-command.bat");
+		process.waitFor();//等待执行完成
 	}
 }
