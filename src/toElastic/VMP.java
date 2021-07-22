@@ -29,8 +29,8 @@ public class VMP {
 			if (!Commons.isValidIP(host)) {
 				VMPEntry tmp = new VMPEntry(url,title);
 				result.put(url,tmp);
-				tmp = new VMPEntry(host,title);
-				result.put(host,tmp);
+				//tmp = new VMPEntry(host,title);
+				//result.put(host,tmp);
 			}
 		}
 		return result.values();
