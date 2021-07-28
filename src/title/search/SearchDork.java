@@ -9,6 +9,7 @@ public enum SearchDork {
 	REQUEST("REQUEST"),
 	RESPONSE("RESPONSE"),
 	COMMENT("COMMENT"),
+	TITLE("TITLE"),
 
 	REGEX("REGEX");//这个用于正则搜索
 

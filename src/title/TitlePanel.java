@@ -53,7 +53,7 @@ public class TitlePanel extends JPanel {
 	public static GetTitleTempConfig tempConfig; //每次获取title过程中的配置。
 	private IndexedLinkedHashMap<String,LineEntry> BackupLineEntries;
 
-	private static JTextField textFieldSearch;
+	private static SearchTextField textFieldSearch;
 
 	public static JTextField getTextFieldSearch() {
 		return textFieldSearch;
@@ -308,14 +308,14 @@ public class TitlePanel extends JPanel {
 		});
 		buttonPanel.add(btnStop);
 
-		textFieldSearch = new SearchTextField().Create("");
+		textFieldSearch = new SearchTextField("");
 		buttonPanel.add(textFieldSearch);
 
 
 		JButton buttonSearch = new JButton("Search");
 		buttonSearch.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				String keyword = textFieldSearch.getText().trim();
+				String keyword = textFieldSearch.getText();
 				titleTable.search(keyword);
 				//searchHistory.addRecord(keyword);
 				digStatus();
@@ -327,9 +327,7 @@ public class TitlePanel extends JPanel {
 		rdbtnUnCheckedItems.setSelected(true);
 		rdbtnUnCheckedItems.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				String keyword = textFieldSearch.getText().trim();
-				titleTable.search(keyword);
-				//lineTable.getModel().unHideLines();
+				buttonSearch.doClick();
 			}
 		});
 		buttonPanel.add(rdbtnUnCheckedItems);
@@ -338,9 +336,7 @@ public class TitlePanel extends JPanel {
 		rdbtnCheckingItems.setSelected(true);
 		rdbtnCheckingItems.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				String keyword = textFieldSearch.getText().trim();
-				titleTable.search(keyword);
-				//lineTable.getModel().unHideLines();
+				buttonSearch.doClick();
 			}
 		});
 		buttonPanel.add(rdbtnCheckingItems);
@@ -349,9 +345,7 @@ public class TitlePanel extends JPanel {
 		rdbtnCheckedItems.setSelected(false);
 		rdbtnCheckedItems.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				String keyword = textFieldSearch.getText().trim();
-				titleTable.search(keyword);
-				//lineTable.getModel().unHideLines();
+				buttonSearch.doClick();
 			}
 		});
 		buttonPanel.add(rdbtnCheckedItems);
@@ -360,8 +354,7 @@ public class TitlePanel extends JPanel {
 		rdbtnMoreActionItems.setSelected(false);
 		rdbtnMoreActionItems.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				String keyword = textFieldSearch.getText().trim();
-				titleTable.search(keyword);
+				buttonSearch.doClick();
 			}
 		});
 		buttonPanel.add(rdbtnMoreActionItems);

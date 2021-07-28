@@ -94,5 +94,37 @@ public class SearchMenu extends JPopupMenu {
 			}
 		});
 		this.add(AllJS);
+		
+		//TODO
+		JMenuItem findAdmin = new JMenuItem(new AbstractAction("Try to find admin portal") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				//<title(.*?)</title>
+				String webpack_PATTERN = "<table(.*?)</table>";
+				TitlePanel.getTextFieldSearch().setText(SearchDork.REGEX.toString()+":"+webpack_PATTERN);
+				//TitlePanel.getTitleTable().search(TitlePanel.getTextFieldSearch().getText());
+			}
+		});
+		this.add(findAdmin);
+		
+		this.addSeparator();//分割线
+		
+		JMenuItem caseSensitive = new JMenuItem(new AbstractAction("Case Sensitive") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				if (actionEvent.getActionCommand().equals("Disable Case Sensitive")) {
+					((SearchTextField)TitlePanel.getTextFieldSearch()).setCaseSensitive(false);
+				}else {
+					((SearchTextField)TitlePanel.getTextFieldSearch()).setCaseSensitive(true);
+				}
+			}
+		});
+		SearchTextField searchTextField = ((SearchTextField)TitlePanel.getTextFieldSearch());
+		if (searchTextField.isCaseSensitive()) {
+			caseSensitive.setText("Disable Case Sensitive");
+		}else {
+			caseSensitive.setText("Enable Case Sensitive");
+		}
+		this.add(caseSensitive);
 	}
 }

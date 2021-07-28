@@ -27,10 +27,18 @@ public class SearchTextField extends JTextField{
 	PrintWriter stdout;
 	PrintWriter stderr;
 	History searchHistory = History.getInstance();
+	boolean caseSensitive;
 
-	public JTextField Create(String name){
-		
-		JTextField textFieldSearch = new JTextField(name);
+	public boolean isCaseSensitive() {
+		return caseSensitive;
+	}
+
+	public void setCaseSensitive(boolean caseSensitive) {
+		this.caseSensitive = caseSensitive;
+	}
+
+	public SearchTextField(String name){
+		super(name);
 
 		try{
 			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
@@ -41,11 +49,11 @@ public class SearchTextField extends JTextField{
 		}
 
 
-		textFieldSearch.addFocusListener(new FocusAdapter() {
+		addFocusListener(new FocusAdapter() {
 			@Override
 			public void focusGained(FocusEvent e) {
-				if (textFieldSearch.getText().equals("Input text to search")) {
-					textFieldSearch.setText("");
+				if (getText().equals("Input text to search")) {
+					setText("");
 				}
 			}
 			@Override
@@ -59,15 +67,15 @@ public class SearchTextField extends JTextField{
 		});
 
 		//enter键触发
-		textFieldSearch.addActionListener(new ActionListener() {
+		addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				String keyword = textFieldSearch.getText().trim();
+				String keyword = getText().trim();
 				TitlePanel.getTitleTable().search(keyword);
 				//searchHistory.addRecord(keyword);//记录搜索历史
 			}
 		});
 
-		textFieldSearch.addMouseListener(new MouseAdapter() {
+		addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2){//左键双击
@@ -75,13 +83,13 @@ public class SearchTextField extends JTextField{
 				if (e.getButton() == MouseEvent.BUTTON3) {//鼠标右键
 					// 弹出菜单
 					SearchMenu sm = new SearchMenu();
-					sm.show(textFieldSearch, e.getX(), e.getY());
+					sm.show(SearchTextField.this, e.getX(), e.getY());
 				}
 			}
 		});
 
 
-		textFieldSearch.addKeyListener(new KeyAdapter(){
+		addKeyListener(new KeyAdapter(){
 			public void keyPressed(KeyEvent e)
 			{
 				if (e.getKeyCode()==KeyEvent.VK_KP_UP || e.getKeyCode() == KeyEvent.VK_UP)//上键
@@ -89,7 +97,7 @@ public class SearchTextField extends JTextField{
 					try {
 						String record = searchHistory.moveUP();
 						if (record != null) {
-							textFieldSearch.setText(record);
+							setText(record);
 						}
 					} catch (Exception ex) {
 						ex.printStackTrace(stderr);
@@ -100,7 +108,7 @@ public class SearchTextField extends JTextField{
 					try {
 						String record = searchHistory.moveDown();
 						if (record != null) {
-							textFieldSearch.setText(record);
+							setText(record);
 						}
 					} catch (Exception ex) {
 						ex.printStackTrace(stderr);
@@ -110,7 +118,7 @@ public class SearchTextField extends JTextField{
 			}
 		});
 
-		textFieldSearch.addMouseWheelListener(new MouseWheelListener(){
+		addMouseWheelListener(new MouseWheelListener(){
 
 			@Override
 			public void mouseWheelMoved(MouseWheelEvent e) {
@@ -118,7 +126,7 @@ public class SearchTextField extends JTextField{
 					try {
 						String record = searchHistory.moveUP();
 						if (record != null) {
-							textFieldSearch.setText(record);
+							setText(record);
 						}
 					} catch (Exception ex) {
 						ex.printStackTrace(stderr);
@@ -129,7 +137,7 @@ public class SearchTextField extends JTextField{
 					try {
 						String record = searchHistory.moveDown();
 						if (record != null) {
-							textFieldSearch.setText(record);
+							setText(record);
 						}
 					} catch (Exception ex) {
 						ex.printStackTrace(stderr);
@@ -139,7 +147,6 @@ public class SearchTextField extends JTextField{
 			}
 
 		});
-		textFieldSearch.setColumns(30);
-		return textFieldSearch;
+		setColumns(30);
 	}
 }

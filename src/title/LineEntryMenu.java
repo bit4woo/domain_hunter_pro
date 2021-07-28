@@ -188,7 +188,7 @@ public class LineEntryMenu extends JPopupMenu {
 					TitlePanel.getTextFieldSearch().setText(length+"");
 				}else if (columnName.equalsIgnoreCase("title")){
 					String title = firstEntry.getTitle();
-					TitlePanel.getTextFieldSearch().setText(title);
+					TitlePanel.getTextFieldSearch().setText(SearchDork.TITLE.toString()+":"+title);
 				}else if (columnName.equalsIgnoreCase("comments")){
 					String comment = firstEntry.getComment();
 					TitlePanel.getTextFieldSearch().setText(SearchDork.COMMENT.toString()+":"+comment);

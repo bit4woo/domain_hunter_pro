@@ -4,6 +4,7 @@ import title.LineEntry;
 import title.TitlePanel;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 public class LineSearch {
@@ -36,52 +37,51 @@ public class LineSearch {
 		return false;
 	}
 	
-	public static boolean textFilter(LineEntry line,String keyword) {
+	/**
+	 * 关键词和搜索内容都进行了小写转换，尽量多得返回内容
+	 * @param line
+	 * @param keyword
+	 * @return
+	 */
+	public static boolean textFilter(LineEntry line,String keyword,boolean caseSensitive) {
 		if (keyword.length() == 0) {
 			return true;
 		}else {//全局搜索
-			if (new String(line.getRequest()).toLowerCase().contains(keyword)) {
-				return true;
-			}
-			if (new String(line.getResponse()).toLowerCase().contains(keyword)) {
-				return true;
-			}
-			/* //这个方法速度要明细慢很多！
-			if (keyword.toLowerCase().startsWith("http://") || keyword.toLowerCase().startsWith("https://")) {
-				try{
-					URL entryURL = new URL(line.getUrl());
-					URL searchURL = new URL(keyword);
-					if (entryURL.equals(searchURL)){
+			ArrayList<String> contentList = new ArrayList<String>();
+			contentList.add(new String(line.getRequest()));
+			contentList.add(new String(line.getResponse()));
+			contentList.add(line.fetchUrlWithCommonFormate());
+			contentList.add(line.getIP());
+			contentList.add(line.getCDN());
+			contentList.add(line.getComment());
+			contentList.add(line.getTitle());
+			if (caseSensitive) {
+				for(String item:contentList) {
+					if (item.contains(keyword)) {
 						return true;
 					}
-				}catch (Exception e){
-					System.out.println(e);
 				}
-			}*/
-			String entryUrl = line.fetchUrlWithCommonFormate();
-			if (entryUrl.equalsIgnoreCase(keyword)){
-				return true;
-			}
-			if (line.getIP().toLowerCase().contains(keyword)) {
-				return true;
-			}
-			if (line.getCDN().toLowerCase().contains(keyword)) {
-				return true;
-			}
-			if (line.getComment().toLowerCase().contains(keyword)) {
-				return true;
-			}
-			if (line.getTitle().toLowerCase().contains(keyword)) {
-				return true;
+			}else {
+				keyword = keyword.toLowerCase();
+				for(String item:contentList) {
+					if (item.toLowerCase().contains(keyword)) {
+						return true;
+					}
+				}
 			}
 			return false;
 		}
 	}
 
-	//支持部分类似google dork的搜索语法
-	//Host url header body request response comment
-	//host:www.baidu.com ----host是dork,www.baidu.com是keyword
-	public static boolean dorkFilter(LineEntry line,String input) {
+	/**
+	 * 支持部分类似google dork的搜索语法。对搜索内容和条件都进行了小写转换，尽量多的返回内容。
+	 * Host url header body request response comment
+	 * host:www.baidu.com ----host是dork,www.baidu.com是keyword
+	 * @param line
+	 * @param input
+	 * @return
+	 */
+	public static boolean dorkFilter(LineEntry line,String input,boolean caseSensitive) {
 		if (SearchDork.isDork(input)){
 			String dork = SearchDork.grepDork(input);
 			String keyword = SearchDork.grepKeyword(input);
@@ -92,15 +92,6 @@ public class LineSearch {
 
 			if (dork.equalsIgnoreCase(SearchDork.REGEX.toString())) {
 				return regexFilter(line,keyword);
-			}
-
-			//BurpExtender.getStdout().println(dork+":"+SearchDork.HOST.toString());
-			if (dork.equalsIgnoreCase(SearchDork.HOST.toString())) {
-				if (line.getHost().toLowerCase().contains(keyword)) {
-					return true;
-				}else {
-					return false;
-				}
 			}
 
 			if (dork.equalsIgnoreCase(SearchDork.PORT.toString())) {
@@ -119,41 +110,45 @@ public class LineSearch {
 				}
 			}
 
+			String tempContent = "";
+			
+			if (dork.equalsIgnoreCase(SearchDork.HOST.toString())) {
+				tempContent = line.getHost();
+			}
+			
 			if (dork.equalsIgnoreCase(SearchDork.URL.toString())) {
-				if (line.getUrl().toLowerCase().contains(keyword)) {
-					return true;
-				}else {
-					return false;
-				}
+				tempContent = line.getUrl();
 			}
 
 			if (dork.equalsIgnoreCase(SearchDork.REQUEST.toString())) {
-				if (new String(line.getRequest()).toLowerCase().contains(keyword)) {
-					return true;
-				}else {
-					return false;
-				}
+				tempContent = new String(line.getRequest());
 			}
 
 			if (dork.equalsIgnoreCase(SearchDork.RESPONSE.toString())) {
-				if (new String(line.getResponse()).toLowerCase().contains(keyword)) {
-					return true;
-				}else {
-					return false;
-				}
+				tempContent = new String(line.getResponse());
 			}
 
 			if (dork.equalsIgnoreCase(SearchDork.COMMENT.toString())) {
-				if (line.getComment().toLowerCase().contains(keyword)) {
-					return true;
-				}else {
-					return false;
-				}
+				tempContent = new String(line.getComment());
+			}
+			
+			if (dork.equalsIgnoreCase(SearchDork.TITLE.toString())) {
+				tempContent = new String(line.getTitle());
+			}
+			
+			if (caseSensitive) {
+				return tempContent.contains(keyword); 
+			}else {
+				keyword = keyword.toLowerCase();
+				return tempContent.toLowerCase().contains(keyword); 
 			}
 		}
 		return false;
 	}
-	
+	/**
+	 * 通过正则搜索，不应该进行大小写转换
+	 * 
+	 */
 	public static boolean regexFilter(LineEntry line,String regex) {
 		//BurpExtender.getStdout().println("regexFilte: "+regex);
 		Pattern pRegex = Pattern.compile(regex);
@@ -161,22 +156,22 @@ public class LineSearch {
 		if (regex.trim().length() == 0) {
 			return true;
 		} else {
-			if (pRegex.matcher(new String(line.getRequest()).toLowerCase()).find()) {
+			if (pRegex.matcher(new String(line.getRequest())).find()) {
 				return true;
 			}
-			if (pRegex.matcher(new String(line.getResponse()).toLowerCase()).find()) {
+			if (pRegex.matcher(new String(line.getResponse())).find()) {
 				return true;
 			}
-			if (pRegex.matcher(line.getUrl().toLowerCase()).find()) {
+			if (pRegex.matcher(line.getUrl()).find()) {
 				return true;
 			}
-			if (pRegex.matcher(line.getIP().toLowerCase()).find()) {
+			if (pRegex.matcher(line.getIP()).find()) {
 				return true;
 			}
-			if (pRegex.matcher(line.getCDN().toLowerCase()).find()) {
+			if (pRegex.matcher(line.getCDN()).find()) {
 				return true;
 			}
-			if (pRegex.matcher(line.getComment().toLowerCase()).find()) {
+			if (pRegex.matcher(line.getComment()).find()) {
 				return true;
 			}
 			return false;

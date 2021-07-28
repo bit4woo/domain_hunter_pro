@@ -33,6 +33,7 @@ import burp.IMessageEditor;
 import title.search.History;
 import title.search.LineSearch;
 import title.search.SearchDork;
+import title.search.SearchTextField;
 
 
 public class LineTable extends JTable
@@ -53,13 +54,13 @@ public class LineTable extends JTable
 	public JSplitPane getTableAndDetailSplitPane() {
 		return tableAndDetailSplitPane;
 	}
-	
+
 	@Override//参考javax.swing.JTable中的函数，每次都有主动进行转换
-    public Object getValueAt(int row, int column) {
-        return getModel().getValueAt(convertRowIndexToModel(row),
-                                     convertColumnIndexToModel(column));
-    }
-	
+	public Object getValueAt(int row, int column) {
+		return getModel().getValueAt(convertRowIndexToModel(row),
+				convertColumnIndexToModel(column));
+	}
+
 	public LineEntry getRowAt(int row) {
 		return getModel().getLineEntries().getValueAtIndex(convertRowIndexToModel(row));
 	}
@@ -250,8 +251,22 @@ public class LineTable extends JTable
 		});
 	}
 
-	//搜索功能函数
-	public void search(String Inputkeyword) {
+	/**
+	 * 搜索功能，自动获取caseSensitive的值
+	 * @param Inputkeyword
+	 */
+	public void search(String keyword) {
+		SearchTextField searchTextField = (SearchTextField)TitlePanel.getTextFieldSearch();
+		boolean caseSensitive = searchTextField.isCaseSensitive();
+		search(keyword,caseSensitive);
+	}
+
+	/**
+	 * 搜索功能
+	 * @param Inputkeyword
+	 * @param caseSensitive
+	 */
+	public void search(String Inputkeyword,boolean caseSensitive) {
 		//rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + keyword));
 		History.getInstance().addRecord(Inputkeyword);//记录搜索历史,单例模式
 
@@ -272,9 +287,9 @@ public class LineTable extends JTable
 
 				if (SearchDork.isDork(Input)) {
 					//stdout.println("do dork search,dork:"+dork+"   keyword:"+keyword);
-					return LineSearch.dorkFilter(line,Input);
+					return LineSearch.dorkFilter(line,Input,caseSensitive);
 				}else {
-					return LineSearch.textFilter(line,Input);
+					return LineSearch.textFilter(line,Input,caseSensitive);
 				}
 			}
 		};
