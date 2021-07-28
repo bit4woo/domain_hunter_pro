@@ -266,13 +266,10 @@ public class LineTable extends JTable
 	 * @param Inputkeyword
 	 * @param caseSensitive
 	 */
-	public void search(String Inputkeyword,boolean caseSensitive) {
+	public void search(String Input,boolean caseSensitive) {
 		//rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + keyword));
-		History.getInstance().addRecord(Inputkeyword);//记录搜索历史,单例模式
+		History.getInstance().addRecord(Input);//记录搜索历史,单例模式
 
-		String Input = Inputkeyword.trim();
-
-		//stdout.println("dork:"+dork+"   keyword:"+keyword);
 		final RowFilter filter = new RowFilter() {
 			@Override
 			public boolean include(Entry entry) {

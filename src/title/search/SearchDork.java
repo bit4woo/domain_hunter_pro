@@ -19,11 +19,15 @@ public enum SearchDork {
 	SearchDork(String dork){
 		this.dork = dork;
 	}
-	//判断是否是dork搜索语句
+	/**
+	 * 判断是否是dork搜索语句,未区分大小写,即HOST: host:是同样效果
+	 * @param input
+	 * @return
+	 */
 	public static boolean isDork(String input) {
 		SearchDork[] values = SearchDork.values();
 		for (SearchDork value:values) {
-			if (input.startsWith(value.toString()+":")) {
+			if (input.toLowerCase().startsWith(value.toString().toLowerCase()+":")) {
 				return true;
 			}
 		}
