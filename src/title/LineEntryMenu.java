@@ -259,6 +259,24 @@ public class LineEntryMenu extends JPopupMenu {
 				}
 			}
 		});
+		
+		JMenuItem copyCommonURLItem = new JMenuItem(new AbstractAction("Copy URL With Common Formate") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				try{
+					java.util.List<String> urls = lineTable.getModel().getCommonURLs(rows);
+					String textUrls = String.join(System.lineSeparator(), urls);
+
+					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+					StringSelection selection = new StringSelection(textUrls);
+					clipboard.setContents(selection, null);
+				}
+				catch (Exception e1)
+				{
+					e1.printStackTrace(stderr);
+				}
+			}
+		});
 
 		JMenuItem dirSearchItem = new JMenuItem();
 		dirSearchItem.setText("Do Dir Search");
@@ -618,6 +636,7 @@ public class LineEntryMenu extends JPopupMenu {
 		this.add(copyHostItem);
 		this.add(copyHostAndPortItem);
 		this.add(copyURLItem);
+		this.add(copyCommonURLItem);
 		this.add(copyLocationURLItem);
 		this.add(copyCDNAndCertInfoItem);
 		this.add(SendToRepeater);
