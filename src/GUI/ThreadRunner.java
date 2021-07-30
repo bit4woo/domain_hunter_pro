@@ -36,6 +36,7 @@ public class ThreadRunner{
 		this.messageInfo = messageInfo;
 	}
 
+	@Deprecated
 	public String getKeywordFromUI() {
 		String responseKeyword = JOptionPane.showInputDialog("Response Keyword", null);
 		while(responseKeyword.trim().equals("")){
@@ -46,7 +47,6 @@ public class ThreadRunner{
 	}
 
 	public void Do(){
-		String keywords = getKeywordFromUI();
 		BlockingQueue<LineEntry> lineEntryQueue = new LinkedBlockingQueue<LineEntry>();//use to store domains
 		lineEntryQueue.addAll(TitlePanel.getTitleTableModel().getLineEntries().values());
 		stdout.println("~~~~~~~~~~~~~Start threading Runner~~~~~~~~~~~~~ total task number: "+lineEntryQueue.size());
@@ -54,7 +54,7 @@ public class ThreadRunner{
 		plist = new ArrayList<RunnerProducer>();
 
 		for (int i=0;i<=50;i++) {
-			RunnerProducer p = new RunnerProducer(runnerGUI.getRunnerTableModel(),lineEntryQueue,messageInfo, keywords, i);
+			RunnerProducer p = new RunnerProducer(runnerGUI.getRunnerTableModel(),lineEntryQueue,messageInfo, i);
 			p.start();
 			plist.add(p);
 		}
@@ -133,12 +133,11 @@ class RunnerProducer extends Thread {//Producer do
 	LineTableModel runnerTableModel;
 	String keyword;
 
-	public RunnerProducer(LineTableModel runnerTableModel,BlockingQueue<LineEntry> lineEntryQueue,IHttpRequestResponse messageInfo, String keyword, int threadNo) {
+	public RunnerProducer(LineTableModel runnerTableModel,BlockingQueue<LineEntry> lineEntryQueue,IHttpRequestResponse messageInfo, int threadNo) {
 		this.runnerTableModel = runnerTableModel;
 		this.runnerTableModel.setListenerIsOn(false);//否则数据会写入title的数据库
 		this.threadNo = threadNo;
 		this.lineEntryQueue = lineEntryQueue;
-		this.keyword = keyword;
 		stopflag= false;
 
 		//为了避免原始messageinfo的改变导致影响后续获取headers等参数，先完成解析存储下来。
@@ -187,13 +186,7 @@ class RunnerProducer extends Thread {//Producer do
 				stdout.println(String.format("%s tasks left, Runner Checking: %s",leftTaskNum,fullurl));
 
 				if (messageinfo !=null) {
-					byte[] response = messageinfo.getResponse();
-					if (response != null) {
-						String responseBody = new String(response);
-						if (responseBody.toLowerCase().contains(keyword)) {
-							runnerTableModel.addNewLineEntry(new LineEntry(messageinfo,LineEntry.CheckStatus_UnChecked,"Runner"));
-						}
-					}
+					runnerTableModel.addNewLineEntry(new LineEntry(messageinfo,LineEntry.CheckStatus_UnChecked,"Runner"));
 				}
 			}catch (Exception e) {
 				e.printStackTrace(stderr);
