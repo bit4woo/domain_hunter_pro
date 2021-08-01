@@ -36,7 +36,6 @@ public class SearchMenu extends JPopupMenu {
 		//		});
 		//		this.add(webpackItem);
 
-
 		JMenuItem webpackItemPc = new JMenuItem(new AbstractAction("webpack-pc:   pc\\.([0-9a-z])*\\.js") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -70,6 +69,28 @@ public class SearchMenu extends JPopupMenu {
 			}
 		});
 		this.add(webpackItemIndex);
+		
+		JMenuItem webpackItemNoScript = new JMenuItem(new AbstractAction("webpack-noscript:   <noscript>(.*?)</noscript>") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				//</noscript> doesn't work properly without JavaScript </noscript>
+				String webpack_PATTERN = "<noscript>(.*?)</noscript>";//后文有小写转换
+				TitlePanel.getTextFieldSearch().setText(SearchDork.REGEX.toString()+":"+webpack_PATTERN);
+				//TitlePanel.getTitleTable().search(TitlePanel.getTextFieldSearch().getText());
+			}
+		});
+		this.add(webpackItemNoScript);
+		
+		JMenuItem findAdminByTableTag = new JMenuItem(new AbstractAction("Table:   <table(.*?)</table>") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				//<title(.*?)</title>
+				String webpack_PATTERN = "<table(.*?)</table>";
+				TitlePanel.getTextFieldSearch().setText(SearchDork.REGEX.toString()+":"+webpack_PATTERN);
+				//TitlePanel.getTitleTable().search(TitlePanel.getTextFieldSearch().getText());
+			}
+		});
+		this.add(findAdminByTableTag);
 
 		this.addSeparator();//分割线
 
@@ -94,18 +115,6 @@ public class SearchMenu extends JPopupMenu {
 			}
 		});
 		this.add(AllJS);
-		
-		//TODO
-		JMenuItem findAdmin = new JMenuItem(new AbstractAction("Try to find admin portal") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-				//<title(.*?)</title>
-				String webpack_PATTERN = "<table(.*?)</table>";
-				TitlePanel.getTextFieldSearch().setText(SearchDork.REGEX.toString()+":"+webpack_PATTERN);
-				//TitlePanel.getTitleTable().search(TitlePanel.getTextFieldSearch().getText());
-			}
-		});
-		this.add(findAdmin);
 		
 		this.addSeparator();//分割线
 		
