@@ -691,8 +691,16 @@ public class Commons {
 		String aa = "10.  12. 12.12/";
 		System.out.println(aa.trim());
 	}
+	
+	public static void test7() {
+		HashMap<String,Set<String>> result = Commons.dnsquery("163.177.151.109");
+		Set<String> IPSet = result.get("IP");
+		Set<String> CDNSet = result.get("CDN");
+		System.out.println(IPSet);
+		System.out.println(CDNSet);
+	}
 
 	public static void main(String args[]) {
-		test6();
+		test7();
 	}
 }
