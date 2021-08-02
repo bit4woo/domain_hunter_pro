@@ -14,6 +14,7 @@ import com.alibaba.fastjson.JSON;
 import com.google.common.net.InternetDomainName;
 
 import GUI.GUI;
+import Tools.DomainComparator;
 import burp.BurpExtender;
 import burp.Commons;
 
@@ -215,7 +216,7 @@ public class DomainManager {
 
 	public String fetchSubDomains() {
 		List<String> tmplist= new ArrayList<>(subDomainSet);
-		Collections.sort(tmplist);
+		Collections.sort(tmplist,new DomainComparator());
 		return String.join(System.lineSeparator(), tmplist);
 	}
 

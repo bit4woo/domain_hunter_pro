@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -99,8 +100,10 @@ public class ToolPanel extends JPanel {
 	 * 注意对监听器的影响
 	 */
 	public void loadConfigToGUI() {
+		BurpExtender.getStdout().println("Loading Tool Panel Config From Disk");
 		String content = BurpExtender.getCallbacks().loadExtensionSetting(BurpExtender.Extension_Setting_Name_Line_Config);
 		if (content == null) {
+			BurpExtender.getStdout().println("Loading From Disk Failed, Use Default");
 			lineConfig = new LineConfig();
 		}else {
 			lineConfig = LineConfig.FromJson(content);
@@ -151,7 +154,7 @@ public class ToolPanel extends JPanel {
 	public void saveConfigToDisk() {
 		saveToConfigFromGUI();
 		String config = lineConfig.ToJson();
-		BurpExtender.getCallbacks().saveExtensionSetting(BurpExtender.Extension_Setting_Name_Line_Config, null);
+		BurpExtender.getStdout().println("Saving Tool Panel Config To Disk");
 		BurpExtender.getCallbacks().saveExtensionSetting(BurpExtender.Extension_Setting_Name_Line_Config, config);
 	}
 
@@ -259,7 +262,9 @@ public class ToolPanel extends JPanel {
 				String content = inputTextArea.getText();
 				if (null != content) {
 					Set<String> domains = DomainProducer.grepDomain(content);
-					outputTextArea.setText(String.join(System.lineSeparator(), domains));
+					ArrayList<String> tmpList = new ArrayList<String>(domains);
+					Collections.sort(tmpList,new DomainComparator());
+					outputTextArea.setText(String.join(System.lineSeparator(), tmpList));
 					BurpExtender.liveAnalysisTread.classifyDomains(domains);
 				}
 			}
@@ -412,6 +417,25 @@ public class ToolPanel extends JPanel {
 					List<String> tmplist= new ArrayList<>(contentSet);
 
 					Collections.sort(tmplist);
+					String output = String.join(System.lineSeparator(), tmplist);
+					outputTextArea.setText(output);
+				} catch (Exception e1) {
+					outputTextArea.setText(e1.getMessage());
+				}
+			}
+		});
+		
+		JButton sortByLength = new JButton("Sort by Length");
+		threeFourthPanel.add(sortByLength);
+		sortByLength.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					List<String> content = Commons.getLinesFromTextArea(inputTextArea);
+					Set<String> contentSet = new HashSet<>(content);
+					List<String> tmplist= new ArrayList<>(contentSet);
+
+					Collections.sort(tmplist,new LengthComparator());
 					String output = String.join(System.lineSeparator(), tmplist);
 					outputTextArea.setText(output);
 				} catch (Exception e1) {
@@ -1136,4 +1160,5 @@ public class ToolPanel extends JPanel {
 			}
 		}
 	}
+	
 }

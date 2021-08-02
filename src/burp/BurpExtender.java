@@ -93,13 +93,14 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		//to save domain result to extensionSetting
 		//仅仅存储sqllite数据库的名称,也就是domainResult的项目名称
 		if (GUI.currentDBFile != null) {
-			BurpExtender.getCallbacks().saveExtensionSetting(BurpExtender.Extension_Setting_Name_DB_File, null);
+			BurpExtender.getStdout().println("Saving Current DB File Path To Disk");
 			BurpExtender.getCallbacks().saveExtensionSetting(BurpExtender.Extension_Setting_Name_DB_File, GUI.currentDBFile.getAbsolutePath());
 		}
 			
 	}
 
 	public static String loadDBfilepathFromExtension() {
+		BurpExtender.getStdout().println("Loading DB File Path From Disk");
 		return BurpExtender.getCallbacks().loadExtensionSetting(BurpExtender.Extension_Setting_Name_DB_File);
 	}
 
@@ -189,8 +190,8 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		}
 
 		gui.getToolPanel().saveConfigToDisk();
-		DomainPanel.autoSave();//域名面板自动保存逻辑有点复杂，退出前再自动保存一次
 		saveDBfilepathToExtension();
+		DomainPanel.autoSave();//域名面板自动保存逻辑有点复杂，退出前再自动保存一次
 	}
 
 	//ITab必须实现的两个方法

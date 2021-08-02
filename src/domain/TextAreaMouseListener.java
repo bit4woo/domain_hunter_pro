@@ -22,7 +22,7 @@ public class TextAreaMouseListener extends MouseAdapter{
     		jp = new TextAreaMenu(selected);
 
     	}else {
-            jp = new JPopupMenu();
+            jp = new TextAreaSortMenu(textArea);
             jp.add("^_^");
     	}
         if (arg0.getButton() == MouseEvent.BUTTON3) {
