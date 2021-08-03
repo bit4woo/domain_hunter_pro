@@ -49,6 +49,9 @@ public class LineEntry {
 
 	public static final String NotTargetBaseOnCertInfo = "NotTargetBaseOnCertInfo";
 	public static final String NotTargetBaseOnBlackList = "NotTargetBaseOnBlackList";
+	
+	public static final String EntryType_Web = "Web";
+	public static final String EntryType_DNS = "DNS";
 
 	public static String systemCharSet = getSystemCharSet();
 
@@ -81,6 +84,7 @@ public class LineEntry {
 	private transient boolean isChecked =false;
 	private String CheckStatus =CheckStatus_UnChecked;
 	private String AssetType = AssetType_C;
+	private String EntryType = EntryType_Web;
 	private String comment ="";
 	private boolean isManualSaved = false;
 
@@ -91,10 +95,19 @@ public class LineEntry {
 	private transient IExtensionHelpers helpers;
 	private transient IBurpExtenderCallbacks callbacks;
 
+	/**
+	 * 默认构造函数，序列化、反序列化所需
+	 */
 	LineEntry(){
 
 	}
 
+	/**
+	 * 用于构造DNS记录
+	 * @param isRequest
+	 * @param requestOrResponse
+	 * @return
+	 */
 	public LineEntry(String host,Set<String> IPset) {
 		this.host = host;
 		this.port = 80;
@@ -103,6 +116,7 @@ public class LineEntry {
 		if (this.IP != null) {
 			this.IP = IPset.toString().replace("[", "").replace("]", "");
 		}
+		this.EntryType = EntryType_DNS;
 	}
 
 	public LineEntry(IHttpRequestResponse messageinfo) {
@@ -533,6 +547,14 @@ Content-Type: text/html;charset=UTF-8
 		if (Arrays.asList(AssetTypeArray).contains(AssetType)) {
 			this.AssetType = AssetType;
 		}
+	}
+
+	public String getEntryType() {
+		return EntryType;
+	}
+
+	public void setEntryType(String entryType) {
+		EntryType = entryType;
 	}
 
 	public String getComment() {

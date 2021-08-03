@@ -324,6 +324,9 @@ public class LineTable extends JTable
 					}else if(modelCol==LineTableModel.getTitletList().indexOf("URL")) {//双击url在浏览器中打开
 						try{
 							String url = selecteEntry.getUrl();
+							if (url != null && !url.toLowerCase().startsWith("http://") && !url.toLowerCase().startsWith("https://")) {
+								url = "http://"+url;//针对DNS记录中URL字段是host的情况
+							}
 							Commons.browserOpen(url,ToolPanel.getLineConfig().getBrowserPath());
 						}catch (Exception e1){
 							e1.printStackTrace(stderr);

@@ -65,19 +65,21 @@ public class Producer extends Thread {//Producer do
 				while (it.hasNext()) {
 					LineEntry item = it.next();
 					String url = item.getUrl();
-					LineEntry linefound = findHistory(url);
-					if (null != linefound) {
-						linefound.removeComment(LineEntry.NotTargetBaseOnCertInfo);
-						linefound.removeComment(LineEntry.NotTargetBaseOnBlackList);
-						item.addComment(linefound.getComment());
-						item.setAssetType(linefound.getAssetType());
-						try {
-							if (url.equalsIgnoreCase(linefound.getUrl()) && item.getBodyText().length() == linefound.getBodyText().length()) {
-								item.setCheckStatus(linefound.getCheckStatus());
-								item.setTime(linefound.getTime());
+					if (item.getEntryType().equals(LineEntry.EntryType_Web)){
+						LineEntry linefound = findHistory(url);
+						if (null != linefound) {
+							linefound.removeComment(LineEntry.NotTargetBaseOnCertInfo);
+							linefound.removeComment(LineEntry.NotTargetBaseOnBlackList);
+							item.addComment(linefound.getComment());
+							item.setAssetType(linefound.getAssetType());
+							try {
+								if (url.equalsIgnoreCase(linefound.getUrl()) && item.getBodyText().length() == linefound.getBodyText().length()) {
+									item.setCheckStatus(linefound.getCheckStatus());
+									item.setTime(linefound.getTime());
+								}
+							}catch(Exception err) {
+								err.printStackTrace(stderr);
 							}
-						}catch(Exception err) {
-							err.printStackTrace(stderr);
 						}
 					}
 
@@ -113,9 +115,9 @@ public class Producer extends Thread {//Producer do
 			}
 			line.setHelpers(helpers);
 			try{//根据host查找
-				String host = new URL(url).getHost();
+				String host = new URL(url).getHost();//可能是域名、也可能是IP
 
-				List<String> lineHost = new ArrayList<>(Arrays.asList(line.getIP().trim().split(",")));
+				Set<String> lineHost = line.fetchIPSet();//解析得到的IP集合
 				lineHost.add(line.getHost());
 				if (lineHost.contains(host)) {
 					//HistoryLines.remove(line.getUrl());//如果有相同URL的记录，就删除这个记录。//ConcurrentModificationException
