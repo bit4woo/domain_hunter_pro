@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -113,9 +112,9 @@ public class ToolPanel extends JPanel {
 		//所以和domain和title中一样，显示数据时关闭监听器。
 		listenerIsOn = false;
 		inputTextArea.setText(lineConfig.getToolPanelText());
-		
+
 		BrowserPath.setText(lineConfig.getBrowserPath());
-		
+
 		if (!lineConfig.getNmapPath().contains("{host}")) {//兼容新旧版本，
 			lineConfig.setNmapPath(LineConfig.defaultNmap);
 		}
@@ -126,7 +125,7 @@ public class ToolPanel extends JPanel {
 		textFieldElasticURL.setText(lineConfig.getElasticApiUrl());
 		textFieldElasticUserPass.setText(lineConfig.getElasticUsernameAndPassword());
 		textFieldUploadApiToken.setText(lineConfig.getUploadApiToken());
-		
+
 		showItemsInOne.setSelected(lineConfig.isShowItemsInOne());
 		rdbtnSaveTrafficTo.setSelected(lineConfig.isEnableElastic());
 		listenerIsOn = true;//显示完毕后打开监听器。
@@ -142,7 +141,7 @@ public class ToolPanel extends JPanel {
 		lineConfig.setElasticApiUrl(textFieldElasticURL.getText().trim());
 		lineConfig.setElasticUsernameAndPassword(textFieldElasticUserPass.getText());
 		lineConfig.setUploadApiToken(textFieldUploadApiToken.getText());
-		
+
 		lineConfig.setToolPanelText(inputTextArea.getText());
 		lineConfig.setShowItemsInOne(showItemsInOne.isSelected());
 		lineConfig.setEnableElastic(rdbtnSaveTrafficTo.isSelected());
@@ -201,7 +200,7 @@ public class ToolPanel extends JPanel {
 
 		JLabel lblNewLabelNull = new JLabel("  ");
 		HeaderPanel.add(lblNewLabelNull);
-		
+
 		JButton outputToInput = new JButton("Input<----Output");
 		HeaderPanel.add(outputToInput);
 		outputToInput.addActionListener(new ActionListener() {
@@ -283,7 +282,7 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		});
-		
+
 		JButton btnFindIP = new JButton("Find IP");
 		threeFourthPanel.add(btnFindIP);
 		btnFindIP.addActionListener(new ActionListener() {
@@ -296,7 +295,7 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		});
-		
+
 		JButton btnFindIPAndPort = new JButton("Find IP:Port");
 		threeFourthPanel.add(btnFindIPAndPort);
 		btnFindIPAndPort.addActionListener(new ActionListener() {
@@ -424,7 +423,7 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		});
-		
+
 		JButton sortByLength = new JButton("Sort by Length");
 		threeFourthPanel.add(sortByLength);
 		sortByLength.addActionListener(new ActionListener() {
@@ -502,6 +501,32 @@ public class ToolPanel extends JPanel {
 			}
 		});
 
+		JButton btnRegexGrep = new JButton("Regex Grep");
+		threeFourthPanel.add(btnRegexGrep);
+		btnRegexGrep.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					String toFind = JOptionPane.showInputDialog("Input Regex", null);
+					if (toFind == null) {
+						return;
+					} else {
+						ArrayList<String> result = new ArrayList<String>();
+						String PATTERN = toFind;
+						Pattern pRegex = Pattern.compile(PATTERN);
+						String content = inputTextArea.getText();
+						Matcher matcher = pRegex.matcher(content);
+						while (matcher.find()) {//多次查找
+							result.add(matcher.group());
+						}
+						outputTextArea.setText(String.join(System.lineSeparator(), result));
+					}
+				} catch (Exception e1) {
+					outputTextArea.setText(e1.getMessage());
+					e1.printStackTrace(stderr);
+				}
+			}
+		});
 
 		JButton btnAddPrefix = new JButton("Add Prefix/Suffix");
 		threeFourthPanel.add(btnAddPrefix);
@@ -590,36 +615,6 @@ public class ToolPanel extends JPanel {
 			}
 		});
 
-
-		JButton btnRegexGrep = new JButton("Regex Grep");
-		btnRegexGrep.setEnabled(false);
-		threeFourthPanel.add(btnRegexGrep);
-		btnRegexGrep.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				try {
-					//					String toFind = JOptionPane.showInputDialog("to find which value", null);
-					//					if (toFind == null) {
-					//						return;
-					//					} else {
-					ArrayList<String> result = new ArrayList<String>();
-					//主要目的是找url        path: '/admin/menu',
-					String webpack_PATTERN = "\'/([0-9a-z])*\'"; //TODO 正则表达不正确
-					Pattern pRegex = Pattern.compile(webpack_PATTERN);
-					String content = inputTextArea.getText();
-					Matcher matcher = pRegex.matcher(content);
-					while (matcher.find()) {//多次查找
-						result.add(matcher.group());
-					}
-					outputTextArea.setText(result.toString());
-					//}
-				} catch (Exception e1) {
-					outputTextArea.setText(e1.getMessage());
-					e1.printStackTrace(stderr);
-				}
-			}
-
-		});
 
 		JButton btnIPsToCIDR = new JButton("IPs To CIDR");
 		threeFourthPanel.add(btnIPsToCIDR);
@@ -738,7 +733,7 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		});
-		
+
 		JButton toLowerCaseButton = new JButton("toLowerCase");
 		threeFourthPanel.add(toLowerCaseButton);
 		toLowerCaseButton.addActionListener(new ActionListener() {
@@ -747,6 +742,7 @@ public class ToolPanel extends JPanel {
 				outputTextArea.setText(inputTextArea.getText().toLowerCase());
 			}
 		});
+		
 
 		JPanel fourFourthPanel = new JPanel();
 		RightOfCenter.setRightComponent(fourFourthPanel);
@@ -871,7 +867,7 @@ public class ToolPanel extends JPanel {
 		gbc_textFieldDirBruteDict.gridx = 1;
 		gbc_textFieldDirBruteDict.gridy = 5;
 		fourFourthPanel.add(textFieldDirBruteDict, gbc_textFieldDirBruteDict);
-		
+
 		JLabel lblElasticURL = new JLabel("Elastic URL:");
 		GridBagConstraints gbc_lblElasticURL = new GridBagConstraints();
 		gbc_lblElasticURL.anchor = GridBagConstraints.WEST;
@@ -879,7 +875,7 @@ public class ToolPanel extends JPanel {
 		gbc_lblElasticURL.gridx = 0;
 		gbc_lblElasticURL.gridy = 6;
 		fourFourthPanel.add(lblElasticURL, gbc_lblElasticURL);
-		
+
 		textFieldElasticURL = new JTextField();
 		textFieldElasticURL.setToolTipText("URL of elastic API");
 		textFieldElasticURL.setText("http://10.12.72.55:9200/");
@@ -893,7 +889,7 @@ public class ToolPanel extends JPanel {
 		gbc_textFieldElasticURL.gridx = 1;
 		gbc_textFieldElasticURL.gridy = 6;
 		fourFourthPanel.add(textFieldElasticURL, gbc_textFieldElasticURL);
-		
+
 		JLabel lblDirElasticUserPass = new JLabel("Elastic Username Password:");
 		GridBagConstraints gbc_lblDirElasticUserPass = new GridBagConstraints();
 		gbc_lblDirElasticUserPass.anchor = GridBagConstraints.WEST;
@@ -901,7 +897,7 @@ public class ToolPanel extends JPanel {
 		gbc_lblDirElasticUserPass.gridx = 0;
 		gbc_lblDirElasticUserPass.gridy = 7;
 		fourFourthPanel.add(lblDirElasticUserPass, gbc_lblDirElasticUserPass);
-		
+
 		textFieldElasticUserPass = new JTextField();
 		textFieldElasticUserPass.setText("elastic:changeme");
 		textFieldElasticUserPass.setToolTipText("username and password of elastic API");
@@ -914,7 +910,7 @@ public class ToolPanel extends JPanel {
 		gbc_textField_1.gridx = 1;
 		gbc_textField_1.gridy = 7;
 		fourFourthPanel.add(textFieldElasticUserPass, gbc_textField_1);
-		
+
 		JLabel lblUploadAPIToken = new JLabel("Upload API Token:");
 		GridBagConstraints gbc_lblUploadAPIToken = new GridBagConstraints();
 		gbc_lblUploadAPIToken.anchor = GridBagConstraints.WEST;
@@ -922,7 +918,7 @@ public class ToolPanel extends JPanel {
 		gbc_lblUploadAPIToken.gridx = 0;
 		gbc_lblUploadAPIToken.gridy = 8;
 		fourFourthPanel.add(lblUploadAPIToken, gbc_lblUploadAPIToken);
-		
+
 		textFieldUploadApiToken = new JTextField();
 		textFieldUploadApiToken.setToolTipText("token of upload api");
 		textFieldUploadApiToken.getDocument().addDocumentListener(new textFieldListener());
@@ -1031,7 +1027,7 @@ public class ToolPanel extends JPanel {
 		gbc_ignoreWrongCAHost.gridx = 1;
 		gbc_ignoreWrongCAHost.gridy = 14;
 		fourFourthPanel.add(ignoreWrongCAHost, gbc_ignoreWrongCAHost);
-		
+
 		rdbtnSaveTrafficTo = new JRadioButton("Save traffic to Elastic");
 		rdbtnSaveTrafficTo.setSelected(false);
 		GridBagConstraints gbc_rdbtnSaveTrafficTo = new GridBagConstraints();
@@ -1138,7 +1134,7 @@ public class ToolPanel extends JPanel {
 
 	//保存各个路径设置参数，自动保存的listener
 	class textFieldListener implements DocumentListener {
-	    
+
 		@Override
 		public void removeUpdate(DocumentEvent e) {
 			if (listenerIsOn) {
@@ -1160,5 +1156,5 @@ public class ToolPanel extends JPanel {
 			}
 		}
 	}
-	
+
 }
