@@ -184,6 +184,10 @@ class RunnerProducer extends Thread {//Producer do
 					newHttpService = helpers.buildHttpService(newHost, httpService.getPort(), httpService.getProtocol());
 				}else {//适用于验证token、cookie在其他站点的有效性
 					newHttpService = helpers.buildHttpService(line.getHost(),line.getPort(),line.getProtocol());
+					if (line.getEntryType().equals(LineEntry.EntryType_DNS)) {
+						//使用已有httpService,DNS记录即跳过；使用host时，可能有特殊端口，DNS记录就有价值
+						continue;
+					}
 				}
 
 				String headerHost = newHttpService.toString().replaceFirst("http://", "").replaceFirst("https://", "");

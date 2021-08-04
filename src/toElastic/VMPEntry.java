@@ -28,6 +28,19 @@ public class VMPEntry {
 			description = title != "" ? title:"from burp";
 		}*/
 	}
+	
+	public VMPEntry(String hostOrUrl,String title,String IPStr,String headerServer){
+		hostOrUrl = hostOrUrl.toLowerCase().trim();
+		name = hostOrUrl;
+		type = 2;
+		
+		description = "title: "+title+System.lineSeparator()
+		+ "IP: " + IPStr+System.lineSeparator()
+		+ "Server: "+headerServer;
+		if (description.equals("")) {
+			description = "from burp";
+		}
+	}
 
 	public  String toJson() {
 		return new Gson().toJson(this,VMPEntry.class);
