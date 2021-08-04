@@ -21,6 +21,7 @@ import java.net.URL;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class LineEntryMenu extends JPopupMenu {
 
@@ -241,6 +242,23 @@ public class LineEntryMenu extends JPopupMenu {
 			}
 		});
 
+		JMenuItem copyIPItem = new JMenuItem(new AbstractAction("Copy IP Set") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				try{
+					Set<String> IPs = lineTable.getModel().getIPs(rows);
+					String text = String.join(System.lineSeparator(), IPs);
+
+					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+					StringSelection selection = new StringSelection(text);
+					clipboard.setContents(selection, null);
+				}
+				catch (Exception e1)
+				{
+					e1.printStackTrace(stderr);
+				}
+			}
+		});
 
 		JMenuItem copyURLItem = new JMenuItem(new AbstractAction("Copy URL") {
 			@Override
@@ -635,6 +653,7 @@ public class LineEntryMenu extends JPopupMenu {
 		this.add(openURLwithBrowserItem);
 		this.add(copyHostItem);
 		this.add(copyHostAndPortItem);
+		this.add(copyIPItem);
 		this.add(copyURLItem);
 		this.add(copyCommonURLItem);
 		this.add(copyLocationURLItem);

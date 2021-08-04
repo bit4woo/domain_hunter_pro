@@ -445,6 +445,18 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		}
 	}
 
+	public Set<String> getIPs(int[] rows) {
+		synchronized (lineEntries) {
+			Arrays.sort(rows); //升序
+			Set<String> Result = new HashSet<>();
+
+			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
+				Set<String> IPs = lineEntries.getValueAtIndex(rows[i]).fetchIPSet();
+				Result.addAll(IPs);
+			}
+			return Result;
+		}
+	}
 
 	public List<String> getURLs(int[] rows) {
 		synchronized (lineEntries) {
