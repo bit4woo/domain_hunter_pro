@@ -220,7 +220,16 @@ public class ProjectMenu{
 
 			}
 		});
-		menuButton.add(detachMenu);
+		//menuButton.add(detachMenu);
+		
+		JMenuItem lockMenu = new JMenuItem(new AbstractAction("lock & unlock")
+		{
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				BurpExtender.getGui().lockUnlock();
+			}
+		});
+		menuButton.add(lockMenu);
 
 		//为了菜单能够区分
 		File dbFile = GUI.getCurrentDBFile();

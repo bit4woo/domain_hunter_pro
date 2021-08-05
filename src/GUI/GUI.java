@@ -78,6 +78,21 @@ public class GUI extends JFrame {
 		projectMenu.Add();
 
 	}
+	/**
+	 * 仅仅锁住图形界面，不影响后台处理数据
+	 */
+	public void lockUnlock() {
+		if (this.getContentPane().isEnabled()) {
+			((JTabbedPane)this.getContentPane()).addTab("Locked",null,new JPanel(),null);
+			((JTabbedPane)this.getContentPane()).setSelectedIndex(3);
+			this.getContentPane().setEnabled(false);
+		}else {
+			this.getContentPane().setEnabled(true);
+			((JTabbedPane)this.getContentPane()).removeTabAt(3);
+			((JTabbedPane)this.getContentPane()).setSelectedIndex(0);
+		}
+	}
+
 
 	public boolean LoadData(String dbFilePath){
 		try {//这其中的异常会导致burp退出

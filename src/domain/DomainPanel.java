@@ -74,7 +74,7 @@ public class DomainPanel extends JPanel {
         DomainPanel.domainResult = domainResult;
     }
     
-    //流量分析进程需要用到这个变量，标记为volatile以获取正确的值
+    //流量分析进程需要用到这个变量，标记为volatile以获取正确的值。
     public volatile static DomainManager domainResult = null;//getter setter
     public static DefaultTableModel domainTableModel;
     PrintWriter stdout;
