@@ -8,6 +8,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.io.PrintWriter;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -281,7 +282,22 @@ public class LineTable extends JTable
 				if (!LineSearch.entryNeedToShow(line)) {
 					return false;
 				}
-
+				//目前只处理&&（and）逻辑的表达式
+				if (Input.contains("&&")) {
+					String[] searchConditions = Input.split("&&");
+					for (String condition:searchConditions) {
+						if (oneCondition(condition,line)) {
+							continue;
+						}else {
+							return false;
+						}
+					}
+					return true;
+				}else {
+					return oneCondition(Input,line);
+				}
+			}
+			public boolean oneCondition(String Input,LineEntry line) {
 				if (SearchDork.isDork(Input)) {
 					//stdout.println("do dork search,dork:"+dork+"   keyword:"+keyword);
 					return LineSearch.dorkFilter(line,Input,caseSensitive);
