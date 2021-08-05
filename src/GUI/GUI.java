@@ -87,7 +87,7 @@ public class GUI extends JFrame {
 			stdout.println("==Start Loading Data From: " + dbFilePath+"==");
 			currentDBFile = new File(dbFilePath);
 			DBHelper dbhelper = new DBHelper(dbFilePath);
-			domainPanel.setDomainResult(dbhelper.getDomainObj());
+			DomainPanel.setDomainResult(dbhelper.getDomainObj());
 			domainPanel.showToDomainUI();
 			titlePanel.showToTitleUI(dbhelper.getTitles());
 			GUI.setCurrentDBFile(currentDBFile);

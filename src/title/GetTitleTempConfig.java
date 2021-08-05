@@ -56,7 +56,9 @@ public class GetTitleTempConfig {
 	}
 
 	public static int inputThreadNumber() {
-		while (true) {
+		int times = 3;
+		while (times > 0) {
+			times--;
 			try {
 				String threads = JOptionPane.showInputDialog("How many threads do you want to use", "50").trim();
 				int number = Integer.parseInt(threads);
@@ -65,5 +67,6 @@ public class GetTitleTempConfig {
 				continue;
 			}
 		}
+		return -1;
 	}
 }

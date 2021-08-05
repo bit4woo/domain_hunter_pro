@@ -371,6 +371,9 @@ public class TitlePanel extends JPanel {
 	 */
 	public void getAllTitle(){
 		tempConfig = new GetTitleTempConfig();
+		if (tempConfig.getThreadNumber() <=0) {
+			return;
+		}
 		DomainPanel.backupDB();
 
 		Set<String> domains = new HashSet<>();//新建一个对象，直接赋值后的删除操作，实质是对domainResult的操作。
@@ -398,6 +401,9 @@ public class TitlePanel extends JPanel {
 
 	public void getExtendTitle(){
 		tempConfig = new GetTitleTempConfig();
+		if (tempConfig.getThreadNumber() <=0) {
+			return;
+		}
 		DomainPanel.backupDB();
 
 		Set<String> extendIPSet = titleTableModel.GetExtendIPSet();
@@ -425,6 +431,9 @@ public class TitlePanel extends JPanel {
 	public void getTitleOfNewDomain(){
 
 		tempConfig = new GetTitleTempConfig();
+		if (tempConfig.getThreadNumber() <= 0) {
+			return;
+		}
 		DomainPanel.backupDB();
 
 		Set<String> domains = new HashSet<>();//新建一个对象，直接赋值后的删除操作，实质是对domainResult的操作。

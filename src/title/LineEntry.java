@@ -19,6 +19,7 @@ import com.ibm.icu.text.CharsetMatch;
 
 import burp.BurpExtender;
 import burp.Getter;
+import burp.HelperPlus;
 import burp.IBurpExtenderCallbacks;
 import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
@@ -215,6 +216,10 @@ public class LineEntry {
 
 	}
 
+	/**
+	 * 获取到的URL是包含了默认端口的，因为burp方法的原因
+	 * @return
+	 */
 	public String getUrl() {//为了格式统一，和查找匹配更精确，都包含了默认端口
 		if (url == null || url.equals("")) {
 			return protocol+"://"+host+":"+port+"/";
@@ -222,15 +227,16 @@ public class LineEntry {
 		return url;
 	}
 
-	//返回通常意义上的URL格式，不包含默认端口。用于搜索
+	/**
+	 * 返回通常意义上的URL格式，不包含默认端口。用于搜索
+	 * @return
+	 */
 	public String fetchUrlWithCommonFormate() {
-		String result = protocol+"://"+host;
-		if ((protocol.equalsIgnoreCase("http") && port == 80)
-			|| (protocol.equalsIgnoreCase("https") && port ==443)) {
-			return result+"/";
-		}else {
-			return result+":"+port+"/";
+		if (url == null || url.equals("")) {
+			url = protocol+"://"+host+":"+port+"/";
 		}
+		url = HelperPlus.removeDefaultPort(url);
+		return url;
 	}
 
 	public void setUrl(String url) {
