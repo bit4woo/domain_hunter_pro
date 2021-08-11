@@ -563,7 +563,9 @@ public class LineEntryMenu extends JPopupMenu {
 			}
 		});
 
-		//单纯从title记录中删除
+		/**
+		 * 单纯从title记录中删除,不做其他修改
+		 */
 		JMenuItem removeItem = new JMenuItem(new AbstractAction("Delete This Entry") {//need to show dialog to confirm
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -576,9 +578,17 @@ public class LineEntryMenu extends JPopupMenu {
 				GUI.titlePanel.digStatus();
 			}
 		});
+		removeItem.setToolTipText("Just Delete Entry In Title Panel");
 		
-		//单纯从title记录中删除
-		JMenuItem removeSubDomainItem = new JMenuItem(new AbstractAction("Delete Host From SubDomainSet") {//need to show dialog to confirm
+		/**
+		 * 从子域名列表中删除对应资产，表面当前host（应该是一个IP）不是我们的目标资产。
+		 * 那么应该同时做以下三点：
+		 * 1、从domain panel中的SubDomainSet移除。
+		 * 2、从title panel中删除记录。
+		 * 3、把目标加入黑名单，以便下次跑网段如果有相同IP可以标记出来。
+		 */
+		@Deprecated
+		JMenuItem removeSubDomainItem = new JMenuItem(new AbstractAction("Delete Host From Target(SubDomainSet)") {//need to show dialog to confirm
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				int result = JOptionPane.showConfirmDialog(null,"Are you sure to DELETE these Hosts from SubDomainSet ?");
@@ -597,9 +607,43 @@ public class LineEntryMenu extends JPopupMenu {
 				GUI.titlePanel.digStatus();
 			}
 		});
+		removeSubDomainItem.setToolTipText("Delete Host In Domain Panel");
+		
+		/**
+		 * 从子域名列表中删除对应资产，表面当前host（应该是一个IP）不是我们的目标资产。
+		 * 那么应该同时做以下三点：
+		 * 1、从domain panel中的SubDomainSet移除。
+		 * 2、从title panel中删除记录。
+		 * 3、把目标加入黑名单，以便下次跑网段如果有相同IP可以标记出来。
+		 */
+		JMenuItem NotTargetHandleItem = new JMenuItem(new AbstractAction("Not My Target! Delete It!") {//need to show dialog to confirm
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				int result = JOptionPane.showConfirmDialog(null,"Are you sure these items are not your target, DELETE them?");
+				if (result == JOptionPane.YES_OPTION) {
+					//java.util.List<String> hosts = lineTable.getModel().getHosts(rows);//不包含端口，如果原始记录包含端口就删不掉
+					//如果有 domain domain:8888 两个记录，这种方式就会删错对象
+					java.util.List<String> hostAndPort = lineTable.getModel().getHostsAndPorts(rows);//包含端口，如果原始记录
+					for(String item:hostAndPort) {
+						if (!DomainPanel.domainResult.getSubDomainSet().remove(item)) {
+							DomainPanel.domainResult.getSubDomainSet().remove(item.split(":")[0]);
+						}
+					}
+					lineTable.getModel().addHostToNotTargetIPSet(rows);//当host是IP的时候，加入黑名单
+					lineTable.getModel().removeRows(rows);//删除当前行，必须最后执行！
+				}else {
+					return;
+				}
+				GUI.titlePanel.digStatus();
+			}
+		});
+		NotTargetHandleItem.setToolTipText("1.Delete Host From Domain Panel,2.Add Host to BlackList,3.Delete Entry From Title Panel");
 
-		//认为资产不是目标资产，加入NotTargeIPSet
-		JMenuItem addToblackListItem = new JMenuItem(new AbstractAction("Add Host To NotTargeIPSet") {//need to show dialog to confirm
+		/**
+		 * 认为资产不是目标资产，加入NotTargeIPSet，不做其他修改
+		 * 黑名单仅用于标记title记录，不会不请求对应的web
+		 */
+		JMenuItem addToblackListItem = new JMenuItem(new AbstractAction("Add Host To Black List(NotTargeIPSet)") {//need to show dialog to confirm
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				int result = JOptionPane.showConfirmDialog(null,"Are you sure to ADD Host(Must Be IP) to NotTargetIPSet ?");
@@ -611,12 +655,16 @@ public class LineEntryMenu extends JPopupMenu {
 				GUI.titlePanel.digStatus();
 			}
 		});
-		addToblackListItem.setToolTipText("If host is IP address,will be added to NotTargetIPSet");
+		addToblackListItem.setToolTipText("If host is IP address,will be added to NotTargetIPSet[Black List]");
 
-		JMenuItem removeFromBlackListItem = new JMenuItem(new AbstractAction("Remove Host From NotTargeIPSet") {//need to show dialog to confirm
+		/**
+		 * 从黑名单中移除，不做其他修改。
+		 * 黑名单仅用于标记title记录，不会不请求对应的web
+		 */
+		JMenuItem removeFromBlackListItem = new JMenuItem(new AbstractAction("Remove Host From Black List(NotTargeIPSet)") {//need to show dialog to confirm
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				int result = JOptionPane.showConfirmDialog(null,"Are you sure to REMOVE these Host(Must Be IP) from NotTargetIPSet ?");
+				int result = JOptionPane.showConfirmDialog(null,"Are you sure to REMOVE Host(Must Be IP) from NotTargetIPSet ?");
 				if (result == JOptionPane.YES_OPTION) {
 					lineTable.getModel().removeHostFromNotTargetIPSet(rows);
 				}else {
@@ -664,7 +712,8 @@ public class LineEntryMenu extends JPopupMenu {
 		this.addSeparator();
 
 		this.add(removeItem);
-		this.add(removeSubDomainItem);
+		//this.add(removeSubDomainItem);
+		this.add(NotTargetHandleItem);
 		this.add(addToblackListItem);
 		this.add(removeFromBlackListItem);
 	}
