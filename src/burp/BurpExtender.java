@@ -2,6 +2,7 @@ package burp;
 
 import GUI.GUI;
 import GUI.LineEntryMenuForBurp;
+import Tools.LineConfig;
 import Tools.ToolPanel;
 import bsh.This;
 import domain.DomainConsumer;
@@ -33,7 +34,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	private static String github = "https://github.com/bit4woo/domain_hunter_pro";
 	private static GUI gui;
 	public static final String Extension_Setting_Name_Line_Config = "domain-Hunter-pro-line-config";
-	public static final String Extension_Setting_Name_DB_File = "domain-Hunter-pro-db-file-path";
+	private static final String Extension_Setting_Name_DB_File = "DomainHunterProDbFilePath";
 
 	private static final Logger log=LogManager.getLogger(BurpExtender.class);
 	public static DomainProducer liveAnalysisTread;
@@ -89,19 +90,31 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	}
 
 
+	@Deprecated
 	public static void saveDBfilepathToExtension() {
 		//to save domain result to extensionSetting
 		//仅仅存储sqllite数据库的名称,也就是domainResult的项目名称
 		if (GUI.currentDBFile != null) {
-			BurpExtender.getStdout().println("Saving Current DB File Path To Disk");
-			BurpExtender.getCallbacks().saveExtensionSetting(BurpExtender.Extension_Setting_Name_DB_File, GUI.currentDBFile.getAbsolutePath());
+			String dbfilepath = GUI.currentDBFile.getAbsolutePath();
+			stdout.println("Saving Current DB File Path To Disk: "+dbfilepath);
+			System.out.println("Loaded DB File Path From Disk: "+dbfilepath);
+			callbacks.saveExtensionSetting(Extension_Setting_Name_DB_File, dbfilepath);
 		}
-			
 	}
-
+	
+	/**
+	 * 很多时候都获取不到数据，都是null值！有bug
+	 * @return
+	 */
+	@Deprecated
 	public static String loadDBfilepathFromExtension() {
-		BurpExtender.getStdout().println("Loading DB File Path From Disk");
-		return BurpExtender.getCallbacks().loadExtensionSetting(BurpExtender.Extension_Setting_Name_DB_File);
+		String dbfilepath = callbacks.loadExtensionSetting(Extension_Setting_Name_DB_File);
+		if (dbfilepath == null) {
+			dbfilepath = LineConfig.loadFromDisk().getDbfilepath();
+		}
+		stdout.println("Loaded DB File Path From Disk: "+dbfilepath);
+		System.out.println("Loaded DB File Path From Disk: "+dbfilepath);
+		return dbfilepath;
 	}
 
 
@@ -165,15 +178,8 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 				//如果这里报java.lang.NullPointerException: Component cannot be null 错误，需要排查contentPane的初始化是否正确。
 			}
 		});
-
-		//recovery save domain results from extensionSetting
-		String dbFilePath = loadDBfilepathFromExtension();
-		System.out.println("Database FileName From Extension Setting: "+dbFilePath);
-		if (dbFilePath != null && dbFilePath.endsWith(".db")) {
-			gui.LoadData(dbFilePath);
-		}
-
-		gui.getToolPanel().loadConfigToGUI();
+		
+		gui.getToolPanel().loadConfigToGUI();//包含db文件的加载
 		startLiveCapture();
 	}
 
@@ -189,8 +195,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 			e.printStackTrace(stderr);
 		}
 
-		gui.getToolPanel().saveConfigToDisk();
-		saveDBfilepathToExtension();
+		gui.getToolPanel().saveConfigToDisk();//包含db文件位置的保存
 		DomainPanel.autoSave();//域名面板自动保存逻辑有点复杂，退出前再自动保存一次
 	}
 

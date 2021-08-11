@@ -1,11 +1,16 @@
 package Tools;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.commons.io.FileUtils;
+
 import com.alibaba.fastjson.JSON;
 
+import GUI.GUI;
 import burp.BurpExtender;
 import burp.Commons;
 import title.LineEntry;
@@ -13,6 +18,9 @@ import title.TitlePanel;
 
 public class LineConfig {
 	private static int MaximumEntries = 1000;//控制显示的条目数，减少内存占用
+
+	//用于本地保存的路径
+	private static final String localdir = System.getProperty("user.home")+File.separator+".domainhunter"+File.separator+"domainhunter.config";
 
 	//跑title时根据各字段过滤某些条目
 	//private static Set<String> blacklistHostSet = new HashSet<String>(); //其实不需要
@@ -41,6 +49,7 @@ public class LineConfig {
 	private String uploadApiToken = "";
 	private boolean showItemsInOne = false;
 	private boolean enableElastic = false;
+	private String dbfilepath ="";
 	
 	LineConfig(){
 		if (Commons.isMac()) {
@@ -210,6 +219,44 @@ public class LineConfig {
 		this.enableElastic = enableElastic;
 	}
 
+
+
+	public String getDbfilepath() {
+		return dbfilepath;
+	}
+
+	public void setDbfilepath(String dbfilepath) {
+		this.dbfilepath = dbfilepath;
+	}
+
+	public void saveToDisk() {
+		File localFile = new File(localdir);
+		try {
+			this.setDbfilepath(GUI.currentDBFile.getAbsolutePath());
+		} catch (Exception e1) {
+			e1.printStackTrace();
+			e1.printStackTrace(BurpExtender.getStderr());
+		}
+		try {
+			FileUtils.write(localFile, this.ToJson());
+		} catch (IOException e) {
+			e.printStackTrace();
+			e.printStackTrace(BurpExtender.getStderr());
+		}
+	}
+
+	public static LineConfig loadFromDisk() {
+		File localFile = new File(localdir);
+		try {
+			String jsonstr = FileUtils.readFileToString(localFile);
+			LineConfig config = FromJson(jsonstr);
+			return config;
+		} catch (IOException e) {
+			e.printStackTrace();
+			e.printStackTrace(BurpExtender.getStderr());
+			return null;
+		}
+	}
 
 
 	public String ToJson() {

@@ -50,6 +50,7 @@ import javax.swing.event.DocumentListener;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.text.StringEscapeUtils;
 
+import GUI.GUI;
 import burp.BurpExtender;
 import burp.Commons;
 import domain.CertInfo;
@@ -100,12 +101,24 @@ public class ToolPanel extends JPanel {
 	 */
 	public void loadConfigToGUI() {
 		BurpExtender.getStdout().println("Loading Tool Panel Config From Disk");
-		String content = BurpExtender.getCallbacks().loadExtensionSetting(BurpExtender.Extension_Setting_Name_Line_Config);
-		if (content == null) {
+//		String content = BurpExtender.getCallbacks().loadExtensionSetting(BurpExtender.Extension_Setting_Name_Line_Config);
+//		if (content == null) {
+//			lineConfig = LineConfig.loadFromDisk();
+//		}else {
+//			lineConfig = LineConfig.FromJson(content);
+//		}
+
+		lineConfig = LineConfig.loadFromDisk();
+		
+		if (lineConfig == null) {
 			BurpExtender.getStdout().println("Loading From Disk Failed, Use Default");
 			lineConfig = new LineConfig();
-		}else {
-			lineConfig = LineConfig.FromJson(content);
+		}
+		
+		String dbFilePath = lineConfig.getDbfilepath();
+		
+		if (dbFilePath != null && dbFilePath.endsWith(".db")) {
+			GUI.LoadData(dbFilePath);
 		}
 		//这里的修改也会触发textFieldListener监听器。
 		//由于我们是多个组件共用一个保存逻辑，当前对一个组件设置值的时候，触发保存，从而导致整体数据的修改！！！
@@ -152,9 +165,11 @@ public class ToolPanel extends JPanel {
 	//保存： 具体各个控件的值---->LineConfig对象---->磁盘文件
 	public void saveConfigToDisk() {
 		saveToConfigFromGUI();
-		String config = lineConfig.ToJson();
+		String dbfilepath = GUI.currentDBFile.getAbsolutePath();
+		lineConfig.setDbfilepath(dbfilepath);
+		lineConfig.saveToDisk();
 		BurpExtender.getStdout().println("Saving Tool Panel Config To Disk");
-		BurpExtender.getCallbacks().saveExtensionSetting(BurpExtender.Extension_Setting_Name_Line_Config, config);
+		BurpExtender.getCallbacks().saveExtensionSetting(BurpExtender.Extension_Setting_Name_Line_Config, lineConfig.ToJson());
 	}
 
 

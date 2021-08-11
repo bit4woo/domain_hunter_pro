@@ -333,6 +333,7 @@ public class DBHelper {
 				return true;
 			}else {
 				System.out.println("update titles failed");
+				stderr.println("update titles failed");
 				return false;
 			}
 		} catch(SQLiteException e) {

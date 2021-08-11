@@ -94,27 +94,27 @@ public class GUI extends JFrame {
 	}
 
 
-	public boolean LoadData(String dbFilePath){
+	public static boolean LoadData(String dbFilePath){
 		try {//这其中的异常会导致burp退出
 			BurpExtender.clearQueue();//更换DB文件前进行，否则Queue中会包含之前的数据。
 			System.out.println("=================================");
 			System.out.println("==Start Loading Data From: " + dbFilePath+"==");
-			stdout.println("==Start Loading Data From: " + dbFilePath+"==");
+			BurpExtender.getStdout().println("==Start Loading Data From: " + dbFilePath+"==");
 			currentDBFile = new File(dbFilePath);
 			DBHelper dbhelper = new DBHelper(dbFilePath);
 			DomainPanel.setDomainResult(dbhelper.getDomainObj());
 			domainPanel.showToDomainUI();
 			titlePanel.showToTitleUI(dbhelper.getTitles());
 			GUI.setCurrentDBFile(currentDBFile);
+			ToolPanel.getLineConfig().setDbfilepath(currentDBFile.getAbsolutePath());
 			GUI.displayProjectName();
-			BurpExtender.saveDBfilepathToExtension();
 			System.out.println("==End Loading Data From: "+ dbFilePath +"==");//输出到debug console
-			stdout.println("==End Loading Data From: "+ dbFilePath +"==");
+			BurpExtender.getStdout().println("==End Loading Data From: "+ dbFilePath +"==");
 			return true;
 		} catch (Exception e) {
-			stdout.println("Loading Failed!");
+			BurpExtender.getStdout().println("Loading Failed!");
 			e.printStackTrace();//输出到debug console
-			e.printStackTrace(stderr);
+			e.printStackTrace(BurpExtender.getStderr());
 			return false;
 		}
 	}
