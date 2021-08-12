@@ -52,6 +52,8 @@ public class LineSearch {
 			contentList.add(new String(line.getResponse()));
 			if (line.getEntryType().equals(LineEntry.EntryType_Web)) {
 				contentList.add(line.fetchUrlWithCommonFormate());
+				//之前这里有个bug，如果用了上面这段代码，数据库更新就会失败！why？
+				//因为之前的fetchUrlWithCommonFormate()实现修改了URL的格式导致，where条件无法匹配。
 			}else {
 				contentList.add(line.getUrl());//本质是domain name
 			}

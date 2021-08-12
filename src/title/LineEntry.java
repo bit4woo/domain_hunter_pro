@@ -229,14 +229,16 @@ public class LineEntry {
 
 	/**
 	 * 返回通常意义上的URL格式，不包含默认端口。用于搜索
+	 * 不要修改原始url的格式！即都包含默认端口。因为数据库中更新对应记录是以URL为依据的，否则不能成功更新记录。
 	 * @return
 	 */
 	public String fetchUrlWithCommonFormate() {
 		if (url == null || url.equals("")) {
 			url = protocol+"://"+host+":"+port+"/";
 		}
-		url = HelperPlus.removeDefaultPort(url);
-		return url;
+		//不要修改原始url的格式！即都包含默认端口。因为数据库中更新对应记录是以URL为依据的，否则不能成功更新记录。
+		String usualUrl = HelperPlus.removeDefaultPort(url);
+		return usualUrl;
 	}
 
 	public void setUrl(String url) {

@@ -340,6 +340,7 @@ public class DBHelper {
 			if (e.getErrorCode() == SQLiteErrorCode.SQLITE_BUSY.code) {
 				log.error("SQLITE_BUSY The database file is locked when call addTitles()");
 			}
+			e.printStackTrace();
 			e.printStackTrace(stderr);
 		} catch (Exception e) {
 			e.printStackTrace();
