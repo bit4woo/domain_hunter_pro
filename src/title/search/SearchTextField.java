@@ -18,7 +18,7 @@ import javax.swing.SwingUtilities;
 import burp.BurpExtender;
 import title.TitlePanel;
 
-/*
+/**
  * 这个类主要是为了创建搜索框，并为搜索框添加各种监听事件：
  * 右键菜单、上线翻动历史记录（鼠标滚轮翻动和上下键翻动）、enter事件、
  */
@@ -47,24 +47,6 @@ public class SearchTextField extends JTextField{
 			stdout = new PrintWriter(System.out, true);
 			stderr = new PrintWriter(System.out, true);
 		}
-
-
-		addFocusListener(new FocusAdapter() {
-			@Override
-			public void focusGained(FocusEvent e) {
-				if (getText().equals("Input text to search")) {
-					setText("");
-				}
-			}
-			@Override
-			public void focusLost(FocusEvent e) {
-				/*
-				 * if (textFieldSearch.getText().equals("")) {
-				 * textFieldSearch.setText("Input text to search"); }
-				 */
-
-			}
-		});
 
 		//enter键触发
 		addActionListener(new ActionListener() {

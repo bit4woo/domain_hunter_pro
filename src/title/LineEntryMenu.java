@@ -396,7 +396,7 @@ public class LineEntryMenu extends JPopupMenu {
 		JMenuItem moreActionItem = new JMenuItem(new AbstractAction("Need More Action") {//checking
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				TitlePanel.getTitleTableModel().updateRowsStatus(rows,LineEntry.CheckStatus_Checking);			
+				TitlePanel.getTitleTableModel().updateRowsStatus(rows,LineEntry.CheckStatus_MoreAction);			
 				java.util.List<String> urls = lineTable.getModel().getURLs(rows);
 				IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
 				for(String url:urls) {

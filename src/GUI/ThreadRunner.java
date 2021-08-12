@@ -50,23 +50,33 @@ public class ThreadRunner{
 	/**
 	 * 只修改host，那么protocol、port都不变，适合查找相同服务的IP、Name
 	 * 修改httpService，那么protocol、host、port修改，适合验证cookie\token对于站点的有效性!
-	 * @return
+	 * @return HTTPService=0 Host=1 cancel=2,即数组的index。
 	 */
-	private boolean justChangeHost() {
-		int user_input = JOptionPane.showConfirmDialog(null, "Just change httpService[No] or Host[Yes]?","Change Option",JOptionPane.YES_NO_OPTION);
+	private static int justChangeHost() {
+		Object[] options = { "HttpService", "Host", "CANCEL" };
+		int user_input = JOptionPane.showOptionDialog(null, "Which Part Do You Want To Repalce?", "Chose Replace Part",
+		JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,
+		null, options, options[0]);
+		//System.out.println(user_input); //HTTPService=0 Host= 1 canel =2,即数组的index。
+		return user_input;
+		/*
+		int user_input = JOptionPane.showConfirmDialog(null, "Which Part Do You Want To Repalce?","Chose Replace Part",JOptionPane.YES_NO_OPTION);
 		if (JOptionPane.YES_OPTION == user_input) {
 			return true;
 		}else {
 			return false;
-		}
+		}*/
 	}
 
 	public void Do(){
 		BlockingQueue<LineEntry> lineEntryQueue = new LinkedBlockingQueue<LineEntry>();//use to store domains
 		lineEntryQueue.addAll(TitlePanel.getTitleTableModel().getLineEntries().values());
 		stdout.println("~~~~~~~~~~~~~Start threading Runner~~~~~~~~~~~~~ total task number: "+lineEntryQueue.size());
-
-		boolean justChangeHost = justChangeHost();
+		int userInput = justChangeHost();
+		if (userInput == 2 || userInput == -1 ){//用户选了cancel（2）或者点击了关闭（-1）
+			return;
+		}
+		boolean justChangeHost = ( justChangeHost() == 1) ;//用户选了host就返回1.
 		plist = new ArrayList<RunnerProducer>();
 
 		for (int i=0;i<=50;i++) {
@@ -120,6 +130,10 @@ public class ThreadRunner{
 			}
 			stdout.println("~~~~~~~~~~~~~All stop message sent! wait them to exit~~~~~~~~~~~~~");
 		}
+	}
+
+	public static void main(String[] args){
+		System.out.println(justChangeHost());
 	}
 }
 
