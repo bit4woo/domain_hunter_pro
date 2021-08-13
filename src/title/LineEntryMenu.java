@@ -174,6 +174,50 @@ public class LineEntryMenu extends JPopupMenu {
 			}
 
 		});
+		
+		JMenuItem SearchOnFoFaWithIconhashItem = new JMenuItem(new AbstractAction("Seach On FoFa With IconHash") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+
+				if (rows.length >=50) {
+					return;
+				}
+				for (int row:rows) {
+					LineEntry firstEntry = lineTable.getModel().getLineEntries().getValueAtIndex(row);
+					String searchContent = firstEntry.getIcon_hash();
+					searchContent = "icon_hash=\""+searchContent+"\"";
+					String url= "https://fofa.so/result?q=%22"+searchContent+"%22";
+					try {
+						Commons.browserOpen(url, null);
+					} catch (Exception e) {
+						e.printStackTrace(stderr);
+					}
+				}
+			}
+
+			public String getValue(LineEntry firstEntry,int columnIndex) {
+
+				String columnName = lineTable.getColumnName(columnIndex);
+
+				if (columnName.equalsIgnoreCase("title")){
+					String title = firstEntry.getTitle();
+					return title;
+				}else if (columnName.equalsIgnoreCase("comments")){
+					String comment = firstEntry.getComment();
+					return comment;
+				}else if (columnName.equalsIgnoreCase("IP")){
+					String ip = firstEntry.getIP();
+					return ip;
+				}else if (columnName.equalsIgnoreCase("CDN")){
+					String cdn = firstEntry.getCDN();
+					return cdn;
+				}else {
+					String host = firstEntry.getHost();
+					return host;
+				}
+			}
+
+		});
 
 		JMenuItem SearchOnHunterItem = new JMenuItem(new AbstractAction("Seach On Hunter") {
 			@Override
@@ -475,6 +519,24 @@ public class LineEntryMenu extends JPopupMenu {
 				}
 			}
 		});
+		
+		JMenuItem copyIconhashItem = new JMenuItem(new AbstractAction("Copy Icon Hash") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				try{
+					List<String> urls = lineTable.getModel().getIconHashes(rows);
+					String textUrls = String.join(System.lineSeparator(), urls);
+
+					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+					StringSelection selection = new StringSelection(textUrls);
+					clipboard.setContents(selection, null);
+				}
+				catch (Exception e1)
+				{
+					e1.printStackTrace(stderr);
+				}
+			}
+		});
 
 		JMenuItem SendToRepeater = new JMenuItem(new AbstractAction("Send To Repeater") {
 			@Override
@@ -695,6 +757,7 @@ public class LineEntryMenu extends JPopupMenu {
 		this.add(SearchOnGithubItem);
 		this.add(SearchOnHunterItem);
 		this.add(SearchOnFoFaItem);
+		this.add(SearchOnFoFaWithIconhashItem);
 
 		this.addSeparator();
 
@@ -706,6 +769,7 @@ public class LineEntryMenu extends JPopupMenu {
 		this.add(copyCommonURLItem);
 		this.add(copyLocationURLItem);
 		this.add(copyCDNAndCertInfoItem);
+		this.add(copyIconhashItem);
 		this.add(SendToRepeater);
 		this.add(SendToRepeaterWithCookieItem);
 

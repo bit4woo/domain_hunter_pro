@@ -74,6 +74,7 @@ public class LineEntry {
 	private String CDN = "";
 	private String webcontainer = "";
 	private String time = "";
+	private String icon_hash = "";
 
 	//Gson中，加了transient表示不序列化，是最简单的方法
 	//给不想被序列化的属性增加transient属性---java特性
@@ -323,6 +324,14 @@ public class LineEntry {
 		this.time = time;
 	}
 
+
+	public String getIcon_hash() {
+		return icon_hash;
+	}
+
+	public void setIcon_hash(String icon_hash) {
+		this.icon_hash = icon_hash;
+	}
 
 	public IHttpRequestResponse getMessageinfo() {
 		//		if (messageinfo == null){

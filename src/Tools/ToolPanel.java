@@ -55,6 +55,7 @@ import burp.BurpExtender;
 import burp.Commons;
 import domain.CertInfo;
 import domain.DomainProducer;
+import title.WebIcon;
 
 /*
  * 所有配置的修改，界面的操作，都立即写入LineConfig对象，如有必要保存到磁盘，再调用一次SaveConfig函数，思路要清晰
@@ -385,6 +386,41 @@ public class ToolPanel extends JPanel {
 				worker.execute();
 			}
 		});
+		
+		JButton iconHashButton = new JButton("GetIconHash");
+		threeFourthPanel.add(iconHashButton);
+		iconHashButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				ArrayList<String> result = new ArrayList<String>();
+				
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+					//using SwingWorker to prevent blocking burp main UI.
+					@Override
+					protected Map doInBackground() throws Exception {
+						try {
+							List<String> urls = Arrays.asList(lineConfig.getToolPanelText().replaceAll(" ","").replaceAll("\r\n", "\n").split("\n"));
+							Iterator<String> it = urls.iterator();
+							while(it.hasNext()) {
+								String url = it.next();
+								String hash = WebIcon.getHash(url);
+								result.add(hash);
+								System.out.println(url+" "+hash);
+							}
+							outputTextArea.setText(String.join(System.lineSeparator(), result));
+						} catch (Exception e1) {
+							outputTextArea.setText(e1.getMessage());
+							e1.printStackTrace(stderr);
+						}
+						return null;
+					}
+					@Override
+					protected void done() {
+					}
+				};
+				worker.execute();
+			}
+		});
 
 		JButton rows2List = new JButton("Rows To List");
 		threeFourthPanel.add(rows2List);
@@ -679,6 +715,17 @@ public class ToolPanel extends JPanel {
 
 		JButton unescapeHTML = new JButton("UnescapeHTML");
 		threeFourthPanel.add(unescapeHTML);
+		unescapeHTML.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					outputTextArea.setText(StringEscapeUtils.unescapeHtml4(inputTextArea.getText()));
+				} catch (Exception e1) {
+					outputTextArea.setText(e1.getMessage());
+					e1.printStackTrace(stderr);
+				}
+			}
+		});
 
 		JButton Base64ToFile = new JButton("Base64ToFile");
 		threeFourthPanel.add(Base64ToFile);
@@ -755,6 +802,33 @@ public class ToolPanel extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				outputTextArea.setText(inputTextArea.getText().toLowerCase());
+			}
+		});
+		
+		
+		JButton testButton = new JButton("test");
+		threeFourthPanel.add(testButton);
+		testButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+					//using SwingWorker to prevent blocking burp main UI.
+					@Override
+					protected Map doInBackground() throws Exception {
+						try {
+							outputTextArea.setText(WebIcon.getHash(inputTextArea.getText()));
+						} catch (Exception e1) {
+							outputTextArea.setText(e1.getMessage());
+							e1.printStackTrace(stderr);
+						}
+						return null;
+					}
+					@Override
+					protected void done() {
+					}
+				};
+				worker.execute();
 			}
 		});
 		
