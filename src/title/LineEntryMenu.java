@@ -18,6 +18,7 @@ import java.awt.event.ActionEvent;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -142,7 +143,9 @@ public class LineEntryMenu extends JPopupMenu {
 				for (int row:rows) {
 					LineEntry firstEntry = lineTable.getModel().getLineEntries().getValueAtIndex(row);
 					String searchContent = getValue(firstEntry,columnIndex);
-					String url= "https://fofa.so/result?q=%22"+searchContent+"%22";
+					searchContent = new String(Base64.getEncoder().encode(searchContent.getBytes()));
+					String url= "https://fofa.so/result?qbase64=%s";
+					url= String.format(url, searchContent);
 					try {
 						Commons.browserOpen(url, null);
 					} catch (Exception e) {
@@ -174,7 +177,7 @@ public class LineEntryMenu extends JPopupMenu {
 			}
 
 		});
-		
+
 		JMenuItem SearchOnFoFaWithIconhashItem = new JMenuItem(new AbstractAction("Seach On FoFa With IconHash") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -185,8 +188,10 @@ public class LineEntryMenu extends JPopupMenu {
 				for (int row:rows) {
 					LineEntry firstEntry = lineTable.getModel().getLineEntries().getValueAtIndex(row);
 					String searchContent = firstEntry.getIcon_hash();
-					searchContent = "icon_hash=\""+searchContent+"\"";
-					String url= "https://fofa.so/result?q=%22"+searchContent+"%22";
+					searchContent = String.format("icon_hash=\"%s\"", searchContent);//icon_hash="-247388890"
+					searchContent = new String(Base64.getEncoder().encode(searchContent.getBytes()));
+					String url= "https://fofa.so/result?qbase64=%s";
+					url= String.format(url, searchContent);
 					try {
 						Commons.browserOpen(url, null);
 					} catch (Exception e) {
@@ -321,7 +326,7 @@ public class LineEntryMenu extends JPopupMenu {
 				}
 			}
 		});
-		
+
 		JMenuItem copyCommonURLItem = new JMenuItem(new AbstractAction("Copy URL With Common Formate") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -343,6 +348,24 @@ public class LineEntryMenu extends JPopupMenu {
 		JMenuItem dirSearchItem = new JMenuItem();
 		dirSearchItem.setText("Do Dir Search");
 		dirSearchItem.addActionListener(new DirSearchAction(lineTable, rows));
+
+		JMenuItem iconHashItem = new JMenuItem();
+		iconHashItem.setText("Do Get Icon Hash");
+		iconHashItem.addActionListener(new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				try{
+					 IndexedLinkedHashMap<String, LineEntry> entries = lineTable.getModel().getLineEntries();
+					for(LineEntry entry:entries.values()) {
+						entry.DoGetIconHash();
+					}
+				}
+				catch (Exception e1)
+				{
+					e1.printStackTrace(BurpExtender.getStderr());
+				}
+			}
+		});
 
 		JMenuItem doPortScan = new JMenuItem();
 		doPortScan.setText("Do Port Scan");
@@ -501,7 +524,7 @@ public class LineEntryMenu extends JPopupMenu {
 				}
 			}
 		});
-		
+
 		JMenuItem copyCDNAndCertInfoItem = new JMenuItem(new AbstractAction("Copy CDN|CertInfo") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -519,7 +542,7 @@ public class LineEntryMenu extends JPopupMenu {
 				}
 			}
 		});
-		
+
 		JMenuItem copyIconhashItem = new JMenuItem(new AbstractAction("Copy Icon Hash") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -641,7 +664,7 @@ public class LineEntryMenu extends JPopupMenu {
 			}
 		});
 		removeItem.setToolTipText("Just Delete Entry In Title Panel");
-		
+
 		/**
 		 * 从子域名列表中删除对应资产，表面当前host（应该是一个IP）不是我们的目标资产。
 		 * 那么应该同时做以下三点：
@@ -670,7 +693,7 @@ public class LineEntryMenu extends JPopupMenu {
 			}
 		});
 		removeSubDomainItem.setToolTipText("Delete Host In Domain Panel");
-		
+
 		/**
 		 * 从子域名列表中删除对应资产，表面当前host（应该是一个IP）不是我们的目标资产。
 		 * 那么应该同时做以下三点：
@@ -750,6 +773,7 @@ public class LineEntryMenu extends JPopupMenu {
 		this.add(doActiveScan);
 		this.add(doPortScan);
 		this.add(dirSearchItem);
+		//this.add(iconHashItem);
 
 		this.addSeparator();
 
@@ -780,5 +804,5 @@ public class LineEntryMenu extends JPopupMenu {
 		this.add(NotTargetHandleItem);
 		this.add(addToblackListItem);
 		this.add(removeFromBlackListItem);
+		}
 	}
-}

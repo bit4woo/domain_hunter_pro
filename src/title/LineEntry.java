@@ -216,6 +216,13 @@ public class LineEntry {
 	public void DoDirBrute() {
 
 	}
+	
+	public void DoGetIconHash() {
+		if (EntryType == EntryType_Web) {
+			String tmpurl =getUrl(); 
+			this.setIcon_hash(WebIcon.getHash(tmpurl));
+		}
+	}
 
 	/**
 	 * 获取到的URL是包含了默认端口的，因为burp方法的原因

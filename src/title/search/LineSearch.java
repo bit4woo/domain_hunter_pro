@@ -61,6 +61,7 @@ public class LineSearch {
 			contentList.add(line.getCDN());
 			contentList.add(line.getComment());
 			contentList.add(line.getTitle());
+			contentList.add(line.getIcon_hash());
 			if (caseSensitive) {
 				for(String item:contentList) {
 					if (item == null) continue;

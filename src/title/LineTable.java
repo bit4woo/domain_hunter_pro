@@ -173,6 +173,7 @@ public class LineTable extends JTable
 		preferredWidths.put("IP",30);
 		preferredWidths.put("CDN|CertInfo",30);
 		preferredWidths.put("Server",10);
+		preferredWidths.put("IconHash", "-17480088888".length());
 		for(String header:LineTableModel.getTitletList()){
 			try{//避免动态删除表字段时，出错
 				int multiNumber = preferredWidths.get(header);
