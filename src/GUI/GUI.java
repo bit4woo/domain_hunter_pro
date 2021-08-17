@@ -124,8 +124,9 @@ public class GUI extends JFrame {
 		if (DomainPanel.getDomainResult() !=null){
 			//String name = GUI.currentDBFile.getName();
 			String name = DomainPanel.getDomainResult().getProjectName();
-			String newName = String.format(BurpExtender.getFullExtenderName()+
-					" [%s]",name);
+			//String newName = String.format(BurpExtender.getFullExtenderName()+" [%s]",name);
+			//v2021.8的版本中，邮件菜单会用到插件名称，所以减小名称的长度
+			String newName = String.format(BurpExtender.getExtenderName()+" [%s]",name);
 			
 			BurpExtender.getCallbacks().setExtensionName(newName); //新插件名称
 			GUI.getProjectMenu().AddDBNameMenuItem(name);
