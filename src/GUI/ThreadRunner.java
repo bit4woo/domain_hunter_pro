@@ -76,7 +76,7 @@ public class ThreadRunner{
 		if (userInput == 2 || userInput == -1 ){//用户选了cancel（2）或者点击了关闭（-1）
 			return;
 		}
-		boolean justChangeHost = ( justChangeHost() == 1) ;//用户选了host就返回1.
+		boolean justChangeHost = ( userInput == 1) ;//用户选了host就返回1.
 		plist = new ArrayList<RunnerProducer>();
 
 		for (int i=0;i<=50;i++) {
