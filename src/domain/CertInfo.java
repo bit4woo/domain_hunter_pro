@@ -115,7 +115,36 @@ public class CertInfo {
 		}
 		return -1;
 	}
-
+	
+	private static String getCertIssuer(Certificate[] certs) {
+		if (certs == null) return null;
+		StringBuffer result = new StringBuffer();
+		for (Certificate cert:certs) {
+			if(cert instanceof X509Certificate) {
+				X509Certificate cer = (X509Certificate ) cert;
+				System.out.println(cer.getIssuerDN());
+				//System.out.println(cer.getIssuerUniqueID());
+				//System.out.println(cer.getIssuerX500Principal());
+				result.append(cer.getIssuerDN());
+			}
+		}
+		return result.toString();
+	}
+	public static String getCertIssuer(String url) {
+		try {
+			if (url.startsWith("https://")){
+				Certificate[] certs = getCerts(url);
+				String info = getCertIssuer(certs);
+				String org = info.split(",")[1];
+				org = org.replaceFirst("O=", "");
+				return org;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
 	public static String getCertTime(String url) {
 		try {
 			if (url.startsWith("https://")){
@@ -197,6 +226,6 @@ public class CertInfo {
 	}
 
 	public static void main(String[] args) {
-		test2();
+		getCertIssuer("https://shopee.com/index.html");
 	}
 }

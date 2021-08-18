@@ -347,20 +347,50 @@ public class ToolPanel extends JPanel {
 		btnCertTime.setToolTipText("get out-of-service time of Cert");
 		threeFourthPanel.add(btnCertTime);
 		btnCertTime.addActionListener(new ActionListener() {
-			List<String> urls = new ArrayList<>();
-			ArrayList<String> result = new ArrayList<String>();
-
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
 					//using SwingWorker to prevent blocking burp main UI.
 					@Override
 					protected Map doInBackground() throws Exception {
-						urls = Arrays.asList(lineConfig.getToolPanelText().replaceAll(" ","").replaceAll("\r\n", "\n").split("\n"));
+						ArrayList<String> result = new ArrayList<String>();
+						List<String> urls = Arrays.asList(lineConfig.getToolPanelText().replaceAll(" ","").replaceAll("\r\n", "\n").split("\n"));
 						Iterator<String> it = urls.iterator();
 						while(it.hasNext()) {
 							String url = it.next();
 							String time = CertInfo.getCertTime(url);
+							result.add(url+" "+time);
+							System.out.println(url+" "+time);
+						}
+						outputTextArea.setText(String.join(System.lineSeparator(), result));
+						return null;
+					}
+					@Override
+					protected void done() {
+						btnCertTime.setEnabled(true);
+						stdout.println("~~~~~~~~~~~~~Search Done~~~~~~~~~~~~~");
+					}
+				};
+				worker.execute();
+			}
+		});
+		
+		JButton btnCertIssuer = new JButton("GetCertIssuer");
+		btnCertTime.setToolTipText("get issuer of Cert");
+		threeFourthPanel.add(btnCertIssuer);
+		btnCertTime.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+					//using SwingWorker to prevent blocking burp main UI.
+					@Override
+					protected Map doInBackground() throws Exception {
+						ArrayList<String> result = new ArrayList<String>();
+						List<String> urls = Arrays.asList(lineConfig.getToolPanelText().replaceAll(" ","").replaceAll("\r\n", "\n").split("\n"));
+						Iterator<String> it = urls.iterator();
+						while(it.hasNext()) {
+							String url = it.next();
+							String time = CertInfo.getCertIssuer(url);
 							result.add(url+" "+time);
 							System.out.println(url+" "+time);
 						}
@@ -822,7 +852,7 @@ public class ToolPanel extends JPanel {
 			}
 		});
 		
-
+		///////
 		JPanel fourFourthPanel = new JPanel();
 		RightOfCenter.setRightComponent(fourFourthPanel);
 		GridBagLayout gbl_fourFourthPanel = new GridBagLayout();
