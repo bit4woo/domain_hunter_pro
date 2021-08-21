@@ -390,9 +390,10 @@ public class LineTable extends JTable
 						//getSelectionModel().setSelectionInterval(rows[0], rows[1]);
 						int[] rows = getSelectedRows();
 						int col = ((LineTable) e.getSource()).columnAtPoint(e.getPoint()); // 获得列位置
+						int modelCol = LineTable.this.convertColumnIndexToModel(col);
 						if (rows.length>0){
-							rows = SelectedRowsToModelRows(getSelectedRows());
-							new LineEntryMenu(LineTable.this, rows, col).show(e.getComponent(), e.getX(), e.getY());
+							int[] modelRows = SelectedRowsToModelRows(rows);
+							new LineEntryMenu(LineTable.this, modelRows, modelCol).show(e.getComponent(), e.getX(), e.getY());
 						}else{//在table的空白处显示右键菜单
 							//https://stackoverflow.com/questions/8903040/right-click-mouselistener-on-whole-jtable-component
 							//new LineEntryMenu(_this).show(e.getComponent(), e.getX(), e.getY());

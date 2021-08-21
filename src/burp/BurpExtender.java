@@ -110,7 +110,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	public static String loadDBfilepathFromExtension() {
 		String dbfilepath = callbacks.loadExtensionSetting(Extension_Setting_Name_DB_File);
 		if (dbfilepath == null) {
-			dbfilepath = LineConfig.loadFromDisk().getDbfilepath();
+			//dbfilepath = LineConfig.loadFromDisk().getDbfilepath();
 		}
 		stdout.println("Loaded DB File Path From Disk: "+dbfilepath);
 		System.out.println("Loaded DB File Path From Disk: "+dbfilepath);
@@ -179,8 +179,8 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 				//如果这里报java.lang.NullPointerException: Component cannot be null 错误，需要排查contentPane的初始化是否正确。
 			}
 		});
-		
-		gui.getToolPanel().loadConfigToGUI();//包含db文件的加载
+		String projectConfigFile = RecentModel.fetchRecent();//返回值可能为null
+		gui.getToolPanel().loadConfigToGUI(projectConfigFile);//包含db文件的加载
 		startLiveCapture();
 	}
 
@@ -196,8 +196,13 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 			e.printStackTrace(stderr);
 		}
 
-		gui.getToolPanel().saveConfigToDisk();//包含db文件位置的保存
-		DomainPanel.autoSave();//域名面板自动保存逻辑有点复杂，退出前再自动保存一次
+		try {
+			DomainPanel.autoSave();//域名面板自动保存逻辑有点复杂，退出前再自动保存一次
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		String configFilePath = ToolPanel.getLineConfig().saveToDisk();//包含db文件位置
+		RecentModel.saveRecent(configFilePath);
 	}
 
 	//ITab必须实现的两个方法

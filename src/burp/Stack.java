@@ -1,4 +1,4 @@
-package Deprecated;
+package burp;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,7 +7,7 @@ public class Stack {
     //实现栈的List
     private List<String> stack;
 
-    Stack() {
+    public Stack() {
         stack = new ArrayList<String>(10);//初始容量为10
     }
 

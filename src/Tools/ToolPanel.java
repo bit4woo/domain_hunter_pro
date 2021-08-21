@@ -70,7 +70,7 @@ public class ToolPanel extends JPanel {
 	private volatile boolean listenerIsOn = true;
 	PrintWriter stdout;
 	PrintWriter stderr;
-	private JTextField BrowserPath;
+	private static JTextField BrowserPath;
 	public static JTextField PortList;
 	public static JTextArea inputTextArea;
 	public static JTextArea outputTextArea;
@@ -100,7 +100,7 @@ public class ToolPanel extends JPanel {
 	 * 加载： 磁盘文件-->LineConfig对象--->具体控件的值
 	 * 注意对监听器的影响
 	 */
-	public void loadConfigToGUI() {
+	public void loadConfigToGUI(String projectConfigFile) {
 		BurpExtender.getStdout().println("Loading Tool Panel Config From Disk");
 //		String content = BurpExtender.getCallbacks().loadExtensionSetting(BurpExtender.Extension_Setting_Name_Line_Config);
 //		if (content == null) {
@@ -108,8 +108,11 @@ public class ToolPanel extends JPanel {
 //		}else {
 //			lineConfig = LineConfig.FromJson(content);
 //		}
-
-		lineConfig = LineConfig.loadFromDisk();
+		if (projectConfigFile == null) {
+			lineConfig = new LineConfig();
+		}else {
+			lineConfig = LineConfig.loadFromDisk(projectConfigFile);//projectConfigFile可能为null
+		}
 		
 		if (lineConfig == null) {
 			BurpExtender.getStdout().println("Loading From Disk Failed, Use Default");
@@ -146,7 +149,7 @@ public class ToolPanel extends JPanel {
 	}
 
 
-	public void saveToConfigFromGUI() {
+	public static void saveToConfigFromGUI() {
 		lineConfig.setBrowserPath(BrowserPath.getText());
 		lineConfig.setDirSearchPath(textFieldDirSearch.getText());
 		lineConfig.setBruteDict(textFieldDirBruteDict.getText());
@@ -160,19 +163,6 @@ public class ToolPanel extends JPanel {
 		lineConfig.setShowItemsInOne(showItemsInOne.isSelected());
 		lineConfig.setEnableElastic(rdbtnSaveTrafficTo.isSelected());
 	}
-
-	//要不要主动获取一下所有控件的值呢？
-	//还是说LineConfig的更新全靠控件的监听器
-	//保存： 具体各个控件的值---->LineConfig对象---->磁盘文件
-	public void saveConfigToDisk() {
-		saveToConfigFromGUI();
-		String dbfilepath = GUI.currentDBFile.getAbsolutePath();
-		lineConfig.setDbfilepath(dbfilepath);
-		lineConfig.saveToDisk();
-		BurpExtender.getStdout().println("Saving Tool Panel Config To Disk");
-		BurpExtender.getCallbacks().saveExtensionSetting(BurpExtender.Extension_Setting_Name_Line_Config, lineConfig.ToJson());
-	}
-
 
 	/**
 	 * Launch the application.
@@ -357,20 +347,50 @@ public class ToolPanel extends JPanel {
 		btnCertTime.setToolTipText("get out-of-service time of Cert");
 		threeFourthPanel.add(btnCertTime);
 		btnCertTime.addActionListener(new ActionListener() {
-			List<String> urls = new ArrayList<>();
-			ArrayList<String> result = new ArrayList<String>();
-
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
 					//using SwingWorker to prevent blocking burp main UI.
 					@Override
 					protected Map doInBackground() throws Exception {
-						urls = Arrays.asList(lineConfig.getToolPanelText().replaceAll(" ","").replaceAll("\r\n", "\n").split("\n"));
+						ArrayList<String> result = new ArrayList<String>();
+						List<String> urls = Arrays.asList(lineConfig.getToolPanelText().replaceAll(" ","").replaceAll("\r\n", "\n").split("\n"));
 						Iterator<String> it = urls.iterator();
 						while(it.hasNext()) {
 							String url = it.next();
 							String time = CertInfo.getCertTime(url);
+							result.add(url+" "+time);
+							System.out.println(url+" "+time);
+						}
+						outputTextArea.setText(String.join(System.lineSeparator(), result));
+						return null;
+					}
+					@Override
+					protected void done() {
+						btnCertTime.setEnabled(true);
+						stdout.println("~~~~~~~~~~~~~Search Done~~~~~~~~~~~~~");
+					}
+				};
+				worker.execute();
+			}
+		});
+		
+		JButton btnCertIssuer = new JButton("GetCertIssuer");
+		btnCertTime.setToolTipText("get issuer of Cert");
+		threeFourthPanel.add(btnCertIssuer);
+		btnCertTime.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+					//using SwingWorker to prevent blocking burp main UI.
+					@Override
+					protected Map doInBackground() throws Exception {
+						ArrayList<String> result = new ArrayList<String>();
+						List<String> urls = Arrays.asList(lineConfig.getToolPanelText().replaceAll(" ","").replaceAll("\r\n", "\n").split("\n"));
+						Iterator<String> it = urls.iterator();
+						while(it.hasNext()) {
+							String url = it.next();
+							String time = CertInfo.getCertIssuer(url);
 							result.add(url+" "+time);
 							System.out.println(url+" "+time);
 						}
@@ -832,7 +852,7 @@ public class ToolPanel extends JPanel {
 			}
 		});
 		
-
+		///////
 		JPanel fourFourthPanel = new JPanel();
 		RightOfCenter.setRightComponent(fourFourthPanel);
 		GridBagLayout gbl_fourFourthPanel = new GridBagLayout();

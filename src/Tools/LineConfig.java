@@ -13,6 +13,7 @@ import com.alibaba.fastjson.JSON;
 import GUI.GUI;
 import burp.BurpExtender;
 import burp.Commons;
+import domain.DomainPanel;
 import title.LineEntry;
 import title.TitlePanel;
 
@@ -20,7 +21,8 @@ public class LineConfig {
 	private static int MaximumEntries = 1000;//控制显示的条目数，减少内存占用
 
 	//用于本地保存的路径
-	private static final String localdir = System.getProperty("user.home")+File.separator+".domainhunter"+File.separator+"domainhunter.config";
+	private static final String localdir = 
+			System.getProperty("user.home")+File.separator+".domainhunter";
 
 	//跑title时根据各字段过滤某些条目
 	//private static Set<String> blacklistHostSet = new HashSet<String>(); //其实不需要
@@ -37,7 +39,7 @@ public class LineConfig {
 			+ "--max-rtt-timeout 1000ms --max-retries 0 --max-scan-delay 0 --min-rate 3000 {host}";
 	public static final String macDefaultPython = "/usr/bin/python";
 	public static final String macDefaultBrowserPath = "/Applications/Firefox.app/Contents/MacOS/firefox";
-	
+
 	private String python3Path = winDefaultPython;
 	private String dirSearchPath = "D:\\github\\dirsearch\\dirsearch.py";
 	private String browserPath = "C:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe";
@@ -50,7 +52,7 @@ public class LineConfig {
 	private boolean showItemsInOne = false;
 	private boolean enableElastic = false;
 	private String dbfilepath ="";
-	
+
 	LineConfig(){
 		if (Commons.isMac()) {
 			python3Path = macDefaultPython;
@@ -58,7 +60,7 @@ public class LineConfig {
 		}
 	}
 
-	
+
 
 
 	public static int getMaximumEntries() {
@@ -229,9 +231,10 @@ public class LineConfig {
 		this.dbfilepath = dbfilepath;
 	}
 
-	public void saveToDisk() {
-		File localFile = new File(localdir);
+	public String saveToDisk() {
+		File localFile = new File(localdir+File.separator+DomainPanel.getDomainResult().getProjectName());
 		try {
+			ToolPanel.saveToConfigFromGUI();
 			this.setDbfilepath(GUI.currentDBFile.getAbsolutePath());
 		} catch (Exception e1) {
 			e1.printStackTrace();
@@ -239,23 +242,28 @@ public class LineConfig {
 		}
 		try {
 			FileUtils.write(localFile, this.ToJson());
-		} catch (IOException e) {
-			e.printStackTrace();
-			e.printStackTrace(BurpExtender.getStderr());
-		}
-	}
-
-	public static LineConfig loadFromDisk() {
-		File localFile = new File(localdir);
-		try {
-			String jsonstr = FileUtils.readFileToString(localFile);
-			LineConfig config = FromJson(jsonstr);
-			return config;
+			BurpExtender.getStdout().println("Saving Tool Panel Config To Disk");
+			return localFile.toString();
 		} catch (IOException e) {
 			e.printStackTrace();
 			e.printStackTrace(BurpExtender.getStderr());
 			return null;
 		}
+	}
+
+	public static LineConfig loadFromDisk(String projectFile) {
+		try {
+			File localFile = new File(projectFile);
+			if (localFile.exists()) {
+				String jsonstr = FileUtils.readFileToString(localFile);
+				LineConfig config = FromJson(jsonstr);
+				return config;
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			e.printStackTrace(BurpExtender.getStderr());
+		}
+		return new LineConfig();
 	}
 
 
