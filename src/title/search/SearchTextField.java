@@ -12,6 +12,7 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.io.PrintWriter;
 
+import javax.swing.JButton;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
@@ -37,7 +38,7 @@ public class SearchTextField extends JTextField{
 		this.caseSensitive = caseSensitive;
 	}
 
-	public SearchTextField(String name){
+	public SearchTextField(String name,JButton SearchButton){
 		super(name);
 
 		try{
@@ -51,8 +52,7 @@ public class SearchTextField extends JTextField{
 		//enter键触发
 		addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				String keyword = getText().trim();
-				TitlePanel.getTitleTable().search(keyword);
+				SearchButton.doClick();
 				//searchHistory.addRecord(keyword);//记录搜索历史
 			}
 		});

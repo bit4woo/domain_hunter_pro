@@ -307,12 +307,11 @@ public class TitlePanel extends JPanel {
 			}
 		});
 		buttonPanel.add(btnStop);
-
-		textFieldSearch = new SearchTextField("");
+		
+		JButton buttonSearch = new JButton("Search");
+		textFieldSearch = new SearchTextField("",buttonSearch);
 		buttonPanel.add(textFieldSearch);
 
-
-		JButton buttonSearch = new JButton("Search");
 		buttonSearch.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String keyword = textFieldSearch.getText();
