@@ -69,6 +69,18 @@ public class CertInfo {
 			}
 		}
 	}
+	public static Set<String> getAlternativeDomains(String url){
+		try {
+			if (url.startsWith("https://")){
+				Certificate[] certs = getCerts(url);
+				Set<String> domains = getAlternativeDomains(certs);
+				return domains;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null; 
+	}
 
 	public static Set<String> getAlternativeDomains(Certificate[] certs) throws Exception {
 		Set<String> tmpSet = new HashSet<String>();
@@ -158,7 +170,7 @@ public class CertInfo {
 		return null;
 	}
 
-	/*
+	/**
 	 * 根据证书主体来获取所有证书域名。证书主体域名必须包含关键词，否则任务是CDN证书，不获取其中的域名
 	 */
 	public static Set<String> getSANsbyKeyword(String aURL,Set<String> domainKeywords){//only when domain key word in the Principal,return SANs

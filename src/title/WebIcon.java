@@ -78,7 +78,7 @@ public class WebIcon {
 
 		//String base64Str = new sun.misc.BASE64Encoder().encode(content);
 		String base64Str = new BASE64Encoder().encode(content);
-		System.out.println(base64Str);
+		//System.out.println(base64Str);
 		int hashvalue = Hashing.murmur3_32().hashString(base64Str.replaceAll("\r","")+"\n",StandardCharsets.UTF_8).asInt();
 		return hashvalue;
 	}

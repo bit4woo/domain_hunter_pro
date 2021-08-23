@@ -342,6 +342,38 @@ public class ToolPanel extends JPanel {
 			}
 
 		});
+		
+		JButton btnCertDomains = new JButton("GetCertDomains");
+		btnCertDomains.setToolTipText("get Alter Domains of Cert");
+		threeFourthPanel.add(btnCertDomains);
+		btnCertDomains.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+					//using SwingWorker to prevent blocking burp main UI.
+					@Override
+					protected Map doInBackground() throws Exception {
+						ArrayList<String> result = new ArrayList<String>();
+						List<String> urls = Arrays.asList(lineConfig.getToolPanelText().replaceAll(" ","").replaceAll("\r\n", "\n").split("\n"));
+						Iterator<String> it = urls.iterator();
+						while(it.hasNext()) {
+							String url = it.next();
+							Set<String> domains = CertInfo.getAlternativeDomains(url);
+							result.add(url+" "+domains.toString());
+							System.out.println(url+" "+domains.toString());
+						}
+						outputTextArea.setText(String.join(System.lineSeparator(), result));
+						return null;
+					}
+					@Override
+					protected void done() {
+						btnCertDomains.setEnabled(true);
+						stdout.println("~~~~~~~~~~~~~Search Done~~~~~~~~~~~~~");
+					}
+				};
+				worker.execute();
+			}
+		});
 
 		JButton btnCertTime = new JButton("GetCertTime");
 		btnCertTime.setToolTipText("get out-of-service time of Cert");
@@ -376,9 +408,9 @@ public class ToolPanel extends JPanel {
 		});
 		
 		JButton btnCertIssuer = new JButton("GetCertIssuer");
-		btnCertTime.setToolTipText("get issuer of Cert");
+		btnCertIssuer.setToolTipText("get issuer of Cert");
 		threeFourthPanel.add(btnCertIssuer);
-		btnCertTime.addActionListener(new ActionListener() {
+		btnCertIssuer.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
@@ -399,7 +431,7 @@ public class ToolPanel extends JPanel {
 					}
 					@Override
 					protected void done() {
-						btnCertTime.setEnabled(true);
+						btnCertIssuer.setEnabled(true);
 						stdout.println("~~~~~~~~~~~~~Search Done~~~~~~~~~~~~~");
 					}
 				};

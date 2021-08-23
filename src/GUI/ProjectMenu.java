@@ -119,13 +119,22 @@ public class ProjectMenu extends JMenu{
 	}
 
 	public void Add() {
-		try{
-			JMenuBar menuBar = getBurpFrame().getJMenuBar();
-			menuBar.add(this, menuBar.getMenuCount() - 1);
-		}catch (Exception e){
-			e.printStackTrace();
-			e.printStackTrace(BurpExtender.getStderr());
-			DomainPanel.HeaderPanel.add(this,0);
+		int count =3;
+		while(count > 0) {
+			try{
+				JMenuBar menuBar = getBurpFrame().getJMenuBar();
+				menuBar.add(this, menuBar.getMenuCount() - 1);
+				break;
+			}catch (Exception e){
+				e.printStackTrace();
+				e.printStackTrace(BurpExtender.getStderr());
+				count--;
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+				}
+			}
 		}
 	}
 
