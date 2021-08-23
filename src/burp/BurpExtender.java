@@ -1,24 +1,27 @@
 package burp;
 
-import GUI.GUI;
-import GUI.LineEntryMenuForBurp;
-import Tools.LineConfig;
-import Tools.ToolPanel;
-import bsh.This;
-import domain.DomainConsumer;
-import domain.DomainPanel;
-import domain.DomainProducer;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import title.TitlePanel;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Component;
 import java.io.PrintWriter;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+
+import javax.swing.JMenuItem;
+import javax.swing.SwingUtilities;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import GUI.GUI;
+import GUI.LineEntryMenuForBurp;
+import GUI.ProjectMenu;
+import Tools.ToolPanel;
+import bsh.This;
+import domain.DomainConsumer;
+import domain.DomainPanel;
+import domain.DomainProducer;
+import title.TitlePanel;
 
 public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListener,IContextMenuFactory,IHttpListener{
 	/**
@@ -101,7 +104,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 			callbacks.saveExtensionSetting(Extension_Setting_Name_DB_File, dbfilepath);
 		}
 	}
-	
+
 	/**
 	 * 很多时候都获取不到数据，都是null值！有bug
 	 * @return
@@ -175,6 +178,8 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 			public void run()
 			{
 				BurpExtender.callbacks.addSuiteTab(BurpExtender.this); 
+				GUI.setProjectMenu(new ProjectMenu(gui));
+				GUI.getProjectMenu().Add();
 				//这里的BurpExtender.this实质是指ITab对象，也就是getUiComponent()中的contentPane.这个参数由GUI()函数初始化。
 				//如果这里报java.lang.NullPointerException: Component cannot be null 错误，需要排查contentPane的初始化是否正确。
 			}

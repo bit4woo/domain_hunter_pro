@@ -16,17 +16,23 @@ import java.io.PrintWriter;
 
 public class GUI extends JFrame {
 
-	protected static DomainPanel domainPanel;
+	public static DomainPanel domainPanel;
 	public static TitlePanel titlePanel;
 	public static File currentDBFile;
-	protected PrintWriter stdout;
-	protected PrintWriter stderr;
+	public static ProjectMenu projectMenu;
+	
+	private PrintWriter stdout;
+	private PrintWriter stderr;
 	public dbFileChooser dbfc = new dbFileChooser();
-	protected static ProjectMenu projectMenu;
+	
 	private ToolPanel toolPanel;
 
 	public static ProjectMenu getProjectMenu() {
 		return projectMenu;
+	}
+
+	public static void setProjectMenu(ProjectMenu projectMenu) {
+		GUI.projectMenu = projectMenu;
 	}
 
 	public static DomainPanel getDomainPanel() {
@@ -73,9 +79,6 @@ public class GUI extends JFrame {
 		tabbedWrapper.addTab("Domains", null, domainPanel, null);
 		tabbedWrapper.addTab("Titles", null, titlePanel, null);
 		tabbedWrapper.addTab("Tools", null,toolPanel,null);
-
-		projectMenu = new ProjectMenu(this);
-		projectMenu.Add();
 
 	}
 	/**
