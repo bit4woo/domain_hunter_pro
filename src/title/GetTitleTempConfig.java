@@ -32,11 +32,19 @@ public class GetTitleTempConfig {
 	public void setThreadNumber(int threadNumber) {
 		this.threadNumber = threadNumber;
 	}
-
+	
+	@Deprecated
 	GetTitleTempConfig(){
 		handlePriavte = WetherHandlePrivate();
 		cookie = inputCookie();
-		threadNumber = inputThreadNumber();
+		threadNumber = inputThreadNumber(50);
+	}
+	
+	GetTitleTempConfig(int domainNum){
+		handlePriavte = WetherHandlePrivate();
+		cookie = inputCookie();
+		int num = threadNumberShouldUse(domainNum);
+		threadNumber = inputThreadNumber(num);
 	}
 
 	private static boolean WetherHandlePrivate() {
@@ -55,12 +63,12 @@ public class GetTitleTempConfig {
 		return cookie;
 	}
 
-	public static int inputThreadNumber() {
+	public static int inputThreadNumber(int defaultThreadNum) {
 		int times = 3;
 		while (times > 0) {
 			times--;
 			try {
-				String threads = JOptionPane.showInputDialog("How many threads do you want to use", "50").trim();
+				String threads = JOptionPane.showInputDialog("How many threads do you want to use", defaultThreadNum).trim();
 				int number = Integer.parseInt(threads);
 				return number;
 			}catch (Exception e) {
@@ -68,5 +76,32 @@ public class GetTitleTempConfig {
 			}
 		}
 		return -1;
+	}
+	
+	/**
+	 * 根据已有的域名梳理，预估应该使用的线程数
+	 * 假设1个任务需要1秒钟。线程数在1-100之间，如何选择线程数使用最小的时间？
+	 * @param domains
+	 * @return
+	 */
+	public static int threadNumberShouldUse(int domainNum) {
+
+		int tmp = (int) Math.sqrt(domainNum);
+		if (tmp <=1) {
+			return 1;
+		}else if(tmp>=50) {
+			return 50;
+		}else {
+			return tmp;
+		}
+	}
+	
+	public static void main(String[] args) {
+		System.out.println(threadNumberShouldUse(100));
+		System.out.println(threadNumberShouldUse(50));
+		System.out.println(threadNumberShouldUse(1));
+		System.out.println(threadNumberShouldUse(1000));
+		System.out.println(threadNumberShouldUse(2395));
+		System.out.println(threadNumberShouldUse(2395000));
 	}
 }
