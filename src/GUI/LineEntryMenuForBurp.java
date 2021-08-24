@@ -394,6 +394,7 @@ public class LineEntryMenuForBurp{
 				if (entries.size() > 0) {
 					for (LineEntry entry:entries) {
 						entry.setCheckStatus(LineEntry.CheckStatus_Checked);
+						entry.setTime(Commons.getNowTimeString());
 						int index = TitlePanel.getTitleTableModel().getLineEntries().IndexOfKey(entry.getUrl());
 						stdout.println("$$$ "+entry.getUrl()+"status has been set to "+LineEntry.CheckStatus_Checked);
 						TitlePanel.getTitleTableModel().fireTableRowsUpdated(index,index);//主动通知更新，否则不会写入数据库!!!

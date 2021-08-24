@@ -168,7 +168,7 @@ public class LineTable extends JTable
 		preferredWidths.put("Length",10);
 		preferredWidths.put("Title",30);
 		preferredWidths.put("Comments",30);
-		preferredWidths.put("Time","2019-05-28-14-13-16".length());
+		preferredWidths.put("CheckDoneTime","2019-05-28-14-13-16".length());
 		preferredWidths.put("isChecked"," isChecked ".length());
 		preferredWidths.put("IP",30);
 		preferredWidths.put("CDN|CertInfo",30);
@@ -356,6 +356,9 @@ public class LineTable extends JTable
 							int index = tmpList.indexOf(currentStatus);
 							String newStatus = tmpList.get((index+1)%LineEntry.CheckStatusArray.length);
 							selecteEntry.setCheckStatus(newStatus);
+							if (newStatus.equalsIgnoreCase(LineEntry.CheckStatus_Checked)) {
+								selecteEntry.setTime(Commons.getNowTimeString());
+							}
 							stdout.println("$$$ "+selecteEntry.getUrl()+" status has been set to "+newStatus);
 							LineTable.this.lineTableModel.fireTableRowsUpdated(rows[0], rows[0]);
 						}catch (Exception e1){

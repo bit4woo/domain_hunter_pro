@@ -73,7 +73,8 @@ public class Producer extends Thread {//Producer do
 							item.addComment(linefound.getComment());
 							item.setAssetType(linefound.getAssetType());
 							try {
-								if (url.equalsIgnoreCase(linefound.getUrl()) && item.getBodyText().length() == linefound.getBodyText().length()) {
+								//长度的判断不准确，不再使用，就记录以前的状态！时间就记录上传完成渗透的时间
+								if (url.equalsIgnoreCase(linefound.getUrl())) {
 									item.setCheckStatus(linefound.getCheckStatus());
 									item.setTime(linefound.getTime());
 								}

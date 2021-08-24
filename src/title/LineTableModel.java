@@ -52,7 +52,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	PrintWriter stderr;
 
 	private static final String[] standardTitles = new String[] {
-			"#", "URL", "Status", "Length", "Title","Comments","Server","isChecked","AssetType","Time","IP", "CDN|CertInfo", "IconHash"};
+			"#", "URL", "Status", "Length", "Title","Comments","Server","isChecked","AssetType","CheckDoneTime","IP", "CDN|CertInfo", "IconHash"};
 	private static List<String> titletList = new ArrayList<>(Arrays.asList(standardTitles));
 	//为了实现动态表结构
 	public static List<String> getTitletList() {
@@ -105,7 +105,8 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 						List<LineEntry> entries = new ArrayList<LineEntry>();
 						for (int i = rowstart; i <= rowend; i++) {
 							LineEntry entry = lineEntries.getValueAtIndex(i);
-							entry.setTime(Commons.getNowTimeString());
+							//entry.setTime(Commons.getNowTimeString());
+							//这里不再更新时间，时间只表示CheckDone的时间
 							entries.add(entry);
 						}
 						dbHelper.updateTitles(entries);
@@ -281,7 +282,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		if (columnIndex == titletList.indexOf("Comments")){
 			return entry.getComment();
 		}
-		if (columnIndex == titletList.indexOf("Time")){
+		if (columnIndex == titletList.indexOf("CheckDoneTime")){
 			return entry.getTime();
 		}
 		if (columnIndex == titletList.indexOf("isChecked")){
@@ -577,6 +578,9 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
 				LineEntry checked = lineEntries.getValueAtIndex(rows[i]);
 				checked.setCheckStatus(status);
+				if (status.equalsIgnoreCase(LineEntry.CheckStatus_Checked)) {
+					checked.setTime(Commons.getNowTimeString());
+				}
 				//				lineEntries.remove(rows[i]);
 				//				lineEntries.add(rows[i], checked);
 				//				//https://stackoverflow.com/questions/4352885/how-do-i-update-the-element-at-a-certain-position-in-an-arraylist
