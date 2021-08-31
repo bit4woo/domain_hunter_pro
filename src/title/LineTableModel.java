@@ -706,6 +706,23 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 
 
 	///////////////////多个行内容的增删查改/////////////////////////////////
+	
+	/**
+	 * 仅用于runner中，某个特殊场景:URL相同host不同的情况
+	 * @param keyindex
+	 * @param lineEntry
+	 */
+	public void addNewLineEntryWithTime(LineEntry lineEntry){
+		if (lineEntry == null) {
+			return;
+		}
+		synchronized (lineEntries) {
+			String key = lineEntry.getUrl()+System.currentTimeMillis();
+			lineEntries.put(key,lineEntry);
+			int index = lineEntries.IndexOfKey(key);
+			fireTableRowsInserted(index, index);
+		}
+	}
 
 	public void addNewLineEntry(LineEntry lineEntry){
 		if (lineEntry == null) {
