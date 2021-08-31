@@ -1,17 +1,6 @@
 package title;
 
-import GUI.GUI;
-import GUI.LineEntryMenuForBurp;
-import Tools.ToolPanel;
-import burp.BurpExtender;
-import burp.Commons;
-import burp.Getter;
-import burp.IBurpExtenderCallbacks;
-import domain.DomainPanel;
-import title.search.SearchDork;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
@@ -20,10 +9,30 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import javax.swing.AbstractAction;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
+import javax.swing.SwingWorker;
+
+import GUI.LineEntryMenuForBurp;
+import GUI.RunnerGUI;
+import GUI.GUI;
+import Tools.ToolPanel;
+import burp.BurpExtender;
+import burp.Commons;
+import burp.Getter;
+import burp.IBurpExtenderCallbacks;
+import burp.IHttpRequestResponse;
+import domain.DomainPanel;
+import title.search.SearchDork;
 
 public class LineEntryMenu extends JPopupMenu {
 
@@ -208,8 +217,8 @@ public class LineEntryMenu extends JPopupMenu {
 				}
 			}
 		});
-		
-		
+
+
 		JMenuItem SearchOnShodanItem = new JMenuItem(new AbstractAction("Seach On Shodan") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -231,7 +240,7 @@ public class LineEntryMenu extends JPopupMenu {
 					}
 				}
 			}
-			
+
 			public String getValue(LineEntry firstEntry,int columnIndex) {
 
 				String columnName = lineTable.getColumnName(columnIndex);
@@ -255,7 +264,7 @@ public class LineEntryMenu extends JPopupMenu {
 			}
 
 		});
-		
+
 		//https://www.shodan.io/search?query=http.favicon.hash%3A-1588080585
 		JMenuItem SearchOnShodanWithIconhashItem = new JMenuItem(new AbstractAction("Seach On Shodan With IconHash") {
 			@Override
@@ -409,7 +418,7 @@ public class LineEntryMenu extends JPopupMenu {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				try{
-					 IndexedLinkedHashMap<String, LineEntry> entries = lineTable.getModel().getLineEntries();
+					IndexedLinkedHashMap<String, LineEntry> entries = lineTable.getModel().getLineEntries();
 					for(LineEntry entry:entries.values()) {
 						entry.DoGetIconHash();
 					}
@@ -424,6 +433,39 @@ public class LineEntryMenu extends JPopupMenu {
 		JMenuItem doPortScan = new JMenuItem();
 		doPortScan.setText("Do Port Scan");
 		doPortScan.addActionListener(new NmapScanAction(lineTable, modleRows));
+
+		JMenuItem doGateWayByPassCheck = new JMenuItem(new AbstractAction("Do GateWay ByPass Check") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				HashMap<String, IHttpRequestResponse> targetMap = new HashMap<String,IHttpRequestResponse>();
+
+				Set<String> IPs = lineTable.getModel().getIPs(modleRows);
+				if (IPs.size() >= 50){//避免一次开太多导致系统卡死
+					BurpExtender.getStderr().println("too many task");
+					return;
+				}
+
+				for (int row: modleRows){//根据IP地址去重
+					LineEntry entry = lineTable.getModel().getLineEntries().getValueAtIndex(row);
+					targetMap.put(entry.getIP(), new LineMessageInfo(entry));
+				}
+				for (IHttpRequestResponse messageInfo:targetMap.values()) {
+					SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+						//using SwingWorker to prevent blocking burp main UI.
+						@Override
+						protected Map doInBackground() throws Exception {
+							RunnerGUI runnergui = new RunnerGUI(messageInfo);
+							runnergui.begainRunChangeHostInHeader();
+							return null;
+						}
+						@Override
+						protected void done() {
+						}
+					};
+					worker.execute();
+				}
+			}
+		});
 
 
 		JMenuItem openURLwithBrowserItem = new JMenuItem(new AbstractAction("Open With Browser(double click url)") {
@@ -827,6 +869,7 @@ public class LineEntryMenu extends JPopupMenu {
 		this.add(doActiveScan);
 		this.add(doPortScan);
 		this.add(dirSearchItem);
+		this.add(doGateWayByPassCheck);
 		//this.add(iconHashItem);
 
 		this.addSeparator();
@@ -860,5 +903,5 @@ public class LineEntryMenu extends JPopupMenu {
 		this.add(NotTargetHandleItem);
 		this.add(addToblackListItem);
 		this.add(removeFromBlackListItem);
-		}
 	}
+}

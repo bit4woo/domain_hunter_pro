@@ -35,10 +35,18 @@ public class ThreadRunner{
 	public PrintWriter stderr = new PrintWriter(callbacks.getStderr(), true);
 	public IExtensionHelpers helpers = callbacks.getHelpers();
 	private RunnerGUI runnerGUI;
+	int changeType;
 
 	public ThreadRunner(RunnerGUI runnerGUI, IHttpRequestResponse messageInfo) {
 		this.runnerGUI = runnerGUI;
 		this.messageInfo = messageInfo;
+		this.changeType = fetchChangeType();
+	}
+	
+	public ThreadRunner(RunnerGUI runnerGUI, IHttpRequestResponse messageInfo,int changeType) {
+		this.runnerGUI = runnerGUI;
+		this.messageInfo = messageInfo;
+		this.changeType = changeType;
 	}
 
 	@Deprecated
@@ -57,7 +65,7 @@ public class ThreadRunner{
 	 * 情况三：目标httpService不变，只修改Header中的host字段，用于检测Nginx或者gateway的防护弱点。
 	 * @return Help=0 CANCEL=1 ....,即数组的index。
 	 */
-	private static int fetchChangeType() {
+	public static int fetchChangeType() {
 		Object[] options = { "Help","CANCEL","Host In Header","Host Of HttpService","HttpService"};
 		int user_input = JOptionPane.showOptionDialog(null, "Which Part Do You Want To Repalce?", "Chose Replace Part",
 		JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,
@@ -80,7 +88,7 @@ public class ThreadRunner{
 		lineEntryQueue.addAll(TitlePanel.getTitleTableModel().getLineEntries().values());
 		domainQueue.addAll(DomainPanel.getDomainResult().getSubDomainSet());
 		stdout.println("~~~~~~~~~~~~~Start threading Runner~~~~~~~~~~~~~ total task number: "+lineEntryQueue.size());
-		int changeType = fetchChangeType();
+		
 		if (changeType == ChangeCancel || changeType == ChangeClose ){//用户选了cancel（2）或者点击了关闭（-1）
 			return;
 		}

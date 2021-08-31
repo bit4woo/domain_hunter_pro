@@ -234,6 +234,11 @@ public class RunnerGUI extends JFrame {
 		runner = new ThreadRunner(this,messageInfo);
 		runner.Do();
 	}
+	
+	public void begainRunChangeHostInHeader() {
+		runner = new ThreadRunner(this,messageInfo,ThreadRunner.ChangeHostInHeader);
+		runner.Do();
+	}
 
 	public void begainDirBrute() {
 		bruter = new ThreadDirBruter(this,messageInfo);
