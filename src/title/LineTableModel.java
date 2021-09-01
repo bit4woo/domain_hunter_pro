@@ -17,7 +17,9 @@ import GUI.GUI;
 import burp.BurpExtender;
 import burp.Commons;
 import burp.DBHelper;
+import burp.Getter;
 import burp.IExtensionHelpers;
+import burp.IHttpRequestResponse;
 import burp.IHttpService;
 import burp.IMessageEditorController;
 import burp.IntArraySlice;
@@ -761,6 +763,26 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		//统一URL字符串的格式
 		url = Commons.formateURLString(url);
 		return lineEntries.get(url);
+	}
+	
+	/**
+	 * 根据一个IHttpRequestResponse对象来查找对应的LineEntry记录
+	 * 首先根据完整URL进行查找，如果没有找到，就使用baseURL进行查找。
+	 * @param message
+	 * @return
+	 */
+	public LineEntry findLineEntryByMessage(IHttpRequestResponse message) {
+		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
+		Getter getter = new Getter(helpers);
+		URL fullurl = getter.getFullURL(message);
+		LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(fullurl.toString());
+		if (entry == null) {
+			URL shortUrl = getter.getShortURL(message);
+			if(!fullurl.equals(shortUrl)) {
+				entry = TitlePanel.getTitleTableModel().findLineEntry(shortUrl.toString());
+			}
+		}
+		return entry;
 	}
 
 	/*

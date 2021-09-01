@@ -2,6 +2,8 @@ package GUI;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -36,6 +38,7 @@ public class ThreadRunner{
 	public IExtensionHelpers helpers = callbacks.getHelpers();
 	private RunnerGUI runnerGUI;
 	int changeType;
+	private boolean AllProductorFinished;
 
 	public ThreadRunner(RunnerGUI runnerGUI, IHttpRequestResponse messageInfo) {
 		this.runnerGUI = runnerGUI;
@@ -80,62 +83,81 @@ public class ThreadRunner{
 		}
 		return user_input;
 	}
+	
+	public static HashSet<String> getDomainsForBypassCheck(){
+		HashSet<String> resultSet = new HashSet<String>();
+		
+		HashSet<String> tmpSet = new HashSet<String>();//所有子域名列表
+		tmpSet.addAll(DomainPanel.getDomainResult().getSubDomainSet());
+		
+		HashSet<String> unreachableSet = new HashSet<String>();
+		Collection<LineEntry> entries = TitlePanel.getTitleTableModel().getLineEntries().values();
+		for (LineEntry entry:entries) {
+			if (entry.getEntryType().equals(LineEntry.EntryType_DNS) || entry.getStatuscode() == 403) {
+				unreachableSet.add(entry.getHost());
+			}
+			tmpSet.remove(entry.getHost());
+		}//删除了title中成功请求的域名
+		
+		tmpSet.addAll(unreachableSet);//添加了请求失败、只有解析、状态403的域名
+		
+		//		for (String item:tmpSet) {//移除IP，这步骤是否需要？
+		//			if (Commons.isValidDomain(item)) {
+		//				resultSet.add(item);
+		//			}
+		//		}
+		//		
+		//		return resultSet;
+		return tmpSet;
+	}
+	
 
 	public void Do(){
 		runnerGUI.lblStatus.setText("running");
 		BlockingQueue<LineEntry> lineEntryQueue = new LinkedBlockingQueue<LineEntry>();//use to store domains
 		BlockingQueue<String> domainQueue = new LinkedBlockingQueue<String>();
 		lineEntryQueue.addAll(TitlePanel.getTitleTableModel().getLineEntries().values());
-		domainQueue.addAll(DomainPanel.getDomainResult().getSubDomainSet());
-		stdout.println("~~~~~~~~~~~~~Start threading Runner~~~~~~~~~~~~~ total task number: "+lineEntryQueue.size());
+		domainQueue.addAll(getDomainsForBypassCheck());
 		
 		if (changeType == ChangeCancel || changeType == ChangeClose ){//用户选了cancel（2）或者点击了关闭（-1）
 			return;
 		}
+		
+		if (changeType == ChangeHostInHeader) {
+			stdout.println("~~~~~~~~~~~~~Start threading Runner~~~~~~~~~~~~~ total task number: "+domainQueue.size());
+		}else {
+			stdout.println("~~~~~~~~~~~~~Start threading Runner~~~~~~~~~~~~~ total task number: "+lineEntryQueue.size());
+		}
+		
 		plist = new ArrayList<RunnerProducer>();
 
 		for (int i=0;i<=50;i++) {
 			RunnerProducer p = new RunnerProducer(runnerGUI.getRunnerTableModel(),lineEntryQueue,domainQueue,messageInfo,changeType, i);
+			p.setDaemon(true);//将子线程设置为守护线程，会随着主线程的结束而立即结束
 			p.start();
 			plist.add(p);
 		}
 
-		long waitTime = 0;
-		while(true) {//to wait all threads exit.
-			if (lineEntryQueue.isEmpty() && isAllProductorFinished()) {
-				stdout.println("~~~~~~~~~~~~~Get Title Done~~~~~~~~~~~~~");
-				break;
-			}else if(lineEntryQueue.isEmpty() && waitTime >=10*60*1000){
-				stdout.println("~~~~~~~~~~~~~Get Title Done(force exits due to time out)~~~~~~~~~~~~~");
-				break;
-			}else {
-				try {
-					Thread.sleep(60*1000);//1分钟
-					waitTime =waitTime+60*1000;
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-				continue;//unnecessary
+		for (RunnerProducer p:plist) {
+			try {
+				p.join();
+				//让主线程等待各个子线程执行完成，才会结束。
+				//https://www.cnblogs.com/zheaven/p/12054044.html
+			} catch (InterruptedException e) {
+				stdout.println("force stop received");
+				e.printStackTrace();
+				break;//必须跳出循环，否则只是不再等待其中的一个线程，还会继续等待其他线程
 			}
 		}
+
+		stdout.println("all producer threads finished");
+		AllProductorFinished = true;
 		runnerGUI.lblStatus.setText("finished");
 		return;
 	}
 
 	boolean isAllProductorFinished(){
-		int i = 0;
-		for (RunnerProducer p:plist) {
-			if(p.isAlive()) {
-				i = i+1;
-			}
-		}
-		if (i>0){
-			stdout.println( "~~~~~~~~~~~~~"+i +" productors are still alive~~~~~~~~~~~~~");
-			return false;
-		}else{
-			stdout.println( "~~~~~~~~~~~~~All productor threads exited ~~~~~~~~~~~~~");
-			return true;
-		}
+		return AllProductorFinished;
 	}
 
 	public void stopThreads() {

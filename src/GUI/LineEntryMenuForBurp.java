@@ -131,6 +131,44 @@ public class LineEntryMenuForBurp{
 		}
 	}
 
+	
+	/**
+	 * 将查找行为放在事件触发之后进行。
+	 * @param topMenu
+	 * @param lineTable
+	 * @param rows
+	 */
+	public static void createSubMenu(JMenu topMenu, IHttpRequestResponse[] messages){
+		String[] MainMenu = LineEntry.AssetTypeArray;
+		for(int i = 0; i < MainMenu.length; i++){
+			JMenuItem item = new JMenuItem(MainMenu[i]);
+			item.addActionListener(new ActionListener() {
+
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					try{
+						if (messages== null || messages.length == 0 ||messages[0] ==null) {
+							return;
+						}
+						LineEntry entry = TitlePanel.getTitleTableModel().findLineEntryByMessage(messages[0]);
+						
+						if (entry != null) {
+							entry.setAssetType(e.getActionCommand());
+						}else {
+							//topMenu.add(new JMenuItem("Null"));
+						}
+					}
+					catch (Exception e1)
+					{
+						e1.printStackTrace();
+					}
+				}
+
+			});
+			topMenu.add(item);
+		}
+	}
+
 
 	public class addHostToRootDomain implements ActionListener{
 		private IContextMenuInvocation invocation;
@@ -410,73 +448,14 @@ public class LineEntryMenuForBurp{
 	}
 
 	public class setLevelAsActionListener implements ActionListener{
-		private IContextMenuInvocation invocation;
-		private JMenu topMenu;
 		setLevelAsActionListener(IContextMenuInvocation invocation,JMenu topMenu) {
-			this.invocation  = invocation;
-			this.topMenu = topMenu;
-			addSubMenuInBackGround();
+			createSubMenu(topMenu,invocation.getSelectedMessages());
 		}
 		@Override
 		public void actionPerformed(ActionEvent e)
 		{
 			//do nothing
 		}
-
-		public void addSubMenuInBackGround() {
-			SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-				@Override
-				protected Map doInBackground() throws Exception {
-					try{
-						IHttpRequestResponse[] messages = invocation.getSelectedMessages();
-						Getter getter = new Getter(helpers);
-						if (messages== null || messages.length == 0 ||messages[0] ==null) {
-							return null;
-						}
-						URL fullurl = getter.getFullURL(messages[0]);
-						LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(fullurl.toString());
-						if (entry == null) {
-							URL shortUrl = getter.getShortURL(messages[0]);
-							if(!fullurl.equals(shortUrl)) {
-								entry = TitlePanel.getTitleTableModel().findLineEntry(shortUrl.toString());
-							}
-						}
-
-						if (entry != null) {
-							int index = TitlePanel.getTitleTable().getModel().getLineEntries().IndexOfKey(entry.getUrl());
-							addLevelABC(topMenu,TitlePanel.getTitleTable(),new int[] {index});
-						}else {
-							//topMenu.add(new JMenuItem("Null"));
-						}
-
-
-						//						IHttpRequestResponse[] messages = invocation.getSelectedMessages();
-						//						Getter getter = new Getter(helpers);
-						//						if (messages[0] != null) {
-						//							String host = getter.getHost(messages[0]);
-						//							List<LineEntry> entries = TitlePanel.getTitleTableModel().findLineEntriesByHost(host);
-						//							if (entries.size() > 0) {
-						//								for (LineEntry entry:entries) {
-						//									int index = TitlePanel.getTitleTable().getModel().getLineEntries().IndexOfKey(entry.getUrl());
-						//									addLevelABC(topMenu,TitlePanel.getTitleTable(),new int[] {index});
-						//								}
-						//							}
-						//						}
-					}
-					catch (Exception e1)
-					{
-						e1.printStackTrace(stderr);
-					}
-					return null;
-				}
-				@Override
-				protected void done() {
-					topMenu.updateUI();
-				}
-			};
-			worker.execute();
-		}
-
 	}
 
 	@Deprecated//该方案响应速度慢，弃用
