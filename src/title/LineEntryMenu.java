@@ -450,19 +450,9 @@ public class LineEntryMenu extends JPopupMenu {
 					targetMap.put(entry.getIP(), new LineMessageInfo(entry));
 				}
 				for (IHttpRequestResponse messageInfo:targetMap.values()) {
-					SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-						//using SwingWorker to prevent blocking burp main UI.
-						@Override
-						protected Map doInBackground() throws Exception {
-							RunnerGUI runnergui = new RunnerGUI(messageInfo);
-							runnergui.begainRunChangeHostInHeader();
-							return null;
-						}
-						@Override
-						protected void done() {
-						}
-					};
-					worker.execute();
+					RunnerGUI runnergui = new RunnerGUI(messageInfo);
+					runnergui.begainRunChangeHostInHeader();
+					runnergui.setVisible(true);
 				}
 			}
 		});

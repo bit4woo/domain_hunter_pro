@@ -232,12 +232,12 @@ public class RunnerGUI extends JFrame {
 
 	public void begainRun() {
 		runner = new ThreadRunner(this,messageInfo);
-		runner.Do();
+		runner.start();
 	}
 	
 	public void begainRunChangeHostInHeader() {
 		runner = new ThreadRunner(this,messageInfo,ThreadRunner.ChangeHostInHeader);
-		runner.Do();
+		runner.start();
 	}
 
 	public void begainDirBrute() {

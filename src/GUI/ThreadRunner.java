@@ -21,7 +21,7 @@ import title.TitlePanel;
 
 //////////////////ThreadGetTitle block/////////////
 //no need to pass BurpExtender object to these class, IBurpExtenderCallbacks object is enough 
-public class ThreadRunner{
+public class ThreadRunner extends Thread{
 	public static final int ChangeService = 4;
 	public static final int ChangeHostInService = 3;
 	public static final int ChangeHostInHeader = 2;
@@ -111,8 +111,8 @@ public class ThreadRunner{
 		return tmpSet;
 	}
 	
-
-	public void Do(){
+	@Override
+	public void run(){
 		runnerGUI.lblStatus.setText("running");
 		BlockingQueue<LineEntry> lineEntryQueue = new LinkedBlockingQueue<LineEntry>();//use to store domains
 		BlockingQueue<String> domainQueue = new LinkedBlockingQueue<String>();
