@@ -244,8 +244,10 @@ public class LineTable extends JTable
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				try {
-					LineTable.this.getRowSorter().getSortKeys().get(0).getColumn();
-					////当Jtable中无数据时，jtable.getRowSorter()是nul
+					if (LineTable.this.getModel() != null) {
+						LineTable.this.getRowSorter().getSortKeys().get(0).getColumn();
+						////当Jtable中无数据时，jtable.getRowSorter()是nul
+					}
 				} catch (Exception e1) {
 					e1.printStackTrace(stderr);
 				}
