@@ -39,6 +39,7 @@ public class ThreadRunner extends Thread{
 	private RunnerGUI runnerGUI;
 	int changeType;
 	private boolean AllProductorFinished;
+	private boolean changeraw;
 
 	public ThreadRunner(RunnerGUI runnerGUI, IHttpRequestResponse messageInfo) {
 		this.runnerGUI = runnerGUI;
@@ -82,6 +83,16 @@ public class ThreadRunner extends Thread{
 			user_input = fetchChangeType();
 		}
 		return user_input;
+	}
+	public static boolean changeRaw() {
+		int result = JOptionPane.showConfirmDialog(null,"Do you want to change [Host in header] when change service?","Chose",
+				JOptionPane.YES_NO_OPTION,
+				JOptionPane.QUESTION_MESSAGE);
+		if (result == JOptionPane.YES_OPTION) {
+			return true;
+		}else {
+			return false;
+		}
 	}
 	
 	public static HashSet<String> getDomainsForBypassCheck(){
@@ -129,10 +140,15 @@ public class ThreadRunner extends Thread{
 			stdout.println("~~~~~~~~~~~~~Start threading Runner~~~~~~~~~~~~~ total task number: "+lineEntryQueue.size());
 		}
 		
+		if (changeType != ChangeHostInHeader) {
+			changeraw = changeRaw();
+		}
+		
 		plist = new ArrayList<RunnerProducer>();
 
 		for (int i=0;i<=50;i++) {
-			RunnerProducer p = new RunnerProducer(runnerGUI.getRunnerTableModel(),lineEntryQueue,domainQueue,messageInfo,changeType, i);
+			RunnerProducer p = new RunnerProducer(runnerGUI.getRunnerTableModel(),lineEntryQueue,domainQueue,
+					messageInfo,changeType,changeraw,i);
 			p.setDaemon(true);//将子线程设置为守护线程，会随着主线程的结束而立即结束
 			p.start();
 			plist.add(p);

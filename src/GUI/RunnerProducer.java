@@ -30,8 +30,10 @@ public class RunnerProducer extends Thread {//Producer do
 
 	LineTableModel runnerTableModel;
 	int changeType;
+	boolean ChangeRaw;
 
-	public RunnerProducer(LineTableModel runnerTableModel,BlockingQueue<LineEntry> lineEntryQueue,BlockingQueue<String> domainQueue,IHttpRequestResponse messageInfo,int changeType, int threadNo) {
+	public RunnerProducer(LineTableModel runnerTableModel,BlockingQueue<LineEntry> lineEntryQueue,BlockingQueue<String> domainQueue,
+			IHttpRequestResponse messageInfo,int changeType, boolean ChangeRaw,int threadNo) {
 		this.runnerTableModel = runnerTableModel;
 		this.runnerTableModel.setListenerIsOn(false);//否则数据会写入title的数据库
 		this.threadNo = threadNo;
@@ -39,6 +41,7 @@ public class RunnerProducer extends Thread {//Producer do
 		this.domainQueue = domainQueue;
 		this.changeType = changeType;
 		stopflag= false;
+		this.ChangeRaw = ChangeRaw;
 
 		//为了避免原始messageinfo的改变导致影响后续获取headers等参数，先完成解析存储下来。
 		//而且也可以避免多线程下getter时常getHeaderMap的结果为空的情况！！！
@@ -87,31 +90,33 @@ public class RunnerProducer extends Thread {//Producer do
 					BurpExtender.getStderr().println("wrong change type");
 					return;
 				}
-				
+
 				///构造数据包
 				byte[] newRequest;
-				if (changeType == ThreadRunner.ChangeHostInHeader) {//这里用全部域名更好，外网不能解析的域名，很可能在这个场景中可以解析
-					newRequest = getter.addOrUpdateHeader(true, request, "Host", newHost);
+				if (ChangeRaw){
+					if (changeType == ThreadRunner.ChangeHostInHeader) {//这里用全部域名更好，外网不能解析的域名，很可能在这个场景中可以解析
+						newRequest = getter.addOrUpdateHeader(true, request, "Host", newHost);
+					}else {
+						String headerHost = newHttpService.toString().replaceFirst("http://", "").replaceFirst("https://", "");
+						newRequest = getter.addOrUpdateHeader(true, request, "Host", headerHost);
+					}
+
+					String headerVaule = getter.getHeaderValueOf(true, request,"Origin");
+					if (null != headerVaule) {
+						//headerVaule = headerVaule.replaceFirst(httpService.toString(), newHttpService.toString());
+						//newRequest = getter.addOrUpdateHeader(true, newRequest, "Origin", headerVaule);
+						newRequest = getter.addOrUpdateHeader(true, newRequest, "Origin", newHttpService.toString());
+					}
+
+					String headerVaule1 = getter.getHeaderValueOf(true, request,"Referer");
+					if (null != headerVaule1) {
+						//headerVaule1 = headerVaule1.replaceFirst(httpService.toString(), newHttpService.toString());
+						//newRequest = getter.addOrUpdateHeader(true, newRequest, "Referer", headerVaule1);
+						newRequest = getter.addOrUpdateHeader(true, newRequest, "Referer", newHttpService.toString()+"/");
+					}
 				}else {
-					String headerHost = newHttpService.toString().replaceFirst("http://", "").replaceFirst("https://", "");
-					newRequest = getter.addOrUpdateHeader(true, request, "Host", headerHost);
+					newRequest = request;
 				}
-
-				String headerVaule = getter.getHeaderValueOf(true, request,"Origin");
-				if (null != headerVaule) {
-					//headerVaule = headerVaule.replaceFirst(httpService.toString(), newHttpService.toString());
-					//newRequest = getter.addOrUpdateHeader(true, newRequest, "Origin", headerVaule);
-					newRequest = getter.addOrUpdateHeader(true, newRequest, "Origin", newHttpService.toString());
-				}
-
-				String headerVaule1 = getter.getHeaderValueOf(true, request,"Referer");
-				if (null != headerVaule1) {
-					//headerVaule1 = headerVaule1.replaceFirst(httpService.toString(), newHttpService.toString());
-					//newRequest = getter.addOrUpdateHeader(true, newRequest, "Referer", headerVaule1);
-					newRequest = getter.addOrUpdateHeader(true, newRequest, "Referer", newHttpService.toString()+"/");
-				}
-
-				
 				
 
 				//stdout.println(httpService.toString());
