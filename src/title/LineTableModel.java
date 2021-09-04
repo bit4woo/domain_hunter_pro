@@ -711,7 +711,6 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	
 	/**
 	 * 仅用于runner中，某个特殊场景:URL相同host不同的情况
-	 * @param keyindex
 	 * @param lineEntry
 	 */
 	public void addNewLineEntryWithTime(LineEntry lineEntry){

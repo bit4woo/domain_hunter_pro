@@ -163,7 +163,7 @@ public class RunnerGUI extends JFrame {
 		buttonSearch.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String keyword = textFieldSearch.getText();
-				runnerTable.search(keyword);
+				runnerTable.search(keyword,false);
 			}
 		});
 		buttonPanel.add(buttonSearch);
@@ -185,7 +185,12 @@ public class RunnerGUI extends JFrame {
 			@Override
 			public void windowClosing(WindowEvent e) {
 				// TODO 关闭多线程
-				runnerTableModel.clear(false);
+				try{
+					runnerTableModel.clear(false);
+				}catch (Exception e1){
+					e1.printStackTrace();
+				}
+
 				if (runner !=null) {
 					runner.stopThreads();
 				}
