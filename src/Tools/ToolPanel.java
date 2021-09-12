@@ -56,6 +56,7 @@ import burp.Commons;
 import domain.CertInfo;
 import domain.DomainProducer;
 import title.WebIcon;
+import javax.swing.SwingConstants;
 
 /*
  * 所有配置的修改，界面的操作，都立即写入LineConfig对象，如有必要保存到磁盘，再调用一次SaveConfig函数，思路要清晰
@@ -242,14 +243,25 @@ public class ToolPanel extends JPanel {
 		LeftOfCenter.setRightComponent(twoFourthPanel);
 
 		inputTextArea = new JTextArea();
+		inputTextArea.setFont(new Font("Monospaced", Font.BOLD, 13));
 		inputTextArea.setColumns(20);
 		inputTextArea.setLineWrap(true);
 		inputTextArea.getDocument().addDocumentListener(new textAreaListener());
 		oneFourthPanel.setViewportView(inputTextArea);
+		
+		JLabel lblNewLabel_1 = new JLabel("Input");
+		lblNewLabel_1.setFont(new Font("宋体", Font.BOLD, 15));
+		lblNewLabel_1.setHorizontalAlignment(SwingConstants.CENTER);
+		oneFourthPanel.setColumnHeaderView(lblNewLabel_1);
 
 		outputTextArea = new JTextArea();
 		outputTextArea.setLineWrap(true);
 		twoFourthPanel.setViewportView(outputTextArea);
+		
+		JLabel lblNewLabel_3 = new JLabel("Output");
+		lblNewLabel_3.setHorizontalAlignment(SwingConstants.CENTER);
+		lblNewLabel_3.setFont(new Font("宋体", Font.BOLD, 15));
+		twoFourthPanel.setColumnHeaderView(lblNewLabel_3);
 
 
 		//四分之三部分放一个panel，里面放操作按钮

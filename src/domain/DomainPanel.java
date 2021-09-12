@@ -51,7 +51,6 @@ public class DomainPanel extends JPanel {
     private JButton btnSearch;
     private JButton btnCrawl;
     private JLabel lblSummary;
-    private JLabel lblNewLabel_2;
 
     private JTextArea textAreaSubdomains;
     private JTextArea textAreaSimilarDomains;
@@ -827,12 +826,12 @@ public class DomainPanel extends JPanel {
         textAreaEmails.setColumns(10);
         textAreaPackages.setColumns(10);
 
-        textAreaSubnets.setToolTipText("Subnets/IP for certain");
-        textAreaRelatedDomains.setToolTipText("Related Domains");
-        textAreaSubdomains.setToolTipText("Sub Domains");
-        textAreaSimilarDomains.setToolTipText("Similar Domains");
-        textAreaEmails.setToolTipText("Emails");
-        textAreaPackages.setToolTipText("Package Names");
+		//        textAreaSubnets.setToolTipText("Subnets/IP for certain");
+		//        textAreaRelatedDomains.setToolTipText("Related Domains");
+		//        textAreaSubdomains.setToolTipText("Sub Domains");
+		//        textAreaSimilarDomains.setToolTipText("Similar Domains");
+		//        textAreaEmails.setToolTipText("Emails");
+		//        textAreaPackages.setToolTipText("Package Names");
 
         ScrollPaneSubnets.setViewportView(textAreaSubnets);
         ScrollPaneRelatedDomains.setViewportView(textAreaRelatedDomains);
@@ -841,6 +840,31 @@ public class DomainPanel extends JPanel {
         ScrollPaneEmails.setViewportView(textAreaEmails);
         ScrollPanePackageNames.setViewportView(textAreaPackages);
 
+        JLabel lblNewLabel = new JLabel("Subnets/IP for certain");
+        lblNewLabel.setFont(new Font("宋体", Font.BOLD, 15));
+        lblNewLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        ScrollPaneSubnets.setColumnHeaderView(lblNewLabel);
+        JLabel lblNewLabel_1 = new JLabel("Related Domains");
+        lblNewLabel_1.setFont(new Font("宋体", Font.BOLD, 15));
+        lblNewLabel_1.setHorizontalAlignment(SwingConstants.CENTER);
+        ScrollPaneRelatedDomains.setColumnHeaderView(lblNewLabel_1);
+        JLabel lblNewLabel_2 = new JLabel("Sub Domains");
+        lblNewLabel_2.setFont(new Font("宋体", Font.BOLD, 15));
+        lblNewLabel_2.setHorizontalAlignment(SwingConstants.CENTER);
+        ScrollPaneSubdomains.setColumnHeaderView(lblNewLabel_2);
+        JLabel lblNewLabel_3 = new JLabel("Similar Domains");
+        lblNewLabel_3.setFont(new Font("宋体", Font.BOLD, 15));
+        lblNewLabel_3.setHorizontalAlignment(SwingConstants.CENTER);
+        ScrollPaneSimilarDomains.setColumnHeaderView(lblNewLabel_3);
+        JLabel lblNewLabel_4 = new JLabel("Emails");
+        lblNewLabel_4.setFont(new Font("宋体", Font.BOLD, 15));
+        lblNewLabel_4.setHorizontalAlignment(SwingConstants.CENTER);
+        ScrollPaneEmails.setColumnHeaderView(lblNewLabel_4);
+        JLabel lblNewLabel_5 = new JLabel("Package Names");
+        lblNewLabel_5.setFont(new Font("宋体", Font.BOLD, 15));
+        lblNewLabel_5.setHorizontalAlignment(SwingConstants.CENTER);
+        ScrollPanePackageNames.setColumnHeaderView(lblNewLabel_5);
+        
         //实现编辑后自动保存
         textAreaSubnets.getDocument().addDocumentListener(new textAreaListener());
         textAreaRelatedDomains.getDocument().addDocumentListener(new textAreaListener());
@@ -855,7 +879,7 @@ public class DomainPanel extends JPanel {
         textAreaSimilarDomains.addMouseListener(new TextAreaMouseListener(textAreaSimilarDomains));
         textAreaEmails.addMouseListener(new TextAreaMouseListener(textAreaEmails));
         textAreaPackages.addMouseListener(new TextAreaMouseListener(textAreaPackages));
-
+        
 
         ///////////////////////////FooterPanel//////////////////
 
@@ -865,9 +889,9 @@ public class DomainPanel extends JPanel {
         fl_FooterPanel.setAlignment(FlowLayout.LEFT);
         this.add(footerPanel, BorderLayout.SOUTH);
 
-        lblNewLabel_2 = new JLabel(BurpExtender.getExtenderName() + "    " + BurpExtender.getGithub());
-        lblNewLabel_2.setFont(new Font("宋体", Font.BOLD, 12));
-        lblNewLabel_2.addMouseListener(new MouseAdapter() {
+        JLabel footerLabel = new JLabel(BurpExtender.getExtenderName() + "    " + BurpExtender.getGithub());
+        footerLabel.setFont(new Font("宋体", Font.BOLD, 12));
+        footerLabel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 try {
@@ -884,15 +908,15 @@ public class DomainPanel extends JPanel {
 
             @Override
             public void mouseEntered(MouseEvent e) {
-                lblNewLabel_2.setForeground(Color.BLUE);
+            	footerLabel.setForeground(Color.BLUE);
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                lblNewLabel_2.setForeground(Color.BLACK);
+            	footerLabel.setForeground(Color.BLACK);
             }
         });
-        footerPanel.add(lblNewLabel_2);
+        footerPanel.add(footerLabel);
 
         lblSummary = new JLabel("      ^_^");
         footerPanel.add(lblSummary);
