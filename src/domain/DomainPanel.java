@@ -12,6 +12,7 @@ import org.apache.logging.log4j.Logger;
 import toElastic.VMP;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.event.DocumentEvent;
@@ -840,28 +841,30 @@ public class DomainPanel extends JPanel {
         ScrollPaneEmails.setViewportView(textAreaEmails);
         ScrollPanePackageNames.setViewportView(textAreaPackages);
 
+        Border blackline = BorderFactory.createLineBorder(Color.black);
+
         JLabel lblNewLabel = new JLabel("Subnets/IP for certain");
-        lblNewLabel.setFont(new Font("宋体", Font.BOLD, 15));
         lblNewLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        lblNewLabel.setBorder(blackline);
         ScrollPaneSubnets.setColumnHeaderView(lblNewLabel);
         JLabel lblNewLabel_1 = new JLabel("Related Domains");
-        lblNewLabel_1.setFont(new Font("宋体", Font.BOLD, 15));
         lblNewLabel_1.setHorizontalAlignment(SwingConstants.CENTER);
+        lblNewLabel_1.setBorder(blackline);
         ScrollPaneRelatedDomains.setColumnHeaderView(lblNewLabel_1);
         JLabel lblNewLabel_2 = new JLabel("Sub Domains");
-        lblNewLabel_2.setFont(new Font("宋体", Font.BOLD, 15));
+        lblNewLabel_2.setBorder(blackline);
         lblNewLabel_2.setHorizontalAlignment(SwingConstants.CENTER);
         ScrollPaneSubdomains.setColumnHeaderView(lblNewLabel_2);
         JLabel lblNewLabel_3 = new JLabel("Similar Domains");
-        lblNewLabel_3.setFont(new Font("宋体", Font.BOLD, 15));
+        lblNewLabel_3.setBorder(blackline);
         lblNewLabel_3.setHorizontalAlignment(SwingConstants.CENTER);
         ScrollPaneSimilarDomains.setColumnHeaderView(lblNewLabel_3);
         JLabel lblNewLabel_4 = new JLabel("Emails");
-        lblNewLabel_4.setFont(new Font("宋体", Font.BOLD, 15));
+        lblNewLabel_4 .setBorder(blackline);
         lblNewLabel_4.setHorizontalAlignment(SwingConstants.CENTER);
         ScrollPaneEmails.setColumnHeaderView(lblNewLabel_4);
         JLabel lblNewLabel_5 = new JLabel("Package Names");
-        lblNewLabel_5.setFont(new Font("宋体", Font.BOLD, 15));
+        lblNewLabel_5.setBorder(blackline);
         lblNewLabel_5.setHorizontalAlignment(SwingConstants.CENTER);
         ScrollPanePackageNames.setColumnHeaderView(lblNewLabel_5);
         

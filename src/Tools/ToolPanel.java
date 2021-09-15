@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -42,6 +43,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
+import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.event.DocumentEvent;
@@ -243,15 +245,16 @@ public class ToolPanel extends JPanel {
 		LeftOfCenter.setRightComponent(twoFourthPanel);
 
 		inputTextArea = new JTextArea();
-		inputTextArea.setFont(new Font("Monospaced", Font.BOLD, 13));
 		inputTextArea.setColumns(20);
 		inputTextArea.setLineWrap(true);
 		inputTextArea.getDocument().addDocumentListener(new textAreaListener());
 		oneFourthPanel.setViewportView(inputTextArea);
 		
+		Border blackline = BorderFactory.createLineBorder(Color.black);
+		
 		JLabel lblNewLabel_1 = new JLabel("Input");
-		lblNewLabel_1.setFont(new Font("宋体", Font.BOLD, 15));
 		lblNewLabel_1.setHorizontalAlignment(SwingConstants.CENTER);
+		lblNewLabel_1.setBorder(blackline);
 		oneFourthPanel.setColumnHeaderView(lblNewLabel_1);
 
 		outputTextArea = new JTextArea();
@@ -260,7 +263,7 @@ public class ToolPanel extends JPanel {
 		
 		JLabel lblNewLabel_3 = new JLabel("Output");
 		lblNewLabel_3.setHorizontalAlignment(SwingConstants.CENTER);
-		lblNewLabel_3.setFont(new Font("宋体", Font.BOLD, 15));
+		lblNewLabel_3.setBorder(blackline);
 		twoFourthPanel.setColumnHeaderView(lblNewLabel_3);
 
 
