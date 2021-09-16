@@ -41,6 +41,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.border.Border;
@@ -58,7 +59,7 @@ import burp.Commons;
 import domain.CertInfo;
 import domain.DomainProducer;
 import title.WebIcon;
-import javax.swing.SwingConstants;
+import title.search.History;
 
 /*
  * 所有配置的修改，界面的操作，都立即写入LineConfig对象，如有必要保存到磁盘，再调用一次SaveConfig函数，思路要清晰
@@ -121,6 +122,8 @@ public class ToolPanel extends JPanel {
 			BurpExtender.getStdout().println("Loading From Disk Failed, Use Default");
 			lineConfig = new LineConfig();
 		}
+		
+		History.setInstance(lineConfig.getSearchHistory());
 		
 		String dbFilePath = lineConfig.getDbfilepath();
 		

@@ -2,8 +2,6 @@ package title.search;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -17,7 +15,6 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
 import burp.BurpExtender;
-import title.TitlePanel;
 
 /**
  * 这个类主要是为了创建搜索框，并为搜索框添加各种监听事件：
@@ -27,7 +24,6 @@ public class SearchTextField extends JTextField{
 
 	PrintWriter stdout;
 	PrintWriter stderr;
-	History searchHistory = History.getInstance();
 	boolean caseSensitive;
 
 	public boolean isCaseSensitive() {
@@ -77,6 +73,7 @@ public class SearchTextField extends JTextField{
 				if (e.getKeyCode()==KeyEvent.VK_KP_UP || e.getKeyCode() == KeyEvent.VK_UP)//上键
 				{
 					try {
+						History searchHistory = History.getInstance();
 						String record = searchHistory.moveUP();
 						if (record != null) {
 							setText(record);
@@ -88,6 +85,7 @@ public class SearchTextField extends JTextField{
 
 				if (e.getKeyCode() == KeyEvent.VK_KP_DOWN || e.getKeyCode() == KeyEvent.VK_DOWN){
 					try {
+						History searchHistory = History.getInstance();
 						String record = searchHistory.moveDown();
 						if (record != null) {
 							setText(record);
@@ -106,6 +104,7 @@ public class SearchTextField extends JTextField{
 			public void mouseWheelMoved(MouseWheelEvent e) {
 				if(e.getWheelRotation()==1){
 					try {
+						History searchHistory = History.getInstance();
 						String record = searchHistory.moveUP();
 						if (record != null) {
 							setText(record);
@@ -117,6 +116,7 @@ public class SearchTextField extends JTextField{
 				}
 				if(e.getWheelRotation()==-1){
 					try {
+						History searchHistory = History.getInstance();
 						String record = searchHistory.moveDown();
 						if (record != null) {
 							setText(record);

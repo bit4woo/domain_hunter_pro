@@ -2,19 +2,42 @@ package title.search;
 
 import java.util.Vector;
 
+import com.google.gson.Gson;
+
 public class History {
 	private Vector<String> historyVector;
 	private int currentPosition = -1;//没有内容时的指针位置
 	private int size;
-    private static final History singleton = new History(10);
+    private static History singleton = new History(10);
 
     public static History getInstance() {
         return singleton;
+    }
+    
+    //default constructor for fastjson
+    History(){
+    	
     }
 	
 	private History(int size){
 		this.size = size;
 		historyVector = new Vector<String>(this.size);
+	}
+	
+	public static History fromJson(String input) {
+		return new Gson().fromJson(input, History.class);
+	}
+	
+	public static void setInstance(History input) {
+		if (input == null || input.historyVector == null) {
+			singleton = new History(10);
+		}else {
+			singleton = input;
+		}
+	}
+	
+	public String toJson() {
+		return new Gson().toJson(this);
 	}
 
 	public void addRecord(String record){
@@ -47,6 +70,13 @@ public class History {
 			currentPosition = currentPosition % (historyVector.size());
 			return historyVector.get(currentPosition);
 		}
-
+	}
+	
+	public static void main(String[] args) {
+		History test = new History(10);
+		test.addRecord("1111");
+		String json = test.toJson();
+		System.out.println(test.toJson());
+		System.out.println(History.fromJson(json));
 	}
 }

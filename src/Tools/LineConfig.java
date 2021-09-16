@@ -8,7 +8,7 @@ import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 
-import com.alibaba.fastjson.JSON;
+import com.google.gson.Gson;
 
 import GUI.GUI;
 import burp.BurpExtender;
@@ -16,6 +16,7 @@ import burp.Commons;
 import domain.DomainPanel;
 import title.LineEntry;
 import title.TitlePanel;
+import title.search.History;
 
 public class LineConfig {
 	private static int MaximumEntries = 1000;//控制显示的条目数，减少内存占用
@@ -52,6 +53,7 @@ public class LineConfig {
 	private boolean showItemsInOne = false;
 	private boolean enableElastic = false;
 	private String dbfilepath ="";
+	private History searchHistory;
 
 	LineConfig(){
 		if (Commons.isMac()) {
@@ -231,11 +233,21 @@ public class LineConfig {
 		this.dbfilepath = dbfilepath;
 	}
 
+	public History getSearchHistory() {
+		return searchHistory;
+	}
+
+	public void setSearchHistory(History searchHistory) {
+		this.searchHistory = searchHistory;
+	}
+
+
 	public String saveToDisk() {
 		File localFile = new File(localdir+File.separator+DomainPanel.getDomainResult().getProjectName());
 		try {
 			ToolPanel.saveToConfigFromGUI();
 			this.setDbfilepath(GUI.currentDBFile.getAbsolutePath());
+			this.setSearchHistory(History.getInstance());
 		} catch (Exception e1) {
 			e1.printStackTrace();
 			e1.printStackTrace(BurpExtender.getStderr());
@@ -268,15 +280,15 @@ public class LineConfig {
 
 
 	public String ToJson() {
-		return JSON.toJSONString(this);
+		//return JSON.toJSONString(this);
 		//https://blog.csdn.net/qq_27093465/article/details/73277291
-		//return new Gson().toJson(this);
+		return new Gson().toJson(this);
 	}
 
 
 	public  static LineConfig FromJson(String instanceString) {// throws Exception {
-		return JSON.parseObject(instanceString,LineConfig.class);
-		//return new Gson().fromJson(instanceString, DomainObject.class);
+		//return JSON.parseObject(instanceString,LineConfig.class);
+		return new Gson().fromJson(instanceString, LineConfig.class);
 	}
 
 	/*
