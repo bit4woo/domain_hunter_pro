@@ -9,12 +9,8 @@
 	<artifactId>domain_hunter_pro</artifactId>
 	<version>v1.4</version>
 
-	<repositories>
-		<repository>
-			<id>jitpack.io</id>
-			<url>https://jitpack.io</url>
-		</repository>
-	</repositories>
+	<!-- <repositories> <repository> <id>jitpack.io</id> <url>https://jitpack.io</url> 
+		</repository> </repositories> -->
 
 	<build>
 		<sourceDirectory>src</sourceDirectory>
@@ -96,7 +92,7 @@
 		<dependency>
 			<groupId>com.github.bit4woo</groupId>
 			<artifactId>burp-api-common</artifactId>
-			<version>v0.1.3</version>
+			<version>0.1.3</version>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/com.alibaba/fastjson -->
