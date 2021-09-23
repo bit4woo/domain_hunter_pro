@@ -2,13 +2,10 @@ package toElastic;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Set;
 
 import com.github.kevinsawicki.http.HttpRequest;
 
-import burp.BurpExtender;
 import burp.Commons;
-import burp.HelperPlus;
 import title.LineEntry;
 import title.TitlePanel;
 
@@ -76,10 +73,6 @@ public class VMP {
 	}
 	
 	public static void main(String[] args) {
-		String url = "https://vmp.test.shopee.io/api/v2/asset/";
-		HashMap<String, String> headers = new HashMap<String,String>();
-		headers.put("Authorization", "Token 87ecb070d5742acc25ad9bd2dd9a80d1bde9d090");
-		headers.put("Content-Type","application/json;charset=UTF-8");
-		System.out.println(isApiOk(url,headers));
+
 	}
 }
