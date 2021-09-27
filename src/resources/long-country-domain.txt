@@ -1,0 +1,7 @@
+co.id
+co.th
+in.th
+com.my
+com.mx
+com.mm
+com.br
