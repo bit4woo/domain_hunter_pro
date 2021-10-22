@@ -111,5 +111,21 @@ public class TextAreaMenu extends JPopupMenu {
 		});
 		
 		this.add(addTosubdomain);
+		
+		JMenuItem whoisItem = new JMenuItem(new AbstractAction("Whois") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				for (String item:selectedItems) {
+					try {
+						Commons.browserOpen("https://whois.chinaz.com/"+item,null);
+						Commons.browserOpen("https://www.whois.com/whois/"+item,null);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		});
+		
+		this.add(whoisItem);
 	}
 }

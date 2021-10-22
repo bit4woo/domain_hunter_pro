@@ -7,6 +7,7 @@ public class RootDomainEntry {
 	private String ZoneTransfer;//域名所属的业务名称
 	private String isBlack;//这个域名是否是黑名单根域名，需要排除的
 	private String comment;
+	private boolean useTLD;//TLD= Top-Level Domain 
 	
 	public RootDomainEntry(String rootDomain) {
 		
@@ -47,5 +48,13 @@ public class RootDomainEntry {
 	}
 	public void setComment(String comment) {
 		this.comment = comment;
+	}
+
+	public boolean isUseTLD() {
+		return useTLD;
+	}
+
+	public void setUseTLD(boolean useTLD) {
+		this.useTLD = useTLD;
 	}
 }
