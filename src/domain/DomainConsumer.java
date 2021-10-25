@@ -71,6 +71,13 @@ public class DomainConsumer extends Thread {
 			moveQueueToSet(BurpExtender.relatedDomainQueue,result.getRelatedDomainSet());
 			moveQueueToSet(BurpExtender.emailQueue,result.getEmailSet());
 			moveQueueToSet(BurpExtender.packageNameQueue,result.getPackageNameSet());
+			moveQueueToSet(BurpExtender.TLDDomainQueue,result.getSubDomainSet());
+			
+			HashSet<String> tmpTLDDomains = new HashSet<String>();
+			moveQueueToSet(BurpExtender.TLDDomainQueue,tmpTLDDomains);
+			for (String domain:tmpTLDDomains) {
+				DomainPanel.domainResult.addRootDomain(domain, false);
+			}
 
 			HashSet<String> newSubdomains = new HashSet<String>();
 			newSubdomains.addAll(result.getSubDomainSet());

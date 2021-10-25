@@ -300,6 +300,9 @@ public class DomainPanel extends JPanel {
                                 domainResult.getSubDomainSet().add(line);
                             } else if (type == DomainManager.SIMILAR_DOMAIN) {
                                 domainResult.getSimilarDomainSet().add(line);
+                            } else if (type == DomainManager.TLD_DOMAIN) {
+                                domainResult.addRootDomain(line, true);
+                                domainResult.getSubDomainSet().add(line);
                             } else {
                                 stdout.println("import skip " + line);
                             }
@@ -591,19 +594,7 @@ public class DomainPanel extends JPanel {
                     JOptionPane.showMessageDialog(null, "you should create project db file first");
                 } else {
                     String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
-                    enteredRootDomain = enteredRootDomain.trim().toLowerCase();
-                    if (enteredRootDomain.startsWith("http://") || enteredRootDomain.startsWith("https://")) {
-                        try {
-                            URL url = new URL(enteredRootDomain);
-                            enteredRootDomain = url.getHost();
-                        } catch (Exception e2) {
-
-                        }
-                    }
-                    enteredRootDomain = InternetDomainName.from(enteredRootDomain).topPrivateDomain().toString();
-                    String keyword = enteredRootDomain.substring(0, enteredRootDomain.indexOf("."));
-
-                    domainResult.AddToRootDomainMap(enteredRootDomain, keyword);
+                    domainResult.addRootDomain(enteredRootDomain,true);
                     showToDomainUI();
                     autoSave();
                 }
@@ -621,19 +612,7 @@ public class DomainPanel extends JPanel {
                     JOptionPane.showMessageDialog(null, "you should create project db file first");
                 } else {
                     String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
-                    enteredRootDomain = enteredRootDomain.trim().toLowerCase();
-                    if (enteredRootDomain.startsWith("http://") || enteredRootDomain.startsWith("https://")) {
-                        try {
-                            URL url = new URL(enteredRootDomain);
-                            enteredRootDomain = url.getHost();
-                        } catch (Exception e2) {
-
-                        }
-                    }
-                    //enteredRootDomain = InternetDomainName.from(enteredRootDomain).topPrivateDomain().toString();
-                    String keyword = enteredRootDomain.substring(0, enteredRootDomain.indexOf("."));
-
-                    domainResult.AddToRootDomainMap(enteredRootDomain, keyword);
+                    domainResult.addRootDomain(enteredRootDomain,false);
                     showToDomainUI();
                     autoSave();
                 }
@@ -677,7 +656,7 @@ public class DomainPanel extends JPanel {
                 for (int i = rowindexs.length - 1; i >= 0; i--) {
                     String rootdomain = (String) domainTableModel.getValueAt(rowindexs[i], 0);
                     domainTableModel.removeRow(rowindexs[i]);
-                    domainResult.AddToRootDomainMap("[exclude]" + rootdomain, "");
+                    domainResult.getRootDomainMap().put("[exclude]" + rootdomain, "");
                 }
                 showToDomainUI();
                 autoSave();
@@ -698,35 +677,25 @@ public class DomainPanel extends JPanel {
                 Set<String> tmpDomains = domainResult.getSubDomainSet();
                 Set<String> newSubDomainSet = new HashSet<>();
                 Set<String> newSimilarDomainSet = new HashSet<String>();
+                
                 tmpDomains.addAll(domainResult.getSimilarDomainSet());
+                tmpDomains.addAll(domainResult.getRelatedDomainSet());
 
                 for (String domain : tmpDomains) {
-                    domain = domain.toLowerCase().trim();
-                    if (domain.endsWith(".")) {
-                        domain = domain.substring(0, domain.length() - 1);
-                    }
+                	domain = DomainManager.cleanDomain(domain);
 
                     int type = domainResult.domainType(domain);
                     if (type == DomainManager.SUB_DOMAIN || type == DomainManager.IP_ADDRESS)
                     //包含手动添加的IP
                     {
                         newSubDomainSet.add(domain);
+                        domainResult.getRelatedDomainSet().remove(domain);
                     } else if (type == DomainManager.SIMILAR_DOMAIN) {
                         newSimilarDomainSet.add(domain);
-                    }
-                }
-
-                //相关域名中也可能包含子域名，子域名才是核心，要将它们加到子域名
-                tmpDomains = domainResult.getRelatedDomainSet();
-                for (String domain : tmpDomains) {
-                    domain = domain.toLowerCase().trim();
-                    if (domain.endsWith(".")) {
-                        domain = domain.substring(0, domain.length() - 1);
-                    }
-
-                    int type = domainResult.domainType(domain);
-                    if (type == DomainManager.SUB_DOMAIN) {
+                    } else if (type == DomainManager.TLD_DOMAIN) {
+                        domainResult.addRootDomain(domain, true);
                         newSubDomainSet.add(domain);
+                        domainResult.getRelatedDomainSet().remove(domain);
                     }
                 }
 
@@ -1295,5 +1264,12 @@ public class DomainPanel extends JPanel {
         } catch (IOException e1) {
             e1.printStackTrace(BurpExtender.getStderr());
         }
+    }
+    
+    public static void main(String[] args) {
+    	String tmp = InternetDomainName.from("baidu.xxx.com.br").topPrivateDomain().toString();
+    	String tmp1 = InternetDomainName.from("baidu.xxx.com.br").publicSuffix().toString();
+    	System.out.println(tmp);
+    	System.out.println(tmp1);
     }
 }

@@ -32,6 +32,7 @@ public class DomainProducer extends Thread {//Producer do
 	private final BlockingQueue<String> relatedDomainQueue;
 	private final BlockingQueue<String> EmailQueue;
 	private final BlockingQueue<String> packageNameQueue;
+	private final BlockingQueue<String> TLDDomainQueue;
 	private BlockingQueue<String> httpsQueue = new LinkedBlockingQueue<>();//temp variable to identify checked https
 
 	private int threadNo;
@@ -48,6 +49,7 @@ public class DomainProducer extends Thread {//Producer do
 			BlockingQueue<String> relatedDomainQueue,
 			BlockingQueue<String> EmailQueue,
 			BlockingQueue<String> packageNameQueue,
+			BlockingQueue<String> TLDDomainQueue,
 			int threadNo) {
 		this.threadNo = threadNo;
 		this.inputQueue = inputQueue;
@@ -56,6 +58,7 @@ public class DomainProducer extends Thread {//Producer do
 		this.relatedDomainQueue = relatedDomainQueue;
 		this.EmailQueue = EmailQueue;
 		this.packageNameQueue = packageNameQueue;
+		this.TLDDomainQueue = TLDDomainQueue;
 		stopflag= false;
 	}
 
@@ -149,6 +152,8 @@ public class DomainProducer extends Thread {//Producer do
 			similarDomainQueue.add(domain);
 		}else if (type == DomainManager.PACKAGE_NAME) {
 			packageNameQueue.add(domain);
+		}else if (type == DomainManager.TLD_DOMAIN) {
+			TLDDomainQueue.add(domain);
 		}
 		return type;
 	}

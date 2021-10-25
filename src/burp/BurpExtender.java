@@ -51,6 +51,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	public static BlockingQueue<String> relatedDomainQueue = new LinkedBlockingQueue<String>();
 	public static BlockingQueue<String> emailQueue = new LinkedBlockingQueue<String>();
 	public static BlockingQueue<String> packageNameQueue = new LinkedBlockingQueue<String>();
+	public static BlockingQueue<String> TLDDomainQueue = new LinkedBlockingQueue<String>();
 
 	public static PrintWriter getStdout() {
 		//不同的时候调用这个参数，可能得到不同的值
@@ -137,7 +138,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	public void startLiveCapture(){
 		liveAnalysisTread = new DomainProducer(BurpExtender.liveinputQueue,BurpExtender.subDomainQueue,
 				BurpExtender.similarDomainQueue,BurpExtender.relatedDomainQueue,
-				BurpExtender.emailQueue,BurpExtender.packageNameQueue,9999);//必须是9999，才能保证流量进程不退出。
+				BurpExtender.emailQueue,BurpExtender.packageNameQueue,BurpExtender.TLDDomainQueue,9999);//必须是9999，才能保证流量进程不退出。
 		liveAnalysisTread.start();
 
 		liveDataSaveTread = new DomainConsumer(1);

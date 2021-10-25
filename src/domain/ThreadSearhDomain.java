@@ -36,7 +36,7 @@ public class ThreadSearhDomain{
 		for (int i=0;i<=20;i++) {
 			DomainProducer p = new DomainProducer(BurpExtender.inputQueue,BurpExtender.subDomainQueue,
 					BurpExtender.similarDomainQueue,BurpExtender.relatedDomainQueue,
-					BurpExtender.emailQueue,BurpExtender.packageNameQueue,i);
+					BurpExtender.emailQueue,BurpExtender.packageNameQueue,BurpExtender.TLDDomainQueue,i);
 			p.start();
 			plist.add(p);
 		}

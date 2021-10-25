@@ -1,5 +1,6 @@
 package domain;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -51,6 +52,7 @@ public class DomainManager {
 	public static int SIMILAR_DOMAIN=1;
 	public static int IP_ADDRESS=2;
 	public static int PACKAGE_NAME=3;
+	public static int TLD_DOMAIN=4; //比如baidu.net是baidu.com的TLD domain。
 	public static int USELESS = -1;
 	//public static int BLACKLIST = -2;
 
@@ -314,14 +316,16 @@ public class DomainManager {
 			return true;
 		}
 		for (String domain:certDomains) {
-			if (domainType(domain) == DomainManager.SUB_DOMAIN) {
+			int type = domainType(domain);
+			if (type == DomainManager.SUB_DOMAIN || type == DomainManager.TLD_DOMAIN) {
 				return true;
 			}
 		}
 		return false;
 	}
 
-	public void AddToRootDomainMap(String key,String value) {
+	@Deprecated //不就等于put操作吗
+	private void AddToRootDomainMap(String key,String value) {
 		if (this.rootDomainMap.containsKey(key) && this.rootDomainMap.containsValue(value)) {
 			//do nothing
 		}else {
@@ -332,6 +336,21 @@ public class DomainManager {
 		//2\或者主动调用显示和保存的函数直接完成，不经过监听器。
 		//GUI.getDomainPanel().showToDomainUI();
 		//DomainPanel.autoSave();
+	}
+	
+	/**
+	 * 将一个域名作为rootdomain加到map中，如果autoSub为true，就自动截取。比如 www.baidu.com-->baidu.com。
+	 * 否则不截取
+	 * @param enteredRootDomain
+	 * @param autoSub
+	 */
+	public void addRootDomain(String enteredRootDomain,boolean autoSub) {
+		enteredRootDomain = cleanDomain(enteredRootDomain);
+		if (autoSub) {
+			enteredRootDomain = InternetDomainName.from(enteredRootDomain).topPrivateDomain().toString();
+		}
+        String keyword = enteredRootDomain.substring(0, enteredRootDomain.indexOf("."));
+        this.rootDomainMap.put(enteredRootDomain,keyword);
 	}
 
 	public void addToDomainOject(String domain){//仅用于鼠标右键，所以加了数据的展示和保存逻辑在里面
@@ -405,17 +424,34 @@ public class DomainManager {
 			//InternetDomainName.from("www.jd.local").topPrivateDomain()//Not under a public suffix: www.jd.local
 		}
 	}
-
-	public int domainType(String domain) {
-		try {
+	
+	public static String cleanDomain(String domain) {
+		if (domain == null){
+			return null;
+		}
+		domain = domain.toLowerCase().trim();
+		if (domain.startsWith("http://")|| domain.startsWith("https://")) {
+			try {
+				domain = new URL(domain).getHost();
+			} catch (MalformedURLException e) {
+				return null;
+			}
+		}else {
 			if (domain.contains(":")) {//处理带有端口号的域名
 				domain = domain.substring(0,domain.indexOf(":"));
 			}
+		}
 
-			domain = domain.toLowerCase().trim();
-			if (domain.endsWith(".")) {
-				domain = domain.substring(0,domain.length()-1);
-			}
+		if (domain.endsWith(".")) {
+			domain = domain.substring(0,domain.length()-1);
+		}
+		
+		return domain;
+	}
+
+	public int domainType(String domain) {
+		try {
+			domain = cleanDomain(domain);
 
 			if (Commons.isValidIP(domain)) {//https://202.77.129.30
 				return DomainManager.IP_ADDRESS;
@@ -428,11 +464,16 @@ public class DomainManager {
 			}
 
 			for (String rootdomain:fetchRootDomainSet()) {
-				if (rootdomain.contains(".")&&!rootdomain.endsWith(".")&&!rootdomain.startsWith("."))
-				{
-					if (domain.endsWith("."+rootdomain)||domain.equalsIgnoreCase(rootdomain)){
-						return DomainManager.SUB_DOMAIN;
-					}
+				rootdomain  = cleanDomain(rootdomain);
+				if (domain.endsWith("."+rootdomain)||domain.equalsIgnoreCase(rootdomain)){
+					return DomainManager.SUB_DOMAIN;
+				}
+			}
+
+			for (String rootdomain:fetchRootDomainSet()) {
+				rootdomain  = cleanDomain(rootdomain);
+				if (isTLDDomain(domain,rootdomain)) {
+					return DomainManager.TLD_DOMAIN;
 				}
 			}
 
@@ -479,6 +520,32 @@ public class DomainManager {
 		}
 		return false;
 	}
+	
+	/**
+	 * 是否是TLD域名。比如 baidu.net 是baidu.com的TLD域名
+	 * 注意：www.baidu.com不是baidu.com的TLD域名，但是是子域名！！！
+	 * @param domain
+	 * @param rootDomain
+	 */
+	public static boolean isTLDDomain(String domain,String rootDomain) {
+		String suffixOfDomain = InternetDomainName.from(domain).publicSuffix().toString();
+		String suffixOfRootDomain = InternetDomainName.from(rootDomain).publicSuffix().toString();
+		if (suffixOfDomain.equalsIgnoreCase(suffixOfRootDomain)) {
+			return false;
+		}
+		String tmpDomain = Commons.replaceLast(domain, suffixOfDomain, "");
+		String tmpRootdomain = Commons.replaceLast(rootDomain, suffixOfRootDomain, "");
+		if (tmpDomain.endsWith("."+tmpRootdomain) || tmpDomain.equalsIgnoreCase(tmpRootdomain)) {
+			return true;
+		}
+		return false;
+	}
+
+	public static void test(){
+		DomainManager tmp = new DomainManager();
+		tmp.addRootDomain("shopee-pay.sg",true);
+		System.out.println(tmp.domainType("test-mgadm.manage.whisper.shopee-pay.sg"));
+	}
 
 	public static void main(String args[]) {
 		/*		String Host ="www.baidu.com";
@@ -498,6 +565,8 @@ public class DomainManager {
 		//		System.out.println(InternetDomainName.from("www.jd.local").publicSuffix());
 		//		System.out.println(InternetDomainName.from("www.jd.local").topPrivateDomain());
 		//		System.out.println(whois("jd.ru"));
+		//System.out.println(isTLDDomain("airpay.ocha.in.th","airpay.ocha.in.th"));
+		test();
 	}
 
 }
