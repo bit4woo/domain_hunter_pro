@@ -354,15 +354,17 @@ public class DomainManager {
 	}
 
 	public void addToDomainOject(String domain){//仅用于鼠标右键，所以加了数据的展示和保存逻辑在里面
-		relatedDomainSet.add(domain);
-		relatedToRoot();
+		subDomainSet.add(domain);
+		addRootDomain(domain,true);
 		GUI.getDomainPanel().showToDomainUI();
 		DomainPanel.autoSave();
 	}
 
 	public void addToDomainOject(Set<String> domains){//仅用于鼠标右键，所以加了数据的展示和保存逻辑在里面
-		relatedDomainSet.addAll(domains);
-		relatedToRoot();
+		subDomainSet.addAll(domains);
+		for (String domain:domains) {
+			addRootDomain(domain,true);
+		}
 		GUI.getDomainPanel().showToDomainUI();
 		DomainPanel.autoSave();
 	}
