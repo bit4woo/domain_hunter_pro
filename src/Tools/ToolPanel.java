@@ -91,7 +91,6 @@ public class ToolPanel extends JPanel {
 	public static JTextField textFieldPortScanner;
 	public static JTextField textFieldDirSearch;
 	public static JTextField textFieldDirBruteDict;
-	public static JTextField textFieldPython;
 	public static JTextField textFieldElasticURL;
 	public static JTextField textFieldElasticUserPass;
 	public static JTextField textFieldUploadApiToken;
@@ -143,7 +142,6 @@ public class ToolPanel extends JPanel {
 		}
 		textFieldPortScanner.setText(lineConfig.getNmapPath());
 		textFieldDirSearch.setText(lineConfig.getDirSearchPath());
-		textFieldPython.setText(lineConfig.getPython3Path());
 		textFieldDirBruteDict.setText(lineConfig.getBruteDict());
 		textFieldElasticURL.setText(lineConfig.getElasticApiUrl());
 		textFieldElasticUserPass.setText(lineConfig.getElasticUsernameAndPassword());
@@ -159,7 +157,6 @@ public class ToolPanel extends JPanel {
 		lineConfig.setBrowserPath(BrowserPath.getText());
 		lineConfig.setDirSearchPath(textFieldDirSearch.getText());
 		lineConfig.setBruteDict(textFieldDirBruteDict.getText());
-		lineConfig.setPython3Path(textFieldPython.getText());
 		lineConfig.setNmapPath(textFieldPortScanner.getText());
 		lineConfig.setElasticApiUrl(textFieldElasticURL.getText().trim());
 		lineConfig.setElasticUsernameAndPassword(textFieldElasticUserPass.getText());
@@ -929,7 +926,7 @@ public class ToolPanel extends JPanel {
 		BrowserPath.setColumns(50);
 		BrowserPath.getDocument().addDocumentListener(new textFieldListener());
 
-		JLabel lblPortScanner = new JLabel("PortScanner Path:");
+		JLabel lblPortScanner = new JLabel("PortScanner Command:");
 		lblPortScanner.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -954,7 +951,8 @@ public class ToolPanel extends JPanel {
 		gbc_textFieldPortScanner.gridx = 1;
 		gbc_textFieldPortScanner.gridy = 1;
 		fourFourthPanel.add(textFieldPortScanner, gbc_textFieldPortScanner);
-
+		
+		/*
 		JLabel lblPythonPath = new JLabel("Python3 Path:");
 		GridBagConstraints gbc_lblPythonPath = new GridBagConstraints();
 		gbc_lblPythonPath.anchor = GridBagConstraints.WEST;
@@ -971,8 +969,17 @@ public class ToolPanel extends JPanel {
 		gbc_textFieldPython.gridx = 1;
 		gbc_textFieldPython.gridy = 2;
 		fourFourthPanel.add(textFieldPython, gbc_textFieldPython);
+		*/
 
-		JLabel lblDirSearch = new JLabel("DirSearch Path:");
+		JLabel lblDirSearch = new JLabel("DirSearch Command:");
+		lblDirSearch.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2){//左键双击
+					textFieldDirSearch.setText(LineConfig.defaultDirSearch);
+				}
+			}
+		});
 		GridBagConstraints gbc_lblDirSearch = new GridBagConstraints();
 		gbc_lblDirSearch.anchor = GridBagConstraints.WEST;
 		gbc_lblDirSearch.insets = new Insets(0, 0, 5, 5);

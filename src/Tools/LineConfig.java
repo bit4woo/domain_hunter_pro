@@ -34,15 +34,14 @@ public class LineConfig {
 	//对于内外网域名或IP的处理分为2种情况：
 	//1、外网模式，即在自己公司挖掘别人公司的漏洞。这个是时候收集到的域名如果是解析到私有IP的，仅仅显示就可以了；如果是私有IP地址则直接忽略。
 	//2、内网模式，即在自己公司挖掘自己公司的漏洞。这个时候所有域名一视同仁，全部和外网域名一样进行请求并获取title，因为内网的IP也是可以访问的。
-	public static final String winDefaultPython = "C:\\Python37\\python.exe";
 	public static final String winDefaultBrowserPath = "C:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe";
 	public static final String defaultNmap = "nmap -Pn -sT -sV --min-rtt-timeout 1ms "
 			+ "--max-rtt-timeout 1000ms --max-retries 0 --max-scan-delay 0 --min-rate 3000 {host}";
-	public static final String macDefaultPython = "/usr/bin/python";
+	public static final String defaultDirSearch = "python3 dirsearch.py -t 8 --proxy=127.0.0.1:8080 "
+			+ "--random-agent -e * -f -x 400,404,500,502,503,514,550,564 -u {url}";
 	public static final String macDefaultBrowserPath = "/Applications/Firefox.app/Contents/MacOS/firefox";
 
-	private String python3Path = winDefaultPython;
-	private String dirSearchPath = "D:\\github\\dirsearch\\dirsearch.py";
+	private String dirSearchPath = defaultDirSearch;
 	private String browserPath = "C:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe";
 	private String nmapPath =defaultNmap;
 	private String bruteDict ="D:\\github\\webdirscan\\dict\\dict.txt";
@@ -57,7 +56,6 @@ public class LineConfig {
 
 	LineConfig(){
 		if (Commons.isMac()) {
-			python3Path = macDefaultPython;
 			browserPath = macDefaultBrowserPath;
 		}
 	}
@@ -119,14 +117,6 @@ public class LineConfig {
 
 	public static void setIgnoreHttpsIfHttpOK(boolean ignoreHttpsIfHttpOK) {
 		ToolPanel.ignoreHTTPS.setSelected(ignoreHttpsIfHttpOK);
-	}
-
-	public String getPython3Path() {
-		return python3Path;
-	}
-
-	public void setPython3Path(String python3Path) {
-		this.python3Path = python3Path;
 	}
 
 	public String getDirSearchPath() {

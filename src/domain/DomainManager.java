@@ -530,8 +530,15 @@ public class DomainManager {
 	 * @param rootDomain
 	 */
 	public static boolean isTLDDomain(String domain,String rootDomain) {
-		String suffixOfDomain = InternetDomainName.from(domain).publicSuffix().toString();
-		String suffixOfRootDomain = InternetDomainName.from(rootDomain).publicSuffix().toString();
+		String suffixOfDomain;
+		String suffixOfRootDomain;
+		try {
+			suffixOfDomain = InternetDomainName.from(domain).publicSuffix().toString();
+			suffixOfRootDomain = InternetDomainName.from(rootDomain).publicSuffix().toString();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
 		if (suffixOfDomain.equalsIgnoreCase(suffixOfRootDomain)) {
 			return false;
 		}
