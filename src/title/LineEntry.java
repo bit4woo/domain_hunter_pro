@@ -458,10 +458,11 @@ Content-Type: text/html;charset=UTF-8
 		}
 		title = title.replaceAll("<.*?>", "");
 
-		if (statuscode == 302 || statuscode == 301) {
+		//https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Redirections
+		if (statuscode >= 300 && statuscode <= 308) {
 			String Locationurl = getHeaderValueOf(false,"Location");
 			if (null != Locationurl) {
-				title  = title +" --> "+Locationurl;
+				title  = " --> "+Locationurl;
 			}
 		}
 		return title;
