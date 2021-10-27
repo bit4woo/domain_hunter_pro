@@ -2,6 +2,21 @@ package toElastic;
 
 import com.google.gson.Gson;
 
+/**
+ * {
+  "product_type": 0,
+  "type": 0,
+  "env": 0,
+  "level": 0,
+  "title": "string",
+  "status": 0,
+  "label": "string",
+  "tags": "string",
+  "name": "string",
+  "description": "string",
+  "references": "string"
+}
+ */
 public class VMPEntry {
 	int product_type =2;//必填
 	int type = 10; //资产类型：0未知，1服务器，2站点portal，3代码仓库，4APP，10other
@@ -11,6 +26,10 @@ public class VMPEntry {
 	String name = ""; //资产名称，可以是ip，域名，网址等
 	String description = "burp";// # 资产描述，关于资产相关信息可以拼接为本字段
 	String references = "burp";//# 参考信息
+	String label = "";
+	String tags = "";  //可以存放Server字段
+	String title = ""; //web title
+	int status = 0; //web status code
 
 	public VMPEntry(String hostOrUrl,String title){
 		hostOrUrl = hostOrUrl.toLowerCase().trim();
@@ -33,10 +52,9 @@ public class VMPEntry {
 		hostOrUrl = hostOrUrl.toLowerCase().trim();
 		name = hostOrUrl;
 		type = 2;
-		
-		description = "title: "+title+System.lineSeparator()
-		+ "IP: " + IPStr+System.lineSeparator()
-		+ "Server: "+headerServer;
+		this.title = title;
+		tags = headerServer;
+		description = "IP: " + IPStr+System.lineSeparator();
 		if (description.equals("")) {
 			description = "from burp";
 		}
@@ -44,5 +62,10 @@ public class VMPEntry {
 
 	public  String toJson() {
 		return new Gson().toJson(this,VMPEntry.class);
+	}
+	
+	public static void main(String[] args) {
+		String tmp = new VMPEntry("shopee.com","shopee offical website").toJson();
+		System.out.println(tmp);
 	}
 }
