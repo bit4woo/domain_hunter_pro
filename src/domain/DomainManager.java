@@ -344,29 +344,14 @@ public class DomainManager {
 	 * @param enteredRootDomain
 	 * @param autoSub
 	 */
-	public void addRootDomain(String enteredRootDomain,boolean autoSub) {
+	public void addToRootDomainAndSubDomain(String enteredRootDomain,boolean autoSub) {
 		enteredRootDomain = cleanDomain(enteredRootDomain);
+		subDomainSet.add(enteredRootDomain);
 		if (autoSub) {
 			enteredRootDomain = InternetDomainName.from(enteredRootDomain).topPrivateDomain().toString();
 		}
         String keyword = enteredRootDomain.substring(0, enteredRootDomain.indexOf("."));
         this.rootDomainMap.put(enteredRootDomain,keyword);
-	}
-
-	public void addToDomainOject(String domain){//仅用于鼠标右键，所以加了数据的展示和保存逻辑在里面
-		subDomainSet.add(domain);
-		addRootDomain(domain,true);
-		GUI.getDomainPanel().showToDomainUI();
-		DomainPanel.autoSave();
-	}
-
-	public void addToDomainOject(Set<String> domains){//仅用于鼠标右键，所以加了数据的展示和保存逻辑在里面
-		subDomainSet.addAll(domains);
-		for (String domain:domains) {
-			addRootDomain(domain,true);
-		}
-		GUI.getDomainPanel().showToDomainUI();
-		DomainPanel.autoSave();
 	}
 
 	public void relatedToRoot() {
@@ -552,7 +537,7 @@ public class DomainManager {
 
 	public static void test(){
 		DomainManager tmp = new DomainManager();
-		tmp.addRootDomain("shopee-pay.sg",true);
+		tmp.addToRootDomainAndSubDomain("shopee-pay.sg",true);
 		System.out.println(tmp.domainType("test-mgadm.manage.whisper.shopee-pay.sg"));
 	}
 

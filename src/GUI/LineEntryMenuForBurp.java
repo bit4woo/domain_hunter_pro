@@ -522,14 +522,11 @@ public class LineEntryMenuForBurp{
 
 	public static void addToDomain(IHttpRequestResponse[] messages) {
 
-		Set<String> domains = new HashSet<String>();
+		DomainManager domainResult = DomainPanel.getDomainResult();
 		for(IHttpRequestResponse message:messages) {
 			String host = message.getHttpService().getHost();
-			domains.add(host);
+			domainResult.addToRootDomainAndSubDomain(host,true);
 		}
-
-		DomainManager domainResult = DomainPanel.getDomainResult();
-		domainResult.addToDomainOject(domains);
 		DomainPanel.autoSave();
 	}
 
@@ -561,7 +558,7 @@ public class LineEntryMenuForBurp{
 			}
 
 			String host = message.getHttpService().getHost();
-			DomainPanel.getDomainResult().addToDomainOject(host); //add domain
+			DomainPanel.getDomainResult().addToRootDomainAndSubDomain(host,true); //add domain
 
 		}
 	}

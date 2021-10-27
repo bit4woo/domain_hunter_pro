@@ -101,7 +101,7 @@ public class TextAreaMenu extends JPopupMenu {
 				DomainManager domainResult = DomainPanel.getDomainResult();
 				for (String item:selectedItems) {
 					try {
-						domainResult.addToDomainOject(item);
+						domainResult.addToRootDomainAndSubDomain(item,true);
 					} catch (Exception e2) {
 						e2.printStackTrace(stderr);
 					}

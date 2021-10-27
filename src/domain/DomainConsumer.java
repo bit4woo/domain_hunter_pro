@@ -76,7 +76,7 @@ public class DomainConsumer extends Thread {
 			HashSet<String> tmpTLDDomains = new HashSet<String>();
 			moveQueueToSet(BurpExtender.TLDDomainQueue,tmpTLDDomains);
 			for (String domain:tmpTLDDomains) {
-				DomainPanel.domainResult.addRootDomain(domain, false);
+				DomainPanel.domainResult.addToRootDomainAndSubDomain(domain, false);
 			}
 
 			HashSet<String> newSubdomains = new HashSet<String>();
@@ -88,8 +88,8 @@ public class DomainConsumer extends Thread {
 			if (newSubdomains.size()>0){
 				BurpExtender.getStdout().println(String.format("~~~~~~~~~~~~~%s subdomains added!~~~~~~~~~~~~~",newSubdomains.size()));
 				BurpExtender.getStdout().println(String.join(System.lineSeparator(), newSubdomains));
-				DomainPanel.autoSave();//进行一次主动保存
 			}
+            DomainPanel.autoSave();
 		}
 	}
 

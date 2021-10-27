@@ -301,7 +301,7 @@ public class DomainPanel extends JPanel {
                             } else if (type == DomainManager.SIMILAR_DOMAIN) {
                                 domainResult.getSimilarDomainSet().add(line);
                             } else if (type == DomainManager.TLD_DOMAIN) {
-                                domainResult.addRootDomain(line, true);
+                                domainResult.addToRootDomainAndSubDomain(line, true);
                                 domainResult.getSubDomainSet().add(line);
                             } else {
                                 stdout.println("import skip " + line);
@@ -594,7 +594,7 @@ public class DomainPanel extends JPanel {
                     JOptionPane.showMessageDialog(null, "you should create project db file first");
                 } else {
                     String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
-                    domainResult.addRootDomain(enteredRootDomain,true);
+                    domainResult.addToRootDomainAndSubDomain(enteredRootDomain,true);
                     showToDomainUI();
                     autoSave();
                 }
@@ -612,7 +612,7 @@ public class DomainPanel extends JPanel {
                     JOptionPane.showMessageDialog(null, "you should create project db file first");
                 } else {
                     String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
-                    domainResult.addRootDomain(enteredRootDomain,false);
+                    domainResult.addToRootDomainAndSubDomain(enteredRootDomain,false);
                     showToDomainUI();
                     autoSave();
                 }
@@ -693,7 +693,7 @@ public class DomainPanel extends JPanel {
                     } else if (type == DomainManager.SIMILAR_DOMAIN) {
                         newSimilarDomainSet.add(domain);
                     } else if (type == DomainManager.TLD_DOMAIN) {
-                        domainResult.addRootDomain(domain, true);
+                        domainResult.addToRootDomainAndSubDomain(domain, true);
                         newSubDomainSet.add(domain);
                         domainResult.getRelatedDomainSet().remove(domain);
                     }
