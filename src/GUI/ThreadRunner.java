@@ -140,7 +140,9 @@ public class ThreadRunner extends Thread{
 			stdout.println("~~~~~~~~~~~~~Start threading Runner~~~~~~~~~~~~~ total task number: "+lineEntryQueue.size());
 		}
 		
-		if (changeType != ChangeHostInHeader) {
+		if (changeType == ChangeHostInHeader) {
+			changeraw = true;
+		}else {
 			changeraw = changeRaw();
 		}
 		
