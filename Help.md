@@ -1,3 +1,6 @@
+视频教程地址： https://www.bilibili.com/video/BV1ZL4y1i71D/
+
+
 ### 1. change HttpService + Host in header
 
 修改的内容包括 protocol host port （即burp的概念中的httpService）。**请求数据包中的Host字段对应进行修改**。即对domain hunter pro中所有目标资产做一次相同的请求。
