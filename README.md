@@ -18,6 +18,94 @@
 
 mmmark （很多核心思路都来自他宝贵的实战经验！）
 
+## 自行打包使用最新功能
+
+1、如果使用过GitHub Packages，直接运行如下命令即可
+
+```
+git clone https://github.com/bit4woo/domain_hunter_pro
+cd domain_hunter_pro
+mvn package
+```
+
+可以在domain_hunter_pro/target/路径下找到对应Jar包。
+
+
+
+2、如果没有使用过GitHub Packages，则需要创建或修改/Users/xxxxxx/.m2/setttings.xml 文件
+
+https://github.com/settings/tokens
+
+```xml
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                      http://maven.apache.org/xsd/settings-1.0.0.xsd">
+
+  <activeProfiles>
+    <activeProfile>github</activeProfile>
+  </activeProfiles>
+
+  <profiles>
+    <profile>
+      <id>github</id>
+      <repositories>
+        <repository>
+          <id>central</id>
+          <url>https://repo1.maven.org/maven2</url>
+        </repository>
+        <repository>
+          <id>github</id>
+          <url>https://maven.pkg.github.com/bit4woo/*</url>
+          <snapshots>
+            <enabled>true</enabled>
+          </snapshots>
+        </repository>
+      </repositories>
+    </profile>
+  </profiles>
+
+  <servers>
+    <server>
+      <id>github</id>
+      <username>你的GitHub用户名</username>
+      <password>你的GitHub access token 通过https://github.com/settings/tokens获取</password>
+    </server>
+  </servers>
+
+    <properties>  
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>  
+        <maven.compiler.encoding>UTF-8</maven.compiler.encoding>  
+    </properties> 
+</settings>
+
+```
+
+`</repository>` 和`<server>` 中的内容是你需要配置的。` <repository>`中的内容你可以直接复制粘贴。
+
+```xml
+       <repository>
+          <id>github</id>
+          <url>https://maven.pkg.github.com/bit4woo/*</url>
+          <snapshots>
+            <enabled>true</enabled>
+          </snapshots>
+        </repository>
+```
+而`<server>` 中的内容就必须用自己的了。通过https://github.com/settings/tokens获取你的GitHub access token
+
+```
+    <server>
+      <id>github</id>
+      <username>你的GitHub用户名</username>
+      <password>你的GitHub access token 通过https://github.com/settings/tokens获取</password>
+    </server>
+```
+
+完成后再进行步骤一的操作即可。
+
+
+
 ## 功能介绍
 
 ### Domains tab：目标管理和信息收集
@@ -117,5 +205,4 @@ Title功能搜索
 ### Tools Tab功能介绍
 
 ![image-20201217114341047](img/README/image-20201217114341047.png)
-
 
