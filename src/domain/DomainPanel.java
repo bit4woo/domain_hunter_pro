@@ -683,6 +683,7 @@ public class DomainPanel extends JPanel {
 
                 for (String domain : tmpDomains) {
                 	domain = DomainManager.cleanDomain(domain);
+                	if (domain == null) continue;
 
                     int type = domainResult.domainType(domain);
                     if (type == DomainManager.SUB_DOMAIN || type == DomainManager.IP_ADDRESS)

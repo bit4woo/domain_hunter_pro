@@ -346,6 +346,7 @@ public class DomainManager {
 	 */
 	public void addToRootDomainAndSubDomain(String enteredRootDomain,boolean autoSub) {
 		enteredRootDomain = cleanDomain(enteredRootDomain);
+		if (enteredRootDomain == null) return;
 		subDomainSet.add(enteredRootDomain);
 		if (autoSub) {
 			enteredRootDomain = InternetDomainName.from(enteredRootDomain).topPrivateDomain().toString();
@@ -515,24 +516,28 @@ public class DomainManager {
 	 * @param rootDomain
 	 */
 	public static boolean isTLDDomain(String domain,String rootDomain) {
-		String suffixOfDomain;
-		String suffixOfRootDomain;
 		try {
-			suffixOfDomain = InternetDomainName.from(domain).publicSuffix().toString();
-			suffixOfRootDomain = InternetDomainName.from(rootDomain).publicSuffix().toString();
+			InternetDomainName suffixDomain = InternetDomainName.from(domain).publicSuffix();
+			InternetDomainName suffixRootDomain = InternetDomainName.from(rootDomain).publicSuffix();
+			if (suffixDomain != null && suffixRootDomain != null){
+				String suffixOfDomain = suffixDomain.toString();
+				String suffixOfRootDomain = suffixRootDomain.toString();
+				if (suffixOfDomain.equalsIgnoreCase(suffixOfRootDomain)) {
+					return false;
+				}
+				String tmpDomain = Commons.replaceLast(domain, suffixOfDomain, "");
+				String tmpRootdomain = Commons.replaceLast(rootDomain, suffixOfRootDomain, "");
+				if (tmpDomain.endsWith("."+tmpRootdomain) || tmpDomain.equalsIgnoreCase(tmpRootdomain)) {
+					return true;
+				}
+			}
+			return false;
+		}catch (java.lang.IllegalArgumentException e){
+			return false;
 		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
 		}
-		if (suffixOfDomain.equalsIgnoreCase(suffixOfRootDomain)) {
-			return false;
-		}
-		String tmpDomain = Commons.replaceLast(domain, suffixOfDomain, "");
-		String tmpRootdomain = Commons.replaceLast(rootDomain, suffixOfRootDomain, "");
-		if (tmpDomain.endsWith("."+tmpRootdomain) || tmpDomain.equalsIgnoreCase(tmpRootdomain)) {
-			return true;
-		}
-		return false;
 	}
 
 	public static void test(){
