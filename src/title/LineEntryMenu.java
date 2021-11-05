@@ -855,37 +855,44 @@ public class LineEntryMenu extends JPopupMenu {
 
 		this.addSeparator();
 
-		this.add(addHostsToScope);
-		this.add(doActiveScan);
-		this.add(doPortScan);
-		this.add(dirSearchItem);
-		this.add(doGateWayByPassCheck);
+		JMenu DoMenu = new JMenu("Do Something");
+		this.add(DoMenu);
+		//burp相关行为
+		DoMenu.add(addHostsToScope);
+		DoMenu.add(SendToRepeater);
+		DoMenu.add(SendToRepeaterWithCookieItem);
+		DoMenu.add(doActiveScan);
+		
+		DoMenu.addSeparator();
+		//外部程序相关行为
+		DoMenu.add(openURLwithBrowserItem);
+		DoMenu.add(doPortScan);
+		DoMenu.add(dirSearchItem);
+		DoMenu.add(doGateWayByPassCheck);
 		//this.add(iconHashItem);
 
-		this.addSeparator();
+		JMenu SearchMenu = new JMenu("Search Something");
+		this.add(SearchMenu);
+		SearchMenu.add(googleSearchItem);
+		SearchMenu.add(SearchOnGithubItem);
+		SearchMenu.add(SearchOnHunterItem);
+		SearchMenu.add(SearchOnFoFaItem);
+		SearchMenu.add(SearchOnFoFaWithIconhashItem);
+		SearchMenu.add(SearchOnShodanItem);
+		SearchMenu.add(SearchOnShodanWithIconhashItem);
 
-		this.add(googleSearchItem);
-		this.add(SearchOnGithubItem);
-		this.add(SearchOnHunterItem);
-		this.add(SearchOnFoFaItem);
-		this.add(SearchOnFoFaWithIconhashItem);
-		this.add(SearchOnShodanItem);
-		this.add(SearchOnShodanWithIconhashItem);
-
-		this.addSeparator();
-
-		this.add(openURLwithBrowserItem);
-		this.add(copyHostItem);
-		this.add(copyHostAndPortItem);
-		this.add(copyIPItem);
-		this.add(copyURLItem);
-		this.add(copyCommonURLItem);
-		this.add(copyLocationURLItem);
-		this.add(copyCDNAndCertInfoItem);
-		this.add(copyIconhashItem);
-		this.add(SendToRepeater);
-		this.add(SendToRepeaterWithCookieItem);
-
+		JMenu CopyMenu = new JMenu("Copy Something");
+		this.add(CopyMenu);
+		
+		CopyMenu.add(copyHostItem);
+		CopyMenu.add(copyHostAndPortItem);
+		CopyMenu.add(copyIPItem);
+		CopyMenu.add(copyURLItem);
+		CopyMenu.add(copyCommonURLItem);
+		CopyMenu.add(copyLocationURLItem);
+		CopyMenu.add(copyCDNAndCertInfoItem);
+		CopyMenu.add(copyIconhashItem);
+		
 		this.addSeparator();
 
 		this.add(removeItem);
