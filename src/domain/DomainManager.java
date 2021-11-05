@@ -353,7 +353,8 @@ public class DomainManager {
 			enteredRootDomain = InternetDomainName.from(enteredRootDomain).topPrivateDomain().toString();
 		}
         String keyword = enteredRootDomain.substring(0, enteredRootDomain.indexOf("."));
-        this.rootDomainMap.put(enteredRootDomain,keyword);
+        rootDomainMap.put(enteredRootDomain,keyword);
+        relatedDomainSet.remove(enteredRootDomain);//刷新时不能清空，所有要有删除操作。
 	}
 	
 	/**
@@ -376,7 +377,6 @@ public class DomainManager {
             return true;
         } else if (type == DomainManager.TLD_DOMAIN) {
             addToRootDomainAndSubDomain(domain, true);
-            relatedDomainSet.remove(domain);//刷新时不能清空，所有要有删除操作。
             return true;
         } else if (type == DomainManager.PACKAGE_NAME) {
         	PackageNameSet.add(domain);
@@ -401,6 +401,12 @@ public class DomainManager {
 		subDomainSet.clear();
 		similarDomainSet.clear();
 		PackageNameSet.clear();
+		for (String domain: tmpDomains) {//应当先做TLD域名的添加，这样可以丰富Root域名，避免数据损失遗漏
+			if (domainType(domain) == DomainManager.TLD_DOMAIN) {
+				addToRootDomainAndSubDomain(domain,true);
+			};
+		}
+		
 		for (String domain: tmpDomains) {
 			addIfValid(domain);
 		}
