@@ -339,6 +339,7 @@ public class DomainManager {
 	}
 	
 	/**
+	 * 这里是任何域名都强行直接添加。
 	 * 将一个域名作为rootdomain加到map中，如果autoSub为true，就自动截取。比如 www.baidu.com-->baidu.com。
 	 * 否则不截取
 	 * @param enteredRootDomain
@@ -353,6 +354,56 @@ public class DomainManager {
 		}
         String keyword = enteredRootDomain.substring(0, enteredRootDomain.indexOf("."));
         this.rootDomainMap.put(enteredRootDomain,keyword);
+	}
+	
+	/**
+	 * 根据已有配置进行添加，不是强行直接添加
+	 * @param enteredRootDomain
+	 * @return boolean 执行了添加返回true，没有执行添加返回false。
+	 */
+	public boolean addIfValid(String domain) {
+		domain = cleanDomain(domain);
+    	if (domain == null) return false;
+
+        int type = domainType(domain);
+        if (type == DomainManager.SUB_DOMAIN || type == DomainManager.IP_ADDRESS)
+        //包含手动添加的IP
+        {
+            subDomainSet.add(domain);//子域名可能来自相关域名和相似域名。
+            return true;
+        } else if (type == DomainManager.SIMILAR_DOMAIN) {
+            similarDomainSet.add(domain);
+            return true;
+        } else if (type == DomainManager.TLD_DOMAIN) {
+            addToRootDomainAndSubDomain(domain, true);
+            relatedDomainSet.remove(domain);//刷新时不能清空，所有要有删除操作。
+            return true;
+        } else if (type == DomainManager.PACKAGE_NAME) {
+        	PackageNameSet.add(domain);
+        	return true;
+        } //Email的没有处理
+        return false;
+	}
+	
+	/**
+	 * 根据规则重新过一遍所有的数据
+	 * 相关域名:来自证书信息不能清空。
+	 * 子域名、相似域名、包名 都重新识别归类。
+	 * Email不做变化
+	 */
+	public void freshBaseRule() {
+		Set<String> tmpDomains = new HashSet<>();
+		tmpDomains.addAll(subDomainSet);
+		tmpDomains.addAll(similarDomainSet);
+		tmpDomains.addAll(relatedDomainSet);
+		tmpDomains.addAll(PackageNameSet);
+		
+		subDomainSet.clear();
+		similarDomainSet.clear();
+		PackageNameSet.clear();
+		for (String domain: tmpDomains) {
+			addIfValid(domain);
+		}
 	}
 
 	public void relatedToRoot() {

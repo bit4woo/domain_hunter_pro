@@ -294,15 +294,8 @@ public class DomainPanel extends JPanel {
                         File file = fc.getSelectedFile();
                         List<String> lines = Files.readLines(file, Charsets.UTF_8);
                         for (String line : lines) {
-                            line = line.trim();
-                            int type = domainResult.domainType(line);
-                            if (type == DomainManager.SUB_DOMAIN) {
-                                domainResult.getSubDomainSet().add(line);
-                            } else if (type == DomainManager.SIMILAR_DOMAIN) {
-                                domainResult.getSimilarDomainSet().add(line);
-                            } else if (type == DomainManager.TLD_DOMAIN) {
-                                domainResult.addToRootDomainAndSubDomain(line, true);
-                                domainResult.getSubDomainSet().add(line);
+                        	if (domainResult.addIfValid(line)) {
+                        		stdout.println("import " + line +" succeed!");
                             } else {
                                 stdout.println("import skip " + line);
                             }
@@ -674,35 +667,7 @@ public class DomainPanel extends JPanel {
                 //to clear sub and similar domains
                 DomainConsumer.QueueToResult();
                 domainResult.getEmailSet().addAll(collectEmails());
-                Set<String> tmpDomains = domainResult.getSubDomainSet();
-                Set<String> newSubDomainSet = new HashSet<>();
-                Set<String> newSimilarDomainSet = new HashSet<String>();
-                
-                tmpDomains.addAll(domainResult.getSimilarDomainSet());
-                tmpDomains.addAll(domainResult.getRelatedDomainSet());
-
-                for (String domain : tmpDomains) {
-                	domain = DomainManager.cleanDomain(domain);
-                	if (domain == null) continue;
-
-                    int type = domainResult.domainType(domain);
-                    if (type == DomainManager.SUB_DOMAIN || type == DomainManager.IP_ADDRESS)
-                    //包含手动添加的IP
-                    {
-                        newSubDomainSet.add(domain);
-                        domainResult.getRelatedDomainSet().remove(domain);
-                    } else if (type == DomainManager.SIMILAR_DOMAIN) {
-                        newSimilarDomainSet.add(domain);
-                    } else if (type == DomainManager.TLD_DOMAIN) {
-                        domainResult.addToRootDomainAndSubDomain(domain, true);
-                        newSubDomainSet.add(domain);
-                        domainResult.getRelatedDomainSet().remove(domain);
-                    }
-                }
-
-                domainResult.setSubDomainSet(newSubDomainSet);
-                domainResult.setSimilarDomainSet(newSimilarDomainSet);
-
+                domainResult.freshBaseRule();
                 showToDomainUI();
                 autoSave();
             }

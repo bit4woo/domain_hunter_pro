@@ -558,7 +558,7 @@ public class LineEntryMenuForBurp{
 			}
 
 			String host = message.getHttpService().getHost();
-			DomainPanel.getDomainResult().addToRootDomainAndSubDomain(host,true); //add domain
+			DomainPanel.getDomainResult().addIfValid(host); //add domain
 
 		}
 	}
