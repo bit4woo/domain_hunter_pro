@@ -75,7 +75,7 @@ public class DomainConsumer extends Thread {
 			HashSet<String> tmpTLDDomains = new HashSet<String>();
 			moveQueueToSet(BurpExtender.TLDDomainQueue,tmpTLDDomains);
 			for (String domain:tmpTLDDomains) {
-				result.addToRootDomainAndSubDomain(domain, false);
+				result.addToRootDomainAndSubDomain(domain, true);
 			}
 
 			HashSet<String> newSubdomains = new HashSet<String>();

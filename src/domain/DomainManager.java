@@ -599,30 +599,17 @@ public class DomainManager {
 
 	public static void test(){
 		DomainManager tmp = new DomainManager();
-		tmp.addToRootDomainAndSubDomain("shopee-pay.sg",true);
+		tmp.addToRootDomainAndSubDomain("order-admin.test.shopee.in",true);
 		System.out.println(tmp.domainType("test-mgadm.manage.whisper.shopee-pay.sg"));
 	}
 
+	public static void test1(String enteredRootDomain) {
+		enteredRootDomain = InternetDomainName.from(enteredRootDomain).topPrivateDomain().toString();
+		System.out.println(enteredRootDomain);
+	}
 	public static void main(String args[]) {
-		/*		String Host ="www.baidu.com";
-		Set<String> rootdomains = new HashSet<String>();
-		rootdomains.add("baidu.com");
-		Set<String> keywords = new HashSet<String>();
-		keywords.add("baidu");
 
-		int type = new DomainObject("").domainType(Host);
-		System.out.println(type);*/
-
-		//		DomainObject xx = new DomainObject("");
-		//		xx.getRelatedDomainSet().add("xxx.baidu.com");
-		//		System.out.println(xx.getRelatedDomainSet());
-
-
-		//		System.out.println(InternetDomainName.from("www.jd.local").publicSuffix());
-		//		System.out.println(InternetDomainName.from("www.jd.local").topPrivateDomain());
-		//		System.out.println(whois("jd.ru"));
-		//System.out.println(isTLDDomain("airpay.ocha.in.th","airpay.ocha.in.th"));
-		test();
+		test1("order-admin.test.shopee.in");
 	}
 
 }
