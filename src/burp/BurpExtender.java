@@ -232,7 +232,10 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 
 	@Override
 	public void processHttpMessage(int toolFlag, boolean messageIsRequest, IHttpRequestResponse messageInfo) {
-		if (toolFlag == IBurpExtenderCallbacks.TOOL_PROXY && !messageIsRequest) {
+		if ((toolFlag == IBurpExtenderCallbacks.TOOL_PROXY || 
+				toolFlag == IBurpExtenderCallbacks.TOOL_INTRUDER ||
+				toolFlag == IBurpExtenderCallbacks.TOOL_REPEATER)
+				&& !messageIsRequest) {
 			liveinputQueue.add(messageInfo);
 		}
 	}
