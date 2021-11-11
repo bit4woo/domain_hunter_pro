@@ -1,6 +1,7 @@
 package domain;
 
 import GUI.GUI;
+import GUI.ProjectMenu;
 import Tools.ToolPanel;
 import burp.*;
 import com.google.common.base.Charsets;
@@ -81,6 +82,17 @@ public class DomainPanel extends JPanel {
     PrintWriter stdout;
     PrintWriter stderr;
 
+	public static void createOrOpenDB() {
+		Object[] options = { "Create","Open"};
+		int user_input = JOptionPane.showOptionDialog(null, "You should Create or Open a DB file", "Chose Your Action",
+		JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null, options, options[0]);
+		if (user_input == 0) {
+			ProjectMenu.createNewDb(BurpExtender.getGui());
+		}
+		if (user_input == 1) {
+			ProjectMenu.openDb();
+		}
+	}
 
     public DomainPanel() {//构造函数
         this.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -584,7 +596,7 @@ public class DomainPanel extends JPanel {
         addButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (domainResult == null) {
-                    JOptionPane.showMessageDialog(null, "you should create project db file first");
+                	createOrOpenDB();
                 } else {
                     String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
                     domainResult.addToRootDomainAndSubDomain(enteredRootDomain,true);
@@ -602,7 +614,7 @@ public class DomainPanel extends JPanel {
         addButton1.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (domainResult == null) {
-                    JOptionPane.showMessageDialog(null, "you should create project db file first");
+                	createOrOpenDB();
                 } else {
                     String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
                     domainResult.addToRootDomainAndSubDomain(enteredRootDomain,false);

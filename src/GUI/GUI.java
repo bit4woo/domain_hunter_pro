@@ -23,7 +23,7 @@ public class GUI extends JFrame {
 	
 	private PrintWriter stdout;
 	private PrintWriter stderr;
-	public dbFileChooser dbfc = new dbFileChooser();
+	public static dbFileChooser dbfc = new dbFileChooser();
 	
 	private ToolPanel toolPanel;
 

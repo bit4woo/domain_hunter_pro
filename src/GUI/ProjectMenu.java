@@ -23,6 +23,22 @@ import title.TitlePanel;
 
 public class ProjectMenu extends JMenu{
 	GUI gui;
+	
+	public static void createNewDb(GUI gui) {
+		File file = GUI.dbfc.dialog(false);//通过保存对话指定文件，这会是一个空文件。
+		if (null != file) {
+			DomainPanel.setDomainResult(new DomainManager(file.getName()));
+			gui.saveData(file.toString(),true);
+			GUI.LoadData(file.toString());//然后加载，就是一个新的空项目了。
+		}
+	}
+	
+	public static void openDb() {
+		File file = GUI.dbfc.dialog(true);
+		if (null != file) {
+			GUI.LoadData(file.toString());
+		}
+	}
 
 	public ProjectMenu(GUI gui){
 		this.gui = gui;
@@ -32,12 +48,7 @@ public class ProjectMenu extends JMenu{
 		{
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {//实质就是save一个空的项目
-				File file = gui.dbfc.dialog(false);//通过保存对话指定文件，这会是一个空文件。
-				if (null != file) {
-					DomainPanel.setDomainResult(new DomainManager(file.getName()));
-					gui.saveData(file.toString(),true);
-					gui.LoadData(file.toString());//然后加载，就是一个新的空项目了。
-				}
+				createNewDb(gui);
 			}
 		});
 		newMenu.setToolTipText("Create A New Project File(DB File)");
@@ -46,10 +57,7 @@ public class ProjectMenu extends JMenu{
 		JMenuItem openMenu = new JMenuItem(new AbstractAction("Open") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				File file = gui.dbfc.dialog(true);
-				if (null != file) {
-					gui.LoadData(file.toString());
-				}
+				openDb();
 			}
 		});
 		openMenu.setToolTipText("Open Domain Hunter Project File(DB File)");
