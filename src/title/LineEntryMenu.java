@@ -308,9 +308,12 @@ public class LineEntryMenu extends JPopupMenu {
 				}else if (columnName.equalsIgnoreCase("IP")){
 					String ip = firstEntry.getIP();
 					TitlePanel.getTextFieldSearch().setText(ip);
-				}else if (columnName.equalsIgnoreCase("CDN")){
+				}else if (columnName.equalsIgnoreCase("CDN|CertInfo")){
 					String cdn = firstEntry.getCDN();
 					TitlePanel.getTextFieldSearch().setText(cdn);
+				}else if (columnName.equalsIgnoreCase("IconHash")){
+					String hash = firstEntry.getIcon_hash();
+					TitlePanel.getTextFieldSearch().setText(hash);
 				}else {
 					String host = firstEntry.getHost();
 					TitlePanel.getTextFieldSearch().setText(SearchDork.HOST.toString()+":"+host);
@@ -855,7 +858,7 @@ public class LineEntryMenu extends JPopupMenu {
 
 		this.addSeparator();
 
-		JMenu DoMenu = new JMenu("Do Something");
+		JMenu DoMenu = new JMenu("Do");
 		this.add(DoMenu);
 		//burp相关行为
 		DoMenu.add(addHostsToScope);
@@ -871,7 +874,7 @@ public class LineEntryMenu extends JPopupMenu {
 		DoMenu.add(doGateWayByPassCheck);
 		//this.add(iconHashItem);
 
-		JMenu SearchMenu = new JMenu("Search Something");
+		JMenu SearchMenu = new JMenu("Search");
 		this.add(SearchMenu);
 		SearchMenu.add(googleSearchItem);
 		SearchMenu.add(SearchOnGithubItem);
@@ -881,7 +884,7 @@ public class LineEntryMenu extends JPopupMenu {
 		SearchMenu.add(SearchOnShodanItem);
 		SearchMenu.add(SearchOnShodanWithIconhashItem);
 
-		JMenu CopyMenu = new JMenu("Copy Something");
+		JMenu CopyMenu = new JMenu("Copy");
 		this.add(CopyMenu);
 		
 		CopyMenu.add(copyHostItem);
