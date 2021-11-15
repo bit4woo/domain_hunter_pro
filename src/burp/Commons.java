@@ -61,16 +61,19 @@ public class Commons {
 		}
 	}
 
+	/**
+	 * 对于信息收集来说，没有用的文件
+	 * js是有用的
+	 * pdf\doc\excel等也是有用的，可以收集到其中的域名
+	 * rar\zip文件即使其中包含了有用信息，是无法直接读取的
+	 * @param urlpath
+	 * @return
+	 */
 	public static boolean uselessExtension(String urlpath) {
-		Set<String> extendset = new HashSet<String>();
-		extendset.add(".gif");
-		extendset.add(".jpg");
-		extendset.add(".png");
-		extendset.add(".css");//gif,jpg,png,css,woff
-		extendset.add(".woff");
-		Iterator<String> iter = extendset.iterator();
-		while (iter.hasNext()) {
-			if(urlpath.endsWith(iter.next().toString())) {//if no next(), this loop will not break out
+		String extensions = "css|jpeg|gif|jpg|png|rar|zip|svg|jpeg|ico|woff|woff2|ttf|otf";
+		String[] extList = extensions.split("|");
+		for ( String item:extList) {
+			if(urlpath.endsWith("."+item)) {
 				return true;
 			}
 		}
