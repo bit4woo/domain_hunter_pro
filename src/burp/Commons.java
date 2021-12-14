@@ -71,7 +71,7 @@ public class Commons {
 	 */
 	public static boolean uselessExtension(String urlpath) {
 		String extensions = "css|jpeg|gif|jpg|png|rar|zip|svg|jpeg|ico|woff|woff2|ttf|otf";
-		String[] extList = extensions.split("|");
+		String[] extList = extensions.split("\\|");
 		for ( String item:extList) {
 			if(urlpath.endsWith("."+item)) {
 				return true;
@@ -721,8 +721,12 @@ public class Commons {
 		System.out.println(IPSet);
 		System.out.println(CDNSet);
 	}
+	
+	public static void test8() {
+		System.out.println(uselessExtension("abc.css"));
+	}
 
 	public static void main(String args[]) {
-		test7();
+		test8();
 	}
 }
