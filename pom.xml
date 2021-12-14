@@ -7,7 +7,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.bit4woo.burp</groupId>
 	<artifactId>domain_hunter_pro</artifactId>
-	<version>v1.4</version>
+	<version>v1.5</version>
 
 	<!-- <repositories> <repository> <id>jitpack.io</id> <url>https://jitpack.io</url> 
 		</repository> </repositories> -->
