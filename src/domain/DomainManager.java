@@ -10,6 +10,8 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.net.InternetDomainName;
@@ -595,6 +597,38 @@ public class DomainManager {
 			e.printStackTrace();
 			return false;
 		}
+	}
+	
+	public void removeMd5Domain(){
+		Iterator<String> it = subDomainSet.iterator();
+		while (it.hasNext()){
+			String item = it.next();
+			String md5 = isMd5Domain(item);//md5的值加上一个点
+			if (md5.length()==33) {
+				it.remove();
+				subDomainSet.add(item.replace(md5, ""));
+			}
+		}
+		
+		Iterator<String> it1 = similarDomainSet.iterator();
+		while (it1.hasNext()){
+			String item = it1.next();
+			String md5 = isMd5Domain(item);//md5的值加上一个点
+			if (md5.length()==33) {
+				it1.remove();
+				similarDomainSet.add(item.replace(md5, ""));
+			}
+		}
+	}
+	
+	public static String isMd5Domain(String domain) {
+		Pattern pattern = Pattern.compile("[a-fA-F0-9]{32}\\.");
+		Matcher matcher = pattern.matcher(domain);
+		if (matcher.find()) {//多次查找
+			String md5 = matcher.group();
+			return md5;
+		}
+		return "";
 	}
 
 	public static void test(){
