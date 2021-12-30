@@ -85,10 +85,10 @@ public class DomainConsumer extends Thread {
 			result.getNewAndNotGetTitleDomainSet().addAll(newSubdomains);
 
 			if (newSubdomains.size()>0){
-				BurpExtender.getStdout().println(String.format("~~~~~~~~~~~~~%s subdomains added!~~~~~~~~~~~~~",newSubdomains.size()));
+				BurpExtender.getStdout().println(String.format("~~~~~~~~~~~~~%s new subdomains added!~~~~~~~~~~~~~",newSubdomains.size()));
 				BurpExtender.getStdout().println(String.join(System.lineSeparator(), newSubdomains));
 			}
-            DomainPanel.autoSave();
+			DomainPanel.autoSave();
 		}
 	}
 

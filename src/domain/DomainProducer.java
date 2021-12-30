@@ -156,7 +156,7 @@ public class DomainProducer extends Thread {//Producer do
 		if (type == DomainManager.SUB_DOMAIN)
 		{
 			if (!subDomainQueue.contains(domain)) {
-				stdout.println("new domain found: "+domain);
+				stdout.println("domain found: "+domain);
 				subDomainQueue.add(domain);
 			}
 		}else if (type == DomainManager.SIMILAR_DOMAIN) {
