@@ -1,9 +1,11 @@
-package domain;
+package thread;
 
 import burp.BurpExtender;
 import burp.IBurpExtenderCallbacks;
 import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
+import domain.DomainConsumer;
+import domain.DomainProducer;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -11,7 +13,7 @@ import java.util.List;
 
 //////////////////ThreadGetTitle block/////////////
 //no need to pass BurpExtender object to these class, IBurpExtenderCallbacks object is enough 
-public class ThreadSearhDomain{
+public class ThreadSearhDomain extends Thread{
 	private List<IHttpRequestResponse> messages;
 	private List<DomainProducer> plist;
 
@@ -25,8 +27,9 @@ public class ThreadSearhDomain{
 		stdout = BurpExtender.getStdout();
 		stderr = BurpExtender.getStderr();
 	}
-
-	public void Do(){
+	
+	@Override
+	public void run(){
 		stdout.println("~~~~~~~~~~~~~Start Search Domain~~~~~~~~~~~~~");
 
 		BurpExtender.inputQueue.addAll(messages);
@@ -37,42 +40,37 @@ public class ThreadSearhDomain{
 			DomainProducer p = new DomainProducer(BurpExtender.inputQueue,BurpExtender.subDomainQueue,
 					BurpExtender.similarDomainQueue,BurpExtender.relatedDomainQueue,
 					BurpExtender.emailQueue,BurpExtender.packageNameQueue,BurpExtender.TLDDomainQueue,i);
+			p.setDaemon(true);
 			p.start();
 			plist.add(p);
 		}
-
-		while(true) {//to wait all threads exit.
-			if (BurpExtender.inputQueue.isEmpty() && isAllProductorFinished()) {
-				stdout.println("~~~~~~~~~~~~~Search Domain Done~~~~~~~~~~~~~");
-				break;
-			}else {
-				try {
-					Thread.sleep(1*1000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-				continue;
+		
+		try {
+			for (DomainProducer p:plist) {
+				p.join();
 			}
+			//让主线程等待各个子线程执行完成，才会结束。
+			//https://www.cnblogs.com/zheaven/p/12054044.html
+		} catch (InterruptedException e) {
+			stdout.println("force stop received");
+			e.printStackTrace();
 		}
-
+		stdout.println("~~~~~~~~~~~~~Search Domain Done~~~~~~~~~~~~~");
 		DomainConsumer.QueueToResult();
 		return;
 	}
 
-	boolean isAllProductorFinished(){
-		for (DomainProducer p:plist) {
-			if(p.isAlive()) {
-				return false;
-			}
-		}
-		return true;
-	}
-
+	@Deprecated
 	public void stopThreads() {
 		for (DomainProducer p:plist) {
 			p.stopThread();
 		}
 		stdout.println("threads stopped!");
+	}
+	
+	public void forceStopThreads() {
+		this.interrupt();//将子线程都设置为守护线程，会随着主线程的结束而立即结束,与setDaemon(true)结合
+		stdout.println("~~~~~~~~~~~~~force stop main thread,all sub-threads will exit!~~~~~~~~~~~~~");
 	}
 
 	//	public static void main(String args[]) {//test

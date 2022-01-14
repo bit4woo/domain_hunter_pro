@@ -1,4 +1,4 @@
-package title;
+package thread;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -45,16 +45,16 @@ public class ThreadGetTitleWithForceStop extends Thread{
 			plist.add(p);
 		}
 
-		for (Producer p:plist) {
-			try {
+
+		try {
+			for (Producer p:plist) {
 				p.join();
-				//让主线程等待各个子线程执行完成，才会结束。
-				//https://www.cnblogs.com/zheaven/p/12054044.html
-			} catch (InterruptedException e) {
-				stdout.println("force stop received");
-				e.printStackTrace();
-				break;//必须跳出循环，否则只是不再等待其中的一个线程，还会继续等待其他线程
 			}
+			//让主线程等待各个子线程执行完成，才会结束。
+			//https://www.cnblogs.com/zheaven/p/12054044.html
+		} catch (InterruptedException e) {
+			stdout.println("force stop received");
+			e.printStackTrace();
 		}
 
 		stdout.println("all producer threads finished");
@@ -65,6 +65,7 @@ public class ThreadGetTitleWithForceStop extends Thread{
 		return AllProductorFinished;
 	}
 
+	@Deprecated
 	public void stopThreads() {
 		for (Producer p:plist) {
 			p.stopThread();

@@ -12,7 +12,7 @@ public class DictReader extends Thread{
 	private boolean stopflag;
 	private BlockingQueue<String> pathDict;
 	
-	DictReader(String filePath,BlockingQueue<String> pathDict) {
+	public DictReader(String filePath,BlockingQueue<String> pathDict) {
 		this.filePath = filePath;
 		this.pathDict = pathDict;
 	}

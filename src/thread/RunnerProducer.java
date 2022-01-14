@@ -1,4 +1,4 @@
-package GUI;
+package thread;
 
 import java.io.PrintWriter;
 import java.util.concurrent.BlockingQueue;
@@ -12,6 +12,11 @@ import burp.IHttpService;
 import title.LineEntry;
 import title.LineTableModel;
 
+/**
+ * 执行请求变换，然后发送web请求的线程
+ * @author bit4woo
+ *
+ */
 public class RunnerProducer extends Thread {//Producer do
 	private final BlockingQueue<LineEntry> lineEntryQueue;//use to store domains
 	private final BlockingQueue<String> domainQueue;
@@ -64,8 +69,8 @@ public class RunnerProducer extends Thread {//Producer do
 					//stdout.println(threadNo+" Producer exited");
 					break;
 				}
-				
-				
+
+
 				///构造Service
 				String newHost;
 				IHttpService newHttpService;
@@ -117,12 +122,12 @@ public class RunnerProducer extends Thread {//Producer do
 				}else {
 					newRequest = request;
 				}
-				
+
 
 				//stdout.println(httpService.toString());
 				//stdout.println(new String(neRequest));
 				IHttpRequestResponse messageinfo = callbacks.makeHttpRequest(newHttpService, newRequest);
-				
+
 				if (changeType == ThreadRunner.ChangeHostInHeader) {
 					int leftTaskNumDomain = domainQueue.size();
 					stdout.println(String.format("%s tasks left, Runner Checking: %s",leftTaskNumDomain,newHost));
@@ -139,7 +144,7 @@ public class RunnerProducer extends Thread {//Producer do
 						runnerTableModel.addNewLineEntry(new LineEntry(messageinfo,LineEntry.CheckStatus_UnChecked,"Runner"));
 					}
 				}
-				
+
 			}catch (Exception e) {
 				e.printStackTrace(stderr);
 			}

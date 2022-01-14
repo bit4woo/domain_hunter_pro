@@ -4,6 +4,8 @@ import GUI.GUI;
 import GUI.ProjectMenu;
 import Tools.ToolPanel;
 import burp.*;
+import thread.ThreadSearhDomain;
+
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import com.google.common.net.InternetDomainName;
@@ -980,7 +982,13 @@ public class DomainPanel extends JPanel {
         AllMessages.addAll(Arrays.asList(messages));
         AllMessages.addAll(collectPackageNameMessages());//包含错误回显的请求响应消息
 
-        new ThreadSearhDomain(AllMessages).Do();
+        ThreadSearhDomain searchinstance = new ThreadSearhDomain(AllMessages);
+        searchinstance.setDaemon(true);
+        try {
+			searchinstance.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
         //DomainPanel.autoSave();//每次搜索完成都应该进行一次保存,放在Do()函数中实现
         return null;
     }

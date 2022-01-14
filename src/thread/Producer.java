@@ -1,11 +1,8 @@
-package title;
+package thread;
 
 import java.io.PrintWriter;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 
@@ -13,6 +10,10 @@ import GUI.GUI;
 import burp.BurpExtender;
 import burp.IBurpExtenderCallbacks;
 import burp.IExtensionHelpers;
+import title.IndexedLinkedHashMap;
+import title.LineEntry;
+import title.TempLineEntry;
+import title.TitlePanel;
 
 /** 
  * @author bit4woo
@@ -20,9 +21,10 @@ import burp.IExtensionHelpers;
  * @version CreateTime：Jun 25, 2020 2:35:31 PM 
  */
 
-/*
- * do request use method of burp
- * return IResponseInfo object Set
+/**
+ * 执行web请求，获取title的线程
+ * 
+ * @author bit4woo
  *
  */
 

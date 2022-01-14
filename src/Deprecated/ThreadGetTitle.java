@@ -10,7 +10,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import burp.BurpExtender;
 import burp.IBurpExtenderCallbacks;
 import burp.IExtensionHelpers;
-import title.Producer;
+import thread.Producer;
 
 //////////////////ThreadGetTitle block/////////////
 //no need to pass BurpExtender object to these class, IBurpExtenderCallbacks object is enough 

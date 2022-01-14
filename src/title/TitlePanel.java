@@ -2,33 +2,28 @@ package title;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
-import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 
 import burp.BurpExtender;
 import burp.Commons;
 import burp.IPAddress;
 import domain.DomainPanel;
+import thread.ThreadGetSubnet;
+import thread.ThreadGetTitleWithForceStop;
 import title.search.SearchTextField;
 
 public class TitlePanel extends JPanel {
@@ -169,16 +164,7 @@ public class TitlePanel extends JPanel {
 		});
 		 */
 
-		JButton btnStop = new JButton("Stop");
-		btnStop.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				int result = JOptionPane.showConfirmDialog(null,"Are you sure to [Force Stop] all theads ?");
-				if (threadGetTitle != null && result == JOptionPane.YES_OPTION){
-					threadGetTitle.forceStopThreads();
-				}
-			}
-		});
-		buttonPanel.add(btnStop);
+
 		
 		JButton buttonSearch = new JButton("Search");
 		textFieldSearch = new SearchTextField("",buttonSearch);
@@ -329,7 +315,15 @@ public class TitlePanel extends JPanel {
 		if (isCurrent) {//获取的是现有可成功连接的IP集合+用户指定的IP网段集合
 			subnets = titleTableModel.GetSubnets();
 		}else {//重新解析所有域名的IP
-			Set<String> IPsOfDomain = new ThreadGetSubnet(DomainPanel.getDomainResult().getSubDomainSet()).Do();
+			ThreadGetSubnet thread = new ThreadGetSubnet(DomainPanel.getDomainResult().getSubDomainSet());
+			thread.start();
+			try {
+				thread.join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+				return "thread Interrupted";
+			}
+			Set<String> IPsOfDomain = thread.IPset;
 			Set<String> IPsOfcertainSubnets = Commons.toIPSet(DomainPanel.getDomainResult().getSubnetSet());//用户配置的确定IP+网段
 			IPsOfDomain.addAll(IPsOfcertainSubnets);
 			subnets = Commons.toSmallerSubNets(IPsOfDomain);

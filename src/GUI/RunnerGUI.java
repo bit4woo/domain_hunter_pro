@@ -17,6 +17,9 @@ import javax.swing.JTabbedPane;
 import javax.swing.border.EmptyBorder;
 
 import burp.IHttpRequestResponse;
+import thread.ThreadBypassGatewayForAll;
+import thread.ThreadDirBruter;
+import thread.ThreadRunner;
 import title.LineTable;
 import title.LineTableModel;
 import title.search.SearchTextField;
@@ -30,10 +33,12 @@ public class RunnerGUI extends JFrame {
 
 	private LineTableModel runnerTableModel = new LineTableModel();
 	private LineTable runnerTable = new LineTable(runnerTableModel);
-	private ThreadRunner runner;
-	private ThreadDirBruter bruter;
 	private IHttpRequestResponse messageInfo;
 	public JLabel lblStatus;
+	
+	private ThreadRunner runner;
+	private ThreadDirBruter bruter;
+	private ThreadBypassGatewayForAll checker;
 
 	public JPanel getRunnerPanel() {
 		return RunnerPanel;
@@ -106,7 +111,7 @@ public class RunnerGUI extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					RunnerGUI frame = new RunnerGUI();
+					RunnerGUI frame = new RunnerGUI(true);
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -119,9 +124,11 @@ public class RunnerGUI extends JFrame {
 
 	/**
 	 * Create the frame.
+	 * 
+	 * 独立运行测试
 	 */
 
-	public RunnerGUI() {
+	public RunnerGUI(boolean Alone) {//传递一个参数以示区分
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		setBounds(100, 100, 1000, 500);
@@ -136,10 +143,12 @@ public class RunnerGUI extends JFrame {
 		//RunnerPanel.add(splitPane, BorderLayout.CENTER);
 	}
 
-
-	public RunnerGUI(IHttpRequestResponse messageInfo) {
-		this.messageInfo = messageInfo;
-
+	/**
+	 * 对一个请求数据包，进行各种变化然后请求，类似Intruder的功能。
+	 * 数据源都来自Domain Hunter
+	 * @param messageInfo
+	 */
+	public RunnerGUI() {
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		//if use "EXIT_ON_CLOSE",burp will exit!!
 		setVisible(true);
@@ -192,12 +201,17 @@ public class RunnerGUI extends JFrame {
 				}
 
 				if (runner !=null) {
-					runner.stopThreads();
+					runner.interrupt();
 				}
 
 				if (bruter != null) {
-					bruter.stopThreads();
+					bruter.interrupt();
 				}
+				
+				if (checker != null) {
+					checker.interrupt();
+				}
+				
 			}
 
 			@Override
@@ -234,12 +248,29 @@ public class RunnerGUI extends JFrame {
 
 		//准备工作
 	}
-
+	
+	public RunnerGUI(IHttpRequestResponse messageInfo) {
+		this();
+		this.messageInfo = messageInfo;
+	}
+		
+	
+	/**
+	 * 对所有收集到的域名和IP进行Host碰撞
+	 */
+	public void begainGatewayBypassCheck() {
+		checker = new ThreadBypassGatewayForAll(this);
+		checker.start();
+	}
+	
 	public void begainRun() {
 		runner = new ThreadRunner(this,messageInfo);
 		runner.start();
 	}
 	
+	/**
+	 * 对一个网关，尝试所有域名的网关绕过测试。（Host碰撞）
+	 */
 	public void begainRunChangeHostInHeader() {
 		runner = new ThreadRunner(this,messageInfo,ThreadRunner.ChangeHostInHeader);
 		runner.start();
@@ -247,6 +278,6 @@ public class RunnerGUI extends JFrame {
 
 	public void begainDirBrute() {
 		bruter = new ThreadDirBruter(this,messageInfo);
-		bruter.Do();
+		bruter.start();
 	}
 }

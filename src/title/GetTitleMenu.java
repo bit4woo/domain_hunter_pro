@@ -46,6 +46,7 @@ public class GetTitleMenu extends JPopupMenu {
 	JMenuItem GetExtendtitleItem;
 	JMenuItem GettitleOfJustNewFoundItem;
 	JMenuItem CopySubnetItem;
+	private JMenuItem StopItem;
 
 	GetTitleMenu(){
 		
@@ -175,12 +176,44 @@ public class GetTitleMenu extends JPopupMenu {
 				worker.execute();
 			}
 		});
+		
+		
+		StopItem = new JMenuItem(new AbstractAction("Stop Threads") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				int result = JOptionPane.showConfirmDialog(null,"Are you sure to [Force Stop] all theads ?");
+				if (TitlePanel.threadGetTitle != null && result == JOptionPane.YES_OPTION){
+					TitlePanel.threadGetTitle.forceStopThreads();
+				}
+			}
+		});
+		
+		JMenuItem doGateWayByPassCheck = new JMenuItem(new AbstractAction("Do GateWay ByPass Check For All") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+					//using SwingWorker to prevent blocking burp main UI.
+					@Override
+					protected Map doInBackground() throws Exception {
 
+						RunnerGUI runnergui = new RunnerGUI();
+						runnergui.begainGatewayBypassCheck();
+						runnergui.setVisible(true);
+						return null;
+					}
+					@Override
+					protected void done() {
+					}
+				};
+				worker.execute();
+			}
+		});
 
 		this.add(getTitleItem);
 		this.add(GetExtendtitleItem);
 		this.add(GettitleOfJustNewFoundItem);
 		this.add(CopySubnetItem);
-		//this.add(DoGatewayBypassCheck);//TODO
+		this.add(StopItem);
+		this.add(doGateWayByPassCheck);
 	}
 }
