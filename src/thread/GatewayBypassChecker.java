@@ -31,9 +31,6 @@ public class GatewayBypassChecker extends Thread {//Producer do
 	public HelperPlus getter = new HelperPlus(helpers);
 
 	LineTableModel runnerTableModel;
-	int changeType;
-	boolean ChangeRaw;
-	
 
 	public GatewayBypassChecker(LineTableModel runnerTableModel,BlockingQueue<String> inputQueue,
 			int threadNo) {
@@ -59,6 +56,7 @@ public class GatewayBypassChecker extends Thread {//Producer do
 				}
 				
 				String IPAndDomain = inputQueue.take();
+				System.out.println("checking : "+IPAndDomain);
 				String ip = IPAndDomain.split("###")[0];
 				String domain = IPAndDomain.split("###")[1];
 				doRequest(ip,domain);
@@ -88,14 +86,14 @@ public class GatewayBypassChecker extends Thread {//Producer do
 		//发送请求
 		IHttpRequestResponse messageinfo  = callbacks.makeHttpRequest(httpService, newRequest);
 		LineEntry entry = new LineEntry(messageinfo,LineEntry.CheckStatus_UnChecked,"GatewayBypassCheck");
-		if (entry.getStatuscode() != 403) {
-			runnerTableModel.addNewLineEntryWithTime(entry);
+		if (entry.getStatuscode() != 403 && entry.getStatuscode() != -1) {
+			runnerTableModel.addNewLineEntry(entry);
 		}
 		
 		IHttpRequestResponse messageinfo1  = callbacks.makeHttpRequest(httpsService, newRequest);
 		LineEntry entry1 = new LineEntry(messageinfo1,LineEntry.CheckStatus_UnChecked,"GatewayBypassCheck");
-		if (entry.getStatuscode() != 403) {
-			runnerTableModel.addNewLineEntryWithTime(entry1);
+		if (entry.getStatuscode() != 403 && entry.getStatuscode() != -1) {
+			runnerTableModel.addNewLineEntry(entry1);
 		}
 	}
 }

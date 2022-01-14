@@ -66,13 +66,13 @@ public class ThreadBypassGatewayForAll extends Thread{
 	@Override
 	public void run(){
 		runnerGUI.lblStatus.setText("running");
-		BlockingQueue<String> InputQueue = new LinkedBlockingQueue<String>();
+		BlockingQueue<String> InputQueue = new LinkedBlockingQueue<String>(500);//设置容量大小，避免导致大量内存占用
 		Set<String> subnets = TitlePanel.getTitleTableModel().GetSubnets();
 		Set<String> IPs = Commons.toIPSet(subnets);
 		HashSet<String> Domains = getDomainsForBypassCheck();
 
 		GatewayBypassProducer gproducer = new GatewayBypassProducer(IPs,Domains,InputQueue);
-		gproducer.setDaemon(true);
+		gproducer.setDaemon(true);//必须在关闭窗口后退出，否则依然写入数据，占用内存
 		gproducer.start();
 
 		plist = new ArrayList<GatewayBypassChecker>();
@@ -95,7 +95,8 @@ public class ThreadBypassGatewayForAll extends Thread{
 		} catch (InterruptedException e) {
 			//当执行主线程的Interrupt方法（当前类的实例），会被这里catch，主线程就会退出，所有子线程也将退出。
 			stdout.println("force stop received");
-			e.printStackTrace();
+			System.out.println(this.getClass().getName()+"received force stop action");
+			//e.printStackTrace();
 		}
 
 		stdout.println("all producer threads finished");
