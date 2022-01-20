@@ -56,10 +56,10 @@ public class GatewayBypassChecker extends Thread {//Producer do
 				}
 				
 				String IPAndDomain = inputQueue.take();
-				System.out.println("checking : "+IPAndDomain);
-				String ip = IPAndDomain.split("###")[0];
+				//System.out.println("checking : "+IPAndDomain);
+				String IPURL = IPAndDomain.split("###")[0];
 				String domain = IPAndDomain.split("###")[1];
-				doRequest(ip,domain);
+				doRequest(IPURL,domain);
 
 			}catch (Exception e) {
 				e.printStackTrace(stderr);
@@ -67,33 +67,27 @@ public class GatewayBypassChecker extends Thread {//Producer do
 		}
 	}
 	
-	public void doRequest(String IP,String domain) {
+	public void doRequest(String IPURL,String domain) {
 		//构造请求包
-		URL httpUrl;
+		URL Url;
 		try {
-			httpUrl = new URL("http://"+IP);
+			Url = new URL(IPURL);
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 			return;
 		}
-		byte[] request = helpers.buildHttpRequest(httpUrl);
+		byte[] request = helpers.buildHttpRequest(Url);
 		byte[] newRequest = getter.addOrUpdateHeader(true, request, "Host", domain);
 		
 		//构造service
-		IHttpService httpService = helpers.buildHttpService(IP, 80, false);
-		IHttpService httpsService = helpers.buildHttpService(IP, 443, true);
+		IHttpService service = helpers.buildHttpService(Url.getHost(), Url.getPort(), Url.getProtocol());
 		
 		//发送请求
-		IHttpRequestResponse messageinfo  = callbacks.makeHttpRequest(httpService, newRequest);
+		IHttpRequestResponse messageinfo  = callbacks.makeHttpRequest(service, newRequest);
 		LineEntry entry = new LineEntry(messageinfo,LineEntry.CheckStatus_UnChecked,"GatewayBypassCheck");
-		if (entry.getStatuscode() != 403 && entry.getStatuscode() != -1) {
-			runnerTableModel.addNewLineEntry(entry);
-		}
-		
-		IHttpRequestResponse messageinfo1  = callbacks.makeHttpRequest(httpsService, newRequest);
-		LineEntry entry1 = new LineEntry(messageinfo1,LineEntry.CheckStatus_UnChecked,"GatewayBypassCheck");
-		if (entry.getStatuscode() != 403 && entry.getStatuscode() != -1) {
-			runnerTableModel.addNewLineEntry(entry1);
+		System.out.println(String.format("curl %s -H 'Host: %s' -k -vv  %s", service.toString(),domain,entry.getStatuscode()));
+		if (entry.getStatuscode() != 403 && entry.getStatuscode() != 404 && entry.getStatuscode() != -1) {
+			runnerTableModel.addNewLineEntryWithHost(entry,domain);
 		}
 	}
 }

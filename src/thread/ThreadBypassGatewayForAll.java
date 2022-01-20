@@ -67,17 +67,16 @@ public class ThreadBypassGatewayForAll extends Thread{
 	public void run(){
 		runnerGUI.lblStatus.setText("running");
 		BlockingQueue<String> InputQueue = new LinkedBlockingQueue<String>(500);//设置容量大小，避免导致大量内存占用
-		Set<String> subnets = TitlePanel.getTitleTableModel().GetSubnets();
-		Set<String> IPs = Commons.toIPSet(subnets);
+		HashSet<String> IPURLs = TitlePanel.getTitleTableModel().getIPURLs();
 		HashSet<String> Domains = getDomainsForBypassCheck();
 
-		GatewayBypassProducer gproducer = new GatewayBypassProducer(IPs,Domains,InputQueue);
+		GatewayBypassProducer gproducer = new GatewayBypassProducer(IPURLs,Domains,InputQueue);
 		gproducer.setDaemon(true);//必须在关闭窗口后退出，否则依然写入数据，占用内存
 		gproducer.start();
 
 		plist = new ArrayList<GatewayBypassChecker>();
 
-		for (int i=0;i<=50;i++) {
+		for (int i=0;i<=100;i++) {
 			GatewayBypassChecker p = new GatewayBypassChecker(runnerGUI.getRunnerTableModel(),InputQueue,i);
 			p.setDaemon(true);//将子线程设置为守护线程，会随着主线程的结束而立即结束
 			//当腰结束整个runner时，结束主线程即可，即调用当前类的.interrupt();

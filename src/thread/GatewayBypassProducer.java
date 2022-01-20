@@ -28,13 +28,13 @@ public class GatewayBypassProducer extends Thread {//Producer do
 	public PrintWriter stderr = new PrintWriter(callbacks.getStderr(), true);
 	public IExtensionHelpers helpers = callbacks.getHelpers();
 
-	private Set<String> IPSet;
+	private Set<String> IPURLSet;
 	private Set<String> domainSet;
 	private BlockingQueue<String> outQueue;
 
-	public GatewayBypassProducer(Set<String> IPSet,Set<String> domainSet,
+	public GatewayBypassProducer(Set<String> IPURLSet,Set<String> domainSet,
 			BlockingQueue<String> outQueue) {
-		this.IPSet = IPSet;
+		this.IPURLSet = IPURLSet;
 		this.domainSet = domainSet;
 		this.outQueue = outQueue;
 		stopflag= false;
@@ -46,13 +46,15 @@ public class GatewayBypassProducer extends Thread {//Producer do
 
 	@Override
 	public void run() {
+		int totalNum = IPURLSet.size()* domainSet.size();
+		System.out.println(totalNum +" total Tasks!");
 		while(true){
 			try {
 				if (stopflag) {
 					break;
 				}
 				
-				for (String ip:IPSet) {
+				for (String ip:IPURLSet) {
 					for (String domain:domainSet) {
 						outQueue.put(ip+"###"+domain);
 					}

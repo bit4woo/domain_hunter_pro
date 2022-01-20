@@ -409,6 +409,21 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		Set<String> subnets = Commons.toSmallerSubNets(IPsOfDomain);
 		return subnets;
 	}
+	
+	/**
+	 * 用于host碰撞
+	 * @return
+	 */
+	public HashSet<String> getIPURLs() {
+		HashSet<String> urls = new HashSet<>();
+		for (LineEntry line:lineEntries.values()) {
+			for (String ip:line.fetchIPSet()) {
+				String url = line.getProtocol()+"://"+ip+":"+line.getPort();
+				urls.add(url);
+			}
+		}
+		return urls;
+	}
 
 	public String getStatusSummary() {
 		int all = lineEntries.size();
@@ -719,6 +734,22 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		}
 		synchronized (lineEntries) {
 			String key = lineEntry.getUrl()+System.currentTimeMillis();
+			lineEntries.put(key,lineEntry);
+			int index = lineEntries.IndexOfKey(key);
+			fireTableRowsInserted(index, index);
+		}
+	}
+	
+	/**
+	 * 用于Host碰撞场景
+	 * @param lineEntry
+	 */
+	public void addNewLineEntryWithHost(LineEntry lineEntry,String Host){
+		if (lineEntry == null) {
+			return;
+		}
+		synchronized (lineEntries) {
+			String key = lineEntry.getUrl()+Host;
 			lineEntries.put(key,lineEntry);
 			int index = lineEntries.IndexOfKey(key);
 			fireTableRowsInserted(index, index);
