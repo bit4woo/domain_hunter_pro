@@ -214,6 +214,6 @@ public class GetTitleMenu extends JPopupMenu {
 		this.add(GettitleOfJustNewFoundItem);
 		this.add(CopySubnetItem);
 		this.add(StopItem);
-		this.add(doGateWayByPassCheck);
+		//this.add(doGateWayByPassCheck);
 	}
 }

@@ -86,7 +86,7 @@ public class GatewayBypassChecker extends Thread {//Producer do
 		IHttpRequestResponse messageinfo  = callbacks.makeHttpRequest(service, newRequest);
 		LineEntry entry = new LineEntry(messageinfo,LineEntry.CheckStatus_UnChecked,"GatewayBypassCheck");
 		System.out.println(String.format("curl %s -H 'Host: %s' -k -vv  %s", service.toString(),domain,entry.getStatuscode()));
-		if (entry.getStatuscode() != 403 && entry.getStatuscode() != 404 && entry.getStatuscode() != -1) {
+		if (entry.getStatuscode() <= 400 && entry.getStatuscode() >= -1) {
 			runnerTableModel.addNewLineEntryWithHost(entry,domain);
 		}
 	}
