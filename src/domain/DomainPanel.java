@@ -1148,7 +1148,7 @@ public class DomainPanel extends JPanel {
      */
     public File saveDomainOnly() {
         try {
-            File file = BurpExtender.getGui().dbfc.dialog(false);
+            File file = BurpExtender.getGui().dbfc.dialog(false,".db");
             if (file != null) {
                 DBHelper dbHelper = new DBHelper(file.toString());
                 if (dbHelper.saveDomainObject(domainResult)) {
@@ -1170,7 +1170,7 @@ public class DomainPanel extends JPanel {
         File file = GUI.getCurrentDBFile();
         if (file == null) {
             if (null == DomainPanel.getDomainResult()) return;//有数据才弹对话框指定文件位置。
-            file = BurpExtender.getGui().dbfc.dialog(false);
+            file = BurpExtender.getGui().dbfc.dialog(false,".db");
             GUI.setCurrentDBFile(file);
         }
         if (file != null) {

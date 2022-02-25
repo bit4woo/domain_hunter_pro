@@ -5,6 +5,7 @@ import java.awt.Container;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.JFrame;
@@ -25,7 +26,7 @@ public class ProjectMenu extends JMenu{
 	GUI gui;
 	
 	public static void createNewDb(GUI gui) {
-		File file = GUI.dbfc.dialog(false);//通过保存对话指定文件，这会是一个空文件。
+		File file = GUI.dbfc.dialog(false,".db");//通过保存对话指定文件，这会是一个空文件。
 		if (null != file) {
 			DomainPanel.setDomainResult(new DomainManager(file.getName()));
 			gui.saveData(file.toString(),true);
@@ -34,7 +35,7 @@ public class ProjectMenu extends JMenu{
 	}
 	
 	public static void openDb() {
-		File file = GUI.dbfc.dialog(true);
+		File file = GUI.dbfc.dialog(true,".db");
 		if (null != file) {
 			GUI.LoadData(file.toString());
 		}
@@ -73,7 +74,7 @@ public class ProjectMenu extends JMenu{
 			public void actionPerformed(ActionEvent actionEvent) {
 				DomainPanel.backupDB();//导入前的备份。
 
-				File file = gui.dbfc.dialog(true);
+				File file = gui.dbfc.dialog(true,".db");
 				if (null ==file) {
 					return;
 				}
@@ -99,6 +100,41 @@ public class ProjectMenu extends JMenu{
 		});
 		ImportMenu.setToolTipText("Import Project File(DB File)");
 		this.add(ImportMenu);
+		
+		
+		/**
+		 * 导入文本文件，将数据和当前DB文件进行合并。
+		 * domain Panel中的内容是集合的合并,无需考虑覆盖问题;
+		 * 
+		 */
+		JMenuItem ImportFromTextFileMenu = new JMenuItem(new AbstractAction("Import Domain List") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				DomainPanel.backupDB();//导入前的备份。
+
+				File file = gui.dbfc.dialog(true,".txt");
+				if (null ==file) {
+					return;
+				}
+				
+				DictFileReader readline = new DictFileReader(file.getAbsolutePath());
+				while(true){
+					List<String> tmp = readline.next(10000,"");
+					if (tmp.size() == 0) {
+						BurpExtender.getStdout().println("Import from file: "+file.getAbsolutePath()+" done");
+						break;
+					}else {
+						for (String item:tmp) {
+							DomainPanel.getDomainResult().addIfValid(item);
+						}
+					}
+				}
+				
+				GUI.getDomainPanel().showToDomainUI();
+			}
+		});
+		ImportMenu.setToolTipText("Import Domain From Text File");
+		this.add(ImportFromTextFileMenu);
 
 		//TODO
 		JMenuItem detachMenu = new JMenuItem(new AbstractAction("Detach")

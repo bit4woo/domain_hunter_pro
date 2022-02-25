@@ -19,12 +19,12 @@ public class dbFileChooser extends JFileChooser {
         this.fc =  new JFileChooser();
     }
 
-    /*
-使用数据模型监听后，不需再自行单独保存当前项目了。
-但是需要用于另存为，单独保存域名(和saveDomainOnly) 2个功能。
-都需要文件选择对话框
- */
-    public File dialog(boolean isOpen) {
+    /**
+	使用数据模型监听后，不需再自行单独保存当前项目了。
+	但是需要用于另存为，单独保存域名(和saveDomainOnly) 2个功能。
+	都需要文件选择对话框
+	 */
+    public File dialog(boolean isOpen,String fileExtension) {
         try {
             if (fc.getCurrentDirectory() != null) {
                 fc = new JFileChooser(fc.getCurrentDirectory());
@@ -32,9 +32,9 @@ public class dbFileChooser extends JFileChooser {
                 fc = new JFileChooser();
             }
 
-            JsonFileFilter jsonFilter = new JsonFileFilter(); //文件扩展名过滤器
-            fc.addChoosableFileFilter(jsonFilter);
-            fc.setFileFilter(jsonFilter);
+            myFileFilter filter = new myFileFilter(fileExtension); //文件扩展名过滤器
+            fc.addChoosableFileFilter(filter);
+            fc.setFileFilter(filter);
             fc.setDialogType(JFileChooser.CUSTOM_DIALOG);
 
             int action;
@@ -48,8 +48,8 @@ public class dbFileChooser extends JFileChooser {
                 File file=fc.getSelectedFile();
                 fc.setCurrentDirectory(new File(file.getParent()));//save latest used dir.
                 if (!isOpen){
-                    if(!(file.getName().toLowerCase().endsWith(".db"))){
-                        file=new File(fc.getCurrentDirectory(),file.getName()+".db");
+                    if(!(file.getName().toLowerCase().endsWith(fileExtension))){
+                        file=new File(fc.getCurrentDirectory(),file.getName()+fileExtension);
                     }
                     if(file.exists()){
                         int result = JOptionPane.showConfirmDialog(null,"Are you sure to overwrite this file ?");
@@ -79,9 +79,9 @@ public class dbFileChooser extends JFileChooser {
                 fc = new JFileChooser();
             }
 
-            JsonFileFilter jsonFilter = new JsonFileFilter(); //文件扩展名过滤器
-            fc.addChoosableFileFilter(jsonFilter);
-            fc.setFileFilter(jsonFilter);
+            myFileFilter dbFilter = new myFileFilter(".db"); //文件扩展名过滤器
+            fc.addChoosableFileFilter(dbFilter);
+            fc.setFileFilter(dbFilter);
             fc.setDialogType(JFileChooser.CUSTOM_DIALOG);
 
             int action = fc.showSaveDialog(null);
@@ -99,13 +99,20 @@ public class dbFileChooser extends JFileChooser {
         }
     }
 
-    class JsonFileFilter extends FileFilter {
+    class myFileFilter extends FileFilter {
+    	private String fileExtension;
+		myFileFilter(String fileExtension){
+			if (!fileExtension.startsWith(".")) {
+				fileExtension = "."+fileExtension;
+			}
+    		this.fileExtension = fileExtension;
+    	}
         public String getDescription() {
-            return "*.db";
-        }//sqlite
+            return fileExtension;
+        }
         public boolean accept(File file) {
             String name = file.getName();
-            return file.isDirectory() || name.toLowerCase().endsWith(".db");  // 仅显示目录和json文件
+            return file.isDirectory() || name.toLowerCase().endsWith(fileExtension.toLowerCase());  // 仅显示目录和xxx文件
         }
     }
 }
