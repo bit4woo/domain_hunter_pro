@@ -18,6 +18,7 @@ import com.ibm.icu.text.CharsetDetector;
 import com.ibm.icu.text.CharsetMatch;
 
 import burp.BurpExtender;
+import burp.Commons;
 import burp.Getter;
 import burp.HelperPlus;
 import burp.IBurpExtenderCallbacks;
@@ -366,47 +367,6 @@ public class LineEntry {
 		return new String(byte_body);
 	}
 
-
-	/*
-Content-Type: text/html;charset=UTF-8
-
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-<meta charset="utf-8">
-<script type="text/javascript" charset="utf-8" src="./resources/jrf-resource/js/jrf.min.js"></script>
-	 */
-
-	public static String getCharset(boolean isRequest,byte[] requestOrResponse){
-		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
-		Getter getter = new Getter(helpers);
-		String contentType = getter.getHeaderValueOf(isRequest,requestOrResponse,"Content-Type");
-		String tmpcharSet = "ISO-8859-1";//http post的默认编码
-
-		if (contentType != null){//1、尝试从contentTpye中获取
-			if (contentType.toLowerCase().contains("charset=")) {
-				tmpcharSet = contentType.toLowerCase().split("charset=")[1];
-			}
-		}
-
-		if (tmpcharSet == null){//2、尝试使用ICU4J进行编码的检测
-			CharsetDetector detector = new CharsetDetector();
-			detector.setText(requestOrResponse);
-			CharsetMatch cm = detector.detect();
-			tmpcharSet = cm.getName();
-		}
-
-		tmpcharSet = tmpcharSet.toLowerCase().trim();
-		//常见的编码格式有ASCII、ANSI、GBK、GB2312、UTF-8、GB18030和UNICODE等。
-		List<String> commonCharSet = Arrays.asList("ASCII,ANSI,GBK,GB2312,UTF-8,GB18030,UNICODE,utf8".toLowerCase().split(","));
-		for (String item:commonCharSet) {
-			if (tmpcharSet.contains(item)) {
-				tmpcharSet = item;
-			}
-		}
-
-		if (tmpcharSet.equals("utf8")) tmpcharSet = "utf-8";
-		return tmpcharSet;
-	}
-
 	//https://javarevisited.blogspot.com/2012/01/get-set-default-character-encoding.html
 	private static String getSystemCharSet() {
 		return Charset.defaultCharset().toString();
@@ -416,7 +376,7 @@ Content-Type: text/html;charset=UTF-8
 
 
 	public String covertCharSet(byte[] response) {
-		String originalCharSet = getCharset(false,response);
+		String originalCharSet = Commons.detectCharset(response);
 		//BurpExtender.getStderr().println(url+"---"+originalCharSet);
 
 		if (originalCharSet != null && !originalCharSet.equalsIgnoreCase(systemCharSet)) {
