@@ -301,6 +301,7 @@ public class LineTable extends JTable
 				}
 			}
 			public boolean oneCondition(String Input,LineEntry line) {
+				Input = Input.trim();//应该去除空格，符合java代码编写习惯
 				if (SearchDork.isDork(Input)) {
 					//stdout.println("do dork search,dork:"+dork+"   keyword:"+keyword);
 					return LineSearch.dorkFilter(line,Input,caseSensitive);
