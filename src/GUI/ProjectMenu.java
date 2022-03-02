@@ -24,7 +24,8 @@ import title.TitlePanel;
 
 public class ProjectMenu extends JMenu{
 	GUI gui;
-	
+	JMenuItem lockMenu;
+
 	public static void createNewDb(GUI gui) {
 		File file = GUI.dbfc.dialog(false,".db");//通过保存对话指定文件，这会是一个空文件。
 		if (null != file) {
@@ -33,7 +34,7 @@ public class ProjectMenu extends JMenu{
 			GUI.LoadData(file.toString());//然后加载，就是一个新的空项目了。
 		}
 	}
-	
+
 	public static void openDb() {
 		File file = GUI.dbfc.dialog(true,".db");
 		if (null != file) {
@@ -100,8 +101,8 @@ public class ProjectMenu extends JMenu{
 		});
 		ImportMenu.setToolTipText("Import Project File(DB File)");
 		this.add(ImportMenu);
-		
-		
+
+
 		/**
 		 * 导入文本文件，将数据和当前DB文件进行合并。
 		 * domain Panel中的内容是集合的合并,无需考虑覆盖问题;
@@ -116,7 +117,7 @@ public class ProjectMenu extends JMenu{
 				if (null ==file) {
 					return;
 				}
-				
+
 				DictFileReader readline = new DictFileReader(file.getAbsolutePath());
 				while(true){
 					List<String> tmp = readline.next(10000,"");
@@ -129,7 +130,7 @@ public class ProjectMenu extends JMenu{
 						}
 					}
 				}
-				
+
 				GUI.getDomainPanel().showToDomainUI();
 			}
 		});
@@ -146,13 +147,14 @@ public class ProjectMenu extends JMenu{
 		});
 		//this.add(detachMenu);
 
-		JMenuItem lockMenu = new JMenuItem(new AbstractAction("lock & unlock")
+		lockMenu = new JMenuItem(new AbstractAction()
 		{
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				BurpExtender.getGui().lockUnlock();
 			}
 		});
+		lockMenu.setText("Lock");
 		this.add(lockMenu);
 
 		//为了菜单能够区分
@@ -201,16 +203,6 @@ public class ProjectMenu extends JMenu{
 		JMenuItem nameItem = new JMenuItem("Project:"+name);
 		nameItem.setName("JustDisplayDBFileName");
 		nameItem.setEnabled(false);
-		nameItem.addActionListener(new AbstractAction(){
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-				String filename = GUI.currentDBFile.getName();
-				int index = indexOfDomainHunter(filename);
-				Container ccc = getBurpFrame().getContentPane();
-				JTabbedPane ParentOfDomainHunter = (JTabbedPane) ccc.getComponent(0);//burpTabBar
-				ParentOfDomainHunter.setSelectedIndex(index);//设置为选中,还是无效，操作失败
-			}
-		});
 		this.insert(nameItem,0);
 	}
 
@@ -264,12 +256,17 @@ public class ProjectMenu extends JMenu{
 		return -1;
 	}
 
+	/**
+	 * DomainHunter*表示locked
+	 * DomainHunter表示unlocked
+	 * @return
+	 */
 	public static boolean isAlone() {
 		int num = 0;
 		JMenuBar menuBar = getBurpFrame().getJMenuBar();
 		int count = menuBar.getMenuCount();
 		for (int i =0;i<count;i++) {
-			if (menuBar.getMenu(i).getText().contains("Hunter")) {
+			if (menuBar.getMenu(i).getText().endsWith("Hunter")) {
 				num++;
 			}
 		}

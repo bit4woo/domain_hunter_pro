@@ -89,11 +89,15 @@ public class GUI extends JFrame {
 			((JTabbedPane)this.getContentPane()).addTab("Locked",null,new JPanel(),null);
 			((JTabbedPane)this.getContentPane()).setSelectedIndex(3);
 			this.getContentPane().setEnabled(false);
+			projectMenu.setText("DomainHunter*");
+			projectMenu.lockMenu.setText("Unlock");
 			ToolPanel.DisplayContextMenuOfBurp.setSelected(false);//不显示burp右键菜单
 		}else {
 			this.getContentPane().setEnabled(true);
 			((JTabbedPane)this.getContentPane()).removeTabAt(3);
 			((JTabbedPane)this.getContentPane()).setSelectedIndex(0);
+			projectMenu.lockMenu.setText("Lock");
+			projectMenu.setText("DomainHunter");
 			ToolPanel.DisplayContextMenuOfBurp.setSelected(true);//显示右键菜单
 		}
 	}
