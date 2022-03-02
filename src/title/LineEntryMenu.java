@@ -10,6 +10,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -399,6 +400,27 @@ public class LineEntryMenu extends JPopupMenu {
 				try{
 					java.util.List<String> urls = lineTable.getModel().getCommonURLs(modleRows);
 					String textUrls = String.join(System.lineSeparator(), urls);
+
+					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+					StringSelection selection = new StringSelection(textUrls);
+					clipboard.setContents(selection, null);
+				}
+				catch (Exception e1)
+				{
+					e1.printStackTrace(stderr);
+				}
+			}
+		});
+		
+		/**
+		 * 获取用于Host碰撞的域名
+		 */
+		JMenuItem copyHostCollisionDomainsItem = new JMenuItem(new AbstractAction("Copy Domains For Host Collision") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				try{
+					HashSet<String> domains = TitlePanel.getTitleTableModel().getDomainsForBypassCheck();
+					String textUrls = String.join(System.lineSeparator(), domains);
 
 					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 					StringSelection selection = new StringSelection(textUrls);
@@ -892,6 +914,7 @@ public class LineEntryMenu extends JPopupMenu {
 		CopyMenu.add(copyIPItem);
 		CopyMenu.add(copyURLItem);
 		CopyMenu.add(copyCommonURLItem);
+		CopyMenu.add(copyHostCollisionDomainsItem);
 		CopyMenu.add(copyLocationURLItem);
 		CopyMenu.add(copyCDNAndCertInfoItem);
 		CopyMenu.add(copyIconhashItem);

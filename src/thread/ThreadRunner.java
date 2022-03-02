@@ -2,8 +2,6 @@ package thread;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -16,7 +14,6 @@ import burp.Commons;
 import burp.IBurpExtenderCallbacks;
 import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
-import domain.DomainPanel;
 import title.LineEntry;
 import title.TitlePanel;
 
@@ -101,32 +98,6 @@ public class ThreadRunner extends Thread{
 		}
 	}
 
-	public static HashSet<String> getDomainsForBypassCheck(){
-		HashSet<String> resultSet = new HashSet<String>();
-
-		HashSet<String> tmpSet = new HashSet<String>();//所有子域名列表
-		tmpSet.addAll(DomainPanel.getDomainResult().getSubDomainSet());
-
-		HashSet<String> unreachableSet = new HashSet<String>();
-		Collection<LineEntry> entries = TitlePanel.getTitleTableModel().getLineEntries().values();
-		for (LineEntry entry:entries) {
-			if (entry.getEntryType().equals(LineEntry.EntryType_DNS) || entry.getStatuscode() == 403) {
-				unreachableSet.add(entry.getHost());
-			}
-			tmpSet.remove(entry.getHost());
-		}//删除了title中成功请求的域名
-
-		tmpSet.addAll(unreachableSet);//添加了请求失败、只有解析、状态403的域名
-
-		//		for (String item:tmpSet) {//移除IP，这步骤是否需要？
-		//			if (Commons.isValidDomain(item)) {
-		//				resultSet.add(item);
-		//			}
-		//		}
-		//		
-		//		return resultSet;
-		return tmpSet;
-	}
 
 	@Override
 	public void run(){
@@ -134,7 +105,7 @@ public class ThreadRunner extends Thread{
 		BlockingQueue<LineEntry> lineEntryQueue = new LinkedBlockingQueue<LineEntry>();//use to store domains
 		BlockingQueue<String> domainQueue = new LinkedBlockingQueue<String>();
 		lineEntryQueue.addAll(TitlePanel.getTitleTableModel().getLineEntries().values());
-		domainQueue.addAll(getDomainsForBypassCheck());
+		domainQueue.addAll(TitlePanel.getTitleTableModel().getDomainsForBypassCheck());
 
 		if (changeType == ChangeCancel || changeType == ChangeClose ){//用户选了cancel（2）或者点击了关闭（-1）
 			return;
@@ -161,7 +132,7 @@ public class ThreadRunner extends Thread{
 			p.start();
 			plist.add(p);
 		}
-		
+
 		try {
 			for (RunnerProducer p:plist) {
 				p.join();
@@ -182,7 +153,7 @@ public class ThreadRunner extends Thread{
 	boolean isAllProductorFinished(){
 		return AllProductorFinished;
 	}
-	
+
 	@Deprecated
 	public void stopThreads() {
 		if (plist != null) {
@@ -192,7 +163,7 @@ public class ThreadRunner extends Thread{
 			stdout.println("~~~~~~~~~~~~~All stop message sent! wait them to exit~~~~~~~~~~~~~");
 		}
 	}
-	
+
 	public void forceStopThreads() {
 		this.interrupt();//将子线程都设置为守护线程，会随着主线程的结束而立即结束,与setDaemon(true)结合
 		stdout.println("~~~~~~~~~~~~~force stop main thread,all sub-threads will exit!~~~~~~~~~~~~~");

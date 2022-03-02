@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -22,6 +23,7 @@ import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
 import burp.IHttpService;
 import burp.IMessageEditorController;
+import burp.IPAddress;
 import burp.IntArraySlice;
 import domain.DomainPanel;
 
@@ -343,7 +345,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		if (rows-1 >=0)	fireTableRowsDeleted(0, rows-1);
 		this.setListenerIsOn(true);
 	}
-	
+
 	/**
 	 * 
 	 * @return 获取已成功获取title的Entry的IP地址集合
@@ -372,7 +374,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		}
 		return result;
 	}
-	
+
 	/**
 	 * 获取根据确定目标汇算出来的网段，减去已确定目标本身后，剩余的IP地址。
 	 * @return 扩展IP集合
@@ -382,9 +384,9 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		//Set<String> CSubNetIPs = Commons.subNetsToIPSet(Commons.toSubNets(IPsOfDomain));
 		Set<String> IPsOfcertainSubnets = Commons.toIPSet(DomainPanel.getDomainResult().getSubnetSet());//用户配置的确定IP+网段
 		IPsOfDomain.addAll(IPsOfcertainSubnets);
-		
+
 		Set<String> subnets = Commons.toSmallerSubNets(IPsOfDomain);//当前所有title结果+确定IP/网段计算出的IP网段
-		
+
 		Set<String> CSubNetIPs = Commons.toIPSet(subnets);// 当前所有title结果计算出的IP集合
 
 		CSubNetIPs.removeAll(IPsOfDomain);//删除域名对应的IP
@@ -409,7 +411,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		Set<String> subnets = Commons.toSmallerSubNets(IPsOfDomain);
 		return subnets;
 	}
-	
+
 	/**
 	 * 用于host碰撞
 	 * @return
@@ -491,7 +493,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			return urls;
 		}
 	}
-	
+
 	public List<String> getCommonURLs(int[] rows) {
 		synchronized (lineEntries) {
 			Arrays.sort(rows); //升序
@@ -521,7 +523,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			return urls;
 		}
 	}
-	
+
 	public List<String> getCDNAndCertInfos(int[] rows) {
 		synchronized (lineEntries) {
 			Arrays.sort(rows); //升序
@@ -535,7 +537,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			return results;
 		}
 	}
-	
+
 	public List<String> getIconHashes(int[] rows) {
 		synchronized (lineEntries) {
 			Arrays.sort(rows); //升序
@@ -681,6 +683,41 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		}
 	}
 
+	/**
+	 * 获取用于Host碰撞的域名列表
+	 * 
+	 * 1、没有解析记录的域名
+	 * 2、解析记录是内网地址的域名
+	 * 
+	 * 3、解析是外网，但是无法访问的域名
+	 * @return
+	 */
+	public HashSet<String> getDomainsForBypassCheck(){
+
+		HashSet<String> allDomainSet = new HashSet<String>();//所有子域名列表
+		allDomainSet.addAll(DomainPanel.getDomainResult().getSubDomainSet());
+
+		HashSet<String> tmp = new HashSet<String>();
+
+		for (String item:allDomainSet) {//移除IP
+			if (item.contains(":")) {//有可能domain:port的情况
+				item = item.split(":")[0];
+			}
+			if (Commons.isValidDomain(item)) {
+				tmp.add(item);
+			}
+		}
+
+		Collection<LineEntry> entries = getLineEntries().values();
+		for (LineEntry entry:entries) {
+			String ip = entry.getIP().split(",")[0];//这里可能不严谨，如果IP解析既有外网地址又有内网地址就会出错
+			if (!IPAddress.isPrivateIPv4(ip)) {//移除公网解析记录；剩下无解析记录和内网解析记录
+				tmp.remove(entry.getHost());
+			}
+		}
+		return tmp;
+	}
+
 	//当记录是非目标资产时，将其IP集合添加到NotTargetIP集合中
 	@Deprecated
 	public void addIPSetOfEntryToNotTargetIPSet(int[] rows) {
@@ -723,7 +760,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 
 
 	///////////////////多个行内容的增删查改/////////////////////////////////
-	
+
 	/**
 	 * 仅用于runner中，某个特殊场景:URL相同host不同的情况
 	 * @param lineEntry
@@ -739,7 +776,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			fireTableRowsInserted(index, index);
 		}
 	}
-	
+
 	/**
 	 * 用于Host碰撞场景
 	 * @param lineEntry
@@ -794,7 +831,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		url = Commons.formateURLString(url);
 		return lineEntries.get(url);
 	}
-	
+
 	/**
 	 * 根据一个IHttpRequestResponse对象来查找对应的LineEntry记录
 	 * 首先根据完整URL进行查找，如果没有找到，就使用baseURL进行查找。

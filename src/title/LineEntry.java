@@ -284,8 +284,8 @@ public class LineEntry {
 	}
 
 	//return IP 的集合
-	public Set<String> fetchIPSet() {
-		Set<String> result = new HashSet<String>();
+	public HashSet<String> fetchIPSet() {
+		HashSet<String> result = new HashSet<String>();
 		for (String ip: IP.split(",")) {
 			result.add(ip.trim());
 		}
