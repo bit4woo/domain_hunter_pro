@@ -689,7 +689,8 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	 * 1、没有解析记录的域名
 	 * 2、解析记录是内网地址的域名
 	 * 
-	 * 3、解析是外网，但是无法访问的域名
+	 * 3、解析是外网，但是外网无法访问的域名（比如403），但是绑定特定IP即可访问。大概率是走了不同的网关导致的.
+	 * 想要准确地获取到这个结果，那么hunter的数据应该是在外网环境中获取的。如果是hunter的数据是内网环境中获取的，就会遗漏一部分数据。
 	 * @return
 	 */
 	public HashSet<String> getDomainsForBypassCheck(){
@@ -712,7 +713,11 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		for (LineEntry entry:entries) {
 			String ip = entry.getIP().split(",")[0];//这里可能不严谨，如果IP解析既有外网地址又有内网地址就会出错
 			if (!IPAddress.isPrivateIPv4(ip)) {//移除公网解析记录；剩下无解析记录和内网解析记录
-				tmp.remove(entry.getHost());
+				if (entry.getStatuscode() == 403 && Commons.isValidDomain(entry.getHost())) {
+					//do Nothing
+				}else {
+					tmp.remove(entry.getHost());
+				}
 			}
 		}
 		return tmp;
