@@ -513,17 +513,18 @@ public class Commons {
 	static String detectCharsetInBody(byte[] requestOrResponse){
 		String body = new String(requestOrResponse);
 		if (body.length() >2000) {
-			body = body.substring(2000);
+			body = body.substring(0,2000);
 		}
 		//<meta charset="utf-8">
-		String pattern = "<meta.*charset=(.*)>";
-		String patternExtract = "charset=(.*)>";
+		String pattern = "<meta.*charset=(.*?)>";//加? 非贪婪模式
+		String patternExtract = "charset=(.*?)>";
 
 		Pattern metaCharset = Pattern.compile(pattern);
 		Matcher matcher = metaCharset.matcher(body);
-
+		//System.out.println(body);
 		if (matcher.find()) {//多次查找
 			String charsetLine = matcher.group();
+			//System.out.println("----"+charsetLine);
 			charsetLine = charsetLine.replaceAll("\"","");//第一个参数是正则
 			charsetLine = charsetLine.replaceAll("/","");
 			charsetLine = charsetLine.replaceAll(" ","");
@@ -531,8 +532,8 @@ public class Commons {
 			Pattern extract = Pattern.compile(patternExtract);
 			Matcher extracter = extract.matcher(charsetLine);
 			if (extracter.find()) {
-				System.out.println( extracter.group(0));
-				System.out.println( extracter.group(1));
+				//System.out.println( extracter.group(0));
+				//System.out.println( extracter.group(1));
 				String charset = extracter.group(1);
 				return charset;
 			}
@@ -821,7 +822,7 @@ public class Commons {
 	}
 
 	public static void test9() throws Exception {
-		byte[] body = FileUtils.readFileToByteArray(new File("D:\\response.html"));
+		byte[] body = FileUtils.readFileToByteArray(new File("/private/tmp/response.html"));
 		System.out.println(detectCharsetInBody(body));
 	}
 
