@@ -195,6 +195,11 @@ public class DomainProducer extends Thread {//Producer do
 		return response;
 	}
 
+	/**
+	 * 先解Unicode，再解url，应该才是正确操作吧
+	 * @param line
+	 * @return
+	 */
 	public static String decodeAll(String line) {
 		line = line.trim();
 
@@ -217,6 +222,24 @@ public class DomainProducer extends Thread {//Producer do
 			}
 		}
 		 */
+		
+		if (needUnicodeConvert(line)) {
+			while (true) {//unicode解码
+				try {
+					int oldlen = line.length();
+					line = StringEscapeUtils.unescapeJava(line);
+					int currentlen = line.length();
+					if (oldlen > currentlen) {
+						continue;
+					}else {
+						break;
+					}
+				}catch(Exception e) {
+					//e.printStackTrace(BurpExtender.getStderr());
+					break;//即使出错，也要进行后续的查找
+				}
+			}
+		}
 
 		if (needURLConvert(line)) {
 			while (true) {
@@ -236,23 +259,6 @@ public class DomainProducer extends Thread {//Producer do
 			}
 		}
 
-		if (needUnicodeConvert(line)) {
-			while (true) {//unicode解码
-				try {
-					int oldlen = line.length();
-					line = StringEscapeUtils.unescapeJava(line);
-					int currentlen = line.length();
-					if (oldlen > currentlen) {
-						continue;
-					}else {
-						break;
-					}
-				}catch(Exception e) {
-					//e.printStackTrace(BurpExtender.getStderr());
-					break;//即使出错，也要进行后续的查找
-				}
-			}
-		}
 		return line;
 	}
 
