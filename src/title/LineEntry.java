@@ -120,6 +120,7 @@ public class LineEntry {
 			this.IP = IPset.toString().replace("[", "").replace("]", "");
 		}
 		this.EntryType = EntryType_DNS;
+		this.CheckStatus = CheckStatus_Checked;
 	}
 
 	public LineEntry(IHttpRequestResponse messageinfo) {
