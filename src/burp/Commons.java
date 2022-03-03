@@ -512,8 +512,11 @@ public class Commons {
 	 */
 	static String detectCharsetInBody(byte[] requestOrResponse){
 		String body = new String(requestOrResponse);
-		if (body.length() >2000) {
-			body = body.substring(0,2000);
+		if (body.contains("\r\n\r\n")) {
+			body = body.split("\r\n\r\n")[1];
+		}
+		if (body.length() >1000) {
+			body = body.substring(0,1000);
 		}
 		//<meta charset="utf-8">
 		String pattern = "<meta.*charset=(.*?)>";//加? 非贪婪模式
