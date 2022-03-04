@@ -3,6 +3,12 @@ package title;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
+import com.alibaba.fastjson.JSON;
+import com.google.gson.Gson;
+
+import domain.DomainManager;
+import domain.target.TargetEntry;
+
 //https://stackoverflow.com/questions/10387290/how-to-get-position-of-key-value-in-linkedhashmap-using-its-key
 public class IndexedLinkedHashMap<K,V> extends LinkedHashMap<K,V> {
 
@@ -46,7 +52,20 @@ public class IndexedLinkedHashMap<K,V> extends LinkedHashMap<K,V> {
         return al_Index.indexOf(key);
     }
     
-    public static void main(String[] args) {
+    public static void test() {
+    	IndexedLinkedHashMap<String,TargetEntry> targetEntries =new IndexedLinkedHashMap<String,TargetEntry>();
+    	targetEntries.put("1111",new TargetEntry("www.baidu.com"));
+    	
+    	String str = JSON.toJSONString(targetEntries);
+    	System.out.println(str);
+    	System.out.println( JSON.parseObject(str,IndexedLinkedHashMap.class));
+		//https://blog.csdn.net/qq_27093465/article/details/73277291
+    	
+    	String str1 = JSON.toJSONString(targetEntries);
+    	System.out.println(str1);
+    	System.out.println( new Gson().fromJson(str,IndexedLinkedHashMap.class));
+    }
+    public void test1() {
     	IndexedLinkedHashMap aaa = new IndexedLinkedHashMap();
     	aaa.put("1", "a");
     	aaa.put("2", "b");
@@ -62,5 +81,8 @@ public class IndexedLinkedHashMap<K,V> extends LinkedHashMap<K,V> {
     	aaa.remove("2");
         aaa.put("7", "x");
     	System.out.println("index of 4: "+aaa.IndexOfKey("4"));
+    }
+    public static void main(String[] args) {
+    	test();
     }
 }
