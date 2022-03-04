@@ -20,7 +20,7 @@ import javax.swing.border.EmptyBorder;
 
 import burp.BurpExtender;
 import burp.Commons;
-import burp.IPAddress;
+import burp.IPAddressUtils;
 import domain.DomainPanel;
 import thread.ThreadGetSubnet;
 import thread.ThreadGetTitleWithForceStop;
@@ -334,7 +334,7 @@ public class TitlePanel extends JPanel {
 			//stdout.println("删除私有IP");
 			for (String subnet :subnets) {
 				String tmp = subnet.split("/")[0];
-				if (IPAddress.isPrivateIPv4(tmp)) {
+				if (IPAddressUtils.isPrivateIPv4(tmp)) {
 					result.remove(subnet);
 					//stdout.println("删除"+subnet);
 				}

@@ -19,6 +19,7 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
 import burp.BurpExtender;
+import domain.DomainPanel;
 import domain.RootDomainMenu;
 
 public class TargetTable extends JTable{
@@ -89,7 +90,7 @@ public class TargetTable extends JTable{
 			}
 		});
 		
-        RowSorter<TableModel> sorter = new TableRowSorter<TableModel>(domainTableModel);
+        RowSorter<TableModel> sorter = new TableRowSorter<TableModel>(DomainPanel.getDomainTableModel());
         setRowSorter(sorter);
 
         setColumnSelectionAllowed(true);

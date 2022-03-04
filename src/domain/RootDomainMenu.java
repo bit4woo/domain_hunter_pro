@@ -22,7 +22,7 @@ public class RootDomainMenu extends JPopupMenu {
 	PrintWriter stderr = BurpExtender.getStderr();
 	private static JTable rootDomainTable;
 
-	RootDomainMenu(final JTable rootDomainTable, final int[] rows,final int columnIndex){
+	public RootDomainMenu(final JTable rootDomainTable, final int[] rows,final int columnIndex){
 		this.rootDomainTable = rootDomainTable;
 
 		JMenuItem getSubDomainsOf = new JMenuItem(new AbstractAction("Get All Subdomin Of This") {

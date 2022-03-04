@@ -14,7 +14,7 @@ import burp.Commons;
 import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
 import burp.IHttpService;
-import burp.IPAddress;
+import burp.IPAddressUtils;
 import domain.CertInfo;
 import domain.DomainManager;
 import domain.DomainPanel;
@@ -107,7 +107,7 @@ public class TempLineEntry {
 		boolean isInPrivateNetwork = TitlePanel.tempConfig.isHandlePriavte();
 
 		if (Commons.isValidIP(host)) {//目标是一个IP
-			if (IPAddress.isPrivateIPv4(host) && !isInPrivateNetwork) {//外网模式，内网IP，直接返回。
+			if (IPAddressUtils.isPrivateIPv4(host) && !isInPrivateNetwork) {//外网模式，内网IP，直接返回。
 				return;
 			}else {
 				IPSet.add(host);
@@ -140,7 +140,7 @@ public class TempLineEntry {
 			//TODO 是否应该移除无效域名？理清楚：无效域名，黑名单域名，无响应域名等情况。
 		}else {//默认过滤私有IP
 			String ip = new ArrayList<>(IPSet).get(0);
-			if (IPAddress.isPrivateIPv4(ip) && !isInPrivateNetwork) {//外网模式，内网域名，仅仅显示域名和IP。
+			if (IPAddressUtils.isPrivateIPv4(ip) && !isInPrivateNetwork) {//外网模式，内网域名，仅仅显示域名和IP。
 				LineEntry entry = new LineEntry(host,IPSet);
 				entry.setTitle("Private IP");
 				addInfoToEntry(entry);

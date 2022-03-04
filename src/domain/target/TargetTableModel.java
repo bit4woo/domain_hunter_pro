@@ -4,7 +4,6 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -13,7 +12,6 @@ import javax.swing.table.AbstractTableModel;
 import burp.BurpExtender;
 import domain.DomainPanel;
 import title.IndexedLinkedHashMap;
-import title.LineEntry;
 
 public class TargetTableModel extends AbstractTableModel {
 
@@ -81,6 +79,26 @@ public class TargetTableModel extends AbstractTableModel {
 		}
 		return "";
 	}
+	
+	public void clear() {
+		for (int i=0;i<targetEntries.size();i++) {
+			removeRow(i);
+		}
+	}
+	
+	/**
+	 * 用于加载数据时，直接初始化
+	 * @param targetEntries
+	 */
+	public void setData(IndexedLinkedHashMap<String,TargetEntry> targetEntries) {
+		clear();
+		this.targetEntries = targetEntries;
+		int size = targetEntries.size();
+		if (size >=1) {
+			fireTableRowsInserted(0, size-1);
+		}
+	}
+	
 
 	public void addRow(String key,TargetEntry entry) {
 		int oldsize = targetEntries.size();

@@ -23,7 +23,7 @@ import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
 import burp.IHttpService;
 import burp.IMessageEditorController;
-import burp.IPAddress;
+import burp.IPAddressUtils;
 import burp.IntArraySlice;
 import domain.DomainPanel;
 
@@ -712,7 +712,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		Collection<LineEntry> entries = getLineEntries().values();
 		for (LineEntry entry:entries) {
 			String ip = entry.getIP().split(",")[0];//这里可能不严谨，如果IP解析既有外网地址又有内网地址就会出错
-			if (!IPAddress.isPrivateIPv4(ip)) {//移除公网解析记录；剩下无解析记录和内网解析记录
+			if (!IPAddressUtils.isPrivateIPv4(ip)) {//移除公网解析记录；剩下无解析记录和内网解析记录
 				if (entry.getStatuscode() == 403 && Commons.isValidDomain(entry.getHost())) {
 					//do Nothing
 				}else {

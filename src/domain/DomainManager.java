@@ -20,6 +20,8 @@ import GUI.GUI;
 import Tools.DomainComparator;
 import burp.BurpExtender;
 import burp.Commons;
+import domain.target.TargetEntry;
+import title.IndexedLinkedHashMap;
 
 /*
  *注意，所有直接对DomainObject中数据的修改，都不会触发该tableChanged监听器。
@@ -35,6 +37,8 @@ public class DomainManager {
 	public boolean autoAddRelatedToRoot = false;
 
 	private LinkedHashMap<String,String> rootDomainMap = new LinkedHashMap<String,String>();
+	private IndexedLinkedHashMap<String,TargetEntry> targetEntries =new IndexedLinkedHashMap<String,TargetEntry>();
+
 	//private LinkedHashMap<String,String> rootBlackDomainMap = new LinkedHashMap<String,String>();
 	// LinkedHashMap to keep the insert order 
 	private Set<String> subnetSet = new HashSet<String>();
@@ -98,6 +102,16 @@ public class DomainManager {
 
 	public void setRootDomainMap(LinkedHashMap<String, String> rootDomainMap) {
 		this.rootDomainMap = rootDomainMap;
+	}
+	
+	
+
+	public IndexedLinkedHashMap<String, TargetEntry> getTargetEntries() {
+		return targetEntries;
+	}
+
+	public void setTargetEntries(IndexedLinkedHashMap<String, TargetEntry> targetEntries) {
+		this.targetEntries = targetEntries;
 	}
 
 	public Set<String> getSubnetSet() {

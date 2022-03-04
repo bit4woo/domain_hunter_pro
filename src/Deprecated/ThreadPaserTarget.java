@@ -161,7 +161,7 @@ class ParserProducer extends Thread {//Producer do
 					continue;
 				}else {//默认过滤私有IP
 					String ip = new ArrayList<>(IPSet).get(0);
-					if (IPAddress.isPrivateIPv4(ip)) {
+					if (IPAddressUtils.isPrivateIPv4(ip)) {
 						continue;
 					}
 				}

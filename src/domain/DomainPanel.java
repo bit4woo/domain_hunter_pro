@@ -4,6 +4,9 @@ import GUI.GUI;
 import GUI.ProjectMenu;
 import Tools.ToolPanel;
 import burp.*;
+import domain.target.TargetEntry;
+import domain.target.TargetTable;
+import domain.target.TargetTableModel;
 import thread.ThreadSearhDomain;
 
 import com.google.common.base.Charsets;
@@ -64,7 +67,7 @@ public class DomainPanel extends JPanel {
     private JTextArea textAreaSubnets;
 
     private SortOrder sortedMethod;
-    private JTable table;
+    private static JTable targetTable;
     public static JPanel HeaderPanel;
 
     private boolean listenerIsOn = true;
@@ -78,9 +81,25 @@ public class DomainPanel extends JPanel {
         DomainPanel.domainResult = domainResult;
     }
     
-    //流量分析进程需要用到这个变量，标记为volatile以获取正确的值。
+    public static JTable getTargetTable() {
+		return targetTable;
+	}
+
+	public void setTargetTable(JTable targetTable) {
+		this.targetTable = targetTable;
+	}
+
+	public static TargetTableModel getDomainTableModel() {
+		return domainTableModel;
+	}
+
+	public static void setDomainTableModel(TargetTableModel domainTableModel) {
+		DomainPanel.domainTableModel = domainTableModel;
+	}
+
+	//流量分析进程需要用到这个变量，标记为volatile以获取正确的值。
     public volatile static DomainManager domainResult = null;//getter setter
-    public static DefaultTableModel domainTableModel;
+    public static TargetTableModel domainTableModel;
     PrintWriter stdout;
     PrintWriter stderr;
 
@@ -448,95 +467,12 @@ public class DomainPanel extends JPanel {
         TargetPanel.setViewportBorder(new LineBorder(new Color(0, 0, 0)));
         //contentPane.add(TargetPanel, BorderLayout.WEST);
 
-        table = new JTable();
-        table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        table.setBorder(new LineBorder(new Color(0, 0, 0)));
-
-        table.getTableHeader().addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                try {
-                    table.getRowSorter().getSortKeys().get(0).getColumn();
-                    //System.out.println(sortedColumn);
-                    sortedMethod = table.getRowSorter().getSortKeys().get(0).getSortOrder();
-                    System.out.println(sortedMethod); //ASCENDING   DESCENDING
-                } catch (Exception e1) {
-                    sortedMethod = null;
-                    e1.printStackTrace(stderr);
-                }
-            }
-        });
-
-        table.addMouseListener(new MouseAdapter() {
-            @Override//表格中的鼠标右键菜单
-            public void mouseReleased(MouseEvent e) {//在windows中触发,因为isPopupTrigger在windows中是在鼠标释放是触发的，而在mac中，是鼠标点击时触发的。
-                //https://stackoverflow.com/questions/5736872/java-popup-trigger-in-linux
-                if (SwingUtilities.isRightMouseButton(e)) {
-                    if (e.isPopupTrigger() && e.getComponent() instanceof JTable) {
-                        //getSelectionModel().setSelectionInterval(rows[0], rows[1]);
-                        int[] rows = table.getSelectedRows();
-                        int col = ((JTable) e.getSource()).columnAtPoint(e.getPoint()); // 获得列位置
-                        if (rows.length > 0) {
-                            rows = SelectedRowsToModelRows(table.getSelectedRows());
-                            new RootDomainMenu(table, rows, col).show(e.getComponent(), e.getX(), e.getY());
-                        } else {//在table的空白处显示右键菜单
-                            //https://stackoverflow.com/questions/8903040/right-click-mouselistener-on-whole-jtable-component
-                            //new LineEntryMenu(_this).show(e.getComponent(), e.getX(), e.getY());
-                        }
-                    }
-                }
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) { //在mac中触发
-                mouseReleased(e);
-            }
-
-            public int[] SelectedRowsToModelRows(int[] SelectedRows) {
-                int[] rows = SelectedRows;
-                for (int i = 0; i < rows.length; i++) {
-                    rows[i] = table.convertRowIndexToModel(rows[i]);//转换为Model的索引，否则排序后索引不对应〿
-                }
-                Arrays.sort(rows);//升序
-                return rows;
-            }
-        });
-
-        domainTableModel = new DefaultTableModel(
-                new Object[][][]{
-                        //{"1", "1","1"},
-                },
-                new String[]{
-                        "Root Domain", "Keyword"//,"Comment"//, "Source"
-                }
-        );
-        table.setModel(domainTableModel);
-
-        /*
-         * 注意，所有直接对DomainObject中数据的修改，都不会触发该tableChanged监听器。
-         * 除非操作的逻辑中包含了firexxxx来主动通知监听器。
-         * DomainPanel.domainTableModel.fireTableChanged(null);
-         */
-        domainTableModel.addTableModelListener(new TableModelListener() {
-            @Override
-            public void tableChanged(TableModelEvent e) {
-                if (listenerIsOn) {
-                    domainResult.setRootDomainMap(getTableMap());
-                    autoSave();
-                }
-            }
-        });
-
-
-        RowSorter<TableModel> sorter = new TableRowSorter<TableModel>(domainTableModel);
-        table.setRowSorter(sorter);
-
-        table.setColumnSelectionAllowed(true);
-        table.setCellSelectionEnabled(true);
-        table.setSurrendersFocusOnKeystroke(true);
-        table.setFillsViewportHeight(true);
-        table.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
-        TargetPanel.setViewportView(table);
+        targetTable = new TargetTable();
+        domainTableModel = new TargetTableModel();
+        targetTable.setModel(domainTableModel);
+        TargetPanel.setViewportView(targetTable);
+        
+        ////////////////////////////////////target area////////////////////////////////////////////////////
 
         //第一次分割
         JSplitPane CenterSplitPane = new JSplitPane();//中间的大模块，一分为二
@@ -633,13 +569,12 @@ public class DomainPanel extends JPanel {
         removeButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
 
-                int[] rowindexs = table.getSelectedRows();
+                int[] rowindexs = targetTable.getSelectedRows();
                 for (int i = 0; i < rowindexs.length; i++) {
-                    rowindexs[i] = table.convertRowIndexToModel(rowindexs[i]);//转换为Model的索引，否则排序后索引不对应。
+                    rowindexs[i] = targetTable.convertRowIndexToModel(rowindexs[i]);//转换为Model的索引，否则排序后索引不对应。
                 }
                 Arrays.sort(rowindexs);
 
-                domainTableModel = (DefaultTableModel) table.getModel();
                 for (int i = rowindexs.length - 1; i >= 0; i--) {
                     domainTableModel.removeRow(rowindexs[i]);
                 }
@@ -653,13 +588,12 @@ public class DomainPanel extends JPanel {
         blackButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
 
-                int[] rowindexs = table.getSelectedRows();
+                int[] rowindexs = targetTable.getSelectedRows();
                 for (int i = 0; i < rowindexs.length; i++) {
-                    rowindexs[i] = table.convertRowIndexToModel(rowindexs[i]);//转换为Model的索引，否则排序后索引不对应。
+                    rowindexs[i] = targetTable.convertRowIndexToModel(rowindexs[i]);//转换为Model的索引，否则排序后索引不对应。
                 }
                 Arrays.sort(rowindexs);
 
-                domainTableModel = (DefaultTableModel) table.getModel();
                 for (int i = rowindexs.length - 1; i >= 0; i--) {
                     String rootdomain = (String) domainTableModel.getValueAt(rowindexs[i], 0);
                     domainTableModel.removeRow(rowindexs[i]);
@@ -947,11 +881,18 @@ public class DomainPanel extends JPanel {
 
         listenerIsOn = false;
         domainResult.relatedToRoot();
-        ClearTable();
-
-        for (Map.Entry<String, String> entry : domainResult.getRootDomainMap().entrySet()) {
-            domainTableModel.addRow(new Object[]{entry.getKey(), entry.getValue()});
+        
+        //兼容旧版本
+        if (domainResult.getRootDomainMap().size() >0 ) {
+        	domainTableModel.clear();
+            for (Map.Entry<String, String> entry : domainResult.getRootDomainMap().entrySet()) {
+                domainTableModel.addRow(entry.getKey(),new TargetEntry(entry.getKey()));
+            }
+            domainResult.getRootDomainMap().clear();//值空，下次就使用新格式的数据了
         }
+
+        //新版本的加载方法
+        domainTableModel.setData(domainResult.getTargetEntries());
 
         textFieldUploadURL.setText(domainResult.uploadURL);
         textAreaSubnets.setText(domainResult.fetchSubnets());
@@ -1108,40 +1049,6 @@ public class DomainPanel extends JPanel {
         return search(rootdomains, keywords);
     }
 
-    /*
-    仅用于root domain数据表发生更改时获取表中数据。
-     */
-    public LinkedHashMap<String, String> getTableMap() {
-        LinkedHashMap<String, String> tableMap = new LinkedHashMap<String, String>();
-
-		/*		for(int x=0;x<table.getRowCount();x++){
-			String key =(String) table.getValueAt(x, 0);
-			String value = (String) table.getValueAt(x, 1); //encountered a "ArrayIndexOutOfBoundsException" error here~~ strange!
-			tableMap.put(key,value);
-		}
-		return tableMap;*/
-
-        Vector data = domainTableModel.getDataVector();
-        for (Object o : data) {
-            Vector v = (Vector) o;
-            String key = (String) v.elementAt(0);
-            String value = (String) v.elementAt(1);
-            if (key != null && value != null) {
-                tableMap.put(key.trim(), value.trim());
-            }
-        }
-        return tableMap;
-    }
-
-    public void ClearTable() {
-        LinkedHashMap<String, String> tmp = domainResult.getRootDomainMap();
-
-        DefaultTableModel model = (DefaultTableModel) table.getModel();
-        model.setRowCount(0);
-        //this also trigger tableModel listener. lead to rootDomainMap to empty!!
-        //so need to backup rootDomainMap and restore!
-        domainResult.setRootDomainMap(tmp);
-    }
 
     /*
     单独保存域名信息到另外的文件
@@ -1262,4 +1169,5 @@ public class DomainPanel extends JPanel {
     	System.out.println(tmp);
     	System.out.println(tmp1);
     }
+
 }
