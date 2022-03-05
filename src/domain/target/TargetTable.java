@@ -17,14 +17,13 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
 import burp.BurpExtender;
-import domain.DomainPanel;
 import domain.RootDomainMenu;
 
 public class TargetTable extends JTable{
 	
 	private PrintWriter stderr;
 	private PrintWriter stdout;
-	private TargetTableModel targetTableModel;
+	private TableModel targetTableModel = new TargetTableModel();
 	
 	
 	public TargetTable() {
@@ -81,14 +80,7 @@ public class TargetTable extends JTable{
 				mouseReleased(e);
 			}
 
-			public int[] SelectedRowsToModelRows(int[] SelectedRows) {
-				int[] rows = SelectedRows;
-				for (int i = 0; i < rows.length; i++) {
-					rows[i] = convertRowIndexToModel(rows[i]);//转换为Model的索引，否则排序后索引不对应〿
-				}
-				Arrays.sort(rows);//升序
-				return rows;
-			}
+
 		});
 
 		RowSorter<TableModel> sorter = new TableRowSorter<TableModel>(targetTableModel);
@@ -101,14 +93,39 @@ public class TargetTable extends JTable{
 		setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
 	}
 	
-
-	public TargetTableModel getTargetTableModel() {
-		return targetTableModel;
-	}
-
-
-	public void setTargetTableModel(TargetTableModel targetTableModel) {
-		this.targetTableModel = targetTableModel;
+	public int[] SelectedRowsToModelRows(int[] SelectedRows) {
+		int[] rows = SelectedRows;
+		for (int i = 0; i < rows.length; i++) {
+			rows[i] = convertRowIndexToModel(rows[i]);//转换为Model的索引，否则排序后索引不对应〿
+		}
+		Arrays.sort(rows);//升序
+		return rows;
 	}
 	
+	@Override
+	public TableModel getModel() {
+		return targetTableModel;
+	}
+	
+	@Override
+	public void setModel(TableModel model) {
+		this.targetTableModel = model;
+		super.setModel(model);
+	}
+
+	//使用setModel，否则需要自行实现很多功能
+	@Deprecated
+	private void setTargetTableModel(TargetTableModel targetTableModel) {
+		this.targetTableModel = targetTableModel;
+	}
+
+	//使用getModel
+	@Deprecated
+	private TargetTableModel getTargetTableModel() {
+		return (TargetTableModel) targetTableModel;
+	}
+	
+	public void loadData(TargetTableModel targetTableModel){
+		setModel(targetTableModel);//这句很关键，否则无法显示整个表的头和内容
+	}
 }

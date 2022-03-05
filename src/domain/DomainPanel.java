@@ -473,10 +473,10 @@ public class DomainPanel extends JPanel {
 
 		JScrollPane TargetPanel = new JScrollPane();//存放目标域名
 		TargetPanel.setViewportBorder(new LineBorder(new Color(0, 0, 0)));
-		//contentPane.add(TargetPanel, BorderLayout.WEST);
 
 		targetTable = new TargetTable();
 		TargetPanel.setViewportView(targetTable);
+		
 
 		////////////////////////////////////target area////////////////////////////////////////////////////
 
@@ -789,10 +789,10 @@ public class DomainPanel extends JPanel {
 				domainResult.getTargetTableModel().addRow(entry.getKey(),new TargetEntry(entry.getKey()));
 			}
 			domainResult.getRootDomainMap().clear();//值空，下次就使用新格式的数据了
-			targetTable.setModel(domainResult.getTargetTableModel());
+			targetTable.loadData(domainResult.getTargetTableModel());
 		}else {
 			//新版本的加载方法
-			targetTable.setTargetTableModel(domainResult.getTargetTableModel());
+			targetTable.loadData(domainResult.getTargetTableModel());
 		}
 
 		textFieldUploadURL.setText(domainResult.uploadURL);

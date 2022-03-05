@@ -78,6 +78,7 @@ public class TargetTableModel extends AbstractTableModel {
 	@Override
 	public Object getValueAt(int rowIndex, int columnIndex) {
 		TargetEntry entry = targetEntries.get(rowIndex);
+		if (entry == null) return "";
 		if (columnIndex == titletList.indexOf("Domain/Subnet/IP")) {
 			return entry.getTarget();
 		}
@@ -89,7 +90,9 @@ public class TargetTableModel extends AbstractTableModel {
 		}
 		return "";
 	}
-	
+
+
+
 	@Override
 	public void setValueAt(Object value, int row, int col) {
 		TargetEntry entry = targetEntries.getValueAtIndex(row);
@@ -104,26 +107,35 @@ public class TargetTableModel extends AbstractTableModel {
 			fireTableCellUpdated(row, col);
 		}
 	}
-	
-	//define header of table???
-		@Override
-		public String getColumnName(int columnIndex) {
-			if (columnIndex >= 0 && columnIndex <= titletList.size()) {
-				return titletList.get(columnIndex);
-			}else {
-				return "";
-			}
-		}
 
-		@Override
-		public boolean isCellEditable(int rowIndex, int columnIndex) {
-			if (titletList.get(columnIndex).equals("Comments")
-					|| titletList.get(columnIndex).equals("Keywords")) {//可以编辑comment
-				return true;
-			}else {
-				return false;
-			}
+	@Override
+	public String getColumnName(int columnIndex) {
+		if (columnIndex >= 0 && columnIndex <= titletList.size()) {
+			return titletList.get(columnIndex);
+		}else {
+			return "";
 		}
+	}
+
+	@Override
+	public Class<?> getColumnClass(int columnIndex)
+	{
+		if (columnIndex == titletList.indexOf("Black")){
+			return boolean.class;
+		}else {
+			return String.class;
+		}
+	}
+
+	@Override
+	public boolean isCellEditable(int rowIndex, int columnIndex) {
+		if (titletList.get(columnIndex).equals("Comments")
+				|| titletList.get(columnIndex).equals("Keywords")) {//可以编辑comment
+			return true;
+		}else {
+			return false;
+		}
+	}
 
 	public void clear() {
 		int size = targetEntries.size();
@@ -255,7 +267,7 @@ public class TargetTableModel extends AbstractTableModel {
 		}
 		return result;
 	}
-	
+
 	public static void main(String[] args) {
 		TargetTableModel aaa= new TargetTableModel();
 		aaa.addRow("111", new TargetEntry("www.baidu.com"));

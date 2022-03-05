@@ -21,6 +21,7 @@ import Tools.DomainComparator;
 import burp.BurpExtender;
 import burp.Commons;
 import burp.DomainNameUtils;
+import com.google.gson.Gson;
 import domain.target.TargetTableModel;
 
 /*
@@ -205,15 +206,18 @@ public class DomainManager {
 	////////////////ser and deser///////////
 
 	public String ToJson() {
-		return JSON.toJSONString(this);
+		//return JSON.toJSONString(this);
 		//https://blog.csdn.net/qq_27093465/article/details/73277291
-		//return new Gson().toJson(this);
+		return new Gson().toJson(this);
 	}
 
 
 	public  static DomainManager FromJson(String instanceString) {// throws Exception {
-		return JSON.parseObject(instanceString,DomainManager.class);
-		//return new Gson().fromJson(instanceString, DomainObject.class);
+		try {
+			return new Gson().fromJson(instanceString, DomainManager.class);
+		}catch (Exception e){
+			return JSON.parseObject(instanceString,DomainManager.class);
+		}
 	}
 
 
