@@ -21,9 +21,12 @@ import domain.DomainPanel;
 import domain.RootDomainMenu;
 
 public class TargetTable extends JTable{
+	
 	private PrintWriter stderr;
 	private PrintWriter stdout;
-
+	private TargetTableModel targetTableModel;
+	
+	
 	public TargetTable() {
 
 		try {
@@ -88,7 +91,7 @@ public class TargetTable extends JTable{
 			}
 		});
 
-		RowSorter<TableModel> sorter = new TableRowSorter<TableModel>(DomainPanel.getTargetTableModel());
+		RowSorter<TableModel> sorter = new TableRowSorter<TableModel>(targetTableModel);
 		setRowSorter(sorter);
 
 		setColumnSelectionAllowed(true);
@@ -97,4 +100,15 @@ public class TargetTable extends JTable{
 		setFillsViewportHeight(true);
 		setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
 	}
+	
+
+	public TargetTableModel getTargetTableModel() {
+		return targetTableModel;
+	}
+
+
+	public void setTargetTableModel(TargetTableModel targetTableModel) {
+		this.targetTableModel = targetTableModel;
+	}
+	
 }

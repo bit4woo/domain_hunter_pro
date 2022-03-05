@@ -793,8 +793,8 @@ public class LineEntryMenu extends JPopupMenu {
 					//如果有 domain domain:8888 两个记录，这种方式就会删错对象
 					java.util.List<String> hostAndPort = lineTable.getModel().getHostsAndPorts(modleRows);//包含端口，如果原始记录
 					for(String item:hostAndPort) {
-						if (!DomainPanel.domainResult.getSubDomainSet().remove(item)) {
-							DomainPanel.domainResult.getSubDomainSet().remove(item.split(":")[0]);
+						if (!DomainPanel.getDomainResult().getSubDomainSet().remove(item)) {
+							DomainPanel.getDomainResult().getSubDomainSet().remove(item.split(":")[0]);
 						}
 					}
 				}else {
@@ -821,8 +821,8 @@ public class LineEntryMenu extends JPopupMenu {
 					//如果有 domain domain:8888 两个记录，这种方式就会删错对象
 					java.util.List<String> hostAndPort = lineTable.getModel().getHostsAndPorts(modleRows);//包含端口，如果原始记录
 					for(String item:hostAndPort) {
-						if (!DomainPanel.domainResult.getSubDomainSet().remove(item)) {
-							DomainPanel.domainResult.getSubDomainSet().remove(item.split(":")[0]);
+						if (!DomainPanel.getDomainResult().getSubDomainSet().remove(item)) {
+							DomainPanel.getDomainResult().getSubDomainSet().remove(item.split(":")[0]);
 						}
 					}
 					lineTable.getModel().addHostToNotTargetIPSet(modleRows);//当host是IP的时候，加入黑名单

@@ -192,7 +192,7 @@ public class DomainManager {
 			filename = GUIMain.currentDBFile.getName();
 		}
 		summary = String.format("  FileName:%s  Root-domain:%s  Related-domain:%s  Sub-domain:%s  Similar-domain:%s  ^_^",
-				filename, rootDomainMap.size(),relatedDomainSet.size(),subDomainSet.size(),similarDomainSet.size());
+				filename, targetTableModel.getTargetEntries().size(),relatedDomainSet.size(),subDomainSet.size(),similarDomainSet.size());
 		return summary;
 	}
 

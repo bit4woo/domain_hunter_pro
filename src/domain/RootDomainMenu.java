@@ -31,7 +31,7 @@ public class RootDomainMenu extends JPopupMenu {
 				String results = "";
 				for (int row:rows) {
 					String rootDomain = (String) rootDomainTable.getModel().getValueAt(row,0);
-					String line = DomainPanel.domainResult.fetchSubDomainsOf(rootDomain);
+					String line = DomainPanel.getDomainResult().fetchSubDomainsOf(rootDomain);
 					results = results+System.lineSeparator()+line;
 				}
 

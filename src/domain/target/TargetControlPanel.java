@@ -9,6 +9,7 @@ import java.util.Arrays;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.SwingWorker;
 import javax.swing.border.LineBorder;
 
 import domain.DomainConsumer;
@@ -18,19 +19,30 @@ public class TargetControlPanel extends JPanel {
 	public TargetControlPanel() {
 		setBorder(new LineBorder(new Color(0, 0, 0)));
 
-
 		JButton addButton = new JButton("Add");
 		addButton.setToolTipText("add Top-Level domain");
 		addButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if (DomainPanel.getDomainResult() == null) {
-					DomainPanel.createOrOpenDB();
-				} else {
-					String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
-					TargetEntry entry = new TargetEntry(enteredRootDomain);
-					DomainPanel.getTargetTableModel().addRow(entry.getTarget(),entry);
-					DomainPanel.autoSave();
-				}
+				SwingWorker worker = new SwingWorker<String,String>() {
+				    @Override
+				    public String doInBackground() {
+				    	if (DomainPanel.getDomainResult() == null) {
+							DomainPanel.createOrOpenDB();
+						} else {
+							String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
+							TargetEntry entry = new TargetEntry(enteredRootDomain);
+							DomainPanel.getDomainResult().getTargetTableModel().addRow(entry.getTarget(),entry);
+							DomainPanel.autoSave();
+						}
+				    	return null;
+				    }
+
+				    @Override
+				    public void done() {
+				    }
+				};
+				
+				worker.execute();
 			}
 		});
 		setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
@@ -46,7 +58,7 @@ public class TargetControlPanel extends JPanel {
 				} else {
 					String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
 					TargetEntry entry = new TargetEntry(enteredRootDomain,false);
-					DomainPanel.getTargetTableModel().addRow(entry.getTarget(),entry);
+					DomainPanel.getDomainResult().getTargetTableModel().addRow(entry.getTarget(),entry);
 					DomainPanel.autoSave();
 				}
 			}
@@ -65,7 +77,7 @@ public class TargetControlPanel extends JPanel {
 				}
 				Arrays.sort(rowindexs);
 
-				TargetTableModel domainTableModel = DomainPanel.getTargetTableModel();
+				TargetTableModel domainTableModel = DomainPanel.getDomainResult().getTargetTableModel();
 				for (int i = rowindexs.length - 1; i >= 0; i--) {
 					domainTableModel.removeRow(rowindexs[i]);
 				}
@@ -84,7 +96,7 @@ public class TargetControlPanel extends JPanel {
 				}
 				Arrays.sort(rowindexs);
 
-				TargetTableModel domainTableModel = DomainPanel.getTargetTableModel();
+				TargetTableModel domainTableModel = DomainPanel.getDomainResult().getTargetTableModel();
 				for (int i = rowindexs.length - 1; i >= 0; i--) {
 					TargetEntry entry = domainTableModel.getValueAt(rowindexs[i]);
 					entry.setBlack(true);

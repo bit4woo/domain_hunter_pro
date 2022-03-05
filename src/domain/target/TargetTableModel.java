@@ -20,13 +20,12 @@ import title.IndexedLinkedHashMap;
 public class TargetTableModel extends AbstractTableModel {
 
 	private IndexedLinkedHashMap<String,TargetEntry> targetEntries =new IndexedLinkedHashMap<String,TargetEntry>();
-	private boolean ListenerIsOn = true;
 
 	PrintWriter stdout;
 	PrintWriter stderr;
 
 	private static final String[] standardTitles = new String[] {
-			"Domain/Subnet/IP", "Keyword", "Comments"};
+			"Domain/Subnet/IP", "Keyword", "Comments","Black"};
 	private static List<String> titletList = new ArrayList<>(Arrays.asList(standardTitles));
 	//为了实现动态表结构
 	public static List<String> getTitletList() {
@@ -51,7 +50,7 @@ public class TargetTableModel extends AbstractTableModel {
 		addTableModelListener(new TableModelListener() {
 			@Override
 			public void tableChanged(TableModelEvent e) {
-				if (ListenerIsOn) {
+				if (DomainPanel.isListenerIsOn()) {
 					DomainPanel.autoSave();
 				}
 			}
@@ -90,11 +89,47 @@ public class TargetTableModel extends AbstractTableModel {
 		}
 		return "";
 	}
+	
+	@Override
+	public void setValueAt(Object value, int row, int col) {
+		TargetEntry entry = targetEntries.getValueAtIndex(row);
+		if (col == titletList.indexOf("Comments")){
+			String valueStr = ((String) value).trim();
+			entry.setComment(valueStr);
+			fireTableCellUpdated(row, col);
+		}
+		if (col == titletList.indexOf("Keywords")){
+			String valueStr = ((String) value).trim();
+			entry.setKeyword(valueStr);
+			fireTableCellUpdated(row, col);
+		}
+	}
+	
+	//define header of table???
+		@Override
+		public String getColumnName(int columnIndex) {
+			if (columnIndex >= 0 && columnIndex <= titletList.size()) {
+				return titletList.get(columnIndex);
+			}else {
+				return "";
+			}
+		}
+
+		@Override
+		public boolean isCellEditable(int rowIndex, int columnIndex) {
+			if (titletList.get(columnIndex).equals("Comments")
+					|| titletList.get(columnIndex).equals("Keywords")) {//可以编辑comment
+				return true;
+			}else {
+				return false;
+			}
+		}
 
 	public void clear() {
-		for (int i=0;i<targetEntries.size();i++) {
-			removeRow(i);
-		}
+		int size = targetEntries.size();
+		targetEntries = new IndexedLinkedHashMap<String,TargetEntry>();
+		System.out.println("clean targets of old data,"+size+" targets cleaned");
+		if (size-1 >=0)	fireTableRowsDeleted(0, size-1);
 	}
 
 	/**
@@ -118,13 +153,12 @@ public class TargetTableModel extends AbstractTableModel {
 	public void addRow(String key,TargetEntry entry) {
 		int oldsize = targetEntries.size();
 		targetEntries.put(key,entry);
+		int rowIndex = targetEntries.IndexOfKey(key);
 		int newsize = targetEntries.size();
-		if (oldsize ==newsize) {
-			int rowIndex = targetEntries.IndexOfKey(key);
+		if (oldsize == newsize) {//覆盖修改
 			fireTableRowsUpdated(rowIndex,rowIndex);
-		}else {
-			int rowIndex = getRowCount();
-			fireTableRowsInserted(rowIndex, rowIndex);
+		}else {//新增
+			fireTableRowsInserted(rowIndex,rowIndex);
 		}
 	}
 
@@ -134,7 +168,7 @@ public class TargetTableModel extends AbstractTableModel {
 	 */
 	public void removeRow(int rowIndex) {
 		targetEntries.remove(rowIndex);
-		fireTableRowsInserted(rowIndex, rowIndex);
+		fireTableRowsDeleted(rowIndex, rowIndex);
 	}
 
 	/**
@@ -143,7 +177,7 @@ public class TargetTableModel extends AbstractTableModel {
 	public void removeRow(String key) {
 		int rowIndex = targetEntries.IndexOfKey(key);
 		targetEntries.remove(key);
-		fireTableRowsInserted(rowIndex, rowIndex);
+		fireTableRowsDeleted(rowIndex, rowIndex);
 	}
 
 	/**
@@ -220,6 +254,12 @@ public class TargetTableModel extends AbstractTableModel {
 			result.add(suffix);
 		}
 		return result;
+	}
+	
+	public static void main(String[] args) {
+		TargetTableModel aaa= new TargetTableModel();
+		aaa.addRow("111", new TargetEntry("www.baidu.com"));
+		aaa.addRow("2222", new TargetEntry("www.baidu.com"));
 	}
 
 }

@@ -1,10 +1,28 @@
 package domain;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Desktop;
-import java.awt.FlowLayout;
-import java.awt.Font;
+import GUI.GUIMain;
+import GUI.ProjectMenu;
+import Tools.ToolPanel;
+import burp.*;
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
+import com.google.common.net.InternetDomainName;
+import domain.target.TargetControlPanel;
+import domain.target.TargetEntry;
+import domain.target.TargetTable;
+import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import thread.ThreadSearhDomain;
+import toElastic.VMP;
+
+import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -15,60 +33,10 @@ import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTable;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.SortOrder;
-import javax.swing.SwingConstants;
-import javax.swing.SwingWorker;
-import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import com.google.common.base.Charsets;
-import com.google.common.io.Files;
-import com.google.common.net.InternetDomainName;
-
-import GUI.GUIMain;
-import GUI.ProjectMenu;
-import Tools.ToolPanel;
-import burp.BurpExtender;
-import burp.Commons;
-import burp.DBHelper;
-import burp.IBurpExtenderCallbacks;
-import burp.IHttpRequestResponse;
-import burp.IHttpService;
-import burp.IScanIssue;
-import domain.target.TargetEntry;
-import domain.target.TargetTable;
-import domain.target.TargetTableModel;
-import thread.ThreadSearhDomain;
-import toElastic.VMP;
 
 /*
  *注意，所有直接对DomainObject中数据的修改，都不会触发该tableChanged监听器。
@@ -92,20 +60,32 @@ public class DomainPanel extends JPanel {
 	private JTextArea textAreaPackages;
 	private JTextArea textAreaSubnets;
 
-	private SortOrder sortedMethod;
-	private static JTable targetTable;
-	public static JPanel HeaderPanel;
+	private static TargetTable targetTable;
+	private static JPanel HeaderPanel;
 
 	//流量分析进程需要用到这个变量，标记为volatile以获取正确的值。
-	public volatile static DomainManager domainResult = null;//getter setter
-	private static TargetTableModel targetTableModel;
-	PrintWriter stdout;
-	PrintWriter stderr;
+	/**
+	 * DomainPanel对应DomainManager
+	 * TargetTable对应TargetTableModel
+	 * 
+	 * targetTable可以从DomainPanel中获取，是GUI的线路关系
+	 * targetTableModel则对应地从DomainManager中的对象获取，是数据模型的线路关系
+	 */
+	private volatile static DomainManager domainResult = new DomainManager();//getter setter
+	private PrintWriter stdout;
+	private PrintWriter stderr;
 
-	private boolean listenerIsOn = true;
+	private static boolean listenerIsOn = true;
 	private static final Logger log = LogManager.getLogger(DomainPanel.class);
 
 
+	public static boolean isListenerIsOn() {
+		return listenerIsOn;
+	}
+
+	public static void setListenerIsOn(boolean listenerIsOn) {
+		DomainPanel.listenerIsOn = listenerIsOn;
+	}
 
 	public static DomainManager getDomainResult() {
 		return domainResult;
@@ -115,21 +95,21 @@ public class DomainPanel extends JPanel {
 		DomainPanel.domainResult = domainResult;
 	}
 
-	public static JTable getTargetTable() {
+	public static TargetTable getTargetTable() {
 		return targetTable;
 	}
 
-	public void setTargetTable(JTable targetTable) {
+	public void setTargetTable(TargetTable targetTable) {
 		this.targetTable = targetTable;
 	}
 
-	public static TargetTableModel getTargetTableModel() {
-		return targetTableModel;
-	}
-
-	public static void setTargetTableModel(TargetTableModel targetTableModel) {
-		DomainPanel.targetTableModel = targetTableModel;
-	}
+//	public static TargetTableModel getTargetTableModel() {
+//		return targetTableModel;
+//	}
+//
+//	public static void setTargetTableModel(TargetTableModel targetTableModel) {
+//		DomainPanel.targetTableModel = targetTableModel;
+//	}
 
 	public static void createOrOpenDB() {
 		Object[] options = { "Create","Open"};
@@ -246,8 +226,8 @@ public class DomainPanel extends JPanel {
 					@Override
 					protected Map doInBackground() throws Exception {
 
-						Set<String> rootDomains = targetTableModel.fetchRootDomainSet();
-						Set<String> keywords = targetTableModel.fetchKeywordSet();
+						Set<String> rootDomains = domainResult.getTargetTableModel().fetchRootDomainSet();
+						Set<String> keywords = domainResult.getTargetTableModel().fetchKeywordSet();
 
 						//stderr.print(keywords.size());
 						//System.out.println(rootDomains.toString());
@@ -288,8 +268,8 @@ public class DomainPanel extends JPanel {
 					//https://stackoverflow.com/questions/19708646/how-to-update-swing-ui-while-actionlistener-is-in-progress
 					@Override
 					protected Map doInBackground() throws Exception {
-						Set<String> rootDomains = targetTableModel.fetchRootDomainSet();
-						Set<String> keywords = targetTableModel.fetchKeywordSet();
+						Set<String> rootDomains = domainResult.getTargetTableModel().fetchRootDomainSet();
+						Set<String> keywords = domainResult.getTargetTableModel().fetchKeywordSet();
 
 						btnCrawl.setEnabled(false);
 						return crawl(rootDomains, keywords);
@@ -496,8 +476,6 @@ public class DomainPanel extends JPanel {
 		//contentPane.add(TargetPanel, BorderLayout.WEST);
 
 		targetTable = new TargetTable();
-		targetTableModel = new TargetTableModel();
-		targetTable.setModel(targetTableModel);
 		TargetPanel.setViewportView(targetTable);
 
 		////////////////////////////////////target area////////////////////////////////////////////////////
@@ -552,115 +530,8 @@ public class DomainPanel extends JPanel {
 		///////////////////////////////Target Operations and Config//////////////////////
 
 
-		JPanel ControlPanel = new JPanel();
-		ControlPanel.setBorder(new LineBorder(new Color(0, 0, 0)));
+		JPanel ControlPanel = new TargetControlPanel();
 		split1of8.setRightComponent(ControlPanel);
-
-
-		JButton addButton = new JButton("Add");
-		addButton.setToolTipText("add Top-Level domain");
-		addButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if (domainResult == null) {
-					createOrOpenDB();
-				} else {
-					String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
-					domainResult.addToRootDomainAndSubDomain(enteredRootDomain,true);
-					showToDomainUI();
-					autoSave();
-				}
-			}
-		});
-		ControlPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-		ControlPanel.add(addButton);
-
-
-		JButton addButton1 = new JButton("Add+");
-		addButton1.setToolTipText("add Multiple-Level domain");
-		addButton1.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if (domainResult == null) {
-					createOrOpenDB();
-				} else {
-					String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
-					domainResult.addToRootDomainAndSubDomain(enteredRootDomain,false);
-					showToDomainUI();
-					autoSave();
-				}
-			}
-		});
-		ControlPanel.add(addButton1);
-
-
-		JButton removeButton = new JButton("Remove");
-		ControlPanel.add(removeButton);
-		removeButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-
-				int[] rowindexs = targetTable.getSelectedRows();
-				for (int i = 0; i < rowindexs.length; i++) {
-					rowindexs[i] = targetTable.convertRowIndexToModel(rowindexs[i]);//转换为Model的索引，否则排序后索引不对应。
-				}
-				Arrays.sort(rowindexs);
-
-				for (int i = rowindexs.length - 1; i >= 0; i--) {
-					targetTableModel.removeRow(rowindexs[i]);
-				}
-				// will trigger tableModel listener---due to "fireTableRowsDeleted" in removeRow
-				//domainResult.setRootDomainMap(getTableMap()); //no need any more because tableModel Listener
-			}
-		});
-
-		JButton blackButton = new JButton("Black");
-		ControlPanel.add(blackButton);
-		blackButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-
-				int[] rowindexs = targetTable.getSelectedRows();
-				for (int i = 0; i < rowindexs.length; i++) {
-					rowindexs[i] = targetTable.convertRowIndexToModel(rowindexs[i]);//转换为Model的索引，否则排序后索引不对应。
-				}
-				Arrays.sort(rowindexs);
-
-				for (int i = rowindexs.length - 1; i >= 0; i--) {
-					String rootdomain = (String) targetTableModel.getValueAt(rowindexs[i], 0);
-					targetTableModel.removeRow(rowindexs[i]);
-					domainResult.getRootDomainMap().put("[exclude]" + rootdomain, "");
-				}
-				showToDomainUI();
-				autoSave();
-				// will trigger tableModel listener
-				//domainResult.setRootDomainMap(getTableMap()); //no need any more because tableModel Listener
-			}
-		});
-
-		JButton btnFresh = new JButton("Fresh");
-		ControlPanel.add(btnFresh);
-		btnFresh.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				//to clear sub and similar domains
-				DomainConsumer.QueueToResult();
-				domainResult.getEmailSet().addAll(collectEmails());
-				domainResult.freshBaseRule();
-				showToDomainUI();
-				autoSave();
-			}
-		});
-
-		/*
-		JButton btnCopy = new JButton("Copy");
-		btnCopy.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-				StringSelection selection = new StringSelection(domainResult.fetchRootDomains());
-				clipboard.setContents(selection, null);
-			}
-		});
-		btnCopy.setToolTipText("Copy Root Domains To ClipBoard");
-		ControlPanel.add(btnCopy);*/
-
 
 		JPanel autoControlPanel = new JPanel();
 		autoControlPanel.setBorder(new LineBorder(new Color(0, 0, 0)));
@@ -912,15 +783,17 @@ public class DomainPanel extends JPanel {
 
 		//兼容旧版本
 		if (domainResult.getRootDomainMap().size() >0 ) {
-			targetTableModel.clear();
+			domainResult.getTargetTableModel().clear();
+			//https://stackoverflow.com/questions/12600659/jxtable-java-lang-indexoutofboundsexception-invalid-range
 			for (Map.Entry<String, String> entry : domainResult.getRootDomainMap().entrySet()) {
-				targetTableModel.addRow(entry.getKey(),new TargetEntry(entry.getKey()));
+				domainResult.getTargetTableModel().addRow(entry.getKey(),new TargetEntry(entry.getKey()));
 			}
 			domainResult.getRootDomainMap().clear();//值空，下次就使用新格式的数据了
+			targetTable.setModel(domainResult.getTargetTableModel());
+		}else {
+			//新版本的加载方法
+			targetTable.setTargetTableModel(domainResult.getTargetTableModel());
 		}
-
-		//新版本的加载方法
-		targetTable.setModel(targetTableModel);
 
 		textFieldUploadURL.setText(domainResult.uploadURL);
 		textAreaSubnets.setText(domainResult.fetchSubnets());
@@ -962,7 +835,7 @@ public class DomainPanel extends JPanel {
 	}
 
 	public void ZoneTransferCheckAll() {
-		for (String rootDomain : targetTableModel.fetchRootDomainSet()) {
+		for (String rootDomain : domainResult.getTargetTableModel().fetchRootDomainSet()) {
 			Set<String> NS = Commons.GetAuthoritativeNameServer(rootDomain);
 			for (String Server : NS) {
 				//stdout.println("checking [Server: "+Server+" Domain: "+rootDomain+"]");

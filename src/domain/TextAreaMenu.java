@@ -131,7 +131,7 @@ public class TextAreaMenu extends JPopupMenu {
 		JMenuItem removeMd5DomainItem = new JMenuItem(new AbstractAction("Remove MD5 Domain") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				DomainPanel.domainResult.removeMd5Domain();
+				DomainPanel.getDomainResult().removeMd5Domain();
 			}
 		});
 		
