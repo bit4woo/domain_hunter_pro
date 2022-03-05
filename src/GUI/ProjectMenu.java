@@ -23,26 +23,26 @@ import title.LineEntry;
 import title.TitlePanel;
 
 public class ProjectMenu extends JMenu{
-	GUI gui;
+	GUIMain gui;
 	JMenuItem lockMenu;
 
-	public static void createNewDb(GUI gui) {
-		File file = GUI.dbfc.dialog(false,".db");//通过保存对话指定文件，这会是一个空文件。
+	public static void createNewDb(GUIMain gui) {
+		File file = GUIMain.dbfc.dialog(false,".db");//通过保存对话指定文件，这会是一个空文件。
 		if (null != file) {
 			DomainPanel.setDomainResult(new DomainManager(file.getName()));
 			gui.saveData(file.toString(),true);
-			GUI.LoadData(file.toString());//然后加载，就是一个新的空项目了。
+			GUIMain.LoadData(file.toString());//然后加载，就是一个新的空项目了。
 		}
 	}
 
 	public static void openDb() {
-		File file = GUI.dbfc.dialog(true,".db");
+		File file = GUIMain.dbfc.dialog(true,".db");
 		if (null != file) {
-			GUI.LoadData(file.toString());
+			GUIMain.LoadData(file.toString());
 		}
 	}
 
-	public ProjectMenu(GUI gui){
+	public ProjectMenu(GUIMain gui){
 		this.gui = gui;
 		this.setText("DomainHunter");
 
@@ -89,7 +89,7 @@ public class ProjectMenu extends JMenu{
 				DomainPanel.getDomainResult().getSimilarDomainSet().addAll(NewManager.getSimilarDomainSet());
 				DomainPanel.getDomainResult().getEmailSet().addAll(NewManager.getEmailSet());
 				DomainPanel.getDomainResult().getPackageNameSet().addAll(NewManager.getPackageNameSet());
-				GUI.getDomainPanel().showToDomainUI();
+				GUIMain.getDomainPanel().showToDomainUI();
 
 				IndexedLinkedHashMap<String, LineEntry> titles = dbhelper.getTitles();
 				for (LineEntry entry:titles.values()) {
@@ -131,7 +131,7 @@ public class ProjectMenu extends JMenu{
 					}
 				}
 
-				GUI.getDomainPanel().showToDomainUI();
+				GUIMain.getDomainPanel().showToDomainUI();
 			}
 		});
 		ImportMenu.setToolTipText("Import Domain From Text File");
@@ -158,7 +158,7 @@ public class ProjectMenu extends JMenu{
 		this.add(lockMenu);
 
 		//为了菜单能够区分
-		File dbFile = GUI.getCurrentDBFile();
+		File dbFile = GUIMain.getCurrentDBFile();
 		if (dbFile != null){
 			AddDBNameMenuItem(dbFile.getName());
 		}
@@ -230,7 +230,7 @@ public class ProjectMenu extends JMenu{
 			if (tmp.getName().equals("DomainHunterPro")){
 				ParentOfDomainHunter.setTitleAt(i,"xxxxx");//似乎burp不会刷新这个title的显示。
 
-				String tmpDbFile = ((GUI) tmp).currentDBFile.getName();
+				String tmpDbFile = ((GUIMain) tmp).currentDBFile.getName();
 				if (tmpDbFile.equals(dbFileName)){
 					ParentOfDomainHunter.setTitleAt(i,tmpDbFile);
 				}
@@ -247,7 +247,7 @@ public class ProjectMenu extends JMenu{
 		for (int i=n-1;i>=0;i--){//倒序查找更快
 			Component tmp = ParentOfDomainHunter.getComponent(i);
 			if (tmp.getName().equals("DomainHunterPro")){
-				String tmpDbFile = ((GUI) tmp).currentDBFile.getName();
+				String tmpDbFile = ((GUIMain) tmp).currentDBFile.getName();
 				if (tmpDbFile.equals(dbFileName)){
 					return i;
 				}

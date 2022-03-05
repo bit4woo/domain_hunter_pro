@@ -13,8 +13,6 @@ import javax.swing.RowSorter;
 import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
 import javax.swing.border.LineBorder;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
@@ -27,15 +25,15 @@ public class TargetTable extends JTable{
 	private PrintWriter stdout;
 
 	public TargetTable() {
-		
+
 		try {
-            stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
-            stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
-        } catch (Exception e) {
-            stdout = new PrintWriter(System.out, true);
-            stderr = new PrintWriter(System.out, true);
-        }
-        
+			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
+			stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
+		} catch (Exception e) {
+			stdout = new PrintWriter(System.out, true);
+			stderr = new PrintWriter(System.out, true);
+		}
+
 		setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		setBorder(new LineBorder(new Color(0, 0, 0)));
 
@@ -89,14 +87,14 @@ public class TargetTable extends JTable{
 				return rows;
 			}
 		});
-		
-        RowSorter<TableModel> sorter = new TableRowSorter<TableModel>(DomainPanel.getDomainTableModel());
-        setRowSorter(sorter);
 
-        setColumnSelectionAllowed(true);
-        setCellSelectionEnabled(true);
-        setSurrendersFocusOnKeystroke(true);
-        setFillsViewportHeight(true);
-        setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
+		RowSorter<TableModel> sorter = new TableRowSorter<TableModel>(DomainPanel.getTargetTableModel());
+		setRowSorter(sorter);
+
+		setColumnSelectionAllowed(true);
+		setCellSelectionEnabled(true);
+		setSurrendersFocusOnKeystroke(true);
+		setFillsViewportHeight(true);
+		setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
 	}
 }

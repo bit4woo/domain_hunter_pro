@@ -6,7 +6,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 
-import GUI.GUI;
+import GUI.GUIMain;
 import burp.BurpExtender;
 import burp.IBurpExtenderCallbacks;
 import burp.IExtensionHelpers;
@@ -101,7 +101,7 @@ public class Producer extends Thread {//Producer do
 	}
 
 	public static LineEntry findHistory(String url) {
-		IndexedLinkedHashMap<String,LineEntry> HistoryLines = GUI.getTitlePanel().getBackupLineEntries();
+		IndexedLinkedHashMap<String,LineEntry> HistoryLines = GUIMain.getTitlePanel().getBackupLineEntries();
 		if (HistoryLines == null) return null;
 		LineEntry found = HistoryLines.get(url);
 		if (found != null) {

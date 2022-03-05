@@ -53,7 +53,7 @@ import javax.swing.event.DocumentListener;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.text.StringEscapeUtils;
 
-import GUI.GUI;
+import GUI.GUIMain;
 import burp.BurpExtender;
 import burp.Commons;
 import domain.CertInfo;
@@ -127,7 +127,7 @@ public class ToolPanel extends JPanel {
 		String dbFilePath = lineConfig.getDbfilepath();
 		
 		if (dbFilePath != null && dbFilePath.endsWith(".db")) {
-			GUI.LoadData(dbFilePath);
+			GUIMain.LoadData(dbFilePath);
 		}
 		//这里的修改也会触发textFieldListener监听器。
 		//由于我们是多个组件共用一个保存逻辑，当前对一个组件设置值的时候，触发保存，从而导致整体数据的修改！！！

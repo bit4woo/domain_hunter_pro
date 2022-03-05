@@ -1,7 +1,16 @@
 package domain.target;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.Set;
+
+import org.apache.commons.io.FileUtils;
+
 import com.google.common.net.InternetDomainName;
 
+import burp.BurpExtender;
+import burp.Commons;
 import burp.DomainNameUtils;
 import domain.DomainPanel;
 
@@ -14,43 +23,43 @@ public class TargetEntry {
 	private boolean isBlack = false;//这个域名是否是黑名单根域名，需要排除的
 	private String comment = "";
 	private boolean useTLD;//TLD= Top-Level Domain
-	
+
 	public static final String Target_Type_Domain = "Domain";
 	public static final String Target_Type_Subnet = "Subnet";
 	public static final String Target_Type_IPaddress = "IP";
 
 	public static final String[]  TargetTypeArray = {Target_Type_Domain,Target_Type_Subnet,Target_Type_IPaddress};
-	
-	
+
+
 	public TargetEntry(String input) {
 		this(input,true);
 	}
 	public TargetEntry(String input,boolean autoSub) {
-		
+
 		String domain = DomainNameUtils.cleanDomain(input);
 		if (domain != null && DomainNameUtils.isValidDomain(domain)) {
 			target = domain;
 			type = Target_Type_Domain;
-			
+
 			if (autoSub) {
 				String RootDomain = InternetDomainName.from(domain).topPrivateDomain().toString();
 				target = RootDomain;
 			}
-	        keyword = domain.substring(0, domain.indexOf("."));
-	        
-	        try {
+			keyword = domain.substring(0, domain.indexOf("."));
+
+			try {
 				DomainPanel.getDomainResult().getSubDomainSet().add(domain);
 				DomainPanel.getDomainResult().getRelatedDomainSet().remove(domain);//刷新时不能清空，所有要有删除操作。
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-	        
+
 		}
 		//IP
 
 	}
-	
-	
+
+
 	public String getTarget() {
 		return target;
 	}
@@ -105,5 +114,25 @@ public class TargetEntry {
 
 	public void setUseTLD(boolean useTLD) {
 		this.useTLD = useTLD;
+	}
+
+	public void zoneTransferCheck() {
+		String rootDomain = InternetDomainName.from(target).topPrivateDomain().toString();
+		Set<String> NS = Commons.GetAuthoritativeNameServer(rootDomain);
+		for (String Server : NS) {
+			//stdout.println("checking [Server: "+Server+" Domain: "+rootDomain+"]");
+			List<String> Records = Commons.ZoneTransferCheck(rootDomain, Server);
+			if (Records.size() > 0) {
+				try {
+					//stdout.println("!!! "+Server+" is zoneTransfer vulnerable for domain "+rootDomain+" !");
+					File file = new File(Server + "-ZoneTransfer-" + Commons.getNowTimeString() + ".txt");
+					file.createNewFile();
+					FileUtils.writeLines(file, Records);
+					BurpExtender.getStdout().println("!!! Records saved to " + file.getAbsolutePath());
+				} catch (IOException e1) {
+					e1.printStackTrace(BurpExtender.getStderr());
+				}
+			}
+		}
 	}
 }

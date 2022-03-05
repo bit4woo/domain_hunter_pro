@@ -23,9 +23,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingWorker;
 
+import GUI.GUIMain;
 import GUI.LineEntryMenuForBurp;
 import GUI.RunnerGUI;
-import GUI.GUI;
 import Tools.ToolPanel;
 import burp.BurpExtender;
 import burp.Commons;
@@ -411,7 +411,7 @@ public class LineEntryMenu extends JPopupMenu {
 				}
 			}
 		});
-		
+
 		/**
 		 * 获取用于Host碰撞的域名
 		 */
@@ -771,7 +771,7 @@ public class LineEntryMenu extends JPopupMenu {
 				}else {
 					return;
 				}
-				GUI.titlePanel.digStatus();
+				GUIMain.titlePanel.digStatus();
 			}
 		});
 		removeItem.setToolTipText("Just Delete Entry In Title Panel");
@@ -800,7 +800,7 @@ public class LineEntryMenu extends JPopupMenu {
 				}else {
 					return;
 				}
-				GUI.titlePanel.digStatus();
+				GUIMain.titlePanel.digStatus();
 			}
 		});
 		removeSubDomainItem.setToolTipText("Delete Host In Domain Panel");
@@ -830,7 +830,7 @@ public class LineEntryMenu extends JPopupMenu {
 				}else {
 					return;
 				}
-				GUI.titlePanel.digStatus();
+				GUIMain.titlePanel.digStatus();
 			}
 		});
 		NotTargetHandleItem.setToolTipText("1.Delete Host From Domain Panel,2.Add Host to BlackList,3.Delete Entry From Title Panel");
@@ -848,7 +848,7 @@ public class LineEntryMenu extends JPopupMenu {
 				}else {
 					return;
 				}
-				GUI.titlePanel.digStatus();
+				GUIMain.titlePanel.digStatus();
 			}
 		});
 		addToblackListItem.setToolTipText("If host is IP address,will be added to NotTargetIPSet[Black List]");
@@ -887,7 +887,7 @@ public class LineEntryMenu extends JPopupMenu {
 		DoMenu.add(SendToRepeater);
 		DoMenu.add(SendToRepeaterWithCookieItem);
 		DoMenu.add(doActiveScan);
-		
+
 		DoMenu.addSeparator();
 		//外部程序相关行为
 		DoMenu.add(openURLwithBrowserItem);
@@ -908,7 +908,7 @@ public class LineEntryMenu extends JPopupMenu {
 
 		JMenu CopyMenu = new JMenu("Copy");
 		this.add(CopyMenu);
-		
+
 		CopyMenu.add(copyHostItem);
 		CopyMenu.add(copyHostAndPortItem);
 		CopyMenu.add(copyIPItem);
@@ -918,7 +918,7 @@ public class LineEntryMenu extends JPopupMenu {
 		CopyMenu.add(copyLocationURLItem);
 		CopyMenu.add(copyCDNAndCertInfoItem);
 		CopyMenu.add(copyIconhashItem);
-		
+
 		this.addSeparator();
 
 		this.add(removeItem);

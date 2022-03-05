@@ -98,7 +98,7 @@ public class DomainProducer extends Thread {//Producer do
 				if (type !=DomainManager.USELESS && protocol.equalsIgnoreCase("https")){//get related domains
 					if (!httpsQueue.contains(shortURL)) {//httpService checked or not
 						httpsQueue.put(shortURL);//必须先添加，否则执行在执行https链接的过程中，已经有很多请求通过检测进行相同的请求了。
-						Set<String> tmpDomains = CertInfo.getSANsbyKeyword(shortURL,DomainPanel.domainResult.fetchKeywordSet());
+						Set<String> tmpDomains = CertInfo.getSANsbyKeyword(shortURL,DomainPanel.getTargetTableModel().fetchKeywordSet());
 						for (String domain:tmpDomains) {
 							if (!relatedDomainQueue.contains(domain)) {
 								relatedDomainQueue.add(domain);
@@ -110,7 +110,7 @@ public class DomainProducer extends Thread {//Producer do
 				//对所有流量都进行抓取，这样可以发现更多域名，但同时也会有很多无用功，尤其是使用者同时挖掘多个目标的时候
 				if (!Commons.uselessExtension(urlString)) {//grep domains from response and classify
 					byte[] response = messageinfo.getResponse();
-					
+
 					if (response != null) {
 						if (response.length >= 100000000) {//避免大数据包卡死整个程序
 							response = subByte(response,0,100000000);
@@ -119,7 +119,7 @@ public class DomainProducer extends Thread {//Producer do
 						classifyDomains(domains);
 					}
 				}
-				
+
 				if (ToolPanel.rdbtnSaveTrafficTo.isSelected()) {
 					if (type != DomainManager.USELESS && !Commons.uselessExtension(urlString)) {//grep domains from response and classify
 						if (threadNo == 9999) {
@@ -144,7 +144,7 @@ public class DomainProducer extends Thread {//Producer do
 			classifyDomain(domain);
 		}
 	}
-	
+
 	public byte[] subByte(byte[] b,int srcPos,int length){
 		byte[] b1 = new byte[length];
 		System.arraycopy(b, srcPos, b1, 0, length);
@@ -222,7 +222,7 @@ public class DomainProducer extends Thread {//Producer do
 			}
 		}
 		 */
-		
+
 		if (needUnicodeConvert(line)) {
 			while (true) {//unicode解码
 				try {
@@ -430,7 +430,7 @@ public class DomainProducer extends Thread {//Producer do
 		}
 		System.out.println(tmpDomain);
 	}
-	
+
 	public static void test1() {
 		String line = "\"%.@.\\\"xsrf\\\",";
 		System.out.println(needURLConvert(line));

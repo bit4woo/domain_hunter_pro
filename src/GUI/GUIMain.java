@@ -14,7 +14,7 @@ import java.io.File;
 import java.io.PrintWriter;
 
 
-public class GUI extends JFrame {
+public class GUIMain extends JFrame {
 
 	public static DomainPanel domainPanel;
 	public static TitlePanel titlePanel;
@@ -32,7 +32,7 @@ public class GUI extends JFrame {
 	}
 
 	public static void setProjectMenu(ProjectMenu projectMenu) {
-		GUI.projectMenu = projectMenu;
+		GUIMain.projectMenu = projectMenu;
 	}
 
 	public static DomainPanel getDomainPanel() {
@@ -53,13 +53,13 @@ public class GUI extends JFrame {
 	}
 
 	public static void setCurrentDBFile(File currentDBFile) {
-		GUI.currentDBFile = currentDBFile;
+		GUIMain.currentDBFile = currentDBFile;
 	}
 
 	/**
 	 * Create the frame.
 	 */
-	public GUI() {//构造函数
+	public GUIMain() {//构造函数
 		try{
 			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
 			stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
@@ -114,9 +114,9 @@ public class GUI extends JFrame {
 			DomainPanel.setDomainResult(dbhelper.getDomainObj());
 			domainPanel.showToDomainUI();
 			titlePanel.showToTitleUI(dbhelper.getTitles());
-			GUI.setCurrentDBFile(currentDBFile);
+			GUIMain.setCurrentDBFile(currentDBFile);
 			ToolPanel.getLineConfig().setDbfilepath(currentDBFile.getAbsolutePath());
-			GUI.displayProjectName();
+			GUIMain.displayProjectName();
 			System.out.println("==End Loading Data From: "+ dbFilePath +"==");//输出到debug console
 			BurpExtender.getStdout().println("==End Loading Data From: "+ dbFilePath +"==");
 			return true;
@@ -138,8 +138,8 @@ public class GUI extends JFrame {
 			String newName = String.format(BurpExtender.getExtenderName()+" [%s]",name);
 			
 			BurpExtender.getCallbacks().setExtensionName(newName); //新插件名称
-			GUI.getProjectMenu().AddDBNameMenuItem(name);
-			GUI.getProjectMenu().AddDBNameTab(name);
+			GUIMain.getProjectMenu().AddDBNameMenuItem(name);
+			GUIMain.getProjectMenu().AddDBNameTab(name);
 			//gui.repaint();//NO need
 		}
 	}
@@ -183,7 +183,7 @@ public class GUI extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					GUI frame = new GUI();
+					GUIMain frame = new GUIMain();
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();

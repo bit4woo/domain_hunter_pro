@@ -16,12 +16,12 @@ import java.util.regex.Pattern;
 import com.alibaba.fastjson.JSON;
 import com.google.common.net.InternetDomainName;
 
-import GUI.GUI;
+import GUI.GUIMain;
 import Tools.DomainComparator;
 import burp.BurpExtender;
 import burp.Commons;
-import domain.target.TargetEntry;
-import title.IndexedLinkedHashMap;
+import burp.DomainNameUtils;
+import domain.target.TargetTableModel;
 
 /*
  *注意，所有直接对DomainObject中数据的修改，都不会触发该tableChanged监听器。
@@ -37,8 +37,9 @@ public class DomainManager {
 	public boolean autoAddRelatedToRoot = false;
 
 	private LinkedHashMap<String,String> rootDomainMap = new LinkedHashMap<String,String>();
-	private IndexedLinkedHashMap<String,TargetEntry> targetEntries =new IndexedLinkedHashMap<String,TargetEntry>();
+	//private IndexedLinkedHashMap<String,TargetEntry> targetEntries =new IndexedLinkedHashMap<String,TargetEntry>();
 
+	private TargetTableModel targetTableModel = new TargetTableModel();
 	//private LinkedHashMap<String,String> rootBlackDomainMap = new LinkedHashMap<String,String>();
 	// LinkedHashMap to keep the insert order 
 	private Set<String> subnetSet = new HashSet<String>();
@@ -103,15 +104,13 @@ public class DomainManager {
 	public void setRootDomainMap(LinkedHashMap<String, String> rootDomainMap) {
 		this.rootDomainMap = rootDomainMap;
 	}
-	
-	
 
-	public IndexedLinkedHashMap<String, TargetEntry> getTargetEntries() {
-		return targetEntries;
+	public TargetTableModel getTargetTableModel() {
+		return targetTableModel;
 	}
 
-	public void setTargetEntries(IndexedLinkedHashMap<String, TargetEntry> targetEntries) {
-		this.targetEntries = targetEntries;
+	public void setTargetTableModel(TargetTableModel targetTableModel) {
+		this.targetTableModel = targetTableModel;
 	}
 
 	public Set<String> getSubnetSet() {
@@ -189,8 +188,8 @@ public class DomainManager {
 
 	public String getSummary() {
 		String filename ="unknown";
-		if (GUI.currentDBFile != null){
-			filename = GUI.currentDBFile.getName();
+		if (GUIMain.currentDBFile != null){
+			filename = GUIMain.currentDBFile.getName();
 		}
 		summary = String.format("  FileName:%s  Root-domain:%s  Related-domain:%s  Sub-domain:%s  Similar-domain:%s  ^_^",
 				filename, rootDomainMap.size(),relatedDomainSet.size(),subDomainSet.size(),similarDomainSet.size());
@@ -265,59 +264,6 @@ public class DomainManager {
 		return String.join(System.lineSeparator(), PackageNameSet);
 	}
 
-	public String fetchRootDomains() {
-		return String.join(System.lineSeparator(), rootDomainMap.keySet());
-	}
-
-
-	public Set<String> fetchRootDomainSet() {
-		Set<String> result = new HashSet<String>();
-		for (String key:rootDomainMap.keySet()) {
-			if (!key.trim().toLowerCase().startsWith("[exclude]")) {
-				result.add(key.trim().toLowerCase());
-			}
-		}
-		return result;
-	}
-
-	public Set<String> fetchRootBlackDomainSet() {
-		Set<String> result = new HashSet<String>();
-		for (String key:rootDomainMap.keySet()) {
-			if (key.trim().toLowerCase().startsWith("[exclude]")) {
-				result.add(key.trim().toLowerCase());
-			}
-		}
-		return result;
-	}
-
-	public Set<String> fetchKeywordSet(){
-		Set<String> result = new HashSet<String>();
-		for (String key:rootDomainMap.keySet()) {
-			String value = rootDomainMap.get(key);
-			if (!value.trim().equals("")) {
-				result.add(rootDomainMap.get(key));
-			}
-		}
-		return result;
-	}
-
-	//主要用于package name的有效性判断
-	public Set<String> fetchSuffixSet(){
-		Set<String> result = new HashSet<String>();
-		for (String key:rootDomainMap.keySet()) {
-			String suffix;
-			try {
-				//InternetDomainName.from(key).publicSuffix() //当不是com、cn等公共的域名结尾时，将返回空。
-				suffix = InternetDomainName.from(key).publicSuffix().toString();
-			} catch (Exception e) {
-				suffix = key.split("\\.",2)[1];//分割成2份
-			}
-			result.add(suffix);
-		}
-		return result;
-	}
-
-
 	//这种一般只会是IP类资产才会需要这样判断吧，域名类很容易确定是否属于目标
 	public boolean isTargetByBlackList(String HostIP) {
 		return !NotTargetIPSet.contains(HostIP);
@@ -353,7 +299,7 @@ public class DomainManager {
 		//GUI.getDomainPanel().showToDomainUI();
 		//DomainPanel.autoSave();
 	}
-	
+
 	/**
 	 * 这里是任何域名都强行直接添加。
 	 * 将一个域名作为rootdomain加到map中，如果autoSub为true，就自动截取。比如 www.baidu.com-->baidu.com。
@@ -368,11 +314,11 @@ public class DomainManager {
 		if (autoSub) {
 			enteredRootDomain = InternetDomainName.from(enteredRootDomain).topPrivateDomain().toString();
 		}
-        String keyword = enteredRootDomain.substring(0, enteredRootDomain.indexOf("."));
-        rootDomainMap.put(enteredRootDomain,keyword);
-        relatedDomainSet.remove(enteredRootDomain);//刷新时不能清空，所有要有删除操作。
+		String keyword = enteredRootDomain.substring(0, enteredRootDomain.indexOf("."));
+		rootDomainMap.put(enteredRootDomain,keyword);
+		relatedDomainSet.remove(enteredRootDomain);//刷新时不能清空，所有要有删除操作。
 	}
-	
+
 	/**
 	 * 根据已有配置进行添加，不是强行直接添加
 	 * @param enteredRootDomain
@@ -380,27 +326,27 @@ public class DomainManager {
 	 */
 	public boolean addIfValid(String domain) {
 		domain = cleanDomain(domain);
-    	if (domain == null) return false;
+		if (domain == null) return false;
 
-        int type = domainType(domain);
-        if (type == DomainManager.SUB_DOMAIN || type == DomainManager.IP_ADDRESS)
-        //包含手动添加的IP
-        {
-            subDomainSet.add(domain);//子域名可能来自相关域名和相似域名。
-            return true;
-        } else if (type == DomainManager.SIMILAR_DOMAIN) {
-            similarDomainSet.add(domain);
-            return true;
-        } else if (type == DomainManager.TLD_DOMAIN) {
-            addToRootDomainAndSubDomain(domain, true);
-            return true;
-        } else if (type == DomainManager.PACKAGE_NAME) {
-        	PackageNameSet.add(domain);
-        	return true;
-        } //Email的没有处理
-        return false;
+		int type = domainType(domain);
+		if (type == DomainManager.SUB_DOMAIN || type == DomainManager.IP_ADDRESS)
+			//包含手动添加的IP
+		{
+			subDomainSet.add(domain);//子域名可能来自相关域名和相似域名。
+			return true;
+		} else if (type == DomainManager.SIMILAR_DOMAIN) {
+			similarDomainSet.add(domain);
+			return true;
+		} else if (type == DomainManager.TLD_DOMAIN) {
+			addToRootDomainAndSubDomain(domain, true);
+			return true;
+		} else if (type == DomainManager.PACKAGE_NAME) {
+			PackageNameSet.add(domain);
+			return true;
+		} //Email的没有处理
+		return false;
 	}
-	
+
 	/**
 	 * 根据规则重新过一遍所有的数据
 	 * 相关域名:来自证书信息不能清空。
@@ -413,7 +359,7 @@ public class DomainManager {
 		tmpDomains.addAll(similarDomainSet);
 		tmpDomains.addAll(relatedDomainSet);
 		tmpDomains.addAll(PackageNameSet);
-		
+
 		subDomainSet.clear();
 		similarDomainSet.clear();
 		PackageNameSet.clear();
@@ -422,7 +368,7 @@ public class DomainManager {
 				addToRootDomainAndSubDomain(domain,true);
 			};
 		}
-		
+
 		for (String domain: tmpDomains) {
 			addIfValid(domain);
 		}
@@ -434,7 +380,7 @@ public class DomainManager {
 				if (relatedDomain!=null && relatedDomain.contains(".")) {
 					String rootDomain =getRootDomain(relatedDomain);
 					if (rootDomain != null) {
-						if (fetchRootBlackDomainSet().contains("[exclude]"+rootDomain)){
+						if (targetTableModel.fetchRootBlackDomainSet().contains(rootDomain)){
 							continue;
 						}					
 						String keyword = rootDomain.substring(0,rootDomain.indexOf("."));
@@ -485,7 +431,7 @@ public class DomainManager {
 			//InternetDomainName.from("www.jd.local").topPrivateDomain()//Not under a public suffix: www.jd.local
 		}
 	}
-	
+
 	public static String cleanDomain(String domain) {
 		if (domain == null){
 			return null;
@@ -506,7 +452,7 @@ public class DomainManager {
 		if (domain.endsWith(".")) {
 			domain = domain.substring(0,domain.length()-1);
 		}
-		
+
 		return domain;
 	}
 
@@ -524,27 +470,27 @@ public class DomainManager {
 				return DomainManager.USELESS;
 			}
 
-			for (String rootdomain:fetchRootDomainSet()) {
+			for (String rootdomain:targetTableModel.fetchRootDomainSet()) {
 				rootdomain  = cleanDomain(rootdomain);
 				if (domain.endsWith("."+rootdomain)||domain.equalsIgnoreCase(rootdomain)){
 					return DomainManager.SUB_DOMAIN;
 				}
 			}
 
-			for (String rootdomain:fetchRootDomainSet()) {
+			for (String rootdomain:targetTableModel.fetchRootDomainSet()) {
 				rootdomain  = cleanDomain(rootdomain);
-				if (isTLDDomain(domain,rootdomain)) {
+				if (DomainNameUtils.isTLDDomain(domain,rootdomain)) {
 					return DomainManager.TLD_DOMAIN;
 				}
 			}
 
-			for (String keyword:fetchKeywordSet()) {
+			for (String keyword:targetTableModel.fetchKeywordSet()) {
 				if (!keyword.equals("") && domain.contains(keyword)) {
 					if (InternetDomainName.from(domain).hasPublicSuffix()) {//是否是以公开的 .com .cn等结尾的域名。//如果是以比如local结尾的域名，就不会被认可
 						return DomainManager.SIMILAR_DOMAIN;
 					}
 
-					if (fetchSuffixSet().contains(domain.substring(0, domain.indexOf(".")))){
+					if (targetTableModel.fetchSuffixSet().contains(domain.substring(0, domain.indexOf(".")))){
 						return DomainManager.PACKAGE_NAME;
 					}
 				}
@@ -558,7 +504,7 @@ public class DomainManager {
 	}
 
 	public boolean isRelatedEmail(String email) {
-		for (String keyword:fetchKeywordSet()) {
+		for (String keyword:targetTableModel.fetchKeywordSet()) {
 			if (!keyword.equals("") && keyword.length() >= 2 && email.contains(keyword)) {
 				return true;
 			}
@@ -570,8 +516,7 @@ public class DomainManager {
 		if (domain.contains(":")) {//处理带有端口号的域名
 			domain = domain.substring(0,domain.indexOf(":"));
 		}
-		for (String rootdomain:fetchRootBlackDomainSet()) {
-			rootdomain = rootdomain.replace("[exclude]", "");
+		for (String rootdomain:targetTableModel.fetchRootBlackDomainSet()) {
 			if (rootdomain.contains(".")&&!rootdomain.endsWith(".")&&!rootdomain.startsWith("."))
 			{
 				if (domain.endsWith("."+rootdomain)||domain.equalsIgnoreCase(rootdomain)){
@@ -581,38 +526,9 @@ public class DomainManager {
 		}
 		return false;
 	}
-	
-	/**
-	 * 是否是TLD域名。比如 baidu.net 是baidu.com的TLD域名
-	 * 注意：www.baidu.com不是baidu.com的TLD域名，但是是子域名！！！
-	 * @param domain
-	 * @param rootDomain
-	 */
-	public static boolean isTLDDomain(String domain,String rootDomain) {
-		try {
-			InternetDomainName suffixDomain = InternetDomainName.from(domain).publicSuffix();
-			InternetDomainName suffixRootDomain = InternetDomainName.from(rootDomain).publicSuffix();
-			if (suffixDomain != null && suffixRootDomain != null){
-				String suffixOfDomain = suffixDomain.toString();
-				String suffixOfRootDomain = suffixRootDomain.toString();
-				if (suffixOfDomain.equalsIgnoreCase(suffixOfRootDomain)) {
-					return false;
-				}
-				String tmpDomain = Commons.replaceLast(domain, suffixOfDomain, "");
-				String tmpRootdomain = Commons.replaceLast(rootDomain, suffixOfRootDomain, "");
-				if (tmpDomain.endsWith("."+tmpRootdomain) || tmpDomain.equalsIgnoreCase(tmpRootdomain)) {
-					return true;
-				}
-			}
-			return false;
-		}catch (java.lang.IllegalArgumentException e){
-			return false;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return false;
-		}
-	}
-	
+
+
+
 	public void removeMd5Domain(){
 		Iterator<String> it = subDomainSet.iterator();
 		while (it.hasNext()){
@@ -623,7 +539,7 @@ public class DomainManager {
 				subDomainSet.add(item.replace(md5, ""));
 			}
 		}
-		
+
 		Iterator<String> it1 = similarDomainSet.iterator();
 		while (it1.hasNext()){
 			String item = it1.next();
@@ -634,7 +550,7 @@ public class DomainManager {
 			}
 		}
 	}
-	
+
 	public static String isMd5Domain(String domain) {
 		Pattern pattern = Pattern.compile("[a-fA-F0-9]{32}\\.");
 		Matcher matcher = pattern.matcher(domain);

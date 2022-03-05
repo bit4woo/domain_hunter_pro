@@ -10,7 +10,7 @@ import org.apache.commons.io.FileUtils;
 
 import com.google.gson.Gson;
 
-import GUI.GUI;
+import GUI.GUIMain;
 import burp.BurpExtender;
 import burp.Commons;
 import domain.DomainPanel;
@@ -236,7 +236,7 @@ public class LineConfig {
 		File localFile = new File(localdir+File.separator+DomainPanel.getDomainResult().getProjectName());
 		try {
 			ToolPanel.saveToConfigFromGUI();
-			this.setDbfilepath(GUI.currentDBFile.getAbsolutePath());
+			this.setDbfilepath(GUIMain.currentDBFile.getAbsolutePath());
 			this.setSearchHistory(History.getInstance());
 		} catch (Exception e1) {
 			e1.printStackTrace();
