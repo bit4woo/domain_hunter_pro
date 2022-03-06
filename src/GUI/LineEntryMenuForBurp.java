@@ -527,7 +527,7 @@ public class LineEntryMenuForBurp{
 			String host = message.getHttpService().getHost();
 			domainResult.addToRootDomainAndSubDomain(host,true);
 		}
-		DomainPanel.autoSave();
+		DomainPanel.saveDomainDataToDB();
 	}
 
 

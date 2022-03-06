@@ -12,6 +12,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingWorker;
 import javax.swing.border.LineBorder;
 
+import GUI.GUIMain;
 import domain.DomainConsumer;
 import domain.DomainPanel;
 
@@ -31,8 +32,8 @@ public class TargetControlPanel extends JPanel {
 						} else {
 							String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
 							TargetEntry entry = new TargetEntry(enteredRootDomain);
-							DomainPanel.getDomainResult().getTargetTableModel().addRow(entry.getTarget(),entry);
-							DomainPanel.autoSave();
+							DomainPanel.fetchTargetModel().addRow(entry.getTarget(),entry);
+							DomainPanel.saveDomainDataToDB();
 						}
 				    	return null;
 				    }
@@ -58,8 +59,8 @@ public class TargetControlPanel extends JPanel {
 				} else {
 					String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
 					TargetEntry entry = new TargetEntry(enteredRootDomain,false);
-					DomainPanel.getDomainResult().getTargetTableModel().addRow(entry.getTarget(),entry);
-					DomainPanel.autoSave();
+					DomainPanel.fetchTargetModel().addRow(entry.getTarget(),entry);
+					DomainPanel.saveDomainDataToDB();
 				}
 			}
 		});
@@ -77,7 +78,7 @@ public class TargetControlPanel extends JPanel {
 				}
 				Arrays.sort(rowindexs);
 
-				TargetTableModel domainTableModel = DomainPanel.getDomainResult().getTargetTableModel();
+				TargetTableModel domainTableModel = DomainPanel.fetchTargetModel();
 				for (int i = rowindexs.length - 1; i >= 0; i--) {
 					domainTableModel.removeRow(rowindexs[i]);
 				}
@@ -96,7 +97,7 @@ public class TargetControlPanel extends JPanel {
 				}
 				Arrays.sort(rowindexs);
 
-				TargetTableModel domainTableModel = DomainPanel.getDomainResult().getTargetTableModel();
+				TargetTableModel domainTableModel = DomainPanel.fetchTargetModel();
 				for (int i = rowindexs.length - 1; i >= 0; i--) {
 					TargetEntry entry = domainTableModel.getValueAt(rowindexs[i]);
 					entry.setBlack(true);
@@ -117,8 +118,8 @@ public class TargetControlPanel extends JPanel {
 				DomainConsumer.QueueToResult();
 				DomainPanel.getDomainResult().getEmailSet().addAll(DomainPanel.collectEmails());
 				DomainPanel.getDomainResult().freshBaseRule();
-				GUI.GUIMain.domainPanel.showToDomainUI();
-				DomainPanel.autoSave();
+				GUIMain.getDomainPanel().showDataToDomainGUI();
+				DomainPanel.saveDomainDataToDB();
 			}
 		});
 

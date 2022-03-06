@@ -1,28 +1,10 @@
 package domain;
 
-import GUI.GUIMain;
-import GUI.ProjectMenu;
-import Tools.ToolPanel;
-import burp.*;
-import com.google.common.base.Charsets;
-import com.google.common.io.Files;
-import com.google.common.net.InternetDomainName;
-import domain.target.TargetControlPanel;
-import domain.target.TargetEntry;
-import domain.target.TargetTable;
-import org.apache.commons.io.FileUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import thread.ThreadSearhDomain;
-import toElastic.VMP;
-
-import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Desktop;
+import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -33,10 +15,59 @@ import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.*;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+import javax.swing.SwingWorker;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
+import com.google.common.net.InternetDomainName;
+
+import GUI.GUIMain;
+import GUI.ProjectMenu;
+import Tools.ToolPanel;
+import burp.BurpExtender;
+import burp.Commons;
+import burp.DBHelper;
+import burp.IBurpExtenderCallbacks;
+import burp.IHttpRequestResponse;
+import burp.IHttpService;
+import burp.IScanIssue;
+import domain.target.TargetControlPanel;
+import domain.target.TargetEntry;
+import domain.target.TargetTable;
+import domain.target.TargetTableModel;
+import thread.ThreadSearhDomain;
+import toElastic.VMP;
 
 /*
  *注意，所有直接对DomainObject中数据的修改，都不会触发该tableChanged监听器。
@@ -103,13 +134,17 @@ public class DomainPanel extends JPanel {
 		this.targetTable = targetTable;
 	}
 
-//	public static TargetTableModel getTargetTableModel() {
-//		return targetTableModel;
-//	}
-//
-//	public static void setTargetTableModel(TargetTableModel targetTableModel) {
-//		DomainPanel.targetTableModel = targetTableModel;
-//	}
+	public static TargetTableModel fetchTargetModel() {
+		return (TargetTableModel)targetTable.getModel();
+	}
+
+	//	public static TargetTableModel getTargetTableModel() {
+	//		return targetTableModel;
+	//	}
+	//
+	//	public static void setTargetTableModel(TargetTableModel targetTableModel) {
+	//		DomainPanel.targetTableModel = targetTableModel;
+	//	}
 
 	public static void createOrOpenDB() {
 		Object[] options = { "Create","Open"};
@@ -226,8 +261,8 @@ public class DomainPanel extends JPanel {
 					@Override
 					protected Map doInBackground() throws Exception {
 
-						Set<String> rootDomains = domainResult.getTargetTableModel().fetchRootDomainSet();
-						Set<String> keywords = domainResult.getTargetTableModel().fetchKeywordSet();
+						Set<String> rootDomains = fetchTargetModel().fetchRootDomainSet();
+						Set<String> keywords = fetchTargetModel().fetchKeywordSet();
 
 						//stderr.print(keywords.size());
 						//System.out.println(rootDomains.toString());
@@ -241,8 +276,8 @@ public class DomainPanel extends JPanel {
 					protected void done() {
 						try {
 							get();
-							showToDomainUI();
-							autoSave();
+							showDataToDomainGUI();
+							saveDomainDataToDB();
 							btnSearch.setEnabled(true);
 							stdout.println("~~~~~~~~~~~~~Search Done~~~~~~~~~~~~~");
 						} catch (Exception e) {
@@ -268,8 +303,8 @@ public class DomainPanel extends JPanel {
 					//https://stackoverflow.com/questions/19708646/how-to-update-swing-ui-while-actionlistener-is-in-progress
 					@Override
 					protected Map doInBackground() throws Exception {
-						Set<String> rootDomains = domainResult.getTargetTableModel().fetchRootDomainSet();
-						Set<String> keywords = domainResult.getTargetTableModel().fetchKeywordSet();
+						Set<String> rootDomains = fetchTargetModel().fetchRootDomainSet();
+						Set<String> keywords = fetchTargetModel().fetchKeywordSet();
 
 						btnCrawl.setEnabled(false);
 						return crawl(rootDomains, keywords);
@@ -280,8 +315,8 @@ public class DomainPanel extends JPanel {
 					protected void done() {
 						try {
 							get();
-							showToDomainUI();
-							autoSave();
+							showDataToDomainGUI();
+							saveDomainDataToDB();
 							btnCrawl.setEnabled(true);
 						} catch (Exception e) {
 							e.printStackTrace(stderr);
@@ -305,7 +340,7 @@ public class DomainPanel extends JPanel {
 					protected Map doInBackground() throws Exception {
 						stdout.println("~~~~~~~~~~~~~Zone Transfer Checking~~~~~~~~~~~~~");
 						btnZoneTransferCheck.setEnabled(false);
-						ZoneTransferCheckAll();
+						fetchTargetModel().ZoneTransferCheckAll();
 						return null;
 					}
 
@@ -341,9 +376,9 @@ public class DomainPanel extends JPanel {
 								stdout.println("import skip " + line);
 							}
 						}
-						showToDomainUI();//保存配置并更新图形显示
+						showDataToDomainGUI();
 						stdout.println("Import domains finished from " + file.getName());
-						autoSave();
+						saveDomainDataToDB();
 						//List<String> lines = Files.readLines(file, Charsets.UTF_8);
 
 					} catch (IOException e1) {
@@ -366,7 +401,7 @@ public class DomainPanel extends JPanel {
 					}
 					domainResult.setProjectName(newProjectName);
 					GUIMain.displayProjectName();
-					autoSave();
+					saveDomainDataToDB();
 				}
 
 				/*重命名文件，开销太大不合适
@@ -426,7 +461,7 @@ public class DomainPanel extends JPanel {
 				try {
 					new URL(url);
 					domainResult.uploadURL = url;
-					autoSave();
+					saveDomainDataToDB();
 				} catch (Exception e) {
 
 				}
@@ -476,7 +511,7 @@ public class DomainPanel extends JPanel {
 
 		targetTable = new TargetTable();
 		TargetPanel.setViewportView(targetTable);
-		
+
 
 		////////////////////////////////////target area////////////////////////////////////////////////////
 
@@ -543,27 +578,8 @@ public class DomainPanel extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				domainResult.autoAddRelatedToRoot = rdbtnAddRelatedToRoot.isSelected();
 				if (domainResult.autoAddRelatedToRoot) {
-					domainResult.relatedToRoot();
-					showToDomainUI();
-					autoSave();
-					/*
-							Set<String> tableRootDomains = getColumnValues("Root Domain");
-							for(String relatedDomain:domainResult.relatedDomainSet) {
-					        	String rootDomain =InternetDomainName.from(relatedDomain).topPrivateDomain().toString();
-								String keyword = rootDomain.substring(0,rootDomain.indexOf("."));
-								if (!tableRootDomains.contains(rootDomain)) {
-									tableModel.addRow(new Object[]{rootDomain,keyword});
-								}
-								//after this, tableModelListener will auto update rootDomainMap.
-							}
-
-							for (String similarDomain:domainResult.similarDomainSet) {
-								String rootDomain =InternetDomainName.from(similarDomain).topPrivateDomain().toString();
-								if (domainResult.rootDomainMap.keySet().contains(rootDomain)) {
-									domainResult.subDomainSet.add(similarDomain);
-									domainResult.similarDomainSet.remove(similarDomain);
-								}
-							}*/
+					showDataToDomainGUI();
+					saveDomainDataToDB();
 				}
 			}
 		});
@@ -776,24 +792,13 @@ public class DomainPanel extends JPanel {
 		//		footerPanel.add(textFieldSearch);
 	}
 
-	public void showToDomainUI() {
-
+	/**
+	 * 显示DomainPanel中的数据。
+	 * 未包含target信息
+	 */
+	public void showDataToDomainGUI() {
 		listenerIsOn = false;
 		domainResult.relatedToRoot();
-
-		//兼容旧版本
-		if (domainResult.getRootDomainMap().size() >0 ) {
-			domainResult.getTargetTableModel().clear();
-			//https://stackoverflow.com/questions/12600659/jxtable-java-lang-indexoutofboundsexception-invalid-range
-			for (Map.Entry<String, String> entry : domainResult.getRootDomainMap().entrySet()) {
-				domainResult.getTargetTableModel().addRow(entry.getKey(),new TargetEntry(entry.getKey()));
-			}
-			domainResult.getRootDomainMap().clear();//值空，下次就使用新格式的数据了
-			targetTable.loadData(domainResult.getTargetTableModel());
-		}else {
-			//新版本的加载方法
-			targetTable.loadData(domainResult.getTargetTableModel());
-		}
 
 		textFieldUploadURL.setText(domainResult.uploadURL);
 		textAreaSubnets.setText(domainResult.fetchSubnets());
@@ -808,6 +813,11 @@ public class DomainPanel extends JPanel {
 		System.out.println("Load Domain Panel Data Done, " + domainResult.getSummary());
 		stdout.println("Load Domain Panel Data Done, " + domainResult.getSummary());
 		listenerIsOn = true;
+	}
+
+	public void LoadData(DomainManager domainResult) {
+		setDomainResult(domainResult);
+		showDataToDomainGUI();
 	}
 
 
@@ -834,26 +844,7 @@ public class DomainPanel extends JPanel {
 		return null;
 	}
 
-	public void ZoneTransferCheckAll() {
-		for (String rootDomain : domainResult.getTargetTableModel().fetchRootDomainSet()) {
-			Set<String> NS = Commons.GetAuthoritativeNameServer(rootDomain);
-			for (String Server : NS) {
-				//stdout.println("checking [Server: "+Server+" Domain: "+rootDomain+"]");
-				List<String> Records = Commons.ZoneTransferCheck(rootDomain, Server);
-				if (Records.size() > 0) {
-					try {
-						//stdout.println("!!! "+Server+" is zoneTransfer vulnerable for domain "+rootDomain+" !");
-						File file = new File(Server + "-ZoneTransfer-" + Commons.getNowTimeString() + ".txt");
-						file.createNewFile();
-						FileUtils.writeLines(file, Records);
-						stdout.println("!!! Records saved to " + file.getAbsolutePath());
-					} catch (IOException e1) {
-						e1.printStackTrace();
-					}
-				}
-			}
-		}
-	}
+
 
 	public static Set<String> collectEmails() {
 		Set<String> Emails = new HashSet<>();
@@ -973,7 +964,7 @@ public class DomainPanel extends JPanel {
 	/*
     自动保存，根据currentDBFile，如果currentDBFile为空或者不存在，就提示选择文件。
 	 */
-	public static void autoSave() {
+	public static void saveDomainDataToDB() {
 		File file = GUIMain.getCurrentDBFile();
 		if (file == null) {
 			if (null == DomainPanel.getDomainResult()) return;//有数据才弹对话框指定文件位置。
@@ -1000,7 +991,7 @@ public class DomainPanel extends JPanel {
 		public void removeUpdate(DocumentEvent e) {
 			if (listenerIsOn) {
 				saveTextAreas();
-				autoSave();
+				saveDomainDataToDB();
 			}
 		}
 
@@ -1008,7 +999,7 @@ public class DomainPanel extends JPanel {
 		public void insertUpdate(DocumentEvent e) {
 			if (listenerIsOn) {
 				saveTextAreas();
-				autoSave();
+				saveDomainDataToDB();
 			}
 		}
 
@@ -1016,7 +1007,7 @@ public class DomainPanel extends JPanel {
 		public void changedUpdate(DocumentEvent arg0) {
 			if (listenerIsOn) {
 				saveTextAreas();
-				autoSave();
+				saveDomainDataToDB();
 			}
 		}
 	}

@@ -1,5 +1,7 @@
 package domain.target;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,9 +13,19 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 
-import com.google.common.net.InternetDomainName;
+import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+import com.alibaba.fastjson.JSON;
+import com.google.common.net.InternetDomainName;
+import com.google.gson.Gson;
+
+import GUI.GUIMain;
 import burp.BurpExtender;
+import burp.Commons;
+import burp.DBHelper;
+import domain.DomainManager;
 import domain.DomainPanel;
 import title.IndexedLinkedHashMap;
 
@@ -27,6 +39,9 @@ public class TargetTableModel extends AbstractTableModel {
 	private static final String[] standardTitles = new String[] {
 			"Domain/Subnet/IP", "Keyword", "Comments","Black"};
 	private static List<String> titletList = new ArrayList<>(Arrays.asList(standardTitles));
+	
+	private static final Logger log = LogManager.getLogger(TargetTableModel.class);
+	
 	//为了实现动态表结构
 	public static List<String> getTitletList() {
 		return titletList;
@@ -50,9 +65,7 @@ public class TargetTableModel extends AbstractTableModel {
 		addTableModelListener(new TableModelListener() {
 			@Override
 			public void tableChanged(TableModelEvent e) {
-				if (DomainPanel.isListenerIsOn()) {
-					DomainPanel.autoSave();
-				}
+				saveToDB();
 			}
 		});
 	}
@@ -61,8 +74,44 @@ public class TargetTableModel extends AbstractTableModel {
 	public IndexedLinkedHashMap<String, TargetEntry> getTargetEntries() {
 		return targetEntries;
 	}
+	//getter setter是为了序列化和反序列化
 	public void setTargetEntries(IndexedLinkedHashMap<String, TargetEntry> targetEntries) {
 		this.targetEntries = targetEntries;
+	}
+	
+	/**
+	 * 转为Json格式
+	 * @return
+	 */
+	public String ToJson() {
+		return new Gson().toJson(this);
+	}
+
+	/**
+	 * 转换为数据模型
+	 * @param instanceString
+	 * @return
+	 */
+	public static TargetTableModel FromJson(String instanceString) {
+		return new Gson().fromJson(instanceString, TargetTableModel.class);
+	}
+	
+	public void saveToDB() {
+		File file = GUIMain.getCurrentDBFile();
+		if (file == null) {
+			if (null == DomainPanel.getDomainResult()) return;//有数据才弹对话框指定文件位置。
+			file = BurpExtender.getGui().dbfc.dialog(false,".db");
+			GUIMain.setCurrentDBFile(file);
+		}
+		if (file != null) {
+			DBHelper dbHelper = new DBHelper(file.toString());
+			boolean success = dbHelper.saveTargets(this);
+			if (success) {
+				log.info("domain data saved");
+			}else {
+				log.error("domain data save failed");
+			}
+		}
 	}
 
 	@Override
@@ -90,7 +139,6 @@ public class TargetTableModel extends AbstractTableModel {
 		}
 		return "";
 	}
-
 
 
 	@Override
@@ -266,6 +314,27 @@ public class TargetTableModel extends AbstractTableModel {
 			result.add(suffix);
 		}
 		return result;
+	}
+	
+	public void ZoneTransferCheckAll() {
+		for (String rootDomain : fetchRootDomainSet()) {
+			Set<String> NS = Commons.GetAuthoritativeNameServer(rootDomain);
+			for (String Server : NS) {
+				//stdout.println("checking [Server: "+Server+" Domain: "+rootDomain+"]");
+				List<String> Records = Commons.ZoneTransferCheck(rootDomain, Server);
+				if (Records.size() > 0) {
+					try {
+						//stdout.println("!!! "+Server+" is zoneTransfer vulnerable for domain "+rootDomain+" !");
+						File file = new File(Server + "-ZoneTransfer-" + Commons.getNowTimeString() + ".txt");
+						file.createNewFile();
+						FileUtils.writeLines(file, Records);
+						stdout.println("!!! Records saved to " + file.getAbsolutePath());
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+				}
+			}
+		}
 	}
 
 	public static void main(String[] args) {

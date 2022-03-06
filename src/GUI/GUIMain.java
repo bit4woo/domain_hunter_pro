@@ -6,6 +6,7 @@ import burp.Commons;
 import burp.DBHelper;
 import burp.dbFileChooser;
 import domain.DomainPanel;
+import domain.target.TargetTableModel;
 import title.TitlePanel;
 
 import javax.swing.*;
@@ -111,9 +112,11 @@ public class GUIMain extends JFrame {
 			BurpExtender.getStdout().println("==Start Loading Data From: " + dbFilePath+"==");
 			currentDBFile = new File(dbFilePath);
 			DBHelper dbhelper = new DBHelper(dbFilePath);
-			DomainPanel.setDomainResult(dbhelper.getDomainObj());
-			domainPanel.showToDomainUI();
-			titlePanel.showToTitleUI(dbhelper.getTitles());
+			
+			domainPanel.LoadData(dbhelper.getDomainObj());
+			DomainPanel.getTargetTable().loadData(dbhelper.getTargets());
+			titlePanel.loadData(dbhelper.getTitles());
+			
 			GUIMain.setCurrentDBFile(currentDBFile);
 			ToolPanel.getLineConfig().setDbfilepath(currentDBFile.getAbsolutePath());
 			GUIMain.displayProjectName();
@@ -159,6 +162,7 @@ public class GUIMain extends JFrame {
 						return true;
 					}
 				}else {
+					boolean targetSaved = dbHelper.saveTargets((TargetTableModel)DomainPanel.getTargetTable().getModel());
 					boolean domainSaved = dbHelper.saveDomainObject(DomainPanel.getDomainResult());
 					boolean titleSaved = dbHelper.addTitles(TitlePanel.getTitleTableModel().getLineEntries());
 					if (domainSaved && titleSaved){

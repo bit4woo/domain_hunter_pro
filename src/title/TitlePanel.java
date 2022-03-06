@@ -345,10 +345,12 @@ public class TitlePanel extends JPanel {
 		return String.join(System.lineSeparator(), tmplist);
 	}
 
-	/*
+	/**
 	 * 用于从DB文件中加载数据，没有去重检查。
+	 * 使用setModel()代替这个函数。
 	 */
-	public void showToTitleUI(IndexedLinkedHashMap<String,LineEntry> lineEntries) {
+	@Deprecated
+	public void showToTitleUIDep(IndexedLinkedHashMap<String,LineEntry> lineEntries) {
 		//titleTableModel.setLineEntries(new ArrayList<LineEntry>());//clear
 		//这里没有fire delete事件，会导致排序号加载文件出错，但是如果fire了又会触发tableModel的删除事件，导致数据库删除。改用clear()
 		titleTableModel.clear(false);//clear
@@ -363,6 +365,12 @@ public class TitlePanel extends JPanel {
 		stdout.println(row+" title entries loaded from database file");
 		digStatus();
 		TitlePanel.getTitleTable().search("");// hide checked items
+	}
+	
+	public void loadData(IndexedLinkedHashMap<String,LineEntry> lineEntries) {
+		LineTableModel tmp = new LineTableModel();
+		tmp.setLineEntries(lineEntries);
+		getTitleTable().setModel(tmp);
 	}
 
 

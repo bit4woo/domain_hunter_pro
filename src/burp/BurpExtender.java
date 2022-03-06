@@ -203,7 +203,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		}
 
 		try {
-			DomainPanel.autoSave();//域名面板自动保存逻辑有点复杂，退出前再自动保存一次
+			DomainPanel.saveDomainDataToDB();//域名面板自动保存逻辑有点复杂，退出前再自动保存一次
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

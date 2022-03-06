@@ -13,6 +13,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.table.TableModel;
+
 import com.alibaba.fastjson.JSON;
 import com.google.common.net.InternetDomainName;
 
@@ -38,9 +40,6 @@ public class DomainManager {
 	public boolean autoAddRelatedToRoot = false;
 
 	private LinkedHashMap<String,String> rootDomainMap = new LinkedHashMap<String,String>();
-	//private IndexedLinkedHashMap<String,TargetEntry> targetEntries =new IndexedLinkedHashMap<String,TargetEntry>();
-
-	private TargetTableModel targetTableModel = new TargetTableModel();
 	//private LinkedHashMap<String,String> rootBlackDomainMap = new LinkedHashMap<String,String>();
 	// LinkedHashMap to keep the insert order 
 	private Set<String> subnetSet = new HashSet<String>();
@@ -104,14 +103,6 @@ public class DomainManager {
 
 	public void setRootDomainMap(LinkedHashMap<String, String> rootDomainMap) {
 		this.rootDomainMap = rootDomainMap;
-	}
-
-	public TargetTableModel getTargetTableModel() {
-		return targetTableModel;
-	}
-
-	public void setTargetTableModel(TargetTableModel targetTableModel) {
-		this.targetTableModel = targetTableModel;
 	}
 
 	public Set<String> getSubnetSet() {
@@ -186,6 +177,10 @@ public class DomainManager {
 	public void setNewAndNotGetTitleDomainSet(Set<String> newAndNotGetTitleDomainSet) {
 		this.newAndNotGetTitleDomainSet = newAndNotGetTitleDomainSet;
 	}
+	
+	public TargetTableModel fetchTargetModel() {
+		return (TargetTableModel)DomainPanel.getTargetTable().getModel();
+	}
 
 	public String getSummary() {
 		String filename ="unknown";
@@ -193,7 +188,7 @@ public class DomainManager {
 			filename = GUIMain.currentDBFile.getName();
 		}
 		summary = String.format("  FileName:%s  Root-domain:%s  Related-domain:%s  Sub-domain:%s  Similar-domain:%s  ^_^",
-				filename, targetTableModel.getTargetEntries().size(),relatedDomainSet.size(),subDomainSet.size(),similarDomainSet.size());
+				filename, fetchTargetModel().getRowCount(),relatedDomainSet.size(),subDomainSet.size(),similarDomainSet.size());
 		return summary;
 	}
 
@@ -384,7 +379,7 @@ public class DomainManager {
 				if (relatedDomain!=null && relatedDomain.contains(".")) {
 					String rootDomain =getRootDomain(relatedDomain);
 					if (rootDomain != null) {
-						if (targetTableModel.fetchRootBlackDomainSet().contains(rootDomain)){
+						if (fetchTargetModel().fetchRootBlackDomainSet().contains(rootDomain)){
 							continue;
 						}					
 						String keyword = rootDomain.substring(0,rootDomain.indexOf("."));
@@ -474,27 +469,27 @@ public class DomainManager {
 				return DomainManager.USELESS;
 			}
 
-			for (String rootdomain:targetTableModel.fetchRootDomainSet()) {
+			for (String rootdomain:fetchTargetModel().fetchRootDomainSet()) {
 				rootdomain  = cleanDomain(rootdomain);
 				if (domain.endsWith("."+rootdomain)||domain.equalsIgnoreCase(rootdomain)){
 					return DomainManager.SUB_DOMAIN;
 				}
 			}
 
-			for (String rootdomain:targetTableModel.fetchRootDomainSet()) {
+			for (String rootdomain:fetchTargetModel().fetchRootDomainSet()) {
 				rootdomain  = cleanDomain(rootdomain);
 				if (DomainNameUtils.isTLDDomain(domain,rootdomain)) {
 					return DomainManager.TLD_DOMAIN;
 				}
 			}
 
-			for (String keyword:targetTableModel.fetchKeywordSet()) {
+			for (String keyword:fetchTargetModel().fetchKeywordSet()) {
 				if (!keyword.equals("") && domain.contains(keyword)) {
 					if (InternetDomainName.from(domain).hasPublicSuffix()) {//是否是以公开的 .com .cn等结尾的域名。//如果是以比如local结尾的域名，就不会被认可
 						return DomainManager.SIMILAR_DOMAIN;
 					}
 
-					if (targetTableModel.fetchSuffixSet().contains(domain.substring(0, domain.indexOf(".")))){
+					if (fetchTargetModel().fetchSuffixSet().contains(domain.substring(0, domain.indexOf(".")))){
 						return DomainManager.PACKAGE_NAME;
 					}
 				}
@@ -508,7 +503,7 @@ public class DomainManager {
 	}
 
 	public boolean isRelatedEmail(String email) {
-		for (String keyword:targetTableModel.fetchKeywordSet()) {
+		for (String keyword:fetchTargetModel().fetchKeywordSet()) {
 			if (!keyword.equals("") && keyword.length() >= 2 && email.contains(keyword)) {
 				return true;
 			}
@@ -520,7 +515,7 @@ public class DomainManager {
 		if (domain.contains(":")) {//处理带有端口号的域名
 			domain = domain.substring(0,domain.indexOf(":"));
 		}
-		for (String rootdomain:targetTableModel.fetchRootBlackDomainSet()) {
+		for (String rootdomain:fetchTargetModel().fetchRootBlackDomainSet()) {
 			if (rootdomain.contains(".")&&!rootdomain.endsWith(".")&&!rootdomain.startsWith("."))
 			{
 				if (domain.endsWith("."+rootdomain)||domain.equalsIgnoreCase(rootdomain)){

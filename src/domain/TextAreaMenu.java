@@ -106,7 +106,7 @@ public class TextAreaMenu extends JPopupMenu {
 						e2.printStackTrace(stderr);
 					}
 				}
-				DomainPanel.autoSave();
+				DomainPanel.saveDomainDataToDB();
 			}
 		});
 		

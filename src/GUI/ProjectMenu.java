@@ -89,7 +89,9 @@ public class ProjectMenu extends JMenu{
 				DomainPanel.getDomainResult().getSimilarDomainSet().addAll(NewManager.getSimilarDomainSet());
 				DomainPanel.getDomainResult().getEmailSet().addAll(NewManager.getEmailSet());
 				DomainPanel.getDomainResult().getPackageNameSet().addAll(NewManager.getPackageNameSet());
-				GUIMain.getDomainPanel().showToDomainUI();
+				
+				GUIMain.getDomainPanel().showDataToDomainGUI();
+				DomainPanel.saveDomainDataToDB();
 
 				IndexedLinkedHashMap<String, LineEntry> titles = dbhelper.getTitles();
 				for (LineEntry entry:titles.values()) {
@@ -131,7 +133,7 @@ public class ProjectMenu extends JMenu{
 					}
 				}
 
-				GUIMain.getDomainPanel().showToDomainUI();
+				GUIMain.getDomainPanel().showDataToDomainGUI();
 			}
 		});
 		ImportMenu.setToolTipText("Import Domain From Text File");

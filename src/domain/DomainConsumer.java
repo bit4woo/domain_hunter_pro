@@ -88,7 +88,7 @@ public class DomainConsumer extends Thread {
 				BurpExtender.getStdout().println(String.format("~~~~~~~~~~~~~%s new subdomains added!~~~~~~~~~~~~~",newSubdomains.size()));
 				BurpExtender.getStdout().println(String.join(System.lineSeparator(), newSubdomains));
 			}
-			DomainPanel.autoSave();
+			DomainPanel.saveDomainDataToDB();
 		}
 	}
 

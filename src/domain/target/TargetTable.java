@@ -6,6 +6,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.PrintWriter;
 import java.util.Arrays;
+import java.util.Map;
 
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -17,13 +18,13 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
 import burp.BurpExtender;
+import domain.DomainPanel;
 import domain.RootDomainMenu;
 
 public class TargetTable extends JTable{
 	
 	private PrintWriter stderr;
 	private PrintWriter stdout;
-	private TableModel targetTableModel = new TargetTableModel();
 	
 	
 	public TargetTable() {
@@ -83,7 +84,7 @@ public class TargetTable extends JTable{
 
 		});
 
-		RowSorter<TableModel> sorter = new TableRowSorter<TableModel>(targetTableModel);
+		RowSorter<TableModel> sorter = new TableRowSorter<TableModel>(dataModel);
 		setRowSorter(sorter);
 
 		setColumnSelectionAllowed(true);
@@ -102,30 +103,32 @@ public class TargetTable extends JTable{
 		return rows;
 	}
 	
+	
+	/**
+	 * JTable本来就实现了这个函数，
+	 * 之所以这样写，是为了避免自己去实现太多功能了。
+	 */
 	@Override
 	public TableModel getModel() {
-		return targetTableModel;
+		return super.getModel();
 	}
 	
 	@Override
 	public void setModel(TableModel model) {
-		this.targetTableModel = model;
 		super.setModel(model);
 	}
 
-	//使用setModel，否则需要自行实现很多功能
-	@Deprecated
-	private void setTargetTableModel(TargetTableModel targetTableModel) {
-		this.targetTableModel = targetTableModel;
-	}
-
-	//使用getModel
-	@Deprecated
-	private TargetTableModel getTargetTableModel() {
-		return (TargetTableModel) targetTableModel;
-	}
-	
 	public void loadData(TargetTableModel targetTableModel){
-		setModel(targetTableModel);//这句很关键，否则无法显示整个表的头和内容
+		//兼容旧版本
+		if (DomainPanel.getDomainResult().getRootDomainMap().size() >0 ) {
+			TargetTableModel tmp = new TargetTableModel();
+			for (Map.Entry<String, String> entry : DomainPanel.getDomainResult().getRootDomainMap().entrySet()) {
+				tmp.addRow(entry.getKey(),new TargetEntry(entry.getKey()));
+			}
+			DomainPanel.getDomainResult().getRootDomainMap().clear();//值空，下次就使用新格式的数据了
+			setModel(tmp);
+		}else {
+			setModel(targetTableModel);//这句很关键，否则无法显示整个表的头和内容
+		}
 	}
 }
