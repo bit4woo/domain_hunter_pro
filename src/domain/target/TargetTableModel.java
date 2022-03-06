@@ -65,7 +65,7 @@ public class TargetTableModel extends AbstractTableModel {
 		addTableModelListener(new TableModelListener() {
 			@Override
 			public void tableChanged(TableModelEvent e) {
-				saveToDB();
+				saveTargetToDB();
 			}
 		});
 	}
@@ -84,7 +84,7 @@ public class TargetTableModel extends AbstractTableModel {
 	 * @return
 	 */
 	public String ToJson() {
-		return new Gson().toJson(this);
+		return JSON.toJSONString(this);
 	}
 
 	/**
@@ -93,10 +93,10 @@ public class TargetTableModel extends AbstractTableModel {
 	 * @return
 	 */
 	public static TargetTableModel FromJson(String instanceString) {
-		return new Gson().fromJson(instanceString, TargetTableModel.class);
+		return JSON.parseObject(instanceString, TargetTableModel.class);
 	}
 	
-	public void saveToDB() {
+	public void saveTargetToDB() {
 		File file = GUIMain.getCurrentDBFile();
 		if (file == null) {
 			if (null == DomainPanel.getDomainResult()) return;//有数据才弹对话框指定文件位置。
@@ -107,9 +107,9 @@ public class TargetTableModel extends AbstractTableModel {
 			DBHelper dbHelper = new DBHelper(file.toString());
 			boolean success = dbHelper.saveTargets(this);
 			if (success) {
-				log.info("domain data saved");
+				log.info("target data saved");
 			}else {
-				log.error("domain data save failed");
+				log.error("target data save failed");
 			}
 		}
 	}

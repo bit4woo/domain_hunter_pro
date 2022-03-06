@@ -113,8 +113,8 @@ public class GUIMain extends JFrame {
 			currentDBFile = new File(dbFilePath);
 			DBHelper dbhelper = new DBHelper(dbFilePath);
 			
-			domainPanel.LoadData(dbhelper.getDomainObj());
 			DomainPanel.getTargetTable().loadData(dbhelper.getTargets());
+			domainPanel.LoadData(dbhelper.getDomainObj());
 			titlePanel.loadData(dbhelper.getTitles());
 			
 			GUIMain.setCurrentDBFile(currentDBFile);

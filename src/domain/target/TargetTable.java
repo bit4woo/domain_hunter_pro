@@ -10,23 +10,22 @@ import java.util.Map;
 
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
-import javax.swing.RowSorter;
 import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
 import javax.swing.border.LineBorder;
 import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
 
 import burp.BurpExtender;
 import domain.DomainPanel;
 import domain.RootDomainMenu;
 
 public class TargetTable extends JTable{
-	
+
+	private TargetTableModel targetModel = new TargetTableModel();
 	private PrintWriter stderr;
 	private PrintWriter stdout;
-	
-	
+
+
 	public TargetTable() {
 
 		try {
@@ -84,16 +83,14 @@ public class TargetTable extends JTable{
 
 		});
 
-		RowSorter<TableModel> sorter = new TableRowSorter<TableModel>(dataModel);
-		setRowSorter(sorter);
-
+		setAutoCreateRowSorter(true);
 		setColumnSelectionAllowed(true);
 		setCellSelectionEnabled(true);
 		setSurrendersFocusOnKeystroke(true);
 		setFillsViewportHeight(true);
 		setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
 	}
-	
+
 	public int[] SelectedRowsToModelRows(int[] SelectedRows) {
 		int[] rows = SelectedRows;
 		for (int i = 0; i < rows.length; i++) {
@@ -102,8 +99,8 @@ public class TargetTable extends JTable{
 		Arrays.sort(rows);//升序
 		return rows;
 	}
-	
-	
+
+
 	/**
 	 * JTable本来就实现了这个函数，
 	 * 之所以这样写，是为了避免自己去实现太多功能了。
@@ -112,10 +109,28 @@ public class TargetTable extends JTable{
 	public TableModel getModel() {
 		return super.getModel();
 	}
-	
+
+	/**
+	 * JTable已经实现的方法，会被已有逻辑调用。不对其进行修改。
+	 * 
+	 */
 	@Override
 	public void setModel(TableModel model) {
 		super.setModel(model);
+	}
+
+	/**
+	 * 自己实现的targetModel的getter和setter，用于自己调用其中函数时，避免对象转换的问题。
+	 * 通过getModel、setModel方法进行对象转换，会失败！
+	 * @param targetModel
+	 */
+	public void setTargetModel(TargetTableModel targetModel) {
+		this.targetModel = targetModel;
+		setModel(targetModel);
+	}
+
+	public TargetTableModel getTargetModel() {
+		return targetModel;
 	}
 
 	public void loadData(TargetTableModel targetTableModel){
@@ -126,9 +141,11 @@ public class TargetTable extends JTable{
 				tmp.addRow(entry.getKey(),new TargetEntry(entry.getKey()));
 			}
 			DomainPanel.getDomainResult().getRootDomainMap().clear();//值空，下次就使用新格式的数据了
-			setModel(tmp);
+			setTargetModel(tmp);
 		}else {
-			setModel(targetTableModel);//这句很关键，否则无法显示整个表的头和内容
+			if (null != targetTableModel) {
+				setTargetModel(targetTableModel);//这句很关键，否则无法显示整个表的头和内容
+			}
 		}
 	}
 }

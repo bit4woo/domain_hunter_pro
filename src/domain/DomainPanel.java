@@ -135,7 +135,7 @@ public class DomainPanel extends JPanel {
 	}
 
 	public static TargetTableModel fetchTargetModel() {
-		return (TargetTableModel)targetTable.getModel();
+		return targetTable.getTargetModel();
 	}
 
 	//	public static TargetTableModel getTargetTableModel() {

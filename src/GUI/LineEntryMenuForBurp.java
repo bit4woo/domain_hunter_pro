@@ -123,7 +123,7 @@ public class LineEntryMenuForBurp{
 
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					lineTable.getModel().updateAssetTypeOfRows(rows,e.getActionCommand());
+					lineTable.getLineTableModel().updateAssetTypeOfRows(rows,e.getActionCommand());
 				}
 
 			});
@@ -482,7 +482,7 @@ public class LineEntryMenuForBurp{
 					}
 
 					if (entry != null) {
-						int index = TitlePanel.getTitleTable().getModel().getLineEntries().IndexOfKey(entry.getUrl());
+						int index = TitlePanel.getTitleTable().getLineTableModel().getLineEntries().IndexOfKey(entry.getUrl());
 
 						addLevelABC(topMenu,TitlePanel.getTitleTable(),new int[] {index});
 						System.out.println("111");

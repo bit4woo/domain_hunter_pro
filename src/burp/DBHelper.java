@@ -65,6 +65,15 @@ public class DBHelper {
 			conn = getConnection();
 			stmt = conn.createStatement();
 			
+			if (!tableExists("Targets")){
+				String sql = "CREATE TABLE Targets" +
+						"(ID INT PRIMARY KEY     NOT NULL," +
+						" Content        TEXT    NOT NULL)";
+				stmt.executeUpdate(sql);
+				System.out.println("Table Targets created successfully");
+				log.info("Table Targets created successfully");
+			}
+			
 			if (!tableExists("DOMAINObject")){
 				String sql = "CREATE TABLE DOMAINObject" +
 						"(ID INT PRIMARY KEY     NOT NULL," +

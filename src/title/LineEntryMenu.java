@@ -74,7 +74,7 @@ public class LineEntryMenu extends JPopupMenu {
 					return;
 				}
 				for (int row:modleRows) {
-					LineEntry firstEntry = lineTable.getModel().getLineEntries().getValueAtIndex(row);
+					LineEntry firstEntry = lineTable.getLineTableModel().getLineEntries().getValueAtIndex(row);
 					String searchContent = getValue(firstEntry,columnIndex);
 					searchContent = URLEncoder.encode(searchContent);
 					String url= "https://www.google.com/search?q="+searchContent;
@@ -117,7 +117,7 @@ public class LineEntryMenu extends JPopupMenu {
 					return;
 				}
 				for (int row:modleRows) {
-					LineEntry firstEntry = lineTable.getModel().getLineEntries().getValueAtIndex(row);
+					LineEntry firstEntry = lineTable.getLineTableModel().getLineEntries().getValueAtIndex(row);
 					String searchContent = getValue(firstEntry,columnIndex);
 					String url= "https://github.com/search?q=%22"+searchContent+"%22+%22jdbc.url%22&type=Code";
 					try {
@@ -159,7 +159,7 @@ public class LineEntryMenu extends JPopupMenu {
 					return;
 				}
 				for (int row:modleRows) {
-					LineEntry firstEntry = lineTable.getModel().getLineEntries().getValueAtIndex(row);
+					LineEntry firstEntry = lineTable.getLineTableModel().getLineEntries().getValueAtIndex(row);
 					String searchContent = getValue(firstEntry,columnIndex);
 					searchContent = new String(Base64.getEncoder().encode(searchContent.getBytes()));
 					String url= "https://fofa.so/result?qbase64=%s";
@@ -204,7 +204,7 @@ public class LineEntryMenu extends JPopupMenu {
 					return;
 				}
 				for (int row:modleRows) {
-					LineEntry firstEntry = lineTable.getModel().getLineEntries().getValueAtIndex(row);
+					LineEntry firstEntry = lineTable.getLineTableModel().getLineEntries().getValueAtIndex(row);
 					String searchContent = firstEntry.getIcon_hash();
 					searchContent = String.format("icon_hash=\"%s\"", searchContent);//icon_hash="-247388890"
 					searchContent = new String(Base64.getEncoder().encode(searchContent.getBytes()));
@@ -228,7 +228,7 @@ public class LineEntryMenu extends JPopupMenu {
 					return;
 				}
 				for (int row:modleRows) {
-					LineEntry firstEntry = lineTable.getModel().getLineEntries().getValueAtIndex(row);
+					LineEntry firstEntry = lineTable.getLineTableModel().getLineEntries().getValueAtIndex(row);
 					String searchContent = getValue(firstEntry,columnIndex);
 					searchContent = URLEncoder.encode(searchContent);
 					String url= "https://www.shodan.io/search?query=%s";
@@ -275,7 +275,7 @@ public class LineEntryMenu extends JPopupMenu {
 					return;
 				}
 				for (int row:modleRows) {
-					LineEntry firstEntry = lineTable.getModel().getLineEntries().getValueAtIndex(row);
+					LineEntry firstEntry = lineTable.getLineTableModel().getLineEntries().getValueAtIndex(row);
 					String searchContent = firstEntry.getIcon_hash();
 					String url= "https://www.shodan.io/search?query=http.favicon.hash:%s";
 					url= String.format(url, searchContent);
@@ -291,7 +291,7 @@ public class LineEntryMenu extends JPopupMenu {
 		JMenuItem SearchOnHunterItem = new JMenuItem(new AbstractAction("Seach On Hunter") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				LineEntry firstEntry = lineTable.getModel().getLineEntries().getValueAtIndex(modleRows[0]);
+				LineEntry firstEntry = lineTable.getLineTableModel().getLineEntries().getValueAtIndex(modleRows[0]);
 				String columnName = lineTable.getColumnName(columnIndex);
 
 				if (columnName.equalsIgnoreCase("Status")){
@@ -326,7 +326,7 @@ public class LineEntryMenu extends JPopupMenu {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				try{
-					java.util.List<String> urls = lineTable.getModel().getHosts(modleRows);
+					java.util.List<String> urls = lineTable.getLineTableModel().getHosts(modleRows);
 					String textUrls = String.join(System.lineSeparator(), urls);
 
 					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -344,7 +344,7 @@ public class LineEntryMenu extends JPopupMenu {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				try{
-					java.util.List<String> items = lineTable.getModel().getHostsAndPorts(modleRows);
+					java.util.List<String> items = lineTable.getLineTableModel().getHostsAndPorts(modleRows);
 					String text = String.join(System.lineSeparator(), items);
 
 					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -362,7 +362,7 @@ public class LineEntryMenu extends JPopupMenu {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				try{
-					Set<String> IPs = lineTable.getModel().getIPs(modleRows);
+					Set<String> IPs = lineTable.getLineTableModel().getIPs(modleRows);
 					String text = String.join(System.lineSeparator(), IPs);
 
 					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -380,7 +380,7 @@ public class LineEntryMenu extends JPopupMenu {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				try{
-					java.util.List<String> urls = lineTable.getModel().getURLs(modleRows);
+					java.util.List<String> urls = lineTable.getLineTableModel().getURLs(modleRows);
 					String textUrls = String.join(System.lineSeparator(), urls);
 
 					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -398,7 +398,7 @@ public class LineEntryMenu extends JPopupMenu {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				try{
-					java.util.List<String> urls = lineTable.getModel().getCommonURLs(modleRows);
+					java.util.List<String> urls = lineTable.getLineTableModel().getCommonURLs(modleRows);
 					String textUrls = String.join(System.lineSeparator(), urls);
 
 					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -443,7 +443,7 @@ public class LineEntryMenu extends JPopupMenu {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				try{
-					IndexedLinkedHashMap<String, LineEntry> entries = lineTable.getModel().getLineEntries();
+					IndexedLinkedHashMap<String, LineEntry> entries = lineTable.getLineTableModel().getLineEntries();
 					for(LineEntry entry:entries.values()) {
 						entry.DoGetIconHash();
 					}
@@ -464,14 +464,14 @@ public class LineEntryMenu extends JPopupMenu {
 			public void actionPerformed(ActionEvent actionEvent) {
 				HashMap<String, IHttpRequestResponse> targetMap = new HashMap<String,IHttpRequestResponse>();
 
-				Set<String> IPs = lineTable.getModel().getIPs(modleRows);
+				Set<String> IPs = lineTable.getLineTableModel().getIPs(modleRows);
 				if (IPs.size() >= 50){//避免一次开太多导致系统卡死
 					BurpExtender.getStderr().println("too many task");
 					return;
 				}
 
 				for (int row: modleRows){//根据IP地址去重
-					LineEntry entry = lineTable.getModel().getLineEntries().getValueAtIndex(row);
+					LineEntry entry = lineTable.getLineTableModel().getLineEntries().getValueAtIndex(row);
 					targetMap.put(entry.getIP(), new LineMessageInfo(entry));
 				}
 				for (IHttpRequestResponse messageInfo:targetMap.values()) {
@@ -487,7 +487,7 @@ public class LineEntryMenu extends JPopupMenu {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				try{
-					java.util.List<String> urls = lineTable.getModel().getURLs(modleRows);
+					java.util.List<String> urls = lineTable.getLineTableModel().getURLs(modleRows);
 					if (urls.size() >= 50){//避免一次开太多网页导致系统卡死
 						return;
 					}
@@ -508,7 +508,7 @@ public class LineEntryMenu extends JPopupMenu {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				try{
-					java.util.List<String> urls = lineTable.getModel().getURLs(modleRows);
+					java.util.List<String> urls = lineTable.getLineTableModel().getURLs(modleRows);
 					IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
 					for(String url:urls) {
 						URL shortUrl = new URL(url);
@@ -526,7 +526,7 @@ public class LineEntryMenu extends JPopupMenu {
 		JMenuItem doActiveScan = new JMenuItem(new AbstractAction("Do Active Scan") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				IndexedLinkedHashMap<String,LineEntry> entries = lineTable.getModel().getLineEntries();
+				IndexedLinkedHashMap<String,LineEntry> entries = lineTable.getLineTableModel().getLineEntries();
 				IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
 				for (int i=modleRows.length-1;i>=0 ;i-- ) {
 					try{
@@ -557,7 +557,7 @@ public class LineEntryMenu extends JPopupMenu {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				TitlePanel.getTitleTableModel().updateRowsStatus(modleRows,LineEntry.CheckStatus_Checking);			
-				java.util.List<String> urls = lineTable.getModel().getURLs(modleRows);
+				java.util.List<String> urls = lineTable.getLineTableModel().getURLs(modleRows);
 				IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
 				for(String url:urls) {
 					URL shortUrl;
@@ -575,7 +575,7 @@ public class LineEntryMenu extends JPopupMenu {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				TitlePanel.getTitleTableModel().updateRowsStatus(modleRows,LineEntry.CheckStatus_MoreAction);			
-				java.util.List<String> urls = lineTable.getModel().getURLs(modleRows);
+				java.util.List<String> urls = lineTable.getLineTableModel().getURLs(modleRows);
 				IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
 				for(String url:urls) {
 					URL shortUrl;
@@ -622,7 +622,7 @@ public class LineEntryMenu extends JPopupMenu {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				try{
-					List<String> urls = lineTable.getModel().getLocationUrls(modleRows);
+					List<String> urls = lineTable.getLineTableModel().getLocationUrls(modleRows);
 					String textUrls = String.join(System.lineSeparator(), urls);
 
 					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -640,7 +640,7 @@ public class LineEntryMenu extends JPopupMenu {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				try{
-					List<String> urls = lineTable.getModel().getCDNAndCertInfos(modleRows);
+					List<String> urls = lineTable.getLineTableModel().getCDNAndCertInfos(modleRows);
 					String textUrls = String.join(System.lineSeparator(), urls);
 
 					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -658,7 +658,7 @@ public class LineEntryMenu extends JPopupMenu {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				try{
-					List<String> urls = lineTable.getModel().getIconHashes(modleRows);
+					List<String> urls = lineTable.getLineTableModel().getIconHashes(modleRows);
 					String textUrls = String.join(System.lineSeparator(), urls);
 
 					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -682,7 +682,7 @@ public class LineEntryMenu extends JPopupMenu {
 					protected Map doInBackground() throws Exception {
 						IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
 						for (int row: modleRows){
-							LineEntry entry = lineTable.getModel().getLineEntries().getValueAtIndex(row);
+							LineEntry entry = lineTable.getLineTableModel().getLineEntries().getValueAtIndex(row);
 							String host =entry.getHost();
 							int port = entry.getPort();
 							String protocol = entry.getProtocol();
@@ -725,7 +725,7 @@ public class LineEntryMenu extends JPopupMenu {
 						}
 						IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
 						for (int row: modleRows){
-							LineEntry entry = lineTable.getModel().getLineEntries().getValueAtIndex(row);
+							LineEntry entry = lineTable.getLineTableModel().getLineEntries().getValueAtIndex(row);
 							String host =entry.getHost();
 							int port = entry.getPort();
 							String protocol = entry.getProtocol();
@@ -767,7 +767,7 @@ public class LineEntryMenu extends JPopupMenu {
 			public void actionPerformed(ActionEvent actionEvent) {
 				int result = JOptionPane.showConfirmDialog(null,"Are you sure to DELETE these items ?");
 				if (result == JOptionPane.YES_OPTION) {
-					lineTable.getModel().removeRows(modleRows);
+					lineTable.getLineTableModel().removeRows(modleRows);
 				}else {
 					return;
 				}
@@ -789,9 +789,9 @@ public class LineEntryMenu extends JPopupMenu {
 			public void actionPerformed(ActionEvent actionEvent) {
 				int result = JOptionPane.showConfirmDialog(null,"Are you sure to DELETE these Hosts from SubDomainSet ?");
 				if (result == JOptionPane.YES_OPTION) {
-					//java.util.List<String> hosts = lineTable.getModel().getHosts(rows);//不包含端口，如果原始记录包含端口就删不掉
+					//java.util.List<String> hosts = lineTable.getLineTableModel().getHosts(rows);//不包含端口，如果原始记录包含端口就删不掉
 					//如果有 domain domain:8888 两个记录，这种方式就会删错对象
-					java.util.List<String> hostAndPort = lineTable.getModel().getHostsAndPorts(modleRows);//包含端口，如果原始记录
+					java.util.List<String> hostAndPort = lineTable.getLineTableModel().getHostsAndPorts(modleRows);//包含端口，如果原始记录
 					for(String item:hostAndPort) {
 						if (!DomainPanel.getDomainResult().getSubDomainSet().remove(item)) {
 							DomainPanel.getDomainResult().getSubDomainSet().remove(item.split(":")[0]);
@@ -817,16 +817,16 @@ public class LineEntryMenu extends JPopupMenu {
 			public void actionPerformed(ActionEvent actionEvent) {
 				int result = JOptionPane.showConfirmDialog(null,"Are you sure these items are not your target, DELETE them?");
 				if (result == JOptionPane.YES_OPTION) {
-					//java.util.List<String> hosts = lineTable.getModel().getHosts(rows);//不包含端口，如果原始记录包含端口就删不掉
+					//java.util.List<String> hosts = lineTable.getLineTableModel().getHosts(rows);//不包含端口，如果原始记录包含端口就删不掉
 					//如果有 domain domain:8888 两个记录，这种方式就会删错对象
-					java.util.List<String> hostAndPort = lineTable.getModel().getHostsAndPorts(modleRows);//包含端口，如果原始记录
+					java.util.List<String> hostAndPort = lineTable.getLineTableModel().getHostsAndPorts(modleRows);//包含端口，如果原始记录
 					for(String item:hostAndPort) {
 						if (!DomainPanel.getDomainResult().getSubDomainSet().remove(item)) {
 							DomainPanel.getDomainResult().getSubDomainSet().remove(item.split(":")[0]);
 						}
 					}
-					lineTable.getModel().addHostToNotTargetIPSet(modleRows);//当host是IP的时候，加入黑名单
-					lineTable.getModel().removeRows(modleRows);//删除当前行，必须最后执行！
+					lineTable.getLineTableModel().addHostToNotTargetIPSet(modleRows);//当host是IP的时候，加入黑名单
+					lineTable.getLineTableModel().removeRows(modleRows);//删除当前行，必须最后执行！
 				}else {
 					return;
 				}
@@ -844,7 +844,7 @@ public class LineEntryMenu extends JPopupMenu {
 			public void actionPerformed(ActionEvent actionEvent) {
 				int result = JOptionPane.showConfirmDialog(null,"Are you sure to ADD Host(Must Be IP) to NotTargetIPSet ?");
 				if (result == JOptionPane.YES_OPTION) {
-					lineTable.getModel().addHostToNotTargetIPSet(modleRows);
+					lineTable.getLineTableModel().addHostToNotTargetIPSet(modleRows);
 				}else {
 					return;
 				}
@@ -862,7 +862,7 @@ public class LineEntryMenu extends JPopupMenu {
 			public void actionPerformed(ActionEvent actionEvent) {
 				int result = JOptionPane.showConfirmDialog(null,"Are you sure to REMOVE Host(Must Be IP) from NotTargetIPSet ?");
 				if (result == JOptionPane.YES_OPTION) {
-					lineTable.getModel().removeHostFromNotTargetIPSet(modleRows);
+					lineTable.getLineTableModel().removeHostFromNotTargetIPSet(modleRows);
 				}else {
 					return;
 				}

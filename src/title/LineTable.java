@@ -37,12 +37,13 @@ public class LineTable extends JTable
 	 *
 	 */
 	private static final long serialVersionUID = 1L;
-	private TableRowSorter<TableModel> tableRowSorter;//TableRowSorter vs. RowSorter
+	private TableRowSorter<LineTableModel> tableRowSorter;//TableRowSorter vs. RowSorter
 
 	private IMessageEditor requestViewer;
 	private IMessageEditor responseViewer;
 	PrintWriter stdout;
 	PrintWriter stderr;
+	private LineTableModel lineTableModel;
 
 	private JSplitPane tableAndDetailSplitPane;//table area + detail area
 	public JSplitPane getTableAndDetailSplitPane() {
@@ -56,7 +57,7 @@ public class LineTable extends JTable
 	}
 
 	public LineEntry getRowAt(int row) {
-		return getModel().getLineEntries().getValueAtIndex(convertRowIndexToModel(row));
+		return getLineTableModel().getLineEntries().getValueAtIndex(convertRowIndexToModel(row));
 	}
 
 	//将选中的行（图形界面的行）转换为Model中的行数（数据队列中的index）.因为图形界面排序等操作会导致图像和数据队列的index不是线性对应的。
@@ -87,7 +88,7 @@ public class LineTable extends JTable
 		this.setModel(lineTableModel);
 
 		tableinit();
-		tableRowSorter = new TableRowSorter<TableModel>(lineTableModel);
+		tableRowSorter = new TableRowSorter<LineTableModel>(lineTableModel);
 		setRowSorter(tableRowSorter);
 		//addClickSort();
 		//FitTableColumns(this);
@@ -107,7 +108,7 @@ public class LineTable extends JTable
 
 		requestViewer.setMessage(Entry.getRequest(), true);
 		responseViewer.setMessage(Entry.getResponse(), false);
-		getModel().setCurrentlyDisplayedItem(Entry);
+		getLineTableModel().setCurrentlyDisplayedItem(Entry);
 		super.changeSelection(row, col, toggle, extend);
 	}
 
@@ -118,13 +119,18 @@ public class LineTable extends JTable
 	 * 数据加载过程中，控制监听器等。
 	 */
 	@Override
-	public LineTableModel getModel(){
-		return (LineTableModel)super.getModel();
+	public TableModel getModel(){
+		return super.getModel();
 	}
 	
 	@Override
 	public void setModel(TableModel dataModel) {
 		super.setModel(dataModel);
+	}
+	
+	
+	public LineTableModel getLineTableModel(){
+		return lineTableModel;
 	}
 
 	public JSplitPane tableAndDetailPanel(){
@@ -149,8 +155,8 @@ public class LineTable extends JTable
 		JTabbedPane ResponsePanel = new JTabbedPane();
 		RequestDetailPanel.setRightComponent(ResponsePanel);
 
-		requestViewer = BurpExtender.getCallbacks().createMessageEditor(getModel(), false);
-		responseViewer = BurpExtender.getCallbacks().createMessageEditor(getModel(), false);
+		requestViewer = BurpExtender.getCallbacks().createMessageEditor(getLineTableModel(), false);
+		responseViewer = BurpExtender.getCallbacks().createMessageEditor(getLineTableModel(), false);
 		RequestPanel.addTab("Request", requestViewer.getComponent());
 		ResponsePanel.addTab("Response", responseViewer.getComponent());
 
@@ -241,7 +247,7 @@ public class LineTable extends JTable
 
 	@Deprecated //还是没能解决添加数据时排序报错的问题
 	public void addClickSort() {//双击header头进行排序
-		tableRowSorter = new TableRowSorter<TableModel>(dataModel);
+		tableRowSorter = new TableRowSorter<LineTableModel>((LineTableModel) dataModel);
 		setRowSorter(tableRowSorter);
 
 		JTableHeader header = this.getTableHeader();
@@ -287,7 +293,7 @@ public class LineTable extends JTable
 			public boolean include(Entry entry) {
 				//entry --- a non-null object that wraps the underlying object from the model
 				int row = (int) entry.getIdentifier();
-				LineEntry line = getModel().getLineEntries().getValueAtIndex(row);
+				LineEntry line = getLineTableModel().getLineEntries().getValueAtIndex(row);
 
 				//第一层判断，根据按钮状态进行判断，如果为true，进行后面的逻辑判断，false直接返回。
 				if (!LineSearch.entryNeedToShow(line)) {
@@ -336,7 +342,7 @@ public class LineTable extends JTable
 					int col = ((LineTable) e.getSource()).columnAtPoint(e.getPoint()); // 获得列位置
 					int modelCol = LineTable.this.convertColumnIndexToModel(col);
 
-					LineEntry selecteEntry = getModel().getLineEntries().getValueAtIndex(rows[0]);
+					LineEntry selecteEntry = getLineTableModel().getLineEntries().getValueAtIndex(rows[0]);
 					if ((modelCol == LineTableModel.getTitletList().indexOf("#") )) {//双击index在google中搜索host。
 						String host = selecteEntry.getHost();
 						String url= "https://www.google.com/search?q=site%3A"+host;
@@ -371,7 +377,7 @@ public class LineTable extends JTable
 								selecteEntry.setTime(Commons.getNowTimeString());
 							}
 							stdout.println("$$$ "+selecteEntry.getUrl()+" status has been set to "+newStatus);
-							getModel().fireTableRowsUpdated(rows[0], rows[0]);
+							getLineTableModel().fireTableRowsUpdated(rows[0], rows[0]);
 						}catch (Exception e1){
 							e1.printStackTrace(stderr);
 						}
@@ -382,7 +388,7 @@ public class LineTable extends JTable
 						String newLevel = tmpList.get((index+1)%3);
 						selecteEntry.setAssetType(newLevel);
 						stdout.println(String.format("$$$ %s updated [AssetType-->%s]",selecteEntry.getUrl(),newLevel));
-						getModel().fireTableRowsUpdated(rows[0], rows[0]);
+						getLineTableModel().fireTableRowsUpdated(rows[0], rows[0]);
 					}else{//LineTableModel.getTitletList().indexOf("CDN|CertInfo")
 						//String value = TitlePanel.getTitleTable().getValueAt(rows[0], col).toString();//rows[0]是转换过的，不能再转换
 						//调用的是原始Jtable中的getValueAt，它本质上也是调用model中的getValueAt，但是有一次转换的过程！！！

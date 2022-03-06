@@ -29,7 +29,7 @@ class NmapScanAction implements ActionListener{
 	@Override
 	public void actionPerformed(ActionEvent actionEvent) {
 		try{
-			java.util.List<String> urls = lineTable.getModel().getURLs(rows);
+			java.util.List<String> urls = lineTable.getLineTableModel().getURLs(rows);
 			for(String url:urls) {
 				String host = new URL(url).getHost();
 				String batFilePathString  = genbatFile(host);

@@ -179,7 +179,7 @@ public class DomainManager {
 	}
 	
 	public TargetTableModel fetchTargetModel() {
-		return (TargetTableModel)DomainPanel.getTargetTable().getModel();
+		return DomainPanel.getTargetTable().getTargetModel();
 	}
 
 	public String getSummary() {
