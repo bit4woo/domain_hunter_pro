@@ -525,7 +525,7 @@ public class LineEntryMenuForBurp{
 		DomainManager domainResult = DomainPanel.getDomainResult();
 		for(IHttpRequestResponse message:messages) {
 			String host = message.getHttpService().getHost();
-			domainResult.addToRootDomainAndSubDomain(host,true);
+			domainResult.addToTargetAndSubDomain(host,true);
 		}
 		DomainPanel.saveDomainDataToDB();
 	}

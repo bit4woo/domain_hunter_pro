@@ -24,26 +24,14 @@ public class TargetControlPanel extends JPanel {
 		addButton.setToolTipText("add Top-Level domain");
 		addButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				SwingWorker worker = new SwingWorker<String,String>() {
-				    @Override
-				    public String doInBackground() {
-				    	if (DomainPanel.getDomainResult() == null) {
-							DomainPanel.createOrOpenDB();
-						} else {
-							String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
-							TargetEntry entry = new TargetEntry(enteredRootDomain);
-							DomainPanel.fetchTargetModel().addRow(entry.getTarget(),entry);
-							DomainPanel.saveDomainDataToDB();
-						}
-				    	return null;
-				    }
-
-				    @Override
-				    public void done() {
-				    }
-				};
-				
-				worker.execute();
+		    	if (DomainPanel.getDomainResult() == null) {
+					DomainPanel.createOrOpenDB();
+				} else {
+					String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
+					TargetEntry entry = new TargetEntry(enteredRootDomain);
+					DomainPanel.fetchTargetModel().addRow(entry.getTarget(),entry);
+					DomainPanel.saveDomainDataToDB();
+				}
 			}
 		});
 		setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));

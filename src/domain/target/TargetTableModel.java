@@ -17,7 +17,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.alibaba.fastjson.JSON;
 import com.google.common.net.InternetDomainName;
 import com.google.gson.Gson;
 
@@ -25,7 +24,6 @@ import GUI.GUIMain;
 import burp.BurpExtender;
 import burp.Commons;
 import burp.DBHelper;
-import domain.DomainManager;
 import domain.DomainPanel;
 import title.IndexedLinkedHashMap;
 
@@ -39,17 +37,17 @@ public class TargetTableModel extends AbstractTableModel {
 	private static final String[] standardTitles = new String[] {
 			"Domain/Subnet/IP", "Keyword", "Comments","Black"};
 	private static List<String> titletList = new ArrayList<>(Arrays.asList(standardTitles));
-	
+
 	private static final Logger log = LogManager.getLogger(TargetTableModel.class);
-	
+
 	//为了实现动态表结构
 	public static List<String> getTitletList() {
 		return titletList;
 	}
 	public TargetTableModel(){
 		try{
-			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
-			stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
+			//stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
+			//stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
 		}catch (Exception e){
 			stdout = new PrintWriter(System.out, true);
 			stderr = new PrintWriter(System.out, true);
@@ -78,13 +76,13 @@ public class TargetTableModel extends AbstractTableModel {
 	public void setTargetEntries(IndexedLinkedHashMap<String, TargetEntry> targetEntries) {
 		this.targetEntries = targetEntries;
 	}
-	
+
 	/**
 	 * 转为Json格式
 	 * @return
 	 */
 	public String ToJson() {
-		return JSON.toJSONString(this);
+		return new Gson().toJson(this);
 	}
 
 	/**
@@ -93,9 +91,9 @@ public class TargetTableModel extends AbstractTableModel {
 	 * @return
 	 */
 	public static TargetTableModel FromJson(String instanceString) {
-		return JSON.parseObject(instanceString, TargetTableModel.class);
+		return new Gson().fromJson(instanceString, TargetTableModel.class);
 	}
-	
+
 	public void saveTargetToDB() {
 		File file = GUIMain.getCurrentDBFile();
 		if (file == null) {
@@ -126,7 +124,7 @@ public class TargetTableModel extends AbstractTableModel {
 
 	@Override
 	public Object getValueAt(int rowIndex, int columnIndex) {
-		TargetEntry entry = targetEntries.get(rowIndex);
+		TargetEntry entry = targetEntries.getValueAtIndex(rowIndex);
 		if (entry == null) return "";
 		if (columnIndex == titletList.indexOf("Domain/Subnet/IP")) {
 			return entry.getTarget();
@@ -136,6 +134,9 @@ public class TargetTableModel extends AbstractTableModel {
 		}
 		if (columnIndex == titletList.indexOf("Comments")) {
 			return entry.getComment();
+		}
+		if (columnIndex == titletList.indexOf("Black")) {
+			return entry.isBlack();
 		}
 		return "";
 	}
@@ -315,7 +316,7 @@ public class TargetTableModel extends AbstractTableModel {
 		}
 		return result;
 	}
-	
+
 	public void ZoneTransferCheckAll() {
 		for (String rootDomain : fetchRootDomainSet()) {
 			Set<String> NS = Commons.GetAuthoritativeNameServer(rootDomain);
@@ -341,6 +342,10 @@ public class TargetTableModel extends AbstractTableModel {
 		TargetTableModel aaa= new TargetTableModel();
 		aaa.addRow("111", new TargetEntry("www.baidu.com"));
 		aaa.addRow("2222", new TargetEntry("www.baidu.com"));
+		String bbb= aaa.ToJson();
+		TargetTableModel ccc = TargetTableModel.FromJson(bbb);
+		System.out.println(bbb);
+		System.out.println(ccc);
 	}
 
 }

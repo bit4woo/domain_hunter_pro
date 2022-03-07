@@ -7,11 +7,13 @@ import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 
+import com.alibaba.fastjson.JSON;
 import com.google.common.net.InternetDomainName;
 
 import burp.BurpExtender;
 import burp.Commons;
 import burp.DomainNameUtils;
+import burp.IPAddressUtils;
 import domain.DomainPanel;
 
 public class TargetEntry {
@@ -22,7 +24,7 @@ public class TargetEntry {
 	private boolean ZoneTransfer = false;//域名对应的权威服务器，是否域于传送漏洞
 	private boolean isBlack = false;//这个域名是否是黑名单根域名，需要排除的
 	private String comment = "";
-	private boolean useTLD;//TLD= Top-Level Domain
+	private boolean useTLD = true;//TLD= Top-Level Domain,比如 baidu.com为true，*.m.baidu.com为false
 
 	public static final String Target_Type_Domain = "Domain";
 	public static final String Target_Type_Subnet = "Subnet";
@@ -30,22 +32,32 @@ public class TargetEntry {
 
 	public static final String[]  TargetTypeArray = {Target_Type_Domain,Target_Type_Subnet,Target_Type_IPaddress};
 
+	public static void main(String[] args) {
+		TargetEntry aa = new TargetEntry("www.baidu.com");
+		System.out.println(JSON.toJSONString(aa));
+	}
 
 	public TargetEntry(String input) {
 		this(input,true);
 	}
 	public TargetEntry(String input,boolean autoSub) {
-
+		if (input == null) return;
 		String domain = DomainNameUtils.cleanDomain(input);
 		if (domain != null && DomainNameUtils.isValidDomain(domain)) {
-			target = domain;
 			type = Target_Type_Domain;
 
+			useTLD = autoSub;
 			if (autoSub) {
-				String RootDomain = InternetDomainName.from(domain).topPrivateDomain().toString();
-				target = RootDomain;
+				try {
+					String RootDomain = InternetDomainName.from(domain).topPrivateDomain().toString();
+					target = RootDomain;
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}else {
+				target = domain;
 			}
-			keyword = domain.substring(0, domain.indexOf("."));
+			keyword = target.substring(0, domain.indexOf("."));
 
 			try {
 				DomainPanel.getDomainResult().getSubDomainSet().add(domain);
@@ -53,10 +65,17 @@ public class TargetEntry {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-
 		}
 		//IP
-
+		if (domain != null && IPAddressUtils.isValidIP(domain)) {
+			type = Target_Type_IPaddress;
+			target = domain;
+		}
+		
+		if (domain != null && IPAddressUtils.isValidSubnet(domain)) {
+			type = Target_Type_Subnet;
+			target = domain;
+		}
 	}
 
 

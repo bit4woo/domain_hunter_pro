@@ -433,7 +433,7 @@ public class DomainPanel extends JPanel {
 		JButton btnBuckupDB = new JButton("Backup DB");
 		btnBuckupDB.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				DomainPanel.this.backupDB();
+				DomainPanel.backupDB();
 			}
 		});
 		HeaderPanel.add(btnBuckupDB);

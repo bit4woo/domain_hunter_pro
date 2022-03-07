@@ -24,6 +24,8 @@ import burp.BurpExtender;
 import burp.Commons;
 import burp.DomainNameUtils;
 import com.google.gson.Gson;
+
+import domain.target.TargetEntry;
 import domain.target.TargetTableModel;
 
 /*
@@ -306,7 +308,8 @@ public class DomainManager {
 	 * @param enteredRootDomain
 	 * @param autoSub
 	 */
-	public void addToRootDomainAndSubDomain(String enteredRootDomain,boolean autoSub) {
+	@Deprecated//旧版本函数启用
+	public void addToRootDomainAndSubDomainDep(String enteredRootDomain,boolean autoSub) {
 		enteredRootDomain = cleanDomain(enteredRootDomain);
 		if (enteredRootDomain == null) return;
 		subDomainSet.add(enteredRootDomain);
@@ -317,6 +320,12 @@ public class DomainManager {
 		rootDomainMap.put(enteredRootDomain,keyword);
 		relatedDomainSet.remove(enteredRootDomain);//刷新时不能清空，所有要有删除操作。
 	}
+	
+	public void addToTargetAndSubDomain(String enteredRootDomain,boolean autoSub) {
+		if (enteredRootDomain == null) return;
+		DomainPanel.fetchTargetModel().addRow(enteredRootDomain,new TargetEntry(enteredRootDomain,true));
+	}
+	
 
 	/**
 	 * 根据已有配置进行添加，不是强行直接添加
@@ -337,7 +346,7 @@ public class DomainManager {
 			similarDomainSet.add(domain);
 			return true;
 		} else if (type == DomainManager.TLD_DOMAIN) {
-			addToRootDomainAndSubDomain(domain, true);
+			addToTargetAndSubDomain(domain,true);
 			return true;
 		} else if (type == DomainManager.PACKAGE_NAME) {
 			PackageNameSet.add(domain);
@@ -364,7 +373,7 @@ public class DomainManager {
 		PackageNameSet.clear();
 		for (String domain: tmpDomains) {//应当先做TLD域名的添加，这样可以丰富Root域名，避免数据损失遗漏
 			if (domainType(domain) == DomainManager.TLD_DOMAIN) {
-				addToRootDomainAndSubDomain(domain,true);
+				addToTargetAndSubDomain(domain,true);
 			};
 		}
 
@@ -375,16 +384,19 @@ public class DomainManager {
 
 	public void relatedToRoot() {
 		if (this.autoAddRelatedToRoot == true) {
-			for(String relatedDomain:this.relatedDomainSet) {
+			HashSet<String> tmpSet = new HashSet<String>();
+			tmpSet.addAll(relatedDomainSet);
+			for(String relatedDomain:tmpSet) {
+				//避免直接引用relatedDomainSet进行循环，由于TargetEntry中有删除操作，会导致'java.util.ConcurrentModificationException'异常
 				if (relatedDomain!=null && relatedDomain.contains(".")) {
 					String rootDomain =getRootDomain(relatedDomain);
 					if (rootDomain != null) {
 						if (fetchTargetModel().fetchRootBlackDomainSet().contains(rootDomain)){
 							continue;
 						}					
-						String keyword = rootDomain.substring(0,rootDomain.indexOf("."));
-						if (!rootDomainMap.keySet().contains(rootDomain) && rootDomain != null) {
-							rootDomainMap.put(rootDomain,keyword);
+						if (rootDomain != null) {
+							TargetEntry tmp = new TargetEntry(rootDomain);
+							fetchTargetModel().addRow(rootDomain, tmp);
 						}
 					}
 					subDomainSet.add(relatedDomain);
@@ -392,7 +404,7 @@ public class DomainManager {
 					System.out.println("error related domain : "+relatedDomain);
 				}
 			}
-			relatedDomainSet.clear();
+			//relatedDomainSet.clear();//TargetEntry的构造函数中就会自动移除，不需要这行代码了
 		}
 		//System.out.println(similarDomainSet);
 
@@ -562,7 +574,6 @@ public class DomainManager {
 
 	public static void test(){
 		DomainManager tmp = new DomainManager();
-		tmp.addToRootDomainAndSubDomain("order-admin.test.shopee.in",true);
 		System.out.println(tmp.domainType("test-mgadm.manage.whisper.shopee-pay.sg"));
 	}
 

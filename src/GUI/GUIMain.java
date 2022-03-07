@@ -162,10 +162,10 @@ public class GUIMain extends JFrame {
 						return true;
 					}
 				}else {
-					boolean targetSaved = dbHelper.saveTargets((TargetTableModel)DomainPanel.getTargetTable().getModel());
+					boolean targetSaved = dbHelper.saveTargets(DomainPanel.getTargetTable().getTargetModel());
 					boolean domainSaved = dbHelper.saveDomainObject(DomainPanel.getDomainResult());
 					boolean titleSaved = dbHelper.addTitles(TitlePanel.getTitleTableModel().getLineEntries());
-					if (domainSaved && titleSaved){
+					if (targetSaved && domainSaved && titleSaved){
 						stdout.println("Save Domain And Title Success! "+ Commons.getNowTimeString());
 						return true;
 					}

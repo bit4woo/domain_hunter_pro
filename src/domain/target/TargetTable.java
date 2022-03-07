@@ -18,6 +18,7 @@ import javax.swing.table.TableModel;
 import burp.BurpExtender;
 import domain.DomainPanel;
 import domain.RootDomainMenu;
+import title.IndexedLinkedHashMap;
 
 public class TargetTable extends JTable{
 
@@ -134,18 +135,23 @@ public class TargetTable extends JTable{
 	}
 
 	public void loadData(TargetTableModel targetTableModel){
+		
+		IndexedLinkedHashMap<String, TargetEntry> entries = targetTableModel.getTargetEntries();
 		//兼容旧版本
 		if (DomainPanel.getDomainResult().getRootDomainMap().size() >0 ) {
-			TargetTableModel tmp = new TargetTableModel();
 			for (Map.Entry<String, String> entry : DomainPanel.getDomainResult().getRootDomainMap().entrySet()) {
-				tmp.addRow(entry.getKey(),new TargetEntry(entry.getKey()));
-			}
-			DomainPanel.getDomainResult().getRootDomainMap().clear();//值空，下次就使用新格式的数据了
-			setTargetModel(tmp);
-		}else {
-			if (null != targetTableModel) {
-				setTargetModel(targetTableModel);//这句很关键，否则无法显示整个表的头和内容
+				entries.put(entry.getKey(),new TargetEntry(entry.getKey(),false));//直接操作entries，避免触发监听器，频繁操作数据库
 			}
 		}
+		
+		//兼容旧版本
+		if (DomainPanel.getDomainResult().getSubnetSet().size() >0 ) {
+			for (String IPorSubnet : DomainPanel.getDomainResult().getSubnetSet()) {
+				entries.put(IPorSubnet,new TargetEntry(IPorSubnet));
+			}
+		}
+		
+		targetTableModel.setData(entries);
+		setTargetModel(targetTableModel);//这句很关键，否则无法显示整个表的头和内容
 	}
 }

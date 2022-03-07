@@ -39,10 +39,6 @@ public class IndexedLinkedHashMap<K,V> extends LinkedHashMap<K,V> {
         al_Index.remove(key);
         return returnValue;
     }
-
-//    public K getKeyAtIndex(int i) {
-//        return (K) al_Index.get(i);
-//    }
     
     public V getValueAtIndex(int i){
         return (V) super.get(al_Index.get(i));

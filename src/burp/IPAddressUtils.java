@@ -84,7 +84,6 @@ public class IPAddressUtils {
 		}
 	}
 
-	@Deprecated
 	public static boolean isValidSubnet(String subnet) {
 		subnet = subnet.replaceAll(" ", "");
 		if (subnet.contains("/")) {
