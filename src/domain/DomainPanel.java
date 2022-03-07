@@ -84,6 +84,7 @@ public class DomainPanel extends JPanel {
 	private JButton btnCrawl;
 	private JLabel lblSummary;
 
+	private JTextArea textAreaFoundIPs;
 	private JTextArea textAreaSubdomains;
 	private JTextArea textAreaSimilarDomains;
 	private JTextArea textAreaRelatedDomains;
@@ -591,7 +592,7 @@ public class DomainPanel extends JPanel {
 		///////////////////////////////textAreas///////////////////////////////////////////////////////
 
 
-		//JScrollPane ScrollPaneSubnets = new JScrollPane(); //1of4
+		JScrollPane ScrollPaneFoundIPs = new JScrollPane(); //1of4
 
 		JScrollPane ScrollPaneRelatedDomains = new JScrollPane(); //2of4
 		JScrollPane ScrollPaneSubdomains = new JScrollPane();
@@ -600,7 +601,7 @@ public class DomainPanel extends JPanel {
 		JScrollPane ScrollPanePackageNames = new JScrollPane();
 
 
-		//split2of8.setRightComponent(ScrollPaneSubnets);
+		split2of8.setRightComponent(ScrollPaneFoundIPs);
 
 		split2of4.setLeftComponent(ScrollPaneRelatedDomains);
 		split2of4.setRightComponent(ScrollPaneSubdomains);
@@ -611,28 +612,28 @@ public class DomainPanel extends JPanel {
 		split4of4.setLeftComponent(ScrollPanePackageNames);
 		split4of4.setRightComponent(null);//通过设置为空来隐藏它
 
-		//textAreaSubnets = new JTextArea();
+		textAreaFoundIPs = new JTextArea();
 		textAreaRelatedDomains = new JTextArea();
 		textAreaSubdomains = new JTextArea();
 		textAreaSimilarDomains = new JTextArea();
 		textAreaEmails = new JTextArea();
 		textAreaPackages = new JTextArea();
 
-		//textAreaSubnets.setColumns(10);
+		textAreaFoundIPs.setColumns(10);
 		textAreaRelatedDomains.setColumns(10);
 		textAreaSubdomains.setColumns(10);
 		textAreaSimilarDomains.setColumns(10);
 		textAreaEmails.setColumns(10);
 		textAreaPackages.setColumns(10);
 
-		//        textAreaSubnets.setToolTipText("Subnets/IP for certain");
-		//        textAreaRelatedDomains.setToolTipText("Related Domains");
-		//        textAreaSubdomains.setToolTipText("Sub Domains");
-		//        textAreaSimilarDomains.setToolTipText("Similar Domains");
-		//        textAreaEmails.setToolTipText("Emails");
-		//        textAreaPackages.setToolTipText("Package Names");
+		textAreaFoundIPs.setToolTipText("Found IPs");
+        textAreaRelatedDomains.setToolTipText("Related Domains");
+        textAreaSubdomains.setToolTipText("Sub Domains");
+        textAreaSimilarDomains.setToolTipText("Similar Domains");
+        textAreaEmails.setToolTipText("Emails");
+        textAreaPackages.setToolTipText("Package Names");
 
-		//ScrollPaneSubnets.setViewportView(textAreaSubnets);
+        ScrollPaneFoundIPs.setViewportView(textAreaFoundIPs);
 		ScrollPaneRelatedDomains.setViewportView(textAreaRelatedDomains);
 		ScrollPaneSubdomains.setViewportView(textAreaSubdomains);
 		ScrollPaneSimilarDomains.setViewportView(textAreaSimilarDomains);
@@ -641,10 +642,10 @@ public class DomainPanel extends JPanel {
 
 		Border blackline = BorderFactory.createLineBorder(Color.black);
 
-//		JLabel lblNewLabel = new JLabel("Subnets/IP for certain");
-//		lblNewLabel.setHorizontalAlignment(SwingConstants.CENTER);
-//		lblNewLabel.setBorder(blackline);
-		//ScrollPaneSubnets.setColumnHeaderView(lblNewLabel);
+		JLabel lblNewLabel = new JLabel("Found IPs");
+		lblNewLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		lblNewLabel.setBorder(blackline);
+		ScrollPaneFoundIPs.setColumnHeaderView(lblNewLabel);
 		JLabel lblNewLabel_1 = new JLabel("Related Domains");
 		lblNewLabel_1.setHorizontalAlignment(SwingConstants.CENTER);
 		lblNewLabel_1.setBorder(blackline);
@@ -667,14 +668,14 @@ public class DomainPanel extends JPanel {
 		ScrollPanePackageNames.setColumnHeaderView(lblNewLabel_5);
 
 		//实现编辑后自动保存
-		//textAreaSubnets.getDocument().addDocumentListener(new textAreaListener());
+		textAreaFoundIPs.getDocument().addDocumentListener(new textAreaListener());
 		textAreaRelatedDomains.getDocument().addDocumentListener(new textAreaListener());
 		textAreaSubdomains.getDocument().addDocumentListener(new textAreaListener());
 		textAreaSimilarDomains.getDocument().addDocumentListener(new textAreaListener());
 		textAreaEmails.getDocument().addDocumentListener(new textAreaListener());
 		textAreaPackages.getDocument().addDocumentListener(new textAreaListener());
 
-		//textAreaSubnets.addMouseListener(new TextAreaMouseListener(textAreaSubnets));
+		textAreaFoundIPs.addMouseListener(new TextAreaMouseListener(textAreaFoundIPs));
 		textAreaRelatedDomains.addMouseListener(new TextAreaMouseListener(textAreaRelatedDomains));
 		textAreaSubdomains.addMouseListener(new TextAreaMouseListener(textAreaSubdomains));
 		textAreaSimilarDomains.addMouseListener(new TextAreaMouseListener(textAreaSimilarDomains));
@@ -801,7 +802,7 @@ public class DomainPanel extends JPanel {
 		domainResult.relatedToRoot();
 
 		textFieldUploadURL.setText(domainResult.uploadURL);
-		//textAreaSubnets.setText(domainResult.fetchSubnets());
+		textAreaFoundIPs.setText(domainResult.fetchFoundIPs());
 		textAreaSubdomains.setText(domainResult.fetchSubDomains());
 		textAreaSimilarDomains.setText(domainResult.fetchSimilarDomains());
 		textAreaRelatedDomains.setText(domainResult.fetchRelatedDomains());
@@ -1017,7 +1018,7 @@ public class DomainPanel extends JPanel {
 		HashSet<String> oldSubdomains = new HashSet<String>();
 		oldSubdomains.addAll(DomainPanel.getDomainResult().getSubDomainSet());
 
-		//domainResult.setSubnetSet(getSetFromTextArea(textAreaSubnets));
+		domainResult.setFoundIPSet(getSetFromTextArea(textAreaFoundIPs));
 		domainResult.setRelatedDomainSet(getSetFromTextArea(textAreaRelatedDomains));
 		domainResult.setSubDomainSet(getSetFromTextArea(textAreaSubdomains));
 		domainResult.setSimilarDomainSet(getSetFromTextArea(textAreaSimilarDomains));

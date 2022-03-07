@@ -20,7 +20,6 @@ import javax.swing.table.TableModel;
 
 import burp.BurpExtender;
 import domain.DomainPanel;
-import domain.RootDomainMenu;
 import title.IndexedLinkedHashMap;
 import title.LineTableModel;
 
@@ -72,7 +71,7 @@ public class TargetTable extends JTable{
 						int col = ((JTable) e.getSource()).columnAtPoint(e.getPoint()); // 获得列位置
 						if (rows.length > 0) {
 							rows = SelectedRowsToModelRows(getSelectedRows());
-							new RootDomainMenu(TargetTable.this, rows, col).show(e.getComponent(), e.getX(), e.getY());
+							new TargetEntryMenu(TargetTable.this, rows, col).show(e.getComponent(), e.getX(), e.getY());
 						} else {//在table的空白处显示右键菜单
 							//https://stackoverflow.com/questions/8903040/right-click-mouselistener-on-whole-jtable-component
 							//new LineEntryMenu(_this).show(e.getComponent(), e.getX(), e.getY());
@@ -156,7 +155,9 @@ public class TargetTable extends JTable{
 	}
 
 	public void loadData(TargetTableModel targetTableModel){
-		
+		if (targetTableModel == null) {//兼容旧版本
+			targetTableModel = new TargetTableModel();
+		}
 		IndexedLinkedHashMap<String, TargetEntry> entries = targetTableModel.getTargetEntries();
 		//兼容旧版本
 		if (DomainPanel.getDomainResult().getRootDomainMap().size() >0 ) {

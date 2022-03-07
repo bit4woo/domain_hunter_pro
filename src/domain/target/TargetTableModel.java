@@ -37,7 +37,7 @@ public class TargetTableModel extends AbstractTableModel {
 	PrintWriter stderr;
 
 	private static final String[] standardTitles = new String[] {
-			"Domain/Subnet/IP", "Keyword", "Comments","Black"};
+			"Domain/Subnet/IP", "Keyword", "Comment","Black"};
 	private static List<String> titletList = new ArrayList<>(Arrays.asList(standardTitles));
 
 	private static final Logger log = LogManager.getLogger(TargetTableModel.class);
@@ -134,7 +134,7 @@ public class TargetTableModel extends AbstractTableModel {
 		if (columnIndex == titletList.indexOf("Keyword")) {
 			return entry.getKeyword();
 		}
-		if (columnIndex == titletList.indexOf("Comments")) {
+		if (columnIndex == titletList.indexOf("Comment")) {
 			return entry.getComment();
 		}
 		if (columnIndex == titletList.indexOf("Black")) {
@@ -147,12 +147,12 @@ public class TargetTableModel extends AbstractTableModel {
 	@Override
 	public void setValueAt(Object value, int row, int col) {
 		TargetEntry entry = targetEntries.getValueAtIndex(row);
-		if (col == titletList.indexOf("Comments")){
+		if (col == titletList.indexOf("Comment")){
 			String valueStr = ((String) value).trim();
 			entry.setComment(valueStr);
 			fireTableCellUpdated(row, col);
 		}
-		if (col == titletList.indexOf("Keywords")){
+		if (col == titletList.indexOf("Keyword")){
 			String valueStr = ((String) value).trim();
 			entry.setKeyword(valueStr);
 			fireTableCellUpdated(row, col);
@@ -180,8 +180,8 @@ public class TargetTableModel extends AbstractTableModel {
 
 	@Override
 	public boolean isCellEditable(int rowIndex, int columnIndex) {
-		if (titletList.get(columnIndex).equals("Comments")
-				|| titletList.get(columnIndex).equals("Keywords")) {//可以编辑comment
+		if (titletList.get(columnIndex).equals("Comment")
+				|| titletList.get(columnIndex).equals("Keyword")) {//可以编辑comment
 			return true;
 		}else {
 			return false;
@@ -207,6 +207,26 @@ public class TargetTableModel extends AbstractTableModel {
 			fireTableRowsInserted(0, size-1);
 		}
 	}
+	
+	
+	public void addRowIfValid(String key,TargetEntry entry) {
+		if (entry.getTarget() == null || entry.getTarget().equals("")) {
+			return;
+		} 
+		if (entry.getType() == null || !titletList.contains(entry.getType())) {
+			return;
+		}
+		
+		if (!key.equalsIgnoreCase(entry.getTarget())) {
+			return;
+		}
+		
+		if (DomainNameUtils.isValidDomain(entry.getTarget()) || 
+				IPAddressUtils.isValidIP(entry.getTarget())||
+				IPAddressUtils.isValidSubnet(entry.getTarget())) {
+			addRow(key,entry);
+		}
+	}
 
 	/**
 	 * 数据的增删查改：新增
@@ -230,7 +250,7 @@ public class TargetTableModel extends AbstractTableModel {
 	 * @param rowIndex
 	 */
 	public void removeRow(int rowIndex) {
-		targetEntries.remove(rowIndex);
+		targetEntries.removeByIndex(rowIndex);
 		fireTableRowsDeleted(rowIndex, rowIndex);
 	}
 
@@ -340,19 +360,15 @@ public class TargetTableModel extends AbstractTableModel {
 	 * IP黑名单
 	 * @return
 	 */
-	public Set<String> fetchBlackIPSet(boolean convertSubnetToIP ) {
+	public Set<String> fetchBlackIPSet() {
 		Set<String> result = new HashSet<String>();
 		for (TargetEntry entry:targetEntries.values()) {
 			if (entry.isBlack()) {
 				if (entry.getType().equals(TargetEntry.Target_Type_IPaddress))
 				result.add(entry.getTarget());
 				if (entry.getType().equals(TargetEntry.Target_Type_Subnet)) {
-					if (convertSubnetToIP) {
-						List<String> tmpIPs = IPAddressUtils.toIPList(entry.getTarget());
-						result.addAll(tmpIPs);
-					}else{
-						result.add(entry.getTarget());
-					}
+					List<String> tmpIPs = IPAddressUtils.toIPList(entry.getTarget());
+					result.addAll(tmpIPs);
 				}
 			}
 		}
@@ -429,6 +445,10 @@ public class TargetTableModel extends AbstractTableModel {
 					return true;
 				}
 			}
+		}
+
+		if (fetchBlackIPSet().contains(domain)){
+			return true;
 		}
 		return false;
 	}

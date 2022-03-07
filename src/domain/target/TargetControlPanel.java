@@ -29,7 +29,7 @@ public class TargetControlPanel extends JPanel {
 				} else {
 					String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
 					TargetEntry entry = new TargetEntry(enteredRootDomain);
-					DomainPanel.fetchTargetModel().addRow(entry.getTarget(),entry);
+					DomainPanel.fetchTargetModel().addRowIfValid(entry.getTarget(),entry);
 					DomainPanel.saveDomainDataToDB();
 				}
 			}
@@ -47,7 +47,7 @@ public class TargetControlPanel extends JPanel {
 				} else {
 					String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
 					TargetEntry entry = new TargetEntry(enteredRootDomain,false);
-					DomainPanel.fetchTargetModel().addRow(entry.getTarget(),entry);
+					DomainPanel.fetchTargetModel().addRowIfValid(entry.getTarget(),entry);
 					DomainPanel.saveDomainDataToDB();
 				}
 			}
@@ -78,21 +78,7 @@ public class TargetControlPanel extends JPanel {
 		add(blackButton);
 		blackButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-
-				int[] rowindexs = DomainPanel.getTargetTable().getSelectedRows();
-				for (int i = 0; i < rowindexs.length; i++) {
-					rowindexs[i] = DomainPanel.getTargetTable().convertRowIndexToModel(rowindexs[i]);//转换为Model的索引，否则排序后索引不对应。
-				}
-				Arrays.sort(rowindexs);
-
-				TargetTableModel domainTableModel = DomainPanel.fetchTargetModel();
-				for (int i = rowindexs.length - 1; i >= 0; i--) {
-					TargetEntry entry = domainTableModel.getValueAt(rowindexs[i]);
-					entry.setBlack(true);
-					String key = entry.getTarget();
-					domainTableModel.updateRow(entry);
-				}
-				// will trigger tableModel listener
+				selectedToBalck();
 			}
 		});
 
@@ -122,5 +108,21 @@ public class TargetControlPanel extends JPanel {
 		});
 		btnCopy.setToolTipText("Copy Root Domains To ClipBoard");
 		add(btnCopy);*/
+	}
+
+	public static void selectedToBalck(){
+		int[] rowindexs = DomainPanel.getTargetTable().getSelectedRows();
+		for (int i = 0; i < rowindexs.length; i++) {
+			rowindexs[i] = DomainPanel.getTargetTable().convertRowIndexToModel(rowindexs[i]);//转换为Model的索引，否则排序后索引不对应。
+		}
+		Arrays.sort(rowindexs);
+
+		TargetTableModel domainTableModel = DomainPanel.fetchTargetModel();
+		for (int i = rowindexs.length - 1; i >= 0; i--) {
+			TargetEntry entry = domainTableModel.getValueAt(rowindexs[i]);
+			entry.setBlack(true);
+			String key = entry.getTarget();
+			domainTableModel.updateRow(entry);
+		}
 	}
 }

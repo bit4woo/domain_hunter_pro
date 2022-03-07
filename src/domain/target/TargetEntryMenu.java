@@ -1,4 +1,4 @@
-package domain;
+package domain.target;
 
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
@@ -12,9 +12,10 @@ import javax.swing.JPopupMenu;
 
 import burp.BurpExtender;
 import burp.Commons;
+import domain.DomainPanel;
 import domain.target.TargetTable;
 
-public class RootDomainMenu extends JPopupMenu {
+public class TargetEntryMenu extends JPopupMenu {
 
 
 	private static final long serialVersionUID = 1L;
@@ -22,7 +23,7 @@ public class RootDomainMenu extends JPopupMenu {
 	PrintWriter stderr = BurpExtender.getStderr();
 	private static TargetTable rootDomainTable;
 
-	public RootDomainMenu(final TargetTable rootDomainTable, final int[] rows,final int columnIndex){
+	public TargetEntryMenu(final TargetTable rootDomainTable, final int[] rows, final int columnIndex){
 		this.rootDomainTable = rootDomainTable;
 
 		JMenuItem getSubDomainsOf = new JMenuItem(new AbstractAction("Get All Subdomin Of This") {
@@ -56,8 +57,16 @@ public class RootDomainMenu extends JPopupMenu {
 			}
 		});
 
+		JMenuItem addToBlackItem = new JMenuItem(new AbstractAction("Add To Black List") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				TargetControlPanel.selectedToBalck();
+			}
+		});
+
 		this.add(getSubDomainsOf);
 		this.add(whoisItem);
+		this.add(addToBlackItem);
 	}
 
 }

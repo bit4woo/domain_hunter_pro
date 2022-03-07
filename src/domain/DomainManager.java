@@ -41,7 +41,9 @@ public class DomainManager {
 	private LinkedHashMap<String,String> rootDomainMap = new LinkedHashMap<String,String>();
 	//private LinkedHashMap<String,String> rootBlackDomainMap = new LinkedHashMap<String,String>();
 	// LinkedHashMap to keep the insert order 
-	private Set<String> subnetSet = new HashSet<String>();
+	private Set<String> subnetSet = new HashSet<String>();//旧版本中用于指定目标IP和网段的地方
+	
+	private Set<String> foundIPSet = new HashSet<String>();
 	private Set<String> subDomainSet = new HashSet<String>();
 	private Set<String> similarDomainSet = new HashSet<String>();
 	private Set<String> relatedDomainSet = new HashSet<String>();
@@ -104,8 +106,17 @@ public class DomainManager {
 		this.rootDomainMap = rootDomainMap;
 	}
 	
+	//兼容旧版本而保留的
 	public Set<String> getSubnetSet() {
 		return subnetSet;
+	}
+	
+	public Set<String> getFoundIPSet() {
+		return foundIPSet;
+	}
+
+	public void setFoundIPSet(Set<String> foundIPSet) {
+		this.foundIPSet = foundIPSet;
 	}
 
 	public Set<String> getSubDomainSet() {
@@ -210,7 +221,6 @@ public class DomainManager {
 		}
 	}
 
-
 	// below methods is self-defined, function name start with "fetch" to void fastjson parser error
 
 	public String fetchRelatedDomains() {
@@ -219,6 +229,12 @@ public class DomainManager {
 
 	public String fetchSimilarDomains() {
 		return String.join(System.lineSeparator(), similarDomainSet);
+	}
+	
+	public String fetchFoundIPs() {
+		List<String> tmplist= new ArrayList<>(foundIPSet);
+		Collections.sort(tmplist,new DomainComparator());
+		return String.join(System.lineSeparator(), tmplist);
 	}
 
 	public String fetchSubDomains() {
