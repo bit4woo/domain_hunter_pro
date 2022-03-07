@@ -13,6 +13,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.PrintWriter;
+import java.util.Map;
 
 
 public class GUIMain extends JFrame {
@@ -103,8 +104,21 @@ public class GUIMain extends JFrame {
 		}
 	}
 
+	public static void LoadData(String dbFilePath){
+		SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+			@Override
+			protected Map doInBackground() throws Exception {
+				LoadDataPrivate(dbFilePath);
+				return null;
+			}
+			@Override
+			protected void done() {
+			}
+		};
+		worker.execute();
+	}
 
-	public static boolean LoadData(String dbFilePath){
+	private static boolean LoadDataPrivate(String dbFilePath){
 		try {//这其中的异常会导致burp退出
 			BurpExtender.clearQueue();//更换DB文件前进行，否则Queue中会包含之前的数据。
 			System.out.println("=================================");
