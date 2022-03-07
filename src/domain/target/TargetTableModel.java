@@ -24,6 +24,8 @@ import GUI.GUIMain;
 import burp.BurpExtender;
 import burp.Commons;
 import burp.DBHelper;
+import burp.DomainNameUtils;
+import burp.IPAddressUtils;
 import domain.DomainPanel;
 import title.IndexedLinkedHashMap;
 
@@ -258,7 +260,6 @@ public class TargetTableModel extends AbstractTableModel {
 	}
 
 
-
 	/**
 	 * 获取数据集的方法
 	 * @return
@@ -266,9 +267,15 @@ public class TargetTableModel extends AbstractTableModel {
 	public String fetchRootDomains() {
 		return String.join(System.lineSeparator(), targetEntries.keySet());
 	}
-
-
-	public Set<String> fetchRootDomainSet() {
+	
+	/**
+	 * 返回目标集合，包含域名、IP、网段。
+	 * 8.8.6.0/25
+	 * example.com
+	 * 8.8.8.8
+	 * @return
+	 */
+	public Set<String> fetchTargetSet() {
 		Set<String> result = new HashSet<String>();
 		for (TargetEntry entry:targetEntries.values()) {
 			if (!entry.isBlack()) {
@@ -278,11 +285,75 @@ public class TargetTableModel extends AbstractTableModel {
 		return result;
 	}
 
-	public Set<String> fetchRootBlackDomainSet() {
+	/**
+	 * 返回目标集合，只返回域名；不包含IP、网段。
+	 * example.com
+	 * @return
+	 */
+	public Set<String> fetchTargetDomainSet() {
+		Set<String> result = new HashSet<String>();
+		for (TargetEntry entry:targetEntries.values()) {
+			if (!entry.isBlack() && entry.getType() == TargetEntry.Target_Type_Domain) {
+				result.add(entry.getTarget());
+			}
+		}
+		return result;
+	}
+	
+	/**
+	 * 返回目标中的IP 和 网段 目标。可选择是否将网段转换为IP列表；不包含域名。
+	 * 8.8.6.0/25 ---默认均转换为IP列表
+	 * 8.8.8.8
+	 * @return
+	 */
+	public Set<String> fetchTargetIPSet() {
+		Set<String> result = new HashSet<String>();
+		for (TargetEntry entry:targetEntries.values()) {
+			if (!entry.isBlack()) {
+				if (entry.getType().equals(TargetEntry.Target_Type_IPaddress)) {
+					result.add(entry.getTarget());
+				}
+				if (entry.getType().equals(TargetEntry.Target_Type_Subnet)) {
+					List<String> tmpIPs = IPAddressUtils.toIPList(entry.getTarget());
+					result.addAll(tmpIPs);
+				}
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * 域名黑名单
+	 * @return
+	 */
+	private Set<String> fetchTargetBlackDomainSet() {
+		Set<String> result = new HashSet<String>();
+		for (TargetEntry entry:targetEntries.values()) {
+			if (entry.isBlack() && entry.getType() == TargetEntry.Target_Type_Domain) {
+				result.add(entry.getTarget());
+			}
+		}
+		return result;
+	}
+	
+	/**
+	 * IP黑名单
+	 * @return
+	 */
+	public Set<String> fetchBlackIPSet(boolean convertSubnetToIP ) {
 		Set<String> result = new HashSet<String>();
 		for (TargetEntry entry:targetEntries.values()) {
 			if (entry.isBlack()) {
+				if (entry.getType().equals(TargetEntry.Target_Type_IPaddress))
 				result.add(entry.getTarget());
+				if (entry.getType().equals(TargetEntry.Target_Type_Subnet)) {
+					if (convertSubnetToIP) {
+						List<String> tmpIPs = IPAddressUtils.toIPList(entry.getTarget());
+						result.addAll(tmpIPs);
+					}else{
+						result.add(entry.getTarget());
+					}
+				}
 			}
 		}
 		return result;
@@ -318,11 +389,11 @@ public class TargetTableModel extends AbstractTableModel {
 	}
 
 	public void ZoneTransferCheckAll() {
-		for (String rootDomain : fetchRootDomainSet()) {
-			Set<String> NS = Commons.GetAuthoritativeNameServer(rootDomain);
+		for (String rootDomain : fetchTargetDomainSet()) {
+			Set<String> NS = DomainNameUtils.GetAuthoritativeNameServer(rootDomain);
 			for (String Server : NS) {
 				//stdout.println("checking [Server: "+Server+" Domain: "+rootDomain+"]");
-				List<String> Records = Commons.ZoneTransferCheck(rootDomain, Server);
+				List<String> Records = DomainNameUtils.ZoneTransferCheck(rootDomain, Server);
 				if (Records.size() > 0) {
 					try {
 						//stdout.println("!!! "+Server+" is zoneTransfer vulnerable for domain "+rootDomain+" !");
@@ -337,6 +408,57 @@ public class TargetTableModel extends AbstractTableModel {
 			}
 		}
 	}
+	
+	/**
+	 * 是否处于黑名单当中
+	 * @param domain
+	 * @return
+	 */
+	public boolean isBlack(String domain) {
+		if (domain.contains(":")) {//处理带有端口号的域名
+			domain = domain.substring(0,domain.indexOf(":"));
+		}
+		if (!(DomainNameUtils.isValidDomain(domain)|| 
+				IPAddressUtils.isValidIP(domain))) {
+			return false;
+		}
+		for (String rootdomain:fetchTargetBlackDomainSet()) {
+			if (rootdomain.contains(".")&&!rootdomain.endsWith(".")&&!rootdomain.startsWith("."))
+			{
+				if (domain.endsWith("."+rootdomain)||domain.equalsIgnoreCase(rootdomain)){
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * 用于判断收集到的域名或IP是不是我们的有效目标
+	 * @param domain
+	 * @return
+	 */
+	@Deprecated
+	public boolean isTargetDep(String domain) {
+		if (domain.contains(":")) {//处理带有端口号的域名
+			domain = domain.substring(0,domain.indexOf(":"));
+		}
+		if (!(DomainNameUtils.isValidDomain(domain)|| 
+				IPAddressUtils.isValidIP(domain))) {
+			return false;
+		}
+		
+		if (isBlack(domain))return false;
+		//先过黑名单，如果在黑名单中，直接排除
+		
+		for (String rootdomain:fetchTargetDomainSet()) {
+			if (domain.endsWith("."+rootdomain)||domain.equalsIgnoreCase(rootdomain)){
+				return true;
+			}
+		}
+		
+		return fetchTargetIPSet().contains(domain);
+	}
 
 	public static void main(String[] args) {
 		TargetTableModel aaa= new TargetTableModel();
@@ -346,6 +468,8 @@ public class TargetTableModel extends AbstractTableModel {
 		TargetTableModel ccc = TargetTableModel.FromJson(bbb);
 		System.out.println(bbb);
 		System.out.println(ccc);
+		
+		System.out.println(aaa.getValueAt(0).getType() == TargetEntry.Target_Type_Domain);
 	}
 
 }

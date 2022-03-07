@@ -2,10 +2,13 @@ package domain.target;
 
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.PrintWriter;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.swing.JTable;
@@ -19,6 +22,7 @@ import burp.BurpExtender;
 import domain.DomainPanel;
 import domain.RootDomainMenu;
 import title.IndexedLinkedHashMap;
+import title.LineTableModel;
 
 public class TargetTable extends JTable{
 
@@ -39,7 +43,8 @@ public class TargetTable extends JTable{
 
 		setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		setBorder(new LineBorder(new Color(0, 0, 0)));
-
+		//tableHeaderLengthInit();
+		
 		getTableHeader().addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -80,8 +85,6 @@ public class TargetTable extends JTable{
 			public void mousePressed(MouseEvent e) { //在mac中触发
 				mouseReleased(e);
 			}
-
-
 		});
 
 		setAutoCreateRowSorter(true);
@@ -90,6 +93,24 @@ public class TargetTable extends JTable{
 		setSurrendersFocusOnKeystroke(true);
 		setFillsViewportHeight(true);
 		setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
+	}
+	
+	public void tableHeaderLengthInit(){
+		Font f = this.getFont();
+		FontMetrics fm = this.getFontMetrics(f);
+		int width = fm.stringWidth("A");//一个字符的宽度
+
+		Map<String,Integer> preferredWidths = new HashMap<String,Integer>();
+		preferredWidths.put("Comments",20);
+		preferredWidths.put("Black"," Black".length());
+		for(String header:LineTableModel.getTitletList()){
+			try{//避免动态删除表字段时，出错
+				int multiNumber = preferredWidths.get(header);
+				this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex(header)).setPreferredWidth(width*multiNumber);
+			}catch (Exception e){
+
+			}
+		}
 	}
 
 	public int[] SelectedRowsToModelRows(int[] SelectedRows) {

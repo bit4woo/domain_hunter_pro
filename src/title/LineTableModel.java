@@ -18,6 +18,7 @@ import GUI.GUIMain;
 import burp.BurpExtender;
 import burp.Commons;
 import burp.DBHelper;
+import burp.DomainNameUtils;
 import burp.Getter;
 import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
@@ -358,8 +359,8 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			if (IPString == null || IPString.length() <7) continue;//处理保存的请求，没有IP的情况
 			String[] linetext = line.getIP().split(",");
 			for (String ip:linetext){
-				ip = Commons.ipClean(ip);
-				if (Commons.isValidIP(ip)){
+				ip = IPAddressUtils.ipClean(ip);
+				if (IPAddressUtils.isValidIP(ip)){
 					result.add(ip);
 				}else {
 					System.out.println(ip + "invalid IP address, skip to handle it!");
@@ -382,12 +383,12 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	public Set<String> GetExtendIPSet() {
 		Set<String> IPsOfDomain = getIPSetFromTitle();//title记录中的IP
 		//Set<String> CSubNetIPs = Commons.subNetsToIPSet(Commons.toSubNets(IPsOfDomain));
-		Set<String> IPsOfcertainSubnets = Commons.toIPSet(DomainPanel.getDomainResult().getSubnetSet());//用户配置的确定IP+网段
+		Set<String> IPsOfcertainSubnets = DomainPanel.fetchTargetModel().fetchTargetIPSet();//用户配置的确定IP+网段
 		IPsOfDomain.addAll(IPsOfcertainSubnets);
 
-		Set<String> subnets = Commons.toSmallerSubNets(IPsOfDomain);//当前所有title结果+确定IP/网段计算出的IP网段
+		Set<String> subnets = IPAddressUtils.toSmallerSubNets(IPsOfDomain);//当前所有title结果+确定IP/网段计算出的IP网段
 
-		Set<String> CSubNetIPs = Commons.toIPSet(subnets);// 当前所有title结果计算出的IP集合
+		Set<String> CSubNetIPs = IPAddressUtils.toIPSet(subnets);// 当前所有title结果计算出的IP集合
 
 		CSubNetIPs.removeAll(IPsOfDomain);//删除域名对应的IP
 		CSubNetIPs.removeAll(IPsOfcertainSubnets);
@@ -405,10 +406,10 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	 */
 	public Set<String> GetSubnets() {
 		Set<String> IPsOfDomain = getIPSetFromTitle();//title记录中的IP
-		Set<String> IPsOfcertainSubnets = Commons.toIPSet(DomainPanel.getDomainResult().getSubnetSet());//用户配置的确定IP+网段
+		Set<String> IPsOfcertainSubnets = DomainPanel.fetchTargetModel().fetchTargetIPSet();//用户配置的确定IP+网段
 		IPsOfDomain.addAll(IPsOfcertainSubnets);
 		//Set<String> CSubNetIPs = Commons.subNetsToIPSet(Commons.toSubNets(IPsOfDomain));
-		Set<String> subnets = Commons.toSmallerSubNets(IPsOfDomain);
+		Set<String> subnets = IPAddressUtils.toSmallerSubNets(IPsOfDomain);
 		return subnets;
 	}
 
@@ -657,7 +658,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
 				LineEntry entry = lineEntries.getValueAtIndex(rows[i]);
 				String Host = entry.getHost();
-				if (Commons.isValidIP(Host)) {
+				if (IPAddressUtils.isValidIP(Host)) {
 					DomainPanel.getDomainResult().getNotTargetIPSet().add(Host);
 					entry.addComment(LineEntry.NotTargetBaseOnBlackList);
 					stdout.println("### "+Host+" added to NotTargetIPSet");
@@ -674,7 +675,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
 				LineEntry entry = lineEntries.getValueAtIndex(rows[i]);
 				String Host = entry.getHost();
-				if (Commons.isValidIP(Host)) {
+				if (IPAddressUtils.isValidIP(Host)) {
 					DomainPanel.getDomainResult().getNotTargetIPSet().remove(Host);
 					entry.removeComment(LineEntry.NotTargetBaseOnBlackList);
 					stdout.println("### "+Host+" removed from NotTargetIPSet");
@@ -704,7 +705,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			if (item.contains(":")) {//有可能domain:port的情况
 				item = item.split(":")[0];
 			}
-			if (Commons.isValidDomain(item)) {
+			if (DomainNameUtils.isValidDomain(item)) {
 				tmp.add(item);
 			}
 		}
@@ -713,7 +714,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		for (LineEntry entry:entries) {
 			String ip = entry.getIP().split(",")[0];//这里可能不严谨，如果IP解析既有外网地址又有内网地址就会出错
 			if (!IPAddressUtils.isPrivateIPv4(ip)) {//移除公网解析记录；剩下无解析记录和内网解析记录
-				if (entry.getStatuscode() == 403 && Commons.isValidDomain(entry.getHost())) {
+				if (entry.getStatuscode() == 403 && DomainNameUtils.isValidDomain(entry.getHost())) {
 					//do Nothing
 				}else {
 					tmp.remove(entry.getHost());
@@ -738,7 +739,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	public void addSubnetBlackList(int[] rows) {
 		for (int i=rows.length-1;i>=0 ;i-- ) {
 			Set<String> IPs = lineEntries.getValueAtIndex(rows[i]).fetchIPSet();
-			Set<String> subnets = Commons.toClassCSubNets(IPs);
+			Set<String> subnets = IPAddressUtils.toClassCSubNets(IPs);
 			DomainPanel.getDomainResult().getNotTargetIPSet().addAll(subnets);
 			stdout.println("### "+subnets.toString()+" added to black list");
 		}

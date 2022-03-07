@@ -5,7 +5,7 @@ import java.util.HashMap;
 
 import com.github.kevinsawicki.http.HttpRequest;
 
-import burp.Commons;
+import burp.IPAddressUtils;
 import title.LineEntry;
 import title.TitlePanel;
 
@@ -25,7 +25,7 @@ public class VMP {
 			String title = entry.getTitle();
 			String IPStr = entry.getIP();
 			String header = entry.getHeaderValueOf(false, "Server");
-			if (!Commons.isValidIP(host)) {
+			if (!IPAddressUtils.isValidIP(host)) {
 				VMPEntry tmp = new VMPEntry(url,title,IPStr,header);
 				result.put(url,tmp);//去重
 			}

@@ -13,18 +13,15 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.table.TableModel;
-
 import com.alibaba.fastjson.JSON;
 import com.google.common.net.InternetDomainName;
+import com.google.gson.Gson;
 
 import GUI.GUIMain;
 import Tools.DomainComparator;
 import burp.BurpExtender;
-import burp.Commons;
 import burp.DomainNameUtils;
-import com.google.gson.Gson;
-
+import burp.IPAddressUtils;
 import domain.target.TargetEntry;
 import domain.target.TargetTableModel;
 
@@ -106,13 +103,9 @@ public class DomainManager {
 	public void setRootDomainMap(LinkedHashMap<String, String> rootDomainMap) {
 		this.rootDomainMap = rootDomainMap;
 	}
-
+	
 	public Set<String> getSubnetSet() {
 		return subnetSet;
-	}
-
-	public void setSubnetSet(Set<String> subnetSet) {
-		this.subnetSet = subnetSet;
 	}
 
 	public Set<String> getSubDomainSet() {
@@ -179,7 +172,7 @@ public class DomainManager {
 	public void setNewAndNotGetTitleDomainSet(Set<String> newAndNotGetTitleDomainSet) {
 		this.newAndNotGetTitleDomainSet = newAndNotGetTitleDomainSet;
 	}
-	
+
 	public TargetTableModel fetchTargetModel() {
 		return DomainPanel.getTargetTable().getTargetModel();
 	}
@@ -219,10 +212,6 @@ public class DomainManager {
 
 
 	// below methods is self-defined, function name start with "fetch" to void fastjson parser error
-
-	public String fetchSubnets() {
-		return String.join(System.lineSeparator(), subnetSet);
-	}
 
 	public String fetchRelatedDomains() {
 		return String.join(System.lineSeparator(), relatedDomainSet);
@@ -320,12 +309,12 @@ public class DomainManager {
 		rootDomainMap.put(enteredRootDomain,keyword);
 		relatedDomainSet.remove(enteredRootDomain);//刷新时不能清空，所有要有删除操作。
 	}
-	
+
 	public void addToTargetAndSubDomain(String enteredRootDomain,boolean autoSub) {
 		if (enteredRootDomain == null) return;
 		DomainPanel.fetchTargetModel().addRow(enteredRootDomain,new TargetEntry(enteredRootDomain,true));
 	}
-	
+
 
 	/**
 	 * 根据已有配置进行添加，不是强行直接添加
@@ -391,13 +380,11 @@ public class DomainManager {
 				if (relatedDomain!=null && relatedDomain.contains(".")) {
 					String rootDomain =getRootDomain(relatedDomain);
 					if (rootDomain != null) {
-						if (fetchTargetModel().fetchRootBlackDomainSet().contains(rootDomain)){
+						if (fetchTargetModel().isBlack(rootDomain)){
 							continue;
-						}					
-						if (rootDomain != null) {
-							TargetEntry tmp = new TargetEntry(rootDomain);
-							fetchTargetModel().addRow(rootDomain, tmp);
 						}
+						TargetEntry tmp = new TargetEntry(rootDomain);
+						fetchTargetModel().addRow(rootDomain, tmp);
 					}
 					subDomainSet.add(relatedDomain);
 				}else {
@@ -471,24 +458,28 @@ public class DomainManager {
 		try {
 			domain = cleanDomain(domain);
 
-			if (Commons.isValidIP(domain)) {//https://202.77.129.30
+			if (IPAddressUtils.isValidIP(domain)) {//https://202.77.129.30
 				return DomainManager.IP_ADDRESS;
 			}
-			if (!Commons.isValidDomain(domain)) {
+			if (!DomainNameUtils.isValidDomain(domain)) {
 				return DomainManager.USELESS;
 			}
-			if (isInRootBlackDomain(domain)) {
+			if (fetchTargetModel().isBlack(domain)) {
 				return DomainManager.USELESS;
 			}
 
-			for (String rootdomain:fetchTargetModel().fetchRootDomainSet()) {
+			for (String rootdomain:fetchTargetModel().fetchTargetDomainSet()) {
 				rootdomain  = cleanDomain(rootdomain);
 				if (domain.endsWith("."+rootdomain)||domain.equalsIgnoreCase(rootdomain)){
 					return DomainManager.SUB_DOMAIN;
 				}
 			}
+			
+			if (fetchTargetModel().fetchTargetIPSet().contains(domain)) {
+				return DomainManager.IP_ADDRESS;
+			}
 
-			for (String rootdomain:fetchTargetModel().fetchRootDomainSet()) {
+			for (String rootdomain:fetchTargetModel().fetchTargetDomainSet()) {
 				rootdomain  = cleanDomain(rootdomain);
 				if (DomainNameUtils.isTLDDomain(domain,rootdomain)) {
 					return DomainManager.TLD_DOMAIN;
@@ -518,21 +509,6 @@ public class DomainManager {
 		for (String keyword:fetchTargetModel().fetchKeywordSet()) {
 			if (!keyword.equals("") && keyword.length() >= 2 && email.contains(keyword)) {
 				return true;
-			}
-		}
-		return false;
-	}
-
-	public boolean isInRootBlackDomain(String domain) {
-		if (domain.contains(":")) {//处理带有端口号的域名
-			domain = domain.substring(0,domain.indexOf(":"));
-		}
-		for (String rootdomain:fetchTargetModel().fetchRootBlackDomainSet()) {
-			if (rootdomain.contains(".")&&!rootdomain.endsWith(".")&&!rootdomain.startsWith("."))
-			{
-				if (domain.endsWith("."+rootdomain)||domain.equalsIgnoreCase(rootdomain)){
-					return true;
-				}
 			}
 		}
 		return false;

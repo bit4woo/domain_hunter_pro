@@ -234,7 +234,7 @@ public class TitlePanel extends JPanel {
 
 		//将新发现的域名也移动到子域名集合中，以便跑一次全量。 ---DomainConsumer.QueueToResult()中的逻辑已经保证了SubDomainSet一直是最全的。
 		domains.addAll(DomainPanel.getDomainResult().getSubDomainSet());
-		domains.addAll(Commons.toIPSet(DomainPanel.getDomainResult().getSubnetSet()));//确定的IP网段，用户自己输入的
+		domains.addAll(DomainPanel.fetchTargetModel().fetchTargetIPSet());//确定的IP网段，用户自己输入的
 		//remove domains in black list that is not our target
 		//domains.removeAll(DomainPanel.getDomainResult().fetchNotTargetIPList());//无需移除，会标记出来的。
 		tempConfig = new GetTitleTempConfig(domains.size());
@@ -324,9 +324,9 @@ public class TitlePanel extends JPanel {
 				return "thread Interrupted";
 			}
 			Set<String> IPsOfDomain = thread.IPset;
-			Set<String> IPsOfcertainSubnets = Commons.toIPSet(DomainPanel.getDomainResult().getSubnetSet());//用户配置的确定IP+网段
+			Set<String> IPsOfcertainSubnets = DomainPanel.fetchTargetModel().fetchTargetIPSet();//用户配置的确定IP+网段
 			IPsOfDomain.addAll(IPsOfcertainSubnets);
-			subnets = Commons.toSmallerSubNets(IPsOfDomain);
+			subnets = IPAddressUtils.toSmallerSubNets(IPsOfDomain);
 		}
 
 		HashSet<String> result = new HashSet<>(subnets);

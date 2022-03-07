@@ -56,6 +56,7 @@ import org.apache.commons.text.StringEscapeUtils;
 import GUI.GUIMain;
 import burp.BurpExtender;
 import burp.Commons;
+import burp.IPAddressUtils;
 import domain.CertInfo;
 import domain.DomainProducer;
 import title.WebIcon;
@@ -741,7 +742,7 @@ public class ToolPanel extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				try {
 					List<String> IPs = Commons.getLinesFromTextArea(inputTextArea);
-					Set<String> subnets = Commons.toSmallerSubNets(new HashSet<String>(IPs));
+					Set<String> subnets = IPAddressUtils.toSmallerSubNets(new HashSet<String>(IPs));
 					outputTextArea.setText(String.join(System.lineSeparator(), subnets));
 				} catch (Exception e1) {
 					outputTextArea.setText(e1.getMessage());
@@ -757,7 +758,7 @@ public class ToolPanel extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				try {
 					List<String> subnets = Commons.getLinesFromTextArea(inputTextArea);
-					List<String> IPs = Commons.toIPList(subnets);// 当前所有title结果计算出的IP集合
+					List<String> IPs = IPAddressUtils.toIPList(subnets);// 当前所有title结果计算出的IP集合
 					outputTextArea.setText(String.join(System.lineSeparator(), IPs));
 				} catch (Exception e1) {
 					outputTextArea.setText(e1.getMessage());

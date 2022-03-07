@@ -137,10 +137,10 @@ public class TargetEntry {
 
 	public void zoneTransferCheck() {
 		String rootDomain = InternetDomainName.from(target).topPrivateDomain().toString();
-		Set<String> NS = Commons.GetAuthoritativeNameServer(rootDomain);
+		Set<String> NS = DomainNameUtils.GetAuthoritativeNameServer(rootDomain);
 		for (String Server : NS) {
 			//stdout.println("checking [Server: "+Server+" Domain: "+rootDomain+"]");
-			List<String> Records = Commons.ZoneTransferCheck(rootDomain, Server);
+			List<String> Records = DomainNameUtils.ZoneTransferCheck(rootDomain, Server);
 			if (Records.size() > 0) {
 				try {
 					//stdout.println("!!! "+Server+" is zoneTransfer vulnerable for domain "+rootDomain+" !");

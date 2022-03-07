@@ -195,7 +195,6 @@ public class LineTable extends JTable
 		}
 		//this.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
 		this.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);//配合横向滚动条
-
 	}
 
 	@Deprecated//据说自动调整行宽度，测试了一下没用啊
