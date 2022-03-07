@@ -157,23 +157,24 @@ public class TargetTable extends JTable{
 	public void loadData(TargetTableModel targetTableModel){
 		if (targetTableModel == null) {//兼容旧版本
 			targetTableModel = new TargetTableModel();
-		}
-		IndexedLinkedHashMap<String, TargetEntry> entries = targetTableModel.getTargetEntries();
-		//兼容旧版本
-		if (DomainPanel.getDomainResult().getRootDomainMap().size() >0 ) {
-			for (Map.Entry<String, String> entry : DomainPanel.getDomainResult().getRootDomainMap().entrySet()) {
-				entries.put(entry.getKey(),new TargetEntry(entry.getKey(),false));//直接操作entries，避免触发监听器，频繁操作数据库
+			IndexedLinkedHashMap<String, TargetEntry> entries = targetTableModel.getTargetEntries();
+			//兼容旧版本
+			if (DomainPanel.getDomainResult().getRootDomainMap().size() >0 ) {
+				for (Map.Entry<String, String> entry : DomainPanel.getDomainResult().getRootDomainMap().entrySet()) {
+					entries.put(entry.getKey(),new TargetEntry(entry.getKey(),false));//直接操作entries，避免触发监听器，频繁操作数据库
+				}
 			}
-		}
-		
-		//兼容旧版本
-		if (DomainPanel.getDomainResult().getSubnetSet().size() >0 ) {
-			for (String IPorSubnet : DomainPanel.getDomainResult().getSubnetSet()) {
-				entries.put(IPorSubnet,new TargetEntry(IPorSubnet));
+			
+			//兼容旧版本
+			if (DomainPanel.getDomainResult().getSubnetSet().size() >0 ) {
+				for (String IPorSubnet : DomainPanel.getDomainResult().getSubnetSet()) {
+					entries.put(IPorSubnet,new TargetEntry(IPorSubnet));
+				}
 			}
+			
+			targetTableModel.setData(entries);
 		}
-		
-		targetTableModel.setData(entries);
+
 		setTargetModel(targetTableModel);//这句很关键，否则无法显示整个表的头和内容
 	}
 }
