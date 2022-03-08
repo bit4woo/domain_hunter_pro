@@ -152,7 +152,7 @@ public class DomainProducer extends Thread {//Producer do
 	}
 
 	public int classifyDomain(String domain) {
-		int type = DomainPanel.getDomainResult().domainType(domain);
+		int type = DomainPanel.fetchTargetModel().domainType(domain);
 		if (type == DomainManager.SUB_DOMAIN)
 		{
 			if (!subDomainQueue.contains(domain)) {
@@ -175,7 +175,7 @@ public class DomainProducer extends Thread {//Producer do
 		if (response != null) {
 			Set<String> emails = DomainProducer.grepEmail(new String(response));
 			for (String email:emails) {
-				if (DomainPanel.getDomainResult().isRelatedEmail(email)) {
+				if (DomainPanel.fetchTargetModel().isRelatedEmail(email)) {
 					EmailQueue.add(email);
 				}
 			}

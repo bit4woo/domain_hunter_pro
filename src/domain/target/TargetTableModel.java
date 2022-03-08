@@ -1,33 +1,23 @@
 package domain.target;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import GUI.GUIMain;
+import burp.*;
+import com.google.common.net.InternetDomainName;
+import com.google.gson.Gson;
+import domain.DomainManager;
+import domain.DomainPanel;
+import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import title.IndexedLinkedHashMap;
 
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import com.google.common.net.InternetDomainName;
-import com.google.gson.Gson;
-
-import GUI.GUIMain;
-import burp.BurpExtender;
-import burp.Commons;
-import burp.DBHelper;
-import burp.DomainNameUtils;
-import burp.IPAddressUtils;
-import domain.DomainPanel;
-import title.IndexedLinkedHashMap;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.*;
 
 public class TargetTableModel extends AbstractTableModel {
 
@@ -57,7 +47,7 @@ public class TargetTableModel extends AbstractTableModel {
 
 
 		/**
-		 * 
+		 *
 		 * 注意，所有直接对TargetTableModel中数据的修改，都不会触发该tableChanged监听器。
 		 * 除非操作的逻辑中包含了firexxxx来主动通知监听器。
 		 * DomainPanel.domainTableModel.fireTableChanged(null);
@@ -207,23 +197,28 @@ public class TargetTableModel extends AbstractTableModel {
 			fireTableRowsInserted(0, size-1);
 		}
 	}
-	
-	
-	public void addRowIfValid(String key,TargetEntry entry) {
+
+	public boolean ifValid(TargetEntry entry) {
 		if (entry.getTarget() == null || entry.getTarget().equals("")) {
-			return;
-		} 
+			return false;
+		}
 		if (entry.getType() == null || !titletList.contains(entry.getType())) {
-			return;
+			return false;
 		}
-		
-		if (!key.equalsIgnoreCase(entry.getTarget())) {
-			return;
+		if (!titletList.contains(entry.getTarget())){
+			return false;
 		}
-		
-		if (DomainNameUtils.isValidDomain(entry.getTarget()) || 
-				IPAddressUtils.isValidIP(entry.getTarget())||
-				IPAddressUtils.isValidSubnet(entry.getTarget())) {
+		String target = entry.getTarget();
+		if (!(DomainNameUtils.isValidDomain(target) ||
+				IPAddressUtils.isValidIP(target)||
+				IPAddressUtils.isValidSubnet(target))) {
+			return false;
+		}
+		return true;
+	}
+
+	public void addRowIfValid(String key,TargetEntry entry) {
+		if (ifValid(entry)){
 			addRow(key,entry);
 		}
 	}
@@ -287,7 +282,7 @@ public class TargetTableModel extends AbstractTableModel {
 	public String fetchRootDomains() {
 		return String.join(System.lineSeparator(), targetEntries.keySet());
 	}
-	
+
 	/**
 	 * 返回目标集合，包含域名、IP、网段。
 	 * 8.8.6.0/25
@@ -319,7 +314,7 @@ public class TargetTableModel extends AbstractTableModel {
 		}
 		return result;
 	}
-	
+
 	/**
 	 * 返回目标中的IP 和 网段 目标。可选择是否将网段转换为IP列表；不包含域名。
 	 * 8.8.6.0/25 ---默认均转换为IP列表
@@ -329,13 +324,16 @@ public class TargetTableModel extends AbstractTableModel {
 	public Set<String> fetchTargetIPSet() {
 		Set<String> result = new HashSet<String>();
 		for (TargetEntry entry:targetEntries.values()) {
-			if (!entry.isBlack()) {
-				if (entry.getType().equals(TargetEntry.Target_Type_IPaddress)) {
-					result.add(entry.getTarget());
-				}
-				if (entry.getType().equals(TargetEntry.Target_Type_Subnet)) {
-					List<String> tmpIPs = IPAddressUtils.toIPList(entry.getTarget());
-					result.addAll(tmpIPs);
+			if (ifValid(entry)) {
+				if (!entry.isBlack()) {
+					if (entry.getTarget() == null || entry.getType() == null) continue;
+					if (entry.getType().equals(TargetEntry.Target_Type_IPaddress)) {
+						result.add(entry.getTarget());
+					}
+					if (entry.getType().equals(TargetEntry.Target_Type_Subnet)) {
+						List<String> tmpIPs = IPAddressUtils.toIPList(entry.getTarget());
+						result.addAll(tmpIPs);
+					}
 				}
 			}
 		}
@@ -355,7 +353,7 @@ public class TargetTableModel extends AbstractTableModel {
 		}
 		return result;
 	}
-	
+
 	/**
 	 * IP黑名单
 	 * @return
@@ -365,7 +363,7 @@ public class TargetTableModel extends AbstractTableModel {
 		for (TargetEntry entry:targetEntries.values()) {
 			if (entry.isBlack()) {
 				if (entry.getType().equals(TargetEntry.Target_Type_IPaddress))
-				result.add(entry.getTarget());
+					result.add(entry.getTarget());
 				if (entry.getType().equals(TargetEntry.Target_Type_Subnet)) {
 					List<String> tmpIPs = IPAddressUtils.toIPList(entry.getTarget());
 					result.addAll(tmpIPs);
@@ -424,7 +422,7 @@ public class TargetTableModel extends AbstractTableModel {
 			}
 		}
 	}
-	
+
 	/**
 	 * 是否处于黑名单当中
 	 * @param domain
@@ -434,7 +432,7 @@ public class TargetTableModel extends AbstractTableModel {
 		if (domain.contains(":")) {//处理带有端口号的域名
 			domain = domain.substring(0,domain.indexOf(":"));
 		}
-		if (!(DomainNameUtils.isValidDomain(domain)|| 
+		if (!(DomainNameUtils.isValidDomain(domain)||
 				IPAddressUtils.isValidIP(domain))) {
 			return false;
 		}
@@ -452,32 +450,92 @@ public class TargetTableModel extends AbstractTableModel {
 		}
 		return false;
 	}
-	
+
 	/**
 	 * 用于判断收集到的域名或IP是不是我们的有效目标
 	 * @param domain
 	 * @return
 	 */
-	@Deprecated
+	@Deprecated //使用
 	public boolean isTargetDep(String domain) {
 		if (domain.contains(":")) {//处理带有端口号的域名
 			domain = domain.substring(0,domain.indexOf(":"));
 		}
-		if (!(DomainNameUtils.isValidDomain(domain)|| 
+		if (!(DomainNameUtils.isValidDomain(domain)||
 				IPAddressUtils.isValidIP(domain))) {
 			return false;
 		}
-		
+
 		if (isBlack(domain))return false;
 		//先过黑名单，如果在黑名单中，直接排除
-		
+
 		for (String rootdomain:fetchTargetDomainSet()) {
 			if (domain.endsWith("."+rootdomain)||domain.equalsIgnoreCase(rootdomain)){
 				return true;
 			}
 		}
-		
+
 		return fetchTargetIPSet().contains(domain);
+	}
+
+	public int domainType(String domain) {
+		try {
+			domain = DomainNameUtils.cleanDomain(domain);
+
+			if (IPAddressUtils.isValidIP(domain)) {//https://202.77.129.30
+				return DomainManager.IP_ADDRESS;
+			}
+			if (!DomainNameUtils.isValidDomain(domain)) {
+				return DomainManager.USELESS;
+			}
+			if (isBlack(domain)) {
+				return DomainManager.USELESS;
+			}
+
+			for (String rootdomain:fetchTargetDomainSet()) {
+				rootdomain  = DomainNameUtils.cleanDomain(rootdomain);
+				if (domain.endsWith("."+rootdomain)||domain.equalsIgnoreCase(rootdomain)){
+					return DomainManager.SUB_DOMAIN;
+				}
+			}
+
+			if (fetchTargetIPSet().contains(domain)) {
+				return DomainManager.IP_ADDRESS;
+			}
+
+			for (String rootdomain:fetchTargetDomainSet()) {
+				rootdomain  = DomainNameUtils.cleanDomain(rootdomain);
+				if (DomainNameUtils.isTLDDomain(domain,rootdomain)) {
+					return DomainManager.TLD_DOMAIN;
+				}
+			}
+
+			for (String keyword:fetchKeywordSet()) {
+				if (!keyword.equals("") && domain.contains(keyword)) {
+					if (InternetDomainName.from(domain).hasPublicSuffix()) {//是否是以公开的 .com .cn等结尾的域名。//如果是以比如local结尾的域名，就不会被认可
+						return DomainManager.SIMILAR_DOMAIN;
+					}
+
+					if (fetchSuffixSet().contains(domain.substring(0, domain.indexOf(".")))){
+						return DomainManager.PACKAGE_NAME;
+					}
+				}
+			}
+
+			return DomainManager.USELESS;
+		} catch (Exception e) {
+			e.printStackTrace(BurpExtender.getStderr());
+			return DomainManager.USELESS;
+		}
+	}
+
+	public boolean isRelatedEmail(String email) {
+		for (String keyword:fetchKeywordSet()) {
+			if (!keyword.equals("") && keyword.length() >= 2 && email.contains(keyword)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public static void main(String[] args) {
@@ -488,7 +546,7 @@ public class TargetTableModel extends AbstractTableModel {
 		TargetTableModel ccc = TargetTableModel.FromJson(bbb);
 		System.out.println(bbb);
 		System.out.println(ccc);
-		
+
 		System.out.println(aaa.getValueAt(0).getType() == TargetEntry.Target_Type_Domain);
 	}
 

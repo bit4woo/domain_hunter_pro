@@ -58,13 +58,12 @@ public class DomainConsumer extends Thread {
 
 	public static void QueueToResult() {
 		//HashSet<String> oldSubdomains = new HashSet<String>();
-		CopyOnWriteArraySet<String> oldSubdomains = new CopyOnWriteArraySet<String>();
 		//java.util.ConcurrentModificationException 可能同时有其他线程在向subDomainSet中写数据，导致的这个错误。
 		//http://ifeve.com/java-copy-on-write/
 		//https://www.jianshu.com/p/c5b52927a61a
 		DomainManager result= DomainPanel.getDomainResult();
 		if (result != null) {
-			oldSubdomains.addAll(result.getSubDomainSet());
+			CopyOnWriteArraySet<String> oldSubdomains = new CopyOnWriteArraySet<String>(result.getSubDomainSet());
 
 			moveQueueToSet(BurpExtender.subDomainQueue,result.getSubDomainSet());//所有子域名还是都存在里面的，至少新发现的又单独存了一份，所以SubDomainSet一直都是最全的。
 			moveQueueToSet(BurpExtender.similarDomainQueue,result.getSimilarDomainSet());
@@ -78,8 +77,7 @@ public class DomainConsumer extends Thread {
 				result.addToTargetAndSubDomain(domain, true);
 			}
 
-			HashSet<String> newSubdomains = new HashSet<String>();
-			newSubdomains.addAll(result.getSubDomainSet());
+			HashSet<String> newSubdomains = new HashSet<String>(result.getSubDomainSet());
 
 			newSubdomains.removeAll(oldSubdomains);
 			result.getNewAndNotGetTitleDomainSet().addAll(newSubdomains);
@@ -87,8 +85,8 @@ public class DomainConsumer extends Thread {
 			if (newSubdomains.size()>0){
 				BurpExtender.getStdout().println(String.format("~~~~~~~~~~~~~%s new subdomains added!~~~~~~~~~~~~~",newSubdomains.size()));
 				BurpExtender.getStdout().println(String.join(System.lineSeparator(), newSubdomains));
+				DomainPanel.saveDomainDataToDB();
 			}
-			DomainPanel.saveDomainDataToDB();
 		}
 	}
 

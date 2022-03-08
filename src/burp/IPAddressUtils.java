@@ -85,6 +85,7 @@ public class IPAddressUtils {
 	}
 
 	public static boolean isValidSubnet(String subnet) {
+		if (null == subnet) return false;
 		subnet = subnet.replaceAll(" ", "");
 		if (subnet.contains("/")) {
 			String[] parts = subnet.split("/");

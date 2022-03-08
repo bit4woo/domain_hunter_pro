@@ -691,7 +691,7 @@ public class DomainPanel extends JPanel {
 		fl_FooterPanel.setAlignment(FlowLayout.LEFT);
 		this.add(footerPanel, BorderLayout.SOUTH);
 
-		JLabel footerLabel = new JLabel(BurpExtender.getExtenderName() + "    " + BurpExtender.getGithub());
+		JLabel footerLabel = new JLabel(BurpExtender.getGithub());
 		footerLabel.setFont(new Font("宋体", Font.BOLD, 12));
 		footerLabel.addMouseListener(new MouseAdapter() {
 			@Override
@@ -860,7 +860,7 @@ public class DomainPanel extends JPanel {
 				Matcher matcher = pDomainNameOnly.matcher(detail);
 				while (matcher.find()) {//多次查找
 					String email = matcher.group();
-					if (domainResult.isRelatedEmail(email)) {
+					if (fetchTargetModel().isRelatedEmail(email)) {
 						Emails.add(matcher.group());
 					}
 					System.out.println(matcher.group());

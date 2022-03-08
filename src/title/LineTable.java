@@ -122,16 +122,25 @@ public class LineTable extends JTable
 	public TableModel getModel(){
 		return super.getModel();
 	}
-	
+
+	/**
+	 * 自己实现的逻辑中不要调用这个函数，它会被JTable的已有功能调用
+	 * @param dataModel
+	 */
 	@Override
 	public void setModel(TableModel dataModel) {
 		super.setModel(dataModel);
 	}
-	
-	
+
 	public LineTableModel getLineTableModel(){
 		return lineTableModel;
 	}
+
+	public void setLineTableModel(LineTableModel lineTableModel) {
+		this.lineTableModel = lineTableModel;//自己保存一份，避免调用getModel后进行类型转换失败。
+		setModel(lineTableModel);
+	}
+
 
 	public JSplitPane tableAndDetailPanel(){
 		JSplitPane splitPane = new JSplitPane();//table area + detail area

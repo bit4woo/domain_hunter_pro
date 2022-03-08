@@ -125,13 +125,14 @@ public class GUIMain extends JFrame {
 			System.out.println("==Start Loading Data From: " + dbFilePath+"==");
 			BurpExtender.getStdout().println("==Start Loading Data From: " + dbFilePath+"==");
 			currentDBFile = new File(dbFilePath);
+			GUIMain.setCurrentDBFile(currentDBFile);
+
 			DBHelper dbhelper = new DBHelper(dbFilePath);
-			
 			DomainPanel.getTargetTable().loadData(dbhelper.getTargets());
 			domainPanel.LoadData(dbhelper.getDomainObj());
 			titlePanel.loadData(dbhelper.getTitles());
 			
-			GUIMain.setCurrentDBFile(currentDBFile);
+
 			ToolPanel.getLineConfig().setDbfilepath(currentDBFile.getAbsolutePath());
 			GUIMain.displayProjectName();
 			System.out.println("==End Loading Data From: "+ dbFilePath +"==");//输出到debug console

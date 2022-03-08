@@ -370,9 +370,8 @@ public class TitlePanel extends JPanel {
 	public void loadData(IndexedLinkedHashMap<String,LineEntry> lineEntries) {
 		LineTableModel tmp = new LineTableModel();
 		tmp.setLineEntries(lineEntries);
-		getTitleTable().setModel(tmp);
+		getTitleTable().setLineTableModel(tmp);
 	}
-
 
 	public void digStatus() {
 		String status = titleTableModel.getStatusSummary();

@@ -43,7 +43,7 @@ public class TargetEntry {
 	public TargetEntry(String input,boolean autoSub) {
 		if (input == null) return;
 		String domain = DomainNameUtils.cleanDomain(input);
-		if (domain != null && DomainNameUtils.isValidDomain(domain)) {
+		if (DomainNameUtils.isValidDomain(domain)) {
 			type = Target_Type_Domain;
 
 			useTLD = autoSub;
