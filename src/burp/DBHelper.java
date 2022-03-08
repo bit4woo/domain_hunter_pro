@@ -116,9 +116,9 @@ public class DBHelper {
 			if (new File(dbFilePath).exists()){
 				conn = DriverManager.getConnection("jdbc:sqlite:"+dbFilePath);
 			}else {
-				System.out.println("DB file not found");
-				stderr.println("DB file not found");
-				log.error("DB file not found");
+				System.out.println("DB file not found: "+dbFilePath);
+				stderr.println("DB file not found: "+dbFilePath);
+				log.error("DB file not found: "+dbFilePath);
 			}
 		}
 		return conn;
@@ -156,7 +156,7 @@ public class DBHelper {
 	
 	/**
 	 * 
-	 * @param targetsJson
+	 * @param model
 	 * @return
 	 */
 	public synchronized boolean saveTargets(TargetTableModel model){

@@ -2,6 +2,8 @@ package domain.target;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -30,7 +32,8 @@ public class TargetEntry {
 	public static final String Target_Type_Subnet = "Subnet";
 	public static final String Target_Type_IPaddress = "IP";
 
-	public static final String[]  TargetTypeArray = {Target_Type_Domain,Target_Type_Subnet,Target_Type_IPaddress};
+	private static final String[]  TargetTypeArray = {Target_Type_Domain,Target_Type_Subnet,Target_Type_IPaddress};
+	public static List<String> TargetTypeList = new ArrayList<>(Arrays.asList(TargetTypeArray));
 
 	public static void main(String[] args) {
 		TargetEntry aa = new TargetEntry("www.baidu.com");

@@ -128,6 +128,8 @@ public class GUIMain extends JFrame {
 			GUIMain.setCurrentDBFile(currentDBFile);
 
 			DBHelper dbhelper = new DBHelper(dbFilePath);
+
+			DomainPanel.setDomainResult(dbhelper.getDomainObj());//为了兼容就版本，
 			DomainPanel.getTargetTable().loadData(dbhelper.getTargets());
 			domainPanel.LoadData(dbhelper.getDomainObj());
 			titlePanel.loadData(dbhelper.getTitles());

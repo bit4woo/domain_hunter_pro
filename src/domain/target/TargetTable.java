@@ -163,9 +163,10 @@ public class TargetTable extends JTable{
 				for (Map.Entry<String, String> entry : DomainPanel.getDomainResult().getRootDomainMap().entrySet()) {
 					String key = entry.getKey();
 					if (key.startsWith("[exclude]")) {
-						key = key.replaceFirst("[exclude]", "");
+						key = key.replaceFirst("\\[exclude\\]", "");
 						TargetEntry targetEntry = new TargetEntry(key, false);
 						targetEntry.setBlack(true);
+						entries.put(key,targetEntry);
 					} else {
 						entries.put(key, new TargetEntry(key, false));//直接操作entries，避免触发监听器，频繁操作数据库
 					}

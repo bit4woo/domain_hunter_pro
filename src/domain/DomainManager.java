@@ -345,7 +345,7 @@ public class DomainManager {
         if (type == DomainManager.TLD_DOMAIN) {
             //应当先做TLD域名的添加，这样可以丰富Root域名，避免数据损失遗漏
             addToTargetAndSubDomain(domain, true);
-        } else if (type == DomainManager.SUB_DOMAIN || type == DomainManager.IP_ADDRESS)
+        } else if (type == DomainManager.SUB_DOMAIN)
         //包含手动添加的IP
         {
             subDomainSet.add(domain);//子域名可能来自相关域名和相似域名。
@@ -356,7 +356,9 @@ public class DomainManager {
         } else if (type == DomainManager.PACKAGE_NAME) {
             PackageNameSet.add(domain);
             return true;
-        } //Email的没有处理
+        } else if (type == DomainManager.IP_ADDRESS){
+            foundIPSet.add(domain);
+        }//Email的没有处理
         return false;
     }
 
@@ -383,21 +385,23 @@ public class DomainManager {
 
     public void relatedToRoot() {
         if (this.autoAddRelatedToRoot) {
-            HashSet<String> tmpSet = new HashSet<String>(relatedDomainSet);
-            for (String relatedDomain : tmpSet) {
-                //避免直接引用relatedDomainSet进行循环，由于TargetEntry中有删除操作，会导致'java.util.ConcurrentModificationException'异常
-                if (relatedDomain != null && relatedDomain.contains(".")) {
-                    if (fetchTargetModel().isBlack(relatedDomain)) {
-                        continue;
+            if (relatedDomainSet.size() >0){
+                HashSet<String> tmpSet = new HashSet<String>(relatedDomainSet);
+                for (String relatedDomain : tmpSet) {
+                    //避免直接引用relatedDomainSet进行循环，由于TargetEntry中有删除操作，会导致'java.util.ConcurrentModificationException'异常
+                    if (relatedDomain != null && relatedDomain.contains(".")) {
+                        if (fetchTargetModel().isBlack(relatedDomain)) {
+                            continue;
+                        }
+                        addToTargetAndSubDomain(relatedDomain, true);
+                    } else {
+                        System.out.println("error related domain : " + relatedDomain);
                     }
-                    addToTargetAndSubDomain(relatedDomain, true);
-                } else {
-                    System.out.println("error related domain : " + relatedDomain);
                 }
+                freshBaseRule();
+                //relatedDomainSet.clear();//TargetEntry的构造函数中就会自动移除，不需要这行代码了
             }
-            //relatedDomainSet.clear();//TargetEntry的构造函数中就会自动移除，不需要这行代码了
         }
-        freshBaseRule();
     }
 
     /**

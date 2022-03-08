@@ -134,6 +134,7 @@ public class ProjectMenu extends JMenu{
 				}
 
 				GUIMain.getDomainPanel().showDataToDomainGUI();
+				GUIMain.getDomainPanel().saveDomainDataToDB();
 			}
 		});
 		ImportMenu.setToolTipText("Import Domain From Text File");

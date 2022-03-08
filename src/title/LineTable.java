@@ -85,7 +85,7 @@ public class LineTable extends JTable
 
 		this.setFillsViewportHeight(true);//在table的空白区域显示右键菜单
 		//https://stackoverflow.com/questions/8903040/right-click-mouselistener-on-whole-jtable-component
-		this.setModel(lineTableModel);
+		this.setLineTableModel(lineTableModel);
 
 		tableinit();
 		tableRowSorter = new TableRowSorter<LineTableModel>(lineTableModel);

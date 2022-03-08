@@ -78,6 +78,7 @@ public class DomainConsumer extends Thread {
 			}
 
 			HashSet<String> newSubdomains = new HashSet<String>(result.getSubDomainSet());
+			//ConcurrentModificationException
 
 			newSubdomains.removeAll(oldSubdomains);
 			result.getNewAndNotGetTitleDomainSet().addAll(newSubdomains);

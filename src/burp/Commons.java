@@ -150,7 +150,7 @@ public class Commons {
 	 */
 	static String detectCharsetInBody(byte[] requestOrResponse){
 		String body = new String(requestOrResponse);
-		if (body.contains("\r\n\r\n")) {
+		if (body.contains("\r\n\r\n")&& body.indexOf("\r\n\r\n")<body.length()) {
 			body = body.split("\r\n\r\n")[1];
 		}
 		if (body.length() >1000) {

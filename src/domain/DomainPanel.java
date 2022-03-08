@@ -356,41 +356,6 @@ public class DomainPanel extends JPanel {
 		});
 		HeaderPanel.add(btnZoneTransferCheck);
 
-		/**
-		 * 从文本文件中导入域名
-		 */
-		JButton btnImportDomain = new JButton("Import Domain");
-		btnImportDomain.setToolTipText("Import Domain From Text File Which One Domain Per Line");
-		btnImportDomain.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				JFileChooser fc = new JFileChooser();
-				fc.setDialogTitle("Chose Domain File");
-				fc.setDialogType(JFileChooser.CUSTOM_DIALOG);
-				if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-					try {
-						File file = fc.getSelectedFile();
-						List<String> lines = Files.readLines(file, Charsets.UTF_8);
-						for (String line : lines) {
-							if (domainResult.addIfValid(line)) {
-								stdout.println("import " + line +" succeed!");
-							} else {
-								stdout.println("import skip " + line);
-							}
-						}
-						showDataToDomainGUI();
-						stdout.println("Import domains finished from " + file.getName());
-						saveDomainDataToDB();
-						//List<String> lines = Files.readLines(file, Charsets.UTF_8);
-
-					} catch (IOException e1) {
-						e1.printStackTrace(stderr);
-					}
-				}
-			}
-		});
-		HeaderPanel.add(btnImportDomain);
-
-
 		JButton btnRenameProject = new JButton("Rename Project");
 		btnRenameProject.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -950,7 +915,7 @@ public class DomainPanel extends JPanel {
 			File file = BurpExtender.getGui().dbfc.dialog(false,".db");
 			if (file != null) {
 				DBHelper dbHelper = new DBHelper(file.toString());
-				if (dbHelper.saveDomainObject(domainResult)) {
+				if (dbHelper.saveDomainObject(domainResult) && dbHelper.saveTargets(fetchTargetModel())) {
 					stdout.println("Save Domain Only Success! " + Commons.getNowTimeString());
 					return file;
 				}

@@ -167,6 +167,11 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		stdout.println(getFullExtenderName());
 		stdout.println(github);
 
+		if (TitlePanel.threadGetTitle != null) {
+			TitlePanel.threadGetTitle.interrupt();//maybe null
+			//以前项目的数据可能加入到当前项目！当以前项目gettitle的线程未结束时
+		}//必须要先结束线程，否则获取数据的操作根本无法结束，因为线程一直通过sync占用资源
+
 		callbacks.setExtensionName(getFullExtenderName()); //插件名称
 		callbacks.registerExtensionStateListener(this);
 		callbacks.registerContextMenuFactory(this);

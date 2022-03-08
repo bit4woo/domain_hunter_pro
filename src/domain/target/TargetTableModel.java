@@ -202,12 +202,10 @@ public class TargetTableModel extends AbstractTableModel {
 		if (entry.getTarget() == null || entry.getTarget().equals("")) {
 			return false;
 		}
-		if (entry.getType() == null || !titletList.contains(entry.getType())) {
+		if (entry.getType() == null || !TargetEntry.TargetTypeList.contains(entry.getType())) {
 			return false;
 		}
-		if (!titletList.contains(entry.getTarget())){
-			return false;
-		}
+
 		String target = entry.getTarget();
 		if (!(DomainNameUtils.isValidDomain(target) ||
 				IPAddressUtils.isValidIP(target)||
