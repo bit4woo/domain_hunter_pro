@@ -347,10 +347,8 @@ public class TitlePanel extends JPanel {
 
 	/**
 	 * 用于从DB文件中加载数据，没有去重检查。
-	 * 使用setModel()代替这个函数。
 	 */
-	@Deprecated
-	public void showToTitleUIDep(IndexedLinkedHashMap<String,LineEntry> lineEntries) {
+	public void loadData(IndexedLinkedHashMap<String,LineEntry> lineEntries) {
 		//titleTableModel.setLineEntries(new ArrayList<LineEntry>());//clear
 		//这里没有fire delete事件，会导致排序号加载文件出错，但是如果fire了又会触发tableModel的删除事件，导致数据库删除。改用clear()
 		titleTableModel.clear(false);//clear
@@ -366,8 +364,13 @@ public class TitlePanel extends JPanel {
 		digStatus();
 		TitlePanel.getTitleTable().search("");// hide checked items
 	}
-	
-	public void loadData(IndexedLinkedHashMap<String,LineEntry> lineEntries) {
+
+	/**
+	 *
+	 * @param lineEntries
+	 */
+	@Deprecated//TODO 不知为何没有起作用
+	public void loadDataNewNotWork(IndexedLinkedHashMap<String,LineEntry> lineEntries) {
 		LineTableModel tmp = new LineTableModel();
 		tmp.setLineEntries(lineEntries);
 		getTitleTable().setLineTableModel(tmp);
