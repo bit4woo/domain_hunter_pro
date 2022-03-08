@@ -111,18 +111,20 @@ public class TargetControlPanel extends JPanel {
 	}
 
 	public static void selectedToBalck(){
-		int[] rowindexs = DomainPanel.getTargetTable().getSelectedRows();
-		for (int i = 0; i < rowindexs.length; i++) {
-			rowindexs[i] = DomainPanel.getTargetTable().convertRowIndexToModel(rowindexs[i]);//转换为Model的索引，否则排序后索引不对应。
-		}
-		Arrays.sort(rowindexs);
+		int option = JOptionPane.showConfirmDialog(null, "Are you sure set target to black?", "WARNING",JOptionPane.YES_NO_OPTION);
+		if (option == JOptionPane.YES_OPTION) {
+			int[] rowindexs = DomainPanel.getTargetTable().getSelectedRows();
+			for (int i = 0; i < rowindexs.length; i++) {
+				rowindexs[i] = DomainPanel.getTargetTable().convertRowIndexToModel(rowindexs[i]);//转换为Model的索引，否则排序后索引不对应。
+			}
+			Arrays.sort(rowindexs);
 
-		TargetTableModel domainTableModel = DomainPanel.fetchTargetModel();
-		for (int i = rowindexs.length - 1; i >= 0; i--) {
-			TargetEntry entry = domainTableModel.getValueAt(rowindexs[i]);
-			entry.setBlack(true);
-			String key = entry.getTarget();
-			domainTableModel.updateRow(entry);
+			TargetTableModel domainTableModel = DomainPanel.fetchTargetModel();
+			for (int i = rowindexs.length - 1; i >= 0; i--) {
+				TargetEntry entry = domainTableModel.getValueAt(rowindexs[i]);
+				entry.setBlack(true);
+				domainTableModel.updateRow(entry);
+			}
 		}
 	}
 }

@@ -6,9 +6,7 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.io.PrintWriter;
 
-import javax.swing.AbstractAction;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
+import javax.swing.*;
 
 import burp.BurpExtender;
 import burp.Commons;

@@ -11,6 +11,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import title.IndexedLinkedHashMap;
 
+import javax.swing.*;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
@@ -147,6 +148,11 @@ public class TargetTableModel extends AbstractTableModel {
 			entry.setKeyword(valueStr);
 			fireTableCellUpdated(row, col);
 		}
+		if (col == titletList.indexOf("Black")){
+			boolean valueStr = ((boolean) value);
+			entry.setBlack(valueStr);
+			fireTableCellUpdated(row, col);
+		}
 	}
 
 	@Override
@@ -217,6 +223,12 @@ public class TargetTableModel extends AbstractTableModel {
 
 	public void addRowIfValid(String key,TargetEntry entry) {
 		if (ifValid(entry)){
+			TargetEntry oldentry = targetEntries.get(key);
+			if (oldentry != null){//如果有旧的记录，就需要用旧的内容做修改
+				entry.setBlack(oldentry.isBlack());
+				entry.setComment(oldentry.getComment());
+				entry.setKeyword(oldentry.getKeyword());
+			}
 			addRow(key,entry);
 		}
 	}
