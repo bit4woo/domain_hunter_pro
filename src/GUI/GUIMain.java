@@ -122,8 +122,8 @@ public class GUIMain extends JFrame {
 		try {//这其中的异常会导致burp退出
 			BurpExtender.clearQueue();//更换DB文件前进行，否则Queue中会包含之前的数据。
 			System.out.println("=================================");
-			System.out.println("==Start Loading Data From: " + dbFilePath+"==");
-			BurpExtender.getStdout().println("==Start Loading Data From: " + dbFilePath+"==");
+			System.out.println("==Start Loading Data From: " + dbFilePath+" "+Commons.getNowTimeString()+"==");
+			BurpExtender.getStdout().println("==Start Loading Data From: " + dbFilePath+" "+Commons.getNowTimeString()+"==");
 			currentDBFile = new File(dbFilePath);
 			GUIMain.setCurrentDBFile(currentDBFile);
 
@@ -137,8 +137,8 @@ public class GUIMain extends JFrame {
 
 			ToolPanel.getLineConfig().setDbfilepath(currentDBFile.getAbsolutePath());
 			GUIMain.displayProjectName();
-			System.out.println("==End Loading Data From: "+ dbFilePath +"==");//输出到debug console
-			BurpExtender.getStdout().println("==End Loading Data From: "+ dbFilePath +"==");
+			System.out.println("==End Loading Data From: "+ dbFilePath+" "+Commons.getNowTimeString() +"==");//输出到debug console
+			BurpExtender.getStdout().println("==End Loading Data From: "+ dbFilePath+" "+Commons.getNowTimeString() +"==");
 			return true;
 		} catch (Exception e) {
 			BurpExtender.getStdout().println("Loading Failed!");
