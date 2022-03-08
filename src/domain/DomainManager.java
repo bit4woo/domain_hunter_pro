@@ -326,7 +326,7 @@ public class DomainManager {
 
     public void addToTargetAndSubDomain(String enteredRootDomain, boolean autoSub) {
         if (enteredRootDomain == null) return;
-        DomainPanel.fetchTargetModel().addRow(enteredRootDomain, new TargetEntry(enteredRootDomain, true));
+        DomainPanel.fetchTargetModel().addRowIfValid(enteredRootDomain, new TargetEntry(enteredRootDomain, true));
     }
 
 
@@ -397,17 +397,7 @@ public class DomainManager {
             }
             //relatedDomainSet.clear();//TargetEntry的构造函数中就会自动移除，不需要这行代码了
         }
-        //System.out.println(similarDomainSet);
-
-
-        Iterator<String> iterator = similarDomainSet.iterator();
-        while (iterator.hasNext()) {
-            String similarDomain = iterator.next();
-            if (addIfValid(similarDomain)) {
-                iterator.remove();//如果直接用for循环，lead to "java.util.ConcurrentModificationException" error
-            }
-            ;
-        }
+        freshBaseRule();
     }
 
     /**

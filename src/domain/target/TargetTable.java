@@ -161,7 +161,14 @@ public class TargetTable extends JTable{
 			//兼容旧版本
 			if (DomainPanel.getDomainResult().getRootDomainMap().size() >0 ) {
 				for (Map.Entry<String, String> entry : DomainPanel.getDomainResult().getRootDomainMap().entrySet()) {
-					entries.put(entry.getKey(),new TargetEntry(entry.getKey(),false));//直接操作entries，避免触发监听器，频繁操作数据库
+					String key = entry.getKey();
+					if (key.startsWith("[exclude]")) {
+						key = key.replaceFirst("[exclude]", "");
+						TargetEntry targetEntry = new TargetEntry(key, false);
+						targetEntry.setBlack(true);
+					} else {
+						entries.put(key, new TargetEntry(key, false));//直接操作entries，避免触发监听器，频繁操作数据库
+					}
 				}
 			}
 			

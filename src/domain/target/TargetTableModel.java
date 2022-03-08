@@ -228,7 +228,7 @@ public class TargetTableModel extends AbstractTableModel {
 	 * @param key
 	 * @param entry
 	 */
-	public void addRow(String key,TargetEntry entry) {
+	private void addRow(String key,TargetEntry entry) {
 		int oldsize = targetEntries.size();
 		targetEntries.put(key,entry);
 		int rowIndex = targetEntries.IndexOfKey(key);
@@ -293,6 +293,7 @@ public class TargetTableModel extends AbstractTableModel {
 	public Set<String> fetchTargetSet() {
 		Set<String> result = new HashSet<String>();
 		for (TargetEntry entry:targetEntries.values()) {
+			if (!ifValid(entry)) continue;
 			if (!entry.isBlack()) {
 				result.add(entry.getTarget());
 			}
@@ -308,8 +309,13 @@ public class TargetTableModel extends AbstractTableModel {
 	public Set<String> fetchTargetDomainSet() {
 		Set<String> result = new HashSet<String>();
 		for (TargetEntry entry:targetEntries.values()) {
-			if (!entry.isBlack() && entry.getType() == TargetEntry.Target_Type_Domain) {
-				result.add(entry.getTarget());
+			if (!ifValid(entry)) continue;
+			try {
+				if (!entry.isBlack() && entry.getType().equals(TargetEntry.Target_Type_Domain)) {
+					result.add(entry.getTarget());
+				}
+			}catch (Exception e){
+				e.printStackTrace();
 			}
 		}
 		return result;
@@ -347,7 +353,8 @@ public class TargetTableModel extends AbstractTableModel {
 	private Set<String> fetchTargetBlackDomainSet() {
 		Set<String> result = new HashSet<String>();
 		for (TargetEntry entry:targetEntries.values()) {
-			if (entry.isBlack() && entry.getType() == TargetEntry.Target_Type_Domain) {
+			if (!ifValid(entry)) continue;
+			if (entry.isBlack() && entry.getType().equals(TargetEntry.Target_Type_Domain)) {
 				result.add(entry.getTarget());
 			}
 		}
@@ -361,6 +368,7 @@ public class TargetTableModel extends AbstractTableModel {
 	public Set<String> fetchBlackIPSet() {
 		Set<String> result = new HashSet<String>();
 		for (TargetEntry entry:targetEntries.values()) {
+			if (!ifValid(entry)) continue;
 			if (entry.isBlack()) {
 				if (entry.getType().equals(TargetEntry.Target_Type_IPaddress))
 					result.add(entry.getTarget());
@@ -376,6 +384,7 @@ public class TargetTableModel extends AbstractTableModel {
 	public Set<String> fetchKeywordSet(){
 		Set<String> result = new HashSet<String>();
 		for (TargetEntry entry:targetEntries.values()) {
+			if (!ifValid(entry)) continue;
 			if (!entry.isBlack() && !entry.getKeyword().trim().equals("")) {
 				result.add(entry.getKeyword());
 			}
@@ -456,7 +465,7 @@ public class TargetTableModel extends AbstractTableModel {
 	 * @param domain
 	 * @return
 	 */
-	@Deprecated //使用
+	@Deprecated //
 	public boolean isTargetDep(String domain) {
 		if (domain.contains(":")) {//处理带有端口号的域名
 			domain = domain.substring(0,domain.indexOf(":"));
@@ -492,7 +501,8 @@ public class TargetTableModel extends AbstractTableModel {
 				return DomainManager.USELESS;
 			}
 
-			for (String rootdomain:fetchTargetDomainSet()) {
+			Set<String> targetDomains = fetchTargetDomainSet();
+			for (String rootdomain:targetDomains) {
 				rootdomain  = DomainNameUtils.cleanDomain(rootdomain);
 				if (domain.endsWith("."+rootdomain)||domain.equalsIgnoreCase(rootdomain)){
 					return DomainManager.SUB_DOMAIN;
