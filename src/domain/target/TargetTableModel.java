@@ -45,8 +45,10 @@ public class TargetTableModel extends AbstractTableModel {
 			stdout = new PrintWriter(System.out, true);
 			stderr = new PrintWriter(System.out, true);
 		}
+		addListener();//构造函数中已经有了添加listener了的操作了，为什么会在Jtable.setModel()函数后失效呢？奇怪！
+	}
 
-
+	public void addListener(){
 		/**
 		 *
 		 * 注意，所有直接对TargetTableModel中数据的修改，都不会触发该tableChanged监听器。

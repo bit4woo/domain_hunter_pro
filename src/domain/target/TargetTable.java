@@ -1,9 +1,17 @@
 package domain.target;
 
-import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.Font;
-import java.awt.FontMetrics;
+import burp.BurpExtender;
+import domain.DomainPanel;
+import title.IndexedLinkedHashMap;
+import title.LineTableModel;
+
+import javax.swing.*;
+import javax.swing.border.LineBorder;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.PrintWriter;
@@ -11,24 +19,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
-import javax.swing.SortOrder;
-import javax.swing.SwingUtilities;
-import javax.swing.border.LineBorder;
-import javax.swing.table.TableModel;
-
-import burp.BurpExtender;
-import domain.DomainPanel;
-import title.IndexedLinkedHashMap;
-import title.LineTableModel;
-
 public class TargetTable extends JTable{
 
 	private TargetTableModel targetModel = new TargetTableModel();
 	private PrintWriter stderr;
 	private PrintWriter stdout;
-
 
 	public TargetTable() {
 
@@ -123,16 +118,18 @@ public class TargetTable extends JTable{
 
 
 	/**
-	 * JTable本来就实现了这个函数，
-	 * 之所以这样写，是为了避免自己去实现太多功能了。
+	 * setModel和getModel是JTable本来就实现了的函数。但是其中Model的类型是DefaultTableModel,
+	 * DefaultTableModel extends AbstractTableModel。而我们自己实现的model虽然也是继承于AbstractTableModel，
+	 * 但是其中有一些自己实现的方法，想要方便地进行其中方法的调用，就不能使用原本的setModel和getModel方法。
 	 */
-	@Override
-	public TableModel getModel() {
-		return super.getModel();
+	//@Override
+	public TargetTableModel getModel() {
+		return this.targetModel;
 	}
 
 	/**
-	 * JTable已经实现的方法，会被已有逻辑调用。不对其进行修改。
+	 * JTable已经实现的方法，会被已有逻辑调用。
+	 * 不对其进行修改，自己的项目代码中也不要调用这个方法！
 	 * 
 	 */
 	@Override
@@ -147,13 +144,19 @@ public class TargetTable extends JTable{
 	 */
 	public void setTargetModel(TargetTableModel targetModel) {
 		this.targetModel = targetModel;
-		setModel(targetModel);
+		setModel(this.targetModel);//没有这个行代码，就数据就不会显示！
+		this.targetModel.addListener();//setModel之后，原来的listener会失效！！！导致不能及时写入DB，这里重新添加！！！
 	}
 
 	public TargetTableModel getTargetModel() {
-		return targetModel;
+		return getModel();
 	}
 
+	/**
+	 * 这里加载数据的过程中使用了setModel来设置新的model对象，这个操作会导致原来的listener失效！
+	 * 而titlePanel中的loadData是修改model中的数据对象，而不是直接更换model。
+	 * @param targetTableModel
+	 */
 	public void loadData(TargetTableModel targetTableModel){
 		if (targetTableModel == null) {//兼容旧版本
 			targetTableModel = new TargetTableModel();
@@ -182,7 +185,6 @@ public class TargetTable extends JTable{
 			
 			targetTableModel.setData(entries);
 		}
-
 		setTargetModel(targetTableModel);//这句很关键，否则无法显示整个表的头和内容
 	}
 }

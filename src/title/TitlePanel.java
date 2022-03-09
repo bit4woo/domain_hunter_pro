@@ -347,6 +347,7 @@ public class TitlePanel extends JPanel {
 
 	/**
 	 * 用于从DB文件中加载数据，没有去重检查。
+	 * 这种加载方式没有改变tableModel，所以tableModelListener也还在。
 	 */
 	public void loadData(IndexedLinkedHashMap<String,LineEntry> lineEntries) {
 		//titleTableModel.setLineEntries(new ArrayList<LineEntry>());//clear
