@@ -11,7 +11,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import title.IndexedLinkedHashMap;
 
-import javax.swing.*;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
@@ -558,6 +557,40 @@ public class TargetTableModel extends AbstractTableModel {
 			}
 		}
 		return false;
+	}
+
+	public void updateComments(int[] rows, String commentAdd) {
+			//because thread let the delete action not in order, so we must loop in here.
+			//list length and index changed after every remove.the origin index not point to right item any more.
+			Arrays.sort(rows); //升序
+			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
+				TargetEntry checked = targetEntries.getValueAtIndex(rows[i]);
+				checked.addComment(commentAdd);
+			}
+			fireUpdated(rows);
+		}
+
+	private void fireUpdated(int[] rows) {
+		List<int[]> slice = IntArraySlice.slice(rows);
+		for(int[] sli:slice) {
+			System.out.println(Arrays.toString(sli));
+			this.fireTableRowsUpdated(sli[sli.length-1],sli[0]);//同上，修复更新多个记录时的错误
+		}
+	}
+
+	public void removeRows(int[] rows) {
+		fireDeleted(rows);
+	}
+
+	//为了同时fire多个不连续的行，自行实现这个方法。
+	private void fireDeleted(int[] rows) {
+		List<int[]> slice = IntArraySlice.slice(rows);
+		//必须逆序，从高位index开始删除，否则删除的对象和预期不一致！！！
+		//上面得到的顺序就是从高位开始的
+		for(int[] sli:slice) {
+			System.out.println(Arrays.toString(sli));
+			this.fireTableRowsDeleted(sli[sli.length-1],sli[0]);//这里传入的值必须是低位数在前面，高位数在后面
+		}
 	}
 
 	public static void main(String[] args) {

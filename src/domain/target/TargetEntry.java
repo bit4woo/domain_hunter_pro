@@ -130,6 +130,16 @@ public class TargetEntry {
 		this.comment = comment;
 	}
 
+	public void addComment(String commentToAdd) {
+		if (commentToAdd == null || commentToAdd.trim().equals("")) return;
+
+		String comments =getComment();
+		if (!comments.contains(commentToAdd)) {
+			comments += ","+commentToAdd;
+			this.setComment(comments);
+		}
+	}
+
 	public boolean isUseTLD() {
 		return useTLD;
 	}
