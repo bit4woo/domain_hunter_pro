@@ -1,29 +1,17 @@
 package domain;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import com.alibaba.fastjson.JSON;
-import com.google.common.net.InternetDomainName;
-import com.google.gson.Gson;
-
 import GUI.GUIMain;
 import Tools.DomainComparator;
-import burp.BurpExtender;
 import burp.DomainNameUtils;
-import burp.IPAddressUtils;
+import com.alibaba.fastjson.JSON;
+import com.google.common.net.InternetDomainName;
 import domain.target.TargetEntry;
 import domain.target.TargetTableModel;
+
+import java.net.URL;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /*
  *注意，所有直接对DomainObject中数据的修改，都不会触发该tableChanged监听器。
