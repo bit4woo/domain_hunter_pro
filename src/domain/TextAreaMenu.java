@@ -33,7 +33,17 @@ public class TextAreaMenu extends JPopupMenu {
         }
         
         List<String> selectedItems = Arrays.asList(selectedText.split(System.lineSeparator()));
-        
+
+		if (selectedItems.size() > 0){
+			JMenuItem goToItem = new JMenuItem(new AbstractAction(selectedItems.size()+" items selected") {
+				@Override
+				public void actionPerformed(ActionEvent actionEvent) {
+
+				}
+			});
+			this.add(goToItem);
+		}
+
         JMenuItem goToItem = new JMenuItem(new AbstractAction("Go To Tilte") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {

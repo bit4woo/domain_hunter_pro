@@ -1,15 +1,23 @@
 package Tools;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Desktop;
-import java.awt.Dimension;
-import java.awt.EventQueue;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import GUI.GUIMain;
+import burp.BurpExtender;
+import burp.Commons;
+import burp.IPAddressUtils;
+import domain.CertInfo;
+import domain.DomainProducer;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.text.StringEscapeUtils;
+import title.WebIcon;
+import title.search.History;
+
+import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -17,50 +25,10 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.PrintWriter;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
-import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.text.StringEscapeUtils;
-
-import GUI.GUIMain;
-import burp.BurpExtender;
-import burp.Commons;
-import burp.IPAddressUtils;
-import domain.CertInfo;
-import domain.DomainProducer;
-import title.WebIcon;
-import title.search.History;
 
 /*
  * 所有配置的修改，界面的操作，都立即写入LineConfig对象，如有必要保存到磁盘，再调用一次SaveConfig函数，思路要清晰
@@ -249,6 +217,7 @@ public class ToolPanel extends JPanel {
 		inputTextArea.setColumns(20);
 		inputTextArea.setLineWrap(true);
 		inputTextArea.getDocument().addDocumentListener(new textAreaListener());
+		inputTextArea.addMouseListener(new TextAreaMouseListener(inputTextArea));
 		oneFourthPanel.setViewportView(inputTextArea);
 		
 		Border blackline = BorderFactory.createLineBorder(Color.black);
@@ -260,6 +229,7 @@ public class ToolPanel extends JPanel {
 
 		outputTextArea = new JTextArea();
 		outputTextArea.setLineWrap(true);
+		outputTextArea.addMouseListener(new TextAreaMouseListener(outputTextArea));
 		twoFourthPanel.setViewportView(outputTextArea);
 		
 		JLabel lblNewLabel_3 = new JLabel("Output");
