@@ -4,6 +4,8 @@ import burp.BurpExtender;
 import burp.DBHelper;
 import domain.DomainManager;
 import domain.DomainPanel;
+import domain.target.TargetEntry;
+import domain.target.TargetTable;
 import title.IndexedLinkedHashMap;
 import title.LineEntry;
 import title.TitlePanel;
@@ -76,7 +78,12 @@ public class ProjectMenu extends JMenu{
 				DBHelper dbhelper = new DBHelper(file.getAbsolutePath());
 				DomainManager NewManager = dbhelper.getDomainObj();
 
-				DomainPanel.getDomainResult().getRootDomainMap().putAll(NewManager.getRootDomainMap());//合并rootDomain
+				IndexedLinkedHashMap<String, TargetEntry> entries = TargetTable.rootDomianToTarget(NewManager);
+				for (TargetEntry entry:entries.values()){
+					DomainPanel.fetchTargetModel().addRowIfValid(entry.getTarget(),entry);
+				}
+
+				//DomainPanel.getDomainResult().getRootDomainMap().putAll(NewManager.getRootDomainMap());//合并rootDomain
 				DomainPanel.getDomainResult().getRelatedDomainSet().addAll(NewManager.getRelatedDomainSet());
 				DomainPanel.getDomainResult().getSubDomainSet().addAll(NewManager.getSubDomainSet());
 				DomainPanel.getDomainResult().getSimilarDomainSet().addAll(NewManager.getSimilarDomainSet());

@@ -1,6 +1,7 @@
 package domain.target;
 
 import burp.BurpExtender;
+import domain.DomainManager;
 import domain.DomainPanel;
 import title.IndexedLinkedHashMap;
 import title.LineTableModel;
@@ -160,31 +161,36 @@ public class TargetTable extends JTable{
 	public void loadData(TargetTableModel targetTableModel){
 		if (targetTableModel == null) {//兼容旧版本
 			targetTableModel = new TargetTableModel();
-			IndexedLinkedHashMap<String, TargetEntry> entries = targetTableModel.getTargetEntries();
-			//兼容旧版本
-			if (DomainPanel.getDomainResult().getRootDomainMap().size() >0 ) {
-				for (Map.Entry<String, String> entry : DomainPanel.getDomainResult().getRootDomainMap().entrySet()) {
-					String key = entry.getKey();
-					if (key.startsWith("[exclude]")) {
-						key = key.replaceFirst("\\[exclude\\]", "");
-						TargetEntry targetEntry = new TargetEntry(key, false);
-						targetEntry.setBlack(true);
-						entries.put(key,targetEntry);
-					} else {
-						entries.put(key, new TargetEntry(key, false));//直接操作entries，避免触发监听器，频繁操作数据库
-					}
-				}
-			}
-			
-			//兼容旧版本
-			if (DomainPanel.getDomainResult().getSubnetSet().size() >0 ) {
-				for (String IPorSubnet : DomainPanel.getDomainResult().getSubnetSet()) {
-					entries.put(IPorSubnet,new TargetEntry(IPorSubnet));
-				}
-			}
-			
+			IndexedLinkedHashMap<String, TargetEntry> entries = rootDomianToTarget(DomainPanel.getDomainResult());
 			targetTableModel.setData(entries);
 		}
 		setTargetModel(targetTableModel);//这句很关键，否则无法显示整个表的头和内容
+	}
+
+	public static IndexedLinkedHashMap<String, TargetEntry> rootDomianToTarget(DomainManager domainManager){
+		IndexedLinkedHashMap<String, TargetEntry> entries = new IndexedLinkedHashMap<String, TargetEntry>();
+		//兼容旧版本
+		if (domainManager.getRootDomainMap().size() >0 ) {
+			for (Map.Entry<String, String> entry : DomainPanel.getDomainResult().getRootDomainMap().entrySet()) {
+				String key = entry.getKey();
+				if (key.startsWith("[exclude]")) {
+					key = key.replaceFirst("\\[exclude\\]", "");
+					TargetEntry targetEntry = new TargetEntry(key, false);
+					targetEntry.setBlack(true);
+					entries.put(key,targetEntry);
+				} else {
+					entries.put(key, new TargetEntry(key, false));//直接操作entries，避免触发监听器，频繁操作数据库
+				}
+			}
+		}
+
+		//兼容旧版本
+		if (domainManager.getSubnetSet().size() >0 ) {
+			for (String IPorSubnet : DomainPanel.getDomainResult().getSubnetSet()) {
+				entries.put(IPorSubnet,new TargetEntry(IPorSubnet));
+			}
+		}
+
+		return entries;
 	}
 }
