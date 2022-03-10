@@ -333,9 +333,8 @@ public class DomainManager {
         if (type == DomainManager.TLD_DOMAIN) {
             //应当先做TLD域名的添加，这样可以丰富Root域名，避免数据损失遗漏
             addToTargetAndSubDomain(domain, true);
-        } else if (type == DomainManager.SUB_DOMAIN)
-        //包含手动添加的IP
-        {
+            return true;
+        } else if (type == DomainManager.SUB_DOMAIN) {//包含手动添加的IP
             subDomainSet.add(domain);//子域名可能来自相关域名和相似域名。
             return true;
         } else if (type == DomainManager.SIMILAR_DOMAIN) {
@@ -346,8 +345,10 @@ public class DomainManager {
             return true;
         } else if (type == DomainManager.IP_ADDRESS){
             foundIPSet.add(domain);
+            return true;
+        }else{
+            return false;
         }//Email的没有处理
-        return false;
     }
 
     /**
@@ -367,7 +368,9 @@ public class DomainManager {
         similarDomainSet.clear();
         PackageNameSet.clear();
         for (String domain : tmpDomains) {
-            addIfValid(domain);
+            if(addIfValid(domain)){
+                relatedDomainSet.remove(domain);
+            }
         }
     }
 
