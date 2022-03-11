@@ -544,7 +544,12 @@ public class TargetTableModel extends AbstractTableModel {
 			}
 
 			return DomainManager.USELESS;
-		} catch (Exception e) {
+		}catch (java.lang.IllegalArgumentException e) {
+			//java.lang.IllegalArgumentException: Not a valid domain name: '-this.state.scroll'
+			BurpExtender.getStderr().println(e.getMessage());
+			return DomainManager.USELESS;
+		}
+		catch (Exception e) {
 			e.printStackTrace(BurpExtender.getStderr());
 			return DomainManager.USELESS;
 		}
