@@ -2,6 +2,7 @@ package domain;
 
 import GUI.GUIMain;
 import Tools.DomainComparator;
+import burp.BurpExtender;
 import burp.DomainNameUtils;
 import com.alibaba.fastjson.JSON;
 import com.google.common.net.InternetDomainName;
@@ -10,6 +11,8 @@ import domain.target.TargetTableModel;
 
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,23 +29,23 @@ public class DomainManager {
     public String summary = "";
     public boolean autoAddRelatedToRoot = false;
 
-    private LinkedHashMap<String, String> rootDomainMap = new LinkedHashMap<String, String>();
+    private ConcurrentHashMap<String, String> rootDomainMap = new ConcurrentHashMap<String, String>();
     //private LinkedHashMap<String,String> rootBlackDomainMap = new LinkedHashMap<String,String>();
     // LinkedHashMap to keep the insert order
-    private Set<String> subnetSet = new HashSet<String>();//旧版本中用于指定目标IP和网段的地方
+    private Set<String> subnetSet = new CopyOnWriteArraySet<String>();//旧版本中用于指定目标IP和网段的地方
 
-    private Set<String> foundIPSet = new HashSet<String>();
-    private Set<String> subDomainSet = new HashSet<String>();
-    private Set<String> similarDomainSet = new HashSet<String>();
-    private Set<String> relatedDomainSet = new HashSet<String>();
-    private Set<String> IsTargetButUselessDomainSet = new HashSet<String>();
+    private Set<String> foundIPSet = new CopyOnWriteArraySet<String>();
+    private Set<String> subDomainSet = new CopyOnWriteArraySet<String>();
+    private Set<String> similarDomainSet = new CopyOnWriteArraySet<String>();
+    private Set<String> relatedDomainSet = new CopyOnWriteArraySet<String>();
+    private Set<String> IsTargetButUselessDomainSet = new CopyOnWriteArraySet<String>();
     //有效(能解析IP)但无用的域名，比如JD的网店域名、首页域名等对信息收集、聚合网段、目标界定有用，但是本身几乎不可能有漏洞的资产。
-    private Set<String> NotTargetIPSet = new HashSet<String>();//IP集合，那些非目标资产的IP集合。只存IP，不存网段。
-    private HashMap<String, Integer> unkownDomainMap = new HashMap<String, Integer>();//记录域名和解析失败的次数，大于五次就从子域名中删除。
-    private Set<String> EmailSet = new HashSet<String>();
-    private Set<String> PackageNameSet = new HashSet<String>();
+    private Set<String> NotTargetIPSet = new CopyOnWriteArraySet<String>();//IP集合，那些非目标资产的IP集合。只存IP，不存网段。
+    private ConcurrentHashMap<String, Integer> unkownDomainMap = new ConcurrentHashMap<String, Integer>();//记录域名和解析失败的次数，大于五次就从子域名中删除。
+    private Set<String> EmailSet = new CopyOnWriteArraySet<String>();
+    private Set<String> PackageNameSet = new CopyOnWriteArraySet<String>();
 
-    private Set<String> newAndNotGetTitleDomainSet = new HashSet<String>();
+    private Set<String> newAndNotGetTitleDomainSet = new CopyOnWriteArraySet<String>();
 
     public static int SUB_DOMAIN = 0;
     public static int SIMILAR_DOMAIN = 1;
@@ -86,11 +89,11 @@ public class DomainManager {
         this.autoAddRelatedToRoot = autoAddRelatedToRoot;
     }
 
-    public LinkedHashMap<String, String> getRootDomainMap() {
+    public ConcurrentHashMap<String, String> getRootDomainMap() {
         return rootDomainMap;
     }
 
-    public void setRootDomainMap(LinkedHashMap<String, String> rootDomainMap) {
+    public void setRootDomainMap(ConcurrentHashMap<String, String> rootDomainMap) {
         this.rootDomainMap = rootDomainMap;
     }
 
@@ -317,7 +320,11 @@ public class DomainManager {
         DomainPanel.fetchTargetModel().addRowIfValid(enteredRootDomain, new TargetEntry(enteredRootDomain, true));
     }
 
-
+    public void addIfValid(Set<String> domains) {
+        for (String domain:domains) {
+            addIfValid(domain);
+        }
+    }
     /**
      * 根据已有配置进行添加，不是强行直接添加
      *
@@ -379,14 +386,19 @@ public class DomainManager {
             if (relatedDomainSet.size() >0){
                 HashSet<String> tmpSet = new HashSet<String>(relatedDomainSet);
                 for (String relatedDomain : tmpSet) {
-                    //避免直接引用relatedDomainSet进行循环，由于TargetEntry中有删除操作，会导致'java.util.ConcurrentModificationException'异常
-                    if (relatedDomain != null && relatedDomain.contains(".")) {
-                        if (fetchTargetModel().isBlack(relatedDomain)) {
-                            continue;
+                    try{
+                        //避免直接引用relatedDomainSet进行循环，由于TargetEntry中有删除操作，会导致'java.util.ConcurrentModificationException'异常
+                        if (relatedDomain != null && relatedDomain.contains(".")) {
+                            if (fetchTargetModel().isBlack(relatedDomain)) {
+                                continue;
+                            }
+                            addToTargetAndSubDomain(relatedDomain, true);
+                        } else {
+                            System.out.println("error related domain : " + relatedDomain);
                         }
-                        addToTargetAndSubDomain(relatedDomain, true);
-                    } else {
-                        System.out.println("error related domain : " + relatedDomain);
+                    }catch (Exception e){
+                        BurpExtender.getStderr().println(relatedDomain);
+                        e.printStackTrace(BurpExtender.getStderr());
                     }
                 }
                 freshBaseRule();
