@@ -80,7 +80,7 @@ public class ProjectMenu extends JMenu{
 
 				IndexedLinkedHashMap<String, TargetEntry> entries = TargetTable.rootDomianToTarget(NewManager);
 				for (TargetEntry entry:entries.values()){
-					DomainPanel.fetchTargetModel().addRowIfValid(entry.getTarget(),entry);
+					DomainPanel.fetchTargetModel().addRowIfValid(entry);
 				}
 
 				//DomainPanel.getDomainResult().getRootDomainMap().putAll(NewManager.getRootDomainMap());//合并rootDomain

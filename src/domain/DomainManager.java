@@ -331,7 +331,7 @@ public class DomainManager {
 
     public void addToTargetAndSubDomain(String enteredRootDomain, boolean autoSub) {
         if (enteredRootDomain == null) return;
-        DomainPanel.fetchTargetModel().addRowIfValid(enteredRootDomain, new TargetEntry(enteredRootDomain, true));
+        DomainPanel.fetchTargetModel().addRowIfValid(new TargetEntry(enteredRootDomain, autoSub));
     }
 
     public void addIfValid(Set<String> domains) {
@@ -406,6 +406,7 @@ public class DomainManager {
                             if (fetchTargetModel().isBlack(relatedDomain)) {
                                 continue;
                             }
+
                             addToTargetAndSubDomain(relatedDomain, true);
                         } else {
                             System.out.println("error related domain : " + relatedDomain);
@@ -421,24 +422,7 @@ public class DomainManager {
         }
     }
 
-    /**
-     * 注意，仅用于relatedToRoot转换时
-     *
-     * @param inputDomain
-     * @return
-     */
-    public static String getRootDomain(String inputDomain) {
-        try {
-            if (inputDomain.toLowerCase().startsWith("http://") || inputDomain.toLowerCase().startsWith("https://")) {
-                inputDomain = new URL(inputDomain).getHost();
-            }
-            String rootDomain = InternetDomainName.from(inputDomain).topPrivateDomain().toString();
-            return rootDomain;
-        } catch (Exception e) {
-            return null;
-            //InternetDomainName.from("www.jd.local").topPrivateDomain()//Not under a public suffix: www.jd.local
-        }
-    }
+
 
     public void removeMd5Domain() {
         Iterator<String> it = subDomainSet.iterator();

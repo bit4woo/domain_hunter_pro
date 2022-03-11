@@ -141,15 +141,19 @@ public class DomainNameUtils {
 	}
 
 
+	/**
+	 * 注意，仅用于relatedToRoot转换时
+	 *
+	 * @param inputDomain
+	 * @return
+	 */
 	public static String getRootDomain(String inputDomain) {
+		inputDomain = DomainNameUtils.cleanDomain(inputDomain);
 		try {
-			if (inputDomain.toLowerCase().startsWith("http://") || inputDomain.toLowerCase().startsWith("https://")) {
-				inputDomain = new URL(inputDomain).getHost();
-			}
-			String rootDomain =InternetDomainName.from(inputDomain).topPrivateDomain().toString();
+			String rootDomain = InternetDomainName.from(inputDomain).topPrivateDomain().toString();
 			return rootDomain;
-		}catch(Exception e) {
-			return null;
+		} catch (Exception e) {
+			return inputDomain;
 			//InternetDomainName.from("www.jd.local").topPrivateDomain()//Not under a public suffix: www.jd.local
 		}
 	}

@@ -51,14 +51,7 @@ public class TargetEntry {
 
 			useTLD = autoSub;
 			if (autoSub) {
-				try {
-					String RootDomain = InternetDomainName.from(domain).topPrivateDomain().toString();
-					target = RootDomain;
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}else {
-				target = domain;
+				target = DomainNameUtils.getRootDomain(domain);
 			}
 			keyword = target.substring(0, target.indexOf("."));
 
