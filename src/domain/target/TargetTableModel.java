@@ -224,13 +224,16 @@ public class TargetTableModel extends AbstractTableModel {
 
 	public void addRowIfValid(String key,TargetEntry entry) {
 		if (ifValid(entry)){
-			TargetEntry oldentry = targetEntries.get(key);
-			if (oldentry != null){//如果有旧的记录，就需要用旧的内容做修改
-				entry.setBlack(oldentry.isBlack());
-				entry.setComment(oldentry.getComment());
-				entry.setKeyword(oldentry.getKeyword());
+			synchronized (targetEntries) {
+				//因为后台的流量分析进程是多线程，可能同事添加数据！
+				TargetEntry oldentry = targetEntries.get(key);
+				if (oldentry != null) {//如果有旧的记录，就需要用旧的内容做修改
+					entry.setBlack(oldentry.isBlack());
+					entry.setComment(oldentry.getComment());
+					entry.setKeyword(oldentry.getKeyword());
+				}
+				addRow(key, entry);
 			}
-			addRow(key,entry);
 		}
 	}
 
