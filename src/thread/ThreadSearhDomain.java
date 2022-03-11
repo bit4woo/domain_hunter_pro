@@ -25,6 +25,7 @@ public class ThreadSearhDomain extends Thread{
 		this.messages = messages;
 		stdout = BurpExtender.getStdout();
 		stderr = BurpExtender.getStderr();
+		this.setName(this.toString());
 	}
 	
 	@Override

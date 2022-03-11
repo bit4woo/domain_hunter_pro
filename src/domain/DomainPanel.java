@@ -258,10 +258,8 @@ public class DomainPanel extends JPanel {
 			public void actionPerformed(ActionEvent arg0) {
 				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
 					//using SwingWorker to prevent blocking burp main UI.
-
 					@Override
 					protected Map doInBackground() throws Exception {
-
 						Set<String> rootDomains = fetchTargetModel().fetchTargetDomainSet();
 						Set<String> keywords = fetchTargetModel().fetchKeywordSet();
 
@@ -280,7 +278,6 @@ public class DomainPanel extends JPanel {
 							showDataToDomainGUI();
 							saveDomainDataToDB();
 							btnSearch.setEnabled(true);
-							stdout.println("~~~~~~~~~~~~~Search Done~~~~~~~~~~~~~");
 						} catch (Exception e) {
 							btnSearch.setEnabled(true);
 							e.printStackTrace(stderr);
@@ -288,7 +285,6 @@ public class DomainPanel extends JPanel {
 					}
 				};
 				worker.execute();
-
 			}
 		});
 
@@ -800,13 +796,13 @@ public class DomainPanel extends JPanel {
 		AllMessages.addAll(collectPackageNameMessages());//包含错误回显的请求响应消息
 
 		ThreadSearhDomain searchinstance = new ThreadSearhDomain(AllMessages);
-		searchinstance.setDaemon(true);
+		searchinstance.start();
 		try {
 			searchinstance.join();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		//DomainPanel.autoSave();//每次搜索完成都应该进行一次保存,放在Do()函数中实现
+		//DomainPanel.saveDomainDataToDB();//SwingWorker中的Done()每次搜索完成都应该进行一次保存
 		return null;
 	}
 

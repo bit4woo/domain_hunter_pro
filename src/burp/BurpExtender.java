@@ -120,7 +120,8 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 
 	public void stopLiveCapture(){
 		if (null != liveAnalysisTread){
-			liveAnalysisTread.stopThread();
+			liveAnalysisTread.interrupt();
+			//9999线程只能这样结束，不受stopflag的影响
 		}
 	}
 

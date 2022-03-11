@@ -14,14 +14,7 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -95,6 +88,12 @@ public class Commons {
 		SimpleDateFormat simpleDateFormat = 
 				new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		return simpleDateFormat.format(time);
+	}
+
+	public static int getNowMinute(){
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(new Date());
+		return cal.get(Calendar.MINUTE);
 	}
 
 	public static void browserOpen(Object url,String browser) throws Exception{

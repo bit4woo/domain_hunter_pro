@@ -1,29 +1,19 @@
 package domain;
 
+import Tools.PatternsFromAndroid;
+import Tools.ToolPanel;
+import burp.*;
+import org.apache.commons.text.StringEscapeUtils;
+import title.LineEntry;
+import toElastic.ElasticClient;
+
 import java.io.PrintWriter;
 import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.apache.commons.text.StringEscapeUtils;
-
-import Tools.PatternsFromAndroid;
-import Tools.ToolPanel;
-import burp.BurpExtender;
-import burp.Commons;
-import burp.IBurpExtenderCallbacks;
-import burp.IExtensionHelpers;
-import burp.IHttpRequestResponse;
-import burp.IHttpService;
-import title.LineEntry;
-import toElastic.ElasticClient;
 
 public class DomainProducer extends Thread {//Producer do
 	private final BlockingQueue<IHttpRequestResponse> inputQueue;//use to store messageInfo
@@ -38,9 +28,10 @@ public class DomainProducer extends Thread {//Producer do
 	public IExtensionHelpers helpers = callbacks.getHelpers();
 
 	public DomainProducer(BlockingQueue<IHttpRequestResponse> inputQueue,
-			int threadNo) {
+						  int threadNo) {
 		this.threadNo = threadNo;
 		this.inputQueue = inputQueue;
+		this.setName(this.getClass().getName()+threadNo);//方便调试
 		stopflag= false;
 	}
 
@@ -58,10 +49,20 @@ public class DomainProducer extends Thread {//Producer do
 						Thread.sleep(1*60*1000);
 						continue;
 					}
+
+					if (Commons.getNowMinute()%2==0){
+						if (DomainPanel.getDomainResult().isChanged()){
+							DomainPanel.saveDomainDataToDB();
+						}
+					}
+
 				}else {
-					if (inputQueue.isEmpty() || stopflag) {
-						//stdout.println("Producer break");
+					if (inputQueue.isEmpty()) {
+						stdout.println(this.getName()+" break due to input queue empty!");
 						break;
+					}
+					if (stopflag) {
+						stdout.println(this.getName()+" break due to stop flag changed to true");
 					}
 				}
 
@@ -291,7 +292,7 @@ public class DomainProducer extends Thread {//Producer do
 		}
 
 		List<String> tmplist= new ArrayList<>(IPSet);
-		Collections.sort(tmplist);		
+		Collections.sort(tmplist);
 		return tmplist;
 	}
 
@@ -310,7 +311,7 @@ public class DomainProducer extends Thread {//Producer do
 		}
 
 		List<String> tmplist= new ArrayList<>(IPSet);
-		Collections.sort(tmplist);		
+		Collections.sort(tmplist);
 		return tmplist;
 	}
 

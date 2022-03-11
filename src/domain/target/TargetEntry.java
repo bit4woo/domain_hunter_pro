@@ -60,7 +60,7 @@ public class TargetEntry {
 			}else {
 				target = domain;
 			}
-			keyword = target.substring(0, domain.indexOf("."));
+			keyword = target.substring(0, target.indexOf("."));
 
 			try {
 				DomainPanel.getDomainResult().getSubDomainSet().add(domain);

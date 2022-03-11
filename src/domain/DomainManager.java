@@ -184,14 +184,28 @@ public class DomainManager {
         if (GUIMain.currentDBFile != null) {
             filename = GUIMain.currentDBFile.getName();
         }
-        summary = String.format("  FileName:%s  Root-domain:%s  Related-domain:%s  Sub-domain:%s  Similar-domain:%s  Email:%s ^_^",
+        String tmpsummary = String.format("  FileName:%s  Root-domain:%s  Related-domain:%s  Sub-domain:%s  Similar-domain:%s  Email:%s ^_^",
                 filename, fetchTargetModel().getRowCount(), relatedDomainSet.size(), subDomainSet.size(), similarDomainSet.size(), EmailSet.size());
-        return summary;
+        return tmpsummary;
     }
 
     public void setSummary(String Summary) {
         this.summary = Summary;
 
+    }
+
+    /**
+     * 判断对象是否有变化，作为写入数据库的依据
+     * @return
+     */
+    public boolean isChanged(){
+        String status = getSummary();
+        if (!status.equals(summary) && !summary.equals("")){
+            summary = getSummary();
+            return true;
+        }else {
+            return false;
+        }
     }
 
 
