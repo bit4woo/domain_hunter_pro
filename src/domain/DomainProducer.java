@@ -27,12 +27,6 @@ import toElastic.ElasticClient;
 
 public class DomainProducer extends Thread {//Producer do
 	private final BlockingQueue<IHttpRequestResponse> inputQueue;//use to store messageInfo
-	private final BlockingQueue<String> subDomainQueue;
-	private final BlockingQueue<String> similarDomainQueue;
-	private final BlockingQueue<String> relatedDomainQueue;
-	private final BlockingQueue<String> EmailQueue;
-	private final BlockingQueue<String> packageNameQueue;
-	private final BlockingQueue<String> TLDDomainQueue;
 	private BlockingQueue<String> httpsQueue = new LinkedBlockingQueue<>();//temp variable to identify checked https
 
 	private int threadNo;
@@ -44,21 +38,9 @@ public class DomainProducer extends Thread {//Producer do
 	public IExtensionHelpers helpers = callbacks.getHelpers();
 
 	public DomainProducer(BlockingQueue<IHttpRequestResponse> inputQueue,
-			BlockingQueue<String> subDomainQueue,
-			BlockingQueue<String> similarDomainQueue,
-			BlockingQueue<String> relatedDomainQueue,
-			BlockingQueue<String> EmailQueue,
-			BlockingQueue<String> packageNameQueue,
-			BlockingQueue<String> TLDDomainQueue,
 			int threadNo) {
 		this.threadNo = threadNo;
 		this.inputQueue = inputQueue;
-		this.subDomainQueue = subDomainQueue;
-		this.similarDomainQueue = similarDomainQueue;
-		this.relatedDomainQueue = relatedDomainQueue;
-		this.EmailQueue = EmailQueue;
-		this.packageNameQueue = packageNameQueue;
-		this.TLDDomainQueue = TLDDomainQueue;
 		stopflag= false;
 	}
 
@@ -94,15 +76,14 @@ public class DomainProducer extends Thread {//Producer do
 
 				//callbacks.printOutput(rootdomains.toString());
 				//callbacks.printOutput(keywords.toString());
-				int type = classifyDomain(Host);
+				int type = DomainPanel.fetchTargetModel().domainType(Host);
+				DomainPanel.getDomainResult().addIfValid(Host);
 				if (type !=DomainManager.USELESS && protocol.equalsIgnoreCase("https")){//get related domains
 					if (!httpsQueue.contains(shortURL)) {//httpService checked or not
 						httpsQueue.put(shortURL);//必须先添加，否则执行在执行https链接的过程中，已经有很多请求通过检测进行相同的请求了。
 						Set<String> tmpDomains = CertInfo.getSANsbyKeyword(shortURL,DomainPanel.fetchTargetModel().fetchKeywordSet());
 						for (String domain:tmpDomains) {
-							if (!relatedDomainQueue.contains(domain)) {
-								relatedDomainQueue.add(domain);
-							}
+							DomainPanel.getDomainResult().getRelatedDomainSet().add(domain);
 						}
 					}
 				}
@@ -116,7 +97,7 @@ public class DomainProducer extends Thread {//Producer do
 							response = subByte(response,0,100000000);
 						}
 						Set<String> domains = DomainProducer.grepDomain(new String(response));
-						classifyDomains(domains);
+						DomainPanel.getDomainResult().addIfValid(domains);
 					}
 				}
 
@@ -139,60 +120,10 @@ public class DomainProducer extends Thread {//Producer do
 		}
 	}
 
-	public void classifyDomains(Set<String> domains) {
-		for (String domain:domains) {
-			classifyDomain(domain);
-		}
-	}
-
 	public byte[] subByte(byte[] b,int srcPos,int length){
 		byte[] b1 = new byte[length];
 		System.arraycopy(b, srcPos, b1, 0, length);
 		return b1;
-	}
-
-	public int classifyDomain(String domain) {
-		int type = DomainPanel.fetchTargetModel().domainType(domain);
-		if (type == DomainManager.SUB_DOMAIN)
-		{
-			if (!subDomainQueue.contains(domain)) {
-				stdout.println("domain found: "+domain);
-				subDomainQueue.add(domain);
-			}
-		}else if (type == DomainManager.SIMILAR_DOMAIN) {
-			similarDomainQueue.add(domain);
-		}else if (type == DomainManager.PACKAGE_NAME) {
-			packageNameQueue.add(domain);
-		}else if (type == DomainManager.TLD_DOMAIN) {
-			TLDDomainQueue.add(domain);
-		}
-		return type;
-	}
-
-	@Deprecated //从burp的Email addresses disclosed这个issue中提取，废弃这个
-	public void classifyEmails(IHttpRequestResponse messageinfo) {
-		byte[] response = messageinfo.getResponse();
-		if (response != null) {
-			Set<String> emails = DomainProducer.grepEmail(new String(response));
-			for (String email:emails) {
-				if (DomainPanel.fetchTargetModel().isRelatedEmail(email)) {
-					EmailQueue.add(email);
-				}
-			}
-			//EmailQueue.addAll(emails);
-		}
-	}
-
-	@Deprecated
-	public static String cleanResponse(String response) {
-		String[] toReplace = {"<em>","<b>","</b>","</em>","<strong>","</strong>","<wbr>","</wbr>",">", ":", "=", "<", "/", "\\", ";", "&", "%3A", "%3D", "%3C"};
-
-		for (String item:toReplace) {
-			if (response.toLowerCase().contains(item)) {
-				response = response.replaceAll(item, "");
-			}
-		}
-		return response;
 	}
 
 	/**
