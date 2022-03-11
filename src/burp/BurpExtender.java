@@ -18,7 +18,6 @@ import GUI.LineEntryMenuForBurp;
 import GUI.ProjectMenu;
 import Tools.ToolPanel;
 import bsh.This;
-import domain.DomainConsumer;
 import domain.DomainPanel;
 import domain.DomainProducer;
 import title.TitlePanel;
@@ -41,17 +40,10 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 
 	private static final Logger log=LogManager.getLogger(BurpExtender.class);
 	public static DomainProducer liveAnalysisTread;
-	public static DomainConsumer liveDataSaveTread;
 	public static BlockingQueue<IHttpRequestResponse> liveinputQueue = new LinkedBlockingQueue<IHttpRequestResponse>();
 	//use to store messageInfo of proxy live
 	public static BlockingQueue<IHttpRequestResponse> inputQueue = new LinkedBlockingQueue<IHttpRequestResponse>();
 	//use to store messageInfo
-	public static BlockingQueue<String> subDomainQueue = new LinkedBlockingQueue<String>();
-	public static BlockingQueue<String> similarDomainQueue = new LinkedBlockingQueue<String>();
-	public static BlockingQueue<String> relatedDomainQueue = new LinkedBlockingQueue<String>();
-	public static BlockingQueue<String> emailQueue = new LinkedBlockingQueue<String>();
-	public static BlockingQueue<String> packageNameQueue = new LinkedBlockingQueue<String>();
-	public static BlockingQueue<String> TLDDomainQueue = new LinkedBlockingQueue<String>();
 
 	public static PrintWriter getStdout() {
 		//不同的时候调用这个参数，可能得到不同的值
@@ -121,38 +113,14 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		return dbfilepath;
 	}
 
-
-	//当更换DB文件时，需要清空。虽然不清空最终结果不受影响，但是输出内容会比较奇怪。
-	public static void clearQueue() {
-		liveinputQueue.clear();
-		inputQueue.clear();
-
-		subDomainQueue.clear();
-		similarDomainQueue.clear();
-		relatedDomainQueue.clear();
-		emailQueue.clear();
-		packageNameQueue.clear();
-	}
-
-
 	public void startLiveCapture(){
-		liveAnalysisTread = new DomainProducer(BurpExtender.liveinputQueue,BurpExtender.subDomainQueue,
-				BurpExtender.similarDomainQueue,BurpExtender.relatedDomainQueue,
-				BurpExtender.emailQueue,BurpExtender.packageNameQueue,BurpExtender.TLDDomainQueue,9999);//必须是9999，才能保证流量进程不退出。
+		liveAnalysisTread = new DomainProducer(BurpExtender.liveinputQueue,9999);//必须是9999，才能保证流量进程不退出。
 		liveAnalysisTread.start();
-
-		liveDataSaveTread = new DomainConsumer(1);
-		liveDataSaveTread.start();
 	}
 
 	public void stopLiveCapture(){
 		if (null != liveAnalysisTread){
 			liveAnalysisTread.stopThread();
-		}
-
-		if (null != liveDataSaveTread){
-			liveDataSaveTread.QueueToResult();
-			liveDataSaveTread.stopThread();
 		}
 	}
 

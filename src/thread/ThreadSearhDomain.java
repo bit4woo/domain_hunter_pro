@@ -4,7 +4,6 @@ import burp.BurpExtender;
 import burp.IBurpExtenderCallbacks;
 import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
-import domain.DomainConsumer;
 import domain.DomainProducer;
 
 import java.io.PrintWriter;
@@ -37,9 +36,7 @@ public class ThreadSearhDomain extends Thread{
 		plist = new ArrayList<DomainProducer>();
 
 		for (int i=0;i<=20;i++) {
-			DomainProducer p = new DomainProducer(BurpExtender.inputQueue,BurpExtender.subDomainQueue,
-					BurpExtender.similarDomainQueue,BurpExtender.relatedDomainQueue,
-					BurpExtender.emailQueue,BurpExtender.packageNameQueue,BurpExtender.TLDDomainQueue,i);
+			DomainProducer p = new DomainProducer(BurpExtender.inputQueue,i);
 			p.setDaemon(true);
 			p.start();
 			plist.add(p);
@@ -56,8 +53,6 @@ public class ThreadSearhDomain extends Thread{
 			e.printStackTrace();
 		}
 		stdout.println("~~~~~~~~~~~~~Search Domain Done~~~~~~~~~~~~~");
-		DomainConsumer.QueueToResult();
-		return;
 	}
 
 	@Deprecated

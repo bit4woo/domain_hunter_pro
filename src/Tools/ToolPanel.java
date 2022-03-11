@@ -5,6 +5,7 @@ import burp.BurpExtender;
 import burp.Commons;
 import burp.IPAddressUtils;
 import domain.CertInfo;
+import domain.DomainPanel;
 import domain.DomainProducer;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.text.StringEscapeUtils;
@@ -256,7 +257,7 @@ public class ToolPanel extends JPanel {
 					ArrayList<String> tmpList = new ArrayList<String>(domains);
 					Collections.sort(tmpList,new DomainComparator());
 					outputTextArea.setText(String.join(System.lineSeparator(), tmpList));
-					BurpExtender.liveAnalysisTread.classifyDomains(domains);
+					DomainPanel.getDomainResult().addIfValid(domains);
 				}
 			}
 		});
