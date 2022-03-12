@@ -149,7 +149,7 @@ public class Commons {
 	 */
 	static String detectCharsetInBody(byte[] requestOrResponse){
 		String body = new String(requestOrResponse);
-		if (body.contains("\r\n\r\n") && body.indexOf("\r\n\r\n")< body.length()-1) {
+		if (body.split("\r\n\r\n").length >=2 ) {
 			body = body.split("\r\n\r\n")[1];
 		}
 		if (body.length() >1000) {
@@ -439,7 +439,11 @@ public class Commons {
 		System.out.println(detectCharsetInBody(body));
 	}
 
+	public static void test10() throws IOException {
+		System.out.println(detectCharsetInBody(FileUtils.readFileToByteArray(new File("F://response.txt"))));
+	}
+
 	public static void main(String args[]) throws Exception {
-		test9();
+		test10();
 	}
 }
