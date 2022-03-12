@@ -115,7 +115,9 @@ public class DomainProducer extends Thread {//Producer do
 						}
 					}
 				}
-			} catch (Exception error) {
+			} catch (InterruptedException error) {
+				BurpExtender.getStdout().println(this.getName() +" exits due to Interrupt signal received");
+			}catch (Exception error) {
 				error.printStackTrace(BurpExtender.getStderr());
 			}
 		}

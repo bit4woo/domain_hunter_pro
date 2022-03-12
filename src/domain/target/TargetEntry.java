@@ -52,6 +52,8 @@ public class TargetEntry {
 			useTLD = autoSub;
 			if (autoSub) {
 				target = DomainNameUtils.getRootDomain(domain);
+			}else{
+				target = domain;
 			}
 			keyword = target.substring(0, target.indexOf("."));
 
