@@ -21,6 +21,7 @@ public class DomainProducer extends Thread {//Producer do
 
 	private int threadNo;
 	private volatile boolean stopflag = false;
+	private volatile boolean currentSaved = false;//每分钟只保存一次的标志位
 
 	private static IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();//静态变量，burp插件的逻辑中，是可以保证它被初始化的。;
 	public PrintWriter stdout = new PrintWriter(callbacks.getStdout(), true);
@@ -50,10 +51,14 @@ public class DomainProducer extends Thread {//Producer do
 						continue;
 					}
 
-					if (Commons.getNowMinute()%2==0){
-						if (DomainPanel.getDomainResult().isChanged()){
+					//每两分钟保存一次
+					if (Commons.getNowMinute()%2==0 ){
+						if (!currentSaved && DomainPanel.getDomainResult().isChanged()){
+							currentSaved = true;
 							DomainPanel.saveDomainDataToDB();
 						}
+					}else {
+						currentSaved = false;
 					}
 
 				}else {

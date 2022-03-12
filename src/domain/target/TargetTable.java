@@ -160,6 +160,7 @@ public class TargetTable extends JTable{
 	 */
 	public void loadData(TargetTableModel targetTableModel){
 		if (targetTableModel == null) {//兼容旧版本
+			DomainPanel.backupDB();
 			targetTableModel = new TargetTableModel();
 			IndexedLinkedHashMap<String, TargetEntry> entries = rootDomianToTarget(DomainPanel.getDomainResult());
 			targetTableModel.setData(entries);

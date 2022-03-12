@@ -235,15 +235,15 @@ public class LineConfig {
 	public String saveToDisk() {
 		try {
 			ToolPanel.saveToConfigFromGUI();
-			this.setDbfilepath(GUIMain.getCurrentDBFile().getAbsolutePath());
 			this.setSearchHistory(History.getInstance());
+			this.setDbfilepath(GUIMain.getCurrentDBFile().getAbsolutePath());
 		} catch (Exception e1) {
 			e1.printStackTrace();
 			e1.printStackTrace(BurpExtender.getStderr());
 		}
 		
 		try {
-			File localFile = new File(localdir+File.separator+GUIMain.getCurrentDBFile()+".config");
+			File localFile = new File(localdir+File.separator+GUIMain.getCurrentDBFile().getName()+".config");
 			FileUtils.write(localFile, this.ToJson());
 			BurpExtender.getStdout().println("Saving Tool Panel Config To Disk");
 			return localFile.toString();
@@ -255,6 +255,9 @@ public class LineConfig {
 	}
 
 	public static LineConfig loadFromDisk(String projectFile) {
+		if (projectFile == null) {
+			return new LineConfig();
+		}
 		try {
 			File localFile = new File(projectFile);
 			if (localFile.exists()) {

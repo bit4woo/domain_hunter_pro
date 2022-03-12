@@ -75,23 +75,8 @@ public class ToolPanel extends JPanel {
 	 */
 	public void loadConfigToGUI(String projectConfigFile) {
 		BurpExtender.getStdout().println("Loading Tool Panel Config From Disk");
-//		String content = BurpExtender.getCallbacks().loadExtensionSetting(BurpExtender.Extension_Setting_Name_Line_Config);
-//		if (content == null) {
-//			lineConfig = LineConfig.loadFromDisk();
-//		}else {
-//			lineConfig = LineConfig.FromJson(content);
-//		}
-		if (projectConfigFile == null) {
-			lineConfig = new LineConfig();
-		}else {
-			lineConfig = LineConfig.loadFromDisk(projectConfigFile);//projectConfigFile可能为null
-		}
-		
-		if (lineConfig == null) {
-			BurpExtender.getStdout().println("Loading From Disk Failed, Use Default");
-			lineConfig = new LineConfig();
-		}
-		
+		lineConfig = LineConfig.loadFromDisk(projectConfigFile);//projectConfigFile可能为null
+
 		History.setInstance(lineConfig.getSearchHistory());
 		
 		String dbFilePath = lineConfig.getDbfilepath();

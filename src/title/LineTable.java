@@ -196,8 +196,10 @@ public class LineTable extends JTable
 		preferredWidths.put("IconHash", "-17480088888".length());
 		for(String header:LineTableModel.getTitletList()){
 			try{//避免动态删除表字段时，出错
-				int multiNumber = preferredWidths.get(header);
-				this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex(header)).setPreferredWidth(width*multiNumber);
+				if (preferredWidths.keySet().contains(header)){
+					int multiNumber = preferredWidths.get(header);
+					this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex(header)).setPreferredWidth(width*multiNumber);
+				}
 			}catch (Exception e){
 
 			}
