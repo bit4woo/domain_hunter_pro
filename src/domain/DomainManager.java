@@ -342,7 +342,7 @@ public class DomainManager {
         int type = fetchTargetModel().domainType(domain);
 
         if (type !=DomainManager.USELESS){
-            BurpExtender.getStdout().println("Target Asset Found :"+domain);
+            BurpExtender.getStdout().println("Target Asset Found: "+domain);
         }
 
         if (type == DomainManager.TLD_DOMAIN) {
@@ -387,6 +387,17 @@ public class DomainManager {
                 relatedDomainSet.remove(domain);
             }
         }
+
+        //处理Email
+        Set<String> oldEmails = DomainPanel.getDomainResult().getEmailSet();
+        HashSet<String > tmpEmalis = new HashSet<>();
+        for(String email:oldEmails) {
+            if (fetchTargetModel().isRelatedEmail(email)) {
+                tmpEmalis.add(email);
+            }
+        }
+        tmpEmalis.addAll(DomainPanel.collectEmails());
+        DomainPanel.getDomainResult().setEmailSet(tmpEmalis);
     }
 
     public void relatedToRoot() {
