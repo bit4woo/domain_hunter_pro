@@ -341,6 +341,10 @@ public class DomainManager {
 
         int type = fetchTargetModel().domainType(domain);
 
+        if (type !=DomainManager.USELESS){
+            BurpExtender.getStdout().println("Target Asset Found :"+domain);
+        }
+
         if (type == DomainManager.TLD_DOMAIN) {
             //应当先做TLD域名的添加，这样可以丰富Root域名，避免数据损失遗漏
             addToTargetAndSubDomain(domain, true);

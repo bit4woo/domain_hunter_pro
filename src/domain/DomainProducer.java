@@ -89,6 +89,7 @@ public class DomainProducer extends Thread {//Producer do
 						httpsQueue.put(shortURL);//必须先添加，否则执行在执行https链接的过程中，已经有很多请求通过检测进行相同的请求了。
 						Set<String> tmpDomains = CertInfo.getSANsbyKeyword(shortURL,DomainPanel.fetchTargetModel().fetchKeywordSet());
 						for (String domain:tmpDomains) {
+							BurpExtender.getStdout().println("Target Related Asset Found :"+domain);
 							if (DomainPanel.getDomainResult().isAutoAddRelatedToRoot()){
 								DomainPanel.getDomainResult().addToTargetAndSubDomain(domain, true);
 							}else{
