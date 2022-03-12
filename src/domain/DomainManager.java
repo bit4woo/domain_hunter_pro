@@ -191,6 +191,7 @@ public class DomainManager {
         String status = getSummary();
         if (!status.equals(summary) && !summary.equals("")){
             summary = getSummary();
+            DomainPanel.getLblSummary().setText(summary);
             return true;
         }else {
             return false;

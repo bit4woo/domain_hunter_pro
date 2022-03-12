@@ -299,21 +299,7 @@ public class Commons {
 	}
 
 	public static void OpenFolder(String path) throws IOException {
-		String program = null;
-		if (isWindows()){
-			program = "explorer.exe";
-		}else if(isMac()){
-			program = "open";
-		}else {
-			program = "nautilus";
-		}
-		if ((path.startsWith("\"") && path.endsWith("\"")) || (path.startsWith("'") && path.endsWith("'"))){
-
-		}else if (path.contains(" ")){
-			path = "\""+path+"\"";
-		}
-		String[] cmdArray = new String[] {program,path};
-		Runtime.getRuntime().exec(cmdArray);
+		Desktop.getDesktop().open(new File(path));
 	}
 
 	/*
@@ -444,6 +430,7 @@ public class Commons {
 	}
 
 	public static void main(String args[]) throws Exception {
-		test10();
+		//test10();
+		OpenFolder("D:\\Program Files");
 	}
 }

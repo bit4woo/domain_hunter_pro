@@ -49,7 +49,7 @@ public class DomainPanel extends JPanel {
 	private JTextField textFieldUploadURL;
 	private JButton btnSearch;
 	private JButton btnCrawl;
-	private JLabel lblSummary;
+	private static JLabel lblSummary;
 
 	private JTextArea textAreaFoundIPs;
 	private JTextArea textAreaSubdomains;
@@ -66,7 +66,7 @@ public class DomainPanel extends JPanel {
 	/**
 	 * DomainPanel对应DomainManager
 	 * TargetTable对应TargetTableModel
-	 * 
+	 *
 	 * targetTable可以从DomainPanel中获取，是GUI的线路关系
 	 * targetTableModel则对应地从DomainManager中的对象获取，是数据模型的线路关系
 	 */
@@ -104,6 +104,10 @@ public class DomainPanel extends JPanel {
 
 	public static TargetTableModel fetchTargetModel() {
 		return targetTable.getTargetModel();
+	}
+
+	public static JLabel getLblSummary() {
+		return lblSummary;
 	}
 
 	//	public static TargetTableModel getTargetTableModel() {
@@ -515,13 +519,13 @@ public class DomainPanel extends JPanel {
 		textAreaPackages.setColumns(10);
 
 		textAreaFoundIPs.setToolTipText("Found IPs");
-        textAreaRelatedDomains.setToolTipText("Related Domains");
-        textAreaSubdomains.setToolTipText("Sub Domains");
-        textAreaSimilarDomains.setToolTipText("Similar Domains");
-        textAreaEmails.setToolTipText("Emails");
-        textAreaPackages.setToolTipText("Package Names");
+		textAreaRelatedDomains.setToolTipText("Related Domains");
+		textAreaSubdomains.setToolTipText("Sub Domains");
+		textAreaSimilarDomains.setToolTipText("Similar Domains");
+		textAreaEmails.setToolTipText("Emails");
+		textAreaPackages.setToolTipText("Package Names");
 
-        ScrollPaneFoundIPs.setViewportView(textAreaFoundIPs);
+		ScrollPaneFoundIPs.setViewportView(textAreaFoundIPs);
 		ScrollPaneRelatedDomains.setViewportView(textAreaRelatedDomains);
 		ScrollPaneSubdomains.setViewportView(textAreaSubdomains);
 		ScrollPaneSimilarDomains.setViewportView(textAreaSimilarDomains);
@@ -593,7 +597,6 @@ public class DomainPanel extends JPanel {
 				} catch (Exception e2) {
 					e2.printStackTrace(stderr);
 				}
-
 			}
 
 			@Override
@@ -613,10 +616,15 @@ public class DomainPanel extends JPanel {
 		lblSummary.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				try {
-					Commons.OpenFolder(GUIMain.getCurrentDBFile().getParent());
-				} catch (Exception e2) {
-					e2.printStackTrace(stderr);
+				if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2) {//左键双击
+					try {
+						Commons.OpenFolder(GUIMain.getCurrentDBFile().getParent());
+					} catch (Exception e2) {
+						e2.printStackTrace(stderr);
+					}
+				}
+				if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 1) {//左键双击
+					lblSummary.setText(domainResult.getSummary());
 				}
 			}
 
