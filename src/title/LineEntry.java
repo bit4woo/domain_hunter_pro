@@ -107,8 +107,8 @@ public class LineEntry {
 
 	/**
 	 * 用于构造DNS记录
-	 * @param isRequest
-	 * @param requestOrResponse
+	 * @param host
+	 * @param IPset
 	 * @return
 	 */
 	public LineEntry(String host,Set<String> IPset) {

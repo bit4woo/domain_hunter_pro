@@ -95,7 +95,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 					if (type == TableModelEvent.INSERT) {//插入事件使用批量方法好像不行，都是一个个插入的，每次都会触发
 						//从使用场景来看也无需使用批量
 						for (int i = rowstart; i <= rowend; i++) {
-							dbHelper.addTitle(lineEntries.getValueAtIndex(i));
+							dbHelper.addTitle(lineEntries.get(i));
 						}
 					} else if (type == TableModelEvent.UPDATE) {
 						/*
@@ -109,7 +109,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 
 						List<LineEntry> entries = new ArrayList<LineEntry>();
 						for (int i = rowstart; i <= rowend; i++) {
-							LineEntry entry = lineEntries.getValueAtIndex(i);
+							LineEntry entry = lineEntries.get(i);
 							//entry.setTime(Commons.getNowTimeString());
 							//这里不再更新时间，时间只表示CheckDone的时间
 							entries.add(entry);
@@ -129,9 +129,9 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 						//必须从高位index进行删除，否则删除的对象会和预期不一致！！！
 						List<String> urls = new ArrayList<String>();
 						for (int i = rowend; i >= rowstart; i--) {
-							String url = lineEntries.getValueAtIndex(i).getUrl();
+							String url = lineEntries.get(i).getUrl();
 							urls.add(url);
-							lineEntries.removeByIndex(i);//删除tableModel中的元素。
+							lineEntries.remove(i);//删除tableModel中的元素。
 							stdout.println("### "+url+" deleted");
 						}
 						dbHelper.deleteTitlesByUrl(urls);//删除数据库中的元素
@@ -257,7 +257,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	@Override
 	public Object getValueAt(int rowIndex, int columnIndex)
 	{
-		LineEntry entry = lineEntries.getValueAtIndex(rowIndex);
+		LineEntry entry = lineEntries.get(rowIndex);
 		//entry.parse();---
 		//"#", "URL", "Status", "Length", "Server","Title", "IP", "CDN", "Comments","Time","isChecked"};
 		if (columnIndex == titletList.indexOf("#")) {
@@ -305,7 +305,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 
 	@Override
 	public void setValueAt(Object value, int row, int col) {
-		LineEntry entry = lineEntries.getValueAtIndex(row);
+		LineEntry entry = lineEntries.get(row);
 		if (col == titletList.indexOf("Comments")){
 			String valueStr = ((String) value).trim();
 			//if (valueStr.equals("")) return;
@@ -448,7 +448,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			List<String> hosts = new ArrayList<>();
 
 			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
-				String host = lineEntries.getValueAtIndex(rows[i]).getHost();
+				String host = lineEntries.get(rows[i]).getHost();
 				hosts.add(host);
 			}
 			return hosts;
@@ -461,7 +461,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			List<String> hosts = new ArrayList<>();
 
 			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
-				LineEntry line = lineEntries.getValueAtIndex(rows[i]);
+				LineEntry line = lineEntries.get(rows[i]);
 				String hostAndPort = line.getHost()+":"+line.getPort();
 				hosts.add(hostAndPort);
 			}
@@ -475,7 +475,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			Set<String> Result = new HashSet<>();
 
 			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
-				Set<String> IPs = lineEntries.getValueAtIndex(rows[i]).fetchIPSet();
+				Set<String> IPs = lineEntries.get(rows[i]).fetchIPSet();
 				Result.addAll(IPs);
 			}
 			return Result;
@@ -488,7 +488,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			List<String> urls = new ArrayList<>();
 
 			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
-				String url = lineEntries.getValueAtIndex(rows[i]).getUrl();
+				String url = lineEntries.get(rows[i]).getUrl();
 				urls.add(url);
 			}
 			return urls;
@@ -501,7 +501,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			List<String> urls = new ArrayList<>();
 
 			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
-				String url = lineEntries.getValueAtIndex(rows[i]).fetchUrlWithCommonFormate();
+				String url = lineEntries.get(rows[i]).fetchUrlWithCommonFormate();
 				urls.add(url);
 			}
 			return urls;
@@ -514,7 +514,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			List<String> urls = new ArrayList<>();
 
 			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
-				LineEntry entry = lineEntries.getValueAtIndex(rows[i]);
+				LineEntry entry = lineEntries.get(rows[i]);
 				String url = entry.getUrl();
 				String Locationurl = entry.getHeaderValueOf(false,"Location");
 				if (url !=null){
@@ -531,7 +531,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			List<String> results = new ArrayList<>();
 
 			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
-				LineEntry entry = lineEntries.getValueAtIndex(rows[i]);
+				LineEntry entry = lineEntries.get(rows[i]);
 				String CDNAndCertInfo = entry.getCDN();
 				results.add(CDNAndCertInfo);
 			}
@@ -545,7 +545,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			List<String> results = new ArrayList<>();
 
 			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
-				LineEntry entry = lineEntries.getValueAtIndex(rows[i]);
+				LineEntry entry = lineEntries.get(rows[i]);
 				String hash = entry.getIcon_hash();
 				results.add(hash);
 			}
@@ -596,7 +596,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			//list length and index changed after every remove.the origin index not point to right item any more.
 			Arrays.sort(rows); //升序
 			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
-				LineEntry checked = lineEntries.getValueAtIndex(rows[i]);
+				LineEntry checked = lineEntries.get(rows[i]);
 				checked.setCheckStatus(status);
 				if (status.equalsIgnoreCase(LineEntry.CheckStatus_Checked)) {
 					checked.setTime(Commons.getNowTimeString());
@@ -619,7 +619,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		synchronized (lineEntries) {
 			Arrays.sort(rows); //升序
 			for (int i=rows.length-1;i>=0 ;i-- ) {
-				LineEntry checked = lineEntries.getValueAtIndex(rows[i]);
+				LineEntry checked = lineEntries.get(rows[i]);
 				if (assetType == checked.getAssetType()) continue;
 				checked.setAssetType(assetType);
 				stdout.println(String.format("$$$ %s updated [AssetType-->%s]",checked.getUrl(),assetType));
@@ -636,7 +636,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			//list length and index changed after every remove.the origin index not point to right item any more.
 			Arrays.sort(rows); //升序
 			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
-				LineEntry checked = lineEntries.getValueAtIndex(rows[i]);
+				LineEntry checked = lineEntries.get(rows[i]);
 				checked.addComment(commentAdd);
 				//				lineEntries.remove(rows[i]);
 				//				lineEntries.add(rows[i], checked);
@@ -656,7 +656,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			//list length and index changed after every remove.the origin index not point to right item any more.
 			Arrays.sort(rows); //升序
 			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
-				LineEntry entry = lineEntries.getValueAtIndex(rows[i]);
+				LineEntry entry = lineEntries.get(rows[i]);
 				String Host = entry.getHost();
 				if (IPAddressUtils.isValidIP(Host)) {
 					DomainPanel.getDomainResult().getNotTargetIPSet().add(Host);
@@ -673,7 +673,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			//list length and index changed after every remove.the origin index not point to right item any more.
 			Arrays.sort(rows); //升序
 			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
-				LineEntry entry = lineEntries.getValueAtIndex(rows[i]);
+				LineEntry entry = lineEntries.get(rows[i]);
 				String Host = entry.getHost();
 				if (IPAddressUtils.isValidIP(Host)) {
 					DomainPanel.getDomainResult().getNotTargetIPSet().remove(Host);
@@ -728,7 +728,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	@Deprecated
 	public void addIPSetOfEntryToNotTargetIPSet(int[] rows) {
 		for (int i=rows.length-1;i>=0 ;i-- ) {
-			Set<String> IPs = lineEntries.getValueAtIndex(rows[i]).fetchIPSet();
+			Set<String> IPs = lineEntries.get(rows[i]).fetchIPSet();
 			DomainPanel.getDomainResult().getNotTargetIPSet().addAll(IPs);
 			stdout.println("### "+IPs.toString()+" added to black list");
 		}
@@ -738,7 +738,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	@Deprecated
 	public void addSubnetBlackList(int[] rows) {
 		for (int i=rows.length-1;i>=0 ;i-- ) {
-			Set<String> IPs = lineEntries.getValueAtIndex(rows[i]).fetchIPSet();
+			Set<String> IPs = lineEntries.get(rows[i]).fetchIPSet();
 			Set<String> subnets = IPAddressUtils.toClassCSubNets(IPs);
 			DomainPanel.getDomainResult().getNotTargetIPSet().addAll(subnets);
 			stdout.println("### "+subnets.toString()+" added to black list");

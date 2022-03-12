@@ -57,7 +57,7 @@ public class LineTable extends JTable
 	}
 
 	public LineEntry getRowAt(int row) {
-		return getLineTableModel().getLineEntries().getValueAtIndex(convertRowIndexToModel(row));
+		return getLineTableModel().getLineEntries().get(convertRowIndexToModel(row));
 	}
 
 	//将选中的行（图形界面的行）转换为Model中的行数（数据队列中的index）.因为图形界面排序等操作会导致图像和数据队列的index不是线性对应的。
@@ -103,7 +103,7 @@ public class LineTable extends JTable
 	public void changeSelection(int row, int col, boolean toggle, boolean extend)
 	{
 		// show the log entry for the selected row
-		//LineEntry Entry = this.lineTableModel.getLineEntries().getValueAtIndex(super.convertRowIndexToModel(row));
+		//LineEntry Entry = this.lineTableModel.getLineEntries().get(super.convertRowIndexToModel(row));
 		LineEntry Entry = this.getRowAt(row);
 
 		requestViewer.setMessage(Entry.getRequest(), true);
@@ -303,7 +303,7 @@ public class LineTable extends JTable
 			public boolean include(Entry entry) {
 				//entry --- a non-null object that wraps the underlying object from the model
 				int row = (int) entry.getIdentifier();
-				LineEntry line = getLineTableModel().getLineEntries().getValueAtIndex(row);
+				LineEntry line = getLineTableModel().getLineEntries().get(row);
 
 				//第一层判断，根据按钮状态进行判断，如果为true，进行后面的逻辑判断，false直接返回。
 				if (!LineSearch.entryNeedToShow(line)) {
@@ -352,7 +352,7 @@ public class LineTable extends JTable
 					int col = ((LineTable) e.getSource()).columnAtPoint(e.getPoint()); // 获得列位置
 					int modelCol = LineTable.this.convertColumnIndexToModel(col);
 
-					LineEntry selecteEntry = getLineTableModel().getLineEntries().getValueAtIndex(rows[0]);
+					LineEntry selecteEntry = getLineTableModel().getLineEntries().get(rows[0]);
 					if ((modelCol == LineTableModel.getTitletList().indexOf("#") )) {//双击index在google中搜索host。
 						String host = selecteEntry.getHost();
 						String url= "https://www.google.com/search?q=site%3A"+host;

@@ -118,7 +118,7 @@ public class TargetTableModel extends AbstractTableModel {
 
 	@Override
 	public Object getValueAt(int rowIndex, int columnIndex) {
-		TargetEntry entry = targetEntries.getValueAtIndex(rowIndex);
+		TargetEntry entry = targetEntries.get(rowIndex);
 		if (entry == null) return "";
 		if (columnIndex == titletList.indexOf("Domain/Subnet/IP")) {
 			return entry.getTarget();
@@ -138,7 +138,7 @@ public class TargetTableModel extends AbstractTableModel {
 
 	@Override
 	public void setValueAt(Object value, int row, int col) {
-		TargetEntry entry = targetEntries.getValueAtIndex(row);
+		TargetEntry entry = targetEntries.get(row);
 		if (col == titletList.indexOf("Comment")){
 			String valueStr = ((String) value).trim();
 			entry.setComment(valueStr);
@@ -260,7 +260,7 @@ public class TargetTableModel extends AbstractTableModel {
 	 * @param rowIndex
 	 */
 	public void removeRow(int rowIndex) {
-		targetEntries.removeByIndex(rowIndex);
+		targetEntries.remove(rowIndex);
 		fireTableRowsDeleted(rowIndex, rowIndex);
 	}
 
@@ -573,7 +573,7 @@ public class TargetTableModel extends AbstractTableModel {
 			//list length and index changed after every remove.the origin index not point to right item any more.
 			Arrays.sort(rows); //升序
 			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
-				TargetEntry checked = targetEntries.getValueAtIndex(rows[i]);
+				TargetEntry checked = targetEntries.get(rows[i]);
 				checked.addComment(commentAdd);
 			}
 			fireUpdated(rows);

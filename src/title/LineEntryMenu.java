@@ -74,7 +74,7 @@ public class LineEntryMenu extends JPopupMenu {
 					return;
 				}
 				for (int row:modleRows) {
-					LineEntry firstEntry = lineTable.getLineTableModel().getLineEntries().getValueAtIndex(row);
+					LineEntry firstEntry = lineTable.getLineTableModel().getLineEntries().get(row);
 					String searchContent = getValue(firstEntry,columnIndex);
 					searchContent = URLEncoder.encode(searchContent);
 					String url= "https://www.google.com/search?q="+searchContent;
@@ -117,7 +117,7 @@ public class LineEntryMenu extends JPopupMenu {
 					return;
 				}
 				for (int row:modleRows) {
-					LineEntry firstEntry = lineTable.getLineTableModel().getLineEntries().getValueAtIndex(row);
+					LineEntry firstEntry = lineTable.getLineTableModel().getLineEntries().get(row);
 					String searchContent = getValue(firstEntry,columnIndex);
 					String url= "https://github.com/search?q=%22"+searchContent+"%22+%22jdbc.url%22&type=Code";
 					try {
@@ -159,7 +159,7 @@ public class LineEntryMenu extends JPopupMenu {
 					return;
 				}
 				for (int row:modleRows) {
-					LineEntry firstEntry = lineTable.getLineTableModel().getLineEntries().getValueAtIndex(row);
+					LineEntry firstEntry = lineTable.getLineTableModel().getLineEntries().get(row);
 					String searchContent = getValue(firstEntry,columnIndex);
 					searchContent = new String(Base64.getEncoder().encode(searchContent.getBytes()));
 					String url= "https://fofa.so/result?qbase64=%s";
@@ -204,7 +204,7 @@ public class LineEntryMenu extends JPopupMenu {
 					return;
 				}
 				for (int row:modleRows) {
-					LineEntry firstEntry = lineTable.getLineTableModel().getLineEntries().getValueAtIndex(row);
+					LineEntry firstEntry = lineTable.getLineTableModel().getLineEntries().get(row);
 					String searchContent = firstEntry.getIcon_hash();
 					searchContent = String.format("icon_hash=\"%s\"", searchContent);//icon_hash="-247388890"
 					searchContent = new String(Base64.getEncoder().encode(searchContent.getBytes()));
@@ -228,7 +228,7 @@ public class LineEntryMenu extends JPopupMenu {
 					return;
 				}
 				for (int row:modleRows) {
-					LineEntry firstEntry = lineTable.getLineTableModel().getLineEntries().getValueAtIndex(row);
+					LineEntry firstEntry = lineTable.getLineTableModel().getLineEntries().get(row);
 					String searchContent = getValue(firstEntry,columnIndex);
 					searchContent = URLEncoder.encode(searchContent);
 					String url= "https://www.shodan.io/search?query=%s";
@@ -275,7 +275,7 @@ public class LineEntryMenu extends JPopupMenu {
 					return;
 				}
 				for (int row:modleRows) {
-					LineEntry firstEntry = lineTable.getLineTableModel().getLineEntries().getValueAtIndex(row);
+					LineEntry firstEntry = lineTable.getLineTableModel().getLineEntries().get(row);
 					String searchContent = firstEntry.getIcon_hash();
 					String url= "https://www.shodan.io/search?query=http.favicon.hash:%s";
 					url= String.format(url, searchContent);
@@ -291,7 +291,7 @@ public class LineEntryMenu extends JPopupMenu {
 		JMenuItem SearchOnHunterItem = new JMenuItem(new AbstractAction("Seach On Hunter") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				LineEntry firstEntry = lineTable.getLineTableModel().getLineEntries().getValueAtIndex(modleRows[0]);
+				LineEntry firstEntry = lineTable.getLineTableModel().getLineEntries().get(modleRows[0]);
 				String columnName = lineTable.getColumnName(columnIndex);
 
 				if (columnName.equalsIgnoreCase("Status")){
@@ -471,7 +471,7 @@ public class LineEntryMenu extends JPopupMenu {
 				}
 
 				for (int row: modleRows){//根据IP地址去重
-					LineEntry entry = lineTable.getLineTableModel().getLineEntries().getValueAtIndex(row);
+					LineEntry entry = lineTable.getLineTableModel().getLineEntries().get(row);
 					targetMap.put(entry.getIP(), new LineMessageInfo(entry));
 				}
 				for (IHttpRequestResponse messageInfo:targetMap.values()) {
@@ -530,7 +530,7 @@ public class LineEntryMenu extends JPopupMenu {
 				IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
 				for (int i=modleRows.length-1;i>=0 ;i-- ) {
 					try{
-						LineEntry entry = entries.getValueAtIndex(modleRows[i]);
+						LineEntry entry = entries.get(modleRows[i]);
 
 						String host = entry.getHost();
 						int port = entry.getPort();
@@ -682,7 +682,7 @@ public class LineEntryMenu extends JPopupMenu {
 					protected Map doInBackground() throws Exception {
 						IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
 						for (int row: modleRows){
-							LineEntry entry = lineTable.getLineTableModel().getLineEntries().getValueAtIndex(row);
+							LineEntry entry = lineTable.getLineTableModel().getLineEntries().get(row);
 							String host =entry.getHost();
 							int port = entry.getPort();
 							String protocol = entry.getProtocol();
@@ -725,7 +725,7 @@ public class LineEntryMenu extends JPopupMenu {
 						}
 						IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
 						for (int row: modleRows){
-							LineEntry entry = lineTable.getLineTableModel().getLineEntries().getValueAtIndex(row);
+							LineEntry entry = lineTable.getLineTableModel().getLineEntries().get(row);
 							String host =entry.getHost();
 							int port = entry.getPort();
 							String protocol = entry.getProtocol();
