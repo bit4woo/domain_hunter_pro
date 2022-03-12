@@ -20,7 +20,7 @@ public class GUIMain extends JFrame {
 
 	public static DomainPanel domainPanel;
 	public static TitlePanel titlePanel;
-	public static File currentDBFile;
+	private static File currentDBFile;
 	public static ProjectMenu projectMenu;
 	
 	private PrintWriter stdout;
@@ -150,8 +150,7 @@ public class GUIMain extends JFrame {
 	//显示项目名称，加载多个该插件时，进行区分，避免混淆
 	public static void displayProjectName() {
 		if (DomainPanel.getDomainResult() !=null){
-			//String name = GUI.currentDBFile.getName();
-			String name = DomainPanel.getDomainResult().getProjectName();
+			String name = GUIMain.currentDBFile.getName();
 			//String newName = String.format(BurpExtender.getFullExtenderName()+" [%s]",name);
 			//v2021.8的版本中，邮件菜单会用到插件名称，所以减小名称的长度
 			String newName = String.format(BurpExtender.getExtenderName()+" [%s]",name);

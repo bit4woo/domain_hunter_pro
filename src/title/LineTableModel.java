@@ -91,7 +91,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 					//int column = e.getColumn();//获取触发事件的列索引
 					//stdout.println(rowstart+"---"+rowend);
 
-					DBHelper dbHelper = new DBHelper(GUIMain.currentDBFile.toString());
+					DBHelper dbHelper = new DBHelper(GUIMain.getCurrentDBFile().toString());
 					if (type == TableModelEvent.INSERT) {//插入事件使用批量方法好像不行，都是一个个插入的，每次都会触发
 						//从使用场景来看也无需使用批量
 						for (int i = rowstart; i <= rowend; i++) {
@@ -330,10 +330,10 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		//虽然触发了，却无法更新数据库。
 		if (syncToFile){
 			try {
-				if (GUIMain.currentDBFile.delete()){
-					GUIMain.currentDBFile.createNewFile();//文件存在时，不会创建新文件!必须先删除就文件
+				if (GUIMain.getCurrentDBFile().delete()){
+					GUIMain.getCurrentDBFile().createNewFile();//文件存在时，不会创建新文件!必须先删除就文件
 				}
-				DBHelper dbHelper = new DBHelper(GUIMain.currentDBFile.toString());
+				DBHelper dbHelper = new DBHelper(GUIMain.getCurrentDBFile().toString());
 				dbHelper.saveDomainObject(DomainPanel.getDomainResult());//效果等同于删除所有title。速度更快
 				//dbHelper.deleteTitles(this.getLineEntries());
 			}catch (Exception e){

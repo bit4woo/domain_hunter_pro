@@ -24,7 +24,6 @@ import java.util.regex.Pattern;
 	//DomainPanel.autoSave();
  */
 public class DomainManager {
-    public String projectName = "";
     public String uploadURL = "Input Upload URL Here";
     public String summary = "";
     public boolean autoAddRelatedToRoot = false;
@@ -61,16 +60,6 @@ public class DomainManager {
     }
 
     public DomainManager(String projectName) {
-        this.projectName = projectName;
-    }
-
-
-    public String getProjectName() {
-        return projectName;
-    }
-
-    public void setProjectName(String projectName) {
-        this.projectName = projectName;
     }
 
     public String getUploadURL() {
@@ -181,8 +170,8 @@ public class DomainManager {
 
     public String getSummary() {
         String filename = "unknown";
-        if (GUIMain.currentDBFile != null) {
-            filename = GUIMain.currentDBFile.getName();
+        if (GUIMain.getCurrentDBFile() != null) {
+            filename = GUIMain.getCurrentDBFile().getName();
         }
         String tmpsummary = String.format("  FileName:%s  Root-domain:%s  Related-domain:%s  Sub-domain:%s  Similar-domain:%s  Email:%s ^_^",
                 filename, fetchTargetModel().getRowCount(), relatedDomainSet.size(), subDomainSet.size(), similarDomainSet.size(), EmailSet.size());

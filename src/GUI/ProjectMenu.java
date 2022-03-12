@@ -243,7 +243,7 @@ public class ProjectMenu extends JMenu{
 			if (tmp.getName().equals("DomainHunterPro")){
 				ParentOfDomainHunter.setTitleAt(i,"xxxxx");//似乎burp不会刷新这个title的显示。
 
-				String tmpDbFile = ((GUIMain) tmp).currentDBFile.getName();
+				String tmpDbFile = ((GUIMain) tmp).getCurrentDBFile().getName();
 				if (tmpDbFile.equals(dbFileName)){
 					ParentOfDomainHunter.setTitleAt(i,tmpDbFile);
 				}
@@ -260,7 +260,7 @@ public class ProjectMenu extends JMenu{
 		for (int i=n-1;i>=0;i--){//倒序查找更快
 			Component tmp = ParentOfDomainHunter.getComponent(i);
 			if (tmp.getName().equals("DomainHunterPro")){
-				String tmpDbFile = ((GUIMain) tmp).currentDBFile.getName();
+				String tmpDbFile = ((GUIMain) tmp).getCurrentDBFile().getName();
 				if (tmpDbFile.equals(dbFileName)){
 					return i;
 				}

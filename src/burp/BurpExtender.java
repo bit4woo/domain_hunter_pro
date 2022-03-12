@@ -90,8 +90,8 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	public static void saveDBfilepathToExtension() {
 		//to save domain result to extensionSetting
 		//仅仅存储sqllite数据库的名称,也就是domainResult的项目名称
-		if (GUIMain.currentDBFile != null) {
-			String dbfilepath = GUIMain.currentDBFile.getAbsolutePath();
+		if (GUIMain.getCurrentDBFile() != null) {
+			String dbfilepath = GUIMain.getCurrentDBFile().getAbsolutePath();
 			stdout.println("Saving Current DB File Path To Disk: "+dbfilepath);
 			System.out.println("Loaded DB File Path From Disk: "+dbfilepath);
 			callbacks.saveExtensionSetting(Extension_Setting_Name_DB_File, dbfilepath);

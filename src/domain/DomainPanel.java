@@ -1,10 +1,26 @@
 package domain;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Desktop;
-import java.awt.FlowLayout;
-import java.awt.Font;
+import GUI.GUIMain;
+import GUI.ProjectMenu;
+import Tools.ToolPanel;
+import burp.*;
+import com.google.common.net.InternetDomainName;
+import domain.target.TargetControlPanel;
+import domain.target.TargetTable;
+import domain.target.TargetTableModel;
+import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import thread.ThreadSearhDomain;
+import toElastic.VMP;
+
+import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -15,59 +31,10 @@ import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
-import javax.swing.SwingWorker;
-import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import com.google.common.base.Charsets;
-import com.google.common.io.Files;
-import com.google.common.net.InternetDomainName;
-
-import GUI.GUIMain;
-import GUI.ProjectMenu;
-import Tools.ToolPanel;
-import burp.BurpExtender;
-import burp.Commons;
-import burp.DBHelper;
-import burp.IBurpExtenderCallbacks;
-import burp.IHttpRequestResponse;
-import burp.IHttpService;
-import burp.IScanIssue;
-import domain.target.TargetControlPanel;
-import domain.target.TargetEntry;
-import domain.target.TargetTable;
-import domain.target.TargetTableModel;
-import thread.ThreadSearhDomain;
-import toElastic.VMP;
 
 /*
  *注意，所有直接对DomainObject中数据的修改，都不会触发该tableChanged监听器。
@@ -351,46 +318,6 @@ public class DomainPanel extends JPanel {
 			}
 		});
 		HeaderPanel.add(btnZoneTransferCheck);
-
-		JButton btnRenameProject = new JButton("Rename Project");
-		btnRenameProject.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-
-				if (domainResult != null) {
-					String newProjectName = JOptionPane.showInputDialog("New Project Name", null).trim();
-					while (newProjectName.trim().equals("")) {
-						newProjectName = JOptionPane.showInputDialog("New Project Name", null).trim();
-					}
-					domainResult.setProjectName(newProjectName);
-					GUIMain.displayProjectName();
-					saveDomainDataToDB();
-				}
-
-				/*重命名文件，开销太大不合适
-				if (GUI.getCurrentDBFile() !=null){
-					String newDBFileName = JOptionPane.showInputDialog("New Project Name", null).trim();
-					while(newDBFileName.trim().equals("")){
-						newDBFileName = JOptionPane.showInputDialog("New Project Name", null).trim();
-					}
-					if (!newDBFileName.endsWith(".db")){
-						newDBFileName = newDBFileName+".db";
-					}
-					File des = new File(GUI.getCurrentDBFile().getParent(),newDBFileName);
-					if (des.toString().equalsIgnoreCase(GUI.getCurrentDBFile().toString())) return;
-					try {
-						autoSave();
-						FileUtils.copyFile(GUI.getCurrentDBFile(),des);
-						BurpExtender.getGui().LoadData(des.toString());
-						FileUtils.deleteQuietly(GUI.getCurrentDBFile());
-					} catch (IOException ioException) {
-						ioException.printStackTrace();
-					}
-					lblSummary.setText(domainResult.getSummary());
-				}*/
-			}
-		});
-		HeaderPanel.add(btnRenameProject);
-
 
 		JButton btnBuckupDB = new JButton("Backup DB");
 		btnBuckupDB.addActionListener(new ActionListener() {

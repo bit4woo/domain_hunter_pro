@@ -96,8 +96,8 @@ public class LineEntryMenuForBurp{
 
 			JMenu domainHunterPro = new JMenu("^_^ Domain Hunter Pro");
 			if (!ProjectMenu.isAlone()) {
-				String proName = DomainPanel.getDomainResult().getProjectName();
-				domainHunterPro.setText(String.format("^_^ Domain Hunter Pro [%s]",proName));
+				String fileName = GUIMain.getCurrentDBFile().toString();
+				domainHunterPro.setText(String.format("^_^ Domain Hunter Pro [%s]",fileName));
 			}
 			result.add(domainHunterPro);
 			for (JMenuItem item : JMenuItemList) {
@@ -106,9 +106,9 @@ public class LineEntryMenuForBurp{
 			return result;
 		}else {
 			if (!ProjectMenu.isAlone()) {
-				String proName = DomainPanel.getDomainResult().getProjectName();
+				String fileName = GUIMain.getCurrentDBFile().toString();
 				for (JMenuItem item : JMenuItemList) {
-					item.setText("^_^ "+proName+"-->"+item.getText().replace("^_^ ", ""));
+					item.setText("^_^ "+fileName+"-->"+item.getText().replace("^_^ ", ""));
 				}
 			}
 			return JMenuItemList;
@@ -135,8 +135,7 @@ public class LineEntryMenuForBurp{
 	/**
 	 * 将查找行为放在事件触发之后进行。
 	 * @param topMenu
-	 * @param lineTable
-	 * @param rows
+	 * @param messages
 	 */
 	public static void createSubMenu(JMenu topMenu, IHttpRequestResponse[] messages){
 		String[] MainMenu = LineEntry.AssetTypeArray;

@@ -230,7 +230,7 @@ public class DBHelper {
 			
 			//让新增和更新的逻辑在一个语句中完成，减少查询。这是mysql中的语句，sqlit中不存在。
 			//String sql = "insert into DOMAINObject(ID,NAME,Content) values(1,?,?) ON DUPLICATE KEY UPDATE NAME=VALUES(NAME),Content=VALUES(Content)";
-			String name = domainResult.getProjectName();
+			String name = "domain_hunter_pro_by_bit4woo";
 			String content  = domainResult.ToJson();
 			pres=conn.prepareStatement(sql);//预编译
 
