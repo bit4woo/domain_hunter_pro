@@ -7,6 +7,7 @@ import java.awt.event.KeyEvent;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -26,13 +27,17 @@ public class TextAreaMenu extends JPopupMenu {
 	PrintWriter stderr;
 	JTextArea textArea;
 	String selectedText;
-	List<String> selectedItems;
+	List<String> selectedItems = new ArrayList<>();
 
 	TextAreaMenu(JTextArea textArea){
 
 		this.textArea = textArea;
 		selectedText = textArea.getSelectedText();
-		selectedItems = Arrays.asList(selectedText.split(System.lineSeparator()));
+		if (selectedText != null && selectedText.equalsIgnoreCase("")){
+			selectedItems = Arrays.asList(selectedText.split(System.lineSeparator()));
+		}
+		List<String> AllItems = Arrays.asList(textArea.getText().split(System.lineSeparator()));
+
 
 		try{
 			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
@@ -61,8 +66,9 @@ public class TextAreaMenu extends JPopupMenu {
 				aa.setSelectedIndex(1);
 				//只会影响Domain Hunter中的选中，当选中的是proxy，使用这个方法并不能自动切换到domain hunter。
 				//stdout.println(BurpExtender.getGui().getRootPane().getName());//null
-
-				TitlePanel.getTextFieldSearch().setText(SearchDork.HOST.toString()+":"+selectedItems.get(0));
+				if (selectedItems.size() >0 ) {
+					TitlePanel.getTextFieldSearch().setText(SearchDork.HOST.toString() + ":" + selectedItems.get(0));
+				}
 			}
 		});
 
@@ -170,8 +176,8 @@ public class TextAreaMenu extends JPopupMenu {
 		JMenuItem Sort = new JMenuItem(new AbstractAction("Sort") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				Collections.sort(selectedItems);
-				textArea.setText(String.join(System.lineSeparator(), selectedItems));
+				Collections.sort(AllItems);
+				textArea.setText(String.join(System.lineSeparator(), AllItems));
 			}
 		});
 
@@ -179,8 +185,8 @@ public class TextAreaMenu extends JPopupMenu {
 		JMenuItem SortByLength = new JMenuItem(new AbstractAction("Sort By Length") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				Collections.sort(selectedItems,new LengthComparator());
-				textArea.setText(String.join(System.lineSeparator(), selectedItems));
+				Collections.sort(AllItems,new LengthComparator());
+				textArea.setText(String.join(System.lineSeparator(), AllItems));
 			}
 		});
 
@@ -188,8 +194,8 @@ public class TextAreaMenu extends JPopupMenu {
 		JMenuItem SortDomain = new JMenuItem(new AbstractAction("Sort Domain") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				Collections.sort(selectedItems,new DomainComparator());
-				textArea.setText(String.join(System.lineSeparator(), selectedItems));
+				Collections.sort(AllItems,new DomainComparator());
+				textArea.setText(String.join(System.lineSeparator(), AllItems));
 			}
 		});
 
