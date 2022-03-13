@@ -33,10 +33,10 @@ public class TextAreaMenu extends JPopupMenu {
 
 		this.textArea = textArea;
 		selectedText = textArea.getSelectedText();
-		if (selectedText != null && selectedText.equalsIgnoreCase("")){
-			selectedItems = Arrays.asList(selectedText.split(System.lineSeparator()));
+		if (selectedText != null && !selectedText.equalsIgnoreCase("")){
+			selectedItems = Commons.textToLines(selectedText);
 		}
-		List<String> AllItems = Arrays.asList(textArea.getText().split(System.lineSeparator()));
+		List<String> AllItems = Commons.getLinesFromTextArea(textArea);
 
 
 		try{
@@ -79,7 +79,7 @@ public class TextAreaMenu extends JPopupMenu {
 					return;
 				}
 				for (String item:selectedItems) {
-					String url= "https://"+item.replace("\r","").replace("\n","");
+					String url= "https://"+item;
 					try {
 						Commons.browserOpen(url, null);
 					} catch (Exception e) {

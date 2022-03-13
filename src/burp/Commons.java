@@ -333,12 +333,20 @@ public class Commons {
 	}
 
 	public static List<String> getLinesFromTextArea(JTextArea textarea){
-		//user input maybe use "\n" in windows, so the System.lineSeparator() not always works fine!
-		String[] lines = textarea.getText().replaceAll("\r\n", "\n").split("\n");
+		return textToLines(textarea.getText());
+	}
+
+	/**
+	 * 换行符的可能性有三种，都必须考虑到
+	 * @param input
+	 * @return
+	 */
+	public static List<String> textToLines(String input){
+		String[] lines = input.split("(\r\n|\r|\n)", -1);
 		List<String> result = new ArrayList<String>();
 		for(String line: lines) {
 			line = line.trim();
-			if (line!="") {
+			if (!line.equalsIgnoreCase("")) {
 				result.add(line.trim());
 			}
 		}
@@ -432,6 +440,8 @@ public class Commons {
 	public static void main(String args[]) throws Exception {
 		//test10();
 		//OpenFolder("D:\\Program Files");
-		browserOpen("http://baidu.com",null);
+		//browserOpen("http://baidu.com",null);
+		String lines[] = "aaaaa\n\nbbbb".split("(\r\n|\r|\n)", -1);
+		System.out.println(lines[0]);
 	}
 }
