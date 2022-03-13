@@ -1,18 +1,20 @@
 package domain;
 
-import java.awt.Desktop;
+import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
-import javax.swing.AbstractAction;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.JTabbedPane;
+import javax.swing.*;
 
+import Tools.DomainComparator;
+import Tools.LengthComparator;
 import burp.BurpExtender;
 import burp.Commons;
 import title.TitlePanel;
@@ -22,41 +24,64 @@ public class TextAreaMenu extends JPopupMenu {
 
 	PrintWriter stdout;
 	PrintWriter stderr;
-	TextAreaMenu(final String selectedText){
+	JTextArea textArea;
+	String selectedText;
+	List<String> selectedItems;
 
-        try{
-            stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
-            stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
-        }catch (Exception e){
-            stdout = new PrintWriter(System.out, true);
-            stderr = new PrintWriter(System.out, true);
-        }
-        
-        List<String> selectedItems = Arrays.asList(selectedText.split(System.lineSeparator()));
+	TextAreaMenu(JTextArea textArea){
 
-		if (selectedItems.size() > 0){
-			JMenuItem goToItem = new JMenuItem(new AbstractAction(selectedItems.size()+" items selected") {
-				@Override
-				public void actionPerformed(ActionEvent actionEvent) {
+		this.textArea = textArea;
+		selectedText = textArea.getSelectedText();
+		selectedItems = Arrays.asList(selectedText.split(System.lineSeparator()));
 
-				}
-			});
-			this.add(goToItem);
+		try{
+			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
+			stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
+		}catch (Exception e){
+			stdout = new PrintWriter(System.out, true);
+			stderr = new PrintWriter(System.out, true);
 		}
 
-        JMenuItem goToItem = new JMenuItem(new AbstractAction("Go To Tilte") {
+		if (selectedItems.size() >0 ){
+			JMenuItem NumberItem = new JMenuItem(new AbstractAction(selectedItems.size()+" Items Selected") {
+				@Override
+				public void actionPerformed(ActionEvent actionEvent) {
+				}
+			});
+			this.add(NumberItem);
+			this.addSeparator();
+		}
+
+
+		JMenuItem goToItem = new JMenuItem(new AbstractAction("Go To Tilte Panel") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				
+
 				JTabbedPane aa= (JTabbedPane) BurpExtender.getGui().getContentPane();
 				aa.setSelectedIndex(1);
 				//只会影响Domain Hunter中的选中，当选中的是proxy，使用这个方法并不能自动切换到domain hunter。
 				//stdout.println(BurpExtender.getGui().getRootPane().getName());//null
-				
+
 				TitlePanel.getTextFieldSearch().setText(SearchDork.HOST.toString()+":"+selectedItems.get(0));
 			}
 		});
-        this.add(goToItem);
+
+		JMenuItem openWithBrowserItem = new JMenuItem(new AbstractAction("Open With Browser") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				if (selectedItems.size() >=50) {
+					return;
+				}
+				for (String item:selectedItems) {
+					String url= "https://"+item.replace("\r","").replace("\n","");
+					try {
+						Commons.browserOpen(url, null);
+					} catch (Exception e) {
+						e.printStackTrace(stderr);
+					}
+				}
+			}
+		});
 
 		JMenuItem googleSearchItem = new JMenuItem(new AbstractAction("Google It") {
 			@Override
@@ -75,9 +100,6 @@ public class TextAreaMenu extends JPopupMenu {
 			}
 		});
 
-		this.add(googleSearchItem);
-		
-		
 		JMenuItem SearchOnGithubItem = new JMenuItem(new AbstractAction("Seach On Github") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -100,8 +122,7 @@ public class TextAreaMenu extends JPopupMenu {
 			}
 		});
 
-		this.add(SearchOnGithubItem);
-		
+
 		JMenuItem addTosubdomain = new JMenuItem(new AbstractAction("Add To Sub-domain") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -119,9 +140,8 @@ public class TextAreaMenu extends JPopupMenu {
 				DomainPanel.saveDomainDataToDB();
 			}
 		});
-		
-		this.add(addTosubdomain);
-		
+
+
 		JMenuItem whoisItem = new JMenuItem(new AbstractAction("Whois") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -135,17 +155,130 @@ public class TextAreaMenu extends JPopupMenu {
 				}
 			}
 		});
-		
-		this.add(whoisItem);
-		
+
+
 		JMenuItem removeMd5DomainItem = new JMenuItem(new AbstractAction("Remove MD5 Domain") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				DomainPanel.getDomainResult().removeMd5Domain();
 			}
 		});
-		
+
+
+
+		/////不需要选中内容的菜单
+		JMenuItem Sort = new JMenuItem(new AbstractAction("Sort") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				Collections.sort(selectedItems);
+				textArea.setText(String.join(System.lineSeparator(), selectedItems));
+			}
+		});
+
+
+		JMenuItem SortByLength = new JMenuItem(new AbstractAction("Sort By Length") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				Collections.sort(selectedItems,new LengthComparator());
+				textArea.setText(String.join(System.lineSeparator(), selectedItems));
+			}
+		});
+
+
+		JMenuItem SortDomain = new JMenuItem(new AbstractAction("Sort Domain") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				Collections.sort(selectedItems,new DomainComparator());
+				textArea.setText(String.join(System.lineSeparator(), selectedItems));
+			}
+		});
+
+
+		//https://blog.csdn.net/opshres169/article/details/51913713
+		JMenuItem SearchDomain = new JMenuItem(new AbstractAction("Search") {
+			int searchBegin = 0;
+
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				String keyword = JOptionPane.showInputDialog("Find What?");
+				searchBegin = search(keyword,searchBegin);
+
+				/**
+				 try {
+				 JTextArea parent = (JTextArea)actionEvent.getSource();
+
+				 boolean enterListenerAdded = false;
+				 KeyListener[] keyListeners = parent.getKeyListeners();
+				 for (KeyListener item: keyListeners) {
+				 if (item.getClass() == EnterListener.class) {
+				 enterListenerAdded = true;
+				 }
+				 }
+				 if (!enterListenerAdded) {
+				 parent.addKeyListener(new EnterListener());
+				 }
+				 } catch (Exception e) {
+				 e.printStackTrace();
+				 }*/
+			}
+
+			/**
+			 * 从特定的位置开始搜索
+			 * @param searchBegin
+			 * @return
+			 */
+			public int search(String keyword, int searchBegin) {
+				if (searchBegin >= textArea.getText().length()) {
+					searchBegin = 0;
+				}
+
+				int offset = textArea.getText().toLowerCase().indexOf(keyword.toLowerCase(),searchBegin);
+				int length = keyword.length();
+
+				if (offset != -1) {
+					textArea.setSelectionStart(offset);
+					textArea.setSelectionEnd(offset + length);
+					textArea.requestFocus();
+					//offset = TextArea.getText().indexOf(search, offset + 1);//查找下一个
+				}
+				return offset + 1;//下一次查找开始的位置
+			}
+
+			/**
+			 * 会和文本编辑冲突
+			 * @author bit4woo
+			 *
+			 */
+			class EnterListener extends KeyAdapter {
+				@Override
+				public void keyPressed(KeyEvent evt){
+					if (evt.getKeyCode() == KeyEvent.VK_N) {
+						String keyword = textArea.getSelectedText();
+						if (keyword == null || "".equals(keyword)) {
+							searchBegin = search(keyword,searchBegin);
+						}
+					}
+				}
+			}
+		});
+
+		SortDomain.setToolTipText("search something");
+
+		//对选中内容起作用的菜单
+		this.add(whoisItem);
+		this.add(googleSearchItem);
+		this.add(SearchOnGithubItem);
+		this.add(openWithBrowserItem);
+		this.add(addTosubdomain);
+		this.addSeparator();
+
+		//无需选中的全局菜单
+		this.add(SearchDomain);
+		this.add(Sort);
+		this.add(SortDomain);
+		this.add(SortByLength);
+		this.add(goToItem);
+
 		this.add(removeMd5DomainItem);
-		
 	}
 }

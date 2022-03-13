@@ -431,6 +431,7 @@ public class Commons {
 
 	public static void main(String args[]) throws Exception {
 		//test10();
-		OpenFolder("D:\\Program Files");
+		//OpenFolder("D:\\Program Files");
+		browserOpen("http://baidu.com",null);
 	}
 }
