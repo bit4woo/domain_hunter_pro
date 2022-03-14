@@ -3,6 +3,7 @@ package domain;
 import Tools.PatternsFromAndroid;
 import Tools.ToolPanel;
 import burp.*;
+import domain.target.TargetEntry;
 import org.apache.commons.text.StringEscapeUtils;
 import title.LineEntry;
 import toElastic.ElasticClient;
@@ -80,10 +81,30 @@ public class DomainProducer extends Thread {//Producer do
 				String protocol =  httpservice.getProtocol();
 				String Host = httpservice.getHost();
 
-				//callbacks.printOutput(rootdomains.toString());
-				//callbacks.printOutput(keywords.toString());
+				//第一阶段：处理Host
+				//当Host是一个IP地址时，它也有可能是我们的目标。如果它的证书域名又在目标中，那么它就是目标。
 				int type = DomainPanel.fetchTargetModel().domainType(Host);
+
+				if (type ==DomainManager.USELESS){
+					continue;
+				}else if (type == DomainManager.NEED_CONFIRM_IP){
+					//当Host是一个IP，也有可能是目标，通过证书信息进一步判断。
+					if (protocol.equalsIgnoreCase("https")){
+						if (isTargetByCertInfoForTarget(shortURL)){
+
+							//确定这个IP是目标了，更新target
+							TargetEntry entry = new TargetEntry(Host);
+							entry.setComment("BaseOnCertInfo");
+							DomainPanel.fetchTargetModel().addRowIfValid(entry);
+
+							//重新判断类型，应该是确定的IP类型了。jiwei.feng@shopee.com
+							type = DomainPanel.fetchTargetModel().domainType(Host);
+						}
+					}
+				}
 				DomainPanel.getDomainResult().addIfValid(Host);
+
+				//第二步：处理HTTPS证书
 				if (type !=DomainManager.USELESS && protocol.equalsIgnoreCase("https")){//get related domains
 					if (!httpsQueue.contains(shortURL)) {//httpService checked or not
 						httpsQueue.put(shortURL);//必须先添加，否则执行在执行https链接的过程中，已经有很多请求通过检测进行相同的请求了。
@@ -99,7 +120,7 @@ public class DomainProducer extends Thread {//Producer do
 					}
 				}
 
-				//对所有流量都进行抓取，这样可以发现更多域名，但同时也会有很多无用功，尤其是使用者同时挖掘多个目标的时候
+				//第三步：对所有流量都进行抓取，这样可以发现更多域名，但同时也会有很多无用功，尤其是使用者同时挖掘多个目标的时候
 				if (!Commons.uselessExtension(urlString)) {//grep domains from response and classify
 					byte[] response = messageinfo.getResponse();
 
@@ -131,6 +152,22 @@ public class DomainProducer extends Thread {//Producer do
 				error.printStackTrace(BurpExtender.getStderr());
 			}
 		}
+	}
+
+	/**
+	 * 这个函数必须返回确定的目标！不能确定的认为是false
+	 * @param shortURL
+	 * @return
+	 */
+	public boolean isTargetByCertInfoForTarget(String shortURL) throws Exception {
+		Set<String> certDomains = CertInfo.getAllSANs(shortURL);
+		for (String domain : certDomains) {
+			int type = DomainPanel.fetchTargetModel().domainType(domain);
+			if (type == DomainManager.SUB_DOMAIN || type == DomainManager.TLD_DOMAIN) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public byte[] subByte(byte[] b,int srcPos,int length){

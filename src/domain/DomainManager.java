@@ -51,6 +51,7 @@ public class DomainManager {
     public static int IP_ADDRESS = 2;
     public static int PACKAGE_NAME = 3;
     public static int TLD_DOMAIN = 4; //比如baidu.net是baidu.com的TLD domain。
+    public static int NEED_CONFIRM_IP = 5; //根据目标无法判断的类型。
     public static int USELESS = -1;
     //public static int BLACKLIST = -2;
 
@@ -267,7 +268,8 @@ public class DomainManager {
         return !NotTargetIPSet.contains(HostIP);
     }
 
-    /*
+    /**
+     *
      * 用于判断站点是否是我们的目标范围，原理是根据证书的所有域名中，是否有域名包含了关键词。
      * 为了避免漏掉有效目标，只有完全确定非目标的才排除！！！
      */
@@ -283,6 +285,8 @@ public class DomainManager {
         }
         return false;
     }
+
+
 
     @Deprecated //不就等于put操作吗
     private void AddToRootDomainMap(String key, String value) {
@@ -341,7 +345,7 @@ public class DomainManager {
 
         int type = fetchTargetModel().domainType(domain);
 
-        if (type !=DomainManager.USELESS){
+        if (type !=DomainManager.USELESS && type!= DomainManager.NEED_CONFIRM_IP){
             BurpExtender.getStdout().println("Target Asset Found: "+domain);
         }
 

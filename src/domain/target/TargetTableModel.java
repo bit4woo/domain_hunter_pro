@@ -4,6 +4,7 @@ import GUI.GUIMain;
 import burp.*;
 import com.google.common.net.InternetDomainName;
 import com.google.gson.Gson;
+import domain.CertInfo;
 import domain.DomainManager;
 import domain.DomainPanel;
 import org.apache.commons.io.FileUtils;
@@ -502,16 +503,20 @@ public class TargetTableModel extends AbstractTableModel {
 		return fetchTargetIPSet().contains(domain);
 	}
 
+	/**
+	 * 判断域名或IP，是否为我们的目标资产。完全是根据target中的配置来判断的。
+	 * @param domain
+	 * @return
+	 */
 	public int domainType(String domain) {
 		try {
-			domain = DomainNameUtils.cleanDomain(domain);
+			domain = DomainNameUtils.cleanDomain(domain);//https://202.77.129.30
 
-			if (IPAddressUtils.isValidIP(domain)) {//https://202.77.129.30
-				return DomainManager.IP_ADDRESS;
-			}
-			if (!DomainNameUtils.isValidDomain(domain)) {
+			//格式校验，package那么也是符合域名的正则格式的。
+			if (!DomainNameUtils.isValidDomain(domain) && !IPAddressUtils.isValidIP(domain)) {
 				return DomainManager.USELESS;
 			}
+
 			if (isBlack(domain)) {
 				return DomainManager.USELESS;
 			}
@@ -528,7 +533,7 @@ public class TargetTableModel extends AbstractTableModel {
 				return DomainManager.IP_ADDRESS;
 			}
 
-			for (String rootdomain:fetchTargetDomainSet()) {
+			for (String rootdomain:targetDomains) {
 				rootdomain  = DomainNameUtils.cleanDomain(rootdomain);
 				if (DomainNameUtils.isTLDDomain(domain,rootdomain)) {
 					return DomainManager.TLD_DOMAIN;
@@ -545,6 +550,10 @@ public class TargetTableModel extends AbstractTableModel {
 						return DomainManager.PACKAGE_NAME;
 					}
 				}
+			}
+
+			if(IPAddressUtils.isValidIP(domain)){
+				return DomainManager.NEED_CONFIRM_IP;
 			}
 
 			return DomainManager.USELESS;
