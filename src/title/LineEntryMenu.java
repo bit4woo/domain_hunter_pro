@@ -784,10 +784,10 @@ public class LineEntryMenu extends JPopupMenu {
 		 * 3、把目标加入黑名单，以便下次跑网段如果有相同IP可以标记出来。
 		 */
 		@Deprecated
-		JMenuItem removeSubDomainItem = new JMenuItem(new AbstractAction("Delete Host From Target(SubDomainSet)") {//need to show dialog to confirm
+		JMenuItem removeSubDomainItem = new JMenuItem(new AbstractAction("Delete Host From SubDomain Set") {//need to show dialog to confirm
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				int result = JOptionPane.showConfirmDialog(null,"Are you sure to DELETE these Hosts from SubDomainSet ?");
+				int result = JOptionPane.showConfirmDialog(null,"Are you sure to DELETE these Hosts from SubDomain Set ?");
 				if (result == JOptionPane.YES_OPTION) {
 					//java.util.List<String> hosts = lineTable.getLineTableModel().getHosts(rows);//不包含端口，如果原始记录包含端口就删不掉
 					//如果有 domain domain:8888 两个记录，这种方式就会删错对象
@@ -800,7 +800,7 @@ public class LineEntryMenu extends JPopupMenu {
 				}
 			}
 		});
-		removeSubDomainItem.setToolTipText("Delete Host In Domain Panel");
+		removeSubDomainItem.setToolTipText("Delete Host From Subdomain Set In Domain Panel");
 
 		/**
 		 * 认为资产不是目标资产，加入NotTargeIPSet，不做其他修改
@@ -815,7 +815,7 @@ public class LineEntryMenu extends JPopupMenu {
 				}
 			}
 		});
-		addToblackListItem.setToolTipText("If host is IP address,will be added to NotTargetIPSet[Black List]");
+		addToblackListItem.setToolTipText("If host is IP address,will be added to Target Black List");
 
 		this.add(itemNumber);
 		this.add(checkingItem);
