@@ -541,6 +541,7 @@ public class LineEntryMenuForBurp{
 
 			LineEntry newEntry = new LineEntry(message);
 			newEntry.setComment("Manual-Saved");
+			newEntry.setEntryType(LineEntry.EntryType_Manual_Saved);
 			newEntry.setCheckStatus(LineEntry.CheckStatus_UnChecked);
 			newEntry.setManualSaved(true);
 

@@ -27,6 +27,7 @@ import burp.IMessageEditorController;
 import burp.IPAddressUtils;
 import burp.IntArraySlice;
 import domain.DomainPanel;
+import domain.target.TargetEntry;
 
 
 public class LineTableModel extends AbstractTableModel implements IMessageEditorController,Serializable {
@@ -414,6 +415,38 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	}
 
 	/**
+	 * 获取title panel中所有entry中的Host+port字段，除了手动保存的请求包记录。
+	 * 用target中的IP网段信息+子域名集合+特殊端口目标集合-这个host集合 = 需要去获取title的新域名集合
+	 *
+	 * 如果是默认端口 80 443就不显示端口
+	 * 如果是特殊端口，就加上端口。
+	 * @return
+	 */
+	public Set<String> GetHostsWithSpecialPort() {
+		HashSet<String> result = new HashSet<>();
+		for (LineEntry entry:lineEntries.values()){
+			try{
+				if (entry.getEntryType().equalsIgnoreCase(LineEntry.EntryType_Manual_Saved)){
+					continue;
+				}
+				if (entry.getComment().contains("Manual-Saved")){
+					continue;
+				}
+
+				if (entry.getPort() !=80 && entry.getPort() !=443){
+					result.add(entry.getHost()+":"+entry.getPort());
+				}else {
+					result.add(entry.getHost());
+				}
+
+			}catch (Exception e){
+				e.printStackTrace(stderr);
+			}
+		}
+		return result;
+	}
+
+	/**
 	 * 用于host碰撞
 	 * @return
 	 */
@@ -650,7 +683,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	}
 
 	//如果记录的Host是IP，且认为不是目标资产，那么将其加入NotTarget集合
-	public void addHostToNotTargetIPSet(int[] rows) {
+	public void addHostToTargetBlackList(int[] rows) {
 		synchronized (lineEntries) {
 			//because thread let the delete action not in order, so we must loop in here.
 			//list length and index changed after every remove.the origin index not point to right item any more.
@@ -659,26 +692,11 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 				LineEntry entry = lineEntries.get(rows[i]);
 				String Host = entry.getHost();
 				if (IPAddressUtils.isValidIP(Host)) {
-					DomainPanel.getDomainResult().getNotTargetIPSet().add(Host);
+					TargetEntry blackIP = new TargetEntry(Host);
+					blackIP.setBlack(true);
+					DomainPanel.fetchTargetModel().addRowIfValid(blackIP);
 					entry.addComment(LineEntry.NotTargetBaseOnBlackList);
-					stdout.println("### "+Host+" added to NotTargetIPSet");
-				}
-			}
-		}
-	}
-
-	public void removeHostFromNotTargetIPSet(int[] rows) {
-		synchronized (lineEntries) {
-			//because thread let the delete action not in order, so we must loop in here.
-			//list length and index changed after every remove.the origin index not point to right item any more.
-			Arrays.sort(rows); //升序
-			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
-				LineEntry entry = lineEntries.get(rows[i]);
-				String Host = entry.getHost();
-				if (IPAddressUtils.isValidIP(Host)) {
-					DomainPanel.getDomainResult().getNotTargetIPSet().remove(Host);
-					entry.removeComment(LineEntry.NotTargetBaseOnBlackList);
-					stdout.println("### "+Host+" removed from NotTargetIPSet");
+					stdout.println("### "+Host+" added to black list");
 				}
 			}
 		}
@@ -722,27 +740,6 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			}
 		}
 		return tmp;
-	}
-
-	//当记录是非目标资产时，将其IP集合添加到NotTargetIP集合中
-	@Deprecated
-	public void addIPSetOfEntryToNotTargetIPSet(int[] rows) {
-		for (int i=rows.length-1;i>=0 ;i-- ) {
-			Set<String> IPs = lineEntries.get(rows[i]).fetchIPSet();
-			DomainPanel.getDomainResult().getNotTargetIPSet().addAll(IPs);
-			stdout.println("### "+IPs.toString()+" added to black list");
-		}
-	}
-
-	//将IP集合算成C段，并加入NotTarget集合
-	@Deprecated
-	public void addSubnetBlackList(int[] rows) {
-		for (int i=rows.length-1;i>=0 ;i-- ) {
-			Set<String> IPs = lineEntries.get(rows[i]).fetchIPSet();
-			Set<String> subnets = IPAddressUtils.toClassCSubNets(IPs);
-			DomainPanel.getDomainResult().getNotTargetIPSet().addAll(subnets);
-			stdout.println("### "+subnets.toString()+" added to black list");
-		}
 	}
 
 	//为了同时fire多个不连续的行，自行实现这个方法。

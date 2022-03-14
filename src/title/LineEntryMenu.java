@@ -777,7 +777,7 @@ public class LineEntryMenu extends JPopupMenu {
 		removeItem.setToolTipText("Just Delete Entry In Title Panel");
 
 		/**
-		 * 从子域名列表中删除对应资产，表面当前host（应该是一个IP）不是我们的目标资产。
+		 * 从子域名列表中删除对应资产，表明当前host（应该是一个IP）不是我们的目标资产。
 		 * 那么应该同时做以下三点：
 		 * 1、从domain panel中的SubDomainSet移除。
 		 * 2、从title panel中删除记录。
@@ -797,79 +797,25 @@ public class LineEntryMenu extends JPopupMenu {
 							DomainPanel.getDomainResult().getSubDomainSet().remove(item.split(":")[0]);
 						}
 					}
-				}else {
-					return;
 				}
-				GUIMain.titlePanel.digStatus();
 			}
 		});
 		removeSubDomainItem.setToolTipText("Delete Host In Domain Panel");
 
 		/**
-		 * 从子域名列表中删除对应资产，表面当前host（应该是一个IP）不是我们的目标资产。
-		 * 那么应该同时做以下三点：
-		 * 1、从domain panel中的SubDomainSet移除。
-		 * 2、从title panel中删除记录。
-		 * 3、把目标加入黑名单，以便下次跑网段如果有相同IP可以标记出来。
-		 */
-		JMenuItem NotTargetHandleItem = new JMenuItem(new AbstractAction("Not My Target! Delete It!") {//need to show dialog to confirm
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-				int result = JOptionPane.showConfirmDialog(null,"Are you sure these items are not your target, DELETE them?");
-				if (result == JOptionPane.YES_OPTION) {
-					//java.util.List<String> hosts = lineTable.getLineTableModel().getHosts(rows);//不包含端口，如果原始记录包含端口就删不掉
-					//如果有 domain domain:8888 两个记录，这种方式就会删错对象
-					java.util.List<String> hostAndPort = lineTable.getLineTableModel().getHostsAndPorts(modleRows);//包含端口，如果原始记录
-					for(String item:hostAndPort) {
-						if (!DomainPanel.getDomainResult().getSubDomainSet().remove(item)) {
-							DomainPanel.getDomainResult().getSubDomainSet().remove(item.split(":")[0]);
-						}
-					}
-					lineTable.getLineTableModel().addHostToNotTargetIPSet(modleRows);//当host是IP的时候，加入黑名单
-					lineTable.getLineTableModel().removeRows(modleRows);//删除当前行，必须最后执行！
-				}else {
-					return;
-				}
-				GUIMain.titlePanel.digStatus();
-			}
-		});
-		NotTargetHandleItem.setToolTipText("1.Delete Host From Domain Panel,2.Add Host to BlackList,3.Delete Entry From Title Panel");
-
-		/**
 		 * 认为资产不是目标资产，加入NotTargeIPSet，不做其他修改
 		 * 黑名单仅用于标记title记录，不会不请求对应的web
 		 */
-		JMenuItem addToblackListItem = new JMenuItem(new AbstractAction("Add Host To Black List(NotTargeIPSet)") {//need to show dialog to confirm
+		JMenuItem addToblackListItem = new JMenuItem(new AbstractAction("Add Host To Black List") {//need to show dialog to confirm
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				int result = JOptionPane.showConfirmDialog(null,"Are you sure to ADD Host(Must Be IP) to NotTargetIPSet ?");
+				int result = JOptionPane.showConfirmDialog(null,"Are you sure to ADD Host(Must Be IP) to Black List ?");
 				if (result == JOptionPane.YES_OPTION) {
-					lineTable.getLineTableModel().addHostToNotTargetIPSet(modleRows);
-				}else {
-					return;
+					lineTable.getLineTableModel().addHostToTargetBlackList(modleRows);
 				}
-				GUIMain.titlePanel.digStatus();
 			}
 		});
 		addToblackListItem.setToolTipText("If host is IP address,will be added to NotTargetIPSet[Black List]");
-
-		/**
-		 * 从黑名单中移除，不做其他修改。
-		 * 黑名单仅用于标记title记录，不会不请求对应的web
-		 */
-		JMenuItem removeFromBlackListItem = new JMenuItem(new AbstractAction("Remove Host From Black List(NotTargeIPSet)") {//need to show dialog to confirm
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-				int result = JOptionPane.showConfirmDialog(null,"Are you sure to REMOVE Host(Must Be IP) from NotTargetIPSet ?");
-				if (result == JOptionPane.YES_OPTION) {
-					lineTable.getLineTableModel().removeHostFromNotTargetIPSet(modleRows);
-				}else {
-					return;
-				}
-			}
-		});
-		removeFromBlackListItem.setToolTipText("If host is IP address,will be removed from NotTargetIPSet");
-
 
 		this.add(itemNumber);
 		this.add(checkingItem);
@@ -921,10 +867,8 @@ public class LineEntryMenu extends JPopupMenu {
 
 		this.addSeparator();
 
-		this.add(removeItem);
-		//this.add(removeSubDomainItem);
-		this.add(NotTargetHandleItem);
+		this.add(removeItem);//单纯删除记录
+		this.add(removeSubDomainItem);
 		this.add(addToblackListItem);
-		this.add(removeFromBlackListItem);
 	}
 }

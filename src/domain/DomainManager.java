@@ -9,7 +9,6 @@ import com.google.common.net.InternetDomainName;
 import domain.target.TargetEntry;
 import domain.target.TargetTableModel;
 
-import java.net.URL;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -29,22 +28,23 @@ public class DomainManager {
     public boolean autoAddRelatedToRoot = false;
 
     private ConcurrentHashMap<String, String> rootDomainMap = new ConcurrentHashMap<String, String>();
+    //旧版本中用于存放目标域名范围的地方,为了兼容不能删除
     //private LinkedHashMap<String,String> rootBlackDomainMap = new LinkedHashMap<String,String>();
     // LinkedHashMap to keep the insert order
-    private Set<String> subnetSet = new CopyOnWriteArraySet<String>();//旧版本中用于指定目标IP和网段的地方
+    private Set<String> subnetSet = new CopyOnWriteArraySet<String>();//旧版本中用于指定目标IP和网段的地方,为了兼容不能删除
 
-    private Set<String> foundIPSet = new CopyOnWriteArraySet<String>();
     private Set<String> subDomainSet = new CopyOnWriteArraySet<String>();
     private Set<String> similarDomainSet = new CopyOnWriteArraySet<String>();
     private Set<String> relatedDomainSet = new CopyOnWriteArraySet<String>();
     private Set<String> IsTargetButUselessDomainSet = new CopyOnWriteArraySet<String>();
     //有效(能解析IP)但无用的域名，比如JD的网店域名、首页域名等对信息收集、聚合网段、目标界定有用，但是本身几乎不可能有漏洞的资产。
-    private Set<String> NotTargetIPSet = new CopyOnWriteArraySet<String>();//IP集合，那些非目标资产的IP集合。只存IP，不存网段。
-    private ConcurrentHashMap<String, Integer> unkownDomainMap = new ConcurrentHashMap<String, Integer>();//记录域名和解析失败的次数，大于五次就从子域名中删除。
+    //private Set<String> NotTargetIPSet = new CopyOnWriteArraySet<String>();//IP集合，那些非目标资产的IP集合。只存IP，不存网段。
+    //private ConcurrentHashMap<String, Integer> unkownDomainMap = new ConcurrentHashMap<String, Integer>();//记录域名和解析失败的次数，大于五次就从子域名中删除。
     private Set<String> EmailSet = new CopyOnWriteArraySet<String>();
     private Set<String> PackageNameSet = new CopyOnWriteArraySet<String>();
+    private Set<String> SpecialPortTargets = new CopyOnWriteArraySet<String>();//用于存放指定了特殊端口的目标
 
-    private Set<String> newAndNotGetTitleDomainSet = new CopyOnWriteArraySet<String>();
+    //private Set<String> newAndNotGetTitleDomainSet = new CopyOnWriteArraySet<String>();
 
     public static int SUB_DOMAIN = 0;
     public static int SIMILAR_DOMAIN = 1;
@@ -92,14 +92,6 @@ public class DomainManager {
         return subnetSet;
     }
 
-    public Set<String> getFoundIPSet() {
-        return foundIPSet;
-    }
-
-    public void setFoundIPSet(Set<String> foundIPSet) {
-        this.foundIPSet = foundIPSet;
-    }
-
     public Set<String> getSubDomainSet() {
         return subDomainSet;
     }
@@ -132,15 +124,6 @@ public class DomainManager {
         IsTargetButUselessDomainSet = isTargetButUselessDomainSet;
     }
 
-
-    public Set<String> getNotTargetIPSet() {
-        return NotTargetIPSet;
-    }
-
-    public void setNotTargetIPSet(Set<String> notTargetIPSet) {
-        NotTargetIPSet = notTargetIPSet;
-    }
-
     public Set<String> getEmailSet() {
         return EmailSet;
     }
@@ -157,12 +140,12 @@ public class DomainManager {
         PackageNameSet = packageNameSet;
     }
 
-    public Set<String> getNewAndNotGetTitleDomainSet() {
-        return newAndNotGetTitleDomainSet;
+    public Set<String> getSpecialPortTargets() {
+        return SpecialPortTargets;
     }
 
-    public void setNewAndNotGetTitleDomainSet(Set<String> newAndNotGetTitleDomainSet) {
-        this.newAndNotGetTitleDomainSet = newAndNotGetTitleDomainSet;
+    public void setSpecialPortTargets(Set<String> specialPortTargets) {
+        SpecialPortTargets = specialPortTargets;
     }
 
     public TargetTableModel fetchTargetModel() {
@@ -224,14 +207,14 @@ public class DomainManager {
         return String.join(System.lineSeparator(), similarDomainSet);
     }
 
-    public String fetchFoundIPs() {
-        List<String> tmplist = new ArrayList<>(foundIPSet);
+    public String fetchSubDomains() {
+        List<String> tmplist = new ArrayList<>(subDomainSet);
         tmplist.sort(new DomainComparator());
         return String.join(System.lineSeparator(), tmplist);
     }
 
-    public String fetchSubDomains() {
-        List<String> tmplist = new ArrayList<>(subDomainSet);
+    public String fetchSpecialPortTargets() {
+        List<String> tmplist = new ArrayList<>(SpecialPortTargets);
         tmplist.sort(new DomainComparator());
         return String.join(System.lineSeparator(), tmplist);
     }
@@ -261,11 +244,6 @@ public class DomainManager {
 
     public String fetchPackageNames() {
         return String.join(System.lineSeparator(), PackageNameSet);
-    }
-
-    //这种一般只会是IP类资产才会需要这样判断吧，域名类很容易确定是否属于目标
-    public boolean isTargetByBlackList(String HostIP) {
-        return !NotTargetIPSet.contains(HostIP);
     }
 
     /**
@@ -363,7 +341,6 @@ public class DomainManager {
             PackageNameSet.add(domain);
             return true;
         } else if (type == DomainManager.IP_ADDRESS){
-            foundIPSet.add(domain);
             return true;
         }else{
             return false;

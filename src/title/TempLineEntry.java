@@ -242,13 +242,6 @@ public class TempLineEntry {
 			entry.removeComment(LineEntry.NotTargetBaseOnCertInfo);
 		}else{
 			entry.addComment(LineEntry.NotTargetBaseOnCertInfo);
-		};
-		if (IPAddressUtils.isValidIP(host)) {
-			if (DomainPanel.getDomainResult().isTargetByBlackList(host)){
-				entry.removeComment(LineEntry.NotTargetBaseOnBlackList);
-			}else{
-				entry.addComment(LineEntry.NotTargetBaseOnBlackList);
-			};
 		}
 	}
 

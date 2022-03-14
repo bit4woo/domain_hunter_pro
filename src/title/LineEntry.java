@@ -54,6 +54,7 @@ public class LineEntry {
 	
 	public static final String EntryType_Web = "Web";
 	public static final String EntryType_DNS = "DNS";
+	public static final String EntryType_Manual_Saved = "Manual_Saved";
 
 	public static String systemCharSet = getSystemCharSet();
 
