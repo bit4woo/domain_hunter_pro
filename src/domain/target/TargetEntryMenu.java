@@ -1,5 +1,6 @@
 package domain.target;
 
+import Tools.ToolPanel;
 import burp.BurpExtender;
 import burp.Commons;
 import domain.DomainPanel;
@@ -53,6 +54,20 @@ public class TargetEntryMenu extends JPopupMenu {
 			}
 		});
 
+		JMenuItem OpenWithBrowserItem = new JMenuItem(new AbstractAction("Open With Browser") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				for (int row:modelRows) {
+					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,0);
+					try {
+						Commons.browserOpen("https://"+rootDomain, ToolPanel.getLineConfig().getBrowserPath());
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		});
+
 		JMenuItem batchAddCommentsItem = new JMenuItem(new AbstractAction("Add Comments") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -73,6 +88,7 @@ public class TargetEntryMenu extends JPopupMenu {
 
 		this.add(getSubDomainsOf);
 		this.add(whoisItem);
+		this.add(OpenWithBrowserItem);
 		this.add(batchAddCommentsItem);
 		this.add(addToBlackItem);
 	}

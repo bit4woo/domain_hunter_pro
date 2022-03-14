@@ -16,6 +16,8 @@ import javax.swing.*;
 
 import Tools.DomainComparator;
 import Tools.LengthComparator;
+import Tools.LineConfig;
+import Tools.ToolPanel;
 import burp.BurpExtender;
 import burp.Commons;
 import title.TitlePanel;
@@ -81,7 +83,7 @@ public class TextAreaMenu extends JPopupMenu {
 				for (String item:selectedItems) {
 					String url= "https://"+item;
 					try {
-						Commons.browserOpen(url, null);
+						Commons.browserOpen(url, ToolPanel.getLineConfig().getBrowserPath());
 					} catch (Exception e) {
 						e.printStackTrace(stderr);
 					}

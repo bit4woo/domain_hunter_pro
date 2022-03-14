@@ -2,18 +2,10 @@ package Tools;
 
 import burp.BurpExtender;
 import burp.Commons;
-import domain.DomainManager;
-import domain.DomainPanel;
-import title.TitlePanel;
-import title.search.SearchDork;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.PrintWriter;
-import java.net.URI;
-import java.net.URLEncoder;
-import java.util.Arrays;
 import java.util.List;
 
 public class TextAreaMenu extends JPopupMenu {
@@ -30,8 +22,8 @@ public class TextAreaMenu extends JPopupMenu {
             stderr = new PrintWriter(System.out, true);
         }
         
-        List<String> selectedItems = Arrays.asList(selectedText.split(System.lineSeparator()));
-        
+        List<String> selectedItems = Commons.textToLines(selectedText);
+
 		if (selectedItems.size() > 0){
 			JMenuItem goToItem = new JMenuItem(new AbstractAction(selectedItems.size()+" items selected") {
 				@Override
