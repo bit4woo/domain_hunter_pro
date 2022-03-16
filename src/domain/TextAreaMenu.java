@@ -20,6 +20,8 @@ import Tools.LineConfig;
 import Tools.ToolPanel;
 import burp.BurpExtender;
 import burp.Commons;
+import burp.DomainNameUtils;
+import burp.IPAddressUtils;
 import title.TitlePanel;
 import title.search.SearchDork;
 
@@ -164,6 +166,33 @@ public class TextAreaMenu extends JPopupMenu {
 			}
 		});
 
+		JMenuItem ASNInfoItem = new JMenuItem(new AbstractAction("ASN Info") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				for (String target:selectedItems) {
+					try {
+						//https://bgp.he.net/dns/shopee.com
+						//https://bgp.he.net/net/143.92.111.0/24
+						//https://bgp.he.net/ip/143.92.127.1
+						String url =null;
+						if (IPAddressUtils.isValidIP(target)){
+							url = "https://bgp.he.net/ip/"+target;
+						}
+						if (IPAddressUtils.isValidSubnet(target)){
+							url = "https://bgp.he.net/net/"+target;
+						}
+						if (DomainNameUtils.isValidDomain(target)){
+							url = "https://bgp.he.net/dns/"+target;
+						}
+						if (url!= null){
+							Commons.browserOpen(url,null);
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		});
 
 		JMenuItem removeMd5DomainItem = new JMenuItem(new AbstractAction("Remove MD5 Domain") {
 			@Override
@@ -274,6 +303,7 @@ public class TextAreaMenu extends JPopupMenu {
 
 		//对选中内容起作用的菜单
 		this.add(whoisItem);
+		this.add(ASNInfoItem);
 		this.add(googleSearchItem);
 		this.add(SearchOnGithubItem);
 		this.add(openWithBrowserItem);
