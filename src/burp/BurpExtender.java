@@ -4,7 +4,9 @@ import java.awt.Component;
 import java.io.PrintWriter;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.swing.JMenuItem;
@@ -44,6 +46,8 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	//use to store messageInfo of proxy live
 	public static BlockingQueue<IHttpRequestResponse> inputQueue = new LinkedBlockingQueue<IHttpRequestResponse>();
 	//use to store messageInfo
+	public static Set<String> httpsChecked = new CopyOnWriteArraySet<>();
+	//temp variable to identify checked https用于记录已经做过HTTPS证书信息获取的httpService
 
 	public static PrintWriter getStdout() {
 		//不同的时候调用这个参数，可能得到不同的值
@@ -171,6 +175,9 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 			stopLiveCapture();
 			if (TitlePanel.threadGetTitle != null) {
 				TitlePanel.threadGetTitle.interrupt();//maybe null
+				inputQueue.clear();
+				liveinputQueue.clear();
+				httpsChecked.clear();
 			}//必须要先结束线程，否则获取数据的操作根本无法结束，因为线程一直通过sync占用资源
 		} catch (Exception e) {
 			e.printStackTrace(stderr);

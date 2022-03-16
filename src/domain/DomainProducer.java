@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
 
 public class DomainProducer extends Thread {//Producer do
 	private final BlockingQueue<IHttpRequestResponse> inputQueue;//use to store messageInfo
-	private BlockingQueue<String> httpsQueue = new LinkedBlockingQueue<>();//temp variable to identify checked https
+
 
 	private int threadNo;
 	private volatile boolean stopflag = false;
@@ -97,7 +97,7 @@ public class DomainProducer extends Thread {//Producer do
 							entry.setComment("BaseOnCertInfo");
 							DomainPanel.fetchTargetModel().addRowIfValid(entry);
 
-							//重新判断类型，应该是确定的IP类型了。jiwei.feng@shopee.com
+							//重新判断类型，应该是确定的IP类型了。
 							type = DomainPanel.fetchTargetModel().domainType(Host);
 						}
 					}
@@ -106,8 +106,9 @@ public class DomainProducer extends Thread {//Producer do
 
 				//第二步：处理HTTPS证书
 				if (type !=DomainManager.USELESS && protocol.equalsIgnoreCase("https")){//get related domains
-					if (!httpsQueue.contains(shortURL)) {//httpService checked or not
-						httpsQueue.put(shortURL);//必须先添加，否则执行在执行https链接的过程中，已经有很多请求通过检测进行相同的请求了。
+					if (BurpExtender.httpsChecked.add(shortURL)) {//httpService checked or not
+						//如果set中已存在，返回false，如果不存在，返回true。
+						//必须先添加，否则执行在执行https链接的过程中，已经有很多请求通过检测进行相同的请求了。
 						Set<String> tmpDomains = CertInfo.getSANsbyKeyword(shortURL,DomainPanel.fetchTargetModel().fetchKeywordSet());
 						for (String domain:tmpDomains) {
 							BurpExtender.getStdout().println("Target Related Asset Found :"+domain);
