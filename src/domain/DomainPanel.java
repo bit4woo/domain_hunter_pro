@@ -369,6 +369,7 @@ public class DomainPanel extends JPanel {
 				SwingWorker<Boolean, Boolean> worker = new SwingWorker<Boolean, Boolean>() {
 					@Override
 					protected Boolean doInBackground() throws Exception {
+						btnUpload.setEnabled(false);
 						String url = domainResult.uploadURL;
 						String host = new URL(url).getHost();
 						String token = ToolPanel.textFieldUploadApiToken.getText().trim();
@@ -378,9 +379,10 @@ public class DomainPanel extends JPanel {
 							headers.put("Authorization", "Token " + token);
 						}
 						if (host.startsWith("vmp.test.shopee.") ||
-								host.contains("burpcollaborator.net")) {
+								host.contains("burpcollaborator.net") ||
+								host.contains("vmp.sz.shopee")) {
 							return VMP.uploadAllVMPEntries(url, headers);
-						} else {
+						} else {//只上传域名信息
 							return VMP.upload(domainResult.uploadURL, headers, domainResult.ToJson());
 						}
 					}
@@ -388,6 +390,7 @@ public class DomainPanel extends JPanel {
 					@Override
 					protected void done() {
 						//Do Nothing
+						btnUpload.setEnabled(true);
 					}
 				};
 				worker.execute();
