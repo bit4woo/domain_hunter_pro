@@ -23,7 +23,21 @@ public class DomainNameUtils {
 		//final String DOMAIN_NAME_PATTERN = "([A-Za-z0-9-]{1,63}(?<!-)\\.)+[A-Za-z]{2,6}";//-this.state.scroll 这种也会被认为是合法的。
 		Pattern pDomainNameOnly = Pattern.compile(DOMAIN_NAME_PATTERN);
 		Matcher matcher = pDomainNameOnly.matcher(domain);
-		return matcher.matches();
+		boolean formateOk = matcher.matches();
+		if (formateOk){
+			//a86ba224e43010880724df4a4be78c11
+			//administratoradministrator
+			//虽然按照RFC的规定，域名的单个字符的模块长度可以是63。但是实际使用情况中，基本不可能有这样的域名。
+			String tmp = domain.replaceAll("-", ".");
+			String[] tmpArray= tmp.split("\\.");
+			for (String item:tmpArray){
+				if (item.length()>=32){
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
 	}
 
 
@@ -216,5 +230,6 @@ public class DomainNameUtils {
 	public static void main(String[] args) {
 		System.out.println(isValidDomain("-baidu.com"));
 		System.out.println(isValidDomain("www1.baidu.com"));
+		System.out.println(isValidDomain("aaaaaaaaa-aaaaaaaaaaaaaaa-aaaaaaaaaaaaaa.www1.baidu.com"));
 	}
 }
