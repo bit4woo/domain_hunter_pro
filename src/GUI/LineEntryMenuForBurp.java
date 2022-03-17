@@ -96,7 +96,7 @@ public class LineEntryMenuForBurp{
 
 			JMenu domainHunterPro = new JMenu("^_^ Domain Hunter Pro");
 			if (!ProjectMenu.isAlone()) {
-				String fileName = GUIMain.getCurrentDBFile().toString();
+				String fileName = GUIMain.getCurrentDBFile().getName();
 				domainHunterPro.setText(String.format("^_^ Domain Hunter Pro [%s]",fileName));
 			}
 			result.add(domainHunterPro);
@@ -104,15 +104,8 @@ public class LineEntryMenuForBurp{
 				domainHunterPro.add(item);
 			}
 			return result;
-		}else {
-			if (!ProjectMenu.isAlone()) {
-				String fileName = GUIMain.getCurrentDBFile().toString();
-				for (JMenuItem item : JMenuItemList) {
-					item.setText("^_^ "+fileName+"-->"+item.getText().replace("^_^ ", ""));
-				}
-			}
-			return JMenuItemList;
 		}
+		return JMenuItemList;
 	}
 
 	public static void addLevelABC(JMenu topMenu,final LineTable lineTable, final int[] rows){
