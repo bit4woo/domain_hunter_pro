@@ -1,6 +1,8 @@
 package Deprecated;
 
 import burp.Commons;
+import burp.DomainNameUtils;
+
 import org.apache.commons.net.whois.WhoisClient;
 
 import java.util.HashMap;
@@ -69,7 +71,7 @@ class RootDomainForBrute{
 		HashMap<String,Set<String>> result = new HashMap();
 		for (String server:nameServers){
 			try {
-				result = Commons.dnsquery(domain,server);
+				result = DomainNameUtils.dnsquery(domain,server);
 				return result;
 			}catch (Exception e){
 				;//do nothing

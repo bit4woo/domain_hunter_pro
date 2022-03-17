@@ -11,10 +11,11 @@ import Tools.LineConfig;
 import Tools.ToolPanel;
 import burp.BurpExtender;
 import burp.Commons;
+import burp.DomainNameUtils;
 import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
 import burp.IHttpService;
-import burp.IPAddress;
+import burp.IPAddressUtils;
 import domain.CertInfo;
 import domain.DomainManager;
 import domain.DomainPanel;
@@ -69,7 +70,7 @@ public class TempLineEntry {
 			port = -1;
 		}
 
-		return Commons.isValidIP(host) || Commons.isValidDomain(host);
+		return IPAddressUtils.isValidIP(host) || DomainNameUtils.isValidDomain(host);
 	}
 
 	//将域名或IP拼接成URL
@@ -106,15 +107,15 @@ public class TempLineEntry {
 		//第一步：IP解析
 		boolean isInPrivateNetwork = TitlePanel.tempConfig.isHandlePriavte();
 
-		if (Commons.isValidIP(host)) {//目标是一个IP
-			if (IPAddress.isPrivateIPv4(host) && !isInPrivateNetwork) {//外网模式，内网IP，直接返回。
+		if (IPAddressUtils.isValidIP(host)) {//目标是一个IP
+			if (IPAddressUtils.isPrivateIPv4(host) && !isInPrivateNetwork) {//外网模式，内网IP，直接返回。
 				return;
 			}else {
 				IPSet.add(host);
 				CDNSet.add("");
 			}
 		}else {//目标是域名
-			HashMap<String,Set<String>> result = Commons.dnsquery(host);
+			HashMap<String,Set<String>> result = DomainNameUtils.dnsquery(host);
 			IPSet = result.get("IP");
 			CDNSet = result.get("CDN");
 		}
@@ -140,7 +141,7 @@ public class TempLineEntry {
 			//TODO 是否应该移除无效域名？理清楚：无效域名，黑名单域名，无响应域名等情况。
 		}else {//默认过滤私有IP
 			String ip = new ArrayList<>(IPSet).get(0);
-			if (IPAddress.isPrivateIPv4(ip) && !isInPrivateNetwork) {//外网模式，内网域名，仅仅显示域名和IP。
+			if (IPAddressUtils.isPrivateIPv4(ip) && !isInPrivateNetwork) {//外网模式，内网域名，仅仅显示域名和IP。
 				LineEntry entry = new LineEntry(host,IPSet);
 				entry.setTitle("Private IP");
 				addInfoToEntry(entry);
@@ -219,7 +220,7 @@ public class TempLineEntry {
 		//当域名可以解析，但是所有URL请求都失败的情况下。添加一条DNS解析记录
 		//TODO 但是IP可以ping通但是无成功的web请求的情况还没有处理
 		if (resultSet.isEmpty()){
-			if (Commons.isValidDomain(host)&& !IPSet.isEmpty()) {
+			if (DomainNameUtils.isValidDomain(host)&& !IPSet.isEmpty()) {
 				LineEntry entry = new LineEntry(host,IPSet);
 				entry.setUrl(host);//将host作为URL字段
 				entry.setTitle("DNS Record");
@@ -241,13 +242,6 @@ public class TempLineEntry {
 			entry.removeComment(LineEntry.NotTargetBaseOnCertInfo);
 		}else{
 			entry.addComment(LineEntry.NotTargetBaseOnCertInfo);
-		};
-		if (Commons.isValidIP(host)) {
-			if (DomainPanel.getDomainResult().isTargetByBlackList(host)){
-				entry.removeComment(LineEntry.NotTargetBaseOnBlackList);
-			}else{
-				entry.addComment(LineEntry.NotTargetBaseOnBlackList);
-			};
 		}
 	}
 

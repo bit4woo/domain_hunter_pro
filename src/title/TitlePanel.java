@@ -20,7 +20,7 @@ import javax.swing.border.EmptyBorder;
 
 import burp.BurpExtender;
 import burp.Commons;
-import burp.IPAddress;
+import burp.IPAddressUtils;
 import domain.DomainPanel;
 import thread.ThreadGetSubnet;
 import thread.ThreadGetTitleWithForceStop;
@@ -234,7 +234,8 @@ public class TitlePanel extends JPanel {
 
 		//将新发现的域名也移动到子域名集合中，以便跑一次全量。 ---DomainConsumer.QueueToResult()中的逻辑已经保证了SubDomainSet一直是最全的。
 		domains.addAll(DomainPanel.getDomainResult().getSubDomainSet());
-		domains.addAll(Commons.toIPSet(DomainPanel.getDomainResult().getSubnetSet()));//确定的IP网段，用户自己输入的
+		domains.addAll(DomainPanel.fetchTargetModel().fetchTargetIPSet());//确定的IP网段，用户自己输入的
+		domains.addAll(DomainPanel.getDomainResult().getSpecialPortTargets());//特殊端口目标
 		//remove domains in black list that is not our target
 		//domains.removeAll(DomainPanel.getDomainResult().fetchNotTargetIPList());//无需移除，会标记出来的。
 		tempConfig = new GetTitleTempConfig(domains.size());
@@ -252,7 +253,6 @@ public class TitlePanel extends JPanel {
 
 		threadGetTitle = new ThreadGetTitleWithForceStop(domains,tempConfig.getThreadNumber());
 		threadGetTitle.start();
-		DomainPanel.getDomainResult().getNewAndNotGetTitleDomainSet().clear();
 	}
 
 
@@ -290,11 +290,21 @@ public class TitlePanel extends JPanel {
 	public void getTitleOfNewDomain(){
 		DomainPanel.backupDB();
 
-		Set<String> domains = new HashSet<>();//新建一个对象，直接赋值后的删除操作，实质是对domainResult的操作。
-		domains.addAll(DomainPanel.getDomainResult().getNewAndNotGetTitleDomainSet());
+		Set<String> newDomains = new HashSet<>(DomainPanel.getDomainResult().getSubDomainSet());//新建一个对象，直接赋值后的删除操作，实质是对domainResult的操作。
+		Set<String> hostsInTitle = titleTableModel.GetHostsWithSpecialPort();
+		newDomains.removeAll(hostsInTitle);
+
+		Set<String> targetIPSet = new HashSet<>(DomainPanel.getTargetTable().getTargetModel().fetchTargetIPSet());//新建一个对象，直接赋值后的删除操作，实质是对domainResult的操作。
+		targetIPSet.removeAll(hostsInTitle);
+
+		Set<String> newDomainsWithPort = new HashSet<>(DomainPanel.getDomainResult().getSpecialPortTargets());//新建一个对象，直接赋值后的删除操作，实质是对domainResult的操作。
+		newDomainsWithPort.removeAll(hostsInTitle);
+
+		newDomains.addAll(targetIPSet);
+		newDomains.addAll(newDomainsWithPort);
 		//remove domains in black list
 		//domains.removeAll(DomainPanel.getDomainResult().fetchNotTargetIPList());//无需移除，会标记出来的。
-		tempConfig = new GetTitleTempConfig(domains.size());
+		tempConfig = new GetTitleTempConfig(newDomains.size());
 		if (tempConfig.getThreadNumber() <=0) {
 			return;
 		}
@@ -302,10 +312,8 @@ public class TitlePanel extends JPanel {
 		if (threadGetTitle != null){
 			threadGetTitle.interrupt();
 		}
-		threadGetTitle = new ThreadGetTitleWithForceStop(domains,tempConfig.getThreadNumber());
+		threadGetTitle = new ThreadGetTitleWithForceStop(newDomains,tempConfig.getThreadNumber());
 		threadGetTitle.start();
-		//清空新发现域名集合前，应该都添加到子域名集合中！！！---DomainConsumer.QueueToResult()中的逻辑已经保证了SubDomainSet一直是最全的。
-		DomainPanel.getDomainResult().getNewAndNotGetTitleDomainSet().clear();
 	}
 
 
@@ -324,9 +332,9 @@ public class TitlePanel extends JPanel {
 				return "thread Interrupted";
 			}
 			Set<String> IPsOfDomain = thread.IPset;
-			Set<String> IPsOfcertainSubnets = Commons.toIPSet(DomainPanel.getDomainResult().getSubnetSet());//用户配置的确定IP+网段
+			Set<String> IPsOfcertainSubnets = DomainPanel.fetchTargetModel().fetchTargetIPSet();//用户配置的确定IP+网段
 			IPsOfDomain.addAll(IPsOfcertainSubnets);
-			subnets = Commons.toSmallerSubNets(IPsOfDomain);
+			subnets = IPAddressUtils.toSmallerSubNets(IPsOfDomain);
 		}
 
 		HashSet<String> result = new HashSet<>(subnets);
@@ -334,7 +342,7 @@ public class TitlePanel extends JPanel {
 			//stdout.println("删除私有IP");
 			for (String subnet :subnets) {
 				String tmp = subnet.split("/")[0];
-				if (IPAddress.isPrivateIPv4(tmp)) {
+				if (IPAddressUtils.isPrivateIPv4(tmp)) {
 					result.remove(subnet);
 					//stdout.println("删除"+subnet);
 				}
@@ -345,10 +353,11 @@ public class TitlePanel extends JPanel {
 		return String.join(System.lineSeparator(), tmplist);
 	}
 
-	/*
+	/**
 	 * 用于从DB文件中加载数据，没有去重检查。
+	 * 这种加载方式没有改变tableModel，所以tableModelListener也还在。
 	 */
-	public void showToTitleUI(IndexedLinkedHashMap<String,LineEntry> lineEntries) {
+	public void loadData(IndexedLinkedHashMap<String,LineEntry> lineEntries) {
 		//titleTableModel.setLineEntries(new ArrayList<LineEntry>());//clear
 		//这里没有fire delete事件，会导致排序号加载文件出错，但是如果fire了又会触发tableModel的删除事件，导致数据库删除。改用clear()
 		titleTableModel.clear(false);//clear
@@ -365,6 +374,16 @@ public class TitlePanel extends JPanel {
 		TitlePanel.getTitleTable().search("");// hide checked items
 	}
 
+	/**
+	 *
+	 * @param lineEntries
+	 */
+	@Deprecated//TODO 不知为何没有起作用
+	public void loadDataNewNotWork(IndexedLinkedHashMap<String,LineEntry> lineEntries) {
+		LineTableModel tmp = new LineTableModel();
+		tmp.setLineEntries(lineEntries);
+		getTitleTable().setLineTableModel(tmp);
+	}
 
 	public void digStatus() {
 		String status = titleTableModel.getStatusSummary();

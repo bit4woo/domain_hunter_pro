@@ -20,6 +20,7 @@ import org.sqlite.SQLiteErrorCode;
 import org.sqlite.SQLiteException;
 
 import domain.DomainManager;
+import domain.target.TargetTableModel;
 import title.IndexedLinkedHashMap;
 import title.LineEntry;
 
@@ -64,6 +65,15 @@ public class DBHelper {
 			conn = getConnection();
 			stmt = conn.createStatement();
 			
+			if (!tableExists("Targets")){
+				String sql = "CREATE TABLE Targets" +
+						"(ID INT PRIMARY KEY     NOT NULL," +
+						" Content        TEXT    NOT NULL)";
+				stmt.executeUpdate(sql);
+				System.out.println("Table Targets created successfully");
+				log.info("Table Targets created successfully");
+			}
+			
 			if (!tableExists("DOMAINObject")){
 				String sql = "CREATE TABLE DOMAINObject" +
 						"(ID INT PRIMARY KEY     NOT NULL," +
@@ -106,9 +116,9 @@ public class DBHelper {
 			if (new File(dbFilePath).exists()){
 				conn = DriverManager.getConnection("jdbc:sqlite:"+dbFilePath);
 			}else {
-				System.out.println("DB file not found");
-				stderr.println("DB file not found");
-				log.error("DB file not found");
+				System.out.println("DB file not found: "+dbFilePath);
+				stderr.println("DB file not found: "+dbFilePath);
+				log.error("DB file not found: "+dbFilePath);
 			}
 		}
 		return conn;
@@ -143,6 +153,67 @@ public class DBHelper {
 		}
 		return false;
 	}
+	
+	/**
+	 * 
+	 * @param model
+	 * @return
+	 */
+	public synchronized boolean saveTargets(TargetTableModel model){
+		try {
+			conn = getConnection();
+			
+			pres = conn.prepareStatement("select ID From Targets");//会比select * From Targets 要快吧
+			rs = pres.executeQuery();
+			String sql = "";
+			if (rs.next()){
+				sql = "update Targets SET Content=? where ID=1";
+			}else{
+				sql = "insert into Targets(ID,Content) values(1,?)";
+			}
+			
+			pres=conn.prepareStatement(sql);//预编译
+
+			String targetsJson = model.ToJson();
+			pres.setString(1,targetsJson);
+			int n = pres.executeUpdate();
+			if (n==1){
+				System.out.println("save targets successfully");
+				return true;//不影响finally的执行
+			}else {
+				System.out.println("save targets failed");
+				return false;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			e.printStackTrace(stderr);
+		} finally {
+			destroy();
+		}
+		return false;
+	}
+	
+	/**
+	 * 从数据库中读出存入的对象
+	 */
+	public TargetTableModel getTargets(){
+		try {
+			String sql="select * from Targets";
+			conn = getConnection();
+			pres=conn.prepareStatement(sql);
+			ResultSet res=pres.executeQuery();
+			while(res.next()){
+				String Content =res.getString("Content");//获取content部分的内容
+				return TargetTableModel.FromJson(Content);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			e.printStackTrace(stderr);
+		} finally {
+			destroy();
+		}
+		return null;
+	}
 
 	public synchronized boolean saveDomainObject(DomainManager domainResult){
 		try {
@@ -159,7 +230,7 @@ public class DBHelper {
 			
 			//让新增和更新的逻辑在一个语句中完成，减少查询。这是mysql中的语句，sqlit中不存在。
 			//String sql = "insert into DOMAINObject(ID,NAME,Content) values(1,?,?) ON DUPLICATE KEY UPDATE NAME=VALUES(NAME),Content=VALUES(Content)";
-			String name = domainResult.getProjectName();
+			String name = "domain_hunter_pro_by_bit4woo";
 			String content  = domainResult.ToJson();
 			pres=conn.prepareStatement(sql);//预编译
 

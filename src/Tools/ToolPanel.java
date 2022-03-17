@@ -1,15 +1,24 @@
 package Tools;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Desktop;
-import java.awt.Dimension;
-import java.awt.EventQueue;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import GUI.GUIMain;
+import burp.BurpExtender;
+import burp.Commons;
+import burp.IPAddressUtils;
+import domain.CertInfo;
+import domain.DomainPanel;
+import domain.DomainProducer;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.text.StringEscapeUtils;
+import title.WebIcon;
+import title.search.History;
+
+import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -17,49 +26,10 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.PrintWriter;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
-import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.text.StringEscapeUtils;
-
-import GUI.GUI;
-import burp.BurpExtender;
-import burp.Commons;
-import domain.CertInfo;
-import domain.DomainProducer;
-import title.WebIcon;
-import title.search.History;
 
 /*
  * 所有配置的修改，界面的操作，都立即写入LineConfig对象，如有必要保存到磁盘，再调用一次SaveConfig函数，思路要清晰
@@ -105,29 +75,14 @@ public class ToolPanel extends JPanel {
 	 */
 	public void loadConfigToGUI(String projectConfigFile) {
 		BurpExtender.getStdout().println("Loading Tool Panel Config From Disk");
-//		String content = BurpExtender.getCallbacks().loadExtensionSetting(BurpExtender.Extension_Setting_Name_Line_Config);
-//		if (content == null) {
-//			lineConfig = LineConfig.loadFromDisk();
-//		}else {
-//			lineConfig = LineConfig.FromJson(content);
-//		}
-		if (projectConfigFile == null) {
-			lineConfig = new LineConfig();
-		}else {
-			lineConfig = LineConfig.loadFromDisk(projectConfigFile);//projectConfigFile可能为null
-		}
-		
-		if (lineConfig == null) {
-			BurpExtender.getStdout().println("Loading From Disk Failed, Use Default");
-			lineConfig = new LineConfig();
-		}
-		
+		lineConfig = LineConfig.loadFromDisk(projectConfigFile);//projectConfigFile可能为null
+
 		History.setInstance(lineConfig.getSearchHistory());
 		
 		String dbFilePath = lineConfig.getDbfilepath();
 		
 		if (dbFilePath != null && dbFilePath.endsWith(".db")) {
-			GUI.LoadData(dbFilePath);
+			GUIMain.LoadData(dbFilePath);
 		}
 		//这里的修改也会触发textFieldListener监听器。
 		//由于我们是多个组件共用一个保存逻辑，当前对一个组件设置值的时候，触发保存，从而导致整体数据的修改！！！
@@ -248,6 +203,7 @@ public class ToolPanel extends JPanel {
 		inputTextArea.setColumns(20);
 		inputTextArea.setLineWrap(true);
 		inputTextArea.getDocument().addDocumentListener(new textAreaListener());
+		inputTextArea.addMouseListener(new TextAreaMouseListener(inputTextArea));
 		oneFourthPanel.setViewportView(inputTextArea);
 		
 		Border blackline = BorderFactory.createLineBorder(Color.black);
@@ -259,6 +215,7 @@ public class ToolPanel extends JPanel {
 
 		outputTextArea = new JTextArea();
 		outputTextArea.setLineWrap(true);
+		outputTextArea.addMouseListener(new TextAreaMouseListener(outputTextArea));
 		twoFourthPanel.setViewportView(outputTextArea);
 		
 		JLabel lblNewLabel_3 = new JLabel("Output");
@@ -285,7 +242,7 @@ public class ToolPanel extends JPanel {
 					ArrayList<String> tmpList = new ArrayList<String>(domains);
 					Collections.sort(tmpList,new DomainComparator());
 					outputTextArea.setText(String.join(System.lineSeparator(), tmpList));
-					BurpExtender.liveAnalysisTread.classifyDomains(domains);
+					DomainPanel.getDomainResult().addIfValid(domains);
 				}
 			}
 		});
@@ -741,7 +698,7 @@ public class ToolPanel extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				try {
 					List<String> IPs = Commons.getLinesFromTextArea(inputTextArea);
-					Set<String> subnets = Commons.toSmallerSubNets(new HashSet<String>(IPs));
+					Set<String> subnets = IPAddressUtils.toSmallerSubNets(new HashSet<String>(IPs));
 					outputTextArea.setText(String.join(System.lineSeparator(), subnets));
 				} catch (Exception e1) {
 					outputTextArea.setText(e1.getMessage());
@@ -757,7 +714,7 @@ public class ToolPanel extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				try {
 					List<String> subnets = Commons.getLinesFromTextArea(inputTextArea);
-					List<String> IPs = Commons.toIPList(subnets);// 当前所有title结果计算出的IP集合
+					List<String> IPs = IPAddressUtils.toIPList(subnets);// 当前所有title结果计算出的IP集合
 					outputTextArea.setText(String.join(System.lineSeparator(), IPs));
 				} catch (Exception e1) {
 					outputTextArea.setText(e1.getMessage());

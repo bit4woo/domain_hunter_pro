@@ -10,7 +10,7 @@ import org.apache.commons.io.FileUtils;
 
 import com.google.gson.Gson;
 
-import GUI.GUI;
+import GUI.GUIMain;
 import burp.BurpExtender;
 import burp.Commons;
 import domain.DomainPanel;
@@ -233,16 +233,17 @@ public class LineConfig {
 
 
 	public String saveToDisk() {
-		File localFile = new File(localdir+File.separator+DomainPanel.getDomainResult().getProjectName());
 		try {
 			ToolPanel.saveToConfigFromGUI();
-			this.setDbfilepath(GUI.currentDBFile.getAbsolutePath());
 			this.setSearchHistory(History.getInstance());
+			this.setDbfilepath(GUIMain.getCurrentDBFile().getAbsolutePath());
 		} catch (Exception e1) {
 			e1.printStackTrace();
 			e1.printStackTrace(BurpExtender.getStderr());
 		}
+		
 		try {
+			File localFile = new File(localdir+File.separator+GUIMain.getCurrentDBFile().getName()+".config");
 			FileUtils.write(localFile, this.ToJson());
 			BurpExtender.getStdout().println("Saving Tool Panel Config To Disk");
 			return localFile.toString();
@@ -254,6 +255,9 @@ public class LineConfig {
 	}
 
 	public static LineConfig loadFromDisk(String projectFile) {
+		if (projectFile == null) {
+			return new LineConfig();
+		}
 		try {
 			File localFile = new File(projectFile);
 			if (localFile.exists()) {

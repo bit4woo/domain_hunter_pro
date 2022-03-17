@@ -8,8 +8,10 @@ import java.util.concurrent.BlockingQueue;
 
 import burp.BurpExtender;
 import burp.Commons;
+import burp.DomainNameUtils;
 import burp.IBurpExtenderCallbacks;
 import burp.IExtensionHelpers;
+import burp.IPAddressUtils;
 
 /**
  * 执行DNS解析的线程
@@ -52,13 +54,13 @@ public class IPProducer extends Thread {//Producer do
 
 				Set<String> IPSet;
 				Set<String> CDNSet;
-				if (Commons.isValidIP(host)) {
+				if (IPAddressUtils.isValidIP(host)) {
 					IPSet = new HashSet<>();
 					IPSet.add(host);
 					CDNSet = new HashSet<>();
 					CDNSet.add("");
 				}else {
-					HashMap<String,Set<String>> result = Commons.dnsquery(host);
+					HashMap<String,Set<String>> result = DomainNameUtils.dnsquery(host);
 					IPSet = result.get("IP");
 
 					CDNSet = result.get("CDN");

@@ -26,7 +26,7 @@ import javax.swing.SwingWorker;
 
 import GUI.LineEntryMenuForBurp;
 import GUI.RunnerGUI;
-import GUI.GUI;
+import GUI.GUIMain;
 import Tools.ToolPanel;
 import burp.BurpExtender;
 import burp.Commons;
@@ -70,7 +70,7 @@ public class GetTitleMenu extends JPopupMenu {
 					@Override
 					protected Map doInBackground() throws Exception {
 						getTitleItem.setEnabled(false);
-						GUI.getTitlePanel().getAllTitle();
+						GUIMain.getTitlePanel().getAllTitle();
 						//btnGettitle.setEnabled(true);
 						return new HashMap<String, String>();
 						//no use ,the return.
@@ -97,7 +97,7 @@ public class GetTitleMenu extends JPopupMenu {
 					@Override
 					protected Map doInBackground() throws Exception {
 						GetExtendtitleItem.setEnabled(false);
-						GUI.getTitlePanel().getExtendTitle();
+						GUIMain.getTitlePanel().getExtendTitle();
 						//btnGetExtendtitle.setEnabled(true);
 						return new HashMap<String, String>();
 						//no use ,the return.
@@ -123,7 +123,7 @@ public class GetTitleMenu extends JPopupMenu {
 					@Override
 					protected Map doInBackground() throws Exception {
 						GettitleOfJustNewFoundItem.setEnabled(false);
-						GUI.getTitlePanel().getTitleOfNewDomain();
+						GUIMain.getTitlePanel().getTitleOfNewDomain();
 						return new HashMap<String, String>();
 						//no use ,the return.
 					}
@@ -154,7 +154,7 @@ public class GetTitleMenu extends JPopupMenu {
 
 						int publicSubnets = JOptionPane.showConfirmDialog(null,"Just get [Pulic] IP Subnets ?");
 
-						String subnetsString = GUI.getTitlePanel().getSubnet(result == JOptionPane.YES_OPTION?true:false,publicSubnets == JOptionPane.YES_OPTION?true:false);
+						String subnetsString = GUIMain.getTitlePanel().getSubnet(result == JOptionPane.YES_OPTION?true:false,publicSubnets == JOptionPane.YES_OPTION?true:false);
 
 						Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 						StringSelection selection = new StringSelection(subnetsString);

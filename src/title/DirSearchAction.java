@@ -20,7 +20,7 @@ class DirSearchAction implements ActionListener{
 	@Override
 	public void actionPerformed(ActionEvent actionEvent) {
 		try{
-			java.util.List<String> urls = lineTable.getModel().getURLs(rows);
+			java.util.List<String> urls = lineTable.getLineTableModel().getURLs(rows);
 			for(String url:urls) {
 				//python dirsearch.py -t 8 --proxy=localhost:7890 --random-agent -e * -f -x 400,404,500,502,503,514,550,564 -u url
 				String cmd = ToolPanel.getLineConfig().getDirSearchPath().replace("{url}", url);

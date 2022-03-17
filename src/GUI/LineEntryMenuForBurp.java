@@ -96,23 +96,16 @@ public class LineEntryMenuForBurp{
 
 			JMenu domainHunterPro = new JMenu("^_^ Domain Hunter Pro");
 			if (!ProjectMenu.isAlone()) {
-				String proName = DomainPanel.getDomainResult().getProjectName();
-				domainHunterPro.setText(String.format("^_^ Domain Hunter Pro [%s]",proName));
+				String fileName = GUIMain.getCurrentDBFile().getName();
+				domainHunterPro.setText(String.format("^_^ Domain Hunter Pro [%s]",fileName));
 			}
 			result.add(domainHunterPro);
 			for (JMenuItem item : JMenuItemList) {
 				domainHunterPro.add(item);
 			}
 			return result;
-		}else {
-			if (!ProjectMenu.isAlone()) {
-				String proName = DomainPanel.getDomainResult().getProjectName();
-				for (JMenuItem item : JMenuItemList) {
-					item.setText("^_^ "+proName+"-->"+item.getText().replace("^_^ ", ""));
-				}
-			}
-			return JMenuItemList;
 		}
+		return JMenuItemList;
 	}
 
 	public static void addLevelABC(JMenu topMenu,final LineTable lineTable, final int[] rows){
@@ -123,7 +116,7 @@ public class LineEntryMenuForBurp{
 
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					lineTable.getModel().updateAssetTypeOfRows(rows,e.getActionCommand());
+					lineTable.getLineTableModel().updateAssetTypeOfRows(rows,e.getActionCommand());
 				}
 
 			});
@@ -135,8 +128,7 @@ public class LineEntryMenuForBurp{
 	/**
 	 * 将查找行为放在事件触发之后进行。
 	 * @param topMenu
-	 * @param lineTable
-	 * @param rows
+	 * @param messages
 	 */
 	public static void createSubMenu(JMenu topMenu, IHttpRequestResponse[] messages){
 		String[] MainMenu = LineEntry.AssetTypeArray;
@@ -482,7 +474,7 @@ public class LineEntryMenuForBurp{
 					}
 
 					if (entry != null) {
-						int index = TitlePanel.getTitleTable().getModel().getLineEntries().IndexOfKey(entry.getUrl());
+						int index = TitlePanel.getTitleTable().getLineTableModel().getLineEntries().IndexOfKey(entry.getUrl());
 
 						addLevelABC(topMenu,TitlePanel.getTitleTable(),new int[] {index});
 						System.out.println("111");
@@ -525,9 +517,9 @@ public class LineEntryMenuForBurp{
 		DomainManager domainResult = DomainPanel.getDomainResult();
 		for(IHttpRequestResponse message:messages) {
 			String host = message.getHttpService().getHost();
-			domainResult.addToRootDomainAndSubDomain(host,true);
+			domainResult.addToTargetAndSubDomain(host,true);
 		}
-		DomainPanel.autoSave();
+		DomainPanel.saveDomainDataToDB();
 	}
 
 
@@ -542,6 +534,7 @@ public class LineEntryMenuForBurp{
 
 			LineEntry newEntry = new LineEntry(message);
 			newEntry.setComment("Manual-Saved");
+			newEntry.setEntryType(LineEntry.EntryType_Manual_Saved);
 			newEntry.setCheckStatus(LineEntry.CheckStatus_UnChecked);
 			newEntry.setManualSaved(true);
 

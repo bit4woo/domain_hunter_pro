@@ -1,48 +1,43 @@
 package GUI;
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Frame;
-import java.awt.event.ActionEvent;
-import java.io.File;
-import java.util.List;
-
-import javax.swing.AbstractAction;
-import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JTabbedPane;
-
 import burp.BurpExtender;
 import burp.DBHelper;
 import domain.DomainManager;
 import domain.DomainPanel;
+import domain.target.TargetEntry;
+import domain.target.TargetTable;
 import title.IndexedLinkedHashMap;
 import title.LineEntry;
 import title.TitlePanel;
 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.io.File;
+import java.util.List;
+import java.util.Map;
+
 public class ProjectMenu extends JMenu{
-	GUI gui;
+	GUIMain gui;
 	JMenuItem lockMenu;
 
-	public static void createNewDb(GUI gui) {
-		File file = GUI.dbfc.dialog(false,".db");//通过保存对话指定文件，这会是一个空文件。
+	public static void createNewDb(GUIMain gui) {
+		File file = GUIMain.dbfc.dialog(false,".db");//通过保存对话指定文件，这会是一个空文件。
 		if (null != file) {
 			DomainPanel.setDomainResult(new DomainManager(file.getName()));
 			gui.saveData(file.toString(),true);
-			GUI.LoadData(file.toString());//然后加载，就是一个新的空项目了。
+			GUIMain.LoadData(file.toString());//然后加载，就是一个新的空项目了。
 		}
 	}
 
 	public static void openDb() {
-		File file = GUI.dbfc.dialog(true,".db");
+		File file = GUIMain.dbfc.dialog(true,".db");
 		if (null != file) {
-			GUI.LoadData(file.toString());
+			GUIMain.LoadData(file.toString());
 		}
 	}
 
-	public ProjectMenu(GUI gui){
+	public ProjectMenu(GUIMain gui){
 		this.gui = gui;
 		this.setText("DomainHunter");
 
@@ -83,13 +78,20 @@ public class ProjectMenu extends JMenu{
 				DBHelper dbhelper = new DBHelper(file.getAbsolutePath());
 				DomainManager NewManager = dbhelper.getDomainObj();
 
-				DomainPanel.getDomainResult().getRootDomainMap().putAll(NewManager.getRootDomainMap());//合并rootDomain
+				IndexedLinkedHashMap<String, TargetEntry> entries = TargetTable.rootDomianToTarget(NewManager);
+				for (TargetEntry entry:entries.values()){
+					DomainPanel.fetchTargetModel().addRowIfValid(entry);
+				}
+
+				//DomainPanel.getDomainResult().getRootDomainMap().putAll(NewManager.getRootDomainMap());//合并rootDomain
 				DomainPanel.getDomainResult().getRelatedDomainSet().addAll(NewManager.getRelatedDomainSet());
 				DomainPanel.getDomainResult().getSubDomainSet().addAll(NewManager.getSubDomainSet());
 				DomainPanel.getDomainResult().getSimilarDomainSet().addAll(NewManager.getSimilarDomainSet());
 				DomainPanel.getDomainResult().getEmailSet().addAll(NewManager.getEmailSet());
 				DomainPanel.getDomainResult().getPackageNameSet().addAll(NewManager.getPackageNameSet());
-				GUI.getDomainPanel().showToDomainUI();
+
+				GUIMain.getDomainPanel().showDataToDomainGUI();
+				DomainPanel.saveDomainDataToDB();
 
 				IndexedLinkedHashMap<String, LineEntry> titles = dbhelper.getTitles();
 				for (LineEntry entry:titles.values()) {
@@ -106,32 +108,43 @@ public class ProjectMenu extends JMenu{
 		/**
 		 * 导入文本文件，将数据和当前DB文件进行合并。
 		 * domain Panel中的内容是集合的合并,无需考虑覆盖问题;
-		 * 
+		 *
 		 */
 		JMenuItem ImportFromTextFileMenu = new JMenuItem(new AbstractAction("Import Domain List") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				DomainPanel.backupDB();//导入前的备份。
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+					@Override
+					protected Map doInBackground() throws Exception {
+						DomainPanel.backupDB();//导入前的备份。
 
-				File file = gui.dbfc.dialog(true,".txt");
-				if (null ==file) {
-					return;
-				}
-
-				DictFileReader readline = new DictFileReader(file.getAbsolutePath());
-				while(true){
-					List<String> tmp = readline.next(10000,"");
-					if (tmp.size() == 0) {
-						BurpExtender.getStdout().println("Import from file: "+file.getAbsolutePath()+" done");
-						break;
-					}else {
-						for (String item:tmp) {
-							DomainPanel.getDomainResult().addIfValid(item);
+						File file = gui.dbfc.dialog(true,".txt");
+						if (null ==file) {
+							return null;
 						}
-					}
-				}
 
-				GUI.getDomainPanel().showToDomainUI();
+						DictFileReader readline = new DictFileReader(file.getAbsolutePath());
+						while(true){
+							List<String> tmp = readline.next(10000,"");
+							if (tmp.size() == 0) {
+								BurpExtender.getStdout().println("Import from file: "+file.getAbsolutePath()+" done");
+								break;
+							}else {
+								for (String item:tmp) {
+									DomainPanel.getDomainResult().addIfValid(item);
+								}
+							}
+						}
+
+						GUIMain.getDomainPanel().showDataToDomainGUI();
+						GUIMain.getDomainPanel().saveDomainDataToDB();
+						return null;
+					}
+					@Override
+					protected void done() {
+					}
+				};
+				worker.execute();
 			}
 		});
 		ImportMenu.setToolTipText("Import Domain From Text File");
@@ -158,7 +171,7 @@ public class ProjectMenu extends JMenu{
 		this.add(lockMenu);
 
 		//为了菜单能够区分
-		File dbFile = GUI.getCurrentDBFile();
+		File dbFile = GUIMain.getCurrentDBFile();
 		if (dbFile != null){
 			AddDBNameMenuItem(dbFile.getName());
 		}
@@ -230,7 +243,7 @@ public class ProjectMenu extends JMenu{
 			if (tmp.getName().equals("DomainHunterPro")){
 				ParentOfDomainHunter.setTitleAt(i,"xxxxx");//似乎burp不会刷新这个title的显示。
 
-				String tmpDbFile = ((GUI) tmp).currentDBFile.getName();
+				String tmpDbFile = ((GUIMain) tmp).getCurrentDBFile().getName();
 				if (tmpDbFile.equals(dbFileName)){
 					ParentOfDomainHunter.setTitleAt(i,tmpDbFile);
 				}
@@ -247,7 +260,7 @@ public class ProjectMenu extends JMenu{
 		for (int i=n-1;i>=0;i--){//倒序查找更快
 			Component tmp = ParentOfDomainHunter.getComponent(i);
 			if (tmp.getName().equals("DomainHunterPro")){
-				String tmpDbFile = ((GUI) tmp).currentDBFile.getName();
+				String tmpDbFile = ((GUIMain) tmp).getCurrentDBFile().getName();
 				if (tmpDbFile.equals(dbFileName)){
 					return i;
 				}

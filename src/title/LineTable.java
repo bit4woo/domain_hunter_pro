@@ -18,6 +18,7 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
 import Tools.ToolPanel;
@@ -36,13 +37,13 @@ public class LineTable extends JTable
 	 *
 	 */
 	private static final long serialVersionUID = 1L;
-	private LineTableModel lineTableModel;
 	private TableRowSorter<LineTableModel> tableRowSorter;//TableRowSorter vs. RowSorter
 
 	private IMessageEditor requestViewer;
 	private IMessageEditor responseViewer;
 	PrintWriter stdout;
 	PrintWriter stderr;
+	private LineTableModel lineTableModel;
 
 	private JSplitPane tableAndDetailSplitPane;//table area + detail area
 	public JSplitPane getTableAndDetailSplitPane() {
@@ -56,7 +57,7 @@ public class LineTable extends JTable
 	}
 
 	public LineEntry getRowAt(int row) {
-		return getModel().getLineEntries().getValueAtIndex(convertRowIndexToModel(row));
+		return getLineTableModel().getLineEntries().get(convertRowIndexToModel(row));
 	}
 
 	//将选中的行（图形界面的行）转换为Model中的行数（数据队列中的index）.因为图形界面排序等操作会导致图像和数据队列的index不是线性对应的。
@@ -82,10 +83,9 @@ public class LineTable extends JTable
 			stderr = new PrintWriter(System.out, true);
 		}
 
-		this.lineTableModel = lineTableModel;
 		this.setFillsViewportHeight(true);//在table的空白区域显示右键菜单
 		//https://stackoverflow.com/questions/8903040/right-click-mouselistener-on-whole-jtable-component
-		this.setModel(lineTableModel);
+		this.setLineTableModel(lineTableModel);
 
 		tableinit();
 		tableRowSorter = new TableRowSorter<LineTableModel>(lineTableModel);
@@ -103,19 +103,42 @@ public class LineTable extends JTable
 	public void changeSelection(int row, int col, boolean toggle, boolean extend)
 	{
 		// show the log entry for the selected row
-		//LineEntry Entry = this.lineTableModel.getLineEntries().getValueAtIndex(super.convertRowIndexToModel(row));
+		//LineEntry Entry = this.lineTableModel.getLineEntries().get(super.convertRowIndexToModel(row));
 		LineEntry Entry = this.getRowAt(row);
 
 		requestViewer.setMessage(Entry.getRequest(), true);
 		responseViewer.setMessage(Entry.getResponse(), false);
-		this.lineTableModel.setCurrentlyDisplayedItem(Entry);
+		getLineTableModel().setCurrentlyDisplayedItem(Entry);
 		super.changeSelection(row, col, toggle, extend);
 	}
 
+	
+	/**
+	 * 使用Jtable本身已实现的getModel和setModel函数，
+	 * 可以避免自行实现很多功能，比如：
+	 * 数据加载过程中，控制监听器等。
+	 */
 	@Override
-	public LineTableModel getModel(){
-		//return (LineTableModel) super.getModel();
+	public TableModel getModel(){
+		return super.getModel();
+	}
+
+	/**
+	 * 自己实现的逻辑中不要调用这个函数，它会被JTable的已有功能调用
+	 * @param dataModel
+	 */
+	@Override
+	public void setModel(TableModel dataModel) {
+		super.setModel(dataModel);
+	}
+
+	public LineTableModel getLineTableModel(){
 		return lineTableModel;
+	}
+
+	public void setLineTableModel(LineTableModel lineTableModel) {
+		this.lineTableModel = lineTableModel;//自己保存一份，避免调用getModel后进行类型转换失败。
+		setModel(lineTableModel);
 	}
 
 
@@ -141,8 +164,8 @@ public class LineTable extends JTable
 		JTabbedPane ResponsePanel = new JTabbedPane();
 		RequestDetailPanel.setRightComponent(ResponsePanel);
 
-		requestViewer = BurpExtender.getCallbacks().createMessageEditor(this.getModel(), false);
-		responseViewer = BurpExtender.getCallbacks().createMessageEditor(this.getModel(), false);
+		requestViewer = BurpExtender.getCallbacks().createMessageEditor(getLineTableModel(), false);
+		responseViewer = BurpExtender.getCallbacks().createMessageEditor(getLineTableModel(), false);
 		RequestPanel.addTab("Request", requestViewer.getComponent());
 		ResponsePanel.addTab("Response", responseViewer.getComponent());
 
@@ -173,15 +196,16 @@ public class LineTable extends JTable
 		preferredWidths.put("IconHash", "-17480088888".length());
 		for(String header:LineTableModel.getTitletList()){
 			try{//避免动态删除表字段时，出错
-				int multiNumber = preferredWidths.get(header);
-				this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex(header)).setPreferredWidth(width*multiNumber);
+				if (preferredWidths.keySet().contains(header)){
+					int multiNumber = preferredWidths.get(header);
+					this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex(header)).setPreferredWidth(width*multiNumber);
+				}
 			}catch (Exception e){
 
 			}
 		}
 		//this.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
 		this.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);//配合横向滚动条
-
 	}
 
 	@Deprecated//据说自动调整行宽度，测试了一下没用啊
@@ -233,7 +257,7 @@ public class LineTable extends JTable
 
 	@Deprecated //还是没能解决添加数据时排序报错的问题
 	public void addClickSort() {//双击header头进行排序
-		tableRowSorter = new TableRowSorter<LineTableModel>(lineTableModel);
+		tableRowSorter = new TableRowSorter<LineTableModel>((LineTableModel) dataModel);
 		setRowSorter(tableRowSorter);
 
 		JTableHeader header = this.getTableHeader();
@@ -279,7 +303,7 @@ public class LineTable extends JTable
 			public boolean include(Entry entry) {
 				//entry --- a non-null object that wraps the underlying object from the model
 				int row = (int) entry.getIdentifier();
-				LineEntry line = LineTable.this.getModel().getLineEntries().getValueAtIndex(row);
+				LineEntry line = getLineTableModel().getLineEntries().get(row);
 
 				//第一层判断，根据按钮状态进行判断，如果为true，进行后面的逻辑判断，false直接返回。
 				if (!LineSearch.entryNeedToShow(line)) {
@@ -328,7 +352,7 @@ public class LineTable extends JTable
 					int col = ((LineTable) e.getSource()).columnAtPoint(e.getPoint()); // 获得列位置
 					int modelCol = LineTable.this.convertColumnIndexToModel(col);
 
-					LineEntry selecteEntry = LineTable.this.lineTableModel.getLineEntries().getValueAtIndex(rows[0]);
+					LineEntry selecteEntry = getLineTableModel().getLineEntries().get(rows[0]);
 					if ((modelCol == LineTableModel.getTitletList().indexOf("#") )) {//双击index在google中搜索host。
 						String host = selecteEntry.getHost();
 						String url= "https://www.google.com/search?q=site%3A"+host;
@@ -363,7 +387,7 @@ public class LineTable extends JTable
 								selecteEntry.setTime(Commons.getNowTimeString());
 							}
 							stdout.println("$$$ "+selecteEntry.getUrl()+" status has been set to "+newStatus);
-							LineTable.this.lineTableModel.fireTableRowsUpdated(rows[0], rows[0]);
+							getLineTableModel().fireTableRowsUpdated(rows[0], rows[0]);
 						}catch (Exception e1){
 							e1.printStackTrace(stderr);
 						}
@@ -374,11 +398,11 @@ public class LineTable extends JTable
 						String newLevel = tmpList.get((index+1)%3);
 						selecteEntry.setAssetType(newLevel);
 						stdout.println(String.format("$$$ %s updated [AssetType-->%s]",selecteEntry.getUrl(),newLevel));
-						LineTable.this.lineTableModel.fireTableRowsUpdated(rows[0], rows[0]);
+						getLineTableModel().fireTableRowsUpdated(rows[0], rows[0]);
 					}else{//LineTableModel.getTitletList().indexOf("CDN|CertInfo")
 						//String value = TitlePanel.getTitleTable().getValueAt(rows[0], col).toString();//rows[0]是转换过的，不能再转换
 						//调用的是原始Jtable中的getValueAt，它本质上也是调用model中的getValueAt，但是有一次转换的过程！！！
-						String value = LineTable.this.lineTableModel.getValueAt(rows[0],modelCol).toString();
+						String value = getModel().getValueAt(rows[0],modelCol).toString();
 						//调用的是我们自己实现的TableModel类中的getValueAt,相比Jtable类中的同名方法，就少了一次转换的过程！！！
 						//String CDNAndCertInfo = selecteEntry.getCDN();
 						Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();

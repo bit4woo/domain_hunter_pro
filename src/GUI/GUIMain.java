@@ -6,19 +6,21 @@ import burp.Commons;
 import burp.DBHelper;
 import burp.dbFileChooser;
 import domain.DomainPanel;
+import domain.target.TargetTableModel;
 import title.TitlePanel;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.PrintWriter;
+import java.util.Map;
 
 
-public class GUI extends JFrame {
+public class GUIMain extends JFrame {
 
 	public static DomainPanel domainPanel;
 	public static TitlePanel titlePanel;
-	public static File currentDBFile;
+	private static File currentDBFile;
 	public static ProjectMenu projectMenu;
 	
 	private PrintWriter stdout;
@@ -32,7 +34,7 @@ public class GUI extends JFrame {
 	}
 
 	public static void setProjectMenu(ProjectMenu projectMenu) {
-		GUI.projectMenu = projectMenu;
+		GUIMain.projectMenu = projectMenu;
 	}
 
 	public static DomainPanel getDomainPanel() {
@@ -53,13 +55,13 @@ public class GUI extends JFrame {
 	}
 
 	public static void setCurrentDBFile(File currentDBFile) {
-		GUI.currentDBFile = currentDBFile;
+		GUIMain.currentDBFile = currentDBFile;
 	}
 
 	/**
 	 * Create the frame.
 	 */
-	public GUI() {//构造函数
+	public GUIMain() {//构造函数
 		try{
 			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
 			stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
@@ -102,23 +104,40 @@ public class GUI extends JFrame {
 		}
 	}
 
+	public static void LoadData(String dbFilePath){
+		SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+			@Override
+			protected Map doInBackground() throws Exception {
+				LoadDataPrivate(dbFilePath);
+				return null;
+			}
+			@Override
+			protected void done() {
+			}
+		};
+		worker.execute();
+	}
 
-	public static boolean LoadData(String dbFilePath){
+	private static boolean LoadDataPrivate(String dbFilePath){
 		try {//这其中的异常会导致burp退出
-			BurpExtender.clearQueue();//更换DB文件前进行，否则Queue中会包含之前的数据。
 			System.out.println("=================================");
-			System.out.println("==Start Loading Data From: " + dbFilePath+"==");
-			BurpExtender.getStdout().println("==Start Loading Data From: " + dbFilePath+"==");
+			System.out.println("==Start Loading Data From: " + dbFilePath+" "+Commons.getNowTimeString()+"==");
+			BurpExtender.getStdout().println("==Start Loading Data From: " + dbFilePath+" "+Commons.getNowTimeString()+"==");
 			currentDBFile = new File(dbFilePath);
+			GUIMain.setCurrentDBFile(currentDBFile);
+
 			DBHelper dbhelper = new DBHelper(dbFilePath);
-			DomainPanel.setDomainResult(dbhelper.getDomainObj());
-			domainPanel.showToDomainUI();
-			titlePanel.showToTitleUI(dbhelper.getTitles());
-			GUI.setCurrentDBFile(currentDBFile);
+
+			DomainPanel.setDomainResult(dbhelper.getDomainObj());//为了兼容就版本，
+			DomainPanel.getTargetTable().loadData(dbhelper.getTargets());
+			domainPanel.LoadData(dbhelper.getDomainObj());
+			titlePanel.loadData(dbhelper.getTitles());
+			
+
 			ToolPanel.getLineConfig().setDbfilepath(currentDBFile.getAbsolutePath());
-			GUI.displayProjectName();
-			System.out.println("==End Loading Data From: "+ dbFilePath +"==");//输出到debug console
-			BurpExtender.getStdout().println("==End Loading Data From: "+ dbFilePath +"==");
+			GUIMain.displayProjectName();
+			System.out.println("==End Loading Data From: "+ dbFilePath+" "+Commons.getNowTimeString() +"==");//输出到debug console
+			BurpExtender.getStdout().println("==End Loading Data From: "+ dbFilePath+" "+Commons.getNowTimeString() +"==");
 			return true;
 		} catch (Exception e) {
 			BurpExtender.getStdout().println("Loading Failed!");
@@ -131,15 +150,14 @@ public class GUI extends JFrame {
 	//显示项目名称，加载多个该插件时，进行区分，避免混淆
 	public static void displayProjectName() {
 		if (DomainPanel.getDomainResult() !=null){
-			//String name = GUI.currentDBFile.getName();
-			String name = DomainPanel.getDomainResult().getProjectName();
+			String name = GUIMain.currentDBFile.getName();
 			//String newName = String.format(BurpExtender.getFullExtenderName()+" [%s]",name);
 			//v2021.8的版本中，邮件菜单会用到插件名称，所以减小名称的长度
 			String newName = String.format(BurpExtender.getExtenderName()+" [%s]",name);
 			
 			BurpExtender.getCallbacks().setExtensionName(newName); //新插件名称
-			GUI.getProjectMenu().AddDBNameMenuItem(name);
-			GUI.getProjectMenu().AddDBNameTab(name);
+			GUIMain.getProjectMenu().AddDBNameMenuItem(name);
+			GUIMain.getProjectMenu().AddDBNameTab(name);
 			//gui.repaint();//NO need
 		}
 	}
@@ -159,9 +177,10 @@ public class GUI extends JFrame {
 						return true;
 					}
 				}else {
+					boolean targetSaved = dbHelper.saveTargets(DomainPanel.getTargetTable().getTargetModel());
 					boolean domainSaved = dbHelper.saveDomainObject(DomainPanel.getDomainResult());
 					boolean titleSaved = dbHelper.addTitles(TitlePanel.getTitleTableModel().getLineEntries());
-					if (domainSaved && titleSaved){
+					if (targetSaved && domainSaved && titleSaved){
 						stdout.println("Save Domain And Title Success! "+ Commons.getNowTimeString());
 						return true;
 					}
@@ -183,7 +202,7 @@ public class GUI extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					GUI frame = new GUI();
+					GUIMain frame = new GUIMain();
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();

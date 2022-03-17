@@ -20,6 +20,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import burp.BurpExtender;
 import burp.Commons;
+import burp.DomainNameUtils;
 import burp.IBurpExtenderCallbacks;
 import burp.IExtensionHelpers;
 import domain.DomainPanel;
@@ -62,7 +63,7 @@ class ThreadBruteDomain{
         stdout.println("checking wildcard DNS record");
         for (String rootDomain: rootDomains){
             String badDomain = "domain-hunter-pro-test."+rootDomain;
-            Set<String> ipset = Commons.dnsquery(badDomain).get("IP");
+            Set<String> ipset = DomainNameUtils.dnsquery(badDomain).get("IP");
             badRecords.put(rootDomain,ipset);
         }
 

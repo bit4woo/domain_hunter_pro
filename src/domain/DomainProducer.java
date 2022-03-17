@@ -1,42 +1,28 @@
 package domain;
 
+import Tools.PatternsFromAndroid;
+import Tools.ToolPanel;
+import burp.*;
+import domain.target.TargetEntry;
+import org.apache.commons.text.StringEscapeUtils;
+import title.LineEntry;
+import toElastic.ElasticClient;
+
 import java.io.PrintWriter;
 import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.text.StringEscapeUtils;
-
-import Tools.PatternsFromAndroid;
-import Tools.ToolPanel;
-import burp.BurpExtender;
-import burp.Commons;
-import burp.IBurpExtenderCallbacks;
-import burp.IExtensionHelpers;
-import burp.IHttpRequestResponse;
-import burp.IHttpService;
-import title.LineEntry;
-import toElastic.ElasticClient;
-
 public class DomainProducer extends Thread {//Producer do
 	private final BlockingQueue<IHttpRequestResponse> inputQueue;//use to store messageInfo
-	private final BlockingQueue<String> subDomainQueue;
-	private final BlockingQueue<String> similarDomainQueue;
-	private final BlockingQueue<String> relatedDomainQueue;
-	private final BlockingQueue<String> EmailQueue;
-	private final BlockingQueue<String> packageNameQueue;
-	private final BlockingQueue<String> TLDDomainQueue;
-	private BlockingQueue<String> httpsQueue = new LinkedBlockingQueue<>();//temp variable to identify checked https
+
 
 	private int threadNo;
 	private volatile boolean stopflag = false;
+	private volatile boolean currentSaved = false;//每分钟只保存一次的标志位
 
 	private static IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();//静态变量，burp插件的逻辑中，是可以保证它被初始化的。;
 	public PrintWriter stdout = new PrintWriter(callbacks.getStdout(), true);
@@ -44,21 +30,10 @@ public class DomainProducer extends Thread {//Producer do
 	public IExtensionHelpers helpers = callbacks.getHelpers();
 
 	public DomainProducer(BlockingQueue<IHttpRequestResponse> inputQueue,
-			BlockingQueue<String> subDomainQueue,
-			BlockingQueue<String> similarDomainQueue,
-			BlockingQueue<String> relatedDomainQueue,
-			BlockingQueue<String> EmailQueue,
-			BlockingQueue<String> packageNameQueue,
-			BlockingQueue<String> TLDDomainQueue,
-			int threadNo) {
+						  int threadNo) {
 		this.threadNo = threadNo;
 		this.inputQueue = inputQueue;
-		this.subDomainQueue = subDomainQueue;
-		this.similarDomainQueue = similarDomainQueue;
-		this.relatedDomainQueue = relatedDomainQueue;
-		this.EmailQueue = EmailQueue;
-		this.packageNameQueue = packageNameQueue;
-		this.TLDDomainQueue = TLDDomainQueue;
+		this.setName(this.getClass().getName()+threadNo);//方便调试
 		stopflag= false;
 	}
 
@@ -76,10 +51,24 @@ public class DomainProducer extends Thread {//Producer do
 						Thread.sleep(1*60*1000);
 						continue;
 					}
+
+					//每两分钟保存一次
+					if (Commons.getNowMinute()%2==0 ){
+						if (!currentSaved && DomainPanel.getDomainResult().isChanged()){
+							currentSaved = true;
+							DomainPanel.saveDomainDataToDB();
+						}
+					}else {
+						currentSaved = false;
+					}
+
 				}else {
-					if (inputQueue.isEmpty() || stopflag) {
-						//stdout.println("Producer break");
+					if (inputQueue.isEmpty()) {
+						stdout.println(this.getName()+" break due to input queue empty!");
 						break;
+					}
+					if (stopflag) {
+						stdout.println(this.getName()+" break due to stop flag changed to true");
 					}
 				}
 
@@ -92,34 +81,59 @@ public class DomainProducer extends Thread {//Producer do
 				String protocol =  httpservice.getProtocol();
 				String Host = httpservice.getHost();
 
-				//callbacks.printOutput(rootdomains.toString());
-				//callbacks.printOutput(keywords.toString());
-				int type = classifyDomain(Host);
+				//第一阶段：处理Host
+				//当Host是一个IP地址时，它也有可能是我们的目标。如果它的证书域名又在目标中，那么它就是目标。
+				int type = DomainPanel.fetchTargetModel().domainType(Host);
+
+				if (type ==DomainManager.USELESS){
+					continue;
+				}else if (type == DomainManager.NEED_CONFIRM_IP){
+					//当Host是一个IP，也有可能是目标，通过证书信息进一步判断。
+					if (protocol.equalsIgnoreCase("https")){
+						if (isTargetByCertInfoForTarget(shortURL)){
+
+							//确定这个IP是目标了，更新target
+							TargetEntry entry = new TargetEntry(Host);
+							entry.setComment("BaseOnCertInfo");
+							DomainPanel.fetchTargetModel().addRowIfValid(entry);
+
+							//重新判断类型，应该是确定的IP类型了。
+							type = DomainPanel.fetchTargetModel().domainType(Host);
+						}
+					}
+				}
+				DomainPanel.getDomainResult().addIfValid(Host);
+
+				//第二步：处理HTTPS证书
 				if (type !=DomainManager.USELESS && protocol.equalsIgnoreCase("https")){//get related domains
-					if (!httpsQueue.contains(shortURL)) {//httpService checked or not
-						httpsQueue.put(shortURL);//必须先添加，否则执行在执行https链接的过程中，已经有很多请求通过检测进行相同的请求了。
-						Set<String> tmpDomains = CertInfo.getSANsbyKeyword(shortURL,DomainPanel.domainResult.fetchKeywordSet());
+					if (BurpExtender.httpsChecked.add(shortURL)) {//httpService checked or not
+						//如果set中已存在，返回false，如果不存在，返回true。
+						//必须先添加，否则执行在执行https链接的过程中，已经有很多请求通过检测进行相同的请求了。
+						Set<String> tmpDomains = CertInfo.getSANsbyKeyword(shortURL,DomainPanel.fetchTargetModel().fetchKeywordSet());
 						for (String domain:tmpDomains) {
-							if (!relatedDomainQueue.contains(domain)) {
-								relatedDomainQueue.add(domain);
+							BurpExtender.getStdout().println("Target Related Asset Found :"+domain);
+							if (DomainPanel.getDomainResult().isAutoAddRelatedToRoot()){
+								DomainPanel.getDomainResult().addToTargetAndSubDomain(domain, true);
+							}else{
+								DomainPanel.getDomainResult().getRelatedDomainSet().add(domain);
 							}
 						}
 					}
 				}
 
-				//对所有流量都进行抓取，这样可以发现更多域名，但同时也会有很多无用功，尤其是使用者同时挖掘多个目标的时候
+				//第三步：对所有流量都进行抓取，这样可以发现更多域名，但同时也会有很多无用功，尤其是使用者同时挖掘多个目标的时候
 				if (!Commons.uselessExtension(urlString)) {//grep domains from response and classify
 					byte[] response = messageinfo.getResponse();
-					
+
 					if (response != null) {
 						if (response.length >= 100000000) {//避免大数据包卡死整个程序
 							response = subByte(response,0,100000000);
 						}
 						Set<String> domains = DomainProducer.grepDomain(new String(response));
-						classifyDomains(domains);
+						DomainPanel.getDomainResult().addIfValid(domains);
 					}
 				}
-				
+
 				if (ToolPanel.rdbtnSaveTrafficTo.isSelected()) {
 					if (type != DomainManager.USELESS && !Commons.uselessExtension(urlString)) {//grep domains from response and classify
 						if (threadNo == 9999) {
@@ -133,66 +147,34 @@ public class DomainProducer extends Thread {//Producer do
 						}
 					}
 				}
-			} catch (Exception error) {
+			} catch (InterruptedException error) {
+				BurpExtender.getStdout().println(this.getName() +" exits due to Interrupt signal received");
+			}catch (Exception error) {
 				error.printStackTrace(BurpExtender.getStderr());
 			}
 		}
 	}
 
-	public void classifyDomains(Set<String> domains) {
-		for (String domain:domains) {
-			classifyDomain(domain);
+	/**
+	 * 这个函数必须返回确定的目标！不能确定的认为是false
+	 * @param shortURL
+	 * @return
+	 */
+	public boolean isTargetByCertInfoForTarget(String shortURL) throws Exception {
+		Set<String> certDomains = CertInfo.getAllSANs(shortURL);
+		for (String domain : certDomains) {
+			int type = DomainPanel.fetchTargetModel().domainType(domain);
+			if (type == DomainManager.SUB_DOMAIN || type == DomainManager.TLD_DOMAIN) {
+				return true;
+			}
 		}
+		return false;
 	}
-	
+
 	public byte[] subByte(byte[] b,int srcPos,int length){
 		byte[] b1 = new byte[length];
 		System.arraycopy(b, srcPos, b1, 0, length);
 		return b1;
-	}
-
-	public int classifyDomain(String domain) {
-		int type = DomainPanel.domainResult.domainType(domain);
-		if (type == DomainManager.SUB_DOMAIN)
-		{
-			if (!subDomainQueue.contains(domain)) {
-				stdout.println("domain found: "+domain);
-				subDomainQueue.add(domain);
-			}
-		}else if (type == DomainManager.SIMILAR_DOMAIN) {
-			similarDomainQueue.add(domain);
-		}else if (type == DomainManager.PACKAGE_NAME) {
-			packageNameQueue.add(domain);
-		}else if (type == DomainManager.TLD_DOMAIN) {
-			TLDDomainQueue.add(domain);
-		}
-		return type;
-	}
-
-	@Deprecated //从burp的Email addresses disclosed这个issue中提取，废弃这个
-	public void classifyEmails(IHttpRequestResponse messageinfo) {
-		byte[] response = messageinfo.getResponse();
-		if (response != null) {
-			Set<String> emails = DomainProducer.grepEmail(new String(response));
-			for (String email:emails) {
-				if (DomainPanel.domainResult.isRelatedEmail(email)) {
-					EmailQueue.add(email);
-				}
-			}
-			//EmailQueue.addAll(emails);
-		}
-	}
-
-	@Deprecated
-	public static String cleanResponse(String response) {
-		String[] toReplace = {"<em>","<b>","</b>","</em>","<strong>","</strong>","<wbr>","</wbr>",">", ":", "=", "<", "/", "\\", ";", "&", "%3A", "%3D", "%3C"};
-
-		for (String item:toReplace) {
-			if (response.toLowerCase().contains(item)) {
-				response = response.replaceAll(item, "");
-			}
-		}
-		return response;
 	}
 
 	/**
@@ -222,7 +204,7 @@ public class DomainProducer extends Thread {//Producer do
 			}
 		}
 		 */
-		
+
 		if (needUnicodeConvert(line)) {
 			while (true) {//unicode解码
 				try {
@@ -267,10 +249,10 @@ public class DomainProducer extends Thread {//Producer do
 		//httpResponse = cleanResponse(httpResponse);
 		Set<String> domains = new HashSet<>();
 		//"^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$"
-		final String DOMAIN_NAME_PATTERN = "([A-Za-z0-9-*]{1,63}(?<!-)\\.)+[A-Za-z]{2,6}";
+		final String DOMAIN_NAME_PATTERN = "((?!-)[A-Za-z0-9-*]{1,63}(?<!-)\\.)+[A-Za-z]{2,6}";
 		//加*号是为了匹配 类似 *.baidu.com的这种域名记录。
 
-		String[] lines = httpResponse.split("\r\n");
+		List<String> lines = Commons.textToLines(httpResponse);
 
 		for (String line:lines) {//分行进行提取，似乎可以提高成功率？
 			line = decodeAll(line);
@@ -360,7 +342,7 @@ public class DomainProducer extends Thread {//Producer do
 		}
 
 		List<String> tmplist= new ArrayList<>(IPSet);
-		Collections.sort(tmplist);		
+		Collections.sort(tmplist);
 		return tmplist;
 	}
 
@@ -379,7 +361,7 @@ public class DomainProducer extends Thread {//Producer do
 		}
 
 		List<String> tmplist= new ArrayList<>(IPSet);
-		Collections.sort(tmplist);		
+		Collections.sort(tmplist);
 		return tmplist;
 	}
 
@@ -421,16 +403,21 @@ public class DomainProducer extends Thread {//Producer do
 	}
 
 	public static void main(String[] args) {
-		test1();
+		test3();
 	}
+
+	public static void test3(){
+		System.out.println(grepDomain("aaa -qq*.baidu.com  bbb"));
+	}
+
 	public static void test2() {
-		String tmpDomain = "*.baidu.com";
+		String tmpDomain = "aaa *.baidu.com  bbb";
 		if (tmpDomain.startsWith("*.")) {
 			tmpDomain = tmpDomain.replaceFirst("\\*\\.","");//第一个参数是正则
 		}
 		System.out.println(tmpDomain);
 	}
-	
+
 	public static void test1() {
 		String line = "\"%.@.\\\"xsrf\\\",";
 		System.out.println(needURLConvert(line));
