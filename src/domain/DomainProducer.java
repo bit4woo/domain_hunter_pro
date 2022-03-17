@@ -249,10 +249,10 @@ public class DomainProducer extends Thread {//Producer do
 		//httpResponse = cleanResponse(httpResponse);
 		Set<String> domains = new HashSet<>();
 		//"^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$"
-		final String DOMAIN_NAME_PATTERN = "([A-Za-z0-9-*]{1,63}(?<!-)\\.)+[A-Za-z]{2,6}";
+		final String DOMAIN_NAME_PATTERN = "((?!-)[A-Za-z0-9-*]{1,63}(?<!-)\\.)+[A-Za-z]{2,6}";
 		//加*号是为了匹配 类似 *.baidu.com的这种域名记录。
 
-		String[] lines = httpResponse.split("\r\n");
+		List<String> lines = Commons.textToLines(httpResponse);
 
 		for (String line:lines) {//分行进行提取，似乎可以提高成功率？
 			line = decodeAll(line);
@@ -403,10 +403,15 @@ public class DomainProducer extends Thread {//Producer do
 	}
 
 	public static void main(String[] args) {
-		test1();
+		test3();
 	}
+
+	public static void test3(){
+		System.out.println(grepDomain("aaa -qq*.baidu.com  bbb"));
+	}
+
 	public static void test2() {
-		String tmpDomain = "*.baidu.com";
+		String tmpDomain = "aaa *.baidu.com  bbb";
 		if (tmpDomain.startsWith("*.")) {
 			tmpDomain = tmpDomain.replaceFirst("\\*\\.","");//第一个参数是正则
 		}
