@@ -7,7 +7,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.bit4woo.burp</groupId>
 	<artifactId>domain_hunter_pro</artifactId>
-	<version>v1.5-dev</version>
+	<version>v1.6</version>
 
 	<!-- <repositories> <repository> <id>jitpack.io</id> <url>https://jitpack.io</url> 
 		</repository> </repositories> -->
@@ -185,7 +185,7 @@
 		<dependency>
 			<groupId>org.beanshell</groupId>
 			<artifactId>bsh</artifactId>
-			<version>[2.0b5,)</version>
+			<version>[2.0b6,)</version>
 		</dependency>
 
 		<dependency>
