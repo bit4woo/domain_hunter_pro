@@ -472,11 +472,24 @@ public class DomainPanel extends JPanel {
 		rdbtnAddRelatedToRoot.setVerticalAlignment(SwingConstants.TOP);
 		rdbtnAddRelatedToRoot.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				domainResult.autoAddRelatedToRoot = rdbtnAddRelatedToRoot.isSelected();
-				if (domainResult.autoAddRelatedToRoot) {
-					showDataToDomainGUI();
-					saveDomainDataToDB();
-				}
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+					@Override
+					protected Map doInBackground() throws Exception {
+						rdbtnAddRelatedToRoot.setEnabled(false);
+						domainResult.autoAddRelatedToRoot = rdbtnAddRelatedToRoot.isSelected();
+						try {
+							if (domainResult.autoAddRelatedToRoot) {
+								showDataToDomainGUI();
+								saveDomainDataToDB();
+							}
+						} catch (Exception exception) {
+							exception.printStackTrace(stderr);
+						}
+						rdbtnAddRelatedToRoot.setEnabled(true);
+						return null;
+					}
+				};
+				worker.execute();
 			}
 		});
 		autoControlPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
