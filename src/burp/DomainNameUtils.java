@@ -199,6 +199,8 @@ public class DomainNameUtils {
 	/**
 	 * 是否是TLD域名。比如 baidu.net 是baidu.com的TLD域名
 	 * 注意：www.baidu.com不是baidu.com的TLD域名，但是是子域名！！！
+	 *
+	 * 这里的rootDomain不一定是 topPrivate。比如 shopeepay.shopee.sg 和shopeepay.shopee.io
 	 * @param domain
 	 * @param rootDomain
 	 */
@@ -209,9 +211,11 @@ public class DomainNameUtils {
 			if (suffixDomain != null && suffixRootDomain != null){
 				String suffixOfDomain = suffixDomain.toString();
 				String suffixOfRootDomain = suffixRootDomain.toString();
+				//域名后缀比较
 				if (suffixOfDomain.equalsIgnoreCase(suffixOfRootDomain)) {
 					return false;
 				}
+				//去除后缀然后比较
 				String tmpDomain = Commons.replaceLast(domain, suffixOfDomain, "");
 				String tmpRootdomain = Commons.replaceLast(rootDomain, suffixOfRootDomain, "");
 				if (tmpDomain.endsWith("."+tmpRootdomain) || tmpDomain.equalsIgnoreCase(tmpRootdomain)) {
@@ -227,9 +231,32 @@ public class DomainNameUtils {
 		}
 	}
 
+	/**
+	 * 由于这里的rootDomain是我们自己指定的不一定是topPrivate。
+	 * 比如 shopeepay.shopee.sg 和shopeepay.shopee.io 应该返回false
+	 * 比如 shopeepay.shopee.sg shopee.io 应该返回true
+	 *
+	 * @param domain
+	 * @param rootDomain
+	 * @return
+	 */
+	public static boolean isTLDDomainOfTopPrivate(String domain,String rootDomain) {
+		try {
+			if(isTLDDomain(domain,rootDomain)){
+				return !InternetDomainName.from(rootDomain).hasParent();
+			}
+			return false;
+		}catch (java.lang.IllegalArgumentException e){
+			return false;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
 	public static void main(String[] args) {
-		System.out.println(isValidDomain("-baidu.com"));
-		System.out.println(isValidDomain("www1.baidu.com"));
-		System.out.println(isValidDomain("aaaaaaaaa-aaaaaaaaaaaaaaa-aaaaaaaaaaaaaa.www1.baidu.com"));
+		System.out.println(isTLDDomain("shopeepay.shopee.sg","shopeepay.com"));
+		//System.out.println(isValidDomain("www1.baidu.com"));
+		//System.out.println(isValidDomain("aaaaaaaaa-aaaaaaaaaaaaaaa-aaaaaaaaaaaaaa.www1.baidu.com"));
 	}
 }

@@ -50,7 +50,7 @@ public class DomainManager {
     public static int SIMILAR_DOMAIN = 1;
     public static int IP_ADDRESS = 2;
     public static int PACKAGE_NAME = 3;
-    public static int TLD_DOMAIN = 4; //比如baidu.net是baidu.com的TLD domain。
+    public static int TLD_DOMAIN = 4; //比如baidu.net是baidu.com的TLD domain。xxx.baiu.net和xxx.baidu.com也是
     public static int NEED_CONFIRM_IP = 5; //根据目标无法判断的类型。
     public static int USELESS = -1;
     //public static int BLACKLIST = -2;
@@ -306,6 +306,13 @@ public class DomainManager {
         DomainPanel.fetchTargetModel().addRowIfValid(new TargetEntry(enteredRootDomain, autoSub));
     }
 
+    public void addTLDToTargetAndSubDomain(String enteredRootDomain) {
+        if (enteredRootDomain == null) return;
+        String tldDomainToAdd  = DomainPanel.fetchTargetModel().getTLDDomainToAdd(enteredRootDomain);
+        TargetEntry tmp = new TargetEntry(tldDomainToAdd, false);
+        DomainPanel.fetchTargetModel().addRowIfValid(tmp);
+    }
+
     public void addIfValid(Set<String> domains) {
         for (String domain:domains) {
             addIfValid(domain);
@@ -326,10 +333,11 @@ public class DomainManager {
         if (type !=DomainManager.USELESS && type!= DomainManager.NEED_CONFIRM_IP){
             BurpExtender.getStdout().println("Target Asset Found: "+domain);
         }
-
         if (type == DomainManager.TLD_DOMAIN) {
             //应当先做TLD域名的添加，这样可以丰富Root域名，避免数据损失遗漏
-            addToTargetAndSubDomain(domain, true);
+            //这里的rootDomain不一定是topPrivate。比如 shopeepay.shopee.sg 和shopeepay.shopee.io
+            //这个时候就不能自动取topPrivate。
+            addTLDToTargetAndSubDomain(domain);
             return true;
         } else if (type == DomainManager.SUB_DOMAIN) {//包含手动添加的IP
             subDomainSet.add(domain);//子域名可能来自相关域名和相似域名。

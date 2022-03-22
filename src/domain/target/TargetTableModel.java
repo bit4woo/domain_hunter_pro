@@ -568,6 +568,26 @@ public class TargetTableModel extends AbstractTableModel {
 		}
 	}
 
+	public String getTLDDomainToAdd(String domain) {
+		domain = DomainNameUtils.cleanDomain(domain);
+		Set<String> targetDomains = fetchTargetDomainSet();
+		for (String rootdomain : targetDomains) {
+			rootdomain = DomainNameUtils.cleanDomain(rootdomain);
+			if (DomainNameUtils.isTLDDomain(domain, rootdomain)) {
+				InternetDomainName suffixDomain = InternetDomainName.from(domain).publicSuffix();
+				InternetDomainName suffixRootDomain = InternetDomainName.from(rootdomain).publicSuffix();
+				if (suffixDomain != null && suffixRootDomain != null) {
+					String suffixOfDomain = suffixDomain.toString();
+					String suffixOfRootDomain = suffixRootDomain.toString();
+
+					String result = Commons.replaceLast(rootdomain, suffixOfRootDomain, suffixOfDomain);
+					return result;
+				}
+			}
+		}
+		return domain;
+	}
+
 	public boolean isRelatedEmail(String email) {
 		for (String keyword:fetchKeywordSet()) {
 			if (!keyword.equals("") && keyword.length() >= 2 && email.contains(keyword)) {
