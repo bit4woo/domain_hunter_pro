@@ -475,10 +475,11 @@ public class DomainPanel extends JPanel {
 				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
 					@Override
 					protected Map doInBackground() throws Exception {
-						rdbtnAddRelatedToRoot.setEnabled(false);
 						domainResult.autoAddRelatedToRoot = rdbtnAddRelatedToRoot.isSelected();
+						rdbtnAddRelatedToRoot.setEnabled(false);
 						try {
 							if (domainResult.autoAddRelatedToRoot) {
+								domainResult.relatedToRoot();
 								showDataToDomainGUI();
 								saveDomainDataToDB();
 							}
@@ -711,7 +712,6 @@ public class DomainPanel extends JPanel {
 	 */
 	public void showDataToDomainGUI() {
 		listenerIsOn = false;
-		domainResult.relatedToRoot();
 
 		textFieldUploadURL.setText(domainResult.uploadURL);
 		textAreaSpecialPortTargets.setText(domainResult.fetchSpecialPortTargets());

@@ -9,6 +9,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Arrays;
+import java.util.Map;
 
 public class TargetControlPanel extends JPanel {
 	public TargetControlPanel() {
@@ -82,10 +83,24 @@ public class TargetControlPanel extends JPanel {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				//to clear sub and similar domains
-				DomainPanel.getDomainResult().freshBaseRule();
-				GUIMain.getDomainPanel().showDataToDomainGUI();
-				DomainPanel.saveDomainDataToDB();
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+
+					@Override
+					protected Map doInBackground() throws Exception {
+						btnFresh.setEnabled(false);
+						try {
+							//to clear sub and similar domains
+							DomainPanel.getDomainResult().freshBaseRule();
+							GUIMain.getDomainPanel().showDataToDomainGUI();
+							DomainPanel.saveDomainDataToDB();
+						} catch (Exception exception) {
+							exception.printStackTrace();
+						}
+						btnFresh.setEnabled(true);
+						return null;
+					}
+				};
+				worker.execute();
 			}
 		});
 
