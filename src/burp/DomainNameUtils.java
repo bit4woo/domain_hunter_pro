@@ -210,7 +210,7 @@ public class DomainNameUtils {
 			InternetDomainName suffixRootDomain = InternetDomainName.from(rootDomain).publicSuffix();
 			if (suffixDomain != null && suffixRootDomain != null){
 				String suffixOfDomain = suffixDomain.toString();
-				String suffixOfRootDomain = suffixRootDomain.toString();
+				String suffixOfRootDomain = suffixRootDomain.toString();//TODO 校验一下；gettitle控制
 				//域名后缀比较
 				if (suffixOfDomain.equalsIgnoreCase(suffixOfRootDomain)) {
 					return false;
@@ -224,6 +224,41 @@ public class DomainNameUtils {
 			}
 			return false;
 		}catch (java.lang.IllegalArgumentException e){
+			return false;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	public static boolean isWhiteListTDL(String domain,String rootDomain){
+		String listStr = ".ac|.ad|.ae|.af|.ag|.ai|.al|.am|.ao|.aq|.ar|.as|.at|.au|.aw|.ax|.az|.ba|" +
+				".bb|.bd|.be|.bf|.bg|.bh|.bi|.bj|.bm|.bn|.bo|.bq|.br|.bs|.bt|.bw|.by|.bz|.ca|" +
+				".cc|.cd|.cf|.cg|.ch|.ci|.ck|.cl|.cm|.cn|.co|.com|.cr|.cu|.cv|.cw|.cx|.cy|.cz|" +
+				".de|.dj|.dk|.dm|.do|.dz|.ec|.edu|.ee|.eg|.eh|.er|.es|.et|.eu|.fi|.fj|.fk|.fm|" +
+				".fo|.fr|.ga|.gd|.ge|.gf|.gg|.gh|.gi|.gl|.gm|.gn|.gov|.gp|.gq|.gr|.gs|.gt|.gu|" +
+				".gw|.gy|.hk|.hm|.hn|.hr|.ht|.hu|.id|.ie|.il|.im|.in|.int|.io|.iq|.ir|.is|.it|" +
+				".je|.jm|.jo|.jp|.ke|.kg|.kh|.ki|.km|.kn|.kp|.kr|.kw|.ky|.kz|.la|.lb|.lc|.li|" +
+				".lk|.lr|.ls|.lt|.lu|.lv|.ly|.ma|.mc|.md|.me|.mg|.mh|.mil|.mk|.ml|.mm|.mn|.mo|" +
+				".mp|.mq|.mr|.ms|.mt|.mu|.mv|.mw|.mx|.my|.mz|.na|.nc|.ne|.net|.nf|.ng|.ni|.nl|" +
+				".no|.np|.nr|.nu|.nz|.om|.org|.pa|.pe|.pf|.pg|.ph|.pk|.pl|.pm|.pn|.pr|.ps|.pt|" +
+				".pw|.py|.qa|.re|.ro|.rs|.ru|.rw|.sa|.sb|.sc|.sd|.se|.sg|.sh|.si|.sk|.sl|.sm|" +
+				".sn|.so|.sr|.ss|.st|.su|.sv|.sx|.sy|.sz|.tc|.td|.tf|.tg|.th|.tj|.tk|.tl|.tm|" +
+				".tn|.to|.tr|.tt|.tv|.tw|.tz|.ua|.ug|.uk|.us|.uy|.uz|.va|.vc|.ve|.vg|.vi|.vn|" +
+				".vu|.wf|.ws|.ye|.yt|.za|.zm|.zw";
+		List<String> tlds = Arrays.asList(listStr.split("\\|"));
+
+		try {
+			if(isTLDDomain(domain,rootDomain)){
+				String suffixOfDomain = InternetDomainName.from(domain).publicSuffix().toString();
+				String[] items = suffixOfDomain.split("\\.");
+				for (String item:items){
+					if (!tlds.contains(item)){
+						return false;
+					}
+				}
+				return true;
+			}
 			return false;
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -1,3 +1,13 @@
+遇到的问题：
+
+单纯使用 com.google.common.net.InternetDomainName当中的方法来获取域名的公共后缀，还是有很多误报。因为公共后缀的列表实在是太大了，https://publicsuffix.org/list/public_suffix_list.dat 用的就是这个列表中的数据。
+
+
+
+我们必须在误报和漏报直接取得平衡。目前常见的公共域名后缀（顶级域名）梳理如下。符合如下情况的自动添加，其他的还是需要使用者自行添加。
+
+
+
 ## 所有的顶级域名列表
 
 A list of all valid top-level domains is maintained by the IANA and is updated from time to time.
