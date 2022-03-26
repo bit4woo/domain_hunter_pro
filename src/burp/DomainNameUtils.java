@@ -204,7 +204,8 @@ public class DomainNameUtils {
 	 * @param domain
 	 * @param rootDomain
 	 */
-	public static boolean isTLDDomain(String domain,String rootDomain) {
+	@Deprecated //范围太广，误报太多
+	private static boolean isTLDDomain(String domain,String rootDomain) {
 		try {
 			InternetDomainName suffixDomain = InternetDomainName.from(domain).publicSuffix();
 			InternetDomainName suffixRootDomain = InternetDomainName.from(rootDomain).publicSuffix();
@@ -231,6 +232,12 @@ public class DomainNameUtils {
 		}
 	}
 
+	/**
+	 * 相比isTLDDomain() 通过白名单缩小范围
+	 * @param domain
+	 * @param rootDomain
+	 * @return
+	 */
 	public static boolean isWhiteListTDL(String domain,String rootDomain){
 		String listStr = ".ac|.ad|.ae|.af|.ag|.ai|.al|.am|.ao|.aq|.ar|.as|.at|.au|.aw|.ax|.az|.ba|" +
 				".bb|.bd|.be|.bf|.bg|.bh|.bi|.bj|.bm|.bn|.bo|.bq|.br|.bs|.bt|.bw|.by|.bz|.ca|" +
@@ -250,10 +257,10 @@ public class DomainNameUtils {
 
 		try {
 			if(isTLDDomain(domain,rootDomain)){
-				String suffixOfDomain = InternetDomainName.from(domain).publicSuffix().toString();
+				String suffixOfDomain = InternetDomainName.from(domain).publicSuffix().toString();//没有保护点号
 				String[] items = suffixOfDomain.split("\\.");
 				for (String item:items){
-					if (!tlds.contains(item)){
+					if (!tlds.contains("."+item)){
 						return false;
 					}
 				}
@@ -270,6 +277,8 @@ public class DomainNameUtils {
 	 * 由于这里的rootDomain是我们自己指定的不一定是topPrivate。
 	 * 比如 shopeepay.shopee.sg 和shopeepay.shopee.io 应该返回false
 	 * 比如 shopeepay.shopee.sg shopee.io 应该返回true
+	 *
+	 * 关键看rootDomain是不是topPrivate
 	 *
 	 * @param domain
 	 * @param rootDomain
@@ -290,7 +299,7 @@ public class DomainNameUtils {
 	}
 
 	public static void main(String[] args) {
-		System.out.println(isTLDDomain("shopeepay.shopee.sg","shopeepay.com"));
+		System.out.println(isWhiteListTDL("test.shopee.co.th","shopee.com"));
 		//System.out.println(isValidDomain("www1.baidu.com"));
 		//System.out.println(isValidDomain("aaaaaaaaa-aaaaaaaaaaaaaaa-aaaaaaaaaaaaaa.www1.baidu.com"));
 	}

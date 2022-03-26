@@ -535,7 +535,7 @@ public class TargetTableModel extends AbstractTableModel {
 
 			for (String rootdomain:targetDomains) {
 				rootdomain  = DomainNameUtils.cleanDomain(rootdomain);
-				if (DomainNameUtils.isTLDDomain(domain,rootdomain)) {
+				if (DomainNameUtils.isWhiteListTDL(domain,rootdomain)) {
 					return DomainManager.TLD_DOMAIN;
 				}
 			}
@@ -573,7 +573,7 @@ public class TargetTableModel extends AbstractTableModel {
 		Set<String> targetDomains = fetchTargetDomainSet();
 		for (String rootdomain : targetDomains) {
 			rootdomain = DomainNameUtils.cleanDomain(rootdomain);
-			if (DomainNameUtils.isTLDDomain(domain, rootdomain)) {
+			if (DomainNameUtils.isWhiteListTDL(domain, rootdomain)) {
 				InternetDomainName suffixDomain = InternetDomainName.from(domain).publicSuffix();
 				InternetDomainName suffixRootDomain = InternetDomainName.from(rootdomain).publicSuffix();
 				if (suffixDomain != null && suffixRootDomain != null) {
