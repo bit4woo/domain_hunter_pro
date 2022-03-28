@@ -41,6 +41,9 @@ public class ASNQuery {
 
             String queryByIp = "https://api.shadowserver.org/net/asn?origin="+IP;
             String resp = HttpRequest.get(queryByIp).body();
+            if (resp.contains("Request forbidden by administrative rules.")){
+                return  null;
+            }
             List<ASNEntry> tmpEntries = JSON.parseArray(resp,ASNEntry.class);
             //List的大小应该是固定的1，可能不能大于一。因为一个IP不可能属于多个ASN。
             for (ASNEntry entry:tmpEntries){
