@@ -6,6 +6,7 @@ import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.Set;
 
+import burp.HelperPlus;
 import org.apache.commons.io.FileUtils;
 
 import com.google.gson.Gson;
@@ -309,6 +310,22 @@ public class LineConfig {
 
 		if (entry.getStatuscode() == 400 && ToolPanel.ignoreHTTPStaus400.isSelected()) {//400 The plain HTTP request was sent to HTTPS port
 			stdout.println(String.format("--- [%s] --- status code == 400",entry.getUrl()));
+			return false;
+		}
+
+		//<head><title>403 Forbidden</title></head>
+		if (entry.getStatuscode() == 403 && entry.getTitle().equals("403 Forbidden")){
+			byte[] body = HelperPlus.getBody(false,entry.getResponse());
+			if (body != null){
+				if (new String(body).toLowerCase().contains("<hr><center>nginx</center>")){
+					return false;
+				}
+			}
+		}
+
+		//<title>Welcome to nginx!</title>
+		if (entry.getStatuscode() == 200 && entry.getTitle().equals("Welcome to nginx!")
+				&& entry.getContentLength()<=612 ){
 			return false;
 		}
 
