@@ -346,8 +346,8 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		for(LineEntry line:lineEntries.values()) {
 			String IPString = line.getIP();
 			if (IPString == null || IPString.length() <7) continue;//处理保存的请求，没有IP的情况
-			String[] linetext = line.getIP().split(",");
-			for (String ip:linetext){
+			HashSet<String> ips = line.fetchIPSet();
+			for (String ip:ips){
 				ip = IPAddressUtils.ipClean(ip);
 				if (IPAddressUtils.isValidIP(ip)){
 					result.add(ip);
@@ -363,6 +363,30 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			}
 		}
 		return result;
+	}
+
+	/**
+	 * 获取title记录中的所有公网IP
+	 * @return
+	 */
+	Set<String> getPublicIPSetFromTitle() {
+		HashSet<String> result = new HashSet<>();
+		for (String ip:getIPSetFromTitle()){
+			if (IPAddressUtils.isValidIP(ip)&& !IPAddressUtils.isPrivateIPv4(ip)){
+				result.add(ip);
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * 获取title记录中的所有公网IP计算出的公网网段
+	 * @return
+	 */
+	public Set<String> getPublicSubnets() {
+		Set<String> IPsOfDomain = getPublicIPSetFromTitle();
+		Set<String> subnets = IPAddressUtils.toSmallerSubNets(IPsOfDomain);
+		return subnets;
 	}
 
 	/**

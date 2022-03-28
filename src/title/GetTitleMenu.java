@@ -12,10 +12,8 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.io.PrintWriter;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 public class GetTitleMenu extends JPopupMenu {
 
@@ -200,20 +198,19 @@ public class GetTitleMenu extends JPopupMenu {
 					protected Map doInBackground() throws Exception {
 						FreshASNInfo.setEnabled(false);
 
-						Set<String> IPSet = TitlePanel.getTitleTableModel().getIPSetFromTitle();
-
-						Iterable<List<String>> lists = Iterables.partition(IPSet, 1000);
-						for (List<String> list:lists){
-							ASNQuery.batchQueryFromApi(list);
+						try {
+							//https://api.shadowserver.org/net/asn?origin=116.198.3.100/24
+							//Set<String> IPSet = TitlePanel.getTitleTableModel().getPublicIPSetFromTitle();
+							Set<String> publicSubnets = TitlePanel.getTitleTableModel().getPublicSubnets();
+							for (List<String> partition : Iterables.partition(publicSubnets, 200)) {
+								ASNQuery.batchQueryFromApi(partition);//接口有限制，请求过快，过频繁会被封。查网段是不错的选择
+							}
+							TitlePanel.getTitleTableModel().freshAllASNInfo();
+						} catch (Exception e) {
+							e.printStackTrace();
 						}
-
-						TitlePanel.getTitleTableModel().freshAllASNInfo();
-
-						return null;
-					}
-					@Override
-					protected void done() {
 						FreshASNInfo.setEnabled(true);
+						return null;
 					}
 				};
 				worker.execute();

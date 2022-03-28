@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ASNQuery {
     public static final String localdir =
@@ -19,14 +20,14 @@ public class ASNQuery {
     public static final String ASNFileName = "ASNInfo.json";
     public static final File localFile = new File(localdir+File.separator+ ASNFileName);
 
-    static HashMap<String,ASNEntry> entries = new HashMap<>();
+    static ConcurrentHashMap<String,ASNEntry> entries = new ConcurrentHashMap<>();
     private static boolean localDataChanged = true;
 
-    public static HashMap<String, ASNEntry> getEntries() {
+    public static ConcurrentHashMap<String, ASNEntry> getEntries() {
         return entries;
     }
 
-    public static void setEntries(HashMap<String, ASNEntry> entries) {
+    public static void setEntries(ConcurrentHashMap<String, ASNEntry> entries) {
         ASNQuery.entries = entries;
     }
 
@@ -34,16 +35,24 @@ public class ASNQuery {
      *
      */
     private static ASNEntry queryFromApi(String IP){
-        String queryByIp = "https://api.shadowserver.org/net/asn?origin="+IP;
-        String resp = HttpRequest.get(queryByIp).body();
-        List<ASNEntry> tmpEntries = JSON.parseArray(resp,ASNEntry.class);
-        //List的大小应该是固定的1，可能不能大于一。因为一个IP不可能属于多个ASN。
-        for (ASNEntry entry:tmpEntries){
-            entries.put(entry.getAsn(),entry);
-            //System.out.println(entry.toString());
+        try {
+            //https://api.shadowserver.org/net/asn?origin=116.198.3.100/24
+            //https://api.shadowserver.org/net/asn?origin=116.198.3.100,8.8.8.8
+
+            String queryByIp = "https://api.shadowserver.org/net/asn?origin="+IP;
+            String resp = HttpRequest.get(queryByIp).body();
+            List<ASNEntry> tmpEntries = JSON.parseArray(resp,ASNEntry.class);
+            //List的大小应该是固定的1，可能不能大于一。因为一个IP不可能属于多个ASN。
+            for (ASNEntry entry:tmpEntries){
+                entries.put(entry.getAsn(),entry);
+                //System.out.println(entry.toString());
+            }
+            saveToFile();
+            return tmpEntries.get(0);
+        } catch (HttpRequest.HttpRequestException e) {
+            e.printStackTrace();
+            return null;
         }
-        saveToFile();
-        return tmpEntries.get(0);
         //https://www.peeringdb.com/api/net/3554
         //https://api.asrank.caida.org/v2/restful/asns/714
         //https://api.ipdata.co/17.253.144.10/asn?api-key=test
@@ -64,7 +73,7 @@ public class ASNQuery {
     private static boolean loadFromFile(){
         try {
             String tmp = FileUtils.readFileToString(localFile, StandardCharsets.UTF_8);
-            entries = JSON.parseObject(tmp, new TypeReference<HashMap<String,ASNEntry>>(){});
+            entries = JSON.parseObject(tmp, new TypeReference<ConcurrentHashMap<String,ASNEntry>>(){});
             localDataChanged = false;//内存中和文件中内容一致了，重置变量标志
             return true;
         }catch (FileNotFoundException e){
@@ -98,7 +107,7 @@ public class ASNQuery {
      * @param ipSet
      */
     public static void batchQueryFromApi(List<String> ipSet){
-        if (ipSet.size()>=1000){
+        if (ipSet.size()>1000){
             System.out.println("too many IP address to query! should less than 1000");
         }else {
             String tmpStr = String.join(",",ipSet);
@@ -119,7 +128,7 @@ public class ASNQuery {
             }
             return result;
         }else {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException(singleIP);
         }
     }
 

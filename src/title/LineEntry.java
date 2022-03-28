@@ -548,13 +548,19 @@ public class LineEntry {
 	}
 
 	public void freshASNInfo() {
-		Iterator<String> it = this.fetchIPSet().iterator();
-		if (it.hasNext()){
-			String ip = it.next();
-			ASNEntry asn = ASNQuery.query(ip);
-			if (null != asn){
-				this.ASNInfo = asn.getAsname_long();
+		try {
+			Iterator<String> it = this.fetchIPSet().iterator();
+			if (it.hasNext()){
+				String ip = it.next();
+				if (IPAddressUtils.isValidIP(ip) && !IPAddressUtils.isPrivateIPv4(ip)){
+					ASNEntry asn = ASNQuery.query(ip);
+					if (null != asn){
+						this.ASNInfo = asn.getAsname_long();
+					}
+				}
 			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 
