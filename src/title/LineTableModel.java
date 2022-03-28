@@ -1,33 +1,17 @@
 package title;
 
-import java.io.PrintWriter;
-import java.io.Serializable;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import GUI.GUIMain;
+import burp.*;
+import domain.DomainPanel;
+import domain.target.TargetEntry;
 
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
-
-import GUI.GUIMain;
-import burp.BurpExtender;
-import burp.Commons;
-import burp.DBHelper;
-import burp.DomainNameUtils;
-import burp.Getter;
-import burp.IExtensionHelpers;
-import burp.IHttpRequestResponse;
-import burp.IHttpService;
-import burp.IMessageEditorController;
-import burp.IPAddressUtils;
-import burp.IntArraySlice;
-import domain.DomainPanel;
-import domain.target.TargetEntry;
+import java.io.PrintWriter;
+import java.io.Serializable;
+import java.net.URL;
+import java.util.*;
 
 
 public class LineTableModel extends AbstractTableModel implements IMessageEditorController,Serializable {
@@ -42,7 +26,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	/*
 	 * 为了提高LineEntry的查找速度，改为使用LinkedHashMap,
 	 * http://infotechgems.blogspot.com/2011/11/java-collections-performance-time.html
-	 * 
+	 *
 	 * LinkedHashMap是继承于HashMap，是基于HashMap和双向链表来实现的。
 	 * HashMap无序；LinkedHashMap有序，可分为插入顺序和访问顺序两种。默认是插入顺序。
 	 * 如果是访问顺序，那put和get操作已存在的Entry时，都会把Entry移动到双向链表的表尾(其实是先删除再插入)。
@@ -58,7 +42,8 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	PrintWriter stderr;
 
 	private static final String[] standardTitles = new String[] {
-			"#", "URL", "Status", "Length", "Title","Comments","Server","isChecked","AssetType","CheckDoneTime","IP", "CDN|CertInfo", "IconHash"};
+			"#", "URL", "Status", "Length", "Title","Comments","Server","isChecked",
+			"AssetType","CheckDoneTime","IP", "CDN|CertInfo","ASNInfo","IconHash"};
 	private static List<String> titletList = new ArrayList<>(Arrays.asList(standardTitles));
 	//为了实现动态表结构
 	public static List<String> getTitletList() {
@@ -300,6 +285,9 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		if (columnIndex == titletList.indexOf("IconHash")){
 			return entry.getIcon_hash();
 		}
+		if (columnIndex == titletList.indexOf("ASNInfo")){
+			return entry.getASNInfo();
+		}
 		return "";
 	}
 
@@ -349,10 +337,10 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	}
 
 	/**
-	 * 
+	 *
 	 * @return 获取已成功获取title的Entry的IP地址集合
 	 */
-	private Set<String> getIPSetFromTitle() {
+	Set<String> getIPSetFromTitle() {
 		Set<String> result = new HashSet<String>();
 		//lineEntries.addAll(hidenLineEntries);
 		for(LineEntry line:lineEntries.values()) {
@@ -653,7 +641,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			Arrays.sort(rows); //升序
 			for (int i=rows.length-1;i>=0 ;i-- ) {
 				LineEntry checked = lineEntries.get(rows[i]);
-				if (assetType == checked.getAssetType()) continue;
+				if (assetType.equalsIgnoreCase(checked.getAssetType())) continue;
 				checked.setAssetType(assetType);
 				stdout.println(String.format("$$$ %s updated [AssetType-->%s]",checked.getUrl(),assetType));
 				//this.fireTableRowsUpdated(rows[i], rows[i]);
@@ -704,10 +692,10 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 
 	/**
 	 * 获取用于Host碰撞的域名列表
-	 * 
+	 *
 	 * 1、没有解析记录的域名
 	 * 2、解析记录是内网地址的域名
-	 * 
+	 *
 	 * 3、解析是外网，但是外网无法访问的域名（比如403），但是绑定特定IP即可访问。大概率是走了不同的网关导致的.
 	 * 想要准确地获取到这个结果，那么hunter的数据应该是在外网环境中获取的。如果是hunter的数据是内网环境中获取的，就会遗漏一部分数据。
 	 * @return
@@ -953,6 +941,14 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		}
 	}
 
+	public void freshAllASNInfo(){
+		synchronized (lineEntries) {
+			for (LineEntry entry : lineEntries.values()) {
+				entry.freshASNInfo();
+			}
+			fireTableRowsUpdated(0,lineEntries.size()-1);
+		}
+	}
 
 
 

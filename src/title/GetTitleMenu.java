@@ -1,40 +1,21 @@
 package title;
 
-import java.awt.Toolkit;
+import ASN.ASNQuery;
+import GUI.GUIMain;
+import GUI.RunnerGUI;
+import burp.BurpExtender;
+import com.google.common.collect.Iterables;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.PrintWriter;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.util.Base64;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.swing.AbstractAction;
-import javax.swing.JButton;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPopupMenu;
-import javax.swing.SwingWorker;
-
-import GUI.LineEntryMenuForBurp;
-import GUI.RunnerGUI;
-import GUI.GUIMain;
-import Tools.ToolPanel;
-import burp.BurpExtender;
-import burp.Commons;
-import burp.Getter;
-import burp.IBurpExtenderCallbacks;
-import burp.IHttpRequestResponse;
-import domain.DomainPanel;
-import title.search.SearchDork;
 
 public class GetTitleMenu extends JPopupMenu {
 
@@ -46,10 +27,11 @@ public class GetTitleMenu extends JPopupMenu {
 	JMenuItem GetExtendtitleItem;
 	JMenuItem GettitleOfJustNewFoundItem;
 	JMenuItem CopySubnetItem;
-	private JMenuItem StopItem;
+	JMenuItem StopItem;
+	JMenuItem FreshASNInfo;
 
 	GetTitleMenu(){
-		
+
 		getTitleItem = new JMenuItem(new AbstractAction("Get Title") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -176,8 +158,8 @@ public class GetTitleMenu extends JPopupMenu {
 				worker.execute();
 			}
 		});
-		
-		
+
+
 		StopItem = new JMenuItem(new AbstractAction("Stop Threads") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -187,7 +169,7 @@ public class GetTitleMenu extends JPopupMenu {
 				}
 			}
 		});
-		
+
 		JMenuItem doGateWayByPassCheck = new JMenuItem(new AbstractAction("Do GateWay ByPass Check For All") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -209,11 +191,41 @@ public class GetTitleMenu extends JPopupMenu {
 			}
 		});
 
+		FreshASNInfo = new JMenuItem(new AbstractAction("Fresh ASN Info") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+					//using SwingWorker to prevent blocking burp main UI.
+					@Override
+					protected Map doInBackground() throws Exception {
+						FreshASNInfo.setEnabled(false);
+
+						Set<String> IPSet = TitlePanel.getTitleTableModel().getIPSetFromTitle();
+
+						Iterable<List<String>> lists = Iterables.partition(IPSet, 1000);
+						for (List<String> list:lists){
+							ASNQuery.batchQueryFromApi(list);
+						}
+
+						TitlePanel.getTitleTableModel().freshAllASNInfo();
+
+						return null;
+					}
+					@Override
+					protected void done() {
+						FreshASNInfo.setEnabled(true);
+					}
+				};
+				worker.execute();
+			}
+		});
+
 		this.add(getTitleItem);
 		this.add(GetExtendtitleItem);
 		this.add(GettitleOfJustNewFoundItem);
 		this.add(CopySubnetItem);
 		this.add(StopItem);
+		this.add(FreshASNInfo);
 		//this.add(doGateWayByPassCheck);
 	}
 }

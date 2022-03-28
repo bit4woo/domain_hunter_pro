@@ -1,26 +1,5 @@
 package title;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Desktop;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.io.PrintWriter;
-import java.net.URI;
-import java.util.*;
-
-import javax.swing.*;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
-
 import Tools.ToolPanel;
 import burp.BurpExtender;
 import burp.Commons;
@@ -29,6 +8,18 @@ import title.search.History;
 import title.search.LineSearch;
 import title.search.SearchDork;
 import title.search.SearchTextField;
+
+import javax.swing.*;
+import javax.swing.table.*;
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.PrintWriter;
+import java.net.URI;
+import java.util.List;
+import java.util.*;
 
 
 public class LineTable extends JTable
@@ -112,7 +103,7 @@ public class LineTable extends JTable
 		super.changeSelection(row, col, toggle, extend);
 	}
 
-	
+
 	/**
 	 * 使用Jtable本身已实现的getModel和setModel函数，
 	 * 可以避免自行实现很多功能，比如：
@@ -194,6 +185,7 @@ public class LineTable extends JTable
 		preferredWidths.put("CDN|CertInfo",30);
 		preferredWidths.put("Server",10);
 		preferredWidths.put("IconHash", "-17480088888".length());
+		preferredWidths.put("ASNInfo","HUAWEI CLOUD SERVICE DATA CENTER".length());
 		for(String header:LineTableModel.getTitletList()){
 			try{//避免动态删除表字段时，出错
 				if (preferredWidths.keySet().contains(header)){
