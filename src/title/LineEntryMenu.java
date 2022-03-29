@@ -273,6 +273,37 @@ public class LineEntryMenu extends JPopupMenu {
 			}
 		});
 
+		JMenuItem ASNInfoItem = new JMenuItem(new AbstractAction("ASN Info") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				for (int row:modleRows) {
+					LineEntry entry = lineTable.getLineTableModel().getLineEntries().get(row);
+					String target = entry.getFirstIP();
+					if (!IPAddressUtils.isValidIP(target)) continue;
+					try {
+						//https://bgp.he.net/dns/shopee.com
+						//https://bgp.he.net/net/143.92.111.0/24
+						//https://bgp.he.net/ip/143.92.127.1
+						String url =null;
+						if (IPAddressUtils.isValidIP(target)){
+							url = "https://bgp.he.net/ip/"+target;
+						}
+						if (IPAddressUtils.isValidSubnet(target)){
+							url = "https://bgp.he.net/net/"+target;
+						}
+						if (DomainNameUtils.isValidDomain(target)){
+							url = "https://bgp.he.net/dns/"+target;
+						}
+						if (url!= null){
+							Commons.browserOpen(url,null);
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		});
+
 		JMenuItem SearchOnHunterItem = new JMenuItem(new AbstractAction("Seach On Hunter") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -844,6 +875,7 @@ public class LineEntryMenu extends JPopupMenu {
 		SearchMenu.add(SearchOnFoFaWithIconhashItem);
 		SearchMenu.add(SearchOnShodanItem);
 		SearchMenu.add(SearchOnShodanWithIconhashItem);
+		SearchMenu.add(ASNInfoItem);
 
 		JMenu CopyMenu = new JMenu("Copy");
 		this.add(CopyMenu);

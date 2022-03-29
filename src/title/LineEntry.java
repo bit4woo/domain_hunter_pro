@@ -547,6 +547,14 @@ public class LineEntry {
 		this.ASNInfo = ASNInfo;
 	}
 
+	public String getFirstIP(){
+		Iterator<String> it = this.fetchIPSet().iterator();
+		if (it.hasNext()) {
+			String ip = it.next();
+			return ip;
+		}
+		return "";
+	}
 	public void freshASNInfo() {
 		try {
 			Iterator<String> it = this.fetchIPSet().iterator();

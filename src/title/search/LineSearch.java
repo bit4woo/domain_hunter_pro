@@ -62,6 +62,7 @@ public class LineSearch {
 			contentList.add(line.getComment());
 			contentList.add(line.getTitle());
 			contentList.add(line.getIcon_hash());
+			contentList.add(line.getASNInfo());
 			if (caseSensitive) {
 				for(String item:contentList) {
 					if (item == null) continue;
@@ -138,11 +139,15 @@ public class LineSearch {
 			}
 
 			if (dork.equalsIgnoreCase(SearchDork.COMMENT.toString())) {
-				tempContent = new String(line.getComment());
+				tempContent = line.getComment();
 			}
 			
 			if (dork.equalsIgnoreCase(SearchDork.TITLE.toString())) {
-				tempContent = new String(line.getTitle());
+				tempContent = line.getTitle();
+			}
+
+			if (dork.equalsIgnoreCase(SearchDork.ASNINFO.toString())) {
+				tempContent = line.getASNInfo();
 			}
 			
 			if (caseSensitive) {
@@ -181,6 +186,9 @@ public class LineSearch {
 				return true;
 			}
 			if (pRegex.matcher(line.getComment()).find()) {
+				return true;
+			}
+			if (pRegex.matcher(line.getASNInfo()).find()) {
 				return true;
 			}
 			return false;

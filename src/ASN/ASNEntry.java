@@ -4,6 +4,9 @@ package ASN;
 
 import burp.IPAddressUtils;
 import inet.ipaddr.AddressStringException;
+import inet.ipaddr.IPAddress;
+import inet.ipaddr.IPAddressSeqRange;
+import inet.ipaddr.IPAddressString;
 
 import java.util.List;
 
@@ -32,13 +35,18 @@ public class ASNEntry {
     public ASNEntry(String lineFromTSV){
         try {
             String[] items = lineFromTSV.split("\t");
+            if (items.length !=5){
+                throw new IllegalArgumentException("data illegal: "+lineFromTSV);
+            }
             prefix = items[0]+"-"+items[1];
             asn = items[2];
             geo = items[3];
             asname_long = items[4];
+            if (asname_long.equals("Not routed")){
+                throw new IllegalArgumentException("Not routed ASN");
+            }
         } catch (Exception e) {
             e.printStackTrace();
-            throw new IllegalArgumentException("data formate illegal");
         }
     }
 
@@ -96,6 +104,15 @@ public class ASNEntry {
                 return false;
             }
         }
+    }
+
+    public int getNumberOfIP(){
+        String start = prefix.split("-")[0];
+        String end = prefix.split("-")[1];
+        IPAddress startIPAddress = new IPAddressString(start).getAddress();
+        IPAddress endIPAddress = new IPAddressString(end).getAddress();
+        IPAddressSeqRange ipRange = startIPAddress.toSequentialRange(endIPAddress);
+        return ipRange.getCount().intValue();
     }
 
     /**

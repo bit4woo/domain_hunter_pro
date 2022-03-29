@@ -10,6 +10,7 @@ public enum SearchDork {
 	RESPONSE("RESPONSE"),
 	COMMENT("COMMENT"),
 	TITLE("TITLE"),
+	ASNINFO("ASNINFO"),
 
 	REGEX("REGEX");//这个用于正则搜索
 

@@ -110,6 +110,10 @@ public class ASNQuery {
             for (String line:lines){
                 try {
                     ASNEntry tmp = new ASNEntry(line);
+                    /**
+                    if (tmp.getNumberOfIP() <255){
+                        System.out.println(tmp.toString());
+                    }*/
                     entriesFromTSV.put(tmp.getAsn()+tmp.getPrefix(),tmp);//注意key值！
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -214,7 +218,8 @@ public class ASNQuery {
 
     public static void main(String[] args) {
 //        System.out.println(query("2.2.2.2"));
-        System.out.println(queryFromApi("2.2.2.2"));
+//        System.out.println(queryFromApi("2.2.2.2"));
+        loadTsvFile();
         //System.out.println(queryFromTsvFile("8.8.8.8"));
         //ASNEntry tmp = new ASNEntry("8.8.8.0\t8.8.8.255\t15169\tUS\tGOOGLE - Google LLC");
         //System.out.println(tmp.contains("8.8.8.8"));

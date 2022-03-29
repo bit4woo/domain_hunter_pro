@@ -239,11 +239,6 @@ public class TempLineEntry {
 		entry.setCDNWithSet(CDNSet);
 		entry.setCertDomainWithSet(certDomains);
 		entry.freshASNInfo();
-		if (DomainPanel.getDomainResult().isTargetByCertInfo(certDomains)){
-			entry.removeComment(LineEntry.NotTargetBaseOnCertInfo);
-		}else{
-			entry.addComment(LineEntry.NotTargetBaseOnCertInfo);
-		}
 	}
 
 	//Just do request
