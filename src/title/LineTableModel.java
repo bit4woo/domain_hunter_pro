@@ -357,11 +357,6 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			}
 		}
 
-		for(Set<String> IPSet:noResponseDomain.values()) {
-			for (String ip:IPSet){
-				result.add(ip.trim());
-			}
-		}
 		return result;
 	}
 
@@ -394,19 +389,18 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	 * @return 扩展IP集合
 	 */
 	public Set<String> GetExtendIPSet() {
+
 		Set<String> IPsOfDomain = getIPSetFromTitle();//title记录中的IP
-		//Set<String> CSubNetIPs = Commons.subNetsToIPSet(Commons.toSubNets(IPsOfDomain));
 		Set<String> IPsOfcertainSubnets = DomainPanel.fetchTargetModel().fetchTargetIPSet();//用户配置的确定IP+网段
 		IPsOfDomain.addAll(IPsOfcertainSubnets);
+		IPsOfDomain.removeAll(DomainPanel.getDomainResult().getNotTargetIPSet());
 
 		Set<String> subnets = IPAddressUtils.toSmallerSubNets(IPsOfDomain);//当前所有title结果+确定IP/网段计算出的IP网段
 
 		Set<String> CSubNetIPs = IPAddressUtils.toIPSet(subnets);// 当前所有title结果计算出的IP集合
 
-		CSubNetIPs.removeAll(IPsOfDomain);//删除域名对应的IP
-		CSubNetIPs.removeAll(IPsOfcertainSubnets);
-		//Set<String> blackIPSet = DomainPanel.getDomainResult().getNotTargetIPSet();
-		//CSubNetIPs.removeAll(blackIPSet);//删除黑名单中的IP
+		CSubNetIPs.removeAll(IPsOfDomain);//删除域名对应的IP，之前已经请求过了
+		CSubNetIPs.removeAll(IPsOfcertainSubnets);//删除网段对应的IP，之前已经请求过了
 
 		return CSubNetIPs;
 	}
@@ -708,7 +702,10 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		}
 	}
 
-	//如果记录的Host是IP，且认为不是目标资产，那么将其加入NotTarget集合
+	/**
+	 * 	如果记录的Host是IP，且认为不是目标资产，那么将其加入NotTarget集合
+	 */
+
 	public void addHostToTargetBlackList(int[] rows) {
 		synchronized (lineEntries) {
 			//because thread let the delete action not in order, so we must loop in here.
@@ -717,12 +714,10 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
 				LineEntry entry = lineEntries.get(rows[i]);
 				String Host = entry.getHost();
-				if (IPAddressUtils.isValidIP(Host)) {
-					TargetEntry blackIP = new TargetEntry(Host);
-					blackIP.setBlack(true);
-					DomainPanel.fetchTargetModel().addRowIfValid(blackIP);
+				if (DomainNameUtils.isValidDomain(Host)) {
+					DomainPanel.getDomainResult().getNotTargetIPSet().addAll(entry.fetchIPSet());
 					entry.addComment(LineEntry.NotTargetBaseOnBlackList);
-					stdout.println("### "+Host+" added to black list");
+					stdout.println("### IP address of "+ Host +" added to black list");
 				}
 			}
 		}
@@ -965,18 +960,6 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		IHttpService service = helpers.buildHttpService(item.getHost(),
 				item.getPort(), item.getProtocol());
 		return service;
-	}
-
-	public void addNewNoResponseDomain(String domain,Set<String> IPSet){
-		synchronized (noResponseDomain) {
-			noResponseDomain.put(domain,IPSet);
-		}
-	}
-
-	public void addNewNoResponseDomain(String domain,String IPSet){
-		synchronized (noResponseDomain) {
-			noResponseDomain.put(domain,new HashSet<String>(Arrays.asList(IPSet.split(","))));
-		}
 	}
 
 	public void freshAllASNInfo(){

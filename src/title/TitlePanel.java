@@ -223,7 +223,8 @@ public class TitlePanel extends JPanel {
 		return buttonPanel;
 	}
 
-	/*
+	/**
+	 *
 	 * 根据所有已知域名获取title
 	 */
 	public void getAllTitle(){
@@ -284,26 +285,24 @@ public class TitlePanel extends JPanel {
 		}
 	}
 
-	/*
-	 * 获取新发现域名的title
+	/**
+	 * 获取新发现域名的title，这里会尝试之前请求失败的域名，可能需要更多时间
 	 */
 	public void getTitleOfNewDomain(){
 		DomainPanel.backupDB();
 
 		Set<String> newDomains = new HashSet<>(DomainPanel.getDomainResult().getSubDomainSet());//新建一个对象，直接赋值后的删除操作，实质是对domainResult的操作。
-		Set<String> hostsInTitle = titleTableModel.GetHostsWithSpecialPort();
-		newDomains.removeAll(hostsInTitle);
-
-		Set<String> targetIPSet = new HashSet<>(DomainPanel.getTargetTable().getTargetModel().fetchTargetIPSet());//新建一个对象，直接赋值后的删除操作，实质是对domainResult的操作。
-		targetIPSet.removeAll(hostsInTitle);
-
-		Set<String> newDomainsWithPort = new HashSet<>(DomainPanel.getDomainResult().getSpecialPortTargets());//新建一个对象，直接赋值后的删除操作，实质是对domainResult的操作。
-		newDomainsWithPort.removeAll(hostsInTitle);
+		Set<String> targetIPSet = new HashSet<>(DomainPanel.getTargetTable().getTargetModel().fetchTargetIPSet());
+		Set<String> newDomainsWithPort = new HashSet<>(DomainPanel.getDomainResult().getSpecialPortTargets());
 
 		newDomains.addAll(targetIPSet);
 		newDomains.addAll(newDomainsWithPort);
+
+		Set<String> hostsInTitle = titleTableModel.GetHostsWithSpecialPort();
+		newDomains.removeAll(hostsInTitle);
+
 		//remove domains in black list
-		//domains.removeAll(DomainPanel.getDomainResult().fetchNotTargetIPList());//无需移除，会标记出来的。
+		newDomains.removeAll(DomainPanel.getDomainResult().getNotTargetIPSet());
 		tempConfig = new GetTitleTempConfig(newDomains.size());
 		if (tempConfig.getThreadNumber() <=0) {
 			return;
