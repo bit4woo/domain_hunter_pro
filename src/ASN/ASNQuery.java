@@ -50,7 +50,7 @@ public class ASNQuery {
             List<ASNEntry> tmpEntries = JSON.parseArray(resp,ASNEntry.class);
             //List的大小应该是固定的1，可能不能大于一。因为一个IP不可能属于多个ASN。
             for (ASNEntry entry:tmpEntries){
-                entriesRecentUsed.put(entry.getAsn(),entry);
+                entriesRecentUsed.put(entry.getAsn()+entry.getPrefix(),entry);
                 //System.out.println(entry.toString());
             }
             saveRecentToFile();
@@ -99,19 +99,23 @@ public class ASNQuery {
     /**
      * 从TSV文件加载数据
      * range_start range_end AS_number country_code AS_description
+     *
+     * 注意：ASN变化不应该成为唯一ID值，因为一个ASN可能有多个网段！而数据库是以网段为主体的
      * @return
      */
     private static void loadTsvFile(){
         if (entriesFromTSV.size() == 0){//无需重复加载
+            System.out.println("loading ip2asn-v4.tsv");
             List<String> lines = readFile("ip2asn-v4.tsv");
             for (String line:lines){
                 try {
                     ASNEntry tmp = new ASNEntry(line);
-                    entriesFromTSV.put(tmp.getAsn(),tmp);
+                    entriesFromTSV.put(tmp.getAsn()+tmp.getPrefix(),tmp);//注意key值！
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
+            System.out.println("ip2asn-v4.tsv loaded");
         }
     }
 
@@ -155,7 +159,7 @@ public class ASNQuery {
         loadTsvFile();
         for (ASNEntry entry:entriesFromTSV.values()){
             if (entry.contains(singleIP)){
-                entriesRecentUsed.put(entry.getAsn(),entry);
+                entriesRecentUsed.put(entry.getAsn()+entry.getPrefix(),entry);
                 saveRecentToFile();
                 return entry;
             }
@@ -210,6 +214,9 @@ public class ASNQuery {
 
     public static void main(String[] args) {
 //        System.out.println(query("2.2.2.2"));
-        System.out.println(queryFromTsvFile("8.8.8.8"));
+        System.out.println(queryFromApi("2.2.2.2"));
+        //System.out.println(queryFromTsvFile("8.8.8.8"));
+        //ASNEntry tmp = new ASNEntry("8.8.8.0\t8.8.8.255\t15169\tUS\tGOOGLE - Google LLC");
+        //System.out.println(tmp.contains("8.8.8.8"));
     }
 }

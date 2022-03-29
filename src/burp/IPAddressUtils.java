@@ -1,16 +1,13 @@
 package burp;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
+import inet.ipaddr.AddressStringException;
+import inet.ipaddr.IPAddress;
+import inet.ipaddr.IPAddressSeqRange;
+import inet.ipaddr.IPAddressString;
 import org.apache.commons.net.util.SubnetUtils;
 import org.apache.commons.net.util.SubnetUtils.SubnetInfo;
+
+import java.util.*;
 
 public class IPAddressUtils {
 
@@ -23,15 +20,15 @@ public class IPAddressUtils {
 			}
 
 			switch (ipParts[0]) {
-			case 10:
-			case 127:
-				return true;
-			case 172:
-				return (ipParts[1] >= 16) && (ipParts[1] < 32);
-			case 192:
-				return (ipParts[1] == 168);
-			case 169:
-				return (ipParts[1] == 254);
+				case 10:
+				case 127:
+					return true;
+				case 172:
+					return (ipParts[1] >= 16) && (ipParts[1] < 32);
+				case 192:
+					return (ipParts[1] == 168);
+				case 169:
+					return (ipParts[1] == 254);
 			}
 		} catch (Exception ex) {
 		}
@@ -238,38 +235,23 @@ public class IPAddressUtils {
 				IPList.add(xx.getNetworkAddress());//.0
 				IPList.addAll(Arrays.asList(ips));
 				IPList.add(xx.getBroadcastAddress());//.255
-			}else if (subnet.contains("-")) {
+			}else if (subnet.contains("-")) {//178.170.186.0-178.170.186.255
 				String[] ips = subnet.split("-");
 				if (ips.length ==2) {
-					try {
-						String startip = ips[0].trim();
-						String endip = ips[1].trim();
-						//System.out.println(startip);
-						//System.out.println(endip);
-						//Converts a String that represents an IP to an int.
-						InetAddress i = InetAddress.getByName(startip);
-						int startIPInt= ByteBuffer.wrap(i.getAddress()).getInt();
-
-						if (!endip.contains(".")) {
-							endip = startip.substring(0,startip.lastIndexOf("."))+endip;
-							//System.out.println(endip);
-						}
-						InetAddress j = InetAddress.getByName(endip);
-						int endIPInt= ByteBuffer.wrap(j.getAddress()).getInt();
-
-						while (startIPInt <= endIPInt) {
-							//System.out.println(startIPInt);
-							startIPInt  = startIPInt+1;
-							//This convert an int representation of ip back to String
-							i= InetAddress.getByName(String.valueOf(startIPInt));
-							String ip= i.getHostAddress();
-							IPList.add(ip);
-							continue;
-						}
-						//System.out.print(IPSet);
-					} catch (UnknownHostException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+					String startip = ips[0].trim();
+					String endip = ips[1].trim();
+					//System.out.println(startip);
+					//System.out.println(endip);
+					IPAddressString string1 = new IPAddressString(startip);
+					IPAddressString string2 = new IPAddressString(endip);
+					IPAddress addr1 = string1.getAddress();
+					IPAddress addr2 = string2.getAddress();
+					IPAddressSeqRange range = addr1.toSequentialRange(addr2);
+					Iterator<? extends IPAddress> it = range.iterator();
+					while (it.hasNext()){
+						IPAddress item = it.next();
+						//System.out.println(item.toString());
+						IPList.add(item.toString());
 					}
 				}
 			}else { //单IP
@@ -278,7 +260,6 @@ public class IPAddressUtils {
 		}catch(Exception e) {
 			e.printStackTrace(BurpExtender.getStderr());
 		}
-
 		return IPList;
 	}
 
@@ -290,6 +271,15 @@ public class IPAddressUtils {
 		return IPList;
 	}
 
+	public static boolean checkIPIsInGivenRange (String inputIP, String rangeStartIP, String rangeEndIP)
+			throws AddressStringException {
+		IPAddress startIPAddress = new IPAddressString(rangeStartIP).getAddress();
+		IPAddress endIPAddress = new IPAddressString(rangeEndIP).getAddress();
+		IPAddressSeqRange ipRange = startIPAddress.toSequentialRange(endIPAddress);
+		IPAddress inputIPAddress = new IPAddressString(inputIP).toAddress();
+
+		return ipRange.contains(inputIPAddress);
+	}
 
 	public static void test3() {
 		Set<String>  a= new HashSet();
@@ -306,20 +296,8 @@ public class IPAddressUtils {
 		System.out.println(subnets1);
 	}
 
-	public static void main(String[] args) {
-		// test IPv4
-		String ipv4Address = "127.56.87.4";
-
-		if (isPrivateIPv4(ipv4Address)) {
-			System.out.println("This is a private IPv4");
-		}
-
-
-		// test IPv6 
-		String ipv6Address = "fe80:db8:a0b:12f0::1";
-
-		if (isPrivateIPv6(ipv6Address)) {
-			System.out.println("This is a private IPv6");
-		}
+	public static void main(String[] args) throws AddressStringException {
+		System.out.println(toIPList("178.170.186.0-178.170.186.255"));
+		System.out.println(checkIPIsInGivenRange("178.170.186.1","178.170.186.0","178.170.186.255"));
 	}
 }

@@ -694,6 +694,20 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		}
 	}
 
+	public void freshASNInfo(int[] rows) {
+		synchronized (lineEntries) {
+			//because thread let the delete action not in order, so we must loop in here.
+			//list length and index changed after every remove.the origin index not point to right item any more.
+			Arrays.sort(rows); //升序
+			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
+				LineEntry checked = lineEntries.get(rows[i]);
+				checked.freshASNInfo();
+				stdout.println("$$$ "+checked.getUrl()+"ASN Info updated");
+			}
+			fireUpdated(rows);
+		}
+	}
+
 	//如果记录的Host是IP，且认为不是目标资产，那么将其加入NotTarget集合
 	public void addHostToTargetBlackList(int[] rows) {
 		synchronized (lineEntries) {
@@ -966,12 +980,10 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	}
 
 	public void freshAllASNInfo(){
-		synchronized (lineEntries) {
-			for (LineEntry entry : lineEntries.values()) {
-				entry.freshASNInfo();
-			}
-			fireTableRowsUpdated(0,lineEntries.size()-1);
+		for (LineEntry entry : lineEntries.values()) {
+			entry.freshASNInfo();
 		}
+		fireTableRowsUpdated(0,lineEntries.size()-1);
 	}
 
 

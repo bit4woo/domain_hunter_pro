@@ -1,6 +1,15 @@
 package title;
 
-import java.awt.Toolkit;
+import GUI.GUIMain;
+import GUI.LineEntryMenuForBurp;
+import GUI.RunnerGUI;
+import Tools.ToolPanel;
+import burp.*;
+import domain.DomainPanel;
+import title.search.SearchDork;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
@@ -8,32 +17,8 @@ import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.swing.AbstractAction;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPopupMenu;
-import javax.swing.SwingWorker;
-
-import GUI.GUIMain;
-import GUI.LineEntryMenuForBurp;
-import GUI.RunnerGUI;
-import Tools.ToolPanel;
-import burp.BurpExtender;
-import burp.Commons;
-import burp.Getter;
-import burp.IBurpExtenderCallbacks;
-import burp.IHttpRequestResponse;
-import domain.DomainPanel;
-import title.search.SearchDork;
+import java.util.*;
 
 public class LineEntryMenu extends JPopupMenu {
 
@@ -556,7 +541,7 @@ public class LineEntryMenu extends JPopupMenu {
 		JMenuItem checkingItem = new JMenuItem(new AbstractAction("Checking") {//checking
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				TitlePanel.getTitleTableModel().updateRowsStatus(modleRows,LineEntry.CheckStatus_Checking);			
+				TitlePanel.getTitleTableModel().updateRowsStatus(modleRows,LineEntry.CheckStatus_Checking);
 				java.util.List<String> urls = lineTable.getLineTableModel().getURLs(modleRows);
 				IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
 				for(String url:urls) {
@@ -574,7 +559,7 @@ public class LineEntryMenu extends JPopupMenu {
 		JMenuItem moreActionItem = new JMenuItem(new AbstractAction("Need More Action") {//checking
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				TitlePanel.getTitleTableModel().updateRowsStatus(modleRows,LineEntry.CheckStatus_MoreAction);			
+				TitlePanel.getTitleTableModel().updateRowsStatus(modleRows,LineEntry.CheckStatus_MoreAction);
 				java.util.List<String> urls = lineTable.getLineTableModel().getURLs(modleRows);
 				IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
 				for(String url:urls) {
@@ -614,6 +599,13 @@ public class LineEntryMenu extends JPopupMenu {
 					Comments = JOptionPane.showInputDialog("Comments", null).trim();
 				}
 				TitlePanel.getTitleTableModel().updateComments(modleRows,Comments);
+			}
+		});
+
+		JMenuItem batchFreshASNInfoItem = new JMenuItem(new AbstractAction("Fresh ASN Info") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				TitlePanel.getTitleTableModel().freshASNInfo(modleRows);
 			}
 		});
 
@@ -823,6 +815,7 @@ public class LineEntryMenu extends JPopupMenu {
 		this.add(checkedItem);
 		this.add(assetTypeMenu);
 		this.add(batchAddCommentsItem);
+		this.add(batchFreshASNInfoItem);
 
 		this.addSeparator();
 

@@ -3,7 +3,7 @@ package ASN;
 //[{"prefix":"8.8.8.0/24","geo":"US","ip":"8.8.8.8","asname_short":"AS15169","asn":"15169","asname_long":"GOOGLE LLC"}]
 
 import burp.IPAddressUtils;
-import com.alibaba.fastjson.JSON;
+import inet.ipaddr.AddressStringException;
 
 import java.util.List;
 
@@ -17,6 +17,12 @@ public class ASNEntry {
     String asname_short = "";
     String prefix = "";//网段信息
     String geo = "";
+
+    /**
+     * 用于fastjson反序列化
+     */
+    ASNEntry(){}
+
 
     /**
      * 从TSV文件加载数据
@@ -77,8 +83,19 @@ public class ASNEntry {
     }
 
     public boolean contains(String IP){
-        List<String> IPSet = IPAddressUtils.toIPList(prefix);
-        return IPSet.contains(IP);
+        if (prefix.contains("/")){
+            List<String> IPSet = IPAddressUtils.toIPList(prefix);
+            return IPSet.contains(IP);
+        }else {//这个速度更快，减少了查找时间
+            try {
+                String start = prefix.split("-")[0];
+                String end = prefix.split("-")[1];
+                return IPAddressUtils.checkIPIsInGivenRange(IP,start,end);
+            } catch (AddressStringException e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
     }
 
     /**
@@ -87,7 +104,7 @@ public class ASNEntry {
      * @return
      */
     public boolean equals(ASNEntry entry){
-        return asn.equals(entry.getAsn());
+        return this.toString().equals(entry.toString());
     }
 
     @Override
