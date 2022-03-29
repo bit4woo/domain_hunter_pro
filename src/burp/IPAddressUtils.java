@@ -250,7 +250,7 @@ public class IPAddressUtils {
 						InetAddress i = InetAddress.getByName(startip);
 						int startIPInt= ByteBuffer.wrap(i.getAddress()).getInt();
 
-						if (endip.indexOf(".") == -1) {
+						if (!endip.contains(".")) {
 							endip = startip.substring(0,startip.lastIndexOf("."))+endip;
 							//System.out.println(endip);
 						}

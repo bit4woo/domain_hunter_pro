@@ -4,6 +4,7 @@ import Tools.ToolPanel;
 import burp.BurpExtender;
 import burp.Commons;
 import burp.IMessageEditor;
+import burp.SystemUtils;
 import title.search.History;
 import title.search.LineSearch;
 import title.search.SearchDork;
@@ -391,15 +392,19 @@ public class LineTable extends JTable
 						selecteEntry.setAssetType(newLevel);
 						stdout.println(String.format("$$$ %s updated [AssetType-->%s]",selecteEntry.getUrl(),newLevel));
 						getLineTableModel().fireTableRowsUpdated(rows[0], rows[0]);
-					}else{//LineTableModel.getTitletList().indexOf("CDN|CertInfo")
+					}else if (modelCol == LineTableModel.getTitletList().indexOf("ASNInfo")) {
+						if (selecteEntry.getASNInfo().equals("")){
+							selecteEntry.freshASNInfo();
+						}else {
+							SystemUtils.writeToClipboard(selecteEntry.getASNInfo());
+						}
+					} else{//LineTableModel.getTitletList().indexOf("CDN|CertInfo")
 						//String value = TitlePanel.getTitleTable().getValueAt(rows[0], col).toString();//rows[0]是转换过的，不能再转换
 						//调用的是原始Jtable中的getValueAt，它本质上也是调用model中的getValueAt，但是有一次转换的过程！！！
 						String value = getModel().getValueAt(rows[0],modelCol).toString();
 						//调用的是我们自己实现的TableModel类中的getValueAt,相比Jtable类中的同名方法，就少了一次转换的过程！！！
 						//String CDNAndCertInfo = selecteEntry.getCDN();
-						Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-						StringSelection selection = new StringSelection(value);
-						clipboard.setContents(selection, null);
+						SystemUtils.writeToClipboard(value);
 					}
 				}
 			}

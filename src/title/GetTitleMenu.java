@@ -201,10 +201,14 @@ public class GetTitleMenu extends JPopupMenu {
 						try {
 							//https://api.shadowserver.org/net/asn?origin=116.198.3.100/24
 							//Set<String> IPSet = TitlePanel.getTitleTableModel().getPublicIPSetFromTitle();
+
+							/**之前只使用网络接口查询，是为了最开始缓存一点基础数据，减少查询次数。
+							 * 现在有了本地数据，不需要了
 							Set<String> publicSubnets = TitlePanel.getTitleTableModel().getPublicSubnets();
 							for (List<String> partition : Iterables.partition(publicSubnets, 200)) {
 								ASNQuery.batchQueryFromApi(partition);//接口有限制，请求过快，过频繁会被封。查网段是不错的选择
 							}
+							 */
 							TitlePanel.getTitleTableModel().freshAllASNInfo();
 						} catch (Exception e) {
 							e.printStackTrace();

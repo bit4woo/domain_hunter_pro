@@ -70,6 +70,7 @@
 				<includes>
 					<include>*.txt</include>  <!--保证dict.txt打包到jar中 -->
 					<include>*.xml</include>  <!-- 保证log4j2.xml打包进去 -->
+					<include>*.tsv</include>
 				</includes>
 				<excludes>
 					<exclude>*.yaml</exclude>

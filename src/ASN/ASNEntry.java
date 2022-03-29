@@ -18,6 +18,24 @@ public class ASNEntry {
     String prefix = "";//网段信息
     String geo = "";
 
+    /**
+     * 从TSV文件加载数据
+     *      * range_start range_end AS_number country_code AS_description
+     * @param lineFromTSV
+     */
+    public ASNEntry(String lineFromTSV){
+        try {
+            String[] items = lineFromTSV.split("\t");
+            prefix = items[0]+"-"+items[1];
+            asn = items[2];
+            geo = items[3];
+            asname_long = items[4];
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new IllegalArgumentException("data formate illegal");
+        }
+    }
+
     public String getAsn() {
         return asn;
     }
