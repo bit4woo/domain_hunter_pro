@@ -1,5 +1,7 @@
 package title;
 
+import ASN.ASNEntry;
+import ASN.ASNQuery;
 import GUI.GUIMain;
 import GUI.LineEntryMenuForBurp;
 import GUI.RunnerGUI;
@@ -19,6 +21,8 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.List;
 import java.util.*;
+
+import static javax.swing.JOptionPane.PLAIN_MESSAGE;
 
 public class LineEntryMenu extends JPopupMenu {
 
@@ -640,6 +644,19 @@ public class LineEntryMenu extends JPopupMenu {
 			}
 		});
 
+		JMenuItem setASNAliasItem = new JMenuItem(new AbstractAction("Set ASN Alias") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				LineEntry firstEntry = lineTable.getLineTableModel().getLineEntries().get(modleRows[0]);
+				String ip = firstEntry.getFirstIP();
+				ASNEntry asnEntry = ASNQuery.query(ip);
+				String alias = JOptionPane.showInputDialog("Input Alias",asnEntry.getAsname_long());
+				asnEntry.setAlias(alias);
+				ASNQuery.saveRecentToFile();
+				TitlePanel.getTitleTableModel().freshASNInfo(modleRows);
+			}
+		});
+
 
 		JMenuItem copyLocationURLItem = new JMenuItem(new AbstractAction("Copy Location URL") {
 			@Override
@@ -847,6 +864,7 @@ public class LineEntryMenu extends JPopupMenu {
 		this.add(assetTypeMenu);
 		this.add(batchAddCommentsItem);
 		this.add(batchFreshASNInfoItem);
+		this.add(setASNAliasItem);
 
 		this.addSeparator();
 

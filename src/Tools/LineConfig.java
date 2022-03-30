@@ -287,6 +287,7 @@ public class LineConfig {
 	}
 
 	/*
+	 * 返回结果值影响是否添加到table中，其实这里面可以对entry进行一些操作
 	 * 能通过过滤器返回true，否则返回false。判断是否是有用的记录。
 	 */
 	public static boolean doFilter(LineEntry entry) {
@@ -298,14 +299,13 @@ public class LineConfig {
 		//default requirement
 		if (entry.getStatuscode() <=0 ) {
 			stdout.println(String.format("--- [%s] --- no response",entry.getUrl()));
-			TitlePanel.getTitleTableModel().addNewNoResponseDomain(entry.getHost(), entry.getIP());
 			return false;
 		}
 
 		if (entry.getStatuscode() >=500 && ToolPanel.ignoreHTTPStaus500.isSelected()) {
 			stdout.println(String.format("--- [%s] --- status code >= 500",entry.getUrl()));
-			TitlePanel.getTitleTableModel().addNewNoResponseDomain(entry.getHost(), entry.getIP());
-			return false;
+			entry.setCheckStatus(LineEntry.CheckStatus_Checked);
+			return true;
 		}
 
 		if (entry.getStatuscode() == 400 && ToolPanel.ignoreHTTPStaus400.isSelected()) {//400 The plain HTTP request was sent to HTTPS port

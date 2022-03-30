@@ -64,7 +64,7 @@ public class ASNQuery {
         //https://api.ipdata.co/17.253.144.10/asn?api-key=test
     }
 
-    private static boolean saveRecentToFile() {
+    public static boolean saveRecentToFile() {
         try {
             String tmp = JSON.toJSONString(entriesRecentUsed);
             FileUtils.writeStringToFile(localFile, tmp,StandardCharsets.UTF_8);
@@ -127,7 +127,7 @@ public class ASNQuery {
         URL url = BurpExtender.class.getClassLoader().getResource(filename);
         File copyFile = new File("."+filename);
         try {
-            if (!copyFile.exists()){
+            if (!copyFile.exists()){//TODO文件更新后需要删除这个
                 FileUtils.copyURLToFile(url,copyFile);
             }
             List<String> dictList = FileUtils.readLines(copyFile, StandardCharsets.UTF_8);

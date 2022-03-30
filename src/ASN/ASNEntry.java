@@ -20,6 +20,7 @@ public class ASNEntry {
     String asname_short = "";
     String prefix = "";//网段信息
     String geo = "";
+    String alias = "";
 
     /**
      * 用于fastjson反序列化
@@ -88,6 +89,26 @@ public class ASNEntry {
 
     public void setGeo(String geo) {
         this.geo = geo;
+    }
+
+    public String getAlias() {
+        return alias;
+    }
+
+    public void setAlias(String alias) {
+        this.alias = alias;
+    }
+
+    /**
+     * ASN描述，主要用于用户查看
+     * @return
+     */
+    public String getASNDescription() {
+        if (!getAlias().equals("")){
+            return getAlias();
+        }else{
+            return getAsname_long();
+        }
     }
 
     public boolean contains(String IP){
