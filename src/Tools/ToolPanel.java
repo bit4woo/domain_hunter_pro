@@ -287,6 +287,19 @@ public class ToolPanel extends JPanel {
 			}
 		});
 
+		JButton btnFindSubnet = new JButton("Find Subnet");
+		threeFourthPanel.add(btnFindSubnet);
+		btnFindSubnet.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String content = inputTextArea.getText();
+				if (null != content) {
+					List<String> subnets = DomainProducer.grepSubnet(content);
+					outputTextArea.setText(String.join(System.lineSeparator(), subnets));
+				}
+			}
+		});
+
 		JButton btnOpenurls = new JButton("OpenURLs");
 		threeFourthPanel.add(btnOpenurls);
 		btnOpenurls.addActionListener(new ActionListener() {

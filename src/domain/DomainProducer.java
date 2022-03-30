@@ -331,7 +331,7 @@ public class DomainProducer extends Thread {//Producer do
 
 	public static List<String> grepIP(String httpResponse) {
 		Set<String> IPSet = new HashSet<>();
-		String[] lines = httpResponse.split("\r\n");
+		List<String> lines = Commons.textToLines(httpResponse);
 
 		for (String line:lines) {
 			Matcher matcher = PatternsFromAndroid.IP_ADDRESS.matcher(line);
@@ -348,10 +348,34 @@ public class DomainProducer extends Thread {//Producer do
 
 	public static List<String> grepIPAndPort(String httpResponse) {
 		Set<String> IPSet = new HashSet<>();
-		String[] lines = httpResponse.split("\r\n");
+		String[] lines = httpResponse.split("(\r\n|\r|\n)");
 
 		for (String line:lines) {
 			String pattern = "\\d{1,3}(?:\\.\\d{1,3}){3}(?::\\d{1,5})?";
+			Pattern pt = Pattern.compile(pattern);
+			Matcher matcher = pt.matcher(line);
+			while (matcher.find()) {//多次查找
+				String tmpIP = matcher.group();
+				IPSet.add(tmpIP);
+			}
+		}
+
+		List<String> tmplist= new ArrayList<>(IPSet);
+		Collections.sort(tmplist);
+		return tmplist;
+	}
+
+	/**
+	 * 提取网段信息 比如143.11.99.0/24
+	 * @param httpResponse
+	 * @return
+	 */
+	public static List<String> grepSubnet(String httpResponse) {
+		Set<String> IPSet = new HashSet<>();
+		String[] lines = httpResponse.split("(\r\n|\r|\n)");
+
+		for (String line:lines) {
+			String pattern = "\\d{1,3}(?:\\.\\d{1,3}){3}(?:/\\d{1,2})?";
 			Pattern pt = Pattern.compile(pattern);
 			Matcher matcher = pt.matcher(line);
 			while (matcher.find()) {//多次查找
@@ -403,7 +427,11 @@ public class DomainProducer extends Thread {//Producer do
 	}
 
 	public static void main(String[] args) {
-		test3();
+		test4();
+	}
+	public static void test4(){
+		System.out.println(grepSubnet("202.181.90.0/24\tSHOPEE SINGAPORE PRIVATE LIMITEDSingapore\n" +
+				"202.181.91.0/24\tSHOPEE SINGAPORE PRIVATE LIMITEDSingapore"));
 	}
 
 	public static void test3(){
