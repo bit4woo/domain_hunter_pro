@@ -300,6 +300,19 @@ public class ToolPanel extends JPanel {
 			}
 		});
 
+		JButton btnFindEmail = new JButton("Find Email");
+		threeFourthPanel.add(btnFindEmail);
+		btnFindEmail.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String content = inputTextArea.getText();
+				if (null != content) {
+					Set<String> emails = DomainProducer.grepEmail(content);
+					outputTextArea.setText(String.join(System.lineSeparator(), emails));
+				}
+			}
+		});
+
 		JButton btnOpenurls = new JButton("OpenURLs");
 		threeFourthPanel.add(btnOpenurls);
 		btnOpenurls.addActionListener(new ActionListener() {

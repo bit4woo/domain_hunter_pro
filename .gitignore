@@ -7,3 +7,4 @@
 *.iml
 /.settings/
 .classpath
+.ip2asn-v4.tsv
