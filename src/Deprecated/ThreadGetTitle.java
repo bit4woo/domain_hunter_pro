@@ -80,7 +80,7 @@ public class ThreadGetTitle{
 
 	public void stopThreads() {
 		for (Producer p:plist) {
-			p.stopThread();
+			p.setStopflag(true);
 		}
 		stdout.println("~~~~~~~~~~~~~All stop message sent! wait them to exit~~~~~~~~~~~~~");
 	}

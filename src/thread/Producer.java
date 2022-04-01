@@ -43,8 +43,8 @@ public class Producer extends Thread {//Producer do
 		this.setName(this.getClass().getName()+threadNo);
 	}
 
-	public void stopThread() {
-		stopflag = true;
+	public void setStopflag(boolean stop) {
+		stopflag = stop;
 	}
 
 	@Override
@@ -55,12 +55,12 @@ public class Producer extends Thread {//Producer do
 					stdout.println(getName()+" exited. due to domainQueue is empty");
 					break;
 				}
-				if (stopflag){
-					stdout.println(getName()+" exited. due to stop flag is true");
+				if (Thread.interrupted()){//没有起作用！
+					stdout.println(getName()+" exited. due to thread interrupt signal received");
 					break;
 				}
-				if (Thread.interrupted()){
-					stdout.println(getName()+" exited. due to thread interrupt signal received");
+				if (stopflag){
+					stdout.println(getName()+" exited. due to stop flag is true");
 					break;
 				}
 
@@ -140,5 +140,17 @@ public class Producer extends Thread {//Producer do
 			}
 		}
 		return null;
+	}
+
+	public static void main(String[] args) {
+		int i= 0;
+		while(true) {
+			if (i >= 10) {
+				System.out.println("exited.");
+				break;
+			}
+			i++;
+		}
+		System.out.println("1111");
 	}
 }
