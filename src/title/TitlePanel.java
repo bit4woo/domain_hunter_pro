@@ -11,11 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
 import burp.BurpExtender;
@@ -228,7 +224,9 @@ public class TitlePanel extends JPanel {
 	 * 根据所有已知域名获取title
 	 */
 	public void getAllTitle(){
-
+		if (!stopGetTitleThread(true)){//其他get title线程未停止
+			return;
+		}
 		DomainPanel.backupDB();
 
 		Set<String> domains = new HashSet<>();//新建一个对象，直接赋值后的删除操作，实质是对domainResult的操作。
@@ -248,9 +246,6 @@ public class TitlePanel extends JPanel {
 		//clear tableModel
 
 		titleTableModel.clear(true);//clear
-		if (threadGetTitle != null){
-			threadGetTitle.interrupt();
-		}
 
 		threadGetTitle = new ThreadGetTitleWithForceStop(domains,tempConfig.getThreadNumber());
 		threadGetTitle.start();
@@ -258,6 +253,9 @@ public class TitlePanel extends JPanel {
 
 
 	public void getExtendTitle(){
+		if (!stopGetTitleThread(true)){//其他get title线程未停止
+			return;
+		}
 		DomainPanel.backupDB();
 
 		Set<String> extendIPSet = titleTableModel.GetExtendIPSet();
@@ -267,10 +265,8 @@ public class TitlePanel extends JPanel {
 		if (tempConfig.getThreadNumber() <=0) {
 			return;
 		}
-		
-		if (threadGetTitle != null){
-			threadGetTitle.interrupt();
-		}
+
+
 		threadGetTitle = new ThreadGetTitleWithForceStop(extendIPSet,tempConfig.getThreadNumber());
 		threadGetTitle.start();
 
@@ -289,6 +285,10 @@ public class TitlePanel extends JPanel {
 	 * 获取新发现域名的title，这里会尝试之前请求失败的域名，可能需要更多时间
 	 */
 	public void getTitleOfNewDomain(){
+		if (!stopGetTitleThread(true)){//其他get title线程未停止
+			return;
+		}
+
 		DomainPanel.backupDB();
 
 		Set<String> newDomains = new HashSet<>(DomainPanel.getDomainResult().getSubDomainSet());//新建一个对象，直接赋值后的删除操作，实质是对domainResult的操作。
@@ -307,10 +307,8 @@ public class TitlePanel extends JPanel {
 		if (tempConfig.getThreadNumber() <=0) {
 			return;
 		}
-		
-		if (threadGetTitle != null){
-			threadGetTitle.interrupt();
-		}
+
+
 		threadGetTitle = new ThreadGetTitleWithForceStop(newDomains,tempConfig.getThreadNumber());
 		threadGetTitle.start();
 	}
@@ -389,4 +387,23 @@ public class TitlePanel extends JPanel {
 		lblSummaryOfTitle.setText(status);
 	}
 
+	/**
+	 * 返回是否发送了stop信号
+	 * @param askBeforeStop
+	 * @return
+	 */
+	public boolean stopGetTitleThread(boolean askBeforeStop){
+		if (threadGetTitle != null && threadGetTitle.isAlive()){
+			if (askBeforeStop){
+				int confirm = JOptionPane.showConfirmDialog(null,"Other Get Title Thread Is Running," +
+						"Are you sure to stop it and run this task?");
+				if (confirm != JOptionPane.YES_OPTION){
+					return false;
+				}
+			}
+			threadGetTitle.interrupt();
+			return true;
+		}
+		return true;
+	}
 }

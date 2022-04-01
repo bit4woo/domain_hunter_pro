@@ -161,9 +161,11 @@ public class GetTitleMenu extends JPopupMenu {
 		StopItem = new JMenuItem(new AbstractAction("Stop Threads") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				int result = JOptionPane.showConfirmDialog(null,"Are you sure to [Force Stop] all theads ?");
-				if (TitlePanel.threadGetTitle != null && result == JOptionPane.YES_OPTION){
-					TitlePanel.threadGetTitle.forceStopThreads();
+				if (TitlePanel.threadGetTitle != null && TitlePanel.threadGetTitle.isAlive() ){
+					int result = JOptionPane.showConfirmDialog(null,"Are You Sure To [Force Stop] All Get Title Threads ?");
+					if (result == JOptionPane.YES_OPTION){
+						TitlePanel.threadGetTitle.forceStopThreads();
+					}
 				}
 			}
 		});
