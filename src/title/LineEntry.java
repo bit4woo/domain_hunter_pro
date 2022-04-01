@@ -563,7 +563,7 @@ public class LineEntry {
 				if (IPAddressUtils.isValidIP(ip) && !IPAddressUtils.isPrivateIPv4(ip)){
 					ASNEntry asn = ASNQuery.query(ip);
 					if (null != asn){
-						this.ASNInfo = asn.getASNDescription();
+						this.ASNInfo = asn.fetchASNDescription();
 					}
 				}
 			}

@@ -102,8 +102,9 @@ public class ASNEntry {
     /**
      * ASN描述，主要用于用户查看
      * @return
+     * get开头的函数会被序列化过程调用
      */
-    public String getASNDescription() {
+    public String fetchASNDescription() {
         if (!getAlias().equals("")){
             return getAlias();
         }else{
@@ -115,7 +116,9 @@ public class ASNEntry {
         if (prefix.contains("/")){
             List<String> IPSet = IPAddressUtils.toIPList(prefix);
             return IPSet.contains(IP);
-        }else {//这个速度更快，减少了查找时间
+        }
+
+        if (prefix.contains("-")){//这个速度更快，减少了查找时间
             try {
                 String start = prefix.split("-")[0];
                 String end = prefix.split("-")[1];
@@ -125,9 +128,14 @@ public class ASNEntry {
                 return false;
             }
         }
+
+        return false;
     }
 
-    public int getNumberOfIP(){
+    /**
+     * get开头的函数会被序列化过程调用
+     */
+    public int FetchumberOfIP(){
         String start = prefix.split("-")[0];
         String end = prefix.split("-")[1];
         IPAddress startIPAddress = new IPAddressString(start).getAddress();
