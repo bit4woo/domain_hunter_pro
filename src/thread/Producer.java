@@ -51,10 +51,19 @@ public class Producer extends Thread {//Producer do
 	public void run() {
 		while(true){
 			try {
-				if (domainQueue.isEmpty() || stopflag) {
-					//stdout.println(threadNo+" Producer exited");
+				if (domainQueue.isEmpty() ) {
+					stdout.println(getName()+" exited. due to domainQueue is empty");
 					break;
 				}
+				if (stopflag){
+					stdout.println(getName()+" exited. due to stop flag is true");
+					break;
+				}
+				if (Thread.interrupted()){
+					stdout.println(getName()+" exited. due to thread interrupt signal received");
+					break;
+				}
+
 				String host = domainQueue.take();
 				int leftTaskNum = domainQueue.size();
 

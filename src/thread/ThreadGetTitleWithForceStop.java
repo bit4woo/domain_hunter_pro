@@ -54,15 +54,14 @@ public class ThreadGetTitleWithForceStop extends Thread{
 			//https://www.cnblogs.com/zheaven/p/12054044.html
 		} catch (InterruptedException e) {
 			stdout.println("force stop received");
+			for (Producer p:plist) {
+				p.interrupt();//由于当前主线程退出，并非是JVM退出，子线程还会继续运行，必须主动中断子线程才可以。
+			}
 			e.printStackTrace();
 		}
 
 		stdout.println("all producer threads finished");
 		AllProductorFinished = true;
-	}
-
-	boolean isAllProductorFinished(){
-		return AllProductorFinished;
 	}
 
 	@Deprecated
