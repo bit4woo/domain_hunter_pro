@@ -35,7 +35,7 @@ public class ThreadGetTitleWithForceStop extends Thread{
 
 		plist = new ArrayList<Producer>();
 
-		for (int i=0;i<=threadNumber;i++) {
+		for (int i=0;i<threadNumber;i++) {
 			Producer p = new Producer(domainQueue,i);
 			//Producer p = new Producer(callbacks,domainQueue,sharedQueue,i);
 			p.setDaemon(true);//将子线程设置为守护线程，会随着主线程的结束而立即结束。只有当JVM也退出时才可以！
@@ -53,7 +53,7 @@ public class ThreadGetTitleWithForceStop extends Thread{
 		} catch (InterruptedException e) {
 			stdout.println(getName()+": force stop received");
 			for (Producer p:plist) {
-				p.interrupt();//没有起作用，奇怪！为什么呢？
+				p.interrupt();//没有起作用，奇怪！为什么呢？就因为没有捕获InterruptedException吗？
 				p.setStopflag(true);//由于当前主线程退出，并非是JVM退出，子线程还会继续运行，必须主动中断子线程才可以。
 			}
 			e.printStackTrace();
