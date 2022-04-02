@@ -394,6 +394,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		Set<String> IPsOfcertainSubnets = DomainPanel.fetchTargetModel().fetchTargetIPSet();//用户配置的确定IP+网段
 		IPsOfDomain.addAll(IPsOfcertainSubnets);
 		IPsOfDomain.removeAll(DomainPanel.getDomainResult().getNotTargetIPSet());
+		//计算网段前，将CDN和云服务的IP排除在外，这就是这个集合的主要作用！
 
 		Set<String> subnets = IPAddressUtils.toSmallerSubNets(IPsOfDomain);//当前所有title结果+确定IP/网段计算出的IP网段
 
@@ -703,10 +704,9 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	}
 
 	/**
-	 * 	如果记录的Host是IP，且认为不是目标资产，那么将其加入NotTarget集合
+	 * 	主要用于记录CDN或者云服务的IP地址，在做网段汇算时排除这些IP。
 	 */
-
-	public void addHostToTargetBlackList(int[] rows) {
+	public void addIPToTargetBlackList(int[] rows) {
 		synchronized (lineEntries) {
 			//because thread let the delete action not in order, so we must loop in here.
 			//list length and index changed after every remove.the origin index not point to right item any more.

@@ -38,8 +38,10 @@ public class DomainManager {
     private Set<String> relatedDomainSet = new CopyOnWriteArraySet<String>();
     //private Set<String> IsTargetButUselessDomainSet = new CopyOnWriteArraySet<String>();
     //有效(能解析IP)但无用的域名，比如JD的网店域名、首页域名等对信息收集、聚合网段、目标界定有用，但是本身几乎不可能有漏洞的资产。
-    private Set<String> NotTargetIPSet = new CopyOnWriteArraySet<String>();//IP集合，那些非目标资产的IP集合。只存IP，不存网段。
-    //存储域名解析到CDN的这类IP。
+
+    private Set<String> NotTargetIPSet = new CopyOnWriteArraySet<String>();
+    //存储域名解析到的CDN或云服务的IP。这类IP在做网段汇算时，应当被排除在外。
+
     //private ConcurrentHashMap<String, Integer> unkownDomainMap = new ConcurrentHashMap<String, Integer>();//记录域名和解析失败的次数，大于五次就从子域名中删除。
     private Set<String> EmailSet = new CopyOnWriteArraySet<String>();
     private Set<String> PackageNameSet = new CopyOnWriteArraySet<String>();

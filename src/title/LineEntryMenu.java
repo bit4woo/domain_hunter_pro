@@ -843,19 +843,19 @@ public class LineEntryMenu extends JPopupMenu {
 		removeSubDomainItem.setToolTipText("Delete Host From Subdomain Set In Domain Panel");
 
 		/**
-		 * 认为资产不是目标资产，加入NotTargeIPSet，不做其他修改
-		 * 黑名单仅用于标记title记录，不会不请求对应的web
+		 * 黑名单主要用于记录CDN或者云服务IP，避免计算网段时包含这些IP。
 		 */
-		JMenuItem addToblackListItem = new JMenuItem(new AbstractAction("Add Host To Black List") {//need to show dialog to confirm
+		JMenuItem addToblackListItem = new JMenuItem(new AbstractAction("Add IP Address To Black List") {//need to show dialog to confirm
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				int result = JOptionPane.showConfirmDialog(null,"Are you sure to ADD Host(Must Be IP) to Black List ?");
+				int result = JOptionPane.showConfirmDialog(null,"Are You Sure To ADD These IP Addresses to Black List?" +
+						"\n\rThese IP Addresses Will Excluded When Calculate Subnet");
 				if (result == JOptionPane.YES_OPTION) {
-					lineTable.getLineTableModel().addHostToTargetBlackList(modleRows);
+					lineTable.getLineTableModel().addIPToTargetBlackList(modleRows);
 				}
 			}
 		});
-		addToblackListItem.setToolTipText("If host is IP address,will be added to Target Black List");
+		addToblackListItem.setToolTipText("IP addresses will be added to Black List");
 
 		this.add(itemNumber);
 		this.add(checkingItem);

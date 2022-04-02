@@ -34,8 +34,8 @@ public class LineEntry {
 	public static final String[] CheckStatusArray = {LineEntry.CheckStatus_UnChecked, LineEntry.CheckStatus_Checking,
 			LineEntry.CheckStatus_Checked,LineEntry.CheckStatus_MoreAction};
 
-	public static final String NotTargetBaseOnCertInfo = "NotTargetBaseOnCertInfo";
-	public static final String NotTargetBaseOnBlackList = "NotTargetBaseOnBlackList";
+	public static final String NotTargetBaseOnCertInfo = "CertInfoNotMatch";
+	public static final String NotTargetBaseOnBlackList = "IPInBlackList";
 
 	public static final String EntryType_Web = "Web";
 	public static final String EntryType_DNS = "DNS";
