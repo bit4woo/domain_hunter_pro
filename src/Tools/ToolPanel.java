@@ -65,6 +65,8 @@ public class ToolPanel extends JPanel {
 	public static JTextField textFieldElasticUserPass;
 	public static JTextField textFieldUploadApiToken;
 
+	String history = "";
+
 	public static LineConfig getLineConfig() {
 		return lineConfig;
 	}
@@ -552,10 +554,11 @@ public class ToolPanel extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				try {
 					String content = inputTextArea.getText();
-					String toFind = JOptionPane.showInputDialog("to find which value", null);
+					String toFind = JOptionPane.showInputDialog("to find which value", history);
 					if (toFind == null) {
 						return;
 					} else {
+						history = toFind;
 						//stdout.println(content);
 						ArrayList<String> result = JSONHandler.grepValueFromJson(content, toFind);
 						//								stdout.println("##################Result of Grep JSON##################");
@@ -580,11 +583,13 @@ public class ToolPanel extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
-					String toFind = JOptionPane.showInputDialog("to find which value", null);
+
+					String toFind = JOptionPane.showInputDialog("to find which value", history);
 					ArrayList<String> result = new ArrayList<String>();
 					if (toFind == null) {
 						return;
 					} else {
+						history = toFind;
 						List<String> content = Commons.getLinesFromTextArea(inputTextArea);
 						for (String item:content) {
 							if (item.toLowerCase().contains(toFind.toLowerCase().trim())) {
@@ -608,10 +613,12 @@ public class ToolPanel extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
-					String toFind = JOptionPane.showInputDialog("Input Regex", null);
+					String toFind = JOptionPane.showInputDialog("Input Regex", history);
+
 					if (toFind == null) {
 						return;
 					} else {
+						history = toFind;
 						ArrayList<String> result = new ArrayList<String>();
 						String PATTERN = toFind;
 						Pattern pRegex = Pattern.compile(PATTERN);
@@ -725,7 +732,11 @@ public class ToolPanel extends JPanel {
 				try {
 					List<String> IPs = Commons.getLinesFromTextArea(inputTextArea);
 					Set<String> subnets = IPAddressUtils.toSmallerSubNets(new HashSet<String>(IPs));
-					outputTextArea.setText(String.join(System.lineSeparator(), subnets));
+
+					List<String> tmplist= new ArrayList<>(subnets);//排序
+					Collections.sort(tmplist);
+
+					outputTextArea.setText(String.join(System.lineSeparator(), tmplist));
 				} catch (Exception e1) {
 					outputTextArea.setText(e1.getMessage());
 					e1.printStackTrace(stderr);
