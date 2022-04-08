@@ -217,7 +217,8 @@ public class TargetTableModel extends AbstractTableModel {
 		String target = entry.getTarget();
 		if (!(DomainNameUtils.isValidDomain(target) ||
 				IPAddressUtils.isValidIP(target)||
-				IPAddressUtils.isValidSubnet(target))) {
+				IPAddressUtils.isValidSubnet(target)||
+				DomainNameUtils.isValidWildCardDomain(target))) {
 			return false;
 		}
 		return true;
@@ -328,6 +329,27 @@ public class TargetTableModel extends AbstractTableModel {
 			if (!ifValid(entry)) continue;
 			try {
 				if (!entry.isBlack() && entry.getType().equals(TargetEntry.Target_Type_Domain)) {
+					result.add(entry.getTarget());
+				}
+			}catch (Exception e){
+				e.printStackTrace();
+			}
+		}
+		return result;
+	}
+
+
+	/**
+	 * 返回目标集合，只返回正则格式的域名；不包含IP、网段、和纯文本的域名。
+	 * seller.*.example.*
+	 * @return
+	 */
+	public Set<String> fetchTargetWildCardDomainSet() {
+		Set<String> result = new HashSet<String>();
+		for (TargetEntry entry:targetEntries.values()) {
+			if (!ifValid(entry)) continue;
+			try {
+				if (!entry.isBlack() && entry.getType().equals(TargetEntry.Target_Type_Wildcard_Domain)) {
 					result.add(entry.getTarget());
 				}
 			}catch (Exception e){
@@ -537,6 +559,14 @@ public class TargetTableModel extends AbstractTableModel {
 				rootdomain  = DomainNameUtils.cleanDomain(rootdomain);
 				if (DomainNameUtils.isWhiteListTDL(domain,rootdomain)) {
 					return DomainManager.TLD_DOMAIN;
+				}
+			}
+
+			Set<String> targetWildCardDomains = fetchTargetWildCardDomainSet();
+			for (String rootdomain:targetWildCardDomains) {
+				rootdomain  = DomainNameUtils.cleanDomain(rootdomain);
+				if (DomainNameUtils.isMatchWildCardDomain(rootdomain,domain)){
+					return DomainManager.SUB_DOMAIN;
 				}
 			}
 

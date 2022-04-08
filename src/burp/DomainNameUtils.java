@@ -1,6 +1,7 @@
 package burp;
 
 import com.google.common.net.InternetDomainName;
+import domain.DomainPanel;
 import org.xbill.DNS.Record;
 import org.xbill.DNS.*;
 
@@ -40,6 +41,83 @@ public class DomainNameUtils {
 		return false;
 	}
 
+
+	/**
+	 * seller.uat.example.com.my
+	 * seller.uat.example.ph
+	 * seller.uat.example.sg
+	 * seller.test.example.ph
+	 * seller.test.example.sg
+	 * seller.uat.example.co.id
+	 * seller.uat.example.co.th
+	 * seller.test.example.vn
+	 * seller.uat.example.vn
+	 * 经常会遇到这样的域名；其中的环境关键词和后缀TLD都是变化的。
+	 * 但是它们属于同一类业务，我们需要能够识别这种类型的资产
+	 * seller.*.example.*
+	 * @param domain
+	 * @return
+	 */
+	public static boolean isValidWildCardDomain(String domain) {
+		if (null == domain) {
+			return false;
+		}
+
+		/**
+		 * 和isValidDomain()中的正则进行比较：
+		 * 前面的部分可以是((?!-)[A-Za-z0-9-]{1,63}(?<!-)\.)即不以-开头的字符串，长度1到63；也可以是(\*\.)，即*.
+		 * 后缀部分即可以是[A-Za-z]{2,6}，也可以是*
+		 */
+		final String DOMAIN_NAME_PATTERN = "^(((?!-)[A-Za-z0-9-]{1,63}(?<!-)\\.)|(\\*\\.))+([A-Za-z]{2,6}|\\*)$";
+		//final String DOMAIN_NAME_PATTERN = "([A-Za-z0-9-]{1,63}(?<!-)\\.)+[A-Za-z]{2,6}";//-this.state.scroll 这种也会被认为是合法的。
+		Pattern pDomainNameOnly = Pattern.compile(DOMAIN_NAME_PATTERN);
+		Matcher matcher = pDomainNameOnly.matcher(domain);
+		boolean formateOk = matcher.matches();
+		if (formateOk){
+			//a86ba224e43010880724df4a4be78c11
+			//administratoradministrator
+			//虽然按照RFC的规定，域名的单个字符的模块长度可以是63。但是实际使用情况中，基本不可能有这样的域名。
+			String tmp = domain.replaceAll("-", ".");
+			String[] tmpArray= tmp.split("\\.");
+			for (String item:tmpArray){
+				if (item.length()>=32){
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 *
+	 * @param wildCardDomain 比如seller.*.example.*
+	 * @param StrDomain 比如seller.uat.example.vn
+	 * @return 判断StrDomain是否符合wildCardDomain的规则
+	 * 注意："seller.xx.example.com"不能匹配"*.seller.*.example.*"和日常的思路想法有点不同
+	 */
+	public static boolean isMatchWildCardDomain(String wildCardDomain,String StrDomain){
+		String domainRegex = wildCardDomain;
+		//"seller.xx.example.com"应当匹配"*.seller.*.example.*"
+		if (domainRegex.startsWith("*.")){
+			domainRegex = domainRegex.replaceFirst("\\*\\.","((?!-)[A-Za-z0-9-]{1,63}(?<!-))+.");
+		}
+		if (domainRegex.endsWith(".*")){
+			domainRegex = Commons.replaceLast(domainRegex,".*",".((?!-)[A-Za-z0-9-]{1,63}(?<!-)\\.)*[A-Za-z]{2,6}");
+		}
+
+		//考虑一些极端情况（*.*sel*ler*.*.*ex*ample*.*）
+		//1 ".*."  这种情况*的内容不能为空，用+
+		domainRegex = domainRegex.replaceAll("\\.\\*\\.",".((?!-)[A-Za-z0-9-]{1,63}(?<!-))+.");
+		//2 ".*."替换后，剩下的只有 ".*字符串" 和 "字符串*." 两种情况了，
+		//3 ".*字符串"不可以以"-"开头，但是可以以它结尾
+		domainRegex = domainRegex.replaceAll("\\.\\*",".((?!-)[A-Za-z0-9-]{1,63})*");
+		//4 "字符串*."可以以"-"开头，但是不可以以它结尾
+		domainRegex = domainRegex.replaceAll("\\.\\*",".([A-Za-z0-9-]{1,63}(?<!-))*");
+
+		//replaceFirst的参数也是正则，能代替正则匹配？
+		return "".equals(StrDomain.replaceFirst(domainRegex,""));
+	}
 
 
 	//http://www.xbill.org/dnsjava/dnsjava-current/examples.html
@@ -200,7 +278,7 @@ public class DomainNameUtils {
 	 * 是否是TLD域名。比如 baidu.net 是baidu.com的TLD域名
 	 * 注意：www.baidu.com不是baidu.com的TLD域名，但是是子域名！！！
 	 *
-	 * 这里的rootDomain不一定是 topPrivate。比如 shopeepay.shopee.sg 和shopeepay.shopee.io
+	 * 这里的rootDomain不一定是 topPrivate。比如 examplepay.example.sg 和examplepay.example.io
 	 * @param domain
 	 * @param rootDomain
 	 */
@@ -275,8 +353,8 @@ public class DomainNameUtils {
 
 	/**
 	 * 由于这里的rootDomain是我们自己指定的不一定是topPrivate。
-	 * 比如 shopeepay.shopee.sg 和shopeepay.shopee.io 应该返回false
-	 * 比如 shopeepay.shopee.sg shopee.io 应该返回true
+	 * 比如 examplepay.example.sg 和examplepay.example.io 应该返回false
+	 * 比如 examplepay.example.sg example.io 应该返回true
 	 *
 	 * 关键看rootDomain是不是topPrivate
 	 *
@@ -298,9 +376,23 @@ public class DomainNameUtils {
 		}
 	}
 
+	public static void testWildCard(){
+		System.out.println(isMatchWildCardDomain("*.baidu.com","www.baidu.com"));
+		System.out.println(isMatchWildCardDomain("*.seller.*.example.*","www.baidu.com"));
+		System.out.println(isMatchWildCardDomain("*.seller.*.example.*","seller.xx.example.com"));
+		System.out.println(isMatchWildCardDomain("*.*","aaa"));
+		System.out.println(isMatchWildCardDomain("*.*","aa.aa"));
+	}
+
 	public static void main(String[] args) {
-		System.out.println(isWhiteListTDL("test.shopee.co.th","shopee.com"));
+		//System.out.println(isWhiteListTDL("test.example.co.th","example.com"));
 		//System.out.println(isValidDomain("www1.baidu.com"));
+//		System.out.println(isValidWildCardDomain("*.aaa.*"));
+//		System.out.println(isValidWildCardDomain("seller.*.example.*"));
+//		System.out.println(isValidWildCardDomain("seller.*.example.com"));
+//		System.out.println(isValidWildCardDomain("seller.aaa.example.com"));
+		testWildCard();
+
 		//System.out.println(isValidDomain("aaaaaaaaa-aaaaaaaaaaaaaaa-aaaaaaaaaaaaaa.www1.baidu.com"));
 	}
 }

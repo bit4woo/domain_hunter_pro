@@ -2,10 +2,7 @@ package domain.target;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.commons.io.FileUtils;
 
@@ -29,6 +26,7 @@ public class TargetEntry {
 	private boolean useTLD = true;//TLD= Top-Level Domain,比如 baidu.com为true，*.m.baidu.com为false
 
 	public static final String Target_Type_Domain = "Domain";
+	public static final String Target_Type_Wildcard_Domain = "WildcardDomain"; //
 	public static final String Target_Type_Subnet = "Subnet";
 	public static final String Target_Type_IPaddress = "IP";
 
@@ -43,6 +41,8 @@ public class TargetEntry {
 	public TargetEntry(String input) {
 		this(input,true);
 	}
+
+
 	public TargetEntry(String input,boolean autoSub) {
 		if (input == null) return;
 		String domain = DomainNameUtils.cleanDomain(input);
@@ -73,6 +73,35 @@ public class TargetEntry {
 		if (domain != null && IPAddressUtils.isValidSubnet(domain)) {
 			type = Target_Type_Subnet;
 			target = domain;
+		}
+
+		/**需要将它改造为正则表达式，去匹配域名
+		 * seller.*.example.*
+		 * seller.*.example.*
+		 */
+		if (domain != null && DomainNameUtils.isValidWildCardDomain(domain)) {
+			type = Target_Type_Wildcard_Domain;
+			target = domain;
+
+			//先替换*.如果末尾有*自然会被剩下。
+
+			//final String DOMAIN_NAME_PATTERN = "^((?!-)[A-Za-z0-9-]{1,63}(?<!-)\\.)+[A-Za-z]{2,6}$";
+			String domainKeyword = domain;
+			domainKeyword = domainKeyword.replaceAll("\\*\\.","");
+			domainKeyword = domainKeyword.replaceAll("\\.\\*","");
+			if (domainKeyword.indexOf(".") > 0){
+				keyword = domainKeyword.substring(0, target.indexOf("."));
+			}else {
+				keyword = domainKeyword;
+			}
+
+			HashSet<String> tmpSet = new HashSet<>(DomainPanel.getDomainResult().getRelatedDomainSet());
+			for (String tmp : tmpSet){
+				//replaceFirst的参数也是正则，能代替正则匹配？
+				if (DomainNameUtils.isMatchWildCardDomain(domain,tmp)){
+					DomainPanel.getDomainResult().getRelatedDomainSet().remove(domain);//刷新时不能清空，所有要有删除操作。
+				}
+			}
 		}
 	}
 
