@@ -38,8 +38,8 @@ public class TargetTableModel extends AbstractTableModel {
 	}
 	public TargetTableModel(){
 		try{
-			//stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
-			//stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
+			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
+			stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
 		}catch (Exception e){
 			stdout = new PrintWriter(System.out, true);
 			stderr = new PrintWriter(System.out, true);
