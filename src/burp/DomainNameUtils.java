@@ -316,7 +316,7 @@ public class DomainNameUtils {
 	 * @param rootDomain
 	 * @return
 	 */
-	public static boolean isWhiteListTDL(String domain,String rootDomain){
+	public static boolean isWhiteListTLD(String domain, String rootDomain){
 		String listStr = ".ac|.ad|.ae|.af|.ag|.ai|.al|.am|.ao|.aq|.ar|.as|.at|.au|.aw|.ax|.az|.ba|" +
 				".bb|.bd|.be|.bf|.bg|.bh|.bi|.bj|.bm|.bn|.bo|.bq|.br|.bs|.bt|.bw|.by|.bz|.ca|" +
 				".cc|.cd|.cf|.cg|.ch|.ci|.ck|.cl|.cm|.cn|.co|.com|.cr|.cu|.cv|.cw|.cx|.cy|.cz|" +

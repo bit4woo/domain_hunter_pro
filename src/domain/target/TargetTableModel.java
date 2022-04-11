@@ -4,7 +4,6 @@ import GUI.GUIMain;
 import burp.*;
 import com.google.common.net.InternetDomainName;
 import com.google.gson.Gson;
-import domain.CertInfo;
 import domain.DomainManager;
 import domain.DomainPanel;
 import org.apache.commons.io.FileUtils;
@@ -525,6 +524,39 @@ public class TargetTableModel extends AbstractTableModel {
 		return fetchTargetIPSet().contains(domain);
 	}
 
+	public void debugPrint(String domain,int type,String reason) {
+		boolean debug= true;
+		if (debug){
+			try {
+				String typeStr ="";
+				if (type == DomainManager.SUB_DOMAIN){
+					typeStr= "SUB_DOMAIN";
+				}
+				if (type == DomainManager.IP_ADDRESS){
+					typeStr= "IP_ADDRESS";
+				}
+				if (type == DomainManager.PACKAGE_NAME){
+					typeStr= "PACKAGE_NAME";
+				}
+				if (type == DomainManager.TLD_DOMAIN){
+					typeStr= "TLD_DOMAIN";
+				}
+				if (type == DomainManager.USELESS){
+					typeStr= "USELESS";
+				}
+				if (type == DomainManager.NEED_CONFIRM_IP){
+					typeStr= "NEED_CONFIRM_IP";
+				}
+
+				String line = String.format("%s is recognised as %s, reason: %s",domain,typeStr,reason);
+				System.out.println(line);
+				BurpExtender.getStdout().println(line);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
 	/**
 	 * 判断域名或IP，是否为我们的目标资产。完全是根据target中的配置来判断的。
 	 * @param domain
@@ -536,10 +568,12 @@ public class TargetTableModel extends AbstractTableModel {
 
 			//格式校验，package那么也是符合域名的正则格式的。
 			if (!DomainNameUtils.isValidDomain(domain) && !IPAddressUtils.isValidIP(domain)) {
+				debugPrint(domain,DomainManager.USELESS,"Not a valid domain or IP address");
 				return DomainManager.USELESS;
 			}
 
 			if (isBlack(domain)) {
+				debugPrint(domain,DomainManager.USELESS,"In black list");
 				return DomainManager.USELESS;
 			}
 
@@ -547,17 +581,20 @@ public class TargetTableModel extends AbstractTableModel {
 			for (String rootdomain:targetDomains) {
 				rootdomain  = DomainNameUtils.cleanDomain(rootdomain);
 				if (domain.endsWith("."+rootdomain)||domain.equalsIgnoreCase(rootdomain)){
+					debugPrint(domain,DomainManager.SUB_DOMAIN,"sub-domain of "+rootdomain);
 					return DomainManager.SUB_DOMAIN;
 				}
 			}
 
 			if (fetchTargetIPSet().contains(domain)) {
+				debugPrint(domain,DomainManager.IP_ADDRESS,"target IP set contains it");
 				return DomainManager.IP_ADDRESS;
 			}
 
 			for (String rootdomain:targetDomains) {
 				rootdomain  = DomainNameUtils.cleanDomain(rootdomain);
-				if (DomainNameUtils.isWhiteListTDL(domain,rootdomain)) {
+				if (DomainNameUtils.isWhiteListTLD(domain,rootdomain)) {
+					debugPrint(domain,DomainManager.TLD_DOMAIN,"TLD-domain of "+rootdomain);
 					return DomainManager.TLD_DOMAIN;
 				}
 			}
@@ -566,6 +603,7 @@ public class TargetTableModel extends AbstractTableModel {
 			for (String rootdomain:targetWildCardDomains) {
 				rootdomain  = DomainNameUtils.cleanDomain(rootdomain);
 				if (DomainNameUtils.isMatchWildCardDomain(rootdomain,domain)){
+					debugPrint(domain,DomainManager.SUB_DOMAIN,"sub-domain of "+rootdomain);
 					return DomainManager.SUB_DOMAIN;
 				}
 			}
@@ -573,27 +611,32 @@ public class TargetTableModel extends AbstractTableModel {
 			for (String keyword:fetchKeywordSet()) {
 				if (!keyword.equals("") && domain.contains(keyword)) {
 					if (InternetDomainName.from(domain).hasPublicSuffix()) {//是否是以公开的 .com .cn等结尾的域名。//如果是以比如local结尾的域名，就不会被认可
+						debugPrint(domain,DomainManager.SIMILAR_DOMAIN,"contains keyword "+keyword);
 						return DomainManager.SIMILAR_DOMAIN;
 					}
 
 					if (fetchSuffixSet().contains(domain.substring(0, domain.indexOf(".")))){
+						debugPrint(domain,DomainManager.PACKAGE_NAME,"starts with target domain suffix");
 						return DomainManager.PACKAGE_NAME;
 					}
 				}
 			}
 
 			if(IPAddressUtils.isValidIP(domain)){
+				debugPrint(domain,DomainManager.NEED_CONFIRM_IP,"is a valid IP address, but not in target IP Set");
 				return DomainManager.NEED_CONFIRM_IP;
 			}
-
+			debugPrint(domain,DomainManager.USELESS,"not match any rule of targets ");
 			return DomainManager.USELESS;
 		}catch (java.lang.IllegalArgumentException e) {
 			//java.lang.IllegalArgumentException: Not a valid domain name: '-this.state.scroll'
 			BurpExtender.getStderr().println(e.getMessage());
+			debugPrint(domain,DomainManager.USELESS,"IllegalArgumentException encountered");
 			return DomainManager.USELESS;
 		}
 		catch (Exception e) {
 			e.printStackTrace(BurpExtender.getStderr());
+			debugPrint(domain,DomainManager.USELESS,"Exception encountered");
 			return DomainManager.USELESS;
 		}
 	}
@@ -603,7 +646,7 @@ public class TargetTableModel extends AbstractTableModel {
 		Set<String> targetDomains = fetchTargetDomainSet();
 		for (String rootdomain : targetDomains) {
 			rootdomain = DomainNameUtils.cleanDomain(rootdomain);
-			if (DomainNameUtils.isWhiteListTDL(domain, rootdomain)) {
+			if (DomainNameUtils.isWhiteListTLD(domain, rootdomain)) {
 				InternetDomainName suffixDomain = InternetDomainName.from(domain).publicSuffix();
 				InternetDomainName suffixRootDomain = InternetDomainName.from(rootdomain).publicSuffix();
 				if (suffixDomain != null && suffixRootDomain != null) {
