@@ -30,7 +30,7 @@ public class TargetEntry {
 	public static final String Target_Type_Subnet = "Subnet";
 	public static final String Target_Type_IPaddress = "IP";
 
-	private static final String[]  TargetTypeArray = {Target_Type_Domain,Target_Type_Subnet,Target_Type_IPaddress};
+	private static final String[]  TargetTypeArray = {Target_Type_Domain,Target_Type_Wildcard_Domain,Target_Type_Subnet,Target_Type_IPaddress};
 	public static List<String> TargetTypeList = new ArrayList<>(Arrays.asList(TargetTypeArray));
 
 	public static void main(String[] args) {
@@ -90,7 +90,7 @@ public class TargetEntry {
 			domainKeyword = domainKeyword.replaceAll("\\*\\.","");
 			domainKeyword = domainKeyword.replaceAll("\\.\\*","");
 			if (domainKeyword.indexOf(".") > 0){
-				keyword = domainKeyword.substring(0, target.indexOf("."));
+				keyword = domainKeyword.substring(0, domainKeyword.indexOf("."));
 			}else {
 				keyword = domainKeyword;
 			}
