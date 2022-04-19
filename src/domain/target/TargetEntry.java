@@ -65,12 +65,12 @@ public class TargetEntry {
 			}
 		}
 		//IP
-		if (domain != null && IPAddressUtils.isValidIP(domain)) {
+		else if (domain != null && IPAddressUtils.isValidIP(domain)) {
 			type = Target_Type_IPaddress;
 			target = domain;
 		}
 		
-		if (domain != null && IPAddressUtils.isValidSubnet(domain)) {
+		else if (domain != null && IPAddressUtils.isValidSubnet(domain)) {
 			type = Target_Type_Subnet;
 			target = domain;
 		}
@@ -79,7 +79,7 @@ public class TargetEntry {
 		 * seller.*.example.*
 		 * seller.*.example.*
 		 */
-		if (domain != null && DomainNameUtils.isValidWildCardDomain(domain)) {
+		else if (domain != null && DomainNameUtils.isValidWildCardDomain(domain)) {
 			type = Target_Type_Wildcard_Domain;
 			target = domain;
 
