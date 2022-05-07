@@ -535,7 +535,7 @@ public class DomainPanel extends JPanel {
 		textAreaEmails.setColumns(10);
 		textAreaPackages.setColumns(10);
 
-		textAreaSpecialPortTargets.setToolTipText("Targets With Port");
+		textAreaSpecialPortTargets.setToolTipText("Targets With Port/Your Custom Targets");
 		textAreaRelatedDomains.setToolTipText("Related Domains");
 		textAreaSubdomains.setToolTipText("Sub Domains");
 		textAreaSimilarDomains.setToolTipText("Similar Domains");
