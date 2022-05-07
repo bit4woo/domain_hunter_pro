@@ -61,6 +61,9 @@ public class LineEntryMenuForBurp{
 		JMenuItem addCommentToDomainHunter = new JMenuItem("^_^ Add Comment");
 		addCommentToDomainHunter.addActionListener(new addComment(invocation));
 
+		JMenuItem saveRequestAndAddComment = new JMenuItem("^_^ Add And Comment");
+		saveRequestAndAddComment.addActionListener(new saveAndComment(invocation));
+
 		JMenuItem setAsChecked = new JMenuItem("^_^ Check Done");
 		setAsChecked.addActionListener(new setAsChecked(invocation));
 
@@ -83,6 +86,7 @@ public class LineEntryMenuForBurp{
 		JMenuItemList.add(setAsChecked);
 		JMenuItemList.add(setLevelAs2);
 
+		JMenuItemList.add(saveRequestAndAddComment);//保存数据包并且添加备注信息
 		JMenuItemList.add(addRequestToDomainHunter);
 		JMenuItemList.add(addCommentToDomainHunter);
 
@@ -374,6 +378,18 @@ public class LineEntryMenuForBurp{
 			{
 				e1.printStackTrace(stderr);
 			}
+		}
+	}
+
+	public class saveAndComment implements ActionListener{
+		private IContextMenuInvocation invocation;
+		saveAndComment(IContextMenuInvocation invocation) {
+			this.invocation  = invocation;
+		}
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			new addRequestToHunter(invocation).actionPerformed(e);
+			new addComment(invocation).actionPerformed(e);
 		}
 	}
 
