@@ -23,14 +23,14 @@ public class TargetTableModel extends AbstractTableModel {
 
 	private IndexedLinkedHashMap<String,TargetEntry> targetEntries =new IndexedLinkedHashMap<String,TargetEntry>();
 
-	PrintWriter stdout;
-	PrintWriter stderr;
+	transient PrintWriter stdout;
+	transient PrintWriter stderr;
 
-	private static final String[] standardTitles = new String[] {
+	private static final transient String[] standardTitles = new String[] {
 			"Domain/Subnet/IP", "Keyword", "Comment","Black"};
-	private static List<String> titletList = new ArrayList<>(Arrays.asList(standardTitles));
+	private static transient List<String> titletList = new ArrayList<>(Arrays.asList(standardTitles));
 
-	private static final Logger log = LogManager.getLogger(TargetTableModel.class);
+	private static final transient Logger log = LogManager.getLogger(TargetTableModel.class);
 
 	//为了实现动态表结构
 	public static List<String> getTitletList() {
