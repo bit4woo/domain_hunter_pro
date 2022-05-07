@@ -5,11 +5,7 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -220,6 +216,23 @@ public class TitlePanel extends JPanel {
 	}
 
 	/**
+	 * 转移手动保存的记录
+	 */
+	public void transferManualSavedItems(){
+		if (BackupLineEntries == null){
+			System.out.println("BackupLineEntries is Null");
+			stderr.println("BackupLineEntries is Null");
+			return;
+		}
+		for (LineEntry entry:BackupLineEntries.values()) {
+			if (entry.getEntryType().equalsIgnoreCase(LineEntry.EntryType_Manual_Saved) ||
+					entry.getComment().toLowerCase().contains("manual-saved")) {
+				TitlePanel.getTitleTableModel().addNewLineEntry(entry);
+			}
+		}
+	}
+
+	/**
 	 *
 	 * 根据所有已知域名获取title
 	 */
@@ -243,9 +256,12 @@ public class TitlePanel extends JPanel {
 		}
 		//backup to history
 		BackupLineEntries = titleTableModel.getLineEntries();
-		//clear tableModel
 
+		//clear tableModel
 		titleTableModel.clear(true);//clear
+
+		//转移以前手动保存的记录
+		transferManualSavedItems();
 
 		threadGetTitle = new ThreadGetTitleWithForceStop(domains,tempConfig.getThreadNumber());
 		threadGetTitle.start();
@@ -270,15 +286,6 @@ public class TitlePanel extends JPanel {
 		threadGetTitle = new ThreadGetTitleWithForceStop(extendIPSet,tempConfig.getThreadNumber());
 		threadGetTitle.start();
 
-		//转移手动保存的结果
-		for (LineEntry entry:BackupLineEntries.values()) {
-			//			if (entry.getComment().contains("Manual-Saved")) {
-			//				TitlePanel.getTitleTableModel().addNewLineEntry(entry);
-			//			}
-			if (entry != null) {
-				TitlePanel.getTitleTableModel().addNewLineEntry(entry);//保存所有历史记录中没有匹配到的记录。
-			}
-		}
 	}
 
 	/**
