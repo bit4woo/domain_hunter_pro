@@ -352,24 +352,23 @@ public class LineEntryMenuForBurp{
 			try{
 				IHttpRequestResponse[] messages = invocation.getSelectedMessages();
 				Getter getter = new Getter(helpers);
+				String comment = getCommentInfo();
+				for (IHttpRequestResponse message:messages){
+					String host = message.getHttpService().getHost();
+					int port = message.getHttpService().getPort();
 
-				String host = messages[0].getHttpService().getHost();
-				int port = messages[0].getHttpService().getPort();
+					List<LineEntry> entries = TitlePanel.getTitleTableModel().findLineEntriesByHostAndPort(host, port);
 
-				List<LineEntry> entries = TitlePanel.getTitleTableModel().findLineEntriesByHostAndPort(host, port);
-
-				if (entries.size() == 0) {
-
-				}else if (entries.size() == 1){
-					addCommentForLine(entries.get(0));
-				}else {
-					URL fullurl = getter.getFullURL(messages[0]);
-					LineEntry entry = findLineEntryByFullUrl(entries,fullurl.toString());
-					if (entry != null) {
-						addCommentForLine(entry);
+					if (entries.size() == 0) {
+						//Do Nothing
+					}else if (entries.size() == 1){
+						addCommentForLine(entries.get(0),comment);
 					}else {
-						for (LineEntry item:entries) {
-							addCommentForLine(item);
+						URL fullurl = getter.getFullURL(message);
+						List<LineEntry> query_list = findLineEntryByFullUrl(entries,fullurl.toString());
+						if (query_list.size() >= 1){//不对所有记录添加备注，只对最新的添加
+							LineEntry item = query_list.get(query_list.size() - 1);
+							addCommentForLine(item,comment);
 						}
 					}
 				}
@@ -504,28 +503,64 @@ public class LineEntryMenuForBurp{
 		}
 	}
 
-	public static LineEntry findLineEntryByFullUrl(List<LineEntry> lineEntries, String url) {
+	/**
+	 * https://api.example.vn:443/Execute#1653013013763
+	 * https://api.example.vn:443/Execute
+	 * 由于存在如上情况，需要返回list
+	 * @param lineEntries
+	 * @param url
+	 * @return
+	 */
+	public static List<LineEntry> findLineEntryByFullUrl(List<LineEntry> lineEntries, String url) {
+		List<LineEntry> result = new ArrayList<LineEntry>();
 		url = Commons.formateURLString(url);
 		for(LineEntry item:lineEntries) {
 			if (item.getUrl().equals(url)) {
-				return item;
+				result.add(item);
+			}
+			if (item.getUrl().startsWith(url+"#")){
+				result.add(item);
 			}
 		}
-		return null;
+		return result;
 	}
 
-
-	public static void addCommentForLine(LineEntry entry) {
+	/**
+	 *
+	 * @param entry
+	 */
+	public static void addCommentForLine(LineEntry entry,String comment) {
 		int index = TitlePanel.getTitleTableModel().getLineEntries().IndexOfKey(entry.getUrl());
+		if (comment != null) {
+			entry.addComment(comment);
+			TitlePanel.getTitleTableModel().fireTableRowsUpdated(index,index);//主动通知更新，否则不会写入数据库!!!
+		}
+	}
+
+	/**
+	 * 对多个记录添加备注
+	 * @param entries
+	 */
+	public static void addCommentForLines(List<LineEntry> entries,String comment) {
+		for (LineEntry entry:entries){
+			int index = TitlePanel.getTitleTableModel().getLineEntries().IndexOfKey(entry.getUrl());
+			if (comment != null) {
+				entry.addComment(comment);
+				TitlePanel.getTitleTableModel().fireTableRowsUpdated(index,index);//主动通知更新，否则不会写入数据库!!!
+			}
+		}
+	}
+
+	/**
+	 * 弹窗，获取需要备注的信息
+	 */
+	public static String getCommentInfo() {
 		String commentAdd = JOptionPane.showInputDialog("Comments", null);
-		if (commentAdd == null) return;
+		if (commentAdd == null) return "";
 		while(commentAdd.trim().equals("")){
 			commentAdd = JOptionPane.showInputDialog("Comments", null).trim();
 		}
-		if (commentAdd != null) {
-			entry.addComment(commentAdd);
-			TitlePanel.getTitleTableModel().fireTableRowsUpdated(index,index);//主动通知更新，否则不会写入数据库!!!
-		}
+		return commentAdd;
 	}
 
 	public static void addToDomain(IHttpRequestResponse[] messages) {
