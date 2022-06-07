@@ -1,23 +1,19 @@
 package Tools;
 
+import GUI.GUIMain;
+import burp.BurpExtender;
+import burp.Commons;
+import burp.HelperPlus;
+import com.google.gson.Gson;
+import org.apache.commons.io.FileUtils;
+import title.LineEntry;
+import title.search.History;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.Set;
-
-import burp.HelperPlus;
-import org.apache.commons.io.FileUtils;
-
-import com.google.gson.Gson;
-
-import GUI.GUIMain;
-import burp.BurpExtender;
-import burp.Commons;
-import domain.DomainPanel;
-import title.LineEntry;
-import title.TitlePanel;
-import title.search.History;
 
 public class LineConfig {
 	private static int MaximumEntries = 1000;//控制显示的条目数，减少内存占用
@@ -35,7 +31,11 @@ public class LineConfig {
 	//对于内外网域名或IP的处理分为2种情况：
 	//1、外网模式，即在自己公司挖掘别人公司的漏洞。这个是时候收集到的域名如果是解析到私有IP的，仅仅显示就可以了；如果是私有IP地址则直接忽略。
 	//2、内网模式，即在自己公司挖掘自己公司的漏洞。这个时候所有域名一视同仁，全部和外网域名一样进行请求并获取title，因为内网的IP也是可以访问的。
-	public static final String winDefaultBrowserPath = "C:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe";
+	public static final String[] winDefaultBrowserPaths = {
+			"C:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe",
+			"C:\\Program Files\\Mozilla Firefox\\firefox.exe",
+			"D:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe",
+			"D:\\Program Files\\Mozilla Firefox\\firefox.exe"};
 	public static final String defaultNmap = "nmap -Pn -sT -sV --min-rtt-timeout 1ms "
 			+ "--max-rtt-timeout 1000ms --max-retries 0 --max-scan-delay 0 --min-rate 3000 {host}";
 	public static final String defaultDirSearch = "python3 dirsearch.py -t 8 --proxy=127.0.0.1:8080 "
@@ -43,7 +43,7 @@ public class LineConfig {
 	public static final String macDefaultBrowserPath = "/Applications/Firefox.app/Contents/MacOS/firefox";
 
 	private String dirSearchPath = defaultDirSearch;
-	private String browserPath = "C:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe";
+	private String browserPath = "";
 	private String nmapPath =defaultNmap;
 	private String bruteDict ="D:\\github\\webdirscan\\dict\\dict.txt";
 	private String toolPanelText = "";
@@ -58,10 +58,14 @@ public class LineConfig {
 	LineConfig(){
 		if (Commons.isMac()) {
 			browserPath = macDefaultBrowserPath;
+		}else {
+			for (String path : winDefaultBrowserPaths) {
+				if (new File(path).exists()) {
+					browserPath = path;
+				}
+			}
 		}
 	}
-
-
 
 
 	public static int getMaximumEntries() {
