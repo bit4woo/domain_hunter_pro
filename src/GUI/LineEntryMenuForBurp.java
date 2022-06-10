@@ -573,9 +573,17 @@ public class LineEntryMenuForBurp{
 		DomainPanel.saveDomainDataToDB();
 	}
 
-
 	public static void addToRequest(IHttpRequestResponse[] messages) {
-		for(IHttpRequestResponse message:messages) {
+		if (messages.length <=0){
+			return;
+		}else if(messages.length==1){
+			addSingleRequest(messages[0]);
+		}else {
+			addRequests(messages);
+		}
+	}
+	public static void addSingleRequest(IHttpRequestResponse message ) {
+
 			//当时为啥要用这个key来存储新增的Request？URL地址一样而数据包不一样的情况？
 			//String hashKey = HashCode.fromBytes(message.getRequest()).toString();
 
@@ -603,7 +611,40 @@ public class LineEntryMenuForBurp{
 
 			String host = message.getHttpService().getHost();
 			DomainPanel.getDomainResult().addIfValid(host); //add domain
+	}
 
+	public static void addRequests(IHttpRequestResponse[] messages) {
+		int user_input = JOptionPane.showConfirmDialog(null, "Do you want to overwrite if item already exist?","Chose Your Action",JOptionPane.YES_NO_CANCEL_OPTION);
+		if (user_input != JOptionPane.YES_OPTION && user_input != JOptionPane.NO_OPTION){
+			return;
+		}
+		for(IHttpRequestResponse message:messages) {
+			//当时为啥要用这个key来存储新增的Request？URL地址一样而数据包不一样的情况？
+			//String hashKey = HashCode.fromBytes(message.getRequest()).toString();
+
+			Getter getter = new Getter(helpers);
+			URL fullurl = getter.getFullURL(message);
+			LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(fullurl.toString());
+
+			LineEntry newEntry = new LineEntry(message);
+			newEntry.setComment("Manual-Saved");
+			newEntry.setEntryType(LineEntry.EntryType_Manual_Saved);
+			newEntry.setCheckStatus(LineEntry.CheckStatus_UnChecked);
+			newEntry.setManualSaved(true);
+
+			if (entry != null) {//存在相同URL的记录
+				if (JOptionPane.YES_OPTION == user_input) {
+					TitlePanel.getTitleTableModel().addNewLineEntry(newEntry); //add request，覆盖
+				}else {//不覆盖,修改后新增
+					newEntry.setUrl(entry.getUrl()+"#"+System.currentTimeMillis());
+					TitlePanel.getTitleTableModel().addNewLineEntry(newEntry); //add request，修改URL(加#时间戳)后新增
+				}//cancel,do nothing
+			}else {//不存在相同记录，直接新增
+				TitlePanel.getTitleTableModel().addNewLineEntry(newEntry); //add request，新增
+			}
+
+			String host = message.getHttpService().getHost();
+			DomainPanel.getDomainResult().addIfValid(host); //add domain
 		}
 	}
 }
