@@ -180,19 +180,35 @@ public class ProjectMenu extends JMenu{
 	}
 
 	public void Add() {
+		int count = 500;
 		JMenuBar menuBar = getBurpFrame().getJMenuBar();
-		DomainPanel.getHeaderPanel().add(menuBar);
-		if (menuBar == null){
-			DomainPanel.getHeaderPanel().add(menuBar);
-		}else{
-			menuBar.add(this, menuBar.getMenuCount() - 1);
+		while(count > 0) {
+			try{
+				if (menuBar == null){
+					try {
+						Thread.sleep(100);
+						count--;
+					} catch (InterruptedException e1) {
+						e1.printStackTrace();
+					}
+				}else {
+					menuBar.add(this, menuBar.getMenuCount() - 1);
+					menuBar.repaint();
+					break;
+				}
+			}catch (Exception e){
+				e.printStackTrace();
+				e.printStackTrace(BurpExtender.getStderr());
+			}
 		}
 	}
 
 	public void remove(){
 		JMenuBar menuBar = getBurpFrame().getJMenuBar();
-		menuBar.remove(this);
-		menuBar.repaint();
+		if (menuBar != null){
+			menuBar.remove(this);
+			menuBar.repaint();
+		}
 	}
 
 	/**
