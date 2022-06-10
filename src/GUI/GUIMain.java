@@ -124,6 +124,10 @@ public class GUIMain extends JFrame {
 			System.out.println("==Start Loading Data From: " + dbFilePath+" "+Commons.getNowTimeString()+"==");
 			BurpExtender.getStdout().println("==Start Loading Data From: " + dbFilePath+" "+Commons.getNowTimeString()+"==");
 			currentDBFile = new File(dbFilePath);
+			if (!currentDBFile.exists()){
+				BurpExtender.getStdout().println("==Load database file [" + dbFilePath+"] failed,file does not exist "+Commons.getNowTimeString()+"==");
+				return false;
+			}
 			GUIMain.setCurrentDBFile(currentDBFile);
 
 			DBHelper dbhelper = new DBHelper(dbFilePath);

@@ -118,6 +118,11 @@ public class DomainPanel extends JPanel {
 	//		DomainPanel.targetTableModel = targetTableModel;
 	//	}
 
+
+	public static JPanel getHeaderPanel() {
+		return HeaderPanel;
+	}
+
 	public static void createOrOpenDB() {
 		Object[] options = { "Create","Open"};
 		int user_input = JOptionPane.showOptionDialog(null, "You should Create or Open a DB file", "Chose Your Action",
@@ -878,13 +883,16 @@ public class DomainPanel extends JPanel {
     自动保存，根据currentDBFile，如果currentDBFile为空或者不存在，就提示选择文件。
 	 */
 	public static void saveDomainDataToDB() {
-		File file = GUIMain.getCurrentDBFile();
-		if (file == null) {
+		try {
+			File file = GUIMain.getCurrentDBFile();
+
 			if (null == DomainPanel.getDomainResult()) return;//有数据才弹对话框指定文件位置。
-			file = BurpExtender.getGui().dbfc.dialog(false,".db");
-			GUIMain.setCurrentDBFile(file);
-		}
-		if (file != null) {
+
+			if (file == null || !file.exists()) {
+				file = GUIMain.dbfc.dialog(false,".db");
+				GUIMain.setCurrentDBFile(file);
+			}
+
 			DBHelper dbHelper = new DBHelper(file.toString());
 			boolean success = dbHelper.saveDomainObject(domainResult);
 			if (success) {
@@ -892,6 +900,9 @@ public class DomainPanel extends JPanel {
 			}else {
 				log.error("domain data save failed");
 			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			e.printStackTrace(BurpExtender.getStderr());
 		}
 	}
 

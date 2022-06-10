@@ -6,6 +6,7 @@ import domain.DomainManager;
 import domain.DomainPanel;
 import domain.target.TargetEntry;
 import domain.target.TargetTable;
+import title.GetTitleMenu;
 import title.IndexedLinkedHashMap;
 import title.LineEntry;
 import title.TitlePanel;
@@ -13,6 +14,7 @@ import title.TitlePanel;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
@@ -178,22 +180,12 @@ public class ProjectMenu extends JMenu{
 	}
 
 	public void Add() {
-		int count =3;
-		while(count > 0) {
-			try{
-				JMenuBar menuBar = getBurpFrame().getJMenuBar();
-				menuBar.add(this, menuBar.getMenuCount() - 1);
-				break;
-			}catch (Exception e){
-				e.printStackTrace();
-				e.printStackTrace(BurpExtender.getStderr());
-				count--;
-				try {
-					Thread.sleep(500);
-				} catch (InterruptedException e1) {
-					e1.printStackTrace();
-				}
-			}
+		JMenuBar menuBar = getBurpFrame().getJMenuBar();
+		DomainPanel.getHeaderPanel().add(menuBar);
+		if (menuBar == null){
+			DomainPanel.getHeaderPanel().add(menuBar);
+		}else{
+			menuBar.add(this, menuBar.getMenuCount() - 1);
 		}
 	}
 
