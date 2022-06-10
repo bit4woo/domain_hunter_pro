@@ -239,6 +239,23 @@ public class TargetTableModel extends AbstractTableModel {
 		}
 	}
 
+
+	public void addRowWithoutFireIfValid(TargetEntry entry) {
+		if (ifValid(entry)){
+			synchronized (targetEntries) {
+				//因为后台的流量分析进程是多线程，可能同事添加数据！
+				String key = entry.getTarget();
+				TargetEntry oldentry = targetEntries.get(key);
+				if (oldentry != null) {//如果有旧的记录，就需要用旧的内容做修改
+					entry.setBlack(oldentry.isBlack());
+					entry.setComment(oldentry.getComment());
+					entry.setKeyword(oldentry.getKeyword());
+				}
+				addRowWithoutFire(key, entry);
+			}
+		}
+	}
+
 	/**
 	 * 数据的增删查改：新增
 	 * @param key
@@ -254,6 +271,16 @@ public class TargetTableModel extends AbstractTableModel {
 		}else {//新增
 			fireTableRowsInserted(rowIndex,rowIndex);
 		}
+	}
+
+
+	/**
+	 * 数据的增删查改：新增
+	 * @param key
+	 * @param entry
+	 */
+	private void addRowWithoutFire(String key,TargetEntry entry) {
+		targetEntries.put(key,entry);
 	}
 
 	/**

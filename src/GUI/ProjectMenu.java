@@ -6,7 +6,6 @@ import domain.DomainManager;
 import domain.DomainPanel;
 import domain.target.TargetEntry;
 import domain.target.TargetTable;
-import title.GetTitleMenu;
 import title.IndexedLinkedHashMap;
 import title.LineEntry;
 import title.TitlePanel;
@@ -14,7 +13,6 @@ import title.TitlePanel;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
@@ -80,7 +78,7 @@ public class ProjectMenu extends JMenu{
 				DBHelper dbhelper = new DBHelper(file.getAbsolutePath());
 				DomainManager NewManager = dbhelper.getDomainObj();
 
-				IndexedLinkedHashMap<String, TargetEntry> entries = TargetTable.rootDomianToTarget(NewManager);
+				IndexedLinkedHashMap<String, TargetEntry> entries = TargetTable.rootDomainToTarget(NewManager);
 				for (TargetEntry entry:entries.values()){
 					DomainPanel.fetchTargetModel().addRowIfValid(entry);
 				}

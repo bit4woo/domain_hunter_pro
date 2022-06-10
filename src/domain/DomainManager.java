@@ -408,7 +408,12 @@ public class DomainManager {
                                 continue;
                             }
 
-                            addToTargetAndSubDomain(relatedDomain, true);
+                            //addToTargetAndSubDomain(relatedDomain, true);
+                            //底层调用了addRow，没调用一次都会触发数据库写操作。这个逻辑中应该避免。
+
+                            fetchTargetModel().addRowWithoutFireIfValid(new TargetEntry(relatedDomain, true));
+                            //添加完成后需要主动调用一次保存！
+
                         } else {
                             System.out.println("error related domain : " + relatedDomain);
                         }
@@ -417,6 +422,7 @@ public class DomainManager {
                         e.printStackTrace(BurpExtender.getStderr());
                     }
                 }
+                fetchTargetModel().saveTargetToDB();//添加完成后需要主动调用一次保存！
                 freshBaseRule();
                 //relatedDomainSet.clear();//TargetEntry的构造函数中就会自动移除，不需要这行代码了
             }

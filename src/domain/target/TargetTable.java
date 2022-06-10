@@ -8,14 +8,12 @@ import title.LineTableModel;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.PrintWriter;
+import java.lang.annotation.Target;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -162,13 +160,13 @@ public class TargetTable extends JTable{
 		if (targetTableModel == null) {//兼容旧版本
 			DomainPanel.backupDB();
 			targetTableModel = new TargetTableModel();
-			IndexedLinkedHashMap<String, TargetEntry> entries = rootDomianToTarget(DomainPanel.getDomainResult());
+			IndexedLinkedHashMap<String, TargetEntry> entries = rootDomainToTarget(DomainPanel.getDomainResult());
 			targetTableModel.setData(entries);
 		}
 		setTargetModel(targetTableModel);//这句很关键，否则无法显示整个表的头和内容
 	}
 
-	public static IndexedLinkedHashMap<String, TargetEntry> rootDomianToTarget(DomainManager domainManager){
+	public static IndexedLinkedHashMap<String, TargetEntry> rootDomainToTarget(DomainManager domainManager){
 		IndexedLinkedHashMap<String, TargetEntry> entries = new IndexedLinkedHashMap<String, TargetEntry>();
 		//兼容旧版本
 		if (domainManager.getRootDomainMap().size() >0 ) {
