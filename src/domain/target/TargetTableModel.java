@@ -2,6 +2,7 @@ package domain.target;
 
 import GUI.GUIMain;
 import burp.*;
+import com.alibaba.fastjson.JSON;
 import com.google.common.net.InternetDomainName;
 import com.google.gson.Gson;
 import domain.DomainManager;
@@ -262,6 +263,13 @@ public class TargetTableModel extends AbstractTableModel {
 	 * @param entry
 	 */
 	private void addRow(String key,TargetEntry entry) {
+		TargetEntry originalEntry = targetEntries.get(key);
+		if (originalEntry != null){
+			String entryStr = JSON.toJSONString(originalEntry);
+			if(entryStr.equals(JSON.toJSONString(entry))){
+				return;
+			}
+		}
 		int oldsize = targetEntries.size();
 		targetEntries.put(key,entry);
 		int rowIndex = targetEntries.IndexOfKey(key);
