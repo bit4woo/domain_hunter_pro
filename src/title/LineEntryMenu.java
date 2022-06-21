@@ -151,7 +151,7 @@ public class LineEntryMenu extends JPopupMenu {
 					LineEntry firstEntry = lineTable.getLineTableModel().getLineEntries().get(row);
 					String searchContent = getValue(firstEntry,columnIndex);
 					searchContent = new String(Base64.getEncoder().encode(searchContent.getBytes()));
-					String url= "https://fofa.so/result?qbase64=%s";
+					String url= "https://fofa.info/result?qbase64=%s";
 					url= String.format(url, searchContent);
 					try {
 						Commons.browserOpen(url, null);
@@ -197,7 +197,7 @@ public class LineEntryMenu extends JPopupMenu {
 					String searchContent = firstEntry.getIcon_hash();
 					searchContent = String.format("icon_hash=\"%s\"", searchContent);//icon_hash="-247388890"
 					searchContent = new String(Base64.getEncoder().encode(searchContent.getBytes()));
-					String url= "https://fofa.so/result?qbase64=%s";
+					String url= "https://fofa.info/result?qbase64=%s";
 					url= String.format(url, searchContent);
 					try {
 						Commons.browserOpen(url, null);
