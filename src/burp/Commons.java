@@ -200,6 +200,9 @@ public class Commons {
 		if (contentType != null){
 			if (contentType.toLowerCase().contains("charset=")) {
 				String tmpcharSet = contentType.toLowerCase().split("charset=")[1];
+				if (tmpcharSet.contains(",")) {
+					tmpcharSet = tmpcharSet.split(",")[0];
+				}
 				if (tmpcharSet != null && tmpcharSet.length() >0) {
 					return tmpcharSet;
 				}
