@@ -24,6 +24,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.util.List;
@@ -66,6 +67,8 @@ public class ToolPanel extends JPanel {
 	public static JTextField textFieldUploadApiToken;
 
 	String history = "";
+
+	private JRadioButton ContentIsFilename;
 
 	public static LineConfig getLineConfig() {
 		return lineConfig;
@@ -178,6 +181,10 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		});
+		
+		ContentIsFilename = new JRadioButton("From File");
+		ContentIsFilename.setSelected(false);
+		HeaderPanel.add(ContentIsFilename);
 
 		//第一次分割，中间的大模块一分为二
 		JSplitPane CenterSplitPane = new JSplitPane();//中间的大模块，一分为二
@@ -201,7 +208,7 @@ public class ToolPanel extends JPanel {
 		JScrollPane twoFourthPanel = new JScrollPane();
 		LeftOfCenter.setRightComponent(twoFourthPanel);
 
-		inputTextArea = new JTextArea();
+		inputTextArea = new DraggableTextArea();
 		inputTextArea.setColumns(20);
 		inputTextArea.setLineWrap(true);
 		inputTextArea.getDocument().addDocumentListener(new textAreaListener());
@@ -308,9 +315,16 @@ public class ToolPanel extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				String content = inputTextArea.getText();
-				if (null != content) {
-					Set<String> emails = DomainProducer.grepEmail(content);
-					outputTextArea.setText(String.join(System.lineSeparator(), emails));
+				if (ContentIsFilename.isSelected()){
+					if (getContentFromFile(content) != null) {
+						Set<String> emails = DomainProducer.grepEmail(content);
+						outputTextArea.setText(String.join(System.lineSeparator(), emails));
+					}
+				}else {
+					if (null != content) {
+						Set<String> emails = DomainProducer.grepEmail(content);
+						outputTextArea.setText(String.join(System.lineSeparator(), emails));
+					}
 				}
 			}
 		});
@@ -1247,6 +1261,19 @@ public class ToolPanel extends JPanel {
 		Set<String> domainList = new HashSet<>(Arrays.asList(textarea.getText().replaceAll(" ","").replaceAll("\r\n", "\n").split("\n")));
 		domainList.remove("");
 		return domainList;
+	}
+	
+	public static String getContentFromFile(String filename) {
+		File tmpfile = new File(filename);
+		if (tmpfile.exists() && tmpfile.isFile()) {
+			try {
+				return FileUtils.readFileToString(tmpfile);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return null;
 	}
 
 	public static HashSet<String> getExternalPortSet(){
