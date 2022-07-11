@@ -2,6 +2,7 @@ package title;
 
 import GUI.GUIMain;
 import burp.*;
+import dao.DBHelper;
 import domain.DomainPanel;
 import domain.target.TargetEntry;
 

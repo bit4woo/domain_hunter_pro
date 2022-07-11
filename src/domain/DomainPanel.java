@@ -4,6 +4,8 @@ import GUI.GUIMain;
 import GUI.ProjectMenu;
 import Tools.ToolPanel;
 import burp.*;
+import dao.DBHelper;
+
 import com.google.common.net.InternetDomainName;
 import domain.target.TargetControlPanel;
 import domain.target.TargetTable;
