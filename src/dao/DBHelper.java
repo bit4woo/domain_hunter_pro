@@ -28,7 +28,6 @@ public class DBHelper {
 	public static void createTable(Connection conn){
 		PreparedStatement stmt =null;
 		try {
-			stmt = conn.createStatement();
 			
 			if (!tableExists(conn,"Targets")){
 				String sql = "CREATE TABLE Targets" +
