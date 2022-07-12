@@ -130,7 +130,9 @@ public class DomainProducer extends Thread {//Producer do
 							response = subByte(response,0,100000000);
 						}
 						Set<String> domains = DomainProducer.grepDomain(new String(response));
+						Set<String> emails = DomainProducer.grepEmail(new String(response));
 						DomainPanel.getDomainResult().addIfValid(domains);
+						DomainPanel.getDomainResult().getEmailSet().addAll(emails);
 					}
 				}
 
