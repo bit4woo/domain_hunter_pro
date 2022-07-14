@@ -16,6 +16,10 @@ import org.sqlite.SQLiteException;
 import title.IndexedLinkedHashMap;
 import title.LineEntry;
 
+/**
+ * 增删查改
+ *
+ */
 public class TitleDao {
 	//////////////////Title///////////////////////////////
 	//https://stackoverflow.com/questions/964207/sqlite-exception-sqlite-busy

@@ -90,6 +90,14 @@
 			<version>1.7</version>
 		</dependency>
 
+		<!-- https://mvnrepository.com/artifact/org.springframework/spring-jdbc -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-jdbc</artifactId>
+			<version>5.3.21</version>
+		</dependency>
+
+
 		<!-- https://mvnrepository.com/artifact/net.portswigger.burp.extender/burp-extender-api -->
 		<dependency>
 			<groupId>net.portswigger.burp.extender</groupId>
