@@ -4,9 +4,10 @@ import GUI.GUIMain;
 import GUI.ProjectMenu;
 import Tools.ToolPanel;
 import burp.*;
-import dao.DBHelper;
 
 import com.google.common.net.InternetDomainName;
+
+import Deprecated.DBHelper;
 import domain.target.TargetControlPanel;
 import domain.target.TargetTable;
 import domain.target.TargetTableModel;

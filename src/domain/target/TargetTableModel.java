@@ -2,11 +2,12 @@ package domain.target;
 
 import GUI.GUIMain;
 import burp.*;
-import dao.DBHelper;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.net.InternetDomainName;
 import com.google.gson.Gson;
+
+import Deprecated.DBHelper;
 import domain.DomainManager;
 import domain.DomainPanel;
 import org.apache.commons.io.FileUtils;

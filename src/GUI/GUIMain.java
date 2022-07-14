@@ -4,12 +4,14 @@ import Tools.ToolPanel;
 import burp.BurpExtender;
 import burp.Commons;
 import burp.dbFileChooser;
-import dao.DBHelper;
 import domain.DomainPanel;
 import domain.target.TargetTableModel;
 import title.TitlePanel;
 
 import javax.swing.*;
+
+import Deprecated.DBHelper;
+
 import java.awt.*;
 import java.io.File;
 import java.io.PrintWriter;

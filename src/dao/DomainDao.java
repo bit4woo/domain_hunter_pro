@@ -3,44 +3,62 @@ package dao;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
+
+import javax.sql.DataSource;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.QueryRunner;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import domain.DomainManager;
 
 public class DomainDao {
-
-	public static boolean createTable() {
-		if (!tableExists(conn,"Title") ){
-			String sqlTitle = "CREATE TABLE Title" +
-					"(ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +//自动增长 https://www.sqlite.org/autoinc.html
-					" NAME           TEXT    NOT NULL," +
-					" Content        TEXT    NOT NULL)";
-			stmt.executeUpdate(sqlTitle);
-			System.out.println("Table created successfully");
-			log.info("Table created successfully");
-		}
+	
+	private DataSource dataSource;
+	private JdbcTemplate jdbcTemplate;
+	void setDataSource(DataSource ds) {
+		dataSource = ds;
+		jdbcTemplate = new JdbcTemplate(ds);
 	}
-	public synchronized boolean saveDomainObject(DomainManager domainResult){
+	
+
+    private Set<String> subDomainSet = new CopyOnWriteArraySet<String>();
+    private Set<String> similarDomainSet = new CopyOnWriteArraySet<String>();
+    private Set<String> relatedDomainSet = new CopyOnWriteArraySet<String>();
+    //private Set<String> IsTargetButUselessDomainSet = new CopyOnWriteArraySet<String>();
+    //有效(能解析IP)但无用的域名，比如JD的网店域名、首页域名等对信息收集、聚合网段、目标界定有用，但是本身几乎不可能有漏洞的资产。
+
+    private Set<String> NotTargetIPSet = new CopyOnWriteArraySet<String>();
+    //存储域名解析到的CDN或云服务的IP。这类IP在做网段汇算时，应当被排除在外。
+
+    //private ConcurrentHashMap<String, Integer> unkownDomainMap = new ConcurrentHashMap<String, Integer>();//记录域名和解析失败的次数，大于五次就从子域名中删除。
+    private Set<String> EmailSet = new CopyOnWriteArraySet<String>();
+    private Set<String> PackageNameSet = new CopyOnWriteArraySet<String>();
+    private Set<String> SpecialPortTargets = new CopyOnWriteArraySet<String>();//用于存放指定了特殊端口的目标
+	
+	public boolean createTable() {
+		String sqlTitle = "CREATE TABLE IF NOT EXISTS Domain" +
+				"(ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +//自动增长 https://www.sqlite.org/autoinc.html
+				" NAME TEXT NOT NULL," +
+				" subdomains        TEXT    NOT NULL," +
+				" similardomains        TEXT    NOT NULL," +
+				" relateddomains        TEXT    NOT NULL," +
+				" emails        TEXT    NOT NULL," +
+				" packagenames        TEXT    NOT NULL," +
+				" nottargetips        TEXT    NOT NULL," +
+				" specialporttargets        TEXT    NOT NULL)";
+		jdbcTemplate.execute(sqlTitle);
+		return true;
+	}
+	
+	public boolean createDomainObject(DomainManager domainResult){
 		try {
-			
-			Connection conn = null;
-			Class.forName(DRIVER); 
-			//https://docs.oracle.com/javase/tutorial/jdbc/basics/connecting.html#drivermanager
-			//JDBC 4.0以前需要这个语句来加载驱动，现在不需要了 
-			conn = DriverManager.getConnection("jdbc:sqlite:"+dbFilePath);
-			ResultSetHandler<Employee> resultHandler = new BeanHandler<Employee>(Employee.class);
-			try {
-				Employee emp = queryRunner.query(conn, "SELECT * FROM employees WHERE first=?", resultHandler, "Sumit");
-				// Display values
-				System.out.print("ID: " + emp.getId() + ", Age: " + emp.getAge() + ", First: " + emp.getFirst() + ", Last: " + emp.getLast());
-			} finally {
-				DbUtils.close(conn);
-			}
-			conn = getConnection();
-			
-			pres = conn.prepareStatement("select ID From DOMAINObject");//会比select * From DOMAINObject 要快吧
+			sql =""
+			jdbcTemplate.update(null)
+			"insert or replace into Book ( Name, TypeID, Level, Seen) values(\"SearchName\", ...)"
+			pres = pres.prepareStatement("select ID From DOMAINObject");//会比select * From DOMAINObject 要快吧
 			rs = pres.executeQuery();
 			String sql = "";
 			if (rs.next()){

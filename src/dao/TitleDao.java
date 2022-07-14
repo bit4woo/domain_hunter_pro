@@ -13,6 +13,7 @@ import org.apache.commons.dbutils.QueryRunner;
 import org.sqlite.SQLiteErrorCode;
 import org.sqlite.SQLiteException;
 
+import Deprecated.DBHelper;
 import title.IndexedLinkedHashMap;
 import title.LineEntry;
 
@@ -21,6 +22,15 @@ import title.LineEntry;
  *
  */
 public class TitleDao {
+	
+	if (!tableExists(conn,"Targets")){
+		String sql = "CREATE TABLE Targets" +
+				"(ID INT PRIMARY KEY     NOT NULL," +
+				" Content        TEXT    NOT NULL)";
+		stmt.executeUpdate(sql);
+		System.out.println("Table Targets created successfully");
+		log.info("Table Targets created successfully");
+	}
 	//////////////////Title///////////////////////////////
 	//https://stackoverflow.com/questions/964207/sqlite-exception-sqlite-busy
 	public boolean addTitle(LineEntry entry){

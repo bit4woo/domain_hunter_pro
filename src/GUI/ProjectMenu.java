@@ -1,7 +1,6 @@
 package GUI;
 
 import burp.BurpExtender;
-import dao.DBHelper;
 import domain.DomainManager;
 import domain.DomainPanel;
 import domain.target.TargetEntry;
@@ -11,6 +10,9 @@ import title.LineEntry;
 import title.TitlePanel;
 
 import javax.swing.*;
+
+import Deprecated.DBHelper;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.File;

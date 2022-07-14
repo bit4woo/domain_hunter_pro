@@ -2,13 +2,15 @@ package title;
 
 import GUI.GUIMain;
 import burp.*;
-import dao.DBHelper;
 import domain.DomainPanel;
 import domain.target.TargetEntry;
 
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
+
+import Deprecated.DBHelper;
+
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.net.URL;

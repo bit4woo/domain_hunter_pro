@@ -13,5 +13,7 @@ https://commons.apache.org/proper/commons-dbutils/examples.html
 JdbcTemplate
 https://www.javatpoint.com/spring-JdbcTemplate-tutorial
 https://www.developersoapbox.com/java-connect-to-sqlite-using-spring-boot/
+https://stackoverflow.com/questions/41230234/using-datasource-to-connect-to-sqlite-with-xerial-sqlite-jdbc-driver
+https://www.journaldev.com/17053/spring-jdbctemplate-example
 使用方法看起来很简单，只需要执行SQL语句，不需要自己去处理异常，关闭数据库链接等。
 见JdbcTemplateTest，测试成功，就用它了
