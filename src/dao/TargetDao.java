@@ -4,18 +4,44 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
+import javax.sql.DataSource;
+
+import org.springframework.jdbc.core.JdbcTemplate;
+
 import domain.target.TargetTableModel;
 
 public class TargetDao {
+
+	private DataSource dataSource;
+	private JdbcTemplate jdbcTemplate;
+	void setDataSource(DataSource ds) {
+		dataSource = ds;
+		jdbcTemplate = new JdbcTemplate(ds);
+	}
+
+	public boolean createTable() {
+		String sqlTitle = "CREATE TABLE IF NOT EXISTS Targets" +
+				"(ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +//自动增长 https://www.sqlite.org/autoinc.html
+				" target           TEXT    NOT NULL," +
+				" type        TEXT    NOT NULL,"+
+				" keyword        TEXT    NOT NULL,"+
+				" ZoneTransfer        BOOLEAN    NOT NULL,"+
+				" isBlack        BOOLEAN    NOT NULL,"+
+				" comment        TEXT    NOT NULL,"+
+				" useTLD        BOOLEAN    NOT NULL)";
+		jdbcTemplate.execute(sqlTitle);
+		return true;
+	}
+
 	/**
 	 * 
 	 * @param model
 	 * @return
 	 */
-	public synchronized boolean saveTargets(TargetTableModel model){
+	public boolean saveTargets(TargetTableModel model){
 		try {
 			Connection conn = getConnection();
-			
+
 			PreparedStatement pres = conn.prepareStatement("select ID From Targets");//会比select * From Targets 要快吧
 			ResultSet rs = pres.executeQuery();
 			String sql = "";
@@ -24,7 +50,7 @@ public class TargetDao {
 			}else{
 				sql = "insert into Targets(ID,Content) values(1,?)";
 			}
-			
+
 			pres=conn.prepareStatement(sql);//预编译
 
 			String targetsJson = model.ToJson();
@@ -45,7 +71,7 @@ public class TargetDao {
 		}
 		return false;
 	}
-	
+
 	/**
 	 * 从数据库中读出存入的对象
 	 */

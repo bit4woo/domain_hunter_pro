@@ -1,6 +1,5 @@
 package dao;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -8,12 +7,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.IntStream;
 
-import org.apache.commons.dbutils.DbUtils;
-import org.apache.commons.dbutils.QueryRunner;
+import javax.sql.DataSource;
+
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.sqlite.SQLiteErrorCode;
 import org.sqlite.SQLiteException;
 
-import Deprecated.DBHelper;
 import title.IndexedLinkedHashMap;
 import title.LineEntry;
 
@@ -22,21 +21,23 @@ import title.LineEntry;
  *
  */
 public class TitleDao {
-	
-	if (!tableExists(conn,"Targets")){
-		String sql = "CREATE TABLE Targets" +
-				"(ID INT PRIMARY KEY     NOT NULL," +
-				" Content        TEXT    NOT NULL)";
-		stmt.executeUpdate(sql);
-		System.out.println("Table Targets created successfully");
-		log.info("Table Targets created successfully");
+	private DataSource dataSource;
+	private JdbcTemplate jdbcTemplate;
+	void setDataSource(DataSource ds) {
+		dataSource = ds;
+		jdbcTemplate = new JdbcTemplate(ds);
 	}
-	//////////////////Title///////////////////////////////
-	//https://stackoverflow.com/questions/964207/sqlite-exception-sqlite-busy
+
+	public boolean createTable() {
+		String sqlTitle = "CREATE TABLE IF NOT EXISTS Title" +
+				"(ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +//自动增长 https://www.sqlite.org/autoinc.html
+				" NAME           TEXT    NOT NULL," +
+				" Content        TEXT    NOT NULL)";
+		jdbcTemplate.execute(sqlTitle);
+		return true;
+	}
+
 	public boolean addTitle(LineEntry entry){
-		try {
-			Connection conn = DBHelper.getConnection("");
-			String insertQuery ="INSERT INTO employees(id,age,first,last) VALUES (?,?,?,?)";
 			
 			String sql="insert into Title(NAME,Content) values(?,?)";
 			PreparedStatement pres = conn.prepareStatement(sql);
@@ -49,23 +50,10 @@ public class TitleDao {
 			}else {
 				return false;
 			}
-		} catch(SQLiteException e) {
-			if (e.getErrorCode() == SQLiteErrorCode.SQLITE_BUSY.code) {
-				log.error("SQLITE_BUSY The database file is locked when add "+entry.getUrl());
-			}
-			e.printStackTrace(stderr);
-		} catch (Exception e) {
-			e.printStackTrace();
-			e.printStackTrace(stderr);
-		} finally {
-			destroy();
-		}
-		return false;
 	}
 
 
-
-	public synchronized boolean addTitles(LinkedHashMap<String,LineEntry> lineEntries){
+	public boolean addTitles(LinkedHashMap<String,LineEntry> lineEntries){
 		try {
 			conn = getConnection();
 			String sql="insert into Title(NAME,Content) values(?,?)";
@@ -121,7 +109,7 @@ public class TitleDao {
 	}
 
 
-	public synchronized void updateTitle(LineEntry entry){
+	public void updateTitle(LineEntry entry){
 		String sql="update Title SET Content=? where NAME=?";
 		//UPDATE Person SET FirstName = 'Fred' WHERE LastName = 'Wilson' 
 
@@ -144,7 +132,7 @@ public class TitleDao {
 		}
 	}
 
-	public synchronized boolean updateTitles(List<LineEntry> lineEntries){
+	public boolean updateTitles(List<LineEntry> lineEntries){
 		try {
 			conn = getConnection();
 			String sql="update Title SET Content=? where NAME=?";
@@ -180,7 +168,7 @@ public class TitleDao {
 	}
 
 
-	public synchronized void deleteTitle(LineEntry entry){
+	public void deleteTitle(LineEntry entry){
 		String sql="DELETE FROM Title where NAME= ?";
 		//DELETE FROM Person WHERE LastName = 'Wilson'  
 
