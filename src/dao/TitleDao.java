@@ -31,25 +31,56 @@ public class TitleDao {
 	public boolean createTable() {
 		String sqlTitle = "CREATE TABLE IF NOT EXISTS Title" +
 				"(ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +//自动增长 https://www.sqlite.org/autoinc.html
-				" NAME           TEXT    NOT NULL," +
-				" Content        TEXT    NOT NULL)";
+				" url           TEXT    NOT NULL," +
+				" statuscode           INT    NOT NULL," +
+				" contentLength           INT    NOT NULL," +
+				" title           TEXT    NOT NULL," +
+				" IP           TEXT    NOT NULL," +
+				" CDN           TEXT    NOT NULL," +
+				" webcontainer           TEXT    NOT NULL," +
+				" time           TEXT    NOT NULL," +
+				" icon_hash           TEXT    NOT NULL," +
+				" ASNInfo           TEXT    NOT NULL," +
+				" request           BLOB    NOT NULL," +
+				" response           BLOB    NOT NULL," +
+				" protocol           TEXT    NOT NULL," +
+				" host           TEXT    NOT NULL," +
+				" port        INT    NOT NULL)";
 		jdbcTemplate.execute(sqlTitle);
 		return true;
 	}
 
-	public boolean addTitle(LineEntry entry){
-			
-			String sql="insert into Title(NAME,Content) values(?,?)";
-			PreparedStatement pres = conn.prepareStatement(sql);
-			pres.setString(1, entry.getUrl());
-			pres.setString(2,entry.ToJson());
-			int result = pres.executeUpdate();
-			if ( result == 1){
-				System.out.println("add title successfully");
-				return true;
-			}else {
-				return false;
-			}
+	/**
+	 * 写入记录，如果URL存在相同的URL，是否需要
+	 * @param entry
+	 * @param overWriteIfExist
+	 * @return
+	 */
+	public boolean addTitle(LineEntry entry,boolean overWriteIfExist){
+		String sql;
+		if (overWriteIfExist) {
+			sql = "insert or replace into DOMAINObject (url,statuscode,contentLength,title,IP,CDN"
+					+ "webcontainer,time,icon_hash,ASNInfo,request,response,"
+					+ "protocol,host,port,"
+					+ "CheckStatus,AssetType,EntryType,comment,isManualSaved)"
+					+ " values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+
+		}else {
+			sql = "insert into DOMAINObject (url,statuscode,contentLength,title,IP,CDN"
+					+ "webcontainer,time,icon_hash,ASNInfo,request,response,protocol,host,port)"
+					+ "webcontainer,time,icon_hash,ASNInfo,request,response,"
+					+ "protocol,host,port,"
+					+ "CheckStatus,AssetType,EntryType,comment,isManualSaved)"
+					+ " values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+		}
+
+		int result = jdbcTemplate.update(sql, entry.getUrl(),entry.getStatuscode(),entry.getContentLength(),entry.getTitle(),
+				entry.getIP(),entry.getCDN(),entry.getWebcontainer(),entry.getTime(),entry.getIcon_hash(),entry.getASNInfo(),
+				entry.getRequest(),entry.getResponse(),
+				entry.getProtocol(),entry.getHost(),entry.getPort(),
+				entry.getCheckStatus(),entry.getAssetType(),entry.getEntryType(),entry.getComment(),entry.isManualSaved());
+		return result > 0;
+		
 	}
 
 
