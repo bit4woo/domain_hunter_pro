@@ -59,14 +59,14 @@ public class TitleDao {
 	public boolean addTitle(LineEntry entry,boolean overWriteIfExist){
 		String sql;
 		if (overWriteIfExist) {
-			sql = "insert or replace into DOMAINObject (url,statuscode,contentLength,title,IP,CDN"
+			sql = "insert or replace into Title (url,statuscode,contentLength,title,IP,CDN"
 					+ "webcontainer,time,icon_hash,ASNInfo,request,response,"
 					+ "protocol,host,port,"
 					+ "CheckStatus,AssetType,EntryType,comment,isManualSaved)"
 					+ " values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
 		}else {
-			sql = "insert into DOMAINObject (url,statuscode,contentLength,title,IP,CDN"
+			sql = "insert into Title (url,statuscode,contentLength,title,IP,CDN"
 					+ "webcontainer,time,icon_hash,ASNInfo,request,response,protocol,host,port)"
 					+ "webcontainer,time,icon_hash,ASNInfo,request,response,"
 					+ "protocol,host,port,"
@@ -84,59 +84,26 @@ public class TitleDao {
 	}
 
 
-	public boolean addTitles(LinkedHashMap<String,LineEntry> lineEntries){
-		try {
-			conn = getConnection();
-			String sql="insert into Title(NAME,Content) values(?,?)";
-			pres=conn.prepareStatement(sql);
-			for(String key:lineEntries.keySet()){
-				pres.setString(1, key);
-				pres.setString(2,lineEntries.get(key).ToJson());
-				pres.addBatch();                                   //实现批量插入
+	public boolean addTitles(List<LineEntry> lineEntries,boolean overWriteIfExist){
+		int num = 0;
+		for (LineEntry entry:lineEntries) {
+			if (addTitle(entry,overWriteIfExist)) {
+				num++;
 			}
-			int[] result = pres.executeBatch();                                   //批量插入到数据库中
-			if ( IntStream.of(result).sum() == lineEntries.size()){
-				System.out.println("add titles successfully");
-				return true;
-			}else {
-				return false;
-			}
-		} catch(SQLiteException e) {
-			if (e.getErrorCode() == SQLiteErrorCode.SQLITE_BUSY.code) {
-				log.error("SQLITE_BUSY The database file is locked when call addTitles()");
-			}
-			e.printStackTrace(stderr);
-		} catch (Exception e) {
-			e.printStackTrace();
-			e.printStackTrace(stderr);
-		} finally {
-			destroy();
 		}
-		return false;
+		return num == lineEntries.size();
 	}
 
 
-	public IndexedLinkedHashMap<String,LineEntry> getTitles(){
-		IndexedLinkedHashMap<String,LineEntry> lineEntriesMap=new IndexedLinkedHashMap<String,LineEntry>();
-		try {
-			conn = getConnection();
-			String sql="select * from Title";
-			pres=conn.prepareStatement(sql);
-
-			ResultSet res=pres.executeQuery();
-			while(res.next()){
-				String LineJson=res.getString("Content");
-				LineEntry entry = LineEntry.FromJson(LineJson);
-				lineEntriesMap.put(entry.getUrl(), entry);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			e.printStackTrace(stderr);
-		} finally {
-			destroy();
-		}
-		System.out.println(lineEntriesMap.size() +" title lines found from DB file");
-		return lineEntriesMap;
+	public LineEntry selectTitleByID(int id){
+		String sql = "select * from Title where id=?";
+		return (LineEntry) jdbcTemplate.queryForObject(sql, new Object[] { id },new TitleMapper());
+	}
+	
+	
+	public LineEntry selectTitleByID(int id){
+		String sql = "select * from Title where id=?";
+		return (LineEntry) jdbcTemplate.queryForObject(sql, new Object[] { id },new TitleMapper());
 	}
 
 

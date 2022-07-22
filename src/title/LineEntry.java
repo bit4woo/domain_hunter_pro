@@ -1,17 +1,32 @@
 package title;
 
-import ASN.ASNEntry;
-import ASN.ASNQuery;
-import burp.*;
-import com.alibaba.fastjson.JSON;
-import com.google.common.hash.HashCode;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.nio.charset.Charset;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import com.alibaba.fastjson.JSON;
+import com.google.common.hash.HashCode;
+
+import ASN.ASNEntry;
+import ASN.ASNQuery;
+import burp.BurpExtender;
+import burp.Commons;
+import burp.Getter;
+import burp.HelperPlus;
+import burp.IExtensionHelpers;
+import burp.IHttpRequestResponse;
+import burp.IPAddressUtils;
+import burp.IResponseInfo;
 
 public class LineEntry {
 	private static final Logger log=LogManager.getLogger(LineEntry.class);
@@ -19,10 +34,6 @@ public class LineEntry {
 	public static final String AssetType_B = "无价值无需再挖";//像官网、首页等对信息收集、目标界定有用；但是对“挖漏洞”来说没有价值的记录。
 	public static final String AssetType_C = "未分类";//默认值，还未进行区分的资产或者普通价值资产
 	public static final String AssetType_D = "非目标资产";//非目标资产，通常跑网段都会出现这类资产。
-
-	//	public static final String Tag_Manager = "管理端";
-	//	public static final String Tag_UserEnd = "用户端";
-	//	public static final String Tag_TestEnvironment = "测试环境";
 
 	public static final String[] AssetTypeArray = {LineEntry.AssetType_A, LineEntry.AssetType_B, LineEntry.AssetType_C, LineEntry.AssetType_D};
 
@@ -41,9 +52,16 @@ public class LineEntry {
 	public static final String EntryType_DNS = "DNS";
 	public static final String EntryType_Manual_Saved = "Manual_Saved";
 
-
 	public static String systemCharSet = getSystemCharSet();
 
+	//private transient IHttpRequestResponse messageinfo;
+	//给不想被序列化的属性增加transient属性---java特性
+	//remove IHttpRequestResponse field ,replace with request+response+httpService(host port protocol). for convert to json.
+
+	//整个数据包IHttpRequestResponse=完整URL地址+请求数据包+响应数据包
+	private String url = "";
+
+	//URL中又包含如下三个属性，这个三个属性可以构造出burp中的IHttpService对象
 	private int port =-1;
 	private String host = "";
 	private String protocol ="";
@@ -53,43 +71,31 @@ public class LineEntry {
 	private byte[] response = {};
 	// request+response+httpService == IHttpRequestResponse,burp的划分方式
 
-	//used in UI,the fields to show,平常的划分方式
-	private String url = "";
+	//从response中获取的字段,解析后赋值
 	private int statuscode = -1;
 	private int contentLength = -1;
 	private String title = "";
-	private String IP = "";
-	private String CDN = "";
 	private String webcontainer = "";
+
 	private String time = "";
+
+	//需要通过查询或者请求获取的其他信息字段
+	private String IP = "";//DNS解析
+	private String CDN = "";//CNAME+从证书中获取的关联域名
 	private String icon_hash = "";
 	private String ASNInfo = "";
 
-	//Gson中，加了transient表示不序列化，是最简单的方法
-	//给不想被序列化的属性增加transient属性---java特性
-	//private transient String messageText = "";//use to search
-	//private transient String bodyText = "";//use to adjust the response changed or not
-	//don't store these two field to reduce config file size.
-
 	//field for user
-	private transient boolean isChecked =false;
 	private String CheckStatus =CheckStatus_UnChecked;
 	private String AssetType = AssetType_C;
 	private String EntryType = EntryType_Web;
 	private String comment ="";
 	private boolean isManualSaved = false;
 
-	private transient IHttpRequestResponse messageinfo;
-
-	//remove IHttpRequestResponse field ,replace with request+response+httpService(host port protocol). for convert to json.
-
-	private transient IExtensionHelpers helpers;
-	private transient IBurpExtenderCallbacks callbacks;
-
 	/**
 	 * 默认构造函数，序列化、反序列化所需
 	 */
-	LineEntry(){
+	public LineEntry(){
 
 	}
 
@@ -105,46 +111,52 @@ public class LineEntry {
 		this.protocol ="http";
 
 		if (this.IP != null) {
-			this.IP = IPset.toString().replace("[", "").replace("]", "");
+			this.IP = String.join(",", IPset);
 		}
 		this.EntryType = EntryType_DNS;
 		this.CheckStatus = CheckStatus_Checked;
 	}
 
+
+	/**
+	 * 用于构造DNS记录
+	 * @param host
+	 * @param IPset
+	 * @return
+	 */
+	public LineEntry(String host,String IPStr) {
+		this.host = host;
+		this.port = 80;
+		this.protocol ="http";
+		this.IP = IPStr;
+
+		this.EntryType = EntryType_DNS;
+		this.CheckStatus = CheckStatus_Checked;
+	}
+
+	/**
+	 * 用于解析IHttpRequestResponse对象
+	 * @param messageinfo
+	 */
 	public LineEntry(IHttpRequestResponse messageinfo) {
-		this.messageinfo = messageinfo;
-		this.callbacks = BurpExtender.getCallbacks();
-		this.helpers = this.callbacks.getHelpers();
-		parse();
+		parse(messageinfo);
+	}
+
+
+	/**
+	 * 用于从数据库中恢复对象
+	 * @param messageinfo
+	 */
+	public LineEntry(URL url,byte[] request,byte[] response) {
+		parse(url,request,response);
 	}
 
 	public LineEntry(IHttpRequestResponse messageinfo,String CheckStatus,String comment) {
-		this.messageinfo = messageinfo;
-		this.callbacks = BurpExtender.getCallbacks();
-		this.helpers = this.callbacks.getHelpers();
-		parse();
-
+		parse(messageinfo);
 		this.CheckStatus = CheckStatus;
 		this.comment = comment;
 	}
 
-	@Deprecated
-	private LineEntry(IHttpRequestResponse messageinfo,boolean isNew,String CheckStatus,String comment,Set<String> IPset,Set<String> CDNset) {
-		this.messageinfo = messageinfo;
-		this.callbacks = BurpExtender.getCallbacks();
-		this.helpers = this.callbacks.getHelpers();
-		parse();
-
-		this.CheckStatus = CheckStatus;
-		this.comment = comment;
-		if (this.IP != null) {
-			this.IP = IPset.toString().replace("[", "").replace("]", "");
-		}
-
-		if (this.CDN != null) {
-			this.CDN = CDNset.toString().replace("[", "").replace("]", "");
-		}
-	}
 
 	public String ToJson(){//注意函数名称，如果是get set开头，会被认为是Getter和Setter函数，会在序列化过程中被调用。
 		return JSON.toJSONString(this);
@@ -154,40 +166,41 @@ public class LineEntry {
 		return JSON.parseObject(json, LineEntry.class);
 	}
 
-	private void parse() {
+	private void parse(IHttpRequestResponse messageinfo) {
+		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
+		URL tmpurl = helpers.analyzeRequest(messageinfo).getUrl();//包含了默认端口
+
+		parse(tmpurl,messageinfo.getRequest(),messageinfo.getResponse());
+	}
+
+	/**
+	 * 可以用于从数据库中恢复对象
+	 * @param url
+	 * @param request
+	 * @param response
+	 */
+	private void parse(URL url,byte[] request,byte[] response) {
 		try {
+			this.url = url.toString();
+			port = url.getPort()== -1 ? url.getDefaultPort():url.getPort();
+			host = url.getHost();
+			protocol = url.getProtocol();
 
-			//time = Commons.getNowTimeString();//这是动态的，会跟随系统时间自动变化,why?--是因为之前LineTableModel的getValueAt函数每次都主动调用了该函数。
+			if (request != null) this.request = request;
 
-			IHttpService service = this.messageinfo.getHttpService();
+			if (response != null) {
+				this.response = response;
 
-			//url = service.toString();
-			url = helpers.analyzeRequest(messageinfo).getUrl().toString();//包含了默认端口
-			port = service.getPort();
-			host = service.getHost();
-			protocol = service.getProtocol();
-
-			if (messageinfo.getRequest() != null){
-				request = messageinfo.getRequest();
-			}
-
-			if (messageinfo.getResponse() != null){
-				response = messageinfo.getResponse();
+				IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
 				IResponseInfo responseInfo = helpers.analyzeResponse(response);
 				statuscode = responseInfo.getStatusCode();
 
-				//				MIMEtype = responseInfo.getStatedMimeType();
-				//				if(MIMEtype == null) {
-				//					MIMEtype = responseInfo.getInferredMimeType();
-				//				}
+				HelperPlus getter = new HelperPlus(helpers);
 
-
-				Getter getter = new Getter(helpers);
-
-				webcontainer = getter.getHeaderValueOf(false, messageinfo, "Server");
-				byte[] byteBody = getter.getBody(false, messageinfo);
+				webcontainer = getter.getHeaderValueOf(false, response, "Server");
+				byte[] byteBody = HelperPlus.getBody(false, response);
 				try{
-					contentLength = Integer.parseInt(getter.getHeaderValueOf(false, messageinfo, "Content-Length").trim());
+					contentLength = Integer.parseInt(getter.getHeaderValueOf(false, response, "Content-Length").trim());
 				}catch (Exception e){
 					if (contentLength==-1 && byteBody!=null) {
 						contentLength = byteBody.length;
@@ -195,7 +208,6 @@ public class LineEntry {
 				}
 
 				title = fetchTitle(response);
-
 			}
 		}catch(Exception e) {
 			e.printStackTrace(BurpExtender.getStderr());
@@ -286,7 +298,7 @@ public class LineEntry {
 	}
 
 	public void setIPWithSet(Set<String> ipSet) {
-		IP = ipSet.toString().replace("[", "").replace("]", "");
+		IP = String.join(",", ipSet);
 	}
 	//用于序列化
 	public String getCDN() {
@@ -298,11 +310,11 @@ public class LineEntry {
 	}
 
 	public void setCDNWithSet(Set<String> cDNSet) {
-		CDN = cDNSet.toString().replace("[", "").replace("]", "");
+		CDN = String.join(",", cDNSet);
 	}
 
 	public void setCertDomainWithSet(Set<String> certDomains) {
-		CDN += " | "+certDomains.toString().replace("[", "").replace("]", "");
+		CDN += " | "+String.join(",", certDomains);
 	}
 
 	public String getWebcontainer() {
@@ -328,26 +340,6 @@ public class LineEntry {
 
 	public void setIcon_hash(String icon_hash) {
 		this.icon_hash = icon_hash;
-	}
-
-	public IHttpRequestResponse getMessageinfo() {
-		//		if (messageinfo == null){
-		//			try{
-		//				messageinfo = callbacks.getHelpers().buildHttpMessage()
-		//				IHttpRequestResponse messageinfo = new IHttpRequestResponse();
-		//				messageinfo.setRequest(this.request);//始终为空，why??? because messageinfo is null ,no object to set content.
-		//				messageinfo.setRequest(this.response);
-		//				IHttpService service = callbacks.getHelpers().buildHttpService(this.host,this.port,this.protocol);
-		//				messageinfo.setHttpService(service);
-		//			}catch (Exception e){
-		//				System.out.println("error "+url);
-		//			}
-		//		}
-		return messageinfo;
-	}
-
-	public void setMessageinfo(IHttpRequestResponse messageinfo) {
-		this.messageinfo = messageinfo;
 	}
 
 	public String getBodyText() {
@@ -409,40 +401,16 @@ public class LineEntry {
 
 		//https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Redirections
 		if (statuscode >= 300 && statuscode <= 308) {
-			String Locationurl = getHeaderValueOf(false,"Location");
+
+			IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
+			HelperPlus getter = new HelperPlus(helpers);
+			String Locationurl = getter.getHeaderValueOf(false,response,"Location");
+
 			if (null != Locationurl) {
 				title  = " --> "+Locationurl;
 			}
 		}
 		return title;
-	}
-
-	public String getHeaderValueOf(boolean messageIsRequest,String headerName) {
-		helpers = BurpExtender.getCallbacks().getHelpers();
-		List<String> headers=null;
-		if(messageIsRequest) {
-			if (this.request == null) {
-				return null;
-			}
-			IRequestInfo analyzeRequest = helpers.analyzeRequest(this.request);
-			headers = analyzeRequest.getHeaders();
-		}else {
-			if (this.response == null) {
-				return null;
-			}
-			IResponseInfo analyzeResponse = helpers.analyzeResponse(this.response);
-			headers = analyzeResponse.getHeaders();
-		}
-
-
-		headerName = headerName.toLowerCase().replace(":", "");
-		String Header_Spliter = ": ";
-		for (String header : headers) {
-			if (header.toLowerCase().startsWith(headerName)) {
-				return header.split(Header_Spliter, 2)[1];//分成2部分，Location: https://www.jd.com
-			}
-		}
-		return null;
 	}
 
 	public int getPort() {
@@ -483,25 +451,6 @@ public class LineEntry {
 
 	public void setResponse(byte[] response) {
 		this.response = response;
-	}
-
-	//程序中不再需要使用 isChecked函数（Checked属性的getter），完全移除
-	@Deprecated//在反序列化时，还会需要这个函数，唯一的使用点。
-	public void setChecked(boolean isChecked) {
-		//如果是旧数据，将这个值设置到新的属性，为了向下兼容需要保留这个函数。
-		try {
-			if (isChecked) {
-				CheckStatus = CheckStatus_Checked;
-			}else {
-				CheckStatus = CheckStatus_UnChecked;
-			}
-			//DBHelper dbHelper = new DBHelper(GUI.currentDBFile.toString());
-			//dbHelper.updateTitle(this);
-			//不能在这里就进行写入，可能对象的属性都还没设置全呢，会导致数据丢失
-		} catch (Exception e) {
-
-		}
-		this.isChecked = isChecked;
 	}
 
 	public String getCheckStatus() {
@@ -612,19 +561,6 @@ public class LineEntry {
 
 	public void setManualSaved(boolean isManualSaved) {
 		this.isManualSaved = isManualSaved;
-	}
-
-	public IExtensionHelpers getHelpers() {
-		return helpers;
-	}
-
-	public void setHelpers(IExtensionHelpers helpers) {
-		this.helpers = helpers;
-	}
-
-	public Object getValue(int columnIndex) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	public static void main(String args[]) {

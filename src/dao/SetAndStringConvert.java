@@ -1,5 +1,6 @@
 package dao;
 
+import java.util.Arrays;
 import java.util.HashSet;
 
 import org.apache.commons.lang3.StringUtils;
@@ -21,6 +22,10 @@ public class SetAndStringConvert {
 		String result = set.toString();
 		String result1 = String.join(",", set);
 		System.out.println(result1);
+		
+		
+		set = new HashSet();
+		set.addAll(Arrays.asList(result1.split(",")));
 	}
 	
 	public static void test1() {
@@ -33,7 +38,9 @@ public class SetAndStringConvert {
 	    System.out.println(result);
 	    
 	  }
-	
+	/**
+	 * set and String convert
+	 */
 	public static void test2() {
 	    HashSet<String> set = new HashSet();
 	    set.add("Alive");
