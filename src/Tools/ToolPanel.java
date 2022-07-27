@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URI;
+import java.net.URL;
 import java.util.List;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -334,22 +335,41 @@ public class ToolPanel extends JPanel {
 		btnOpenurls.addActionListener(new ActionListener() {
 			List<String> urls = new ArrayList<>();
 			Iterator<String> it = urls.iterator();
+			private int totalNumber;
+			private int left;
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (inputTextAreaChanged) {//default is true
 					urls = Arrays.asList(lineConfig.getToolPanelText().replaceAll(" ","").replaceAll("\r\n", "\n").split("\n"));
+					totalNumber = urls.size();
+					left = urls.size();
 					it = urls.iterator();
 					inputTextAreaChanged = false;
 				}
 				try {
 					int i =10;
-					while(i>0 && it.hasNext()) {
+					while(i >0 && it.hasNext()) {
 						String url = it.next();
-						//stdout.println(url);
-						Commons.browserOpen(url, lineConfig.getBrowserPath());
+						if (!url.toLowerCase().startsWith("https://") &&
+								!url.toLowerCase().startsWith("http://")) {
+							url = "http://"+url;
+							URL tmpUrl = new URL(url);
+							if (tmpUrl.getPort() == -1) {
+								Commons.browserOpen(url, lineConfig.getBrowserPath());
+								Commons.browserOpen(url.replaceFirst("http://", "https://"), lineConfig.getBrowserPath());
+							}else if (Integer.toString(tmpUrl.getPort()).endsWith("443")) {
+								Commons.browserOpen(url.replaceFirst("http://", "https://"), lineConfig.getBrowserPath());
+							}else {
+								Commons.browserOpen(url, lineConfig.getBrowserPath());
+							}
+						}else {
+							Commons.browserOpen(url, lineConfig.getBrowserPath());
+						}
 						i--;
+						left--;
 					}
+					btnOpenurls.setText("OpenURLs"+"("+left+"/"+totalNumber+")");
 				} catch (Exception e1) {
 					e1.printStackTrace(stderr);
 				}
