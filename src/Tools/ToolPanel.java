@@ -3,6 +3,7 @@ package Tools;
 import GUI.GUIMain;
 import burp.BurpExtender;
 import burp.Commons;
+import burp.DomainNameUtils;
 import burp.IPAddressUtils;
 import domain.CertInfo;
 import domain.DomainPanel;
@@ -492,6 +493,45 @@ public class ToolPanel extends JPanel {
 								String hash = WebIcon.getHash(url);
 								result.add(hash);
 								System.out.println(url+" "+hash);
+							}
+							outputTextArea.setText(String.join(System.lineSeparator(), result));
+						} catch (Exception e1) {
+							outputTextArea.setText(e1.getMessage());
+							e1.printStackTrace(stderr);
+						}
+						return null;
+					}
+					@Override
+					protected void done() {
+					}
+				};
+				worker.execute();
+			}
+		});
+		
+		JButton getIPAddressButton = new JButton("GetIPAddress");
+		threeFourthPanel.add(getIPAddressButton);
+		getIPAddressButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				ArrayList<String> result = new ArrayList<String>();
+				
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+					//using SwingWorker to prevent blocking burp main UI.
+					@Override
+					protected Map doInBackground() throws Exception {
+						try {
+							List<String> domains = Arrays.asList(lineConfig.getToolPanelText().replaceAll(" ","").replaceAll("\r\n", "\n").split("\n"));
+							Iterator<String> it = domains.iterator();
+							while(it.hasNext()) {
+								String domain = it.next();
+								if (IPAddressUtils.isValidIP(domain)) {//目标是一个IP
+									result.add(domain);
+								}else if (DomainNameUtils.isValidDomain(domain)) {//目标是域名
+									HashMap<String,Set<String>> temp = DomainNameUtils.dnsquery(domain);
+									Set<String> IPSet = temp.get("IP");
+									result.addAll(IPSet);
+								}
 							}
 							outputTextArea.setText(String.join(System.lineSeparator(), result));
 						} catch (Exception e1) {
