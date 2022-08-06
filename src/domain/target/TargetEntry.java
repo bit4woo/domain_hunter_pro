@@ -106,6 +106,10 @@ public class TargetEntry {
 	}
 
 
+	public TargetEntry() {
+		// TODO Auto-generated constructor stub
+	}
+
 	public String getTarget() {
 		return target;
 	}

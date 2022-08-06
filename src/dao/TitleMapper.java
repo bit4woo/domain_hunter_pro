@@ -9,7 +9,7 @@ import org.springframework.jdbc.core.RowMapper;
 
 import title.LineEntry;
 
-public class TitleMapper implements RowMapper {
+public class TitleMapper implements RowMapper<LineEntry> {
 
 	@Override
 	/**

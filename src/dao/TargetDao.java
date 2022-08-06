@@ -3,12 +3,15 @@ package dao;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.List;
 
 import javax.sql.DataSource;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import domain.target.TargetEntry;
 import domain.target.TargetTableModel;
+import title.LineEntry;
 
 public class TargetDao {
 
@@ -20,7 +23,7 @@ public class TargetDao {
 	}
 
 	public boolean createTable() {
-		String sqlTitle = "CREATE TABLE IF NOT EXISTS Targets" +
+		String sqlTitle = "CREATE TABLE IF NOT EXISTS Target" +
 				"(ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +//自动增长 https://www.sqlite.org/autoinc.html
 				" target           TEXT    NOT NULL," +
 				" type        TEXT    NOT NULL,"+
@@ -30,7 +33,27 @@ public class TargetDao {
 				" comment        TEXT    NOT NULL,"+
 				" useTLD        BOOLEAN    NOT NULL)";
 		jdbcTemplate.execute(sqlTitle);
+		
+		//https://www.sqlitetutorial.net/sqlite-replace-statement/
+		//让target字段成为replace操作判断是否重复的判断条件。
+		String sqlcreateIndex = "CREATE UNIQUE INDEX idx_Target_target ON Target (target)";
+		jdbcTemplate.execute(sqlcreateIndex);
 		return true;
+	}
+	
+	/**
+	 * 
+	 * @param entry
+	 * @return
+	 */
+	public boolean addOrUpdateTarget(TargetEntry entry){
+		String sql = "insert or replace into Target (target,type,keyword,ZoneTransfer,isBlack,comment,useTLD)"
+					+ " values(?,?,?,?,?,?,?)";
+
+		int result = jdbcTemplate.update(sql, entry.getTarget(),entry.getType(),entry.getKeyword(),entry.isZoneTransfer(),
+				entry.isBlack(),entry.getComment(),entry.isUseTLD());
+		return result > 0;
+		
 	}
 
 	/**
@@ -38,38 +61,19 @@ public class TargetDao {
 	 * @param model
 	 * @return
 	 */
-	public boolean saveTargets(TargetTableModel model){
-		try {
-			Connection conn = getConnection();
-
-			PreparedStatement pres = conn.prepareStatement("select ID From Targets");//会比select * From Targets 要快吧
-			ResultSet rs = pres.executeQuery();
-			String sql = "";
-			if (rs.next()){
-				sql = "update Targets SET Content=? where ID=1";
-			}else{
-				sql = "insert into Targets(ID,Content) values(1,?)";
-			}
-
-			pres=conn.prepareStatement(sql);//预编译
-
-			String targetsJson = model.ToJson();
-			pres.setString(1,targetsJson);
-			int n = pres.executeUpdate();
-			if (n==1){
-				System.out.println("save targets successfully");
-				return true;//不影响finally的执行
-			}else {
-				System.out.println("save targets failed");
-				return false;
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			e.printStackTrace(stderr);
-		} finally {
-			destroy();
-		}
-		return false;
+	public List<TargetEntry> selectAll(){
+		String sql = "select * from Target";
+		return jdbcTemplate.query(sql,new TargetMapper());
+	}
+	
+	public TargetEntry selectByID(int id){
+		String sql = "select * from Target where id=?";
+		return jdbcTemplate.queryForObject(sql, new Object[] { id },new TargetMapper());
+	}
+	
+	public TargetEntry selectByTarget(String target){
+		String sql = "select * from Title where target=?";
+		return jdbcTemplate.queryForObject(sql, new Object[] { target },new TargetMapper());
 	}
 
 	/**

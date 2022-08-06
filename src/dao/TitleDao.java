@@ -97,13 +97,13 @@ public class TitleDao {
 
 	public LineEntry selectTitleByID(int id){
 		String sql = "select * from Title where id=?";
-		return (LineEntry) jdbcTemplate.queryForObject(sql, new Object[] { id },new TitleMapper());
+		return jdbcTemplate.queryForObject(sql, new Object[] { id },new TitleMapper());
 	}
 	
 	
-	public LineEntry selectTitleByID(int id){
+	public LineEntry selectTitleByUrl(int id){
 		String sql = "select * from Title where id=?";
-		return (LineEntry) jdbcTemplate.queryForObject(sql, new Object[] { id },new TitleMapper());
+		return jdbcTemplate.queryForObject(sql, new Object[] { id },new TitleMapper());
 	}
 
 
