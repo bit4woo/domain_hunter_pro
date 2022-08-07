@@ -1,5 +1,6 @@
 package dao;
 
+import java.io.File;
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -12,9 +13,15 @@ public class TargetDao {
 
 	private DataSource dataSource;
 	private JdbcTemplate jdbcTemplate;
-	void setDataSource(DataSource ds) {
-		dataSource = ds;
-		jdbcTemplate = new JdbcTemplate(ds);
+	
+	public TargetDao(String dbFilePath){
+		dataSource = DBUtils.getSqliteDataSource(dbFilePath);
+		jdbcTemplate = new JdbcTemplate(dataSource);
+	}
+	
+	public TargetDao(File dbFilePath){
+		dataSource = DBUtils.getSqliteDataSource(dbFilePath.toString());
+		jdbcTemplate = new JdbcTemplate(dataSource);
 	}
 
 	public boolean createTable() {
@@ -50,6 +57,16 @@ public class TargetDao {
 		return result > 0;
 		
 	}
+	
+	public boolean addOrUpdateTargets(List<TargetEntry> entries){
+		int num=0;
+		for (TargetEntry entry:entries) {
+			if (addOrUpdateTarget(entry)) {
+				num++;
+			};
+		}
+		return num==entries.size();
+	}
 
 	/**
 	 * 
@@ -81,7 +98,12 @@ public class TargetDao {
 		return jdbcTemplate.update(sql, id) > 0;
 	}
 	
-	public boolean deleteByTarget(TargetEntry entry) {
+	public boolean deleteByTarget(String targetDomain) {
+		String sql = "delete from Target where target=?";
+		return jdbcTemplate.update(sql, targetDomain) > 0;
+	}
+	
+	public boolean deleteTarget(TargetEntry entry) {
 		String sql = "delete from Target where target=?";
 		return jdbcTemplate.update(sql, entry.getTarget()) > 0;
 	}

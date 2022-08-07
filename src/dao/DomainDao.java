@@ -12,9 +12,10 @@ public class DomainDao {
 
 	private DataSource dataSource;
 	private JdbcTemplate jdbcTemplate;
-	void setDataSource(DataSource ds) {
-		dataSource = ds;
-		jdbcTemplate = new JdbcTemplate(ds);
+	
+	public DomainDao(String dbFilePath){
+		dataSource = DBUtils.getSqliteDataSource(dbFilePath);
+		jdbcTemplate = new JdbcTemplate(dataSource);
 	}
 
 	public boolean createTable() {

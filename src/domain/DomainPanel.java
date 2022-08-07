@@ -1,29 +1,10 @@
 package domain;
 
-import GUI.GUIMain;
-import GUI.ProjectMenu;
-import Tools.ToolPanel;
-import burp.*;
-
-import com.google.common.net.InternetDomainName;
-
-import Deprecated.DBHelper;
-import domain.target.TargetControlPanel;
-import domain.target.TargetTable;
-import domain.target.TargetTableModel;
-import org.apache.commons.io.FileUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import thread.ThreadSearhDomain;
-import toElastic.VMP;
-
-import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Desktop;
+import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -34,10 +15,58 @@ import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.*;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import com.google.common.net.InternetDomainName;
+
+import GUI.GUIMain;
+import GUI.ProjectMenu;
+import Tools.ToolPanel;
+import burp.BurpExtender;
+import burp.Commons;
+import burp.IBurpExtenderCallbacks;
+import burp.IHttpRequestResponse;
+import burp.IHttpService;
+import burp.IScanIssue;
+import dao.DomainDao;
+import dao.TargetDao;
+import domain.target.TargetControlPanel;
+import domain.target.TargetEntry;
+import domain.target.TargetTable;
+import domain.target.TargetTableModel;
+import thread.ThreadSearhDomain;
+import toElastic.VMP;
 
 /*
  *注意，所有直接对DomainObject中数据的修改，都不会触发该tableChanged监听器。
@@ -865,21 +894,16 @@ public class DomainPanel extends JPanel {
 	/*
     单独保存域名信息到另外的文件
 	 */
-	public File saveDomainOnly() {
+	public void saveDomainOnly() {
 		try {
 			File file = BurpExtender.getGui().dbfc.dialog(false,".db");
 			if (file != null) {
-				DBHelper dbHelper = new DBHelper(file.toString());
-				if (dbHelper.saveDomainObject(domainResult) && dbHelper.saveTargets(fetchTargetModel())) {
-					stdout.println("Save Domain Only Success! " + Commons.getNowTimeString());
-					return file;
-				}
+				new TargetDao(file).addOrUpdateTargets((List<TargetEntry>) fetchTargetModel().getTargetEntries().values());
+				new DomainDao(file.toString()).createOrUpdateDomainObject(domainResult);
 			}
-		} catch (Exception e) {
-			e.printStackTrace(stderr);
+		}catch (Exception e) {
+			
 		}
-		stdout.println("Save Domain Only failed! " + Commons.getNowTimeString());
-		return null;
 	}
 
 	/*
@@ -896,8 +920,8 @@ public class DomainPanel extends JPanel {
 				GUIMain.setCurrentDBFile(file);
 			}
 
-			DBHelper dbHelper = new DBHelper(file.toString());
-			boolean success = dbHelper.saveDomainObject(domainResult);
+			DomainDao domainDao = new DomainDao(file.toString());
+			boolean success = domainDao.createOrUpdateDomainObject(domainResult);
 			if (success) {
 				log.info("domain data saved");
 			}else {
@@ -909,6 +933,9 @@ public class DomainPanel extends JPanel {
 		}
 	}
 
+
+
+
 	/*
     //用于各种domain的手动编辑后的保存（不包含rootdomain）
 	 */
@@ -918,7 +945,7 @@ public class DomainPanel extends JPanel {
 		public void removeUpdate(DocumentEvent e) {
 			if (listenerIsOn) {
 				saveTextAreas();
-				saveDomainDataToDB();
+				new DomainDao(GUIMain.getCurrentDBFile().toString()).createOrUpdateDomainObject(domainResult);
 			}
 		}
 
@@ -926,7 +953,7 @@ public class DomainPanel extends JPanel {
 		public void insertUpdate(DocumentEvent e) {
 			if (listenerIsOn) {
 				saveTextAreas();
-				saveDomainDataToDB();
+				new DomainDao(GUIMain.getCurrentDBFile().toString()).createOrUpdateDomainObject(domainResult);
 			}
 		}
 
@@ -934,7 +961,7 @@ public class DomainPanel extends JPanel {
 		public void changedUpdate(DocumentEvent arg0) {
 			if (listenerIsOn) {
 				saveTextAreas();
-				saveDomainDataToDB();
+				new DomainDao(GUIMain.getCurrentDBFile().toString()).createOrUpdateDomainObject(domainResult);
 			}
 		}
 	}

@@ -422,7 +422,6 @@ public class DomainManager {
                         e.printStackTrace(BurpExtender.getStderr());
                     }
                 }
-                fetchTargetModel().saveTargetToDB();//添加完成后需要主动调用一次保存！
                 freshBaseRule();
                 //relatedDomainSet.clear();//TargetEntry的构造函数中就会自动移除，不需要这行代码了
             }

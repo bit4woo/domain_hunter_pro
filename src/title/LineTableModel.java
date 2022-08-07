@@ -2,6 +2,7 @@ package title;
 
 import GUI.GUIMain;
 import burp.*;
+import dao.TitleDao;
 import domain.DomainPanel;
 import domain.target.TargetEntry;
 
@@ -80,67 +81,24 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 					//int column = e.getColumn();//获取触发事件的列索引
 					//stdout.println(rowstart+"---"+rowend);
 
-					DBHelper dbHelper = new DBHelper(GUIMain.getCurrentDBFile().toString());
+					TitleDao titleDao = new TitleDao(GUIMain.getCurrentDBFile().toString());
 					if (type == TableModelEvent.INSERT) {//插入事件使用批量方法好像不行，都是一个个插入的，每次都会触发
 						//从使用场景来看也无需使用批量
 						for (int i = rowstart; i <= rowend; i++) {
-							dbHelper.addTitle(lineEntries.get(i));
+							titleDao.addOrUpdateTitle(lineEntries.get(i));
 						}
 					} else if (type == TableModelEvent.UPDATE) {
-						/*
 						for (int i = rowstart; i <= rowend; i++) {
-							String key = lineEntries.getKeyAtIndex(i);
-							LineEntry entry = lineEntries.get(key);
-							entry.setTime(Commons.getNowTimeString());
-							dbHelper.updateTitle(entry);
+							titleDao.addOrUpdateTitle(lineEntries.get(i));
 						}
-						 */
-
-						List<LineEntry> entries = new ArrayList<LineEntry>();
-						for (int i = rowstart; i <= rowend; i++) {
-							LineEntry entry = lineEntries.get(i);
-							//entry.setTime(Commons.getNowTimeString());
-							//这里不再更新时间，时间只表示CheckDone的时间
-							entries.add(entry);
-						}
-						dbHelper.updateTitles(entries);
-
 					} else if (type == TableModelEvent.DELETE) {//可以批量操作
-						/*
-						for (int i = rowstart; i <= rowend; i++) {
-							String key = lineEntries.getKeyAtIndex(i);
-							dbHelper.deleteTitle(lineEntries.get(key));
-							lineEntries.remove(key);
-						}
-						 */
-
 
 						//必须从高位index进行删除，否则删除的对象会和预期不一致！！！
-						List<String> urls = new ArrayList<String>();
 						for (int i = rowend; i >= rowstart; i--) {
 							String url = lineEntries.get(i).getUrl();
-							urls.add(url);
-							lineEntries.remove(i);//删除tableModel中的元素。
+							titleDao.deleteTitleByUrl(url);
 							stdout.println("### "+url+" deleted");
 						}
-						dbHelper.deleteTitlesByUrl(urls);//删除数据库中的元素
-
-
-
-						/*
-						List<String> urls = new ArrayList<String>();
-						for (int i = rowend; i >= rowstart; i--) {
-							String key = lineEntries.getKeyAtIndex(i);
-							urls.add(key);
-						}
-						dbHelper.deleteTitlesByUrl(urls);//删除数据库中的元素
-						for(String url:urls) {
-							lineEntries.remove(url);//删除tableModel中的元素。
-							stdout.println("### "+url+" deleted");
-						}
-						 */
-
-
 					} else {
 						//System.out.println("此事件是由其他原因触发");
 					}

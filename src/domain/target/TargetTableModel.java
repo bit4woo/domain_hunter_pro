@@ -2,6 +2,8 @@ package domain.target;
 
 import GUI.GUIMain;
 import burp.*;
+import dao.TargetDao;
+import dao.TitleDao;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.net.InternetDomainName;
@@ -61,8 +63,34 @@ public class TargetTableModel extends AbstractTableModel {
 		addTableModelListener(new TableModelListener() {
 			@Override
 			public void tableChanged(TableModelEvent e) {
-				saveTargetToDB();
+				
+				int type = e.getType();//获取事件类型(增、删、改等)
+				int rowstart = e.getFirstRow();//获取触发事件的行索引，即是fireTableRowxxx中的2个参数。
+				int rowend = e.getLastRow();
+
+				TargetDao targetDao = new TargetDao(GUIMain.getCurrentDBFile().toString());
+				if (type == TableModelEvent.INSERT) {//插入事件使用批量方法好像不行，都是一个个插入的，每次都会触发
+					//从使用场景来看也无需使用批量
+					for (int i = rowstart; i <= rowend; i++) {
+						targetDao.addOrUpdateTarget(targetEntries.get(i));
+					}
+				} else if (type == TableModelEvent.UPDATE) {
+					for (int i = rowstart; i <= rowend; i++) {
+						targetDao.addOrUpdateTarget(targetEntries.get(i));
+					}
+				} else if (type == TableModelEvent.DELETE) {//可以批量操作
+
+					//必须从高位index进行删除，否则删除的对象会和预期不一致！！！
+					for (int i = rowend; i >= rowstart; i--) {
+						String targetDomain = targetEntries.get(i).getTarget();
+						targetDao.deleteByTarget(targetDomain);
+						stdout.println("### "+targetDomain+" deleted");
+					}
+				} else {
+					//System.out.println("此事件是由其他原因触发");
+				}
 			}
+			
 		});
 	}
 
@@ -90,24 +118,6 @@ public class TargetTableModel extends AbstractTableModel {
 	 */
 	public static TargetTableModel FromJson(String instanceString) {
 		return new Gson().fromJson(instanceString, TargetTableModel.class);
-	}
-
-	public void saveTargetToDB() {
-		File file = GUIMain.getCurrentDBFile();
-		if (file == null) {
-			if (null == DomainPanel.getDomainResult()) return;//有数据才弹对话框指定文件位置。
-			file = BurpExtender.getGui().dbfc.dialog(false,".db");
-			GUIMain.setCurrentDBFile(file);
-		}
-		if (file != null) {
-			DBHelper dbHelper = new DBHelper(file.toString());
-			boolean success = dbHelper.saveTargets(this);
-			if (success) {
-				log.info("target data saved");
-			}else {
-				log.error("target data save failed");
-			}
-		}
 	}
 
 	@Override
@@ -230,7 +240,7 @@ public class TargetTableModel extends AbstractTableModel {
 	public void addRowIfValid(TargetEntry entry) {
 		if (ifValid(entry)){
 			synchronized (targetEntries) {
-				//因为后台的流量分析进程是多线程，可能同事添加数据！
+				//因为后台的流量分析进程是多线程，可能同时添加数据！
 				String key = entry.getTarget();
 				TargetEntry oldentry = targetEntries.get(key);
 				if (oldentry != null) {//如果有旧的记录，就需要用旧的内容做修改

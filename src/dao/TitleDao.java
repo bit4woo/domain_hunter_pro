@@ -16,9 +16,10 @@ import title.LineEntry;
 public class TitleDao {
 	private DataSource dataSource;
 	private JdbcTemplate jdbcTemplate;
-	void setDataSource(DataSource ds) {
-		dataSource = ds;
-		jdbcTemplate = new JdbcTemplate(ds);
+	
+	public TitleDao(String dbFilePath){
+		dataSource = DBUtils.getSqliteDataSource(dbFilePath);
+		jdbcTemplate = new JdbcTemplate(dataSource);
 	}
 
 	public boolean createTable() {
@@ -101,6 +102,11 @@ public class TitleDao {
 	public boolean deleteTitle(LineEntry entry){
 		String sql="DELETE FROM Title where url= ?";
 		return jdbcTemplate.update(sql, entry.getUrl()) > 0;
+	}
+	
+	public boolean deleteTitleByUrl(String url){
+		String sql="DELETE FROM Title where url= ?";
+		return jdbcTemplate.update(sql, url) > 0;
 	}
 
 	public boolean deleteTitles(List<LineEntry> lineEntries){
