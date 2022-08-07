@@ -44,8 +44,13 @@ public class DomainDao {
 	 * 从数据库中读出存入的对象
 	 */
 	public List<DomainManager> selectDomainObject(){
-
 		String sql ="select Content from DOMAINObject";
 		return jdbcTemplate.query(sql,new DomainObjectMapper());
+	}
+	
+
+	public boolean deleteDomainObject(List<String> urls){
+		String sql="DELETE FROM DOMAINObject where NAME= domain_hunter_pro_by_bit4woo";
+		return jdbcTemplate.update(sql) >0;
 	}
 }

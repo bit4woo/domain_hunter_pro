@@ -1,8 +1,5 @@
 package dao;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -10,8 +7,6 @@ import javax.sql.DataSource;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import domain.target.TargetEntry;
-import domain.target.TargetTableModel;
-import title.LineEntry;
 
 public class TargetDao {
 
@@ -58,7 +53,6 @@ public class TargetDao {
 
 	/**
 	 * 
-	 * @param model
 	 * @return
 	 */
 	public List<TargetEntry> selectAll(){
@@ -72,29 +66,24 @@ public class TargetDao {
 	}
 	
 	public TargetEntry selectByTarget(String target){
-		String sql = "select * from Title where target=?";
+		String sql = "select * from Target where target=?";
 		return jdbcTemplate.queryForObject(sql, new Object[] { target },new TargetMapper());
 	}
-
+	
+	
 	/**
-	 * 从数据库中读出存入的对象
+	 * 
+	 * @param id
+	 * @return
 	 */
-	public TargetTableModel getTargets(){
-		try {
-			String sql="select * from Targets";
-			conn = getConnection();
-			pres=conn.prepareStatement(sql);
-			ResultSet res=pres.executeQuery();
-			while(res.next()){
-				String Content =res.getString("Content");//获取content部分的内容
-				return TargetTableModel.FromJson(Content);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			e.printStackTrace(stderr);
-		} finally {
-			destroy();
-		}
-		return null;
+	public boolean deleteByID(int id) {
+		String sql = "delete from Target where ID=?";
+		return jdbcTemplate.update(sql, id) > 0;
 	}
+	
+	public boolean deleteByTarget(TargetEntry entry) {
+		String sql = "delete from Target where target=?";
+		return jdbcTemplate.update(sql, entry.getTarget()) > 0;
+	}
+
 }
