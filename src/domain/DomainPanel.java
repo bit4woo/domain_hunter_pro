@@ -4,6 +4,8 @@ import GUI.GUIMain;
 import GUI.ProjectMenu;
 import Tools.ToolPanel;
 import burp.*;
+import config.ConfigPanel;
+
 import com.google.common.net.InternetDomainName;
 import domain.target.TargetControlPanel;
 import domain.target.TargetTable;
@@ -377,7 +379,7 @@ public class DomainPanel extends JPanel {
 						btnUpload.setEnabled(false);
 						String url = domainResult.uploadURL;
 						String host = new URL(url).getHost();
-						String token = ToolPanel.textFieldUploadApiToken.getText().trim();
+						String token = ConfigPanel.textFieldUploadApiToken.getText().trim();
 						HashMap<String, String> headers = new HashMap<String, String>();
 						headers.put("Content-Type", "application/json;charset=UTF-8");
 						if (token != null && !token.equals("")) {//vmp

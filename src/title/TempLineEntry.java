@@ -4,11 +4,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
-import Tools.LineConfig;
-import Tools.ToolPanel;
 import burp.BurpExtender;
 import burp.Commons;
 import burp.DomainNameUtils;
@@ -16,6 +13,8 @@ import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
 import burp.IHttpService;
 import burp.IPAddressUtils;
+import config.ConfigPanel;
+import config.LineConfig;
 import domain.CertInfo;
 import domain.DomainManager;
 import domain.DomainPanel;
@@ -47,7 +46,7 @@ public class TempLineEntry {
 	public Set<LineEntry> getFinalLineEntry(){
 		if (host ==null) return new HashSet<>();//无效host直接返回
 
-		if (ToolPanel.ignoreWrongCAHost.isSelected()){
+		if (ConfigPanel.ignoreWrongCAHost.isSelected()){
 			if (DomainPanel.getDomainResult().isTargetByCertInfo(certDomains)){
 				return new HashSet<>();
 			};

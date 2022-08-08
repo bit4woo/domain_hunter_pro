@@ -7,6 +7,7 @@ import GUI.LineEntryMenuForBurp;
 import GUI.RunnerGUI;
 import Tools.ToolPanel;
 import burp.*;
+import config.ConfigPanel;
 import domain.DomainPanel;
 import title.search.SearchDork;
 
@@ -512,7 +513,7 @@ public class LineEntryMenu extends JPopupMenu {
 						return;
 					}
 					for (String url:urls){
-						Commons.browserOpen(url,ToolPanel.getLineConfig().getBrowserPath());
+						Commons.browserOpen(url,ConfigPanel.getLineConfig().getBrowserPath());
 					}
 				}
 				catch (Exception e1)

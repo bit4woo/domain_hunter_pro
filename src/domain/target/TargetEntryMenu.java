@@ -1,18 +1,22 @@
 package domain.target;
 
-import Tools.ToolPanel;
-import burp.BurpExtender;
-import burp.Commons;
-import burp.DomainNameUtils;
-import burp.IPAddressUtils;
-import domain.DomainPanel;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.io.PrintWriter;
+
+import javax.swing.AbstractAction;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
+
+import burp.BurpExtender;
+import burp.Commons;
+import burp.DomainNameUtils;
+import burp.IPAddressUtils;
+import config.ConfigPanel;
+import domain.DomainPanel;
 
 public class TargetEntryMenu extends JPopupMenu {
 
@@ -92,7 +96,7 @@ public class TargetEntryMenu extends JPopupMenu {
 				for (int row:modelRows) {
 					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,0);
 					try {
-						Commons.browserOpen("https://"+rootDomain, ToolPanel.getLineConfig().getBrowserPath());
+						Commons.browserOpen("https://"+rootDomain, ConfigPanel.getLineConfig().getBrowserPath());
 					} catch (Exception e) {
 						e.printStackTrace();
 					}

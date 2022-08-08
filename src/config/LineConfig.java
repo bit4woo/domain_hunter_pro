@@ -1,6 +1,7 @@
-package Tools;
+package config;
 
 import GUI.GUIMain;
+import Tools.ToolPanel;
 import burp.BurpExtender;
 import burp.Commons;
 import burp.HelperPlus;
@@ -117,11 +118,11 @@ public class LineConfig {
 	}
 
 	public static boolean isIgnoreHttpsOrHttpIfOneOK() {
-		return ToolPanel.ignoreHTTPS.isSelected();
+		return ConfigPanel.ignoreHTTPS.isSelected();
 	}
 
 	public static void setIgnoreHttpsIfHttpOK(boolean ignoreHttpsIfHttpOK) {
-		ToolPanel.ignoreHTTPS.setSelected(ignoreHttpsIfHttpOK);
+		ConfigPanel.ignoreHTTPS.setSelected(ignoreHttpsIfHttpOK);
 	}
 
 	public String getDirSearchPath() {
@@ -239,7 +240,7 @@ public class LineConfig {
 
 	public String saveToDisk() {
 		try {
-			ToolPanel.saveToConfigFromGUI();
+			ConfigPanel.saveToConfigFromGUI();
 			this.setSearchHistory(History.getInstance());
 			this.setDbfilepath(GUIMain.getCurrentDBFile().getAbsolutePath());
 		} catch (Exception e1) {
@@ -307,13 +308,13 @@ public class LineConfig {
 			return entry;
 		}
 
-		if (entry.getStatuscode() >=500 && ToolPanel.ignoreHTTPStaus500.isSelected()) {
+		if (entry.getStatuscode() >=500 && ConfigPanel.ignoreHTTPStaus500.isSelected()) {
 			stdout.println(String.format("--- [%s] --- status code >= 500",entry.getUrl()));
 			entry.setCheckStatus(LineEntry.CheckStatus_Checked);
 			return entry;
 		}
 
-		if (entry.getStatuscode() == 400 && ToolPanel.ignoreHTTPStaus400.isSelected()) {//400 The plain HTTP request was sent to HTTPS port
+		if (entry.getStatuscode() == 400 && ConfigPanel.ignoreHTTPStaus400.isSelected()) {//400 The plain HTTP request was sent to HTTPS port
 			stdout.println(String.format("--- [%s] --- status code == 400",entry.getUrl()));
 			entry.setCheckStatus(LineEntry.CheckStatus_Checked);
 			return entry;

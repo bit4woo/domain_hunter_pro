@@ -20,8 +20,8 @@ import org.elasticsearch.client.indices.GetIndexRequest;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 
-import Tools.ToolPanel;
 import burp.BurpExtender;
+import config.ConfigPanel;
 import title.LineEntry;
 
 //https://www.elastic.co/guide/en/elasticsearch/client/java-rest/7.13/java-rest-high-document-index.html
@@ -126,8 +126,8 @@ public class ElasticClient {
 	 * @param entry
 	 */
 	public static void writeData(LineEntry entry) {
-		String apiUrl = ToolPanel.textFieldElasticURL.getText().trim();
-		String userAndPass = ToolPanel.textFieldElasticUserPass.getText();
+		String apiUrl = ConfigPanel.textFieldElasticURL.getText().trim();
+		String userAndPass = ConfigPanel.textFieldElasticUserPass.getText();
 		if (userAndPass.contains(":")) {
 			String[] arr = userAndPass.split(":");
 			writeData(apiUrl,arr[0],arr[1],entry);

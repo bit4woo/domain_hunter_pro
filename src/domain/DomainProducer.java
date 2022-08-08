@@ -1,20 +1,29 @@
 package domain;
 
-import Tools.PatternsFromAndroid;
-import Tools.ToolPanel;
-import burp.*;
-import domain.target.TargetEntry;
-import org.apache.commons.text.StringEscapeUtils;
-import title.LineEntry;
-import toElastic.ElasticClient;
-
 import java.io.PrintWriter;
 import java.net.URLDecoder;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.commons.text.StringEscapeUtils;
+
+import Tools.PatternsFromAndroid;
+import burp.BurpExtender;
+import burp.Commons;
+import burp.IBurpExtenderCallbacks;
+import burp.IExtensionHelpers;
+import burp.IHttpRequestResponse;
+import burp.IHttpService;
+import config.ConfigPanel;
+import domain.target.TargetEntry;
+import title.LineEntry;
+import toElastic.ElasticClient;
 
 public class DomainProducer extends Thread {//Producer do
 	private final BlockingQueue<IHttpRequestResponse> inputQueue;//use to store messageInfo
@@ -136,7 +145,7 @@ public class DomainProducer extends Thread {//Producer do
 					}
 				}
 
-				if (ToolPanel.rdbtnSaveTrafficTo.isSelected()) {
+				if (ConfigPanel.rdbtnSaveTrafficTo.isSelected()) {
 					if (type != DomainManager.USELESS && !Commons.uselessExtension(urlString)) {//grep domains from response and classify
 						if (threadNo == 9999) {
 							try {//写入elastic的逻辑，只对目标资产生效

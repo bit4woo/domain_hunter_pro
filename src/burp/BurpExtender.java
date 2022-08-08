@@ -19,6 +19,7 @@ import GUI.LineEntryMenuForBurp;
 import GUI.ProjectMenu;
 import Tools.ToolPanel;
 import bsh.This;
+import config.ConfigPanel;
 import domain.DomainPanel;
 import domain.DomainProducer;
 import title.TitlePanel;
@@ -163,7 +164,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 			}
 		});
 		String projectConfigFile = RecentModel.fetchRecent();//返回值可能为null
-		gui.getToolPanel().loadConfigToGUI(projectConfigFile);//包含db文件的加载
+		gui.getConfigPanel().loadConfigToGUI(projectConfigFile);//包含db文件的加载
 		startLiveCapture();
 	}
 
@@ -187,7 +188,8 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		String configFilePath = ToolPanel.getLineConfig().saveToDisk();//包含db文件位置
+		gui.getConfigPanel();
+		String configFilePath = ConfigPanel.getLineConfig().saveToDisk();//包含db文件位置
 		RecentModel.saveRecent(configFilePath);
 	}
 
@@ -203,7 +205,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 
 	@Override
 	public List<JMenuItem> createMenuItems(IContextMenuInvocation invocation) {
-		if (ToolPanel.DisplayContextMenuOfBurp.isSelected()) {
+		if (ConfigPanel.DisplayContextMenuOfBurp.isSelected()) {
 			return new LineEntryMenuForBurp().createMenuItemsForBurp(invocation);
 		}else {
 			return null;

@@ -5,6 +5,7 @@ import burp.BurpExtender;
 import burp.Commons;
 import burp.DBHelper;
 import burp.dbFileChooser;
+import config.ConfigPanel;
 import domain.DomainPanel;
 import domain.target.TargetTableModel;
 import title.TitlePanel;
@@ -28,6 +29,7 @@ public class GUIMain extends JFrame {
 	public static dbFileChooser dbfc = new dbFileChooser();
 	
 	private ToolPanel toolPanel;
+	private ConfigPanel configPanel;
 
 	public static ProjectMenu getProjectMenu() {
 		return projectMenu;
@@ -48,6 +50,14 @@ public class GUIMain extends JFrame {
 
 	public ToolPanel getToolPanel() {
 		return toolPanel;
+	}
+	
+	public ConfigPanel getConfigPanel() {
+		return configPanel;
+	}
+
+	public void setConfigPanel(ConfigPanel configPanel) {
+		this.configPanel = configPanel;
 	}
 
 	public static File getCurrentDBFile() {
@@ -78,10 +88,11 @@ public class GUIMain extends JFrame {
 		domainPanel = new DomainPanel();
 		titlePanel = new TitlePanel();
 		toolPanel = new ToolPanel();
+		configPanel = new ConfigPanel();
 		tabbedWrapper.addTab("Domains", null, domainPanel, null);
 		tabbedWrapper.addTab("Titles", null, titlePanel, null);
 		tabbedWrapper.addTab("Tools", null,toolPanel,null);
-
+		tabbedWrapper.addTab("Config", null,configPanel,null);
 	}
 	/**
 	 * 仅仅锁住图形界面，不影响后台处理数据
@@ -93,14 +104,14 @@ public class GUIMain extends JFrame {
 			this.getContentPane().setEnabled(false);
 			projectMenu.setText("DomainHunter*");
 			projectMenu.lockMenu.setText("Unlock");
-			ToolPanel.DisplayContextMenuOfBurp.setSelected(false);//不显示burp右键菜单
+			ConfigPanel.DisplayContextMenuOfBurp.setSelected(false);//不显示burp右键菜单
 		}else {
 			this.getContentPane().setEnabled(true);
 			((JTabbedPane)this.getContentPane()).removeTabAt(3);
 			((JTabbedPane)this.getContentPane()).setSelectedIndex(0);
 			projectMenu.lockMenu.setText("Lock");
 			projectMenu.setText("DomainHunter");
-			ToolPanel.DisplayContextMenuOfBurp.setSelected(true);//显示右键菜单
+			ConfigPanel.DisplayContextMenuOfBurp.setSelected(true);//显示右键菜单
 		}
 	}
 
@@ -138,7 +149,7 @@ public class GUIMain extends JFrame {
 			titlePanel.loadData(dbhelper.getTitles());
 			
 
-			ToolPanel.getLineConfig().setDbfilepath(currentDBFile.getAbsolutePath());
+			ConfigPanel.getLineConfig().setDbfilepath(currentDBFile.getAbsolutePath());
 			GUIMain.displayProjectName();
 			System.out.println("==End Loading Data From: "+ dbFilePath+" "+Commons.getNowTimeString() +"==");//输出到debug console
 			BurpExtender.getStdout().println("==End Loading Data From: "+ dbFilePath+" "+Commons.getNowTimeString() +"==");
@@ -214,4 +225,6 @@ public class GUIMain extends JFrame {
 			}
 		});
 	}
+
+
 }
