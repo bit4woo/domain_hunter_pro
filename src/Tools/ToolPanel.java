@@ -7,6 +7,7 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -191,12 +192,12 @@ public class ToolPanel extends JPanel {
 		//四分之三部分放一个panel，里面放操作按钮
 		JPanel threeFourthPanel = new JPanel();
 		RightOfCenter.setLeftComponent(threeFourthPanel);
-		threeFourthPanel.setLayout(new FlowLayout());
+		threeFourthPanel.setLayout(new GridLayout(10, 1));
 		//https://stackoverflow.com/questions/5709690/how-do-i-make-this-flowlayout-wrap-within-its-jsplitpane
 		threeFourthPanel.setMinimumSize(new Dimension(0, 0));//为了让button自动换行
 
 		JButton btnFindDomains = new JButton("Find Domains");
-		threeFourthPanel.add(btnFindDomains);
+		
 		btnFindDomains.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -213,7 +214,7 @@ public class ToolPanel extends JPanel {
 
 		JButton btnFindUrls = new JButton("Find URLs");
 		btnFindUrls.setToolTipText("only find entire URL");
-		threeFourthPanel.add(btnFindUrls);
+		
 		btnFindUrls.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -226,7 +227,7 @@ public class ToolPanel extends JPanel {
 		});
 
 		JButton btnFindIP = new JButton("Find IP");
-		threeFourthPanel.add(btnFindIP);
+		
 		btnFindIP.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -239,7 +240,7 @@ public class ToolPanel extends JPanel {
 		});
 
 		JButton btnFindIPAndPort = new JButton("Find IP:Port");
-		threeFourthPanel.add(btnFindIPAndPort);
+		
 		btnFindIPAndPort.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -252,7 +253,7 @@ public class ToolPanel extends JPanel {
 		});
 
 		JButton btnFindSubnet = new JButton("Find Subnet");
-		threeFourthPanel.add(btnFindSubnet);
+		
 		btnFindSubnet.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -265,7 +266,7 @@ public class ToolPanel extends JPanel {
 		});
 
 		JButton btnFindEmail = new JButton("Find Email");
-		threeFourthPanel.add(btnFindEmail);
+		
 		btnFindEmail.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -283,9 +284,10 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		});
+		
 
 		JButton btnOpenurls = new JButton("OpenURLs");
-		threeFourthPanel.add(btnOpenurls);
+		
 		btnOpenurls.addActionListener(new ActionListener() {
 			List<String> urls = new ArrayList<>();
 			Iterator<String> it = urls.iterator();
@@ -333,7 +335,7 @@ public class ToolPanel extends JPanel {
 		
 		JButton btnCertDomains = new JButton("GetCertDomains");
 		btnCertDomains.setToolTipText("get Alter Domains of Cert");
-		threeFourthPanel.add(btnCertDomains);
+		
 		btnCertDomains.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -365,7 +367,7 @@ public class ToolPanel extends JPanel {
 
 		JButton btnCertTime = new JButton("GetCertTime");
 		btnCertTime.setToolTipText("get out-of-service time of Cert");
-		threeFourthPanel.add(btnCertTime);
+		
 		btnCertTime.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -397,7 +399,7 @@ public class ToolPanel extends JPanel {
 		
 		JButton btnCertIssuer = new JButton("GetCertIssuer");
 		btnCertIssuer.setToolTipText("get issuer of Cert");
-		threeFourthPanel.add(btnCertIssuer);
+		
 		btnCertIssuer.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -428,7 +430,7 @@ public class ToolPanel extends JPanel {
 		});
 		
 		JButton iconHashButton = new JButton("GetIconHash");
-		threeFourthPanel.add(iconHashButton);
+		
 		iconHashButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -463,7 +465,7 @@ public class ToolPanel extends JPanel {
 		});
 		
 		JButton getIPAddressButton = new JButton("GetIPAddress");
-		threeFourthPanel.add(getIPAddressButton);
+		
 		getIPAddressButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -502,7 +504,7 @@ public class ToolPanel extends JPanel {
 		});
 
 		JButton rows2List = new JButton("Rows To List");
-		threeFourthPanel.add(rows2List);
+		
 		rows2List.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -517,7 +519,7 @@ public class ToolPanel extends JPanel {
 		});
 
 		JButton rows2Array = new JButton("Rows To Array");
-		threeFourthPanel.add(rows2Array);
+		
 		rows2Array.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -536,7 +538,7 @@ public class ToolPanel extends JPanel {
 		});
 
 		JButton removeDuplicate = new JButton("Remove Duplicate");
-		threeFourthPanel.add(removeDuplicate);
+		
 		removeDuplicate.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -555,7 +557,7 @@ public class ToolPanel extends JPanel {
 		});
 
 		JButton sortByLength = new JButton("Sort by Length");
-		threeFourthPanel.add(sortByLength);
+		
 		sortByLength.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -575,7 +577,7 @@ public class ToolPanel extends JPanel {
 
 
 		JButton btnGrep = new JButton("Grep Json");
-		threeFourthPanel.add(btnGrep);
+		
 		btnGrep.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -605,7 +607,7 @@ public class ToolPanel extends JPanel {
 		});
 
 		JButton btnLine = new JButton("Grep Line");
-		threeFourthPanel.add(btnLine);
+		
 		btnLine.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -635,7 +637,7 @@ public class ToolPanel extends JPanel {
 		});
 
 		JButton btnRegexGrep = new JButton("Regex Grep");
-		threeFourthPanel.add(btnRegexGrep);
+		
 		btnRegexGrep.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -664,7 +666,7 @@ public class ToolPanel extends JPanel {
 		});
 
 		JButton btnAddPrefix = new JButton("Add Prefix/Suffix");
-		threeFourthPanel.add(btnAddPrefix);
+		
 		btnAddPrefix.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -697,7 +699,7 @@ public class ToolPanel extends JPanel {
 		});
 
 		JButton btnRemovePrefix = new JButton("Remove Prefix/Suffix");
-		threeFourthPanel.add(btnRemovePrefix);
+		
 		btnRemovePrefix.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -716,7 +718,7 @@ public class ToolPanel extends JPanel {
 
 
 		JButton btnReplace = new JButton("ReplaceFirstStr");
-		threeFourthPanel.add(btnReplace);
+		
 		btnReplace.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -752,7 +754,7 @@ public class ToolPanel extends JPanel {
 
 
 		JButton btnIPsToCIDR = new JButton("IPs To CIDR");
-		threeFourthPanel.add(btnIPsToCIDR);
+		
 		btnIPsToCIDR.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -772,7 +774,7 @@ public class ToolPanel extends JPanel {
 		});
 
 		JButton btnCIDRToIPs = new JButton("CIDR To IPs");
-		threeFourthPanel.add(btnCIDRToIPs);
+		
 		btnCIDRToIPs.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -788,7 +790,7 @@ public class ToolPanel extends JPanel {
 		});
 
 		JButton unescapeJava = new JButton("UnescapeJava");
-		threeFourthPanel.add(unescapeJava);
+		
 		unescapeJava.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -802,7 +804,7 @@ public class ToolPanel extends JPanel {
 		});
 
 		JButton unescapeHTML = new JButton("UnescapeHTML");
-		threeFourthPanel.add(unescapeHTML);
+		
 		unescapeHTML.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -816,7 +818,7 @@ public class ToolPanel extends JPanel {
 		});
 
 		JButton Base64ToFile = new JButton("Base64ToFile");
-		threeFourthPanel.add(Base64ToFile);
+		
 		Base64ToFile.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -858,7 +860,7 @@ public class ToolPanel extends JPanel {
 		});
 
 		JButton splitButton = new JButton("Split");
-		threeFourthPanel.add(splitButton);
+		
 		splitButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -872,7 +874,7 @@ public class ToolPanel extends JPanel {
 		});
 
 		JButton combineButton = new JButton("Combine");
-		threeFourthPanel.add(combineButton);
+		
 		combineButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -885,7 +887,7 @@ public class ToolPanel extends JPanel {
 		});
 
 		JButton toLowerCaseButton = new JButton("toLowerCase");
-		threeFourthPanel.add(toLowerCaseButton);
+		
 		toLowerCaseButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -895,7 +897,7 @@ public class ToolPanel extends JPanel {
 		
 		
 		JButton testButton = new JButton("test");
-		threeFourthPanel.add(testButton);
+		
 		testButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -920,6 +922,52 @@ public class ToolPanel extends JPanel {
 			}
 		});
 		
+		
+		//查找提取类
+		threeFourthPanel.add(btnFindDomains);
+		threeFourthPanel.add(btnFindUrls);
+		threeFourthPanel.add(btnFindIP);
+		threeFourthPanel.add(btnFindIPAndPort);
+		threeFourthPanel.add(btnFindSubnet);
+		threeFourthPanel.add(btnFindEmail);
+		threeFourthPanel.add(btnGrep);
+		threeFourthPanel.add(btnLine);
+		threeFourthPanel.add(btnRegexGrep);
+		
+		threeFourthPanel.add(new JButton("|"));
+		
+		//网络请求类
+		threeFourthPanel.add(btnOpenurls);
+		threeFourthPanel.add(btnCertDomains);
+		threeFourthPanel.add(btnCertTime);
+		threeFourthPanel.add(btnCertIssuer);
+		threeFourthPanel.add(iconHashButton);
+		threeFourthPanel.add(getIPAddressButton);
+		
+		threeFourthPanel.add(new JButton("|"));
+		
+		//数据转换类
+		threeFourthPanel.add(rows2List);
+		threeFourthPanel.add(rows2Array);
+		threeFourthPanel.add(btnIPsToCIDR);
+		threeFourthPanel.add(btnCIDRToIPs);
+		
+		threeFourthPanel.add(new JButton("|"));
+		
+		threeFourthPanel.add(removeDuplicate);
+		threeFourthPanel.add(sortByLength);
+
+		threeFourthPanel.add(btnAddPrefix);
+		threeFourthPanel.add(btnRemovePrefix);
+		threeFourthPanel.add(btnReplace);
+		threeFourthPanel.add(unescapeJava);
+		threeFourthPanel.add(unescapeHTML);
+		threeFourthPanel.add(toLowerCaseButton);
+		threeFourthPanel.add(splitButton);
+		threeFourthPanel.add(combineButton);
+		
+		threeFourthPanel.add(Base64ToFile);
+		threeFourthPanel.add(testButton);
 		
 
 		///////////////////////////FooterPanel//////////////////
