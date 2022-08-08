@@ -1,12 +1,16 @@
 package Tools;
 
+import java.io.BufferedReader;
 import java.io.File;
-import java.io.OutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 
 import burp.BurpExtender;
+import burp.Commons;
 
 /**
  * 实现Masscan+Nmap的端口扫描
@@ -35,7 +39,7 @@ public class portScanner {
 	public static String masscan(List<String> ipList) {
 		String targetFile = targetsToFile(ipList);
 		String resultFile = resultFile(targetFile);
-		String command = String.format("sudo masscan -p 1-65535 --rate 10000 -iL {} -oJ {}",targetFile,resultFile);
+		String command = String.format("/usr/local/bin/masscan -p 1-65535 --rate 10000 -iL {} -oJ {}",targetFile,resultFile);
 		try {
 			Process process = Runtime.getRuntime().exec(command);
 			process.waitFor();//等待执行完成
@@ -81,19 +85,47 @@ public class portScanner {
 		}
 	}
 	
-	public static String findAbsolutePath(String cmd) {
-		try {
-			Process process = Runtime.getRuntime().exec(cmd);//TODO
-			process.waitFor();//等待执行完成
-			OutputStream aa = process.getOutputStream();
-		} catch (Exception e) {
-			e.printStackTrace();
+	private static String getSystemCharSet() {
+		return Charset.defaultCharset().toString();
+	}
+	
+	//TODO有的命令可以，有的不行，奇怪
+	public static void findAbsolutePath(String cmd) throws Exception {
+		//windows where
+		//linux which
+		//mac which where
+		
+		if (Commons.isWindows()) {
+			cmd = "where "+cmd;
+		}else {
+			cmd = "which "+cmd;
 		}
+		
+		final Process p = Runtime.getRuntime().exec(cmd);
+
+		new Thread(new Runnable() {
+		    public void run() {
+		        BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
+		        String line = null;
+		        try {
+		            while ((line = input.readLine()) != null)
+		                System.out.println(line);
+		        } catch (IOException e) {
+		            e.printStackTrace();
+		        }
+		    }
+		}).start();
+
+		p.waitFor();
 	}
 	
 	
-	
-	public static void main(String[] args) {
-		System.out.println(masscan("43.132.80.21"));
+	public static void main(String[] args) throws Exception {
+//		System.out.println(masscan("43.132.80.21"));
+//		findAbsolutePath("masscan");
+//		findAbsolutePath("python");
+//		System.out.println(findAbsolutePath("masscan"));
+//		System.out.println(findAbsolutePath("python"));
+
 	}
 }

@@ -560,7 +560,7 @@ public class TargetTableModel extends AbstractTableModel {
 	}
 
 	public void debugPrint(String domain,int type,String reason) {
-		boolean debug= true;
+		boolean debug= false;
 		if (debug){
 			try {
 				String typeStr ="";

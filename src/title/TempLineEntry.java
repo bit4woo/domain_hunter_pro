@@ -31,8 +31,6 @@ public class TempLineEntry {
 	URL customPortHttpUrl;
 	URL customPortHttpsUrl;
 
-	List<URL> externalPortUrls = new ArrayList<>();
-
 	Set<String> IPSet = new HashSet<>();
 	Set<String> CDNSet = new HashSet<>();
 	Set<String> certDomains = new HashSet<>();
@@ -86,18 +84,6 @@ public class TempLineEntry {
 				customPortHttpsUrl = new URL(String.format("https://%s:%s/",host,port));
 			}
 
-			//处理用户指定的端口，for external port, eg. 8000,8080,
-			Set<String> ExternalPorts = ToolPanel.getExternalPortSet();
-			if (ExternalPorts.size() != 0) {
-				for (String port: ExternalPorts) {
-					int tmpPort = Integer.parseInt(port);
-					if (tmpPort == 80 || tmpPort == 443) continue;
-					URL ex_http = new URL(String.format("http://%s:%s/",host,tmpPort));
-					URL ex_https = new URL(String.format("https://%s:%s/",host,tmpPort));
-					externalPortUrls.add(ex_https);
-					externalPortUrls.add(ex_http);
-				}
-			}
 		}catch (Exception e){
 			e.printStackTrace();
 		}
@@ -139,6 +125,12 @@ public class TempLineEntry {
 
 		if (IPSet.size() <= 0) {
 			//TODO 是否应该移除无效域名？理清楚：无效域名，黑名单域名，无响应域名等情况。
+			//依然添加一条记录，以便人工判断，人工可以根据此记录来清理收集到的域名列表。
+			LineEntry entry = new LineEntry(host,IPSet);
+			entry.setTitle("No DNS Record");
+			resultSet.add(entry);
+			return resultSet;
+			
 		}else {//默认过滤私有IP
 			String ip = new ArrayList<>(IPSet).get(0);
 			if (IPAddressUtils.isPrivateIPv4(ip) && !isInPrivateNetwork) {//外网模式，内网域名，仅仅显示域名和IP。
@@ -167,12 +159,10 @@ public class TempLineEntry {
 			//stdout.println("messageinfo"+JSONObject.toJSONString(messageinfo));
 			//这里有2种异常情况：1.请求失败（连IP都解析不了,已经通过第一步过滤了）；2.请求成功但是响应包为空（可以解析IP，比如内网域名）。
 			//第一种请求在这里就结束了，第二种情况的请求信息会传递到consumer中进行IP获取的操作。
-			if (LineConfig.doFilter(httpEntry)) {
-				String location = httpEntry.getHeaderValueOf(false,"Location");
-				if (location == null || !location.startsWith("https://"+host)) {//如果是跳转到https，还是请求https
-					resultSet.add(httpEntry);
-				}
-			}
+			
+			//即使是单纯跳转HTTPS的http请求，也有其独特之处，比如之前的Nginx Vhost traffic monitor，默认只能在http中成功，https下就不行。
+			LineConfig.doFilter(httpEntry);
+			resultSet.add(httpEntry);
 		} catch (Exception e) {
 			e.printStackTrace(BurpExtender.getStderr());
 		}
@@ -187,34 +177,21 @@ public class TempLineEntry {
 					httpsEntry = doRequest(defaultHttpsUrl);
 				}
 				addInfoToEntry(httpsEntry);
-				boolean httpsOK = LineConfig.doFilter(httpsEntry);
-				if (httpsOK) {
-					resultSet.add(httpsEntry);
-				}
+				LineConfig.doFilter(httpsEntry);
+				resultSet.add(httpsEntry);
 			}
 		} catch (Exception e) {
 			e.printStackTrace(BurpExtender.getStderr());
 		}
 
-		//2.3 do externalPort request
-		try {
-			for(URL url:externalPortUrls) {
-				LineEntry entry = doRequest(url);
-				boolean pass = LineConfig.doFilter(entry);
-				if (pass) {
-					addInfoToEntry(entry);
-					resultSet.add(entry);
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace(BurpExtender.getStderr());
-		}
-		
 		//设置Icon hash字段
 		for (LineEntry entry:resultSet){
-			String url = entry.getUrl();
-			String hash = WebIcon.getHash(url);
-			entry.setIcon_hash(hash);
+			if (entry.getStatuscode() >=0) {
+				//没有响应包的，不做这个
+				String url = entry.getUrl();
+				String hash = WebIcon.getHash(url);
+				entry.setIcon_hash(hash);
+			}
 		}
 		
 		//当域名可以解析，但是所有URL请求都失败的情况下。添加一条DNS解析记录
@@ -229,7 +206,6 @@ public class TempLineEntry {
 				return resultSet;
 			}
 		}
-		
 		return resultSet;
 	}
 

@@ -48,7 +48,6 @@ public class ToolPanel extends JPanel {
 	PrintWriter stdout;
 	PrintWriter stderr;
 	private static JTextField BrowserPath;
-	public static JTextField PortList;
 	public static JTextArea inputTextArea;
 	public static JTextArea outputTextArea;
 
@@ -1065,24 +1064,6 @@ public class ToolPanel extends JPanel {
 		gbc_textFieldDirSearch.gridy = 3;
 		fourFourthPanel.add(textFieldDirSearch, gbc_textFieldDirSearch);
 
-
-		JLabel lblExternalPorts = new JLabel("External Port:");
-		GridBagConstraints gbc_lblExternalPorts = new GridBagConstraints();
-		gbc_lblExternalPorts.fill = GridBagConstraints.BOTH;
-		gbc_lblExternalPorts.insets = new Insets(0, 0, 5, 5);
-		gbc_lblExternalPorts.gridx = 0;
-		gbc_lblExternalPorts.gridy = 4;
-		fourFourthPanel.add(lblExternalPorts, gbc_lblExternalPorts);
-		PortList = new JTextField();
-		GridBagConstraints gbc_PortList = new GridBagConstraints();
-		gbc_PortList.fill = GridBagConstraints.BOTH;
-		gbc_PortList.insets = new Insets(0, 0, 5, 0);
-		gbc_PortList.gridx = 1;
-		gbc_PortList.gridy = 4;
-		fourFourthPanel.add(PortList, gbc_PortList);
-		PortList.setColumns(50);
-		PortList.setToolTipText("eg.: 8080,8088");
-
 		JLabel lblDirBruteDict = new JLabel("Dir Brute Dict:");
 		GridBagConstraints gbc_lblDirBruteDict = new GridBagConstraints();
 		gbc_lblDirBruteDict.anchor = GridBagConstraints.WEST;
@@ -1334,21 +1315,6 @@ public class ToolPanel extends JPanel {
 			}
 		}
 		return null;
-	}
-
-	public static HashSet<String> getExternalPortSet(){
-		String input = PortList.getText();
-		HashSet<String> result = new HashSet<String>();
-		for (String item:input.split(",")) {
-			item = item.trim();
-			try {
-				Integer.parseInt(item);
-				result.add(item);
-			}catch(Exception e) {
-
-			}
-		}
-		return result;
 	}
 
 	//保存文本框的数据
