@@ -7,7 +7,10 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -189,12 +192,7 @@ public class ToolPanel extends JPanel {
 		twoFourthPanel.setColumnHeaderView(lblNewLabel_3);
 
 
-		//四分之三部分放一个panel，里面放操作按钮
-		JPanel threeFourthPanel = new JPanel();
-		RightOfCenter.setLeftComponent(threeFourthPanel);
-		threeFourthPanel.setLayout(new GridLayout(10, 1));
-		//https://stackoverflow.com/questions/5709690/how-do-i-make-this-flowlayout-wrap-within-its-jsplitpane
-		threeFourthPanel.setMinimumSize(new Dimension(0, 0));//为了让button自动换行
+
 
 		JButton btnFindDomains = new JButton("Find Domains");
 		
@@ -923,51 +921,62 @@ public class ToolPanel extends JPanel {
 		});
 		
 		
-		//查找提取类
-		threeFourthPanel.add(btnFindDomains);
-		threeFourthPanel.add(btnFindUrls);
-		threeFourthPanel.add(btnFindIP);
-		threeFourthPanel.add(btnFindIPAndPort);
-		threeFourthPanel.add(btnFindSubnet);
-		threeFourthPanel.add(btnFindEmail);
-		threeFourthPanel.add(btnGrep);
-		threeFourthPanel.add(btnLine);
-		threeFourthPanel.add(btnRegexGrep);
+		//四分之三部分放一个panel，里面放操作按钮
+		JPanel threeFourthPanel = new JPanel();
+		RightOfCenter.setLeftComponent(threeFourthPanel);
+		threeFourthPanel.setLayout(new GridLayout(10, 1));
+		//https://stackoverflow.com/questions/5709690/how-do-i-make-this-flowlayout-wrap-within-its-jsplitpane
+		threeFourthPanel.setMinimumSize(new Dimension(0, 0));//为了让button自动换行
 		
-		threeFourthPanel.add(new JButton("|"));
+		GridBagLayout gbl_threeFourthPanel = new GridBagLayout();
+		threeFourthPanel.setLayout(gbl_threeFourthPanel);
+		
+		//查找提取类
+		threeFourthPanel.add(btnFindDomains,new bagLayout(1,1));
+		threeFourthPanel.add(btnFindUrls,new bagLayout(1,2));
+		threeFourthPanel.add(btnFindIP,new bagLayout(1,2));
+		threeFourthPanel.add(btnFindIPAndPort,new bagLayout(1,3));
+		threeFourthPanel.add(btnFindSubnet,new bagLayout(1,4));
+		threeFourthPanel.add(btnFindEmail,new bagLayout(1,5));
+		
+		
+		threeFourthPanel.add(btnGrep,new bagLayout(2,1));
+		threeFourthPanel.add(btnLine,new bagLayout(2,2));
+		threeFourthPanel.add(btnRegexGrep,new bagLayout(2,3));
+		
 		
 		//网络请求类
-		threeFourthPanel.add(btnOpenurls);
-		threeFourthPanel.add(btnCertDomains);
-		threeFourthPanel.add(btnCertTime);
-		threeFourthPanel.add(btnCertIssuer);
-		threeFourthPanel.add(iconHashButton);
-		threeFourthPanel.add(getIPAddressButton);
+		threeFourthPanel.add(btnOpenurls,new bagLayout(3,1));
+		threeFourthPanel.add(btnCertDomains,new bagLayout(4,1));
+		threeFourthPanel.add(btnCertTime,new bagLayout(4,2));
+		threeFourthPanel.add(btnCertIssuer,new bagLayout(4,3));
+		threeFourthPanel.add(iconHashButton,new bagLayout(4,4));
+		threeFourthPanel.add(getIPAddressButton,new bagLayout(4,5));
 		
-		threeFourthPanel.add(new JButton("|"));
 		
 		//数据转换类
-		threeFourthPanel.add(rows2List);
-		threeFourthPanel.add(rows2Array);
-		threeFourthPanel.add(btnIPsToCIDR);
-		threeFourthPanel.add(btnCIDRToIPs);
+		threeFourthPanel.add(rows2List,new bagLayout(5,1));
+		threeFourthPanel.add(rows2Array,new bagLayout(5,2));
+		threeFourthPanel.add(btnIPsToCIDR,new bagLayout(5,3));
+		threeFourthPanel.add(btnCIDRToIPs,new bagLayout(5,4));
 		
-		threeFourthPanel.add(new JButton("|"));
 		
-		threeFourthPanel.add(removeDuplicate);
-		threeFourthPanel.add(sortByLength);
-
-		threeFourthPanel.add(btnAddPrefix);
-		threeFourthPanel.add(btnRemovePrefix);
-		threeFourthPanel.add(btnReplace);
-		threeFourthPanel.add(unescapeJava);
-		threeFourthPanel.add(unescapeHTML);
-		threeFourthPanel.add(toLowerCaseButton);
-		threeFourthPanel.add(splitButton);
-		threeFourthPanel.add(combineButton);
+		threeFourthPanel.add(removeDuplicate,new bagLayout(6,1));
+		threeFourthPanel.add(sortByLength,new bagLayout(6,2));
+		threeFourthPanel.add(btnAddPrefix,new bagLayout(6,3));
+		threeFourthPanel.add(btnRemovePrefix,new bagLayout(6,4));
+		threeFourthPanel.add(btnReplace,new bagLayout(6,5));
 		
-		threeFourthPanel.add(Base64ToFile);
-		threeFourthPanel.add(testButton);
+		
+		threeFourthPanel.add(unescapeJava,new bagLayout(8,1));
+		threeFourthPanel.add(unescapeHTML,new bagLayout(8,2));
+		
+		
+		threeFourthPanel.add(toLowerCaseButton,new bagLayout(9,1));
+		threeFourthPanel.add(splitButton,new bagLayout(9,2));
+		threeFourthPanel.add(combineButton,new bagLayout(9,3));
+		threeFourthPanel.add(Base64ToFile,new bagLayout(9,4));
+		threeFourthPanel.add(testButton,new bagLayout(9,5));
 		
 
 		///////////////////////////FooterPanel//////////////////
@@ -1027,7 +1036,7 @@ public class ToolPanel extends JPanel {
 		}
 		return null;
 	}
-
+	
 	//保存文本框的数据
 	class textAreaListener implements DocumentListener {
 
@@ -1055,6 +1064,22 @@ public class ToolPanel extends JPanel {
 			}
 		}
 	}
+	
+	
+	class bagLayout extends GridBagConstraints {
+		/**
+		 * 采用普通的行列计数，从1开始
+		 * @param row
+		 * @param colum
+		 */
+		bagLayout(int row,int column){
+			this.fill = GridBagConstraints.BOTH;
+			this.insets = new Insets(0, 0, 5, 5);
+			this.gridx = column-1;
+			this.gridy = row-1;
+		}
+	}
+
 
 	
 
