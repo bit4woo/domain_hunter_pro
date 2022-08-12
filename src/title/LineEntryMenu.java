@@ -1,18 +1,6 @@
 package title;
 
-import ASN.ASNEntry;
-import ASN.ASNQuery;
-import GUI.GUIMain;
-import GUI.LineEntryMenuForBurp;
-import GUI.RunnerGUI;
-import Tools.ToolPanel;
-import burp.*;
-import config.ConfigPanel;
-import domain.DomainPanel;
-import title.search.SearchDork;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
@@ -20,10 +8,36 @@ import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.*;
+import java.util.Map;
+import java.util.Set;
 
-import static javax.swing.JOptionPane.PLAIN_MESSAGE;
+import javax.swing.AbstractAction;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
+import javax.swing.SwingWorker;
+
+import ASN.ASNEntry;
+import ASN.ASNQuery;
+import GUI.GUIMain;
+import GUI.LineEntryMenuForBurp;
+import GUI.RunnerGUI;
+import burp.BurpExtender;
+import burp.Commons;
+import burp.DomainNameUtils;
+import burp.Getter;
+import burp.IBurpExtenderCallbacks;
+import burp.IHttpRequestResponse;
+import burp.IPAddressUtils;
+import config.ConfigPanel;
+import domain.DomainPanel;
+import title.search.SearchDork;
 
 public class LineEntryMenu extends JPopupMenu {
 
@@ -284,7 +298,6 @@ public class LineEntryMenu extends JPopupMenu {
 				for (int row:modleRows) {
 					LineEntry entry = lineTable.getLineTableModel().getLineEntries().get(row);
 					String target = entry.getFirstIP();
-					if (!IPAddressUtils.isValidIP(target)) continue;
 					try {
 						//https://bgp.he.net/dns/shopee.com
 						//https://bgp.he.net/net/143.92.111.0/24
@@ -300,6 +313,28 @@ public class LineEntryMenu extends JPopupMenu {
 							url = "https://bgp.he.net/dns/"+target;
 						}
 						if (url!= null){
+							Commons.browserOpen(url,null);
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		});
+
+		//https://ipinfo.io/8.8.8.8
+		JMenuItem IPInfoItem = new JMenuItem(new AbstractAction("IP Info") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				for (int row:modleRows) {
+					LineEntry entry = lineTable.getLineTableModel().getLineEntries().get(row);
+					String target = entry.getFirstIP();
+					if (target == null) {
+						target = entry.getHost();
+					}
+					try {
+						if (IPAddressUtils.isValidIP(target)){
+							String url = "https://ipinfo.io/"+target;
 							Commons.browserOpen(url,null);
 						}
 					} catch (Exception e) {
@@ -895,6 +930,7 @@ public class LineEntryMenu extends JPopupMenu {
 		SearchMenu.add(SearchOnShodanItem);
 		SearchMenu.add(SearchOnShodanWithIconhashItem);
 		SearchMenu.add(ASNInfoItem);
+		SearchMenu.add(IPInfoItem);
 
 		JMenu CopyMenu = new JMenu("Copy");
 		this.add(CopyMenu);
