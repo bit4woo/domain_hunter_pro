@@ -8,7 +8,7 @@ public class TextAreaMouseListener extends MouseAdapter{
 
     private final JTextArea textArea;
 
-    TextAreaMouseListener(JTextArea textArea){
+    public TextAreaMouseListener(JTextArea textArea){
         this.textArea = textArea;
     }
 
