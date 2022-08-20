@@ -14,6 +14,8 @@ import java.util.List;
 
 import javax.swing.JTextArea;
 
+import org.apache.commons.io.FileUtils;
+
 public class DraggableTextArea extends JTextArea implements DropTargetListener {
         private static final long serialVersionUID = 7247130270544835594L;
       
@@ -57,5 +59,35 @@ public class DraggableTextArea extends JTextArea implements DropTargetListener {
                 } catch (IOException ex) {        
                 }  
             }
+        }
+        @Override
+        public void setText(String Text) {
+        	try {
+        		//避免大文件卡死整个burp
+				if (Text.length() >= 10000) {
+					File tmpFile = new File("ContentIsInTmpFile.txt");
+					FileUtils.write(tmpFile, Text);
+					Text = tmpFile.getAbsolutePath();
+				}
+				super.setText(Text);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+        }
+        
+        @Override
+        public String getText() {
+        	String content = super.getText();
+        	try {
+				if (content.endsWith("ContentIsInTmpFile.txt")) {
+					File tempFile = new File(content);
+					if (tempFile.exists()){
+						content = FileUtils.readFileToString(tempFile);
+					}
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+        	return content;
         }
 }

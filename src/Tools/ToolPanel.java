@@ -40,7 +40,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
@@ -77,14 +76,12 @@ public class ToolPanel extends JPanel {
 
 	PrintWriter stdout;
 	PrintWriter stderr;
-	public static JTextArea inputTextArea;
+	public static DraggableTextArea inputTextArea;
 	public static JTextArea outputTextArea;
 
 	public boolean inputTextAreaChanged = true;
 
 	String history = "";
-
-	private JRadioButton ContentIsFilename;
 
 	/**
 	 * Launch the application.
@@ -141,10 +138,6 @@ public class ToolPanel extends JPanel {
 			}
 		});
 		
-		ContentIsFilename = new JRadioButton("From File");
-		ContentIsFilename.setSelected(false);
-		HeaderPanel.add(ContentIsFilename);
-
 		//第一次分割，中间的大模块一分为二
 		JSplitPane CenterSplitPane = new JSplitPane();//中间的大模块，一分为二
 		CenterSplitPane.setResizeWeight(0.5);
@@ -269,16 +262,9 @@ public class ToolPanel extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				String content = inputTextArea.getText();
-				if (ContentIsFilename.isSelected()){
-					if (getContentFromFile(content) != null) {
-						Set<String> emails = DomainProducer.grepEmail(content);
-						outputTextArea.setText(String.join(System.lineSeparator(), emails));
-					}
-				}else {
-					if (null != content) {
-						Set<String> emails = DomainProducer.grepEmail(content);
-						outputTextArea.setText(String.join(System.lineSeparator(), emails));
-					}
+				if (null != content) {
+					Set<String> emails = DomainProducer.grepEmail(content);
+					outputTextArea.setText(String.join(System.lineSeparator(), emails));
 				}
 			}
 		});
