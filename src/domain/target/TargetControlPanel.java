@@ -1,17 +1,31 @@
 package domain.target;
 
-import GUI.GUIMain;
-import domain.DomainPanel;
-
-import javax.swing.*;
-import javax.swing.border.LineBorder;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Arrays;
 import java.util.Map;
 
+import javax.swing.JButton;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.SwingConstants;
+import javax.swing.SwingWorker;
+import javax.swing.border.LineBorder;
+
+import GUI.GUIMain;
+import burp.BurpExtender;
+import domain.DomainPanel;
+
 public class TargetControlPanel extends JPanel {
+	
+	public static JRadioButton rdbtnAddRelatedToRoot;
+
 	public TargetControlPanel() {
 		setBorder(new LineBorder(new Color(0, 0, 0)));
 
@@ -19,7 +33,7 @@ public class TargetControlPanel extends JPanel {
 		addButton.setToolTipText("add Top-Level domain");
 		addButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-		    	if (DomainPanel.getDomainResult() == null) {
+				if (DomainPanel.getDomainResult() == null) {
 					DomainPanel.createOrOpenDB();
 				} else {
 					String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
@@ -29,8 +43,6 @@ public class TargetControlPanel extends JPanel {
 				}
 			}
 		});
-		setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-		add(addButton);
 
 
 		JButton addButton1 = new JButton("Add+");
@@ -47,11 +59,9 @@ public class TargetControlPanel extends JPanel {
 				}
 			}
 		});
-		add(addButton1);
 
 
 		JButton removeButton = new JButton("Remove");
-		add(removeButton);
 		removeButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 
@@ -69,16 +79,16 @@ public class TargetControlPanel extends JPanel {
 			}
 		});
 
+		
 		JButton blackButton = new JButton("Black");
-		add(blackButton);
 		blackButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				selectedToBalck();
 			}
 		});
 
+		
 		JButton btnFresh = new JButton("Fresh");
-		add(btnFresh);
 		btnFresh.addActionListener(new ActionListener() {
 
 			@Override
@@ -115,6 +125,46 @@ public class TargetControlPanel extends JPanel {
 		});
 		btnCopy.setToolTipText("Copy Root Domains To ClipBoard");
 		add(btnCopy);*/
+		
+		rdbtnAddRelatedToRoot = new JRadioButton("Auto Add Related Domain To Root Domain");
+		rdbtnAddRelatedToRoot.setVerticalAlignment(SwingConstants.TOP);
+		rdbtnAddRelatedToRoot.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+					@Override
+					protected Map doInBackground() throws Exception {
+						DomainPanel.getDomainResult().autoAddRelatedToRoot = rdbtnAddRelatedToRoot.isSelected();
+						rdbtnAddRelatedToRoot.setEnabled(false);
+						try {
+							if (DomainPanel.getDomainResult().autoAddRelatedToRoot) {
+								DomainPanel.getDomainResult().relatedToRoot();
+								GUIMain.getDomainPanel().showDataToDomainGUI();
+								DomainPanel.saveDomainDataToDB();
+							}
+						} catch (Exception exception) {
+							exception.printStackTrace(BurpExtender.getStderr());
+						}
+						rdbtnAddRelatedToRoot.setEnabled(true);
+						return null;
+					}
+				};
+				worker.execute();
+			}
+		});
+		rdbtnAddRelatedToRoot.setSelected(false);
+		
+		GridBagLayout gbl = new GridBagLayout();
+		this.setLayout(gbl);
+		
+		this.add(addButton,new bagLayout(1,1));
+		this.add(addButton1,new bagLayout(1,2));
+		this.add(removeButton,new bagLayout(1,3));
+		this.add(blackButton,new bagLayout(1,4));
+		this.add(btnFresh,new bagLayout(1,5));
+		
+		bagLayout tmp = new bagLayout(2,1);
+		tmp.gridwidth = 5;//可以占用5个单元格
+		this.add(rdbtnAddRelatedToRoot,tmp);
 	}
 
 	public static void selectedToBalck(){
@@ -132,6 +182,20 @@ public class TargetControlPanel extends JPanel {
 				entry.setBlack(true);
 				domainTableModel.updateRow(entry);
 			}
+		}
+	}
+	
+	class bagLayout extends GridBagConstraints {
+		/**
+		 * 采用普通的行列计数，从1开始
+		 * @param row
+		 * @param colum
+		 */
+		bagLayout(int row,int column){
+			this.fill = GridBagConstraints.BOTH;
+			this.insets = new Insets(0, 0, 5, 5);
+			this.gridx = column-1;
+			this.gridy = row-1;
 		}
 	}
 }
