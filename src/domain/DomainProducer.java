@@ -260,7 +260,8 @@ public class DomainProducer extends Thread {//Producer do
 		//httpResponse = cleanResponse(httpResponse);
 		Set<String> domains = new HashSet<>();
 		//"^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$"
-		final String DOMAIN_NAME_PATTERN = "((?!-)[A-Za-z0-9-*]{1,63}(?<!-)\\.)+[A-Za-z]{2,6}";
+		final String DOMAIN_NAME_PATTERN = "((?!-)[A-Za-z0-9-*]{1,63}(?<!-)\\.)+[A-Za-z]{2,6}(?::\\d{1,5})?";
+		//加上(?::\\d{1,5})?部分，支持端口模式
 		//加*号是为了匹配 类似 *.baidu.com的这种域名记录。
 
 		List<String> lines = Commons.textToLines(httpResponse);
@@ -440,15 +441,19 @@ public class DomainProducer extends Thread {//Producer do
 	}
 
 	public static void main(String[] args) {
-		test4();
+		test3();
 	}
+	
+	
 	public static void test4(){
 		System.out.println(grepSubnet("202.181.90.0/24\tSHOPEE SINGAPORE PRIVATE LIMITEDSingapore\n" +
 				"202.181.91.0/24\tSHOPEE SINGAPORE PRIVATE LIMITEDSingapore"));
 	}
 
 	public static void test3(){
-		System.out.println(grepDomain("aaa -qq*.baidu.com  bbb"));
+		System.out.println(grepDomain("baidu.com."));
+		System.out.println(grepDomain("http://baidu.com."));
+		System.out.println(grepDomain("http://baidu.com:200."));
 	}
 
 	public static void test2() {
@@ -460,7 +465,8 @@ public class DomainProducer extends Thread {//Producer do
 	}
 
 	public static void test1() {
-		String line = "\"%.@.\\\"xsrf\\\",";
+//		String line = "\"%.@.\\\"xsrf\\\",";
+		String line = "%2f%2fbaidu.com";
 		System.out.println(needURLConvert(line));
 		if (needURLConvert(line)) {
 			while (true) {

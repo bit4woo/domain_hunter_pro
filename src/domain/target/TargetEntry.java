@@ -45,7 +45,7 @@ public class TargetEntry {
 
 	public TargetEntry(String input,boolean autoSub) {
 		if (input == null) return;
-		String domain = DomainNameUtils.cleanDomain(input);
+		String domain = DomainNameUtils.clearDomainWithoutPort(input);
 		if (DomainNameUtils.isValidDomain(domain)) {
 			type = Target_Type_Domain;
 

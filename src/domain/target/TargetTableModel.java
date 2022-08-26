@@ -7,6 +7,8 @@ import com.google.common.net.InternetDomainName;
 import com.google.gson.Gson;
 import domain.DomainManager;
 import domain.DomainPanel;
+import domain.DomainProducer;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -600,7 +602,11 @@ public class TargetTableModel extends AbstractTableModel {
 	 */
 	public int domainType(String domain) {
 		try {
-			domain = DomainNameUtils.cleanDomain(domain);//https://202.77.129.30
+			Set<String> domains = DomainProducer.grepDomain(domain);//https://202.77.129.30
+			if (domains.size() ==0) {
+				return DomainManager.USELESS;
+			}
+			domain = new ArrayList<String>(domains).get(0);
 
 			//格式校验，package那么也是符合域名的正则格式的。
 			if (!DomainNameUtils.isValidDomain(domain) && !IPAddressUtils.isValidIP(domain)) {
@@ -615,7 +621,7 @@ public class TargetTableModel extends AbstractTableModel {
 
 			Set<String> targetDomains = fetchTargetDomainSet();
 			for (String rootdomain:targetDomains) {
-				rootdomain  = DomainNameUtils.cleanDomain(rootdomain);
+				rootdomain  = DomainNameUtils.clearDomainWithoutPort(rootdomain);
 				if (domain.endsWith("."+rootdomain)||domain.equalsIgnoreCase(rootdomain)){
 					debugPrint(domain,DomainManager.SUB_DOMAIN,"sub-domain of "+rootdomain);
 					return DomainManager.SUB_DOMAIN;
@@ -628,7 +634,7 @@ public class TargetTableModel extends AbstractTableModel {
 			}
 
 			for (String rootdomain:targetDomains) {
-				rootdomain  = DomainNameUtils.cleanDomain(rootdomain);
+				rootdomain  = DomainNameUtils.clearDomainWithoutPort(rootdomain);
 				if (DomainNameUtils.isWhiteListTLD(domain,rootdomain)) {
 					debugPrint(domain,DomainManager.TLD_DOMAIN,"TLD-domain of "+rootdomain);
 					return DomainManager.TLD_DOMAIN;
@@ -637,7 +643,7 @@ public class TargetTableModel extends AbstractTableModel {
 
 			Set<String> targetWildCardDomains = fetchTargetWildCardDomainSet();
 			for (String rootdomain:targetWildCardDomains) {
-				rootdomain  = DomainNameUtils.cleanDomain(rootdomain);
+				rootdomain  = DomainNameUtils.clearDomainWithoutPort(rootdomain);
 				if (DomainNameUtils.isMatchWildCardDomain(rootdomain,domain)){
 					debugPrint(domain,DomainManager.SUB_DOMAIN,"sub-domain of "+rootdomain);
 					return DomainManager.SUB_DOMAIN;
@@ -695,10 +701,10 @@ public class TargetTableModel extends AbstractTableModel {
 	
 
 	public String getTLDDomainToAdd(String domain) {
-		domain = DomainNameUtils.cleanDomain(domain);
+		domain = DomainNameUtils.clearDomainWithoutPort(domain);
 		Set<String> targetDomains = fetchTargetDomainSet();
 		for (String rootdomain : targetDomains) {
-			rootdomain = DomainNameUtils.cleanDomain(rootdomain);
+			rootdomain = DomainNameUtils.clearDomainWithoutPort(rootdomain);
 			if (DomainNameUtils.isWhiteListTLD(domain, rootdomain)) {
 				InternetDomainName suffixDomain = InternetDomainName.from(domain).publicSuffix();
 				InternetDomainName suffixRootDomain = InternetDomainName.from(rootdomain).publicSuffix();

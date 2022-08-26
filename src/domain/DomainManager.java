@@ -355,7 +355,7 @@ public class DomainManager {
 	 */
 	@Deprecated//旧版本函数启用
 	public void addToRootDomainAndSubDomainDep(String enteredRootDomain, boolean autoSub) {
-		enteredRootDomain = DomainNameUtils.cleanDomain(enteredRootDomain);
+		enteredRootDomain = DomainNameUtils.clearDomainWithoutPort(enteredRootDomain);
 		if (enteredRootDomain == null) return;
 		subDomainSet.add(enteredRootDomain);
 		if (autoSub) {
