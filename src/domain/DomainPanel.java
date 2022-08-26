@@ -775,7 +775,7 @@ public class DomainPanel extends JPanel {
 
 
 		lblSummary.setText(domainResult.getSummary());
-		ControlPanel.rdbtnAddRelatedToRoot.setSelected(domainResult.autoAddRelatedToRoot);
+		TargetControlPanel.rdbtnAddRelatedToRoot.setSelected(domainResult.autoAddRelatedToRoot);
 
 		System.out.println("Load Domain Panel Data Done, " + domainResult.getSummary());
 		stdout.println("Load Domain Panel Data Done, " + domainResult.getSummary());
@@ -813,7 +813,10 @@ public class DomainPanel extends JPanel {
 	}
 
 
-
+	/**
+	 * 从issue中提取Email
+	 * @return
+	 */
 	public static Set<String> collectEmails() {
 		Set<String> Emails = new HashSet<>();
 		IScanIssue[] issues = BurpExtender.getCallbacks().getScanIssues(null);
@@ -827,7 +830,7 @@ public class DomainPanel extends JPanel {
 				Matcher matcher = pDomainNameOnly.matcher(detail);
 				while (matcher.find()) {//多次查找
 					String email = matcher.group();
-					if (fetchTargetModel().isRelatedEmail(email)) {
+					if (fetchTargetModel().emailType(email) == DomainManager.CERTAIN_EMAIL) {
 						Emails.add(matcher.group());
 					}
 					System.out.println(matcher.group());

@@ -50,6 +50,7 @@ public class DomainManager {
 
 	//private ConcurrentHashMap<String, Integer> unkownDomainMap = new ConcurrentHashMap<String, Integer>();//记录域名和解析失败的次数，大于五次就从子域名中删除。
 	private Set<String> EmailSet = new CopyOnWriteArraySet<String>();
+	private Set<String> similarEmailSet = new CopyOnWriteArraySet<String>();
 	private Set<String> PackageNameSet = new CopyOnWriteArraySet<String>();
 	private Set<String> SpecialPortTargets = new CopyOnWriteArraySet<String>();//用于存放指定了特殊端口的目标
 
@@ -62,6 +63,9 @@ public class DomainManager {
 	public static int TLD_DOMAIN = 4; //比如baidu.net是baidu.com的TLD domain。xxx.baiu.net和xxx.baidu.com也是
 	public static int NEED_CONFIRM_IP = 5; //根据目标无法判断的类型。
 	public static int USELESS = -1;
+	
+	public static int CERTAIN_EMAIL = 10;
+	public static int SIMILAR_EMAIL = 11;
 	//public static int BLACKLIST = -2;
 
 
@@ -131,6 +135,14 @@ public class DomainManager {
 
 	public void setEmailSet(Set<String> emailSet) {
 		EmailSet = emailSet;
+	}
+
+	public Set<String> getSimilarEmailSet() {
+		return similarEmailSet;
+	}
+
+	public void setSimilarEmailSet(Set<String> similarEmailSet) {
+		this.similarEmailSet = similarEmailSet;
 	}
 
 	public Set<String> getNotTargetIPSet() {
@@ -367,6 +379,36 @@ public class DomainManager {
 			return false;
 		}//Email的没有处理
 	}
+	
+	
+	public void addIfValidEmail(Set<String> emails) {
+		for (String email:emails) {
+			addIfValidEmail(email);
+		}
+	}
+	
+	
+	/**
+	 * 根据已有配置进行添加，不是强行直接添加
+	 *
+	 * @param domain
+	 * @return boolean 执行了添加返回true，没有执行添加返回false。
+	 */
+	public boolean addIfValidEmail(String email) {
+		if (email == null) return false;
+
+		int type = fetchTargetModel().emailType(email);
+
+		if (type == DomainManager.CERTAIN_EMAIL) {
+			EmailSet.add(email);
+			return true;
+		} else if (type == DomainManager.SIMILAR_EMAIL) {//包含手动添加的IP
+			similarEmailSet.add(email);//子域名可能来自相关域名和相似域名。
+			return true;
+		}else{
+			return false;
+		}
+	}
 
 	/**
 	 * 根据规则重新过一遍所有的数据
@@ -391,15 +433,15 @@ public class DomainManager {
 		}
 
 		//处理Email
-		Set<String> oldEmails = DomainPanel.getDomainResult().getEmailSet();
 		HashSet<String > tmpEmalis = new HashSet<>();
-		for(String email:oldEmails) {
-			if (fetchTargetModel().isRelatedEmail(email)) {
-				tmpEmalis.add(email);
-			}
-		}
+		
+		tmpEmalis.addAll(EmailSet);
+		tmpEmalis.addAll(similarEmailSet);
 		tmpEmalis.addAll(DomainPanel.collectEmails());
-		DomainPanel.getDomainResult().setEmailSet(tmpEmalis);
+		
+		EmailSet.clear();
+		similarEmailSet.clear();
+		DomainPanel.getDomainResult().addIfValidEmail(tmpEmalis);
 	}
 
 	public void relatedToRoot() {

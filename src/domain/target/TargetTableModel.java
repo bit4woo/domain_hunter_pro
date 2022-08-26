@@ -333,6 +333,7 @@ public class TargetTableModel extends AbstractTableModel {
 	public String fetchRootDomains() {
 		return String.join(System.lineSeparator(), targetEntries.keySet());
 	}
+	
 
 	/**
 	 * 返回目标集合，包含域名、IP、网段。
@@ -675,6 +676,23 @@ public class TargetTableModel extends AbstractTableModel {
 			return DomainManager.USELESS;
 		}
 	}
+	
+	
+	public int emailType(String email) {
+		
+		for (String rootDomain:fetchTargetDomainSet()) {
+			if (rootDomain.length() >= 2 && email.toLowerCase().endsWith(rootDomain.toLowerCase())) {
+				return DomainManager.CERTAIN_EMAIL;
+			}
+		}
+		for (String keyword:fetchKeywordSet()) {
+			if (keyword.length() >= 2 && email.contains(keyword)) {
+				return DomainManager.SIMILAR_EMAIL;
+			}
+		}
+		return DomainManager.USELESS;
+	}
+	
 
 	public String getTLDDomainToAdd(String domain) {
 		domain = DomainNameUtils.cleanDomain(domain);
@@ -696,14 +714,6 @@ public class TargetTableModel extends AbstractTableModel {
 		return domain;
 	}
 
-	public boolean isRelatedEmail(String email) {
-		for (String keyword:fetchKeywordSet()) {
-			if (!keyword.equals("") && keyword.length() >= 2 && email.contains(keyword)) {
-				return true;
-			}
-		}
-		return false;
-	}
 
 	public void updateComments(int[] rows, String commentAdd) {
 			//because thread let the delete action not in order, so we must loop in here.

@@ -141,7 +141,7 @@ public class DomainProducer extends Thread {//Producer do
 						Set<String> domains = DomainProducer.grepDomain(new String(response));
 						Set<String> emails = DomainProducer.grepEmail(new String(response));
 						DomainPanel.getDomainResult().addIfValid(domains);
-						DomainPanel.getDomainResult().getEmailSet().addAll(emails);
+						DomainPanel.getDomainResult().addIfValidEmail(emails);
 					}
 				}
 
@@ -422,7 +422,10 @@ public class DomainProducer extends Thread {//Producer do
 		}
 	}
 
-	@Deprecated //从burp的Email addresses disclosed这个issue中提取，废弃这个
+	/**
+	 * 从burp的Email addresses disclosed这个issue中提取，废弃这个
+	 * DomainPanel.collectEmails()，可以从issue中提取Email，但是不是实时的，只有search或者fresh的时候才会触发。
+	 */
 	public static Set<String> grepEmail(String httpResponse) {
 		Set<String> Emails = new HashSet<>();
 		final String REGEX_EMAIL = "[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+";
@@ -433,7 +436,6 @@ public class DomainProducer extends Thread {//Producer do
 			Emails.add(matcher.group());
 			System.out.println(matcher.group());
 		}
-
 		return Emails;
 	}
 
