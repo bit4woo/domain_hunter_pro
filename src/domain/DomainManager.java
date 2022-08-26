@@ -39,6 +39,7 @@ public class DomainManager {
 	// LinkedHashMap to keep the insert order
 	private Set<String> subnetSet = new CopyOnWriteArraySet<String>();//旧版本中用于指定目标IP和网段的地方,为了兼容不能删除
 
+	
 	private Set<String> subDomainSet = new CopyOnWriteArraySet<String>();
 	private Set<String> similarDomainSet = new CopyOnWriteArraySet<String>();
 	private Set<String> relatedDomainSet = new CopyOnWriteArraySet<String>();
@@ -53,6 +54,9 @@ public class DomainManager {
 	private Set<String> similarEmailSet = new CopyOnWriteArraySet<String>();
 	private Set<String> PackageNameSet = new CopyOnWriteArraySet<String>();
 	private Set<String> SpecialPortTargets = new CopyOnWriteArraySet<String>();//用于存放指定了特殊端口的目标
+	
+	private Set<String> IPSetOfSubnet = new CopyOnWriteArraySet<String>();
+	private Set<String> IPSetOfCert = new CopyOnWriteArraySet<String>();
 
 	//private Set<String> newAndNotGetTitleDomainSet = new CopyOnWriteArraySet<String>();
 
@@ -143,6 +147,22 @@ public class DomainManager {
 
 	public void setSimilarEmailSet(Set<String> similarEmailSet) {
 		this.similarEmailSet = similarEmailSet;
+	}
+	
+	public Set<String> getIPSetOfSubnet() {
+		return IPSetOfSubnet;
+	}
+
+	public void setIPSetOfSubnet(Set<String> iPSetOfSubnet) {
+		IPSetOfSubnet = iPSetOfSubnet;
+	}
+
+	public Set<String> getIPSetOfCert() {
+		return IPSetOfCert;
+	}
+
+	public void setIPSetOfCert(Set<String> iPSetOfCert) {
+		IPSetOfCert = iPSetOfCert;
 	}
 
 	public Set<String> getNotTargetIPSet() {
@@ -266,6 +286,30 @@ public class DomainManager {
 	public String fetchPackageNames() {
 		return String.join(System.lineSeparator(), PackageNameSet);
 	}
+	
+	public String fetchSimilarEmails() {
+		List<String> tmplist = new ArrayList<>(similarEmailSet);
+		Collections.sort(tmplist);
+		return String.join(System.lineSeparator(), tmplist);
+	}
+	
+	public String fetchIPSetOfSubnet() {
+		List<String> tmplist = new ArrayList<>(IPSetOfSubnet);
+		Collections.sort(tmplist);
+		return String.join(System.lineSeparator(), tmplist);
+	}
+	
+	public String fetchIPSetOfCert() {
+		List<String> tmplist = new ArrayList<>(IPSetOfCert);
+		Collections.sort(tmplist);
+		return String.join(System.lineSeparator(), tmplist);
+	}
+	
+	public String fetchIPBlackList() {
+		List<String> tmplist = new ArrayList<>(NotTargetIPSet);
+		Collections.sort(tmplist);
+		return String.join(System.lineSeparator(), tmplist);
+	}
 
 	/**
 	 *
@@ -346,8 +390,9 @@ public class DomainManager {
 	 * @return boolean 执行了添加返回true，没有执行添加返回false。
 	 */
 	public boolean addIfValid(String domain) {
-		domain = DomainNameUtils.cleanDomain(domain);
-		if (domain == null) return false;
+		Set<String> domains = DomainProducer.grepDomain(domain);
+		if (domains.size() ==0) return false;
+		domain = new ArrayList<String>(domains).get(0);
 
 		int type = fetchTargetModel().domainType(domain);
 

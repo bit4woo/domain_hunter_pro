@@ -768,10 +768,10 @@ public class DomainPanel extends JPanel {
 		ScrollPaneEmails.getTextArea().setText(domainResult.fetchEmails());
 		ScrollPanePackageNames.getTextArea().setText(domainResult.fetchPackageNames());
 
-		PanelIPOfSubnet.getTextArea().setText(domainResult.fetchEmails());//TODO
-		PanelIPOfCert.getTextArea().setText(domainResult.fetchEmails());
-		PanelBlackIPList.getTextArea().setText(domainResult.fetchEmails());
-		PanelSimilarEmails.getTextArea().setText(domainResult.fetchEmails());
+		PanelIPOfSubnet.getTextArea().setText(domainResult.fetchIPSetOfSubnet());
+		PanelIPOfCert.getTextArea().setText(domainResult.fetchIPSetOfCert());
+		PanelBlackIPList.getTextArea().setText(domainResult.fetchIPBlackList());
+		PanelSimilarEmails.getTextArea().setText(domainResult.fetchSimilarEmails());
 
 
 		lblSummary.setText(domainResult.getSummary());
@@ -967,6 +967,12 @@ public class DomainPanel extends JPanel {
 		domainResult.setSimilarDomainSet(getSetFromTextArea(ScrollPaneSimilarDomains.getTextArea()));
 		domainResult.setEmailSet(getSetFromTextArea(ScrollPaneEmails.getTextArea()));
 		domainResult.setPackageNameSet(getSetFromTextArea(ScrollPanePackageNames.getTextArea()));
+		
+		domainResult.setIPSetOfSubnet(getSetFromTextArea(PanelIPOfSubnet.getTextArea()));
+		domainResult.setIPSetOfCert(getSetFromTextArea(PanelIPOfCert.getTextArea()));
+		domainResult.setNotTargetIPSet(getSetFromTextArea(PanelBlackIPList.getTextArea()));
+		domainResult.setSimilarEmailSet(getSetFromTextArea(PanelSimilarEmails.getTextArea()));
+		
 		domainResult.getSummary();
 	}
 
