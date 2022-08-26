@@ -60,11 +60,6 @@ public class DomainPanel extends JPanel {
 	JScrollPanelWithHeader ScrollPaneSimilarDomains;
 	JScrollPanelWithHeader ScrollPaneEmails;
 	JScrollPanelWithHeader ScrollPanePackageNames;
-	
-	JScrollPanelWithHeader PanelIPOfSubnet;
-	JScrollPanelWithHeader PanelIPOfCert;
-	JScrollPanelWithHeader PanelBlackIPList;
-	JScrollPanelWithHeader PanelSimilarEmails;
 
 	private static TargetTable targetTable;
 	private static JPanel HeaderPanel;
@@ -411,222 +406,127 @@ public class DomainPanel extends JPanel {
 		HeaderPanel.add(btnUpload);
 
 
-		////////////////////////////////////Body Panel area///////////////////////////////////////////////////////
+		////////////////////////////////////target area///////////////////////////////////////////////////////
 
 
+		JScrollPane TargetPanel = new JScrollPane();//存放目标域名
+		TargetPanel.setViewportBorder(new LineBorder(new Color(0, 0, 0)));
 
-		//布局参考		https://docs.oracle.com/javase/tutorial/uiswing/layout/visual.html
-		//GridBagLayout ---类似Excel的合并单元格，也不可拖动边框大小
-		//GridLayout ---类似Excel，但是不可拖动格子边框
-		
-		/*GridLayout布局测试代码
-		JPanel BodyPane = new JPanel();//中间的大模块，一分为二
-		this.add(BodyPane, BorderLayout.CENTER);
-		BodyPane.setLayout(new GridLayout(2, 6, 0, 0));
-		
-		
-		JScrollPane Pane1 = new JScrollPane();
-		JScrollPane Pane2 = new JScrollPane();
-		JScrollPane Pane3 = new JScrollPane();
-		JScrollPane Pane4 = new JScrollPane();
-		JScrollPane Pane5 = new JScrollPane();
-		JScrollPane Pane6 = new JScrollPane();
-		JScrollPane Pane7 = new JScrollPane();
-		JScrollPane Pane8 = new JScrollPane();
-		
-		BodyPane.add(Pane1);
-		BodyPane.add(Pane2);
-		BodyPane.add(Pane3);
-		BodyPane.add(Pane4);
-		BodyPane.add(Pane5);
-		BodyPane.add(Pane6);
-		BodyPane.add(Pane7);
-		BodyPane.add(Pane8);
-		
-		ScrollPaneSpecialPortTargets = new JScrollPanelWithHeader("Targets With Port","Targets With Port/Your Custom Targets"); 
-		Pane1.setViewportView(ScrollPaneSpecialPortTargets);
- * 
- */
-		
-		
-		//多次分割命名说明：
-		//最初的bodyPanel为A; 分割得到的b1,b2; b1再次分割得到C1,c2,b2再次分割得到c3,c4;以此类推。
-		//子域名、相关域名、相似域名、邮箱、相似邮箱、包名、根据网段确定的IP、根据证书确定的IP、IP黑名单、用户自定义输入目标；目标规则Table、Table控制按钮。至少需要12个格子
-		
-		//第一层分割
-		JSplitPane BodyPanelAliasAPanel = new JSplitPane();//中间的大模块，一分为二
-		BodyPanelAliasAPanel.setResizeWeight(0.5);
-		BodyPanelAliasAPanel.setOrientation(JSplitPane.VERTICAL_SPLIT);
-		this.add(BodyPanelAliasAPanel, BorderLayout.CENTER);
-
-
-		//第二层分割，左边 B1
-		JSplitPane B1Panel = new JSplitPane();//放入左边的分区。再讲左边的分区一分为二
-		B1Panel.setResizeWeight(0.5);
-		BodyPanelAliasAPanel.setLeftComponent(B1Panel);
-
-		//第二层分割，右边 B2
-		JSplitPane B2Panel = new JSplitPane();//放入右半部分分区，
-		B2Panel.setResizeWeight(0.5);
-		BodyPanelAliasAPanel.setRightComponent(B2Panel);
-
-		
-		//第三层分割，得到C1,C2,C3,C4
-		JSplitPane C1Panel = new JSplitPane();
-		C1Panel.setResizeWeight(0.5);
-		B1Panel.setLeftComponent(C1Panel);
-
-		JSplitPane C2Panel = new JSplitPane();
-		C2Panel.setResizeWeight(0.5);
-		B1Panel.setRightComponent(C2Panel);
-
-		
-		JSplitPane C3Panel = new JSplitPane();
-		C3Panel.setResizeWeight(0.5);
-		B2Panel.setLeftComponent(C3Panel);
-		
-		JSplitPane C4Panel = new JSplitPane();
-		C4Panel.setResizeWeight(0.5);
-		B2Panel.setRightComponent(C4Panel);
-
-		//第四层分割，得到D1~D8
-		JSplitPane D1Panel = new JSplitPane();
-		D1Panel.setResizeWeight(0.5);
-		C1Panel.setLeftComponent(D1Panel);
-
-		JSplitPane D2Panel = new JSplitPane();
-		D2Panel.setResizeWeight(0.5);
-		C1Panel.setRightComponent(D2Panel);
-
-		JSplitPane D3Panel = new JSplitPane();
-		D3Panel.setResizeWeight(0.5);
-		C2Panel.setLeftComponent(D3Panel);
-		
-		JSplitPane D4Panel = new JSplitPane();
-		D4Panel.setResizeWeight(0.5);
-		C2Panel.setRightComponent(D4Panel);
-		
-		JSplitPane D5Panel = new JSplitPane();
-		D5Panel.setResizeWeight(0.5);
-		C3Panel.setLeftComponent(D5Panel);
-		
-		JSplitPane D6Panel = new JSplitPane();
-		D6Panel.setResizeWeight(0.5);
-		C3Panel.setRightComponent(D6Panel);
-		
-		JSplitPane D7Panel = new JSplitPane();
-		D7Panel.setResizeWeight(0.5);
-		C4Panel.setLeftComponent(D7Panel);
-		
-		JSplitPane D8Panel = new JSplitPane();
-		D8Panel.setResizeWeight(0.5);
-		C4Panel.setRightComponent(D8Panel);
-		
-		//第五层分割，得到E1~E16
-		JScrollPane E1Panel = new JScrollPane();
-		D1Panel.setLeftComponent(E1Panel);
-		
-		//E1放入目标控制table
-		E1Panel.setViewportBorder(new LineBorder(new Color(0, 0, 0)));
 		targetTable = new TargetTable();
-		E1Panel.setViewportView(targetTable);
-		
-		
-		//JScrollPane E2Panel = new JScrollPane();
-		ScrollPaneRelatedDomains = new JScrollPanelWithHeader("Related Domains","Related Domains"); //E2
-		D1Panel.setRightComponent(ScrollPaneRelatedDomains);
-		
-		//JScrollPane E3Panel = new JScrollPane();
-		ScrollPaneSubdomains = new JScrollPanelWithHeader("Sub Domains","Sub Domains");
-		D2Panel.setLeftComponent(ScrollPaneSubdomains);
-		
-		//JScrollPane E4Panel = new JScrollPane();
-		ScrollPaneSimilarDomains = new JScrollPanelWithHeader("Similar Domains","Similar Domains");
-		D2Panel.setRightComponent(ScrollPaneSimilarDomains);
-		
-		//JScrollPane E5Panel = new JScrollPane();
-		ScrollPaneEmails = new JScrollPanelWithHeader("Emails","Emails");
-		D3Panel.setLeftComponent(ScrollPaneEmails);
-		
-		//JScrollPane E6Panel = new JScrollPane();
-		PanelSimilarEmails = new JScrollPanelWithHeader("Similar Emails","Similar Emails");
-		D3Panel.setRightComponent(PanelSimilarEmails);
-		
-		//JScrollPane E7Panel = new JScrollPane();
-		D4Panel.setLeftComponent(null);
-		//预留位置，设为空，会在界面上隐藏
-		
-		//JScrollPane E8Panel = new JScrollPane();
-		D4Panel.setRightComponent(null);
-		//预留位置，设为空，会在界面上隐藏
-		
-		//JScrollPane E9Panel = new JScrollPane();
-		//D5Panel.setLeftComponent(E9Panel);
-		//对应E9位置，左下角第一个
-		JPanel ControlPanel = new TargetControlPanel();
-		D5Panel.setLeftComponent(ControlPanel);
-		
-		//JScrollPane E10Panel = new JScrollPane();
-		ScrollPaneSpecialPortTargets = new JScrollPanelWithHeader("Targets With Port","Targets With Port/Your Custom Targets");
-		D5Panel.setRightComponent(ScrollPaneSpecialPortTargets);
-		
-		//JScrollPane E11Panel = new JScrollPane();
-		PanelIPOfSubnet = new JScrollPanelWithHeader("IP Of Subnet","IP Of Subnet");
-		D6Panel.setLeftComponent(PanelIPOfSubnet);
-		
-		//JScrollPane E12Panel = new JScrollPane();
-		PanelIPOfCert = new JScrollPanelWithHeader("IP Of Cert","IP Of Cert");
-		D6Panel.setRightComponent(PanelIPOfCert);
-		
-		//JScrollPane E13Panel = new JScrollPane();
-		ScrollPanePackageNames = new JScrollPanelWithHeader("Package Names","Package Names");
-		D7Panel.setLeftComponent(ScrollPanePackageNames);
-		
-		//JScrollPane E14Panel = new JScrollPane();
-		PanelBlackIPList = new JScrollPanelWithHeader("Black IP List","Black IP List");
-		D7Panel.setRightComponent(PanelBlackIPList);
-		
-		//JScrollPane E15Panel = new JScrollPane();
-		D8Panel.setLeftComponent(null);
-		
-		//JScrollPane E16Panel = new JScrollPane();
-		D8Panel.setRightComponent(null);
+		TargetPanel.setViewportView(targetTable);
 
-//
-//		JPanel autoControlPanel = new JPanel();
-//		autoControlPanel.setBorder(new LineBorder(new Color(0, 0, 0)));
-//		split2of8.setLeftComponent(autoControlPanel);
-//
-//		rdbtnAddRelatedToRoot = new JRadioButton("Auto Add Related Domain To Root Domain");
-//		rdbtnAddRelatedToRoot.setVerticalAlignment(SwingConstants.TOP);
-//		rdbtnAddRelatedToRoot.addActionListener(new ActionListener() {
-//			public void actionPerformed(ActionEvent e) {
-//				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-//					@Override
-//					protected Map doInBackground() throws Exception {
-//						domainResult.autoAddRelatedToRoot = rdbtnAddRelatedToRoot.isSelected();
-//						rdbtnAddRelatedToRoot.setEnabled(false);
-//						try {
-//							if (domainResult.autoAddRelatedToRoot) {
-//								domainResult.relatedToRoot();
-//								showDataToDomainGUI();
-//								saveDomainDataToDB();
-//							}
-//						} catch (Exception exception) {
-//							exception.printStackTrace(stderr);
-//						}
-//						rdbtnAddRelatedToRoot.setEnabled(true);
-//						return null;
-//					}
-//				};
-//				worker.execute();
-//			}
-//		});
-//		autoControlPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-//		rdbtnAddRelatedToRoot.setSelected(false);
-//		autoControlPanel.add(rdbtnAddRelatedToRoot);
-		
-		
+
+		////////////////////////////////////target area////////////////////////////////////////////////////
+
+		//第一次分割
+		JSplitPane CenterSplitPane = new JSplitPane();//中间的大模块，一分为二
+		CenterSplitPane.setResizeWeight(0.5);
+		this.add(CenterSplitPane, BorderLayout.CENTER);
+
+
+		//第二次分割，左边
+		JSplitPane leftOfCenterSplitPane = new JSplitPane();//放入左边的分区。再讲左边的分区一分为二
+		leftOfCenterSplitPane.setResizeWeight(0.2);
+		CenterSplitPane.setLeftComponent(leftOfCenterSplitPane);
+
+		//第二次分割，右边
+		JSplitPane rightOfCenterSplitPane = new JSplitPane();//放入右半部分分区，
+		rightOfCenterSplitPane.setResizeWeight(0.7);
+		CenterSplitPane.setRightComponent(rightOfCenterSplitPane);
+
+		JSplitPane split1of4 = new JSplitPane();
+		split1of4.setOrientation(JSplitPane.VERTICAL_SPLIT);
+		split1of4.setResizeWeight(0.7);
+		leftOfCenterSplitPane.setLeftComponent(split1of4);
+
+		JSplitPane split1of8 = new JSplitPane();
+		split1of8.setResizeWeight(1.0);
+		split1of8.setOrientation(JSplitPane.VERTICAL_SPLIT);
+		split1of8.setLeftComponent(TargetPanel);
+		split1of4.setLeftComponent(split1of8);
+
+
+		JSplitPane split2of8 = new JSplitPane();
+		split2of8.setOrientation(JSplitPane.VERTICAL_SPLIT);
+		split2of8.setResizeWeight(0.01);
+		split1of4.setRightComponent(split2of8);
+
+		JSplitPane split2of4 = new JSplitPane();//四分之二区域的分割者
+		split2of4.setResizeWeight(0.5);
+		leftOfCenterSplitPane.setRightComponent(split2of4);
+
+
+		JSplitPane split3of4 = new JSplitPane();//四分之三区域的分割者，
+		split3of4.setResizeWeight(0.5);
+		rightOfCenterSplitPane.setLeftComponent(split3of4);
+
+
+		JSplitPane split4of4 = new JSplitPane();
+		rightOfCenterSplitPane.setRightComponent(split4of4);
+
+
+		///////////////////////////////Target Operations and Config//////////////////////
+
+
+		JPanel ControlPanel = new TargetControlPanel();
+		split1of8.setRightComponent(ControlPanel);
+
+		JPanel autoControlPanel = new JPanel();
+		autoControlPanel.setBorder(new LineBorder(new Color(0, 0, 0)));
+		split2of8.setLeftComponent(autoControlPanel);
+
+		rdbtnAddRelatedToRoot = new JRadioButton("Auto Add Related Domain To Root Domain");
+		rdbtnAddRelatedToRoot.setVerticalAlignment(SwingConstants.TOP);
+		rdbtnAddRelatedToRoot.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+					@Override
+					protected Map doInBackground() throws Exception {
+						domainResult.autoAddRelatedToRoot = rdbtnAddRelatedToRoot.isSelected();
+						rdbtnAddRelatedToRoot.setEnabled(false);
+						try {
+							if (domainResult.autoAddRelatedToRoot) {
+								domainResult.relatedToRoot();
+								showDataToDomainGUI();
+								saveDomainDataToDB();
+							}
+						} catch (Exception exception) {
+							exception.printStackTrace(stderr);
+						}
+						rdbtnAddRelatedToRoot.setEnabled(true);
+						return null;
+					}
+				};
+				worker.execute();
+			}
+		});
+		autoControlPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+		rdbtnAddRelatedToRoot.setSelected(false);
+		autoControlPanel.add(rdbtnAddRelatedToRoot);
+
+
+		///////////////////////////////textAreas///////////////////////////////////////////////////////
+
+
+		ScrollPaneSpecialPortTargets = new JScrollPanelWithHeader("Targets With Port","Targets With Port/Your Custom Targets"); //1of4
+
+		ScrollPaneRelatedDomains = new JScrollPanelWithHeader("Related Domains","Related Domains"); //2of4
+		ScrollPaneSubdomains = new JScrollPanelWithHeader("Sub Domains","Sub Domains");
+		ScrollPaneSimilarDomains = new JScrollPanelWithHeader("Similar Domains","Similar Domains");
+		ScrollPaneEmails = new JScrollPanelWithHeader("Emails","Emails");
+		ScrollPanePackageNames = new JScrollPanelWithHeader("Package Names","Package Names");
+
+		split2of8.setRightComponent(ScrollPaneSpecialPortTargets);
+
+		split2of4.setLeftComponent(ScrollPaneRelatedDomains);
+		split2of4.setRightComponent(ScrollPaneSubdomains);
+
+		split3of4.setLeftComponent(ScrollPaneSimilarDomains);
+		split3of4.setRightComponent(ScrollPaneEmails);
+
+		split4of4.setLeftComponent(ScrollPanePackageNames);
+		split4of4.setRightComponent(null);//通过设置为空来隐藏它
+
 		///////////////////////////FooterPanel//////////////////
 
 
@@ -756,19 +656,11 @@ public class DomainPanel extends JPanel {
 		ScrollPaneRelatedDomains.getTextArea().setText(domainResult.fetchRelatedDomains());
 		ScrollPaneEmails.getTextArea().setText(domainResult.fetchEmails());
 		ScrollPanePackageNames.getTextArea().setText(domainResult.fetchPackageNames());
-		
-		PanelIPOfSubnet.getTextArea().setText(domainResult.fetchEmails());//TODO
-		PanelIPOfCert.getTextArea().setText(domainResult.fetchEmails());
-		PanelBlackIPList.getTextArea().setText(domainResult.fetchEmails());
-		PanelSimilarEmails.getTextArea().setText(domainResult.fetchEmails());
-		
-		
 		lblSummary.setText(domainResult.getSummary());
 		rdbtnAddRelatedToRoot.setSelected(domainResult.autoAddRelatedToRoot);
 
 		System.out.println("Load Domain Panel Data Done, " + domainResult.getSummary());
 		stdout.println("Load Domain Panel Data Done, " + domainResult.getSummary());
-		
 		listenerIsOn = true;
 	}
 

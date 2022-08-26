@@ -16,6 +16,8 @@ import javax.swing.JTextArea;
 
 import org.apache.commons.io.FileUtils;
 
+import burp.BurpExtender;
+
 public class DraggableTextArea extends JTextArea implements DropTargetListener {
         private static final long serialVersionUID = 7247130270544835594L;
       
@@ -89,5 +91,39 @@ public class DraggableTextArea extends JTextArea implements DropTargetListener {
 				e.printStackTrace();
 			}
         	return content;
+        }
+        
+        
+        @Override
+        public void insert(String str, int pos) {
+        	try {
+        		System.out.println("insert called");
+        		BurpExtender.getStdout().println("insert called");
+				super.insert(str,pos);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+        }
+        
+        
+        @Override
+        public void append(String str) {
+        	try {
+        		BurpExtender.getStdout().println("append called");
+				super.append(str);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+        }
+        
+        
+        @Override
+        public void replaceRange(String str, int start, int end) {
+        	try {
+        		BurpExtender.getStdout().println("replaceRange called");
+				super.replaceRange(str,start,end);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
         }
 }
