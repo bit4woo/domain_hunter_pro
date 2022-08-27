@@ -89,6 +89,10 @@ public class DomainProducer extends Thread {//Producer do
 				String shortURL = httpservice.toString();
 				String protocol =  httpservice.getProtocol();
 				String Host = httpservice.getHost();
+				int port = httpservice.getPort();
+				if (port !=80 && port!=443) {
+					Host = Host+port;
+				}
 
 				//第一阶段：处理Host
 				//当Host是一个IP地址时，它也有可能是我们的目标。如果它的证书域名又在目标中，那么它就是目标。
@@ -102,16 +106,18 @@ public class DomainProducer extends Thread {//Producer do
 						if (isTargetByCertInfoForTarget(shortURL)){
 
 							//确定这个IP是目标了，更新target
-							TargetEntry entry = new TargetEntry(Host);
-							entry.setComment("BaseOnCertInfo");
-							DomainPanel.fetchTargetModel().addRowIfValid(entry);
+							//TargetEntry entry = new TargetEntry(Host);
+							//entry.setComment("BaseOnCertInfo");
+							//DomainPanel.fetchTargetModel().addRowIfValid(entry);
 
 							//重新判断类型，应该是确定的IP类型了。
-							type = DomainPanel.fetchTargetModel().domainType(Host);
+							//type = DomainPanel.fetchTargetModel().domainType(Host);
+							DomainPanel.getDomainResult().getIPSetOfCert().add(Host);
 						}
 					}
+				}else {
+					DomainPanel.getDomainResult().addIfValid(Host);
 				}
-				DomainPanel.getDomainResult().addIfValid(Host);
 
 				//第二步：处理HTTPS证书
 				if (type !=DomainManager.USELESS && protocol.equalsIgnoreCase("https")){//get related domains

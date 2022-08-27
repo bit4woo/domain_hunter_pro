@@ -56,18 +56,23 @@ public class TempLineEntry {
 
 	//输入解析
 	private boolean hostCheckAndParse(String inputHost){
-		inputHost = inputHost.trim();
+		try {
+			inputHost = inputHost.trim();
 
-		if (inputHost.contains(":")) {//处理带有端口号的域名
-			String tmpport = inputHost.substring(inputHost.indexOf(":") + 1);
-			port = Integer.parseInt(tmpport);
-			host = inputHost.substring(0, inputHost.indexOf(":"));
-		}else {
-			host = inputHost;
-			port = -1;
+			if (inputHost.contains(":")) {//处理带有端口号的域名
+				String tmpport = inputHost.substring(inputHost.indexOf(":") + 1);
+				port = Integer.parseInt(tmpport);
+				host = inputHost.substring(0, inputHost.indexOf(":"));
+			}else {
+				host = inputHost;
+				port = -1;
+			}
+
+			return IPAddressUtils.isValidIP(host) || DomainNameUtils.isValidDomain(host);
+		} catch (NumberFormatException e) {
+			e.printStackTrace();
+			return false;
 		}
-
-		return IPAddressUtils.isValidIP(host) || DomainNameUtils.isValidDomain(host);
 	}
 
 	//将域名或IP拼接成URL

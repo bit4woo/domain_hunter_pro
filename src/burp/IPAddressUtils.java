@@ -59,6 +59,17 @@ public class IPAddressUtils {
 			if ( ip == null || ip.isEmpty() ) {
 				return false;
 			}
+			if (ip.contains(":")) {
+				String[] ipAndPort = ip.split(":");
+				if (ipAndPort.length !=2) {
+					return false;
+				}
+				ip = ipAndPort[0];
+				int port = Integer.parseInt(ipAndPort[1]);
+				if ( port < 0 || port > 65535 ) {
+					return false;
+				}
+			}
 
 			String[] parts = ip.split( "\\." );
 			if ( parts.length != 4 ) {

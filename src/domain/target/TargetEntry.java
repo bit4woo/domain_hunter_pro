@@ -28,7 +28,7 @@ public class TargetEntry {
 	public static final String Target_Type_Domain = "Domain";
 	public static final String Target_Type_Wildcard_Domain = "WildcardDomain"; //
 	public static final String Target_Type_Subnet = "Subnet";
-	public static final String Target_Type_IPaddress = "IP";
+	public static final String Target_Type_IPaddress = "IP";//弃用，target应该是一个范围控制记录，单个IP不适合，直接放入Certain IP集合
 
 	private static final String[]  TargetTypeArray = {Target_Type_Domain,Target_Type_Wildcard_Domain,Target_Type_Subnet,Target_Type_IPaddress};
 	public static List<String> TargetTypeList = new ArrayList<>(Arrays.asList(TargetTypeArray));

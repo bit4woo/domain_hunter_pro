@@ -471,7 +471,7 @@ public class DomainPanel extends JPanel {
 		ScrollPaneEmails = new JScrollPanelWithHeader("Emails","Emails");
 		PanelSimilarEmails = new JScrollPanelWithHeader("Similar Emails","Similar Emails");
 
-		ScrollPaneSpecialPortTargets = new JScrollPanelWithHeader("Targets With Port","Targets With Port/Your Custom Targets");
+		ScrollPaneSpecialPortTargets = new JScrollPanelWithHeader("Custom Assets","you can put your custom assets here");
 		PanelIPOfSubnet = new JScrollPanelWithHeader("IP Of Subnet","IP Of Subnet");
 		PanelIPOfCert = new JScrollPanelWithHeader("IP Of Cert","IP Of Cert");
 		ScrollPanePackageNames = new JScrollPanelWithHeader("Package Names","Package Names");

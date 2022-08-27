@@ -211,12 +211,16 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 			return null;
 		}
 	}
-
+	
+	/**
+	 * 包含extender，这样get title中的流量也可以收集。而且IP的get title也能通过证书信息判断其归属
+	 */
 	@Override
 	public void processHttpMessage(int toolFlag, boolean messageIsRequest, IHttpRequestResponse messageInfo) {
 		if ((toolFlag == IBurpExtenderCallbacks.TOOL_PROXY || 
 				toolFlag == IBurpExtenderCallbacks.TOOL_INTRUDER ||
-				toolFlag == IBurpExtenderCallbacks.TOOL_REPEATER)
+				toolFlag == IBurpExtenderCallbacks.TOOL_REPEATER ||
+				toolFlag == IBurpExtenderCallbacks.TOOL_EXTENDER) 
 				&& !messageIsRequest) {
 			liveinputQueue.add(messageInfo);
 		}

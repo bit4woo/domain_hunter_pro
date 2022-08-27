@@ -62,7 +62,7 @@ public class DomainManager {
 
 	public static int SUB_DOMAIN = 0;
 	public static int SIMILAR_DOMAIN = 1;
-	public static int IP_ADDRESS = 2;
+	public static int IP_ADDRESS = 2;//属于某个目标网段，是确定的IP地址
 	public static int PACKAGE_NAME = 3;
 	public static int TLD_DOMAIN = 4; //比如baidu.net是baidu.com的TLD domain。xxx.baiu.net和xxx.baidu.com也是
 	public static int NEED_CONFIRM_IP = 5; //根据目标无法判断的类型。
@@ -390,7 +390,7 @@ public class DomainManager {
 	 * @return boolean 执行了添加返回true，没有执行添加返回false。
 	 */
 	public boolean addIfValid(String domain) {
-		Set<String> domains = DomainProducer.grepDomain(domain);
+		Set<String> domains = DomainProducer.grepDomain(domain);//这样以支持domain:port形式的资产
 		if (domains.size() ==0) return false;
 		domain = new ArrayList<String>(domains).get(0);
 
@@ -407,6 +407,7 @@ public class DomainManager {
 			return true;
 		} else if (type == DomainManager.SUB_DOMAIN) {//包含手动添加的IP
 			subDomainSet.add(domain);//子域名可能来自相关域名和相似域名。
+			//gettitle的逻辑中默认会请求80、443，所以无需再添加不包含端口的记录
 			return true;
 		} else if (type == DomainManager.SIMILAR_DOMAIN) {
 			similarDomainSet.add(domain);

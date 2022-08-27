@@ -508,7 +508,9 @@ public class TargetTableModel extends AbstractTableModel {
 	}
 
 	/**
-	 * 是否处于黑名单当中
+	 * 是否处于黑名单当中;
+	 * 1、target中的域名黑名单、网段黑名单、IP黑名单
+	 * 2、domainResult中的NotTargetIPSet
 	 * @param domain
 	 * @return
 	 */
@@ -530,6 +532,10 @@ public class TargetTableModel extends AbstractTableModel {
 		}
 
 		if (fetchBlackIPSet().contains(domain)){
+			return true;
+		}
+		
+		if (DomainPanel.getDomainResult().getNotTargetIPSet().contains(domain)) {
 			return true;
 		}
 		return false;
@@ -597,16 +603,14 @@ public class TargetTableModel extends AbstractTableModel {
 
 	/**
 	 * 判断域名或IP，是否为我们的目标资产。完全是根据target中的配置来判断的。
+	 * 
+	 * 当输入exampe.com:8080进行判断时，去除端口不影响结果。
 	 * @param domain
 	 * @return
 	 */
 	public int domainType(String domain) {
 		try {
-			Set<String> domains = DomainProducer.grepDomain(domain);//https://202.77.129.30
-			if (domains.size() ==0) {
-				return DomainManager.USELESS;
-			}
-			domain = new ArrayList<String>(domains).get(0);
+			domain = DomainNameUtils.clearDomainWithoutPort(domain);
 
 			//格式校验，package那么也是符合域名的正则格式的。
 			if (!DomainNameUtils.isValidDomain(domain) && !IPAddressUtils.isValidIP(domain)) {
