@@ -21,7 +21,6 @@ import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
 import burp.IHttpService;
 import config.ConfigPanel;
-import domain.target.TargetEntry;
 import title.LineEntry;
 import toElastic.ElasticClient;
 
@@ -96,7 +95,7 @@ public class DomainProducer extends Thread {//Producer do
 
 				//第一阶段：处理Host
 				//当Host是一个IP地址时，它也有可能是我们的目标。如果它的证书域名又在目标中，那么它就是目标。
-				int type = DomainPanel.fetchTargetModel().domainType(Host);
+				int type = DomainPanel.fetchTargetModel().assetType(Host);
 
 				if (type ==DomainManager.USELESS){
 					continue;
@@ -145,8 +144,11 @@ public class DomainProducer extends Thread {//Producer do
 							response = subByte(response,0,100000000);
 						}
 						Set<String> domains = DomainProducer.grepDomain(new String(response));
+						List<String> IPs = DomainProducer.grepIPAndPort(new String(response));
 						Set<String> emails = DomainProducer.grepEmail(new String(response));
+
 						DomainPanel.getDomainResult().addIfValid(domains);
+						DomainPanel.getDomainResult().addIfValid(new HashSet<>(IPs));
 						DomainPanel.getDomainResult().addIfValidEmail(emails);
 					}
 				}
@@ -180,7 +182,7 @@ public class DomainProducer extends Thread {//Producer do
 	public boolean isTargetByCertInfoForTarget(String shortURL) throws Exception {
 		Set<String> certDomains = CertInfo.getAllSANs(shortURL);
 		for (String domain : certDomains) {
-			int type = DomainPanel.fetchTargetModel().domainType(domain);
+			int type = DomainPanel.fetchTargetModel().assetType(domain);
 			if (type == DomainManager.SUB_DOMAIN || type == DomainManager.TLD_DOMAIN) {
 				return true;
 			}

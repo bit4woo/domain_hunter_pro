@@ -605,42 +605,42 @@ public class TargetTableModel extends AbstractTableModel {
 	 * 判断域名或IP，是否为我们的目标资产。完全是根据target中的配置来判断的。
 	 * 
 	 * 当输入exampe.com:8080进行判断时，去除端口不影响结果。
-	 * @param domain
+	 * @param domainOrIP
 	 * @return
 	 */
-	public int domainType(String domain) {
+	public int assetType(String domainOrIP) {
 		try {
-			domain = DomainNameUtils.clearDomainWithoutPort(domain);
+			domainOrIP = DomainNameUtils.clearDomainWithoutPort(domainOrIP);
 
 			//格式校验，package那么也是符合域名的正则格式的。
-			if (!DomainNameUtils.isValidDomain(domain) && !IPAddressUtils.isValidIP(domain)) {
-				debugPrint(domain,DomainManager.USELESS,"Not a valid domain or IP address");
+			if (!DomainNameUtils.isValidDomain(domainOrIP) && !IPAddressUtils.isValidIP(domainOrIP)) {
+				debugPrint(domainOrIP,DomainManager.USELESS,"Not a valid domain or IP address");
 				return DomainManager.USELESS;
 			}
 
-			if (isBlack(domain)) {
-				debugPrint(domain,DomainManager.USELESS,"In black list");
+			if (isBlack(domainOrIP)) {
+				debugPrint(domainOrIP,DomainManager.USELESS,"In black list");
 				return DomainManager.USELESS;
 			}
 
 			Set<String> targetDomains = fetchTargetDomainSet();
 			for (String rootdomain:targetDomains) {
 				rootdomain  = DomainNameUtils.clearDomainWithoutPort(rootdomain);
-				if (domain.endsWith("."+rootdomain)||domain.equalsIgnoreCase(rootdomain)){
-					debugPrint(domain,DomainManager.SUB_DOMAIN,"sub-domain of "+rootdomain);
+				if (domainOrIP.endsWith("."+rootdomain)||domainOrIP.equalsIgnoreCase(rootdomain)){
+					debugPrint(domainOrIP,DomainManager.SUB_DOMAIN,"sub-domain of "+rootdomain);
 					return DomainManager.SUB_DOMAIN;
 				}
 			}
 
-			if (fetchTargetIPSet().contains(domain)) {
-				debugPrint(domain,DomainManager.IP_ADDRESS,"target IP set contains it");
+			if (fetchTargetIPSet().contains(domainOrIP)) {
+				debugPrint(domainOrIP,DomainManager.IP_ADDRESS,"target IP set contains it");
 				return DomainManager.IP_ADDRESS;
 			}
 
 			for (String rootdomain:targetDomains) {
 				rootdomain  = DomainNameUtils.clearDomainWithoutPort(rootdomain);
-				if (DomainNameUtils.isWhiteListTLD(domain,rootdomain)) {
-					debugPrint(domain,DomainManager.TLD_DOMAIN,"TLD-domain of "+rootdomain);
+				if (DomainNameUtils.isWhiteListTLD(domainOrIP,rootdomain)) {
+					debugPrint(domainOrIP,DomainManager.TLD_DOMAIN,"TLD-domain of "+rootdomain);
 					return DomainManager.TLD_DOMAIN;
 				}
 			}
@@ -648,41 +648,41 @@ public class TargetTableModel extends AbstractTableModel {
 			Set<String> targetWildCardDomains = fetchTargetWildCardDomainSet();
 			for (String rootdomain:targetWildCardDomains) {
 				rootdomain  = DomainNameUtils.clearDomainWithoutPort(rootdomain);
-				if (DomainNameUtils.isMatchWildCardDomain(rootdomain,domain)){
-					debugPrint(domain,DomainManager.SUB_DOMAIN,"sub-domain of "+rootdomain);
+				if (DomainNameUtils.isMatchWildCardDomain(rootdomain,domainOrIP)){
+					debugPrint(domainOrIP,DomainManager.SUB_DOMAIN,"sub-domain of "+rootdomain);
 					return DomainManager.SUB_DOMAIN;
 				}
 			}
 
 			for (String keyword:fetchKeywordSet()) {
-				if (!keyword.equals("") && domain.contains(keyword)) {
-					if (InternetDomainName.from(domain).hasPublicSuffix()) {//是否是以公开的 .com .cn等结尾的域名。//如果是以比如local结尾的域名，就不会被认可
-						debugPrint(domain,DomainManager.SIMILAR_DOMAIN,"contains keyword "+keyword);
+				if (!keyword.equals("") && domainOrIP.contains(keyword)) {
+					if (InternetDomainName.from(domainOrIP).hasPublicSuffix()) {//是否是以公开的 .com .cn等结尾的域名。//如果是以比如local结尾的域名，就不会被认可
+						debugPrint(domainOrIP,DomainManager.SIMILAR_DOMAIN,"contains keyword "+keyword);
 						return DomainManager.SIMILAR_DOMAIN;
 					}
 
-					if (fetchSuffixSet().contains(domain.substring(0, domain.indexOf(".")))){
-						debugPrint(domain,DomainManager.PACKAGE_NAME,"starts with target domain suffix");
+					if (fetchSuffixSet().contains(domainOrIP.substring(0, domainOrIP.indexOf(".")))){
+						debugPrint(domainOrIP,DomainManager.PACKAGE_NAME,"starts with target domain suffix");
 						return DomainManager.PACKAGE_NAME;
 					}
 				}
 			}
 
-			if(IPAddressUtils.isValidIP(domain)){
-				debugPrint(domain,DomainManager.NEED_CONFIRM_IP,"is a valid IP address, but not in target IP Set");
+			if(IPAddressUtils.isValidIP(domainOrIP)){
+				debugPrint(domainOrIP,DomainManager.NEED_CONFIRM_IP,"is a valid IP address, but not in target IP Set");
 				return DomainManager.NEED_CONFIRM_IP;
 			}
-			debugPrint(domain,DomainManager.USELESS,"not match any rule of targets ");
+			debugPrint(domainOrIP,DomainManager.USELESS,"not match any rule of targets ");
 			return DomainManager.USELESS;
 		}catch (java.lang.IllegalArgumentException e) {
 			//java.lang.IllegalArgumentException: Not a valid domain name: '-this.state.scroll'
 			BurpExtender.getStderr().println(e.getMessage());
-			debugPrint(domain,DomainManager.USELESS,"IllegalArgumentException encountered");
+			debugPrint(domainOrIP,DomainManager.USELESS,"IllegalArgumentException encountered");
 			return DomainManager.USELESS;
 		}
 		catch (Exception e) {
 			e.printStackTrace(BurpExtender.getStderr());
-			debugPrint(domain,DomainManager.USELESS,"Exception encountered");
+			debugPrint(domainOrIP,DomainManager.USELESS,"Exception encountered");
 			return DomainManager.USELESS;
 		}
 	}

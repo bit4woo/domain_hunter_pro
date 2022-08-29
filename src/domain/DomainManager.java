@@ -262,7 +262,7 @@ public class DomainManager {
 
 	public String fetchSubDomainsOf(String rootDomain) {
 		List<String> tmplist = new ArrayList<>();
-		if (fetchTargetModel().domainType(rootDomain) == DomainManager.SUB_DOMAIN) {//判断是否有效rootDomain
+		if (fetchTargetModel().assetType(rootDomain) == DomainManager.SUB_DOMAIN) {//判断是否有效rootDomain
 			if (!rootDomain.startsWith(".")) {
 				rootDomain = "." + rootDomain;
 			}
@@ -321,7 +321,7 @@ public class DomainManager {
 			return true;
 		}
 		for (String domain : certDomains) {
-			int type = fetchTargetModel().domainType(domain);
+			int type = fetchTargetModel().assetType(domain);
 			if (type == DomainManager.SUB_DOMAIN || type == DomainManager.TLD_DOMAIN) {
 				return true;
 			}
@@ -391,10 +391,16 @@ public class DomainManager {
 	 */
 	public boolean addIfValid(String domain) {
 		Set<String> domains = DomainProducer.grepDomain(domain);//这样以支持domain:port形式的资产
-		if (domains.size() ==0) return false;
-		domain = new ArrayList<String>(domains).get(0);
+		List<String> ips = DomainProducer.grepIPAndPort(domain);
+		if (domains.size() !=0 ){
+			domain = new ArrayList<String>(domains).get(0);
+		} else if(ips.size() !=0){
+			domain = ips.get(0);
+		}else{
+			return false;
+		}
 
-		int type = fetchTargetModel().domainType(domain);
+		int type = fetchTargetModel().assetType(domain);
 
 		if (type !=DomainManager.USELESS && type!= DomainManager.NEED_CONFIRM_IP){
 			BurpExtender.getStdout().println("Target Asset Found: "+domain);
@@ -437,7 +443,7 @@ public class DomainManager {
 	/**
 	 * 根据已有配置进行添加，不是强行直接添加
 	 *
-	 * @param domain
+	 * @param email
 	 * @return boolean 执行了添加返回true，没有执行添加返回false。
 	 */
 	public boolean addIfValidEmail(String email) {
