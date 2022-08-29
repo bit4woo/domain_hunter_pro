@@ -416,7 +416,7 @@ public class DomainManager {
 			PackageNameSet.add(domain);
 			return true;
 		} else if (type == DomainManager.IP_ADDRESS){
-			subDomainSet.add(domain);
+			IPSetOfSubnet.add(domain);
 			return true;
 		} else if (type == DomainManager.NEED_CONFIRM_IP){
 			SpecialPortTargets.add(domain);
