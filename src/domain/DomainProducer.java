@@ -101,7 +101,7 @@ public class DomainProducer extends Thread {//Producer do
 					continue;
 				}else if (type == DomainManager.NEED_CONFIRM_IP){
 					//当Host是一个IP，也有可能是目标，通过证书信息进一步判断。
-					if (protocol.equalsIgnoreCase("https") && messageinfo.getResponse()!=null){
+					if (protocol.equalsIgnoreCase("https") && messageinfo.getResponse()!=null && !DomainPanel.getDomainResult().getIPSetOfCert().contains(Host)){
 						if (isTargetByCertInfoForTarget(shortURL)){
 
 							//确定这个IP是目标了，更新target
