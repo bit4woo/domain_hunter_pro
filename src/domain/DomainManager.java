@@ -470,14 +470,18 @@ public class DomainManager {
 	 */
 	public void freshBaseRule() {
 		Set<String> tmpDomains = new HashSet<>();
+		tmpDomains.addAll(relatedDomainSet);
+
 		tmpDomains.addAll(subDomainSet);
 		tmpDomains.addAll(similarDomainSet);
-		tmpDomains.addAll(relatedDomainSet);
 		tmpDomains.addAll(PackageNameSet);
+		tmpDomains.addAll(IPSetOfSubnet);
 
 		subDomainSet.clear();
 		similarDomainSet.clear();
 		PackageNameSet.clear();
+		IPSetOfSubnet.clear();
+
 		for (String domain : tmpDomains) {
 			if(addIfValid(domain)){
 				relatedDomainSet.remove(domain);
