@@ -213,14 +213,14 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	}
 	
 	/**
-	 * 包含extender，这样get title中的流量也可以收集。而且IP的get title也能通过证书信息判断其归属
+	 * 包含extender，这样get title中的流量也可以收集。而且IP的get title也能通过证书信息判断其归属；
+	 * 其实当通过浏览器打开URL时，也能完成这个收集过程，还是先移除extender，避免get title过程卡死。
 	 */
 	@Override
 	public void processHttpMessage(int toolFlag, boolean messageIsRequest, IHttpRequestResponse messageInfo) {
 		if ((toolFlag == IBurpExtenderCallbacks.TOOL_PROXY || 
 				toolFlag == IBurpExtenderCallbacks.TOOL_INTRUDER ||
-				toolFlag == IBurpExtenderCallbacks.TOOL_REPEATER ||
-				toolFlag == IBurpExtenderCallbacks.TOOL_EXTENDER) 
+				toolFlag == IBurpExtenderCallbacks.TOOL_REPEATER) 
 				&& !messageIsRequest) {
 			liveinputQueue.add(messageInfo);
 		}
