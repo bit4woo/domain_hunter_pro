@@ -103,8 +103,7 @@ public class ProjectMenu extends JMenu{
 				DomainPanel.saveDomainDataToDB();
 
 				TitleDao tmpTitleDao = new TitleDao(file);
-				IndexedLinkedHashMap<String, LineEntry> titles = dbhelper.getTitles();
-				for (LineEntry entry:titles.values()) {
+				for (LineEntry entry:tmpTitleDao.selectAllTitle()) {
 					TitlePanel.getTitleTableModel().addNewLineEntry(entry);
 				}
 				System.out.println("Import finished");

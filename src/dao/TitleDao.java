@@ -117,6 +117,10 @@ public class TitleDao {
 		return jdbcTemplate.queryForObject(sql, new Object[] { url },new TitleMapper());
 	}
 
+	public List<LineEntry> selectAllTitle(){
+		String sql = "select * from Title";
+		return jdbcTemplate.query(sql,new TitleMapper());
+	}
 	
 	public boolean deleteTitle(LineEntry entry){
 		String sql="DELETE FROM Title where url= ?";
@@ -128,6 +132,11 @@ public class TitleDao {
 		return jdbcTemplate.update(sql, url) > 0;
 	}
 
+	public boolean deleteTitleByID(int id){
+		String sql="DELETE FROM Title where ID= ?";
+		return jdbcTemplate.update(sql, id) > 0;
+	}
+
 	public boolean deleteTitles(List<LineEntry> lineEntries){
 		List<String> urls = new ArrayList<String>();
 		for(LineEntry entry:lineEntries) {
@@ -136,5 +145,11 @@ public class TitleDao {
 		String sql="DELETE FROM Title where NAME In ?";
 		
 		return jdbcTemplate.update(sql, urls) == urls.size();
+	}
+
+	public int getRowCount(){
+		String sql = "select count(*) from Title";
+		return jdbcTemplate.queryForObject(
+				sql, Integer.class);
 	}
 }

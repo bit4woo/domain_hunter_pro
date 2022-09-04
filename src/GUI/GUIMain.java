@@ -5,6 +5,7 @@ import burp.BurpExtender;
 import burp.Commons;
 import burp.dbFileChooser;
 import config.ConfigPanel;
+import dao.TargetDao;
 import domain.DomainPanel;
 import domain.target.TargetTableModel;
 import title.TitlePanel;
@@ -143,11 +144,8 @@ public class GUIMain extends JFrame {
 			}
 			GUIMain.setCurrentDBFile(currentDBFile);
 
-			DBHelper dbhelper = new DBHelper(dbFilePath);
-
-			DomainPanel.setDomainResult(dbhelper.getDomainObj());//为了兼容就版本，
-			DomainPanel.getTargetTable().loadData(dbhelper.getTargets());
-			domainPanel.LoadData(dbhelper.getDomainObj());
+			DomainPanel.getTargetTable().loadData(new TargetTableModel(new TargetDao(currentDBFile)));
+			domainPanel.LoadData(new D);
 			titlePanel.loadData(dbhelper.getTitles());
 			
 
@@ -227,6 +225,4 @@ public class GUIMain extends JFrame {
 			}
 		});
 	}
-
-
 }

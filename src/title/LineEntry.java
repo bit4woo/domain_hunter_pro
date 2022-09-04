@@ -54,6 +54,8 @@ public class LineEntry {
 
 	public static String systemCharSet = getSystemCharSet();
 
+
+	private int ID;//当从数据库中查询的记录会有自增长的主键
 	//private transient IHttpRequestResponse messageinfo;
 	//给不想被序列化的属性增加transient属性---java特性
 	//remove IHttpRequestResponse field ,replace with request+response+httpService(host port protocol). for convert to json.
@@ -91,6 +93,7 @@ public class LineEntry {
 	private String EntryType = EntryType_Web;
 	private String comment ="";
 	private boolean isManualSaved = false;
+	private IExtensionHelpers helpers;
 
 	/**
 	 * 默认构造函数，序列化、反序列化所需
@@ -166,7 +169,7 @@ public class LineEntry {
 	}
 
 	private void parse(IHttpRequestResponse messageinfo) {
-		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
+		helpers = BurpExtender.getCallbacks().getHelpers();
 		URL tmpurl = helpers.analyzeRequest(messageinfo).getUrl();//包含了默认端口
 
 		parse(tmpurl,messageinfo.getRequest(),messageinfo.getResponse());
@@ -190,7 +193,7 @@ public class LineEntry {
 			if (response != null) {
 				this.response = response;
 
-				IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
+				helpers = BurpExtender.getCallbacks().getHelpers();
 				IResponseInfo responseInfo = helpers.analyzeResponse(response);
 				statuscode = responseInfo.getStatusCode();
 
@@ -223,6 +226,14 @@ public class LineEntry {
 			String tmpurl =getUrl();
 			this.setIcon_hash(WebIcon.getHash(tmpurl));
 		}
+	}
+
+	public int getID() {
+		return ID;
+	}
+
+	public void setID(int ID) {
+		this.ID = ID;
 	}
 
 	/**
@@ -587,5 +598,9 @@ public class LineEntry {
 		}else {
 			return getter.getHeaderValueOf(false,response,headerName);
 		}
+	}
+
+	public void setHelpers(IExtensionHelpers helpers) {
+		this.helpers=helpers;
 	}
 }

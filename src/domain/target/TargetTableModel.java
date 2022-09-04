@@ -30,7 +30,7 @@ import java.util.*;
 public class TargetTableModel extends AbstractTableModel {
 
 	//private IndexedLinkedHashMap<String,TargetEntry> targetEntries =new IndexedLinkedHashMap<String,TargetEntry>();
-	TargetDao dao = new TargetDao("F:\\test.db");
+	TargetDao dao;
 
 	transient PrintWriter stdout;
 	transient PrintWriter stderr;
@@ -53,6 +53,10 @@ public class TargetTableModel extends AbstractTableModel {
 			stdout = new PrintWriter(System.out, true);
 			stderr = new PrintWriter(System.out, true);
 		}
+	}
+	public TargetTableModel(TargetDao dao){
+		this();
+		this.dao = dao;
 	}
 
 	@Override
