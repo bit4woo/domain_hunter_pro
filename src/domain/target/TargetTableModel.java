@@ -29,7 +29,8 @@ import java.util.*;
 
 public class TargetTableModel extends AbstractTableModel {
 
-	private IndexedLinkedHashMap<String,TargetEntry> targetEntries =new IndexedLinkedHashMap<String,TargetEntry>();
+	//private IndexedLinkedHashMap<String,TargetEntry> targetEntries =new IndexedLinkedHashMap<String,TargetEntry>();
+	TargetDao dao = new TargetDao("F:\\test.db");
 
 	transient PrintWriter stdout;
 	transient PrintWriter stderr;
@@ -52,79 +53,11 @@ public class TargetTableModel extends AbstractTableModel {
 			stdout = new PrintWriter(System.out, true);
 			stderr = new PrintWriter(System.out, true);
 		}
-		addListener();//构造函数中已经有了添加listener了的操作了，为什么会在Jtable.setModel()函数后失效呢？奇怪！
-	}
-
-	public void addListener(){
-		/**
-		 *
-		 * 注意，所有直接对TargetTableModel中数据的修改，都不会触发该tableChanged监听器。
-		 * 除非操作的逻辑中包含了firexxxx来主动通知监听器。
-		 * DomainPanel.domainTableModel.fireTableChanged(null);
-		 */
-		addTableModelListener(new TableModelListener() {
-			@Override
-			public void tableChanged(TableModelEvent e) {
-				
-				int type = e.getType();//获取事件类型(增、删、改等)
-				int rowstart = e.getFirstRow();//获取触发事件的行索引，即是fireTableRowxxx中的2个参数。
-				int rowend = e.getLastRow();
-
-				TargetDao targetDao = new TargetDao(GUIMain.getCurrentDBFile().toString());
-				if (type == TableModelEvent.INSERT) {//插入事件使用批量方法好像不行，都是一个个插入的，每次都会触发
-					//从使用场景来看也无需使用批量
-					for (int i = rowstart; i <= rowend; i++) {
-						targetDao.addOrUpdateTarget(targetEntries.get(i));
-					}
-				} else if (type == TableModelEvent.UPDATE) {
-					for (int i = rowstart; i <= rowend; i++) {
-						targetDao.addOrUpdateTarget(targetEntries.get(i));
-					}
-				} else if (type == TableModelEvent.DELETE) {//可以批量操作
-
-					//必须从高位index进行删除，否则删除的对象会和预期不一致！！！
-					for (int i = rowend; i >= rowstart; i--) {
-						String targetDomain = targetEntries.get(i).getTarget();
-						targetDao.deleteByTarget(targetDomain);
-						stdout.println("### "+targetDomain+" deleted");
-					}
-				} else {
-					//System.out.println("此事件是由其他原因触发");
-				}
-			}
-			
-		});
-	}
-
-	//getter setter是为了序列化和反序列化
-	public IndexedLinkedHashMap<String, TargetEntry> getTargetEntries() {
-		return targetEntries;
-	}
-	//getter setter是为了序列化和反序列化
-	public void setTargetEntries(IndexedLinkedHashMap<String, TargetEntry> targetEntries) {
-		this.targetEntries = targetEntries;
-	}
-
-	/**
-	 * 转为Json格式
-	 * @return
-	 */
-	public String ToJson() {
-		return new Gson().toJson(this);
-	}
-
-	/**
-	 * 转换为数据模型
-	 * @param instanceString
-	 * @return
-	 */
-	public static TargetTableModel FromJson(String instanceString) {
-		return new Gson().fromJson(instanceString, TargetTableModel.class);
 	}
 
 	@Override
 	public int getRowCount() {
-		return targetEntries.size();
+		return dao.getRowCount();
 	}
 
 	@Override
@@ -134,7 +67,7 @@ public class TargetTableModel extends AbstractTableModel {
 
 	@Override
 	public Object getValueAt(int rowIndex, int columnIndex) {
-		TargetEntry entry = targetEntries.get(rowIndex);
+		TargetEntry entry = dao.selectByID(rowIndex);
 		if (entry == null) return "";
 		if (columnIndex == titletList.indexOf("Domain/Subnet/IP")) {
 			return entry.getTarget();
@@ -154,7 +87,7 @@ public class TargetTableModel extends AbstractTableModel {
 
 	@Override
 	public void setValueAt(Object value, int row, int col) {
-		TargetEntry entry = targetEntries.get(row);
+		TargetEntry entry = dao.selectByID(row);
 		if (col == titletList.indexOf("Comment")){
 			String valueStr = ((String) value).trim();
 			entry.setComment(valueStr);
@@ -170,6 +103,7 @@ public class TargetTableModel extends AbstractTableModel {
 			entry.setBlack(valueStr);
 			fireTableCellUpdated(row, col);
 		}
+		dao.addOrUpdateTarget(entry);
 	}
 
 	@Override
@@ -201,25 +135,6 @@ public class TargetTableModel extends AbstractTableModel {
 		}
 	}
 
-	public void clear() {
-		int size = targetEntries.size();
-		targetEntries = new IndexedLinkedHashMap<String,TargetEntry>();
-		System.out.println("clean targets of old data,"+size+" targets cleaned");
-		if (size-1 >=0)	fireTableRowsDeleted(0, size-1);
-	}
-
-	/**
-	 * 用于加载数据时，直接初始化
-	 * @param targetEntries
-	 */
-	public void setData(IndexedLinkedHashMap<String,TargetEntry> targetEntries) {
-		clear();
-		this.targetEntries = targetEntries;
-		int size = targetEntries.size();
-		if (size >=1) {
-			fireTableRowsInserted(0, size-1);
-		}
-	}
 
 	public boolean ifValid(TargetEntry entry) {
 		if (entry.getTarget() == null || entry.getTarget().equals("")) {
@@ -239,88 +154,34 @@ public class TargetTableModel extends AbstractTableModel {
 		return true;
 	}
 
+	/**
+	 * 最新添加的记录，都是没有ID值的，只有当从数据库中读取出来后才会有
+	 * @param entry
+	 */
 	public void addRowIfValid(TargetEntry entry) {
 		if (ifValid(entry)){
-			synchronized (targetEntries) {
-				//因为后台的流量分析进程是多线程，可能同时添加数据！
 				String key = entry.getTarget();
-				TargetEntry oldentry = targetEntries.get(key);
+				TargetEntry oldentry = dao.selectByTarget(key);
 				if (oldentry != null) {//如果有旧的记录，就需要用旧的内容做修改
 					entry.setBlack(oldentry.isBlack());
 					entry.setComment(oldentry.getComment());
 					entry.setKeyword(oldentry.getKeyword());
 				}
-				addRow(key, entry);
-			}
-		}
-	}
-
-
-	public void addRowWithoutFireIfValid(TargetEntry entry) {
-		if (ifValid(entry)){
-			synchronized (targetEntries) {
-				//因为后台的流量分析进程是多线程，可能同事添加数据！
-				String key = entry.getTarget();
-				TargetEntry oldentry = targetEntries.get(key);
-				if (oldentry != null) {//如果有旧的记录，就需要用旧的内容做修改
-					entry.setBlack(oldentry.isBlack());
-					entry.setComment(oldentry.getComment());
-					entry.setKeyword(oldentry.getKeyword());
+				dao.addOrUpdateTarget(entry);
+				if (oldentry != null){
+					fireTableRowsUpdated(oldentry.getID(),oldentry.getID());
+				}else {
+					fireTableRowsInserted(dao.getRowCount(),dao.getRowCount());
 				}
-				addRowWithoutFire(key, entry);
 			}
 		}
-	}
-
-	/**
-	 * 数据的增删查改：新增
-	 * @param key
-	 * @param entry
-	 */
-	private void addRow(String key,TargetEntry entry) {
-		TargetEntry originalEntry = targetEntries.get(key);
-		if (originalEntry != null){
-			String entryStr = JSON.toJSONString(originalEntry);
-			if(entryStr.equals(JSON.toJSONString(entry))){
-				return;
-			}
-		}
-		int oldsize = targetEntries.size();
-		targetEntries.put(key,entry);
-		int rowIndex = targetEntries.IndexOfKey(key);
-		int newsize = targetEntries.size();
-		if (oldsize == newsize) {//覆盖修改
-			fireTableRowsUpdated(rowIndex,rowIndex);
-		}else {//新增
-			fireTableRowsInserted(rowIndex,rowIndex);
-		}
-	}
-
-
-	/**
-	 * 数据的增删查改：新增
-	 * @param key
-	 * @param entry
-	 */
-	private void addRowWithoutFire(String key,TargetEntry entry) {
-		targetEntries.put(key,entry);
-	}
 
 	/**
 	 * 数据的增删查改：删除
 	 * @param rowIndex
 	 */
 	public void removeRow(int rowIndex) {
-		targetEntries.remove(rowIndex);
-		fireTableRowsDeleted(rowIndex, rowIndex);
-	}
-
-	/**
-	 * 数据的增删查改：删除
-	 */
-	public void removeRow(String key) {
-		int rowIndex = targetEntries.IndexOfKey(key);
-		targetEntries.remove(key);
+		dao.deleteByID(rowIndex);
 		fireTableRowsDeleted(rowIndex, rowIndex);
 	}
 
@@ -328,45 +189,18 @@ public class TargetTableModel extends AbstractTableModel {
 	 * 数据的增删查改：查询
 	 */
 	public TargetEntry getValueAt(int rowIndex) {
-		TargetEntry entry = targetEntries.get(rowIndex);
+		TargetEntry entry = dao.selectByID(rowIndex);
 		return entry;
 	}
 
 	/**
 	 * 数据的增删查改：修改更新
 	 */
-	public void updateRow(TargetEntry entry) {
-		String key = entry.getTarget();
-		addRow(key,entry);
+	public void updateRow(int rowIndex,TargetEntry entry) {
+		dao.addOrUpdateTarget(entry);
+		fireTableRowsUpdated(rowIndex,rowIndex);
 	}
 
-
-	/**
-	 * 获取数据集的方法
-	 * @return
-	 */
-	public String fetchRootDomains() {
-		return String.join(System.lineSeparator(), targetEntries.keySet());
-	}
-	
-
-	/**
-	 * 返回目标集合，包含域名、IP、网段。
-	 * 8.8.6.0/25
-	 * example.com
-	 * 8.8.8.8
-	 * @return
-	 */
-	public Set<String> fetchTargetSet() {
-		Set<String> result = new HashSet<String>();
-		for (TargetEntry entry:targetEntries.values()) {
-			if (!ifValid(entry)) continue;
-			if (!entry.isBlack()) {
-				result.add(entry.getTarget());
-			}
-		}
-		return result;
-	}
 
 	/**
 	 * 返回目标集合，只返回域名；不包含IP、网段。
@@ -375,7 +209,7 @@ public class TargetTableModel extends AbstractTableModel {
 	 */
 	public Set<String> fetchTargetDomainSet() {
 		Set<String> result = new HashSet<String>();
-		for (TargetEntry entry:targetEntries.values()) {
+		for (TargetEntry entry:dao.selectAll()) {
 			if (!ifValid(entry)) continue;
 			try {
 				if (!entry.isBlack() && entry.getType().equals(TargetEntry.Target_Type_Domain)) {
@@ -396,7 +230,7 @@ public class TargetTableModel extends AbstractTableModel {
 	 */
 	public Set<String> fetchTargetWildCardDomainSet() {
 		Set<String> result = new HashSet<String>();
-		for (TargetEntry entry:targetEntries.values()) {
+		for (TargetEntry entry:dao.selectAll()) {
 			if (!ifValid(entry)) continue;
 			try {
 				if (!entry.isBlack() && entry.getType().equals(TargetEntry.Target_Type_Wildcard_Domain)) {
@@ -417,7 +251,7 @@ public class TargetTableModel extends AbstractTableModel {
 	 */
 	public Set<String> fetchTargetIPSet() {
 		Set<String> result = new HashSet<String>();
-		for (TargetEntry entry:targetEntries.values()) {
+		for (TargetEntry entry:dao.selectAll()) {
 			if (ifValid(entry)) {
 				if (!entry.isBlack()) {
 					if (entry.getTarget() == null || entry.getType() == null) continue;
@@ -440,7 +274,7 @@ public class TargetTableModel extends AbstractTableModel {
 	 */
 	private Set<String> fetchTargetBlackDomainSet() {
 		Set<String> result = new HashSet<String>();
-		for (TargetEntry entry:targetEntries.values()) {
+		for (TargetEntry entry:dao.selectAll()) {
 			if (!ifValid(entry)) continue;
 			if (entry.isBlack() && entry.getType().equals(TargetEntry.Target_Type_Domain)) {
 				result.add(entry.getTarget());
@@ -455,7 +289,7 @@ public class TargetTableModel extends AbstractTableModel {
 	 */
 	public Set<String> fetchBlackIPSet() {
 		Set<String> result = new HashSet<String>();
-		for (TargetEntry entry:targetEntries.values()) {
+		for (TargetEntry entry:dao.selectAll()) {
 			if (!ifValid(entry)) continue;
 			if (entry.isBlack()) {
 				if (entry.getType().equals(TargetEntry.Target_Type_IPaddress))
@@ -471,7 +305,7 @@ public class TargetTableModel extends AbstractTableModel {
 
 	public Set<String> fetchKeywordSet(){
 		Set<String> result = new HashSet<String>();
-		for (TargetEntry entry:targetEntries.values()) {
+		for (TargetEntry entry:dao.selectAll()) {
 			if (!ifValid(entry)) continue;
 			if (!entry.isBlack() && !entry.getKeyword().trim().equals("")) {
 				result.add(entry.getKeyword());
@@ -486,7 +320,8 @@ public class TargetTableModel extends AbstractTableModel {
 	 */
 	public Set<String> fetchSuffixSet(){
 		Set<String> result = new HashSet<String>();
-		for (String key:targetEntries.keySet()) {
+		for (TargetEntry entry:dao.selectAll()) {
+			String key = entry.getTarget();
 			String suffix;
 			try {
 				//InternetDomainName.from(key).publicSuffix() //当不是com、cn等公共的域名结尾时，将返回空。
@@ -743,8 +578,9 @@ public class TargetTableModel extends AbstractTableModel {
 			//list length and index changed after every remove.the origin index not point to right item any more.
 			Arrays.sort(rows); //升序
 			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
-				TargetEntry checked = targetEntries.get(rows[i]);
+				TargetEntry checked = dao.selectByID(rows[i]);
 				checked.addComment(commentAdd);
+				dao.addOrUpdateTarget(checked);
 			}
 			fireUpdated(rows);
 		}
@@ -774,14 +610,7 @@ public class TargetTableModel extends AbstractTableModel {
 
 	public static void main(String[] args) {
 		TargetTableModel aaa= new TargetTableModel();
-		aaa.addRow("111", new TargetEntry("www.baidu.com"));
-		aaa.addRow("2222", new TargetEntry("www.baidu.com"));
-		String bbb= aaa.ToJson();
-		TargetTableModel ccc = TargetTableModel.FromJson(bbb);
-		System.out.println(bbb);
-		System.out.println(ccc);
-
-		System.out.println(aaa.getValueAt(0).getType() == TargetEntry.Target_Type_Domain);
+		aaa.addRowIfValid(new TargetEntry("www.baidu.com"));
 	}
 
 }

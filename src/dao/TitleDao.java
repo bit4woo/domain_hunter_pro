@@ -52,7 +52,6 @@ public class TitleDao {
 	/**
 	 * 写入记录，如果URL存在相同的URL，则覆盖
 	 * @param entry
-	 * @param overWriteIfExist
 	 * @return
 	 */
 	public boolean addOrUpdateTitle(LineEntry entry){

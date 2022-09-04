@@ -16,7 +16,8 @@ public class TargetMapper implements RowMapper<TargetEntry> {
 	public TargetEntry mapRow(ResultSet rs, int rowNum) throws SQLException {
 
 		TargetEntry entry = new TargetEntry();
-		
+
+		entry.setID(rs.getInt("ID"));
 		entry.setTarget(rs.getString("target"));
 		entry.setType(rs.getString("type"));
 		entry.setKeyword(rs.getString("keyword"));

@@ -51,7 +51,6 @@ import GUI.JScrollPanelWithHeader;
 import GUI.ProjectMenu;
 import burp.BurpExtender;
 import burp.Commons;
-import burp.DBHelper;
 import burp.IBurpExtenderCallbacks;
 import burp.IHttpRequestResponse;
 import burp.IHttpService;

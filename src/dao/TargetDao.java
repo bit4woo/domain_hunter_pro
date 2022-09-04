@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import domain.target.TargetEntry;
@@ -17,11 +18,17 @@ public class TargetDao {
 	public TargetDao(String dbFilePath){
 		dataSource = DBUtils.getSqliteDataSource(dbFilePath);
 		jdbcTemplate = new JdbcTemplate(dataSource);
+		if (!testSelect()){
+			createTable();
+		}
 	}
 	
 	public TargetDao(File dbFilePath){
 		dataSource = DBUtils.getSqliteDataSource(dbFilePath.toString());
 		jdbcTemplate = new JdbcTemplate(dataSource);
+		if (!testSelect()){
+			createTable();
+		}
 	}
 
 	public boolean createTable() {
@@ -78,15 +85,35 @@ public class TargetDao {
 	}
 	
 	public TargetEntry selectByID(int id){
-		String sql = "select * from Target where id=?";
-		return jdbcTemplate.queryForObject(sql, new Object[] { id },new TargetMapper());
+		try {
+			String sql = "select * from Target where id=?";
+			return jdbcTemplate.queryForObject(sql, new Object[] { id },new TargetMapper());
+		} catch (DataAccessException e) {
+			//e.printStackTrace();
+			return null;
+		}
 	}
 	
 	public TargetEntry selectByTarget(String target){
-		String sql = "select * from Target where target=?";
-		return jdbcTemplate.queryForObject(sql, new Object[] { target },new TargetMapper());
+		try {
+			String sql = "select * from Target where target=?";
+			return jdbcTemplate.queryForObject(sql, new Object[] { target },new TargetMapper());
+		} catch (DataAccessException e) {
+			//e.printStackTrace();
+			return null;
+		}
 	}
 	
+	public boolean testSelect(){
+		try {
+			String sql = "select * from Target limit 1";
+			jdbcTemplate.execute(sql);
+			return true;
+		} catch (DataAccessException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
 	
 	/**
 	 * 
@@ -106,6 +133,13 @@ public class TargetDao {
 	public boolean deleteTarget(TargetEntry entry) {
 		String sql = "delete from Target where target=?";
 		return jdbcTemplate.update(sql, entry.getTarget()) > 0;
+	}
+
+
+	public int getRowCount(){
+		String sql = "select count(*) from Target";
+		return jdbcTemplate.queryForObject(
+				sql, Integer.class);
 	}
 
 }

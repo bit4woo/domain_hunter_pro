@@ -144,7 +144,6 @@ public class TargetTable extends JTable{
 	public void setTargetModel(TargetTableModel targetModel) {
 		this.targetModel = targetModel;
 		setModel(this.targetModel);//没有这个行代码，就数据就不会显示！
-		this.targetModel.addListener();//setModel之后，原来的listener会失效！！！导致不能及时写入DB，这里重新添加！！！
 	}
 
 	public TargetTableModel getTargetModel() {
@@ -157,12 +156,6 @@ public class TargetTable extends JTable{
 	 * @param targetTableModel
 	 */
 	public void loadData(TargetTableModel targetTableModel){
-		if (targetTableModel == null) {//兼容旧版本
-			DomainPanel.backupDB();
-			targetTableModel = new TargetTableModel();
-			IndexedLinkedHashMap<String, TargetEntry> entries = rootDomainToTarget(DomainPanel.getDomainResult());
-			targetTableModel.setData(entries);
-		}
 		setTargetModel(targetTableModel);//这句很关键，否则无法显示整个表的头和内容
 	}
 

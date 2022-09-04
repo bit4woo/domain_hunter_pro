@@ -178,7 +178,7 @@ public class TargetControlPanel extends JPanel {
 			for (int i = rowindexs.length - 1; i >= 0; i--) {
 				TargetEntry entry = domainTableModel.getValueAt(rowindexs[i]);
 				entry.setBlack(true);
-				domainTableModel.updateRow(entry);
+				domainTableModel.updateRow(rowindexs[i],entry);
 			}
 		}
 	}

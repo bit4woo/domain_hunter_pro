@@ -16,6 +16,7 @@ import burp.IPAddressUtils;
 import domain.DomainPanel;
 
 public class TargetEntry {
+	private int ID; //用于从数据库中查询后记录在数据库中的主键ID
 	private String target;//根域名、网段、或者IP
 	private String type;
 	private String keyword = "";
@@ -108,6 +109,14 @@ public class TargetEntry {
 
 	public TargetEntry() {
 		// TODO Auto-generated constructor stub
+	}
+
+	public int getID() {
+		return ID;
+	}
+
+	public void setID(int ID) {
+		this.ID = ID;
 	}
 
 	public String getTarget() {
