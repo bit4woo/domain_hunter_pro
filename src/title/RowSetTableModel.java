@@ -23,12 +23,18 @@ import javax.sql.RowSetEvent;
 import javax.sql.RowSetListener;
 import javax.swing.table.AbstractTableModel;
 
-public class RowSetTableModel extends AbstractTableModel implements RowSetListener {
+import burp.BurpExtender;
+import burp.IExtensionHelpers;
+import burp.IHttpService;
+import burp.IMessageEditorController;
+
+public class RowSetTableModel extends AbstractTableModel implements RowSetListener,IMessageEditorController {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 	private RowSet rowSet = null;
+	private LineEntry currentlyDisplayedItem;
 
 	public RowSetTableModel(RowSet set) {
 		super();
@@ -36,9 +42,11 @@ public class RowSetTableModel extends AbstractTableModel implements RowSetListen
 		rowSet.addRowSetListener(this);
 	}
 
+	@Override
 	public void cursorMoved(RowSetEvent event) {
 	}
 
+	@Override
 	public Class getColumnClass(int column) {
 		String cname;
 		int type;
@@ -148,7 +156,8 @@ public class RowSetTableModel extends AbstractTableModel implements RowSetListen
 			return super.getColumnClass(column);
 		}
 	}
-
+	
+	@Override
 	public int getColumnCount() {
 		try {
 			ResultSetMetaData meta = rowSet.getMetaData();
@@ -162,6 +171,7 @@ public class RowSetTableModel extends AbstractTableModel implements RowSetListen
 		}
 	}
 
+	@Override
 	public String getColumnName(int col) {
 		try {
 			ResultSetMetaData meta = rowSet.getMetaData();
@@ -175,6 +185,7 @@ public class RowSetTableModel extends AbstractTableModel implements RowSetListen
 		}
 	}
 
+	@Override
 	public int getRowCount() {
 		try {
 			if (rowSet.last()) {
@@ -187,6 +198,7 @@ public class RowSetTableModel extends AbstractTableModel implements RowSetListen
 		}
 	}
 
+	@Override
 	public Object getValueAt(int row, int col) {
 		try {
 			if (!rowSet.absolute(row + 1)) {
@@ -198,6 +210,7 @@ public class RowSetTableModel extends AbstractTableModel implements RowSetListen
 		}
 	}
 
+	@Override
 	public void rowChanged(RowSetEvent event) {
 		try {
 			int row = rowSet.getRow();
@@ -213,10 +226,12 @@ public class RowSetTableModel extends AbstractTableModel implements RowSetListen
 		}
 	}
 
+	@Override
 	public void rowSetChanged(RowSetEvent event) {
 		fireTableStructureChanged();
 	}
 
+	@Override
 	public void setValueAt(Object value, int row, int column) {
 		try {
 			if (!rowSet.absolute(row + 1)) {
@@ -225,5 +240,53 @@ public class RowSetTableModel extends AbstractTableModel implements RowSetListen
 			rowSet.updateObject(column + 1, value);
 		} catch (SQLException e) {
 		}
+	}
+	
+	
+	public LineEntry getCurrentlyDisplayedItem() {
+		return this.currentlyDisplayedItem;
+	}
+
+	public void setCurrentlyDisplayedItem(LineEntry currentlyDisplayedItem) {
+		this.currentlyDisplayedItem = currentlyDisplayedItem;
+	}
+	
+	
+	//
+	// implement IMessageEditorController
+	// this allows our request/response viewers to obtain details about the messages being displayed
+	//
+
+	@Override
+	public byte[] getRequest()
+	{
+		LineEntry item = getCurrentlyDisplayedItem();
+		if(item==null) {
+			return "".getBytes();
+		}
+		return item.getRequest();
+	}
+
+	@Override
+	public byte[] getResponse()
+	{
+		LineEntry item = getCurrentlyDisplayedItem();
+		if(item==null) {
+			return "".getBytes();
+		}
+		return item.getResponse();
+	}
+
+	@Override
+	public IHttpService getHttpService()
+	{
+		LineEntry item = getCurrentlyDisplayedItem();
+		if(item==null) {
+			return null;
+		}
+		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
+		IHttpService service = helpers.buildHttpService(item.getHost(),
+				item.getPort(), item.getProtocol());
+		return service;
 	}
 }
