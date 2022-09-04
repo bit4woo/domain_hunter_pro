@@ -135,6 +135,11 @@ public class TargetTableModel extends AbstractTableModel {
 		}
 	}
 
+	public List<TargetEntry> getAllTargets()
+	{
+		return dao.selectAll();
+	}
+
 
 	public boolean ifValid(TargetEntry entry) {
 		if (entry.getTarget() == null || entry.getTarget().equals("")) {

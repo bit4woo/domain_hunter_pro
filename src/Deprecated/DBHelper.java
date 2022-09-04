@@ -17,6 +17,7 @@ prepareStatement  //预编译方法，在有参数传入时用它
 createStatement  //在固定语句时可以用它
 它们都对应2种语句执行方法 executeQuery - select  \executeUpdate - insert、update、delete
  */
+@Deprecated
 public class DBHelper {
 	private static final Logger log=LogManager.getLogger(DBHelper.class);
 	public static PrintWriter stdout;

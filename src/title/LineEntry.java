@@ -121,7 +121,7 @@ public class LineEntry {
 	/**
 	 * 用于构造DNS记录
 	 * @param host
-	 * @param IPset
+	 * @param IPStr
 	 * @return
 	 */
 	public LineEntry(String host,String IPStr) {
@@ -145,7 +145,6 @@ public class LineEntry {
 
 	/**
 	 * 用于从数据库中恢复对象
-	 * @param messageinfo
 	 */
 	public LineEntry(URL url,byte[] request,byte[] response) {
 		parse(url,request,response);
@@ -578,5 +577,15 @@ public class LineEntry {
 		System.out.println(entry.getTime());
 		String key = HashCode.fromBytes(entry.getRequest()).toString();
 		System.out.println(key);
+	}
+
+	public String getHeaderValueOf(boolean isRequest, String headerName) {
+		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
+		HelperPlus getter = new HelperPlus(helpers);
+		if (isRequest){
+			return getter.getHeaderValueOf(true,request,headerName);
+		}else {
+			return getter.getHeaderValueOf(false,response,headerName);
+		}
 	}
 }

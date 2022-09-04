@@ -266,37 +266,6 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	//////////////////////extend AbstractTableModel////////////////////////////////
 
 
-
-	public void clear(boolean syncToFile) {
-		//		if (syncToFile){
-		//			this.setListenerIsOn(true);
-		//		}else {
-		//			this.setListenerIsOn(false);
-		//		}
-		this.setListenerIsOn(false);//这里之所以要关闭listener，是因为LineEntries为空时，执行listener中的逻辑将出错而退出。而后续获取title的逻辑就会中断。就丢失了title的历史记录。
-		int rows = this.getRowCount();
-		stderr.print("rows:"+rows);
-		//this.setLineEntries(new ArrayList<LineEntry>());//这个方式无法通过listenser去同步数据库，因为LineEntries已经空了。
-		//虽然触发了，却无法更新数据库。
-		if (syncToFile){
-			try {
-				if (GUIMain.getCurrentDBFile().delete()){
-					GUIMain.getCurrentDBFile().createNewFile();//文件存在时，不会创建新文件!必须先删除就文件
-				}
-				DBHelper dbHelper = new DBHelper(GUIMain.getCurrentDBFile().toString());
-				dbHelper.saveDomainObject(DomainPanel.getDomainResult());//效果等同于删除所有title。速度更快
-				//dbHelper.deleteTitles(this.getLineEntries());
-			}catch (Exception e){
-				e.printStackTrace(stderr);
-			}
-
-		}
-		this.setLineEntries(new IndexedLinkedHashMap<String,LineEntry>());//如果ListenerIsOn，将会触发listener
-		System.out.println("clean lines of old data,"+rows+" lines cleaned");
-		if (rows-1 >=0)	fireTableRowsDeleted(0, rows-1);
-		this.setListenerIsOn(true);
-	}
-
 	/**
 	 *
 	 * @return 获取已成功获取title的Entry的IP地址集合

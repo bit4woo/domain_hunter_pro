@@ -1,5 +1,6 @@
 package dao;
 
+import java.io.File;
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -15,6 +16,11 @@ public class DomainDao {
 	
 	public DomainDao(String dbFilePath){
 		dataSource = DBUtils.getSqliteDataSource(dbFilePath);
+		jdbcTemplate = new JdbcTemplate(dataSource);
+	}
+
+	public DomainDao(File dbFile){
+		dataSource = DBUtils.getSqliteDataSource(dbFile.toString());
 		jdbcTemplate = new JdbcTemplate(dataSource);
 	}
 

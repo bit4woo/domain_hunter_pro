@@ -40,6 +40,9 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import dao.DomainDao;
+import dao.TargetDao;
+import domain.target.TargetEntry;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -918,8 +921,8 @@ public class DomainPanel extends JPanel {
 		try {
 			File file = BurpExtender.getGui().dbfc.dialog(false,".db");
 			if (file != null) {
-				new TargetDao(file).addOrUpdateTargets((List<TargetEntry>) fetchTargetModel().getTargetEntries().values());
-				new DomainDao(file.toString()).createOrUpdateDomainObject(domainResult);
+				new TargetDao(file).addOrUpdateTargets(fetchTargetModel().getAllTargets());
+				new DomainDao(file).createOrUpdateDomainObject(domainResult);
 			}
 		}catch (Exception e) {
 			
