@@ -7,10 +7,8 @@ import java.awt.event.MouseEvent;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -25,6 +23,7 @@ import burp.HttpMessageCharSet;
 import burp.IContextMenuInvocation;
 import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
+import config.ConfigPanel;
 import domain.DomainManager;
 import domain.DomainPanel;
 import title.LineEntry;
@@ -95,7 +94,7 @@ public class LineEntryMenuForBurp{
 		JMenuItemList.add(runWithSamePathItem);
 		JMenuItemList.add(sendToToolPanel);
 
-		if (ToolPanel.showItemsInOne.isSelected()) {
+		if (ConfigPanel.showItemsInOne.isSelected()) {
 			ArrayList<JMenuItem> result = new ArrayList<JMenuItem>();
 
 			JMenu domainHunterPro = new JMenu("^_^ Domain Hunter Pro");

@@ -1,20 +1,28 @@
 package domain;
 
-import Tools.PatternsFromAndroid;
-import Tools.ToolPanel;
-import burp.*;
-import domain.target.TargetEntry;
-import org.apache.commons.text.StringEscapeUtils;
-import title.LineEntry;
-import toElastic.ElasticClient;
-
 import java.io.PrintWriter;
 import java.net.URLDecoder;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.commons.text.StringEscapeUtils;
+
+import Tools.PatternsFromAndroid;
+import burp.BurpExtender;
+import burp.Commons;
+import burp.IBurpExtenderCallbacks;
+import burp.IExtensionHelpers;
+import burp.IHttpRequestResponse;
+import burp.IHttpService;
+import config.ConfigPanel;
+import title.LineEntry;
+import toElastic.ElasticClient;
 
 public class DomainProducer extends Thread {//Producer do
 	private final BlockingQueue<IHttpRequestResponse> inputQueue;//use to store messageInfo
@@ -80,29 +88,35 @@ public class DomainProducer extends Thread {//Producer do
 				String shortURL = httpservice.toString();
 				String protocol =  httpservice.getProtocol();
 				String Host = httpservice.getHost();
+				int port = httpservice.getPort();
+				if (port !=80 && port!=443) {
+					Host = Host+port;
+				}
 
 				//第一阶段：处理Host
 				//当Host是一个IP地址时，它也有可能是我们的目标。如果它的证书域名又在目标中，那么它就是目标。
-				int type = DomainPanel.fetchTargetModel().domainType(Host);
+				int type = DomainPanel.fetchTargetModel().assetType(Host);
 
 				if (type ==DomainManager.USELESS){
 					continue;
 				}else if (type == DomainManager.NEED_CONFIRM_IP){
 					//当Host是一个IP，也有可能是目标，通过证书信息进一步判断。
-					if (protocol.equalsIgnoreCase("https")){
+					if (protocol.equalsIgnoreCase("https") && messageinfo.getResponse()!=null && !DomainPanel.getDomainResult().getIPSetOfCert().contains(Host)){
 						if (isTargetByCertInfoForTarget(shortURL)){
 
 							//确定这个IP是目标了，更新target
-							TargetEntry entry = new TargetEntry(Host);
-							entry.setComment("BaseOnCertInfo");
-							DomainPanel.fetchTargetModel().addRowIfValid(entry);
+							//TargetEntry entry = new TargetEntry(Host);
+							//entry.setComment("BaseOnCertInfo");
+							//DomainPanel.fetchTargetModel().addRowIfValid(entry);
 
 							//重新判断类型，应该是确定的IP类型了。
-							type = DomainPanel.fetchTargetModel().domainType(Host);
+							//type = DomainPanel.fetchTargetModel().domainType(Host);
+							DomainPanel.getDomainResult().getIPSetOfCert().add(Host);
 						}
 					}
+				}else {
+					DomainPanel.getDomainResult().addIfValid(Host);
 				}
-				DomainPanel.getDomainResult().addIfValid(Host);
 
 				//第二步：处理HTTPS证书
 				if (type !=DomainManager.USELESS && protocol.equalsIgnoreCase("https")){//get related domains
@@ -130,11 +144,16 @@ public class DomainProducer extends Thread {//Producer do
 							response = subByte(response,0,100000000);
 						}
 						Set<String> domains = DomainProducer.grepDomain(new String(response));
+						List<String> IPs = DomainProducer.grepIPAndPort(new String(response));
+						Set<String> emails = DomainProducer.grepEmail(new String(response));
+
 						DomainPanel.getDomainResult().addIfValid(domains);
+						DomainPanel.getDomainResult().addIfValid(new HashSet<>(IPs));
+						DomainPanel.getDomainResult().addIfValidEmail(emails);
 					}
 				}
 
-				if (ToolPanel.rdbtnSaveTrafficTo.isSelected()) {
+				if (ConfigPanel.rdbtnSaveTrafficTo.isSelected()) {
 					if (type != DomainManager.USELESS && !Commons.uselessExtension(urlString)) {//grep domains from response and classify
 						if (threadNo == 9999) {
 							try {//写入elastic的逻辑，只对目标资产生效
@@ -163,7 +182,7 @@ public class DomainProducer extends Thread {//Producer do
 	public boolean isTargetByCertInfoForTarget(String shortURL) throws Exception {
 		Set<String> certDomains = CertInfo.getAllSANs(shortURL);
 		for (String domain : certDomains) {
-			int type = DomainPanel.fetchTargetModel().domainType(domain);
+			int type = DomainPanel.fetchTargetModel().assetType(domain);
 			if (type == DomainManager.SUB_DOMAIN || type == DomainManager.TLD_DOMAIN) {
 				return true;
 			}
@@ -249,7 +268,8 @@ public class DomainProducer extends Thread {//Producer do
 		//httpResponse = cleanResponse(httpResponse);
 		Set<String> domains = new HashSet<>();
 		//"^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$"
-		final String DOMAIN_NAME_PATTERN = "((?!-)[A-Za-z0-9-*]{1,63}(?<!-)\\.)+[A-Za-z]{2,6}";
+		final String DOMAIN_NAME_PATTERN = "((?!-)[A-Za-z0-9-*]{1,63}(?<!-)\\.)+[A-Za-z]{2,6}(?::\\d{1,5})?";
+		//加上(?::\\d{1,5})?部分，支持端口模式
 		//加*号是为了匹配 类似 *.baidu.com的这种域名记录。
 
 		List<String> lines = Commons.textToLines(httpResponse);
@@ -411,7 +431,10 @@ public class DomainProducer extends Thread {//Producer do
 		}
 	}
 
-	@Deprecated //从burp的Email addresses disclosed这个issue中提取，废弃这个
+	/**
+	 * 从burp的Email addresses disclosed这个issue中提取，废弃这个
+	 * DomainPanel.collectEmails()，可以从issue中提取Email，但是不是实时的，只有search或者fresh的时候才会触发。
+	 */
 	public static Set<String> grepEmail(String httpResponse) {
 		Set<String> Emails = new HashSet<>();
 		final String REGEX_EMAIL = "[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+";
@@ -422,20 +445,23 @@ public class DomainProducer extends Thread {//Producer do
 			Emails.add(matcher.group());
 			System.out.println(matcher.group());
 		}
-
 		return Emails;
 	}
 
 	public static void main(String[] args) {
-		test4();
+		test3();
 	}
+	
+	
 	public static void test4(){
 		System.out.println(grepSubnet("202.181.90.0/24\tSHOPEE SINGAPORE PRIVATE LIMITEDSingapore\n" +
 				"202.181.91.0/24\tSHOPEE SINGAPORE PRIVATE LIMITEDSingapore"));
 	}
 
 	public static void test3(){
-		System.out.println(grepDomain("aaa -qq*.baidu.com  bbb"));
+		System.out.println(grepDomain("baidu.com."));
+		System.out.println(grepDomain("http://baidu.com."));
+		System.out.println(grepDomain("http://baidu.com:200."));
 	}
 
 	public static void test2() {
@@ -447,7 +473,8 @@ public class DomainProducer extends Thread {//Producer do
 	}
 
 	public static void test1() {
-		String line = "\"%.@.\\\"xsrf\\\",";
+//		String line = "\"%.@.\\\"xsrf\\\",";
+		String line = "%2f%2fbaidu.com";
 		System.out.println(needURLConvert(line));
 		if (needURLConvert(line)) {
 			while (true) {

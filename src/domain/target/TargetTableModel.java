@@ -12,6 +12,8 @@ import com.google.gson.Gson;
 import Deprecated.DBHelper;
 import domain.DomainManager;
 import domain.DomainPanel;
+import domain.DomainProducer;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -346,6 +348,7 @@ public class TargetTableModel extends AbstractTableModel {
 	public String fetchRootDomains() {
 		return String.join(System.lineSeparator(), targetEntries.keySet());
 	}
+	
 
 	/**
 	 * 返回目标集合，包含域名、IP、网段。
@@ -518,7 +521,9 @@ public class TargetTableModel extends AbstractTableModel {
 	}
 
 	/**
-	 * 是否处于黑名单当中
+	 * 是否处于黑名单当中;
+	 * 1、target中的域名黑名单、网段黑名单、IP黑名单
+	 * 2、domainResult中的NotTargetIPSet
 	 * @param domain
 	 * @return
 	 */
@@ -540,6 +545,10 @@ public class TargetTableModel extends AbstractTableModel {
 		}
 
 		if (fetchBlackIPSet().contains(domain)){
+			return true;
+		}
+		
+		if (DomainPanel.getDomainResult().getNotTargetIPSet().contains(domain)) {
 			return true;
 		}
 		return false;
@@ -573,7 +582,7 @@ public class TargetTableModel extends AbstractTableModel {
 	}
 
 	public void debugPrint(String domain,int type,String reason) {
-		boolean debug= true;
+		boolean debug= false;
 		if (debug){
 			try {
 				String typeStr ="";
@@ -607,93 +616,112 @@ public class TargetTableModel extends AbstractTableModel {
 
 	/**
 	 * 判断域名或IP，是否为我们的目标资产。完全是根据target中的配置来判断的。
-	 * @param domain
+	 * 
+	 * 当输入exampe.com:8080进行判断时，去除端口不影响结果。
+	 * @param domainOrIP
 	 * @return
 	 */
-	public int domainType(String domain) {
+	public int assetType(String domainOrIP) {
 		try {
-			domain = DomainNameUtils.cleanDomain(domain);//https://202.77.129.30
+			domainOrIP = DomainNameUtils.clearDomainWithoutPort(domainOrIP);
 
 			//格式校验，package那么也是符合域名的正则格式的。
-			if (!DomainNameUtils.isValidDomain(domain) && !IPAddressUtils.isValidIP(domain)) {
-				debugPrint(domain,DomainManager.USELESS,"Not a valid domain or IP address");
+			if (!DomainNameUtils.isValidDomain(domainOrIP) && !IPAddressUtils.isValidIP(domainOrIP)) {
+				debugPrint(domainOrIP,DomainManager.USELESS,"Not a valid domain or IP address");
 				return DomainManager.USELESS;
 			}
 
-			if (isBlack(domain)) {
-				debugPrint(domain,DomainManager.USELESS,"In black list");
+			if (isBlack(domainOrIP)) {
+				debugPrint(domainOrIP,DomainManager.USELESS,"In black list");
 				return DomainManager.USELESS;
 			}
 
 			Set<String> targetDomains = fetchTargetDomainSet();
 			for (String rootdomain:targetDomains) {
-				rootdomain  = DomainNameUtils.cleanDomain(rootdomain);
-				if (domain.endsWith("."+rootdomain)||domain.equalsIgnoreCase(rootdomain)){
-					debugPrint(domain,DomainManager.SUB_DOMAIN,"sub-domain of "+rootdomain);
+				rootdomain  = DomainNameUtils.clearDomainWithoutPort(rootdomain);
+				if (domainOrIP.endsWith("."+rootdomain)||domainOrIP.equalsIgnoreCase(rootdomain)){
+					debugPrint(domainOrIP,DomainManager.SUB_DOMAIN,"sub-domain of "+rootdomain);
 					return DomainManager.SUB_DOMAIN;
 				}
 			}
 
-			if (fetchTargetIPSet().contains(domain)) {
-				debugPrint(domain,DomainManager.IP_ADDRESS,"target IP set contains it");
+			if (fetchTargetIPSet().contains(domainOrIP)) {
+				debugPrint(domainOrIP,DomainManager.IP_ADDRESS,"target IP set contains it");
 				return DomainManager.IP_ADDRESS;
 			}
 
 			for (String rootdomain:targetDomains) {
-				rootdomain  = DomainNameUtils.cleanDomain(rootdomain);
-				if (DomainNameUtils.isWhiteListTLD(domain,rootdomain)) {
-					debugPrint(domain,DomainManager.TLD_DOMAIN,"TLD-domain of "+rootdomain);
+				rootdomain  = DomainNameUtils.clearDomainWithoutPort(rootdomain);
+				if (DomainNameUtils.isWhiteListTLD(domainOrIP,rootdomain)) {
+					debugPrint(domainOrIP,DomainManager.TLD_DOMAIN,"TLD-domain of "+rootdomain);
 					return DomainManager.TLD_DOMAIN;
 				}
 			}
 
 			Set<String> targetWildCardDomains = fetchTargetWildCardDomainSet();
 			for (String rootdomain:targetWildCardDomains) {
-				rootdomain  = DomainNameUtils.cleanDomain(rootdomain);
-				if (DomainNameUtils.isMatchWildCardDomain(rootdomain,domain)){
-					debugPrint(domain,DomainManager.SUB_DOMAIN,"sub-domain of "+rootdomain);
+				rootdomain  = DomainNameUtils.clearDomainWithoutPort(rootdomain);
+				if (DomainNameUtils.isMatchWildCardDomain(rootdomain,domainOrIP)){
+					debugPrint(domainOrIP,DomainManager.SUB_DOMAIN,"sub-domain of "+rootdomain);
 					return DomainManager.SUB_DOMAIN;
 				}
 			}
 
 			for (String keyword:fetchKeywordSet()) {
-				if (!keyword.equals("") && domain.contains(keyword)) {
-					if (InternetDomainName.from(domain).hasPublicSuffix()) {//是否是以公开的 .com .cn等结尾的域名。//如果是以比如local结尾的域名，就不会被认可
-						debugPrint(domain,DomainManager.SIMILAR_DOMAIN,"contains keyword "+keyword);
+				if (!keyword.equals("") && domainOrIP.contains(keyword)) {
+					if (InternetDomainName.from(domainOrIP).hasPublicSuffix()) {//是否是以公开的 .com .cn等结尾的域名。//如果是以比如local结尾的域名，就不会被认可
+						debugPrint(domainOrIP,DomainManager.SIMILAR_DOMAIN,"contains keyword "+keyword);
 						return DomainManager.SIMILAR_DOMAIN;
 					}
 
-					if (fetchSuffixSet().contains(domain.substring(0, domain.indexOf(".")))){
-						debugPrint(domain,DomainManager.PACKAGE_NAME,"starts with target domain suffix");
+					if (fetchSuffixSet().contains(domainOrIP.substring(0, domainOrIP.indexOf(".")))){
+						debugPrint(domainOrIP,DomainManager.PACKAGE_NAME,"starts with target domain suffix");
 						return DomainManager.PACKAGE_NAME;
 					}
 				}
 			}
 
-			if(IPAddressUtils.isValidIP(domain)){
-				debugPrint(domain,DomainManager.NEED_CONFIRM_IP,"is a valid IP address, but not in target IP Set");
+			if(IPAddressUtils.isValidIP(domainOrIP)){
+				debugPrint(domainOrIP,DomainManager.NEED_CONFIRM_IP,"is a valid IP address, but not in target IP Set");
 				return DomainManager.NEED_CONFIRM_IP;
 			}
-			debugPrint(domain,DomainManager.USELESS,"not match any rule of targets ");
+			debugPrint(domainOrIP,DomainManager.USELESS,"not match any rule of targets ");
 			return DomainManager.USELESS;
 		}catch (java.lang.IllegalArgumentException e) {
 			//java.lang.IllegalArgumentException: Not a valid domain name: '-this.state.scroll'
 			BurpExtender.getStderr().println(e.getMessage());
-			debugPrint(domain,DomainManager.USELESS,"IllegalArgumentException encountered");
+			debugPrint(domainOrIP,DomainManager.USELESS,"IllegalArgumentException encountered");
 			return DomainManager.USELESS;
 		}
 		catch (Exception e) {
 			e.printStackTrace(BurpExtender.getStderr());
-			debugPrint(domain,DomainManager.USELESS,"Exception encountered");
+			debugPrint(domainOrIP,DomainManager.USELESS,"Exception encountered");
 			return DomainManager.USELESS;
 		}
 	}
+	
+	
+	public int emailType(String email) {
+		
+		for (String rootDomain:fetchTargetDomainSet()) {
+			if (rootDomain.length() >= 2 && email.toLowerCase().endsWith(rootDomain.toLowerCase())) {
+				return DomainManager.CERTAIN_EMAIL;
+			}
+		}
+		for (String keyword:fetchKeywordSet()) {
+			if (keyword.length() >= 2 && email.contains(keyword)) {
+				return DomainManager.SIMILAR_EMAIL;
+			}
+		}
+		return DomainManager.USELESS;
+	}
+	
 
 	public String getTLDDomainToAdd(String domain) {
-		domain = DomainNameUtils.cleanDomain(domain);
+		domain = DomainNameUtils.clearDomainWithoutPort(domain);
 		Set<String> targetDomains = fetchTargetDomainSet();
 		for (String rootdomain : targetDomains) {
-			rootdomain = DomainNameUtils.cleanDomain(rootdomain);
+			rootdomain = DomainNameUtils.clearDomainWithoutPort(rootdomain);
 			if (DomainNameUtils.isWhiteListTLD(domain, rootdomain)) {
 				InternetDomainName suffixDomain = InternetDomainName.from(domain).publicSuffix();
 				InternetDomainName suffixRootDomain = InternetDomainName.from(rootdomain).publicSuffix();
@@ -709,14 +737,6 @@ public class TargetTableModel extends AbstractTableModel {
 		return domain;
 	}
 
-	public boolean isRelatedEmail(String email) {
-		for (String keyword:fetchKeywordSet()) {
-			if (!keyword.equals("") && keyword.length() >= 2 && email.contains(keyword)) {
-				return true;
-			}
-		}
-		return false;
-	}
 
 	public void updateComments(int[] rows, String commentAdd) {
 			//because thread let the delete action not in order, so we must loop in here.

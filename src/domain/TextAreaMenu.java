@@ -1,6 +1,6 @@
 package domain;
 
-import java.awt.*;
+import java.awt.Desktop;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -8,20 +8,23 @@ import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
 
 import Tools.DomainComparator;
 import Tools.LengthComparator;
-import Tools.LineConfig;
-import Tools.ToolPanel;
 import burp.BurpExtender;
 import burp.Commons;
 import burp.DomainNameUtils;
 import burp.IPAddressUtils;
+import config.ConfigPanel;
 import title.TitlePanel;
 import title.search.SearchDork;
 
@@ -85,7 +88,7 @@ public class TextAreaMenu extends JPopupMenu {
 				for (String item:selectedItems) {
 					String url= "https://"+item;
 					try {
-						Commons.browserOpen(url, ToolPanel.getLineConfig().getBrowserPath());
+						Commons.browserOpen(url, ConfigPanel.getLineConfig().getBrowserPath());
 					} catch (Exception e) {
 						e.printStackTrace(stderr);
 					}

@@ -1,26 +1,44 @@
 package title;
 
-import Tools.ToolPanel;
-import burp.BurpExtender;
-import burp.Commons;
-import burp.IMessageEditor;
-import burp.SystemUtils;
-import title.search.History;
-import title.search.LineSearch;
-import title.search.SearchDork;
-import title.search.SearchTextField;
-
-import javax.swing.*;
-import javax.swing.table.*;
-import java.awt.*;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Desktop;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.PrintWriter;
 import java.net.URI;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
-import java.util.*;
+import java.util.Map;
+
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.RowFilter;
+import javax.swing.RowSorter;
+import javax.swing.SortOrder;
+import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
+
+import burp.BurpExtender;
+import burp.Commons;
+import burp.IMessageEditor;
+import burp.SystemUtils;
+import config.ConfigPanel;
+import title.search.History;
+import title.search.LineSearch;
+import title.search.SearchDork;
+import title.search.SearchTextField;
 
 
 public class LineTable extends JTable
@@ -364,7 +382,7 @@ public class LineTable extends JTable
 							if (url != null && !url.toLowerCase().startsWith("http://") && !url.toLowerCase().startsWith("https://")) {
 								url = "http://"+url;//针对DNS记录中URL字段是host的情况
 							}
-							Commons.browserOpen(url,ToolPanel.getLineConfig().getBrowserPath());
+							Commons.browserOpen(url,ConfigPanel.getLineConfig().getBrowserPath());
 						}catch (Exception e1){
 							e1.printStackTrace(stderr);
 						}

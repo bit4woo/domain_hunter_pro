@@ -19,6 +19,7 @@ import GUI.LineEntryMenuForBurp;
 import GUI.ProjectMenu;
 import Tools.ToolPanel;
 import bsh.This;
+import config.ConfigPanel;
 import domain.DomainPanel;
 import domain.DomainProducer;
 import title.TitlePanel;
@@ -163,7 +164,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 			}
 		});
 		String projectConfigFile = RecentModel.fetchRecent();//返回值可能为null
-		gui.getToolPanel().loadConfigToGUI(projectConfigFile);//包含db文件的加载
+		gui.getConfigPanel().loadConfigToGUI(projectConfigFile);//包含db文件的加载
 		startLiveCapture();
 	}
 
@@ -187,7 +188,8 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		String configFilePath = ToolPanel.getLineConfig().saveToDisk();//包含db文件位置
+		gui.getConfigPanel();
+		String configFilePath = ConfigPanel.getLineConfig().saveToDisk();//包含db文件位置
 		RecentModel.saveRecent(configFilePath);
 	}
 
@@ -203,18 +205,22 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 
 	@Override
 	public List<JMenuItem> createMenuItems(IContextMenuInvocation invocation) {
-		if (ToolPanel.DisplayContextMenuOfBurp.isSelected()) {
+		if (ConfigPanel.DisplayContextMenuOfBurp.isSelected()) {
 			return new LineEntryMenuForBurp().createMenuItemsForBurp(invocation);
 		}else {
 			return null;
 		}
 	}
-
+	
+	/**
+	 * 包含extender，这样get title中的流量也可以收集。而且IP的get title也能通过证书信息判断其归属；
+	 * 其实当通过浏览器打开URL时，也能完成这个收集过程，还是先移除extender，避免get title过程卡死。
+	 */
 	@Override
 	public void processHttpMessage(int toolFlag, boolean messageIsRequest, IHttpRequestResponse messageInfo) {
 		if ((toolFlag == IBurpExtenderCallbacks.TOOL_PROXY || 
 				toolFlag == IBurpExtenderCallbacks.TOOL_INTRUDER ||
-				toolFlag == IBurpExtenderCallbacks.TOOL_REPEATER)
+				toolFlag == IBurpExtenderCallbacks.TOOL_REPEATER) 
 				&& !messageIsRequest) {
 			liveinputQueue.add(messageInfo);
 		}

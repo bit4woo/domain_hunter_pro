@@ -1,6 +1,7 @@
-package Tools;
+package config;
 
 import GUI.GUIMain;
+import Tools.ToolPanel;
 import burp.BurpExtender;
 import burp.Commons;
 import burp.HelperPlus;
@@ -117,11 +118,11 @@ public class LineConfig {
 	}
 
 	public static boolean isIgnoreHttpsOrHttpIfOneOK() {
-		return ToolPanel.ignoreHTTPS.isSelected();
+		return ConfigPanel.ignoreHTTPS.isSelected();
 	}
 
 	public static void setIgnoreHttpsIfHttpOK(boolean ignoreHttpsIfHttpOK) {
-		ToolPanel.ignoreHTTPS.setSelected(ignoreHttpsIfHttpOK);
+		ConfigPanel.ignoreHTTPS.setSelected(ignoreHttpsIfHttpOK);
 	}
 
 	public String getDirSearchPath() {
@@ -239,7 +240,7 @@ public class LineConfig {
 
 	public String saveToDisk() {
 		try {
-			ToolPanel.saveToConfigFromGUI();
+			ConfigPanel.saveToConfigFromGUI();
 			this.setSearchHistory(History.getInstance());
 			this.setDbfilepath(GUIMain.getCurrentDBFile().getAbsolutePath());
 		} catch (Exception e1) {
@@ -294,30 +295,33 @@ public class LineConfig {
 	 * 返回结果值影响是否添加到table中，其实这里面可以对entry进行一些操作
 	 * 能通过过滤器返回true，否则返回false。判断是否是有用的记录。
 	 */
-	public static boolean doFilter(LineEntry entry) {
+	public static LineEntry doFilter(LineEntry entry) {
 
 		PrintWriter stdout = BurpExtender.getStdout();
 		PrintWriter stderr = BurpExtender.getStderr();
 
-		if (entry == null) return false;
+		if (entry == null) return entry;
 		//default requirement
 		if (entry.getStatuscode() <=0 ) {
 			stdout.println(String.format("--- [%s] --- no response",entry.getUrl()));
-			return false;
+			entry.setCheckStatus(LineEntry.CheckStatus_Checked);
+			return entry;
 		}
 
-		if (entry.getStatuscode() >=500 && ToolPanel.ignoreHTTPStaus500.isSelected()) {
+		if (entry.getStatuscode() >=500 && ConfigPanel.ignoreHTTPStaus500.isSelected()) {
 			stdout.println(String.format("--- [%s] --- status code >= 500",entry.getUrl()));
 			entry.setCheckStatus(LineEntry.CheckStatus_Checked);
-			return true;
+			return entry;
 		}
 
-		if (entry.getStatuscode() == 400 && ToolPanel.ignoreHTTPStaus400.isSelected()) {//400 The plain HTTP request was sent to HTTPS port
+		if (entry.getStatuscode() == 400 && ConfigPanel.ignoreHTTPStaus400.isSelected()) {//400 The plain HTTP request was sent to HTTPS port
 			stdout.println(String.format("--- [%s] --- status code == 400",entry.getUrl()));
-			return false;
+			entry.setCheckStatus(LineEntry.CheckStatus_Checked);
+			return entry;
 		}
 
 		//<head><title>403 Forbidden</title></head>
+		/*
 		if (entry.getStatuscode() == 403 && entry.getTitle().equals("403 Forbidden")){
 			byte[] body = HelperPlus.getBody(false,entry.getResponse());
 			if (body != null){
@@ -325,12 +329,13 @@ public class LineConfig {
 					return false;
 				}
 			}
-		}
+		}*/
 
 		//<title>Welcome to nginx!</title>
 		if (entry.getStatuscode() == 200 && entry.getTitle().equals("Welcome to nginx!")
 				&& entry.getContentLength()<=612 ){
-			return false;
+			entry.setCheckStatus(LineEntry.CheckStatus_Checked);
+			return entry;
 		}
 
 		/*
@@ -377,7 +382,7 @@ public class LineConfig {
 		}
 		 */
 
-		return true;
+		return entry;
 	}
 
 }

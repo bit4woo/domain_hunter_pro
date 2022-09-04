@@ -20,7 +20,7 @@ public class DomainNameUtils {
 			return false;
 		}
 
-		final String DOMAIN_NAME_PATTERN = "^((?!-)[A-Za-z0-9-]{1,63}(?<!-)\\.)+[A-Za-z]{2,6}$";
+		final String DOMAIN_NAME_PATTERN = "^((?!-)[A-Za-z0-9-]{1,63}(?<!-)\\.)+[A-Za-z]{2,6}(?::\\d{1,5})?$";
 		//final String DOMAIN_NAME_PATTERN = "([A-Za-z0-9-]{1,63}(?<!-)\\.)+[A-Za-z]{2,6}";//-this.state.scroll 这种也会被认为是合法的。
 		Pattern pDomainNameOnly = Pattern.compile(DOMAIN_NAME_PATTERN);
 		Matcher matcher = pDomainNameOnly.matcher(domain);
@@ -240,7 +240,7 @@ public class DomainNameUtils {
 	 * @return
 	 */
 	public static String getRootDomain(String inputDomain) {
-		inputDomain = DomainNameUtils.cleanDomain(inputDomain);
+		inputDomain = DomainNameUtils.clearDomainWithoutPort(inputDomain);
 		try {
 			String rootDomain = InternetDomainName.from(inputDomain).topPrivateDomain().toString();
 			return rootDomain;
@@ -250,7 +250,12 @@ public class DomainNameUtils {
 		}
 	}
 
-	public static String cleanDomain(String domain) {
+	/**
+	 * 获取纯域名，不包含端口
+	 * @param domain
+	 * @return
+	 */
+	public static String clearDomainWithoutPort(String domain) {
 		if (domain == null){
 			return null;
 		}
@@ -391,8 +396,9 @@ public class DomainNameUtils {
 //		System.out.println(isValidWildCardDomain("seller.*.example.*"));
 //		System.out.println(isValidWildCardDomain("seller.*.example.com"));
 //		System.out.println(isValidWildCardDomain("seller.aaa.example.com"));
-		testWildCard();
+//		testWildCard();
 
 		//System.out.println(isValidDomain("aaaaaaaaa-aaaaaaaaaaaaaaa-aaaaaaaaaaaaaa.www1.baidu.com"));
+		System.out.println(isValidDomain("baidu.com:222"));
 	}
 }

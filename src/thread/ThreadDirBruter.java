@@ -9,11 +9,11 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import GUI.DictReader;
 import GUI.RunnerGUI;
-import Tools.ToolPanel;
 import burp.BurpExtender;
 import burp.IBurpExtenderCallbacks;
 import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
+import config.ConfigPanel;
 
 //no need to pass BurpExtender object to these class, IBurpExtenderCallbacks object is enough 
 /**
@@ -35,7 +35,7 @@ public class ThreadDirBruter extends Thread{
 	public ThreadDirBruter(RunnerGUI runnerGUI,IHttpRequestResponse messageInfo) {
 		this.runnerGUI = runnerGUI;
 		this.messageInfo = messageInfo;
-		File dictFile = new File(ToolPanel.textFieldDirBruteDict.getText().trim());
+		File dictFile = new File(ConfigPanel.textFieldDirBruteDict.getText().trim());
 		if (dictFile.exists()){
 			DictReader reader = new DictReader(dictFile.toString(),pathDict);
 			reader.start();
@@ -49,7 +49,7 @@ public class ThreadDirBruter extends Thread{
 	@Override
 	public void run(){
 		BlockingQueue<String> pathDict = new LinkedBlockingQueue<String>();
-		File dictFile = new File(ToolPanel.textFieldDirBruteDict.getText().trim());
+		File dictFile = new File(ConfigPanel.textFieldDirBruteDict.getText().trim());
 		if (dictFile.exists()){
 			DictReader reader = new DictReader(dictFile.toString(),pathDict);
 			reader.start();
