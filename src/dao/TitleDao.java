@@ -1,10 +1,12 @@
 package dao;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import title.LineEntry;
@@ -20,6 +22,24 @@ public class TitleDao {
 	public TitleDao(String dbFilePath){
 		dataSource = DBUtils.getSqliteDataSource(dbFilePath);
 		jdbcTemplate = new JdbcTemplate(dataSource);
+		if (!testSelect()){
+			createTable();
+		}
+	}
+
+	public TitleDao(File dbFile){
+		this(dbFile.toString());
+	}
+
+	public boolean testSelect(){
+		try {
+			String sql = "select * from Title limit 1";
+			jdbcTemplate.execute(sql);
+			return true;
+		} catch (DataAccessException e) {
+			e.printStackTrace();
+			return false;
+		}
 	}
 
 	public boolean createTable() {

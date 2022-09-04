@@ -48,12 +48,13 @@ public class DomainManager {
 
 	private Set<String> NotTargetIPSet = new CopyOnWriteArraySet<String>();
 	//存储域名解析到的CDN或云服务的IP。这类IP在做网段汇算时，应当被排除在外。
+	//也就是通常意义上的黑名单
 
 	//private ConcurrentHashMap<String, Integer> unkownDomainMap = new ConcurrentHashMap<String, Integer>();//记录域名和解析失败的次数，大于五次就从子域名中删除。
 	private Set<String> EmailSet = new CopyOnWriteArraySet<String>();
 	private Set<String> similarEmailSet = new CopyOnWriteArraySet<String>();
 	private Set<String> PackageNameSet = new CopyOnWriteArraySet<String>();
-	private Set<String> SpecialPortTargets = new CopyOnWriteArraySet<String>();//用于存放指定了特殊端口的目标
+	private Set<String> SpecialPortTargets = new CopyOnWriteArraySet<String>();//用于存放指定了特殊端口的目标,或者用戶自己輸入的任意目標
 	
 	private Set<String> IPSetOfSubnet = new CopyOnWriteArraySet<String>();
 	private Set<String> IPSetOfCert = new CopyOnWriteArraySet<String>();

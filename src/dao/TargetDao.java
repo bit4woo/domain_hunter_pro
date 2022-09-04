@@ -24,11 +24,7 @@ public class TargetDao {
 	}
 	
 	public TargetDao(File dbFilePath){
-		dataSource = DBUtils.getSqliteDataSource(dbFilePath.toString());
-		jdbcTemplate = new JdbcTemplate(dataSource);
-		if (!testSelect()){
-			createTable();
-		}
+		this(dbFilePath.toString());
 	}
 
 	public boolean createTable() {

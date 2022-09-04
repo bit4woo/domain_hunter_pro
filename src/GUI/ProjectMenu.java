@@ -1,6 +1,9 @@
 package GUI;
 
 import burp.BurpExtender;
+import dao.DomainDao;
+import dao.TargetDao;
+import dao.TitleDao;
 import domain.DomainManager;
 import domain.DomainPanel;
 import domain.target.TargetEntry;
@@ -77,24 +80,29 @@ public class ProjectMenu extends JMenu{
 					return;
 				}
 
-				DBHelper dbhelper = new DBHelper(file.getAbsolutePath());
-				DomainManager NewManager = dbhelper.getDomainObj();
-
-				IndexedLinkedHashMap<String, TargetEntry> entries = TargetTable.rootDomainToTarget(NewManager);
-				for (TargetEntry entry:entries.values()){
+				TargetDao tmpTargetDao = new TargetDao(file);
+				for (TargetEntry entry:tmpTargetDao.selectAll()){
 					DomainPanel.fetchTargetModel().addRowIfValid(entry);
 				}
 
-				//DomainPanel.getDomainResult().getRootDomainMap().putAll(NewManager.getRootDomainMap());//合并rootDomain
-				DomainPanel.getDomainResult().getRelatedDomainSet().addAll(NewManager.getRelatedDomainSet());
-				DomainPanel.getDomainResult().getSubDomainSet().addAll(NewManager.getSubDomainSet());
-				DomainPanel.getDomainResult().getSimilarDomainSet().addAll(NewManager.getSimilarDomainSet());
-				DomainPanel.getDomainResult().getEmailSet().addAll(NewManager.getEmailSet());
-				DomainPanel.getDomainResult().getPackageNameSet().addAll(NewManager.getPackageNameSet());
+				DomainDao tmpDomainDao = new DomainDao(file);
+				DomainPanel.getDomainResult().getRelatedDomainSet().addAll(tmpDomainDao.selectByType(DomainDao.Type_RelatedDomain));
+				DomainPanel.getDomainResult().getSubDomainSet().addAll(tmpDomainDao.selectByType(DomainDao.Type_SubDomain));
+				DomainPanel.getDomainResult().getSimilarDomainSet().addAll(tmpDomainDao.selectByType(DomainDao.Type_SimilarDomain));
+				DomainPanel.getDomainResult().getEmailSet().addAll(tmpDomainDao.selectByType(DomainDao.Type_Email));
+				DomainPanel.getDomainResult().getPackageNameSet().addAll(tmpDomainDao.selectByType(DomainDao.Type_PackageName));
+
+				DomainPanel.getDomainResult().getSimilarEmailSet().addAll(tmpDomainDao.selectByType(DomainDao.Type_SimilarEmail));
+				DomainPanel.getDomainResult().getIPSetOfCert().addAll(tmpDomainDao.selectByType(DomainDao.Type_IPSetOfCert));
+				DomainPanel.getDomainResult().getIPSetOfSubnet().addAll(tmpDomainDao.selectByType(DomainDao.Type_IPSetOfSubnet));
+				DomainPanel.getDomainResult().getNotTargetIPSet().addAll(tmpDomainDao.selectByType(DomainDao.Type_BlackIP));
+				DomainPanel.getDomainResult().getSpecialPortTargets().addAll(tmpDomainDao.selectByType(DomainDao.Type_SpecialPortTarget));
+
 
 				GUIMain.getDomainPanel().showDataToDomainGUI();
 				DomainPanel.saveDomainDataToDB();
 
+				TitleDao tmpTitleDao = new TitleDao(file);
 				IndexedLinkedHashMap<String, LineEntry> titles = dbhelper.getTitles();
 				for (LineEntry entry:titles.values()) {
 					TitlePanel.getTitleTableModel().addNewLineEntry(entry);
