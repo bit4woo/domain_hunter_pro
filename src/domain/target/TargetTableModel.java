@@ -71,7 +71,7 @@ public class TargetTableModel extends AbstractTableModel {
 
 	@Override
 	public Object getValueAt(int rowIndex, int columnIndex) {
-		TargetEntry entry = dao.selectByID(rowIndex);
+		TargetEntry entry = dao.selectByRowIndex(rowIndex);
 		if (entry == null) return "";
 		if (columnIndex == titletList.indexOf("Domain/Subnet/IP")) {
 			return entry.getTarget();
@@ -91,7 +91,7 @@ public class TargetTableModel extends AbstractTableModel {
 
 	@Override
 	public void setValueAt(Object value, int row, int col) {
-		TargetEntry entry = dao.selectByID(row);
+		TargetEntry entry = dao.selectByRowIndex(row);
 		if (col == titletList.indexOf("Comment")){
 			String valueStr = ((String) value).trim();
 			entry.setComment(valueStr);
@@ -198,7 +198,7 @@ public class TargetTableModel extends AbstractTableModel {
 	 * 数据的增删查改：查询
 	 */
 	public TargetEntry getValueAt(int rowIndex) {
-		TargetEntry entry = dao.selectByID(rowIndex);
+		TargetEntry entry = dao.selectByRowIndex(rowIndex);
 		return entry;
 	}
 
@@ -587,7 +587,7 @@ public class TargetTableModel extends AbstractTableModel {
 			//list length and index changed after every remove.the origin index not point to right item any more.
 			Arrays.sort(rows); //升序
 			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
-				TargetEntry checked = dao.selectByID(rows[i]);
+				TargetEntry checked = dao.selectByRowIndex(rows[i]);
 				checked.addComment(commentAdd);
 				dao.addOrUpdateTarget(checked);
 			}

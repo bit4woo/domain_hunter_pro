@@ -57,8 +57,10 @@ public class TargetDao {
 
 		int result = jdbcTemplate.update(sql, entry.getTarget(),entry.getType(),entry.getKeyword(),entry.isZoneTransfer(),
 				entry.isBlack(),entry.getComment(),entry.isUseTLD());
+
+		String key = entry.getTarget();
+
 		return result > 0;
-		
 	}
 	
 	public boolean addOrUpdateTargets(List<TargetEntry> entries){
@@ -71,6 +73,8 @@ public class TargetDao {
 		return num==entries.size();
 	}
 
+
+
 	/**
 	 * 
 	 * @return
@@ -79,7 +83,8 @@ public class TargetDao {
 		String sql = "select * from Target";
 		return jdbcTemplate.query(sql,new TargetMapper());
 	}
-	
+
+	@Deprecated
 	public TargetEntry selectByID(int id){
 		try {
 			String sql = "select * from Target where id=?";
@@ -89,7 +94,23 @@ public class TargetDao {
 			return null;
 		}
 	}
-	
+
+	/**
+	 * 根据TableModel的rowIndex进行查询
+	 * @param rowIndex
+	 * @return
+	 */
+	public TargetEntry selectByRowIndex(int rowIndex){
+		try {//查询第一行，就是limit 1 offset 0;第二行就是limit 1 offset 1.所以从0开始的RowIndex恰好作为offset值
+			String sql = "select * from Target LIMIT 1 OFFSET ?";
+			return jdbcTemplate.queryForObject(sql, new Object[] { rowIndex },new TargetMapper());
+		} catch (DataAccessException e) {
+			//e.printStackTrace();
+			return null;
+		}
+	}
+
+
 	public TargetEntry selectByTarget(String target){
 		try {
 			String sql = "select * from Target where target=?";
@@ -116,9 +137,15 @@ public class TargetDao {
 	 * @param id
 	 * @return
 	 */
+	@Deprecated
 	public boolean deleteByID(int id) {
 		String sql = "delete from Target where ID=?";
 		return jdbcTemplate.update(sql, id) > 0;
+	}
+
+	public boolean deleteByRowIndex(int rowIndex) {
+		String sql = "delete from Target limit 1 offset rowIndex";
+		return jdbcTemplate.update(sql, rowIndex) > 0;
 	}
 	
 	public boolean deleteByTarget(String targetDomain) {
