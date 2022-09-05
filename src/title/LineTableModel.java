@@ -713,12 +713,9 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			Arrays.sort(rows); //升序
 			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
 				LineEntry entry = lineEntries.get(rows[i]);
-				String Host = entry.getHost();
-				if (DomainNameUtils.isValidDomain(Host)) {
-					DomainPanel.getDomainResult().getNotTargetIPSet().addAll(entry.fetchIPSet());
-					entry.addComment(LineEntry.NotTargetBaseOnBlackList);
-					stdout.println("### IP address of "+ Host +" added to black list");
-				}
+				DomainPanel.getDomainResult().getNotTargetIPSet().addAll(entry.fetchIPSet());
+				entry.addComment(LineEntry.NotTargetBaseOnBlackList);
+				stdout.println("### IP address "+ entry.fetchIPSet().toString() +" added to black list");
 			}
 		}
 	}
