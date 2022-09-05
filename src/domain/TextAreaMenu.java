@@ -322,6 +322,7 @@ public class TextAreaMenu extends JPopupMenu {
 		this.addSeparator();
 
 		//无需选中的全局菜单
+		this.add(SortFresh);
 		this.add(SearchDomain);
 		this.add(Sort);
 		this.add(SortDomain);
