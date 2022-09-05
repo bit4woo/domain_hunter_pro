@@ -18,6 +18,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 
+import GUI.GUIMain;
 import Tools.DomainComparator;
 import Tools.LengthComparator;
 import burp.BurpExtender;
@@ -234,6 +235,13 @@ public class TextAreaMenu extends JPopupMenu {
 		});
 
 
+		JMenuItem SortFresh = new JMenuItem(new AbstractAction("Fresh") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				GUIMain.getDomainPanel().showDataToDomainGUI();
+			}
+		});
+		
 		//https://blog.csdn.net/opshres169/article/details/51913713
 		JMenuItem SearchDomain = new JMenuItem(new AbstractAction("Search") {
 			int searchBegin = 0;
