@@ -67,8 +67,8 @@ public class DraggableTextArea extends JTextArea implements DropTargetListener {
         	try {
         		//避免大文件卡死整个burp
 				if (Text.length() >= 10000) {
-					File tmpFile = new File("ContentIsInTmpFile.txt");
-					FileUtils.write(tmpFile, Text);
+					File tmpFile = new File(FileUtils.getTempDirectory()+File.pathSeparator+"ContentIsInTmpFile.txt");
+					FileUtils.writeByteArrayToFile(tmpFile, Text.getBytes());
 					Text = tmpFile.getAbsolutePath();
 				}
 				super.setText(Text);
