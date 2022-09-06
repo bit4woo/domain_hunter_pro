@@ -124,9 +124,10 @@ public class ASNQuery {
     }
 
     public static List<String> readFile(String filename) {
-        URL url = BurpExtender.class.getClassLoader().getResource(filename);
-        File copyFile = new File("."+filename);
         try {
+            URL url = BurpExtender.class.getClassLoader().getResource(filename);
+            File copyFile = new File(FileUtils.getTempDirectory()+File.pathSeparator+"."+filename);
+            copyFile.deleteOnExit();
             if (!copyFile.exists()){//TODO文件更新后需要删除这个
                 FileUtils.copyURLToFile(url,copyFile);
             }
