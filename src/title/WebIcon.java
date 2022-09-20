@@ -30,7 +30,8 @@ public class WebIcon {
 			int port = url.getPort()==-1?url.getDefaultPort():url.getPort();
 			IHttpService service = helpers.buildHttpService(url.getHost(), port, url.getProtocol());
 			IHttpRequestResponse info = BurpExtender.getCallbacks().makeHttpRequest(service,requsetbyte);
-			byte[] body = new HelperPlus(helpers).getBody(false, info);
+			byte[] body = HelperPlus.getBody(false, info);
+			if (body ==null) return "";
 			int hash = calcHash(body);
 			return hash+"";
 		} catch (MalformedURLException e) {
