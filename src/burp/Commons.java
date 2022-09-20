@@ -155,28 +155,15 @@ public class Commons {
 		if (body.length() >1000) {
 			body = body.substring(0,1000);
 		}
-		//<meta charset="utf-8">
-		String pattern = "<meta.*charset=(.*?)>";//加? 非贪婪模式
-		String patternExtract = "charset=(.*?)>";
+		String pattern = "charset=(.*?)[\"/\\s>]+";//加? 非贪婪模式
+		//String patternExtract = "charset=(.*?)>";
 
 		Pattern metaCharset = Pattern.compile(pattern);
 		Matcher matcher = metaCharset.matcher(body);
 		//System.out.println(body);
 		if (matcher.find()) {//多次查找
-			String charsetLine = matcher.group();
-			//System.out.println("----"+charsetLine);
-			charsetLine = charsetLine.replaceAll("\"","");//第一个参数是正则
-			charsetLine = charsetLine.replaceAll("/","");
-			charsetLine = charsetLine.replaceAll(" ","");
-
-			Pattern extract = Pattern.compile(patternExtract);
-			Matcher extracter = extract.matcher(charsetLine);
-			if (extracter.find()) {
-				//System.out.println( extracter.group(0));
-				//System.out.println( extracter.group(1));
-				String charset = extracter.group(1);
-				return charset;
-			}
+			String charset = matcher.group(1);
+			return charset;
 		}
 		return null;
 	}
@@ -439,12 +426,18 @@ public class Commons {
 	public static void test10() throws IOException {
 		System.out.println(detectCharsetInBody(FileUtils.readFileToByteArray(new File("F://response.txt"))));
 	}
+	
+	public static void testCharset() {
+		String aaa = "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\">\n"
+				+ "    <head>\n"
+				+ "        <title>The page is not found</title>\n"
+				+ "        <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n"
+				+ "        <style type=\"text/css\">";
+		System.out.print(detectCharsetInBody(aaa.getBytes()));
+	}
 
 	public static void main(String args[]) throws Exception {
 		//test10();
-		//OpenFolder("D:\\Program Files");
-		//browserOpen("http://baidu.com",null);
-		String lines[] = "aaaaa\n\nbbbb".split("(\r\n|\r|\n)", -1);
-		System.out.println(lines[0]);
+		testCharset();
 	}
 }
