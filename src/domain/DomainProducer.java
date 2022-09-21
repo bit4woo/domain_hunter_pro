@@ -16,6 +16,7 @@ import org.apache.commons.text.StringEscapeUtils;
 import Tools.PatternsFromAndroid;
 import burp.BurpExtender;
 import burp.Commons;
+import burp.DomainNameUtils;
 import burp.IBurpExtenderCallbacks;
 import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
@@ -442,8 +443,11 @@ public class DomainProducer extends Thread {//Producer do
 		Pattern pDomainNameOnly = Pattern.compile(REGEX_EMAIL);
 		Matcher matcher = pDomainNameOnly.matcher(httpResponse);
 		while (matcher.find()) {//多次查找
-			Emails.add(matcher.group());
-			System.out.println(matcher.group());
+			String item = matcher.group();
+			if (DomainNameUtils.isValidDomain(item.split("@")[1])) {
+				Emails.add(item);
+				System.out.println(item);
+			}
 		}
 		return Emails;
 	}

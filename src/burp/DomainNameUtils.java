@@ -96,7 +96,7 @@ public class DomainNameUtils {
 	 * @return 判断StrDomain是否符合wildCardDomain的规则
 	 * 注意："seller.xx.example.com"不能匹配"*.seller.*.example.*"和日常的思路想法有点不同
 	 */
-	public static boolean isMatchWildCardDomain(String wildCardDomain,String StrDomain){
+	public static boolean isMatchWildCardDomainOld(String wildCardDomain,String StrDomain){
 		String domainRegex = wildCardDomain;
 		//"seller.xx.example.com"应当匹配"*.seller.*.example.*"
 		if (domainRegex.startsWith("*.")){
@@ -117,6 +117,23 @@ public class DomainNameUtils {
 
 		//replaceFirst的参数也是正则，能代替正则匹配？
 		return "".equals(StrDomain.replaceFirst(domainRegex,""));
+	}
+	
+	/**
+	 *
+	 * @param wildCardDomain 比如seller.*.example.*
+	 * @param StrDomain 比如seller.uat.example.vn
+	 * @return 判断StrDomain是否符合wildCardDomain的规则
+	 */
+	public static boolean isMatchWildCardDomain(String wildCardDomain,String StrDomain){
+		String domainRegex = wildCardDomain;
+		domainRegex = domainRegex.replaceAll("\\.","\\\\.");//  . ---> \.  即域名中的点表示原意,不是正则中的点
+
+		domainRegex = domainRegex.replaceAll("\\*","\\.\\*");//  * ---> .*  即*就是正则中的.*
+		System.out.println(domainRegex);
+		Pattern pDomainNameOnly = Pattern.compile(domainRegex);
+		Matcher matcher = pDomainNameOnly.matcher(StrDomain);
+		return matcher.matches();
 	}
 
 
@@ -383,7 +400,7 @@ public class DomainNameUtils {
 
 	public static void testWildCard(){
 		System.out.println(isMatchWildCardDomain("*.baidu.com","www.baidu.com"));
-		System.out.println(isMatchWildCardDomain("*.seller.*.example.*","www.baidu.com"));
+		System.out.println(isMatchWildCardDomain("*.seller.*.example.*","xxx.xxx.seller.xxx.example.com"));
 		System.out.println(isMatchWildCardDomain("*.seller.*.example.*","seller.xx.example.com"));
 		System.out.println(isMatchWildCardDomain("*.*","aaa"));
 		System.out.println(isMatchWildCardDomain("*.*","aa.aa"));
@@ -392,13 +409,9 @@ public class DomainNameUtils {
 	public static void main(String[] args) {
 		//System.out.println(isWhiteListTDL("test.example.co.th","example.com"));
 		//System.out.println(isValidDomain("www1.baidu.com"));
-//		System.out.println(isValidWildCardDomain("*.aaa.*"));
-//		System.out.println(isValidWildCardDomain("seller.*.example.*"));
-//		System.out.println(isValidWildCardDomain("seller.*.example.com"));
-//		System.out.println(isValidWildCardDomain("seller.aaa.example.com"));
-//		testWildCard();
+		testWildCard();
 
 		//System.out.println(isValidDomain("aaaaaaaaa-aaaaaaaaaaaaaaa-aaaaaaaaaaaaaa.www1.baidu.com"));
-		System.out.println(isValidDomain("baidu.com:222"));
+		//System.out.println(isValidDomain("baidu.com:222"));
 	}
 }
