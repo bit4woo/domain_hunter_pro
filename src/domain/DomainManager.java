@@ -202,6 +202,11 @@ public class DomainManager {
 				filename, fetchTargetModel().getRowCount(), relatedDomainSet.size(), subDomainSet.size(), similarDomainSet.size(), EmailSet.size());
 		return tmpsummary;
 	}
+	
+	public boolean isEmpty() {
+		return (fetchTargetModel().getRowCount()+ relatedDomainSet.size()+
+		subDomainSet.size()+similarDomainSet.size()+EmailSet.size()) == 0;
+	}
 
 	public void setSummary(String Summary) {
 		this.summary = Summary;

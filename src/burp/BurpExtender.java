@@ -183,14 +183,18 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 			e.printStackTrace(stderr);
 		}
 
+		
 		try {
+			if (null == DomainPanel.getDomainResult()) return;//有数据才弹对话框指定文件位置。
+			if (DomainPanel.getDomainResult().isEmpty()) return;
+			
 			DomainPanel.saveDomainDataToDB();//域名面板自动保存逻辑有点复杂，退出前再自动保存一次
+			gui.getConfigPanel();
+			String configFilePath = ConfigPanel.getLineConfig().saveToDisk();//包含db文件位置
+			RecentModel.saveRecent(configFilePath);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		gui.getConfigPanel();
-		String configFilePath = ConfigPanel.getLineConfig().saveToDisk();//包含db文件位置
-		RecentModel.saveRecent(configFilePath);
 	}
 
 	//ITab必须实现的两个方法

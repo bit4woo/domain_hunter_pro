@@ -939,8 +939,6 @@ public class DomainPanel extends JPanel {
 		try {
 			File file = GUIMain.getCurrentDBFile();
 
-			if (null == DomainPanel.getDomainResult()) return;//有数据才弹对话框指定文件位置。
-
 			if (file == null || !file.exists()) {
 				file = GUIMain.dbfc.dialog(false,".db");
 				GUIMain.setCurrentDBFile(file);

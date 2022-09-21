@@ -844,10 +844,10 @@ public class LineEntryMenu extends JPopupMenu {
 				int result = JOptionPane.showConfirmDialog(null,"Are you sure to DELETE these items ?");
 				if (result == JOptionPane.YES_OPTION) {
 					lineTable.getLineTableModel().removeRows(modleRows);
+					GUIMain.titlePanel.digStatus();
 				}else {
 					return;
 				}
-				GUIMain.titlePanel.digStatus();
 			}
 		});
 		removeItem.setToolTipText("Just Delete Entry In Title Panel");
@@ -863,7 +863,7 @@ public class LineEntryMenu extends JPopupMenu {
 		JMenuItem removeSubDomainItem = new JMenuItem(new AbstractAction("Delete Host From SubDomain Set") {//need to show dialog to confirm
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				int result = JOptionPane.showConfirmDialog(null,"Are you sure to DELETE these Hosts from SubDomain Set ?");
+				int result = JOptionPane.showConfirmDialog(null,"Delete these hosts from sub-domain set?");
 				if (result == JOptionPane.YES_OPTION) {
 					//java.util.List<String> hosts = lineTable.getLineTableModel().getHosts(rows);//不包含端口，如果原始记录包含端口就删不掉
 					//如果有 domain domain:8888 两个记录，这种方式就会删错对象
@@ -884,8 +884,8 @@ public class LineEntryMenu extends JPopupMenu {
 		JMenuItem addToblackListItem = new JMenuItem(new AbstractAction("Add IP Address To Black List") {//need to show dialog to confirm
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				int result = JOptionPane.showConfirmDialog(null,"Are You Sure To ADD These IP Addresses to Black List?" +
-						"\n\rThese IP Addresses Will Excluded When Calculate Subnet");
+				int result = JOptionPane.showConfirmDialog(null,"Add these IP to black list?" +
+						"\n\rwill exclude them when calculate subnet");
 				if (result == JOptionPane.YES_OPTION) {
 					lineTable.getLineTableModel().addIPToTargetBlackList(modleRows);
 				}
@@ -893,6 +893,23 @@ public class LineEntryMenu extends JPopupMenu {
 		});
 		addToblackListItem.setToolTipText("IP addresses will be added to Black List");
 
+		/**
+		 * 黑名单主要用于记录CDN或者云服务IP，避免计算网段时包含这些IP。
+		 */
+		JMenuItem addToblackListAndDeleteItem = new JMenuItem(new AbstractAction("Add IP To Black List And Del Entry") {//need to show dialog to confirm
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				int result = JOptionPane.showConfirmDialog(null,"Add these IP to black list and Delete entry?" +
+						"\n\rwill exclude them when calculate subnet");
+				if (result == JOptionPane.YES_OPTION) {
+					lineTable.getLineTableModel().addIPToTargetBlackList(modleRows);
+					lineTable.getLineTableModel().removeRows(modleRows);
+					GUIMain.titlePanel.digStatus();
+				}
+			}
+		});
+		addToblackListItem.setToolTipText("IP addresses will be added to Black List");
+		
 		this.add(itemNumber);
 		this.add(checkingItem);
 		this.add(moreActionItem);
@@ -947,6 +964,7 @@ public class LineEntryMenu extends JPopupMenu {
 
 		this.addSeparator();
 
+		this.add(addToblackListAndDeleteItem);
 		this.add(removeItem);//单纯删除记录
 		this.add(removeSubDomainItem);
 		this.add(addToblackListItem);
