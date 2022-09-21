@@ -67,26 +67,17 @@ public class DomainNameUtils {
 		 * 和isValidDomain()中的正则进行比较：
 		 * 前面的部分可以是((?!-)[A-Za-z0-9-]{1,63}(?<!-)\.)即不以-开头的字符串，长度1到63；也可以是(\*\.)，即*.
 		 * 后缀部分即可以是[A-Za-z]{2,6}，也可以是*
+		 * 
+		 * a86ba224e43010880724df4a4be78c11
+		 * administratoradministrator
+		 * 虽然按照RFC的规定，域名的单个字符的模块长度可以是63。但是实际使用情况中，基本不可能有这样的域名。
 		 */
-		final String DOMAIN_NAME_PATTERN = "^(((?!-)[A-Za-z0-9-]{1,63}(?<!-)\\.)|(\\*\\.))+([A-Za-z]{2,6}|\\*)$";
+		final String DOMAIN_NAME_PATTERN = "^((?!-)[A-Za-z0-9\\*-]{1,32}(?<!-)\\.)+([A-Za-z*]{1,6})$";
 		//final String DOMAIN_NAME_PATTERN = "([A-Za-z0-9-]{1,63}(?<!-)\\.)+[A-Za-z]{2,6}";//-this.state.scroll 这种也会被认为是合法的。
 		Pattern pDomainNameOnly = Pattern.compile(DOMAIN_NAME_PATTERN);
 		Matcher matcher = pDomainNameOnly.matcher(domain);
 		boolean formateOk = matcher.matches();
-		if (formateOk){
-			//a86ba224e43010880724df4a4be78c11
-			//administratoradministrator
-			//虽然按照RFC的规定，域名的单个字符的模块长度可以是63。但是实际使用情况中，基本不可能有这样的域名。
-			String tmp = domain.replaceAll("-", ".");
-			String[] tmpArray= tmp.split("\\.");
-			for (String item:tmpArray){
-				if (item.length()>=32){
-					return false;
-				}
-			}
-			return true;
-		}
-		return false;
+		return formateOk;
 	}
 
 	/**
@@ -405,13 +396,21 @@ public class DomainNameUtils {
 		System.out.println(isMatchWildCardDomain("*.*","aaa"));
 		System.out.println(isMatchWildCardDomain("*.*","aa.aa"));
 	}
+	
+	public static void testWild(){
+		System.out.println(isValidWildCardDomain("*.baidu.com"));
+		System.out.println(isValidWildCardDomain("*.seller.*.example.com"));
+		System.out.println(isValidWildCardDomain("*.seller.*.example.*"));
+		System.out.println(isValidWildCardDomain("*xxx*.baidu.com"));
+		System.out.println(isValidWildCardDomain("*.*"));
+	}
 
 	public static void main(String[] args) {
 		//System.out.println(isWhiteListTDL("test.example.co.th","example.com"));
 		//System.out.println(isValidDomain("www1.baidu.com"));
-		testWildCard();
+		testWild();
 
-		//System.out.println(isValidDomain("aaaaaaaaa-aaaaaaaaaaaaaaa-aaaaaaaaaaaaaa.www1.baidu.com"));
+		//System.out.println(isValidWildCardDomain("aaaaaaaaa-aaaaaaaaaaaaaaa-aaaaaaaaaaaaaa.www1.baidu.com"));
 		//System.out.println(isValidDomain("baidu.com:222"));
 	}
 }

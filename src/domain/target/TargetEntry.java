@@ -87,8 +87,8 @@ public class TargetEntry {
 
 			//final String DOMAIN_NAME_PATTERN = "^((?!-)[A-Za-z0-9-]{1,63}(?<!-)\\.)+[A-Za-z]{2,6}$";
 			String domainKeyword = domain;
-			domainKeyword = domainKeyword.replaceAll("\\*\\.","");
-			domainKeyword = domainKeyword.replaceAll("\\.\\*","");
+			domainKeyword = domainKeyword.replaceAll("\\*","");
+			domainKeyword = domainKeyword.replaceAll("\\.\\.","\\.");
 			if (domainKeyword.indexOf(".") > 0){
 				keyword = domainKeyword.substring(0, domainKeyword.indexOf("."));
 			}else {
