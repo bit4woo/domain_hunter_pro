@@ -198,8 +198,10 @@ public class DomainManager {
 		if (GUIMain.getCurrentDBFile() != null) {
 			filename = GUIMain.getCurrentDBFile().getName();
 		}
-		String tmpsummary = String.format("  FileName:%s  Root-domain:%s  Related-domain:%s  Sub-domain:%s  Similar-domain:%s  Email:%s ^_^",
-				filename, fetchTargetModel().getRowCount(), relatedDomainSet.size(), subDomainSet.size(), similarDomainSet.size(), EmailSet.size());
+		String tmpsummary = String.format("  FileName:%s  Root-domain:%s  Related-domain:%s  Sub-domain:%s  Similar-domain:%s  Email:%s "
+				+ "IPOfSubnet:%s IPOfCert:%s ^_^",
+				filename, fetchTargetModel().getRowCount(), relatedDomainSet.size(), subDomainSet.size(), similarDomainSet.size(), EmailSet.size(),
+				IPSetOfSubnet.size(),IPSetOfCert.size());
 		return tmpsummary;
 	}
 	
@@ -474,6 +476,7 @@ public class DomainManager {
 	 * Email不做变化
 	 */
 	public void freshBaseRule() {
+		BurpExtender.getStdout().println("before refresh--> "+getSummary());
 		Set<String> tmpDomains = new HashSet<>();
 		tmpDomains.addAll(relatedDomainSet);
 
@@ -503,6 +506,7 @@ public class DomainManager {
 		EmailSet.clear();
 		similarEmailSet.clear();
 		DomainPanel.getDomainResult().addIfValidEmail(tmpEmalis);
+		BurpExtender.getStdout().println("after refresh--> "+getSummary());
 	}
 
 	public void relatedToRoot() {

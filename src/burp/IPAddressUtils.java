@@ -53,7 +53,14 @@ public class IPAddressUtils {
 		return isPrivateIPv6;
 	}
 
-	//校验字符串是否是一个合格的IP地址
+	/**
+	 * 校验字符串是否是一个合格的IP地址
+	 * 会发现如下类型的IP，是有效的IP地址，但是实际情况却不会有人这么写。
+	 * 应当从我们的正则中剔除
+	 * PING 181.002.245.007 (181.2.245.7): 56 data bytes
+	 * @param ip
+	 * @return
+	 */
 	public static boolean isValidIP (String ip) {
 		try {
 			if ( ip == null || ip.isEmpty() ) {
@@ -77,6 +84,9 @@ public class IPAddressUtils {
 			}
 
 			for ( String s : parts ) {
+				if (s.startsWith("0")) {
+					return false;
+				}
 				int i = Integer.parseInt( s );
 				if ( (i < 0) || (i > 255) ) {
 					return false;
@@ -308,7 +318,8 @@ public class IPAddressUtils {
 	}
 
 	public static void main(String[] args) throws AddressStringException {
-		System.out.println(toIPList("178.170.186.0-178.170.186.255"));
-		System.out.println(checkIPIsInGivenRange("178.170.186.1","178.170.186.0","178.170.186.255"));
+		//System.out.println(toIPList("178.170.186.0-178.170.186.255"));
+		//System.out.println(checkIPIsInGivenRange("178.170.186.1","178.170.186.0","178.170.186.255"));
+		System.out.println(isValidIP("033.072.025.009"));
 	}
 }

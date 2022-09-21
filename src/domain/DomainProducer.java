@@ -21,6 +21,7 @@ import burp.IBurpExtenderCallbacks;
 import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
 import burp.IHttpService;
+import burp.IPAddressUtils;
 import config.ConfigPanel;
 import title.LineEntry;
 import toElastic.ElasticClient;
@@ -350,6 +351,13 @@ public class DomainProducer extends Thread {//Producer do
 		return tmplist;
 	}
 
+	/**
+	 * 会发现如下类型的IP，是有效的IP地址，但是实际情况却不会有人这么写。
+	 * 应当从我们的正则中剔除
+	 * PING 181.002.245.007 (181.2.245.7): 56 data bytes
+	 * @param httpResponse
+	 * @return
+	 */
 	public static List<String> grepIP(String httpResponse) {
 		Set<String> IPSet = new HashSet<>();
 		List<String> lines = Commons.textToLines(httpResponse);
@@ -358,7 +366,9 @@ public class DomainProducer extends Thread {//Producer do
 			Matcher matcher = PatternsFromAndroid.IP_ADDRESS.matcher(line);
 			while (matcher.find()) {//多次查找
 				String tmpIP = matcher.group();
-				IPSet.add(tmpIP);
+				if (IPAddressUtils.isValidIP(tmpIP)) {
+					IPSet.add(tmpIP);
+				}
 			}
 		}
 
@@ -377,7 +387,9 @@ public class DomainProducer extends Thread {//Producer do
 			Matcher matcher = pt.matcher(line);
 			while (matcher.find()) {//多次查找
 				String tmpIP = matcher.group();
-				IPSet.add(tmpIP);
+				if (IPAddressUtils.isValidIP(tmpIP)) {
+					IPSet.add(tmpIP);
+				}
 			}
 		}
 
