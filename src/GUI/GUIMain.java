@@ -100,14 +100,16 @@ public class GUIMain extends JFrame {
 	public void lockUnlock() {
 		if (this.getContentPane().isEnabled()) {
 			((JTabbedPane)this.getContentPane()).addTab("Locked",null,new JPanel(),null);
-			((JTabbedPane)this.getContentPane()).setSelectedIndex(3);
+			int size = ((JTabbedPane)this.getContentPane()).getTabCount();
+			((JTabbedPane)this.getContentPane()).setSelectedIndex(size-1);
 			this.getContentPane().setEnabled(false);
 			projectMenu.setText("DomainHunter*");
 			projectMenu.lockMenu.setText("Unlock");
 			ConfigPanel.DisplayContextMenuOfBurp.setSelected(false);//不显示burp右键菜单
 		}else {
 			this.getContentPane().setEnabled(true);
-			((JTabbedPane)this.getContentPane()).removeTabAt(3);
+			int size = ((JTabbedPane)this.getContentPane()).getTabCount();
+			((JTabbedPane)this.getContentPane()).removeTabAt(size-1);
 			((JTabbedPane)this.getContentPane()).setSelectedIndex(0);
 			projectMenu.lockMenu.setText("Lock");
 			projectMenu.setText("DomainHunter");
