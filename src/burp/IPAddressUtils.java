@@ -84,7 +84,7 @@ public class IPAddressUtils {
 			}
 
 			for ( String s : parts ) {
-				if (s.startsWith("0")) {
+				if (s.startsWith("0") && s.length() > 1 ) {
 					return false;
 				}
 				int i = Integer.parseInt( s );

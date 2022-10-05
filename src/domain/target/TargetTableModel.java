@@ -208,7 +208,7 @@ public class TargetTableModel extends AbstractTableModel {
 		}
 	}
 
-	public boolean ifValid(TargetEntry entry) {
+	public static boolean ifValid(TargetEntry entry) {
 		if (entry.getTarget() == null || entry.getTarget().equals("")) {
 			return false;
 		}
@@ -759,16 +759,14 @@ public class TargetTableModel extends AbstractTableModel {
 		}
 	}
 
+	public static void test() {
+		TargetEntry aaa = new TargetEntry("103.125.112.0/23");
+		System.out.println(ifValid(aaa));
+		System.out.println(IPAddressUtils.isValidSubnet("103.125.112.0/23"));
+	}
+	
 	public static void main(String[] args) {
-		TargetTableModel aaa= new TargetTableModel();
-		aaa.addRow("111", new TargetEntry("www.baidu.com"));
-		aaa.addRow("2222", new TargetEntry("www.baidu.com"));
-		String bbb= aaa.ToJson();
-		TargetTableModel ccc = TargetTableModel.FromJson(bbb);
-		System.out.println(bbb);
-		System.out.println(ccc);
-
-		System.out.println(aaa.getValueAt(0).getType() == TargetEntry.Target_Type_Domain);
+		test();
 	}
 
 }
