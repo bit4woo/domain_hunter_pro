@@ -30,7 +30,7 @@ public class WebIcon {
 			int port = url.getPort()==-1?url.getDefaultPort():url.getPort();
 			IHttpService service = helpers.buildHttpService(url.getHost(), port, url.getProtocol());
 			IHttpRequestResponse info = BurpExtender.getCallbacks().makeHttpRequest(service,requsetbyte);
-			byte[] body = new HelperPlus(helpers).getBody(false, info);
+			byte[] body = new HelperPlus(helpers).getBody(false, info);//这里不能使用静态方法。
 			if (body ==null) return "";
 			int hash = calcHash(body);
 			return hash+"";
