@@ -57,6 +57,7 @@ public class DomainNameUtils {
 	 * seller.*.example.*
 	 * @param domain
 	 * @return
+	 *
 	 */
 	public static boolean isValidWildCardDomain(String domain) {
 		if (null == domain) {
@@ -77,7 +78,7 @@ public class DomainNameUtils {
 		Pattern pDomainNameOnly = Pattern.compile(DOMAIN_NAME_PATTERN);
 		Matcher matcher = pDomainNameOnly.matcher(domain);
 		boolean formateOk = matcher.matches();
-		return formateOk;
+		return formateOk && domain.contains("*");
 	}
 
 	/**
@@ -408,9 +409,9 @@ public class DomainNameUtils {
 	public static void main(String[] args) {
 		//System.out.println(isWhiteListTDL("test.example.co.th","example.com"));
 		//System.out.println(isValidDomain("www1.baidu.com"));
-		testWild();
+		//testWild();
 
 		//System.out.println(isValidWildCardDomain("aaaaaaaaa-aaaaaaaaaaaaaaa-aaaaaaaaaaaaaa.www1.baidu.com"));
-		//System.out.println(isValidDomain("baidu.com:222"));
+		System.out.println(isValidDomain("96c1e4d00aa03b2356d5c0782a1b4f7d.www.creditbean.in"));
 	}
 }
