@@ -146,11 +146,11 @@ public class DomainProducer extends Thread {//Producer do
 							response = subByte(response,0,100000000);
 						}
 						Set<String> domains = DomainProducer.grepDomain(new String(response));
-						List<String> IPs = DomainProducer.grepIPAndPort(new String(response));
+						//List<String> IPs = DomainProducer.grepIPAndPort(new String(response));
 						Set<String> emails = DomainProducer.grepEmail(new String(response));
 
 						DomainPanel.getDomainResult().addIfValid(domains);
-						DomainPanel.getDomainResult().addIfValid(new HashSet<>(IPs));
+						//DomainPanel.getDomainResult().addIfValid(new HashSet<>(IPs));
 						DomainPanel.getDomainResult().addIfValidEmail(emails);
 					}
 				}
@@ -377,6 +377,12 @@ public class DomainProducer extends Thread {//Producer do
 		return tmplist;
 	}
 
+	/**
+	 *  误报太高，不划算。不再使用
+	 * @param httpResponse
+	 * @return
+	 */
+	@Deprecated
 	public static List<String> grepIPAndPort(String httpResponse) {
 		Set<String> IPSet = new HashSet<>();
 		String[] lines = httpResponse.split("(\r\n|\r|\n)");

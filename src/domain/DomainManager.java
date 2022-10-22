@@ -431,9 +431,10 @@ public class DomainManager {
 		} else if (type == DomainManager.IP_ADDRESS){
 			IPSetOfSubnet.add(domain);
 			return true;
-		} else if (type == DomainManager.NEED_CONFIRM_IP){
-			SpecialPortTargets.add(domain);
-			return true;
+		//不再直接添加收集到但是无法确认所属关系的IP，误报太高
+		//		} else if (type == DomainManager.NEED_CONFIRM_IP){
+		//			SpecialPortTargets.add(domain);
+		//			return true;
 		}else{
 			return false;
 		}//Email的没有处理
