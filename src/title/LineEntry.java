@@ -15,6 +15,8 @@ import java.util.regex.Pattern;
 
 public class LineEntry {
 	private static final Logger log=LogManager.getLogger(LineEntry.class);
+	
+	//资产重要性
 	public static final String AssetType_A = "重要目标";//像管理后台、统一登录等等一旦有漏洞就危害很高的系统。
 	public static final String AssetType_B = "无价值无需再挖";//像官网、首页等对信息收集、目标界定有用；但是对“挖漏洞”来说没有价值的记录。
 	public static final String AssetType_C = "未分类";//默认值，还未进行区分的资产或者普通价值资产
@@ -24,8 +26,10 @@ public class LineEntry {
 	//	public static final String Tag_UserEnd = "用户端";
 	//	public static final String Tag_TestEnvironment = "测试环境";
 
-	public static final String[] AssetTypeArray = {LineEntry.AssetType_A, LineEntry.AssetType_B, LineEntry.AssetType_C, LineEntry.AssetType_D};
-
+	public static final String[] AssetTypeArray = {LineEntry.AssetType_A, LineEntry.AssetType_B, 
+			LineEntry.AssetType_C, LineEntry.AssetType_D};
+	
+	//对当前资产的检测进度
 	public static final String CheckStatus_UnChecked = "UnChecked";
 	public static final String CheckStatus_Checked = "Done";
 	public static final String CheckStatus_Checking = "Checking";
@@ -33,13 +37,20 @@ public class LineEntry {
 
 	public static final String[] CheckStatusArray = {LineEntry.CheckStatus_UnChecked, LineEntry.CheckStatus_Checking,
 			LineEntry.CheckStatus_Checked,LineEntry.CheckStatus_MoreAction};
+	
+	//资产归属判断依据
+	public static final String Tag_NotTargetBaseOnCertInfo = "CertNotMatch";
+	public static final String Tag_NotTargetBaseOnBlackList = "IPIsBlack";
+	public static final String Tag_NotTargetByUser = "NotTarget";
 
-	public static final String NotTargetBaseOnCertInfo = "CertInfoNotMatch";
-	public static final String NotTargetBaseOnBlackList = "IPInBlackList";
-
-	public static final String EntryType_Web = "Web";
+	public static final String EntryType_Web = "Web"; //
 	public static final String EntryType_DNS = "DNS";
-	public static final String EntryType_Manual_Saved = "Manual_Saved";
+	
+	//记录的来源
+	public static final String Source_Sub_domain = "subdomain"; //来自subdomain
+	public static final String Source_Custom_Input = "custom"; //来自用户自定义输入
+	public static final String Source_Subnet_Extend = "extend"; //来自网段扩展汇算
+	public static final String Source_Manual_Saved = "saved"; //来自用户手动保存
 
 
 	public static String systemCharSet = getSystemCharSet();
@@ -58,8 +69,9 @@ public class LineEntry {
 	private int statuscode = -1;
 	private int contentLength = -1;
 	private String title = "";
-	private String IP = "";
-	private String CDN = "";
+	private Set<String> IPSet = new HashSet<String>();
+	private Set<String> CNAMESet = new HashSet<String>();
+	private Set<String> CertDomainSet = new HashSet<String>();
 	private String webcontainer = "";
 	private String time = "";
 	private String icon_hash = "";
@@ -72,12 +84,10 @@ public class LineEntry {
 	//don't store these two field to reduce config file size.
 
 	//field for user
-	private transient boolean isChecked =false;
 	private String CheckStatus =CheckStatus_UnChecked;
 	private String AssetType = AssetType_C;
 	private String EntryType = EntryType_Web;
 	private String comment ="";
-	private boolean isManualSaved = false;
 
 	private transient IHttpRequestResponse messageinfo;
 
@@ -103,10 +113,7 @@ public class LineEntry {
 		this.host = host;
 		this.port = 80;
 		this.protocol ="http";
-
-		if (this.IP != null) {
-			this.IP = IPset.toString().replace("[", "").replace("]", "");
-		}
+		this.IPSet = IPset;
 		this.EntryType = EntryType_DNS;
 		this.CheckStatus = CheckStatus_Checked;
 	}
@@ -126,24 +133,6 @@ public class LineEntry {
 
 		this.CheckStatus = CheckStatus;
 		this.comment = comment;
-	}
-
-	@Deprecated
-	private LineEntry(IHttpRequestResponse messageinfo,boolean isNew,String CheckStatus,String comment,Set<String> IPset,Set<String> CDNset) {
-		this.messageinfo = messageinfo;
-		this.callbacks = BurpExtender.getCallbacks();
-		this.helpers = this.callbacks.getHelpers();
-		parse();
-
-		this.CheckStatus = CheckStatus;
-		this.comment = comment;
-		if (this.IP != null) {
-			this.IP = IPset.toString().replace("[", "").replace("]", "");
-		}
-
-		if (this.CDN != null) {
-			this.CDN = CDNset.toString().replace("[", "").replace("]", "");
-		}
 	}
 
 	public String ToJson(){//注意函数名称，如果是get set开头，会被认为是Getter和Setter函数，会在序列化过程中被调用。
@@ -267,42 +256,29 @@ public class LineEntry {
 		this.title = title;
 	}
 
-	//IPString 222.79.64.33, 124.225.183.63
-	public String getIP() {
-		return IP;
+	public Set<String> getIPSet() {
+		return IPSet;
 	}
 
-	//return IP 的集合
-	public HashSet<String> fetchIPSet() {
-		HashSet<String> result = new HashSet<String>();
-		for (String ip: IP.split(",")) {
-			result.add(ip.trim());
-		}
-		return result;
+	public void setIPSet(Set<String> iPSet) {
+		IPSet = iPSet;
 	}
-
-	public void setIP(String iP) {
-		IP = iP;
-	}
-
-	public void setIPWithSet(Set<String> ipSet) {
-		IP = ipSet.toString().replace("[", "").replace("]", "");
+	
+	//用于序列化
+	public Set<String> getCNAMESet() {
+		return CNAMESet;
 	}
 	//用于序列化
-	public String getCDN() {
-		return CDN;
-	}
-	//用于序列化
-	public void setCDN(String cDN) {
-		CDN = cDN;
+	public void setCNAMESet(Set<String> cNAMESet) {
+		CNAMESet = cNAMESet;
 	}
 
-	public void setCDNWithSet(Set<String> cDNSet) {
-		CDN = cDNSet.toString().replace("[", "").replace("]", "");
+	public Set<String> getCertDomainSet() {
+		return CertDomainSet;
 	}
 
-	public void setCertDomainWithSet(Set<String> certDomains) {
-		CDN += " | "+certDomains.toString().replace("[", "").replace("]", "");
+	public void setCertDomainSet(Set<String> certDomainSet) {
+		CertDomainSet = certDomainSet;
 	}
 
 	public String getWebcontainer() {
@@ -328,26 +304,6 @@ public class LineEntry {
 
 	public void setIcon_hash(String icon_hash) {
 		this.icon_hash = icon_hash;
-	}
-
-	public IHttpRequestResponse getMessageinfo() {
-		//		if (messageinfo == null){
-		//			try{
-		//				messageinfo = callbacks.getHelpers().buildHttpMessage()
-		//				IHttpRequestResponse messageinfo = new IHttpRequestResponse();
-		//				messageinfo.setRequest(this.request);//始终为空，why??? because messageinfo is null ,no object to set content.
-		//				messageinfo.setRequest(this.response);
-		//				IHttpService service = callbacks.getHelpers().buildHttpService(this.host,this.port,this.protocol);
-		//				messageinfo.setHttpService(service);
-		//			}catch (Exception e){
-		//				System.out.println("error "+url);
-		//			}
-		//		}
-		return messageinfo;
-	}
-
-	public void setMessageinfo(IHttpRequestResponse messageinfo) {
-		this.messageinfo = messageinfo;
 	}
 
 	public String getBodyText() {
@@ -485,25 +441,6 @@ public class LineEntry {
 		this.response = response;
 	}
 
-	//程序中不再需要使用 isChecked函数（Checked属性的getter），完全移除
-	@Deprecated//在反序列化时，还会需要这个函数，唯一的使用点。
-	public void setChecked(boolean isChecked) {
-		//如果是旧数据，将这个值设置到新的属性，为了向下兼容需要保留这个函数。
-		try {
-			if (isChecked) {
-				CheckStatus = CheckStatus_Checked;
-			}else {
-				CheckStatus = CheckStatus_UnChecked;
-			}
-			//DBHelper dbHelper = new DBHelper(GUI.currentDBFile.toString());
-			//dbHelper.updateTitle(this);
-			//不能在这里就进行写入，可能对象的属性都还没设置全呢，会导致数据丢失
-		} catch (Exception e) {
-
-		}
-		this.isChecked = isChecked;
-	}
-
 	public String getCheckStatus() {
 		return CheckStatus;
 	}
@@ -548,7 +485,7 @@ public class LineEntry {
 	}
 
 	public String getFirstIP(){
-		Iterator<String> it = this.fetchIPSet().iterator();
+		Iterator<String> it = this.IPSet.iterator();
 		if (it.hasNext()) {
 			String ip = it.next();
 			return ip;
@@ -557,7 +494,7 @@ public class LineEntry {
 	}
 	public void freshASNInfo() {
 		try {
-			Iterator<String> it = this.fetchIPSet().iterator();
+			Iterator<String> it = this.IPSet.iterator();
 			if (it.hasNext()){
 				String ip = it.next();
 				if (IPAddressUtils.isValidIP(ip) && !IPAddressUtils.isPrivateIPv4(ip)){
