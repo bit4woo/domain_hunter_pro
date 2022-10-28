@@ -201,7 +201,7 @@ public class LineTable extends JTable
 		preferredWidths.put("CheckDoneTime","2019-05-28-14-13-16".length());
 		preferredWidths.put("isChecked"," isChecked ".length());
 		preferredWidths.put("IP",30);
-		preferredWidths.put("CDN|CertInfo",30);
+		preferredWidths.put("CNAME|CertInfo",30);
 		preferredWidths.put("Server",10);
 		preferredWidths.put("IconHash", "-17480088888".length());
 		preferredWidths.put("ASNInfo","HUAWEI CLOUD SERVICE DATA CENTER".length());

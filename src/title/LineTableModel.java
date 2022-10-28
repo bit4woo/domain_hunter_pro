@@ -33,17 +33,15 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	 * LinkedHashMap是线程不安全的。
 	 */
 	private IndexedLinkedHashMap<String,LineEntry> lineEntries =new IndexedLinkedHashMap<String,LineEntry>();
-	private IndexedLinkedHashMap<String,Set<String>> noResponseDomain =new IndexedLinkedHashMap<String,Set<String>>();
 	//private boolean EnableSearch = Runtime.getRuntime().totalMemory()/1024/1024/1024 > 16;//if memory >16GB enable Search. else disable.
 	private boolean ListenerIsOn = true;
-	//private PrintWriter stderr = new PrintWriter(BurpExtender.callbacks.getStderr(), true);
 
 	PrintWriter stdout;
 	PrintWriter stderr;
 
 	private static final String[] standardTitles = new String[] {
 			"#", "URL", "Status", "Length", "Title","Comments","Server","isChecked",
-			"AssetType","CheckDoneTime","IP", "CDN|CertInfo","ASNInfo","IconHash"};
+			"AssetType","CheckDoneTime","IP", "CNAME|CertInfo","ASNInfo","IconHash"};
 	private static List<String> titletList = new ArrayList<>(Arrays.asList(standardTitles));
 	//为了实现动态表结构
 	public static List<String> getTitletList() {
@@ -175,7 +173,6 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	@Override
 	public Class<?> getColumnClass(int columnIndex)
 	{
-
 		if (columnIndex == titletList.indexOf("#")) {
 			return Integer.class;//id
 		}
@@ -192,26 +189,6 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			return String.class;//id
 		}
 		return String.class;
-
-
-
-		//		
-		//		switch(columnIndex)
-		//		{	
-		//			case 0:
-		//				return Integer.class;//id
-		//			case 2:
-		//				return Integer.class;//Status
-		//			case 3:
-		//				return Integer.class;//Length
-		//			case 11:
-		//				return boolean.class;//isNew
-		//			case 12:
-		//				return boolean.class;//isChecked
-		//			default:
-		//				return String.class;
-		//		}//0-id, 1-url,2-status, 3-length,4-mimetype,5-server, 6-title, 7-ip, 8-cdn, 9-comments, 10-time, 11-isnew, 12-ischecked
-
 	}
 
 	@Override
@@ -265,13 +242,22 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			return entry.getTitle();
 		}
 		if (columnIndex == titletList.indexOf("IP")){
-			return entry.getIP();
+			return String.join(",", entry.getIPSet());
 		}
-		if (columnIndex == titletList.indexOf("CDN|CertInfo")){
-			return entry.getCDN();
+		if (columnIndex == titletList.indexOf("CNAME|CertInfo")){
+			String CNames = String.join(",", entry.getCNAMESet());
+			String CertDomains = String.join(",", entry.getCertDomainSet());
+			Set<String> tmp = new HashSet<>();
+			if (!CNames.equals("")) {
+				tmp.add(CNames);
+			}
+			if (!CertDomains.equals("")) {
+				tmp.add(CertDomains);
+			}
+			return String.join("|", tmp);
 		}
 		if (columnIndex == titletList.indexOf("Comments")){
-			return entry.getComment();
+			return String.join(",", entry.getComments());
 		}
 		if (columnIndex == titletList.indexOf("CheckDoneTime")){
 			return entry.getTime();
@@ -298,7 +284,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		if (col == titletList.indexOf("Comments")){
 			String valueStr = ((String) value).trim();
 			//if (valueStr.equals("")) return;
-			entry.setComment(valueStr);
+			entry.setComments(new HashSet<>(Arrays.asList(valueStr.split(","))));
 			fireTableCellUpdated(row, col);
 		}
 	}
@@ -342,19 +328,9 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	 */
 	Set<String> getIPSetFromTitle() {
 		Set<String> result = new HashSet<String>();
-		//lineEntries.addAll(hidenLineEntries);
+		
 		for(LineEntry line:lineEntries.values()) {
-			String IPString = line.getIP();
-			if (IPString == null || IPString.length() <7) continue;//处理保存的请求，没有IP的情况
-			HashSet<String> ips = line.fetchIPSet();
-			for (String ip:ips){
-				ip = IPAddressUtils.ipClean(ip);
-				if (IPAddressUtils.isValidIP(ip)){
-					result.add(ip);
-				}else {
-					System.out.println(ip + "invalid IP address, skip to handle it!");
-				}
-			}
+			result.addAll(line.getIPSet());
 		}
 
 		return result;
@@ -748,7 +724,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 
 		Collection<LineEntry> entries = getLineEntries().values();
 		for (LineEntry entry:entries) {
-			String ip = entry.getIP().split(",")[0];//这里可能不严谨，如果IP解析既有外网地址又有内网地址就会出错
+			String ip = entry.getIPSet().split(",")[0];//这里可能不严谨，如果IP解析既有外网地址又有内网地址就会出错
 			if (!IPAddressUtils.isPrivateIPv4(ip)) {//移除公网解析记录；剩下无解析记录和内网解析记录
 				if (entry.getStatuscode() == 403 && DomainNameUtils.isValidDomain(entry.getHost())) {
 					//do Nothing
@@ -780,7 +756,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	}
 
 
-	///////////////////多个行内容的增删查改/////////////////////////////////
+	///////////////////^^^多个行内容的增删查改^^^/////////////////////////////////
 
 	/**
 	 * 仅用于runner中，某个特殊场景:URL相同host不同的情况
@@ -965,31 +941,4 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		}
 		fireTableRowsUpdated(0,lineEntries.size()-1);
 	}
-
-
-
-	/*    public class LineTable extends JTable
-    {	
-	 *//**
-	 *
-	 *//*
-    	private static final long serialVersionUID = 1L;
-        public LineTable(LineTableModel lineTableModel)
-        {
-            super(lineTableModel);
-        }
-
-        @Override
-        public void changeSelection(int row, int col, boolean toggle, boolean extend)
-        {
-            // show the log entry for the selected row
-        	LineEntry Entry = lineEntries.get(super.convertRowIndexToModel(row));
-            requestViewer.setMessage(Entry.messageinfo.getRequest(), true);
-            responseViewer.setMessage(Entry.messageinfo.getResponse(), false);
-            currentlyDisplayedItem = Entry.messageinfo;
-            super.changeSelection(row, col, toggle, extend);
-        }
-    }*/
-
-
 }
