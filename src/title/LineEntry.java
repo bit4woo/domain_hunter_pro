@@ -87,14 +87,9 @@ public class LineEntry {
 	private String CheckStatus =CheckStatus_UnChecked;
 	private String AssetType = AssetType_C;
 	private String EntryType = EntryType_Web;
-	private String comment ="";
-
-	private transient IHttpRequestResponse messageinfo;
+	private Set<String> comments = new HashSet<String>();
 
 	//remove IHttpRequestResponse field ,replace with request+response+httpService(host port protocol). for convert to json.
-
-	private transient IExtensionHelpers helpers;
-	private transient IBurpExtenderCallbacks callbacks;
 
 	/**
 	 * 默认构造函数，序列化、反序列化所需
@@ -119,20 +114,14 @@ public class LineEntry {
 	}
 
 	public LineEntry(IHttpRequestResponse messageinfo) {
-		this.messageinfo = messageinfo;
-		this.callbacks = BurpExtender.getCallbacks();
-		this.helpers = this.callbacks.getHelpers();
-		parse();
+		parse(messageinfo);
 	}
 
 	public LineEntry(IHttpRequestResponse messageinfo,String CheckStatus,String comment) {
-		this.messageinfo = messageinfo;
-		this.callbacks = BurpExtender.getCallbacks();
-		this.helpers = this.callbacks.getHelpers();
-		parse();
+		parse(messageinfo);
 
 		this.CheckStatus = CheckStatus;
-		this.comment = comment;
+		addComment(comment);
 	}
 
 	public String ToJson(){//注意函数名称，如果是get set开头，会被认为是Getter和Setter函数，会在序列化过程中被调用。
@@ -143,12 +132,13 @@ public class LineEntry {
 		return JSON.parseObject(json, LineEntry.class);
 	}
 
-	private void parse() {
+	private void parse(IHttpRequestResponse messageinfo) {
 		try {
 
 			//time = Commons.getNowTimeString();//这是动态的，会跟随系统时间自动变化,why?--是因为之前LineTableModel的getValueAt函数每次都主动调用了该函数。
-
-			IHttpService service = this.messageinfo.getHttpService();
+			if (messageinfo == null) return;
+			IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
+			IHttpService service = messageinfo.getHttpService();
 
 			//url = service.toString();
 			url = helpers.analyzeRequest(messageinfo).getUrl().toString();//包含了默认端口
@@ -165,12 +155,6 @@ public class LineEntry {
 				IResponseInfo responseInfo = helpers.analyzeResponse(response);
 				statuscode = responseInfo.getStatusCode();
 
-				//				MIMEtype = responseInfo.getStatedMimeType();
-				//				if(MIMEtype == null) {
-				//					MIMEtype = responseInfo.getInferredMimeType();
-				//				}
-
-
 				Getter getter = new Getter(helpers);
 
 				webcontainer = getter.getHeaderValueOf(false, messageinfo, "Server");
@@ -184,7 +168,6 @@ public class LineEntry {
 				}
 
 				title = fetchTitle(response);
-
 			}
 		}catch(Exception e) {
 			e.printStackTrace(BurpExtender.getStderr());
@@ -320,7 +303,7 @@ public class LineEntry {
 	}
 
 
-	public String covertCharSet(byte[] response) {
+	public static String covertCharSet(byte[] response) {
 		String originalCharSet = Commons.detectCharset(response);
 		//BurpExtender.getStderr().println(url+"---"+originalCharSet);
 
@@ -338,67 +321,64 @@ public class LineEntry {
 		return new String(response);
 	}
 
+	/**
+	 * 
+	 * @param response
+	 * @return
+	 */
 	public String fetchTitle(byte[] response) {
-		String bodyText = covertCharSet(response);
-
-		Pattern p = Pattern.compile("<title(.*?)</title>");
-		//<title ng-bind="service.title">The Evolution of the Producer-Consumer Problem in Java - DZone Java</title>
-		Matcher m  = p.matcher(bodyText);
-		while ( m.find() ) {
-			title = m.group(0);
-		}
-		if (title.equals("")) {
-			Pattern ph = Pattern.compile("<title [.*?]>(.*?)</title>");
-			Matcher mh  = ph.matcher(bodyText);
-			while ( mh.find() ) {
-				title = mh.group(0);
-			}
-		}
-		if (title.equals("")) {
-			Pattern ph = Pattern.compile("<h[1-6]>(.*?)</h[1-6]>");
-			Matcher mh  = ph.matcher(bodyText);
-			while ( mh.find() ) {
-				title = mh.group(0);
-			}
-		}
-		title = title.replaceAll("<.*?>", "");
-
+		if (response == null) return "";
+		
 		//https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Redirections
 		if (statuscode >= 300 && statuscode <= 308) {
-			String Locationurl = getHeaderValueOf(false,"Location");
+			IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
+			Getter getter = new Getter(helpers);
+
+			String Locationurl = getter.getHeaderValueOf(false, response, "Location");
 			if (null != Locationurl) {
 				title  = " --> "+Locationurl;
+				return title;
+			}
+		}
+		
+		String bodyText = covertCharSet(response);
+
+		return grepTitle(bodyText);
+	}
+	/**
+	 * 从响应包中提取title
+	 * <title>Kênh Quản Lý Shop - Phần Mềm Quản Lý Bán Hàng Miễn Phí</title>
+	 * <title ng-bind="service.title">The Evolution of the Producer-Consumer Problem in Java - DZone Java</title>
+	 * 
+	 * 正则要求：
+	 * 1、title名称不能区分大小写
+	 * TITLE
+	 * @param bodyText
+	 * @return
+	 */
+	private static String grepTitle(String bodyText) {
+		String title = "";
+		
+		String regex = "<title(.*?)>(.*?)</title>";
+		Pattern p = Pattern.compile(regex,Pattern.CASE_INSENSITIVE);
+		Matcher m  = p.matcher(bodyText);
+		while ( m.find() ) {
+			title = m.group(2);//注意
+			if (title !=null && !title.equals("")) {
+				return title;
+			}
+		}
+		
+		String regex1 = "<h[1-6](.*?)>(.*?)</h[1-6]>";
+		Pattern ph = Pattern.compile(regex1,Pattern.CASE_INSENSITIVE);
+		Matcher mh  = ph.matcher(bodyText);
+		while ( mh.find() ) {
+			title = mh.group(2);
+			if (title !=null && !title.equals("")) {
+				return title;
 			}
 		}
 		return title;
-	}
-
-	public String getHeaderValueOf(boolean messageIsRequest,String headerName) {
-		helpers = BurpExtender.getCallbacks().getHelpers();
-		List<String> headers=null;
-		if(messageIsRequest) {
-			if (this.request == null) {
-				return null;
-			}
-			IRequestInfo analyzeRequest = helpers.analyzeRequest(this.request);
-			headers = analyzeRequest.getHeaders();
-		}else {
-			if (this.response == null) {
-				return null;
-			}
-			IResponseInfo analyzeResponse = helpers.analyzeResponse(this.response);
-			headers = analyzeResponse.getHeaders();
-		}
-
-
-		headerName = headerName.toLowerCase().replace(":", "");
-		String Header_Spliter = ": ";
-		for (String header : headers) {
-			if (header.toLowerCase().startsWith(headerName)) {
-				return header.split(Header_Spliter, 2)[1];//分成2部分，Location: https://www.jd.com
-			}
-		}
-		return null;
 	}
 
 	public int getPort() {
@@ -468,12 +448,12 @@ public class LineEntry {
 		EntryType = entryType;
 	}
 
-	public String getComment() {
-		return comment;
+	public Set<String> getComments() {
+		return comments;
 	}
 
-	public void setComment(String comment) {
-		this.comment = comment;
+	public void setComments(Set<String> comments) {
+		this.comments = comments;
 	}
 
 	public String getASNInfo() {
@@ -509,62 +489,32 @@ public class LineEntry {
 		}
 	}
 
-	private List<String> getCommentList() {
-		ArrayList<String> result = new ArrayList<String>();
-		if (comment == null || comment.trim().equals("")){
-			return result;
-		}else{
-			String[] comments = comment.split(",");
-			for (String comment:comments) {
-				if (!result.contains(comment)) {
-					result.add(comment);
-				}
-			}
-			return result;
-		}
-	}
+
 	public void addComment(String commentToAdd) {
 		if (commentToAdd ==null || commentToAdd.trim().equals("")) return;
 
-		List<String> comments = getCommentList();
 		if (!comments.contains(commentToAdd)) {
 			comments.add(commentToAdd);
-			this.setComment(String.join(",", comments));
 		}
 	}
 
 	public void removeComment(String commentToRemove) {
 		if (commentToRemove ==null || commentToRemove.trim().equals("")) return;
 
-		List<String> comments = getCommentList();
-		if (comments.contains(commentToRemove)) {
-			comments.remove(commentToRemove);
-			this.setComment(String.join(",", comments));
-		}
+		comments.remove(commentToRemove);
 	}
-
-	public boolean isManualSaved() {
-		return isManualSaved;
+	
+	
+	public static void testGrepTitle() {
+		String aa = " <title>Kênh Quản Lý Shop - Phần Mềm Quản Lý Bán Hàng Miễn Phí</title>";
+		String bb = "<title ng-bind=\"service.title\">The Evolution of the Producer-Consumer Problem in Java - DZone Java</title>";
+		String cc = " <TITLE>Kênh Quản Lý Shop - Phần Mềm Quản Lý Bán Hàng Miễn Phí</title>";
+		String dd = " <h1aaa>h1</h1>";
+		
+		System.out.println(grepTitle(dd));
 	}
-
-	public void setManualSaved(boolean isManualSaved) {
-		this.isManualSaved = isManualSaved;
-	}
-
-	public IExtensionHelpers getHelpers() {
-		return helpers;
-	}
-
-	public void setHelpers(IExtensionHelpers helpers) {
-		this.helpers = helpers;
-	}
-
-	public Object getValue(int columnIndex) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public static void main(String args[]) {
+	
+	public static void test() {
 		//		LineEntry x = new LineEntry();
 		//		x.setRequest("xxxxxx".getBytes());
 		//		//		System.out.println(yy);
@@ -579,5 +529,9 @@ public class LineEntry {
 		System.out.println(entry.getTime());
 		String key = HashCode.fromBytes(entry.getRequest()).toString();
 		System.out.println(key);
+	}
+
+	public static void main(String args[]) {
+		testGrepTitle();
 	}
 }
