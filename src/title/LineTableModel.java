@@ -33,9 +33,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	 */
 	private static final long serialVersionUID = 1L;
 	private LineEntry currentlyDisplayedItem;
-
 	private IndexedHashMap<String,LineEntry> lineEntries =new IndexedHashMap<String,LineEntry>();
-	private boolean ListenerIsOn = true;
 
 	PrintWriter stdout;
 	PrintWriter stderr;
@@ -68,25 +66,24 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		this.lineEntries = lineEntries;
 	}
 
+	////////getter setter//////////
 
 	public IndexedHashMap<String, LineEntry> getLineEntries() {
 		return lineEntries;
 	}
 
-
 	public void setLineEntries(IndexedHashMap<String, LineEntry> lineEntries) {
 		this.lineEntries = lineEntries;
 	}
-
-
-	public boolean isListenerIsOn() {
-		return ListenerIsOn;
+	
+	public LineEntry getCurrentlyDisplayedItem() {
+		return this.currentlyDisplayedItem;
 	}
 
-	public void setListenerIsOn(boolean listenerIsOn) {
-		this.ListenerIsOn = listenerIsOn;
+	public void setCurrentlyDisplayedItem(LineEntry currentlyDisplayedItem) {
+		this.currentlyDisplayedItem = currentlyDisplayedItem;
 	}
-
+	//////// ^^^^getter setter^^^^//////////
 
 	////////////////////// extend AbstractTableModel////////////////////////////////
 
@@ -194,20 +191,55 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		return "";
 	}
 
-
 	@Override
 	public void setValueAt(Object value, int row, int col) {
 		LineEntry entry = lineEntries.get(row);
 		if (col == titletList.indexOf("Comments")){
 			String valueStr = ((String) value).trim();
-			//if (valueStr.equals("")) return;
 			entry.setComments(new HashSet<>(Arrays.asList(valueStr.split(","))));
 			fireTableCellUpdated(row, col);
 		}
 	}
-	//////////////////////extend AbstractTableModel////////////////////////////////
+	//////////////////////^^^extend AbstractTableModel^^^////////////////////////////////
 
+	///////////////////// implement IMessageEditorController ////////////////////////////////
+	// this allows our request/response viewers to obtain details about the messages being displayed
 
+	@Override
+	public byte[] getRequest()
+	{
+		LineEntry item = getCurrentlyDisplayedItem();
+		if(item==null) {
+			return "".getBytes();
+		}
+		return item.getRequest();
+	}
+
+	@Override
+	public byte[] getResponse()
+	{
+		LineEntry item = getCurrentlyDisplayedItem();
+		if(item==null) {
+			return "".getBytes();
+		}
+		return item.getResponse();
+	}
+
+	@Override
+	public IHttpService getHttpService()
+	{
+		LineEntry item = getCurrentlyDisplayedItem();
+		if(item==null) {
+			return null;
+		}
+		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
+		IHttpService service = helpers.buildHttpService(item.getHost(),
+				item.getPort(), item.getProtocol());
+		return service;
+	}
+	///////////////////// ^^^^implement IMessageEditorController^^^^ ////////////////////////////////
+
+	
 	/**
 	 *
 	 * @return 获取已成功获取title的Entry的IP地址集合
@@ -452,6 +484,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		return indexes;
 	}
 
+	/////删改操作，需要操作数据库了//TODO/////
 
 	public void removeRows(int[] rows) {
 		Arrays.sort(rows); //升序
@@ -465,8 +498,6 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 
 
 	public void updateRowsStatus(int[] rows,String status) {
-		//because thread let the delete action not in order, so we must loop in here.
-		//list length and index changed after every remove.the origin index not point to right item any more.
 		Arrays.sort(rows); //升序
 		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
 			LineEntry checked = lineEntries.get(rows[i]);
@@ -731,51 +762,9 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		return result;
 	}
 
-	public LineEntry getCurrentlyDisplayedItem() {
-		return this.currentlyDisplayedItem;
-	}
 
-	public void setCurrentlyDisplayedItem(LineEntry currentlyDisplayedItem) {
-		this.currentlyDisplayedItem = currentlyDisplayedItem;
-	}
 
-	//
-	// implement IMessageEditorController
-	// this allows our request/response viewers to obtain details about the messages being displayed
-	//
-
-	@Override
-	public byte[] getRequest()
-	{
-		LineEntry item = getCurrentlyDisplayedItem();
-		if(item==null) {
-			return "".getBytes();
-		}
-		return item.getRequest();
-	}
-
-	@Override
-	public byte[] getResponse()
-	{
-		LineEntry item = getCurrentlyDisplayedItem();
-		if(item==null) {
-			return "".getBytes();
-		}
-		return item.getResponse();
-	}
-
-	@Override
-	public IHttpService getHttpService()
-	{
-		LineEntry item = getCurrentlyDisplayedItem();
-		if(item==null) {
-			return null;
-		}
-		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
-		IHttpService service = helpers.buildHttpService(item.getHost(),
-				item.getPort(), item.getProtocol());
-		return service;
-	}
+	
 
 	public void freshAllASNInfo(){
 		for (LineEntry entry : lineEntries.values()) {
