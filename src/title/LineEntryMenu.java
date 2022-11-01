@@ -94,17 +94,17 @@ public class LineEntryMenu extends JPopupMenu {
 
 				String columnName = lineTable.getColumnName(columnIndex);
 
-				if (columnName.equalsIgnoreCase("title")){
+				if (columnName.equalsIgnoreCase("Title")){
 					String title = firstEntry.getTitle();
 					return "intitle:"+title;
-				}else if (columnName.equalsIgnoreCase("comments")){
-					String comment = firstEntry.getComment();
+				}else if (columnName.equalsIgnoreCase("Comments")){
+					String comment = firstEntry.getComments().toString();
 					return comment;
 				}else if (columnName.equalsIgnoreCase("IP")){
-					String ip = firstEntry.getIP();
+					String ip = firstEntry.getIPSet().toString();
 					return ip;
-				}else if (columnName.equalsIgnoreCase("CDN")){
-					String cdn = firstEntry.getCDN();
+				}else if (columnName.equalsIgnoreCase("CNAME|CertInfo")){
+					String cdn = firstEntry.getCNAMESet().toString();
 					return cdn;
 				}else {
 					String host = firstEntry.getHost();
@@ -134,24 +134,7 @@ public class LineEntryMenu extends JPopupMenu {
 
 			public String getValue(LineEntry firstEntry,int columnIndex) {
 
-				String columnName = lineTable.getColumnName(columnIndex);
-
-				if (columnName.equalsIgnoreCase("title")){
-					String title = firstEntry.getTitle();
-					return title;
-				}else if (columnName.equalsIgnoreCase("comments")){
-					String comment = firstEntry.getComment();
-					return comment;
-				}else if (columnName.equalsIgnoreCase("IP")){
-					String ip = firstEntry.getIP();
-					return ip;
-				}else if (columnName.equalsIgnoreCase("CDN")){
-					String cdn = firstEntry.getCDN();
-					return cdn;
-				}else {
-					String host = firstEntry.getHost();
-					return host;
-				}
+				return getValueFromEntry(firstEntry,columnIndex);
 			}
 		});
 
@@ -178,24 +161,7 @@ public class LineEntryMenu extends JPopupMenu {
 
 			public String getValue(LineEntry firstEntry,int columnIndex) {
 
-				String columnName = lineTable.getColumnName(columnIndex);
-
-				if (columnName.equalsIgnoreCase("title")){
-					String title = firstEntry.getTitle();
-					return title;
-				}else if (columnName.equalsIgnoreCase("comments")){
-					String comment = firstEntry.getComment();
-					return comment;
-				}else if (columnName.equalsIgnoreCase("IP")){
-					String ip = firstEntry.getIP();
-					return ip;
-				}else if (columnName.equalsIgnoreCase("CDN")){
-					String cdn = firstEntry.getCDN();
-					return cdn;
-				}else {
-					String host = firstEntry.getHost();
-					return host;
-				}
+				return getValueFromEntry(firstEntry,columnIndex);
 			}
 
 		});
@@ -248,24 +214,7 @@ public class LineEntryMenu extends JPopupMenu {
 
 			public String getValue(LineEntry firstEntry,int columnIndex) {
 
-				String columnName = lineTable.getColumnName(columnIndex);
-
-				if (columnName.equalsIgnoreCase("title")){
-					String title = firstEntry.getTitle();
-					return title;
-				}else if (columnName.equalsIgnoreCase("comments")){
-					String comment = firstEntry.getComment();
-					return comment;
-				}else if (columnName.equalsIgnoreCase("IP")){
-					String ip = firstEntry.getIP();
-					return ip;
-				}else if (columnName.equalsIgnoreCase("CDN")){
-					String cdn = firstEntry.getCDN();
-					return cdn;
-				}else {
-					String host = firstEntry.getHost();
-					return host;
-				}
+				return getValueFromEntry(firstEntry,columnIndex);
 			}
 
 		});
@@ -360,13 +309,13 @@ public class LineEntryMenu extends JPopupMenu {
 					String title = firstEntry.getTitle();
 					TitlePanel.getTextFieldSearch().setText(SearchDork.TITLE.toString()+":"+title);
 				}else if (columnName.equalsIgnoreCase("comments")){
-					String comment = firstEntry.getComment();
+					String comment = firstEntry.getComments().toString();
 					TitlePanel.getTextFieldSearch().setText(SearchDork.COMMENT.toString()+":"+comment);
 				}else if (columnName.equalsIgnoreCase("IP")){
-					String ip = firstEntry.getIP();
+					String ip = firstEntry.getIPSet().toString();
 					TitlePanel.getTextFieldSearch().setText(ip);
-				}else if (columnName.equalsIgnoreCase("CDN|CertInfo")){
-					String cdn = firstEntry.getCDN();
+				}else if (columnName.equalsIgnoreCase("CNAME|CertInfo")){
+					String cdn = firstEntry.getCNAMESet().toString();
 					TitlePanel.getTextFieldSearch().setText(cdn);
 				}else if (columnName.equalsIgnoreCase("IconHash")){
 					String hash = firstEntry.getIcon_hash();
@@ -499,7 +448,7 @@ public class LineEntryMenu extends JPopupMenu {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				try{
-					IndexedLinkedHashMap<String, LineEntry> entries = lineTable.getLineTableModel().getLineEntries();
+					IndexedHashMap<String, LineEntry> entries = lineTable.getLineTableModel().getLineEntries();
 					for(LineEntry entry:entries.values()) {
 						entry.DoGetIconHash();
 					}
@@ -528,7 +477,7 @@ public class LineEntryMenu extends JPopupMenu {
 
 				for (int row: modleRows){//根据IP地址去重
 					LineEntry entry = lineTable.getLineTableModel().getLineEntries().get(row);
-					targetMap.put(entry.getIP(), new LineMessageInfo(entry));
+					targetMap.put(entry.getIPSet().toString(), new LineMessageInfo(entry));
 				}
 				for (IHttpRequestResponse messageInfo:targetMap.values()) {
 					RunnerGUI runnergui = new RunnerGUI(messageInfo);
@@ -582,7 +531,7 @@ public class LineEntryMenu extends JPopupMenu {
 		JMenuItem doActiveScan = new JMenuItem(new AbstractAction("Do Active Scan") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				IndexedLinkedHashMap<String,LineEntry> entries = lineTable.getLineTableModel().getLineEntries();
+				IndexedHashMap<String,LineEntry> entries = lineTable.getLineTableModel().getLineEntries();
 				IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
 				for (int i=modleRows.length-1;i>=0 ;i-- ) {
 					try{
@@ -968,5 +917,28 @@ public class LineEntryMenu extends JPopupMenu {
 		this.add(removeItem);//单纯删除记录
 		this.add(removeSubDomainItem);
 		this.add(addToblackListItem);
+	}
+	
+	
+	public String getValueFromEntry(LineEntry firstEntry,int columnIndex) {
+
+		String columnName = lineTable.getColumnName(columnIndex);
+
+		if (columnName.equalsIgnoreCase("Title")){
+			String title = firstEntry.getTitle();
+			return "intitle:"+title;
+		}else if (columnName.equalsIgnoreCase("Comments")){
+			String comment = firstEntry.getComments().toString();
+			return comment;
+		}else if (columnName.equalsIgnoreCase("IP")){
+			String ip = firstEntry.getIPSet().toString();
+			return ip;
+		}else if (columnName.equalsIgnoreCase("CNAME|CertInfo")){
+			String cdn = firstEntry.getCNAMESet().toString();
+			return cdn;
+		}else {
+			String host = firstEntry.getHost();
+			return "site:"+host;
+		}
 	}
 }

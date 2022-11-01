@@ -23,7 +23,7 @@ public class VMP {
 			String url = entry.getUrl();
 			String host = entry.getHost();
 			String title = entry.getTitle();
-			String IPStr = entry.getIP();
+			String IPStr = entry.getIPSet().toString();
 			String header = entry.getHeaderValueOf(false, "Server");
 			if (!IPAddressUtils.isValidIP(host)) {
 				VMPEntry tmp = new VMPEntry(url,title,IPStr,header);

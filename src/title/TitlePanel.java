@@ -38,7 +38,7 @@ public class TitlePanel extends JPanel {
 	PrintWriter stderr;
 	public static ThreadGetTitleWithForceStop threadGetTitle;
 	public static GetTitleTempConfig tempConfig; //每次获取title过程中的配置。
-	private IndexedLinkedHashMap<String,LineEntry> BackupLineEntries;
+	private IndexedHashMap<String,LineEntry> BackupLineEntries;
 
 	private static SearchTextField textFieldSearch;
 
@@ -59,7 +59,7 @@ public class TitlePanel extends JPanel {
 		return titleTableModel;
 	}
 
-	public IndexedLinkedHashMap<String,LineEntry> getBackupLineEntries() {
+	public IndexedHashMap<String,LineEntry> getBackupLineEntries() {
 		return BackupLineEntries;
 	}
 
@@ -225,8 +225,7 @@ public class TitlePanel extends JPanel {
 			return;
 		}
 		for (LineEntry entry:BackupLineEntries.values()) {
-			if (entry.getEntryType().equalsIgnoreCase(LineEntry.EntryType_Manual_Saved) ||
-					entry.getComment().toLowerCase().contains("manual-saved")) {
+			if (entry.getEntrySource().equalsIgnoreCase(LineEntry.Source_Manual_Saved)) {
 				TitlePanel.getTitleTableModel().addNewLineEntry(entry);
 			}
 		}
@@ -361,7 +360,7 @@ public class TitlePanel extends JPanel {
 	 * 用于从DB文件中加载数据，没有去重检查。
 	 * 这种加载方式没有改变tableModel，所以tableModelListener也还在。
 	 */
-	public void loadData(IndexedLinkedHashMap<String,LineEntry> lineEntries) {
+	public void loadData(IndexedHashMap<String,LineEntry> lineEntries) {
 		//titleTableModel.setLineEntries(new ArrayList<LineEntry>());//clear
 		//这里没有fire delete事件，会导致排序号加载文件出错，但是如果fire了又会触发tableModel的删除事件，导致数据库删除。改用clear()
 		titleTableModel.clear(false);//clear
@@ -383,7 +382,7 @@ public class TitlePanel extends JPanel {
 	 * @param lineEntries
 	 */
 	@Deprecated//TODO 不知为何没有起作用
-	public void loadDataNewNotWork(IndexedLinkedHashMap<String,LineEntry> lineEntries) {
+	public void loadDataNewNotWork(IndexedHashMap<String,LineEntry> lineEntries) {
 		LineTableModel tmp = new LineTableModel();
 		tmp.setLineEntries(lineEntries);
 		getTitleTable().setLineTableModel(tmp);

@@ -1,21 +1,30 @@
 package GUI;
 
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Frame;
+import java.awt.event.ActionEvent;
+import java.io.File;
+import java.util.List;
+import java.util.Map;
+
+import javax.swing.AbstractAction;
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JTabbedPane;
+import javax.swing.SwingWorker;
+
 import burp.BurpExtender;
 import burp.DBHelper;
 import domain.DomainManager;
 import domain.DomainPanel;
 import domain.target.TargetEntry;
 import domain.target.TargetTable;
-import title.IndexedLinkedHashMap;
+import title.IndexedHashMap;
 import title.LineEntry;
 import title.TitlePanel;
-
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.io.File;
-import java.util.List;
-import java.util.Map;
 
 public class ProjectMenu extends JMenu{
 	GUIMain gui;
@@ -78,7 +87,7 @@ public class ProjectMenu extends JMenu{
 				DBHelper dbhelper = new DBHelper(file.getAbsolutePath());
 				DomainManager NewManager = dbhelper.getDomainObj();
 
-				IndexedLinkedHashMap<String, TargetEntry> entries = TargetTable.rootDomainToTarget(NewManager);
+				IndexedHashMap<String, TargetEntry> entries = TargetTable.rootDomainToTarget(NewManager);
 				for (TargetEntry entry:entries.values()){
 					DomainPanel.fetchTargetModel().addRowIfValid(entry);
 				}
@@ -93,7 +102,7 @@ public class ProjectMenu extends JMenu{
 				GUIMain.getDomainPanel().showDataToDomainGUI();
 				DomainPanel.saveDomainDataToDB();
 
-				IndexedLinkedHashMap<String, LineEntry> titles = dbhelper.getTitles();
+				IndexedHashMap<String, LineEntry> titles = dbhelper.getTitles();
 				for (LineEntry entry:titles.values()) {
 					TitlePanel.getTitleTableModel().addNewLineEntry(entry);
 				}

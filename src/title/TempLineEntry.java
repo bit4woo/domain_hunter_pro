@@ -215,9 +215,9 @@ public class TempLineEntry {
 
 	private void addInfoToEntry(LineEntry entry) {
 		if (entry == null) return;
-		entry.setIPWithSet(IPSet);
-		entry.setCDNWithSet(CDNSet);
-		entry.setCertDomainWithSet(certDomains);
+		entry.setIPSet(IPSet);
+		entry.setCNAMESet(CDNSet);
+		entry.setCertDomainSet(certDomains);
 		entry.freshASNInfo();
 	}
 

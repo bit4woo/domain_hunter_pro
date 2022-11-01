@@ -10,7 +10,7 @@ import GUI.GUIMain;
 import burp.BurpExtender;
 import burp.IBurpExtenderCallbacks;
 import burp.IExtensionHelpers;
-import title.IndexedLinkedHashMap;
+import title.IndexedHashMap;
 import title.LineEntry;
 import title.TempLineEntry;
 import title.TitlePanel;
@@ -78,9 +78,9 @@ public class Producer extends Thread {//Producer do
 					if (item.getEntryType().equals(LineEntry.EntryType_Web)){
 						LineEntry linefound = findHistory(url);
 						if (null != linefound) {
-							linefound.removeComment(LineEntry.NotTargetBaseOnCertInfo);
-							linefound.removeComment(LineEntry.NotTargetBaseOnBlackList);
-							item.addComment(linefound.getComment());
+							linefound.getEntryTags().remove(LineEntry.Tag_NotTargetBaseOnCertInfo);
+							linefound.getEntryTags().remove(LineEntry.Tag_NotTargetBaseOnBlackList);
+							item.getComments().addAll(linefound.getComments());
 							item.setAssetType(linefound.getAssetType());
 							try {
 								//长度的判断不准确，不再使用，就记录以前的状态！时间就记录上传完成渗透的时间
@@ -109,7 +109,7 @@ public class Producer extends Thread {//Producer do
 	}
 
 	public static LineEntry findHistory(String url) {
-		IndexedLinkedHashMap<String,LineEntry> HistoryLines = GUIMain.getTitlePanel().getBackupLineEntries();
+		IndexedHashMap<String,LineEntry> HistoryLines = GUIMain.getTitlePanel().getBackupLineEntries();
 		if (HistoryLines == null) return null;
 		LineEntry found = HistoryLines.get(url);
 		if (found != null) {
@@ -124,11 +124,10 @@ public class Producer extends Thread {//Producer do
 			if (line== null) {
 				continue;
 			}
-			line.setHelpers(helpers);
 			try{//根据host查找
 				String host = new URL(url).getHost();//可能是域名、也可能是IP
 
-				Set<String> lineHost = line.fetchIPSet();//解析得到的IP集合
+				Set<String> lineHost = line.getIPSet();//解析得到的IP集合
 				lineHost.add(line.getHost());
 				if (lineHost.contains(host)) {
 					//HistoryLines.remove(line.getUrl());//如果有相同URL的记录，就删除这个记录。//ConcurrentModificationException

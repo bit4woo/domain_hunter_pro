@@ -1,30 +1,40 @@
 package domain.target;
 
-import GUI.GUIMain;
-import burp.*;
-import com.alibaba.fastjson.JSON;
-import com.google.common.net.InternetDomainName;
-import com.google.gson.Gson;
-import domain.DomainManager;
-import domain.DomainPanel;
-import domain.DomainProducer;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import title.IndexedLinkedHashMap;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.*;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import com.alibaba.fastjson.JSON;
+import com.google.common.net.InternetDomainName;
+import com.google.gson.Gson;
+
+import GUI.GUIMain;
+import burp.BurpExtender;
+import burp.Commons;
+import burp.DBHelper;
+import burp.DomainNameUtils;
+import burp.IPAddressUtils;
+import burp.IntArraySlice;
+import domain.DomainManager;
+import domain.DomainPanel;
+import title.IndexedHashMap;
 
 public class TargetTableModel extends AbstractTableModel {
 
-	private IndexedLinkedHashMap<String,TargetEntry> targetEntries =new IndexedLinkedHashMap<String,TargetEntry>();
+	private IndexedHashMap<String,TargetEntry> targetEntries =new IndexedHashMap<String,TargetEntry>();
 
 	transient PrintWriter stdout;
 	transient PrintWriter stderr;
@@ -66,11 +76,11 @@ public class TargetTableModel extends AbstractTableModel {
 	}
 
 	//getter setter是为了序列化和反序列化
-	public IndexedLinkedHashMap<String, TargetEntry> getTargetEntries() {
+	public IndexedHashMap<String, TargetEntry> getTargetEntries() {
 		return targetEntries;
 	}
 	//getter setter是为了序列化和反序列化
-	public void setTargetEntries(IndexedLinkedHashMap<String, TargetEntry> targetEntries) {
+	public void setTargetEntries(IndexedHashMap<String, TargetEntry> targetEntries) {
 		this.targetEntries = targetEntries;
 	}
 
@@ -190,7 +200,7 @@ public class TargetTableModel extends AbstractTableModel {
 
 	public void clear() {
 		int size = targetEntries.size();
-		targetEntries = new IndexedLinkedHashMap<String,TargetEntry>();
+		targetEntries = new IndexedHashMap<String,TargetEntry>();
 		System.out.println("clean targets of old data,"+size+" targets cleaned");
 		if (size-1 >=0)	fireTableRowsDeleted(0, size-1);
 	}
@@ -199,7 +209,7 @@ public class TargetTableModel extends AbstractTableModel {
 	 * 用于加载数据时，直接初始化
 	 * @param targetEntries
 	 */
-	public void setData(IndexedLinkedHashMap<String,TargetEntry> targetEntries) {
+	public void setData(IndexedHashMap<String,TargetEntry> targetEntries) {
 		clear();
 		this.targetEntries = targetEntries;
 		int size = targetEntries.size();

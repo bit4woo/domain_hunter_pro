@@ -57,9 +57,9 @@ public class LineSearch {
 			}else {
 				contentList.add(line.getUrl());//本质是domain name
 			}
-			contentList.add(line.getIP());
-			contentList.add(line.getCDN());
-			contentList.add(line.getComment());
+			contentList.add(line.getIPSet().toString());
+			contentList.add(line.getCNAMESet().toString());
+			contentList.add(line.getComments().toString());
 			contentList.add(line.getTitle());
 			contentList.add(line.getIcon_hash());
 			contentList.add(line.getASNInfo());
@@ -139,7 +139,7 @@ public class LineSearch {
 			}
 
 			if (dork.equalsIgnoreCase(SearchDork.COMMENT.toString())) {
-				tempContent = line.getComment();
+				tempContent = line.getComments().toString();
 			}
 			
 			if (dork.equalsIgnoreCase(SearchDork.TITLE.toString())) {
@@ -179,13 +179,13 @@ public class LineSearch {
 			if (pRegex.matcher(line.getUrl()).find()) {
 				return true;
 			}
-			if (pRegex.matcher(line.getIP()).find()) {
+			if (pRegex.matcher(line.getIPSet().toString()).find()) {
 				return true;
 			}
-			if (pRegex.matcher(line.getCDN()).find()) {
+			if (pRegex.matcher(line.getCNAMESet().toString()).find()) {
 				return true;
 			}
-			if (pRegex.matcher(line.getComment()).find()) {
+			if (pRegex.matcher(line.getComments().toString()).find()) {
 				return true;
 			}
 			if (pRegex.matcher(line.getASNInfo()).find()) {

@@ -1,22 +1,28 @@
 package domain.target;
 
-import burp.BurpExtender;
-import domain.DomainManager;
-import domain.DomainPanel;
-import title.IndexedLinkedHashMap;
-import title.LineTableModel;
-
-import javax.swing.*;
-import javax.swing.border.LineBorder;
-import javax.swing.table.TableModel;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.PrintWriter;
-import java.lang.annotation.Target;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.SortOrder;
+import javax.swing.SwingUtilities;
+import javax.swing.border.LineBorder;
+import javax.swing.table.TableModel;
+
+import burp.BurpExtender;
+import domain.DomainManager;
+import domain.DomainPanel;
+import title.IndexedHashMap;
+import title.LineTableModel;
 
 public class TargetTable extends JTable{
 
@@ -160,14 +166,14 @@ public class TargetTable extends JTable{
 		if (targetTableModel == null) {//兼容旧版本
 			DomainPanel.backupDB();
 			targetTableModel = new TargetTableModel();
-			IndexedLinkedHashMap<String, TargetEntry> entries = rootDomainToTarget(DomainPanel.getDomainResult());
+			IndexedHashMap<String, TargetEntry> entries = rootDomainToTarget(DomainPanel.getDomainResult());
 			targetTableModel.setData(entries);
 		}
 		setTargetModel(targetTableModel);//这句很关键，否则无法显示整个表的头和内容
 	}
 
-	public static IndexedLinkedHashMap<String, TargetEntry> rootDomainToTarget(DomainManager domainManager){
-		IndexedLinkedHashMap<String, TargetEntry> entries = new IndexedLinkedHashMap<String, TargetEntry>();
+	public static IndexedHashMap<String, TargetEntry> rootDomainToTarget(DomainManager domainManager){
+		IndexedHashMap<String, TargetEntry> entries = new IndexedHashMap<String, TargetEntry>();
 		//兼容旧版本
 		if (domainManager.getRootDomainMap().size() >0 ) {
 			for (Map.Entry<String, String> entry : DomainPanel.getDomainResult().getRootDomainMap().entrySet()) {

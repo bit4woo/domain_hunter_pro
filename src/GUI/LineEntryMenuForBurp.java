@@ -591,10 +591,8 @@ public class LineEntryMenuForBurp{
 			LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(fullurl.toString());
 
 			LineEntry newEntry = new LineEntry(message);
-			newEntry.setComment("Manual-Saved");
-			newEntry.setEntryType(LineEntry.EntryType_Manual_Saved);
+			newEntry.setEntrySource(LineEntry.Source_Manual_Saved);
 			newEntry.setCheckStatus(LineEntry.CheckStatus_UnChecked);
-			newEntry.setManualSaved(true);
 
 			if (entry != null) {//存在相同URL的记录
 				int user_input = JOptionPane.showConfirmDialog(null, "Do you want to overwrite?","Item already exist",JOptionPane.YES_NO_CANCEL_OPTION);
@@ -626,10 +624,8 @@ public class LineEntryMenuForBurp{
 			LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(fullurl.toString());
 
 			LineEntry newEntry = new LineEntry(message);
-			newEntry.setComment("Manual-Saved");
-			newEntry.setEntryType(LineEntry.EntryType_Manual_Saved);
+			newEntry.setEntrySource(LineEntry.Source_Manual_Saved);
 			newEntry.setCheckStatus(LineEntry.CheckStatus_UnChecked);
-			newEntry.setManualSaved(true);
 
 			if (entry != null) {//存在相同URL的记录
 				if (JOptionPane.YES_OPTION == user_input) {

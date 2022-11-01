@@ -22,10 +22,6 @@ public class LineEntry {
 	public static final String AssetType_C = "未分类";//默认值，还未进行区分的资产或者普通价值资产
 	public static final String AssetType_D = "非目标资产";//非目标资产，通常跑网段都会出现这类资产。
 
-	//	public static final String Tag_Manager = "管理端";
-	//	public static final String Tag_UserEnd = "用户端";
-	//	public static final String Tag_TestEnvironment = "测试环境";
-
 	public static final String[] AssetTypeArray = {LineEntry.AssetType_A, LineEntry.AssetType_B, 
 			LineEntry.AssetType_C, LineEntry.AssetType_D};
 	
@@ -43,7 +39,7 @@ public class LineEntry {
 	public static final String Tag_NotTargetBaseOnBlackList = "IPIsBlack";
 	public static final String Tag_NotTargetByUser = "NotTarget";
 
-	public static final String EntryType_Web = "Web"; //
+	public static final String EntryType_Web = "Web";
 	public static final String EntryType_DNS = "DNS";
 	
 	//记录的来源
@@ -87,7 +83,9 @@ public class LineEntry {
 	private String CheckStatus =CheckStatus_UnChecked;
 	private String AssetType = AssetType_C;
 	private String EntryType = EntryType_Web;
+	private String EntrySource = "";
 	private Set<String> comments = new HashSet<String>();
+	private Set<String> EntryTags = new HashSet<String>();
 
 	//remove IHttpRequestResponse field ,replace with request+response+httpService(host port protocol). for convert to json.
 
@@ -255,13 +253,26 @@ public class LineEntry {
 	public void setCNAMESet(Set<String> cNAMESet) {
 		CNAMESet = cNAMESet;
 	}
-
+	
 	public Set<String> getCertDomainSet() {
 		return CertDomainSet;
 	}
 
 	public void setCertDomainSet(Set<String> certDomainSet) {
 		CertDomainSet = certDomainSet;
+	}
+	
+	public String fetchCNAMEAndCertInfo() {
+		String CNames = String.join(",", getCNAMESet());
+		String CertDomains = String.join(",", getCertDomainSet());
+		Set<String> tmp = new HashSet<>();
+		if (!CNames.equals("")) {
+			tmp.add(CNames);
+		}
+		if (!CertDomains.equals("")) {
+			tmp.add(CertDomains);
+		}
+		return String.join("|", tmp);
 	}
 
 	public String getWebcontainer() {
@@ -344,6 +355,22 @@ public class LineEntry {
 		String bodyText = covertCharSet(response);
 
 		return grepTitle(bodyText);
+	}
+	
+	public String getHeaderValueOf(boolean isRequest, String headerName){
+		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
+		Getter getter = new Getter(helpers);
+		try {
+			if (isRequest) {
+				String value = getter.getHeaderValueOf(false, request, headerName);
+			}else {
+				String value = getter.getHeaderValueOf(false, response, headerName);
+			}
+			return title;
+		} catch (Exception e) {
+			//e.printStackTrace();
+			return "";
+		}
 	}
 	/**
 	 * 从响应包中提取title
@@ -447,6 +474,14 @@ public class LineEntry {
 	public void setEntryType(String entryType) {
 		EntryType = entryType;
 	}
+	
+	public String getEntrySource() {
+		return EntrySource;
+	}
+
+	public void setEntrySource(String entrySource) {
+		EntrySource = entrySource;
+	}
 
 	public Set<String> getComments() {
 		return comments;
@@ -454,6 +489,14 @@ public class LineEntry {
 
 	public void setComments(Set<String> comments) {
 		this.comments = comments;
+	}
+	
+	public Set<String> getEntryTags() {
+		return EntryTags;
+	}
+
+	public void setEntryTags(Set<String> entryTags) {
+		EntryTags = entryTags;
 	}
 
 	public String getASNInfo() {
