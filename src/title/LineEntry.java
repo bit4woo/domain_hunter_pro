@@ -8,6 +8,7 @@ import com.google.common.hash.HashCode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -15,7 +16,7 @@ import java.util.regex.Pattern;
 
 public class LineEntry {
 	private static final Logger log=LogManager.getLogger(LineEntry.class);
-	
+
 	//资产重要性
 	public static final String AssetType_A = "重要目标";//像管理后台、统一登录等等一旦有漏洞就危害很高的系统。
 	public static final String AssetType_B = "无价值无需再挖";//像官网、首页等对信息收集、目标界定有用；但是对“挖漏洞”来说没有价值的记录。
@@ -24,7 +25,7 @@ public class LineEntry {
 
 	public static final String[] AssetTypeArray = {LineEntry.AssetType_A, LineEntry.AssetType_B, 
 			LineEntry.AssetType_C, LineEntry.AssetType_D};
-	
+
 	//对当前资产的检测进度
 	public static final String CheckStatus_UnChecked = "UnChecked";
 	public static final String CheckStatus_Checked = "Done";
@@ -33,7 +34,7 @@ public class LineEntry {
 
 	public static final String[] CheckStatusArray = {LineEntry.CheckStatus_UnChecked, LineEntry.CheckStatus_Checking,
 			LineEntry.CheckStatus_Checked,LineEntry.CheckStatus_MoreAction};
-	
+
 	//资产归属判断依据
 	public static final String Tag_NotTargetBaseOnCertInfo = "CertNotMatch";
 	public static final String Tag_NotTargetBaseOnBlackList = "IPIsBlack";
@@ -41,7 +42,7 @@ public class LineEntry {
 
 	public static final String EntryType_Web = "Web";
 	public static final String EntryType_DNS = "DNS";
-	
+
 	//记录的来源
 	public static final String Source_Sub_domain = "subdomain"; //来自subdomain
 	public static final String Source_Custom_Input = "custom"; //来自用户自定义输入
@@ -115,6 +116,13 @@ public class LineEntry {
 		parse(messageinfo);
 	}
 
+	/**
+	 * 用于从数据库中恢复对象
+	 */
+	public LineEntry(URL url,byte[] request,byte[] response) {
+		parse(url,request,response);
+	}
+
 	public LineEntry(IHttpRequestResponse messageinfo,String CheckStatus,String comment) {
 		parse(messageinfo);
 
@@ -131,34 +139,41 @@ public class LineEntry {
 	}
 
 	private void parse(IHttpRequestResponse messageinfo) {
+		if (messageinfo == null) return;
+		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
+		URL tmpurl = helpers.analyzeRequest(messageinfo).getUrl();//包含了默认端口
+		parse(tmpurl,messageinfo.getRequest(),messageinfo.getResponse());
+	}
+
+
+	/**
+	 * 可以用于从数据库中恢复对象
+	 * @param url
+	 * @param request
+	 * @param response
+	 */
+	private void parse(URL url,byte[] request,byte[] response) {
 		try {
+			this.url = url.toString();
+			port = url.getPort()== -1 ? url.getDefaultPort():url.getPort();
+			host = url.getHost();
+			protocol = url.getProtocol();
 
-			//time = Commons.getNowTimeString();//这是动态的，会跟随系统时间自动变化,why?--是因为之前LineTableModel的getValueAt函数每次都主动调用了该函数。
-			if (messageinfo == null) return;
-			IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
-			IHttpService service = messageinfo.getHttpService();
+			if (request != null) this.request = request;
 
-			//url = service.toString();
-			url = helpers.analyzeRequest(messageinfo).getUrl().toString();//包含了默认端口
-			port = service.getPort();
-			host = service.getHost();
-			protocol = service.getProtocol();
+			if (response != null) {
+				this.response = response;
 
-			if (messageinfo.getRequest() != null){
-				request = messageinfo.getRequest();
-			}
-
-			if (messageinfo.getResponse() != null){
-				response = messageinfo.getResponse();
+				IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
 				IResponseInfo responseInfo = helpers.analyzeResponse(response);
 				statuscode = responseInfo.getStatusCode();
 
-				Getter getter = new Getter(helpers);
+				HelperPlus getter = new HelperPlus(helpers);
 
-				webcontainer = getter.getHeaderValueOf(false, messageinfo, "Server");
-				byte[] byteBody = getter.getBody(false, messageinfo);
+				webcontainer = getter.getHeaderValueOf(false, response, "Server");
+				byte[] byteBody = HelperPlus.getBody(false, response);
 				try{
-					contentLength = Integer.parseInt(getter.getHeaderValueOf(false, messageinfo, "Content-Length").trim());
+					contentLength = Integer.parseInt(getter.getHeaderValueOf(false, response, "Content-Length").trim());
 				}catch (Exception e){
 					if (contentLength==-1 && byteBody!=null) {
 						contentLength = byteBody.length;
@@ -244,7 +259,7 @@ public class LineEntry {
 	public void setIPSet(Set<String> iPSet) {
 		IPSet = iPSet;
 	}
-	
+
 	//用于序列化
 	public Set<String> getCNAMESet() {
 		return CNAMESet;
@@ -253,7 +268,7 @@ public class LineEntry {
 	public void setCNAMESet(Set<String> cNAMESet) {
 		CNAMESet = cNAMESet;
 	}
-	
+
 	public Set<String> getCertDomainSet() {
 		return CertDomainSet;
 	}
@@ -261,7 +276,7 @@ public class LineEntry {
 	public void setCertDomainSet(Set<String> certDomainSet) {
 		CertDomainSet = certDomainSet;
 	}
-	
+
 	public String fetchCNAMEAndCertInfo() {
 		String CNames = String.join(",", getCNAMESet());
 		String CertDomains = String.join(",", getCertDomainSet());
@@ -339,7 +354,7 @@ public class LineEntry {
 	 */
 	public String fetchTitle(byte[] response) {
 		if (response == null) return "";
-		
+
 		//https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Redirections
 		if (statuscode >= 300 && statuscode <= 308) {
 			IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
@@ -351,12 +366,12 @@ public class LineEntry {
 				return title;
 			}
 		}
-		
+
 		String bodyText = covertCharSet(response);
 
 		return grepTitle(bodyText);
 	}
-	
+
 	public String getHeaderValueOf(boolean isRequest, String headerName){
 		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
 		Getter getter = new Getter(helpers);
@@ -385,7 +400,7 @@ public class LineEntry {
 	 */
 	private static String grepTitle(String bodyText) {
 		String title = "";
-		
+
 		String regex = "<title(.*?)>(.*?)</title>";
 		Pattern p = Pattern.compile(regex,Pattern.CASE_INSENSITIVE);
 		Matcher m  = p.matcher(bodyText);
@@ -395,7 +410,7 @@ public class LineEntry {
 				return title;
 			}
 		}
-		
+
 		String regex1 = "<h[1-6](.*?)>(.*?)</h[1-6]>";
 		Pattern ph = Pattern.compile(regex1,Pattern.CASE_INSENSITIVE);
 		Matcher mh  = ph.matcher(bodyText);
@@ -474,7 +489,7 @@ public class LineEntry {
 	public void setEntryType(String entryType) {
 		EntryType = entryType;
 	}
-	
+
 	public String getEntrySource() {
 		return EntrySource;
 	}
@@ -490,7 +505,7 @@ public class LineEntry {
 	public void setComments(Set<String> comments) {
 		this.comments = comments;
 	}
-	
+
 	public Set<String> getEntryTags() {
 		return EntryTags;
 	}
@@ -546,17 +561,17 @@ public class LineEntry {
 
 		comments.remove(commentToRemove);
 	}
-	
-	
+
+
 	public static void testGrepTitle() {
 		String aa = " <title>Kênh Quản Lý Shop - Phần Mềm Quản Lý Bán Hàng Miễn Phí</title>";
 		String bb = "<title ng-bind=\"service.title\">The Evolution of the Producer-Consumer Problem in Java - DZone Java</title>";
 		String cc = " <TITLE>Kênh Quản Lý Shop - Phần Mềm Quản Lý Bán Hàng Miễn Phí</title>";
 		String dd = " <h1aaa>h1</h1>";
-		
+
 		System.out.println(grepTitle(dd));
 	}
-	
+
 	public static void test() {
 		//		LineEntry x = new LineEntry();
 		//		x.setRequest("xxxxxx".getBytes());

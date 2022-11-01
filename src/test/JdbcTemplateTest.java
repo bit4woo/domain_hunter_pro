@@ -1,4 +1,4 @@
-package dao;
+package test;
 
 import javax.sql.DataSource;
 

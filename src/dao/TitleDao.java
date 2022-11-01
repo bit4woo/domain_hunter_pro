@@ -9,6 +9,8 @@ import javax.sql.DataSource;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import com.alibaba.fastjson.JSON;
+
 import title.LineEntry;
 
 /**
@@ -50,7 +52,8 @@ public class TitleDao {
 				" contentLength           INT    NOT NULL," +
 				" title           TEXT    NOT NULL," +
 				" IP           TEXT    NOT NULL," +
-				" CDN           TEXT    NOT NULL," +
+				" CNAME           TEXT    NOT NULL," +
+				" CertDomains           TEXT    NOT NULL," +
 				" webcontainer           TEXT    NOT NULL," +
 				" time           TEXT    NOT NULL," +
 				" icon_hash           TEXT    NOT NULL," +
@@ -59,7 +62,14 @@ public class TitleDao {
 				" response           BLOB    NOT NULL," +
 				" protocol           TEXT    NOT NULL," +
 				" host           TEXT    NOT NULL," +
-				" port        INT    NOT NULL)";
+				" port        INT    NOT NULL)"+
+				" CheckStatus        INT    NOT NULL)"+
+				" AssetType        INT    NOT NULL)"+
+				" EntryType        INT    NOT NULL)"+
+				" EntrySource        INT    NOT NULL)"+
+				" comments        INT    NOT NULL)"+
+				" EntryTags        INT    NOT NULL)";
+		
 		jdbcTemplate.execute(sqlTitle);
 		
 		//https://www.sqlitetutorial.net/sqlite-replace-statement/
@@ -75,17 +85,22 @@ public class TitleDao {
 	 * @return
 	 */
 	public boolean addOrUpdateTitle(LineEntry entry){
-		String sql = "insert or replace into Title (url,statuscode,contentLength,title,IP,CDN"
-					+ "webcontainer,time,icon_hash,ASNInfo,request,response,"
+		String sql = "insert or replace into Title (url,statuscode,contentLength,title,IP,CNAME"
+					+ "CertDomains,webcontainer,time,icon_hash,ASNInfo,request,response,"
 					+ "protocol,host,port,"
-					+ "CheckStatus,AssetType,EntryType,comment,isManualSaved)"
-					+ " values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+					+ "CheckStatus,AssetType,EntryType,EntrySource,comments,EntryTags)"
+					+ " values(?,?,?,?,?,?,"
+					+ "?,?,?,?,?,?,?,"
+					+ "?,?,?,"
+					+ "?,?,?,?,?,?)";
 
 		int result = jdbcTemplate.update(sql, entry.getUrl(),entry.getStatuscode(),entry.getContentLength(),entry.getTitle(),
-				entry.getIP(),entry.getCDN(),entry.getWebcontainer(),entry.getTime(),entry.getIcon_hash(),entry.getASNInfo(),
+				JSON.toJSONString(entry.getIPSet()),JSON.toJSONString(entry.getCNAMESet()),
+				JSON.toJSONString(entry.getCertDomainSet()),entry.getWebcontainer(),entry.getTime(),entry.getIcon_hash(),entry.getASNInfo(),
 				entry.getRequest(),entry.getResponse(),
 				entry.getProtocol(),entry.getHost(),entry.getPort(),
-				entry.getCheckStatus(),entry.getAssetType(),entry.getEntryType(),entry.getComment(),entry.isManualSaved());
+				entry.getCheckStatus(),entry.getAssetType(),entry.getEntryType(),entry.getEntrySource(),
+				JSON.toJSONString(entry.getComments()),JSON.toJSONString(entry.getEntryTags()));
 		return result > 0;
 	}
 
@@ -142,7 +157,7 @@ public class TitleDao {
 		for(LineEntry entry:lineEntries) {
 			urls.add(entry.getUrl());
 		}
-		String sql="DELETE FROM Title where NAME In ?";
+		String sql="DELETE FROM Title where url In ?";
 		
 		return jdbcTemplate.update(sql, urls) == urls.size();
 	}
