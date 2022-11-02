@@ -11,6 +11,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.alibaba.fastjson.JSON;
 
+import burp.SetAndStr;
 import title.LineEntry;
 
 /**
@@ -20,7 +21,7 @@ import title.LineEntry;
 public class TitleDao {
 	private DataSource dataSource;
 	private JdbcTemplate jdbcTemplate;
-	
+
 	public TitleDao(String dbFilePath){
 		dataSource = DBUtils.getSqliteDataSource(dbFilePath);
 		jdbcTemplate = new JdbcTemplate(dataSource);
@@ -51,31 +52,35 @@ public class TitleDao {
 				" statuscode           INT    NOT NULL," +
 				" contentLength           INT    NOT NULL," +
 				" title           TEXT    NOT NULL," +
-				" IP           TEXT    NOT NULL," +
-				" CNAME           TEXT    NOT NULL," +
-				" CertDomains           TEXT    NOT NULL," +
 				" webcontainer           TEXT    NOT NULL," +
-				" time           TEXT    NOT NULL," +
+				
+				" IPSet           TEXT    NOT NULL," +
+				" CNAMESet           TEXT    NOT NULL," +
+				" CertDomainSet           TEXT    NOT NULL," +
+				
 				" icon_hash           TEXT    NOT NULL," +
 				" ASNInfo           TEXT    NOT NULL," +
+				" time           TEXT    NOT NULL," +
+				
 				" request           BLOB    NOT NULL," +
 				" response           BLOB    NOT NULL," +
 				" protocol           TEXT    NOT NULL," +
 				" host           TEXT    NOT NULL," +
 				" port        INT    NOT NULL)"+
+				
 				" CheckStatus        INT    NOT NULL)"+
 				" AssetType        INT    NOT NULL)"+
 				" EntryType        INT    NOT NULL)"+
 				" EntrySource        INT    NOT NULL)"+
 				" comments        INT    NOT NULL)"+
 				" EntryTags        INT    NOT NULL)";
-		
+
 		jdbcTemplate.execute(sqlTitle);
-		
+
 		//https://www.sqlitetutorial.net/sqlite-replace-statement/
 		String sqlcreateIndex = "CREATE UNIQUE INDEX idx_Title_url ON Title (url)";
 		jdbcTemplate.execute(sqlcreateIndex);
-		
+
 		return true;
 	}
 
@@ -85,22 +90,22 @@ public class TitleDao {
 	 * @return
 	 */
 	public boolean addOrUpdateTitle(LineEntry entry){
-		String sql = "insert or replace into Title (url,statuscode,contentLength,title,IP,CNAME"
-					+ "CertDomains,webcontainer,time,icon_hash,ASNInfo,request,response,"
-					+ "protocol,host,port,"
-					+ "CheckStatus,AssetType,EntryType,EntrySource,comments,EntryTags)"
-					+ " values(?,?,?,?,?,?,"
-					+ "?,?,?,?,?,?,?,"
-					+ "?,?,?,"
-					+ "?,?,?,?,?,?)";
+		String sql = "insert or replace into Title (url,statuscode,contentLength,title,webcontainer,"
+				+ "IPSet,CNAMESet,CertDomainSet,icon_hash,ASNInfo,time,"
+				+ "protocol,host,port,request,response,"
+				+ "CheckStatus,AssetType,EntryType,EntrySource,comments,EntryTags)"
+				+ "values(?,?,?,?,?,"
+				+ "?,?,?,?,?,?,"
+				+ "?,?,?,?,?,"
+				+ "?,?,?,?,?,?)";
 
-		int result = jdbcTemplate.update(sql, entry.getUrl(),entry.getStatuscode(),entry.getContentLength(),entry.getTitle(),
-				JSON.toJSONString(entry.getIPSet()),JSON.toJSONString(entry.getCNAMESet()),
-				JSON.toJSONString(entry.getCertDomainSet()),entry.getWebcontainer(),entry.getTime(),entry.getIcon_hash(),entry.getASNInfo(),
-				entry.getRequest(),entry.getResponse(),
-				entry.getProtocol(),entry.getHost(),entry.getPort(),
+		int result = jdbcTemplate.update(sql, 
+				entry.getUrl(),entry.getStatuscode(),entry.getContentLength(),entry.getTitle(),entry.getWebcontainer(),
+				SetAndStr.toStr(entry.getIPSet()),SetAndStr.toStr(entry.getCNAMESet()),
+				SetAndStr.toStr(entry.getCertDomainSet()),entry.getIcon_hash(),entry.getASNInfo(),entry.getTime(),
+				entry.getProtocol(),entry.getHost(),entry.getPort(),entry.getRequest(),entry.getResponse(),
 				entry.getCheckStatus(),entry.getAssetType(),entry.getEntryType(),entry.getEntrySource(),
-				JSON.toJSONString(entry.getComments()),JSON.toJSONString(entry.getEntryTags()));
+				SetAndStr.toStr(entry.getComments()),SetAndStr.toStr(entry.getEntryTags()));
 		return result > 0;
 	}
 
@@ -125,8 +130,8 @@ public class TitleDao {
 		String sql = "select * from Title where id=?";
 		return jdbcTemplate.queryForObject(sql, new Object[] { id },new TitleMapper());
 	}
-	
-	
+
+
 	public LineEntry selectTitleByUrl(String url){
 		String sql = "select * from Title where url=?";
 		return jdbcTemplate.queryForObject(sql, new Object[] { url },new TitleMapper());
@@ -136,12 +141,12 @@ public class TitleDao {
 		String sql = "select * from Title";
 		return jdbcTemplate.query(sql,new TitleMapper());
 	}
-	
+
 	public boolean deleteTitle(LineEntry entry){
 		String sql="DELETE FROM Title where url= ?";
 		return jdbcTemplate.update(sql, entry.getUrl()) > 0;
 	}
-	
+
 	public boolean deleteTitleByUrl(String url){
 		String sql="DELETE FROM Title where url= ?";
 		return jdbcTemplate.update(sql, url) > 0;
@@ -158,7 +163,7 @@ public class TitleDao {
 			urls.add(entry.getUrl());
 		}
 		String sql="DELETE FROM Title where url In ?";
-		
+
 		return jdbcTemplate.update(sql, urls) == urls.size();
 	}
 

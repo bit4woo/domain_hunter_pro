@@ -52,6 +52,10 @@ public class LineEntry {
 
 	public static String systemCharSet = getSystemCharSet();
 
+	/**
+	 * 从burp的角度，一个数据包由三部分组成：request、response、httpService
+	 * 而httpService又可以分为：protocol、host、port
+	 */
 	private int port =-1;
 	private String host = "";
 	private String protocol ="";
@@ -60,19 +64,25 @@ public class LineEntry {
 	private byte[] request = {};
 	private byte[] response = {};
 	// request+response+httpService == IHttpRequestResponse,burp的划分方式
-
-	//used in UI,the fields to show,平常的划分方式
+	
+	/**
+	 * 如下是显示界面使用到的字段，部分来自数据包本身，部分需要额外的请求
+	 *
+	 */
 	private String url = "";
 	private int statuscode = -1;
 	private int contentLength = -1;
 	private String title = "";
+	private String webcontainer = "";
+	//如上几个字段都是来自数据包本身
+	
 	private Set<String> IPSet = new HashSet<String>();
 	private Set<String> CNAMESet = new HashSet<String>();
 	private Set<String> CertDomainSet = new HashSet<String>();
-	private String webcontainer = "";
-	private String time = "";
 	private String icon_hash = "";
 	private String ASNInfo = "";
+	private String time = "";
+	//如上几个字段需要网络请求或查询
 
 	//Gson中，加了transient表示不序列化，是最简单的方法
 	//给不想被序列化的属性增加transient属性---java特性
@@ -80,7 +90,7 @@ public class LineEntry {
 	//private transient String bodyText = "";//use to adjust the response changed or not
 	//don't store these two field to reduce config file size.
 
-	//field for user
+	//field for user用户标记的字段，表明状态、类型、来源、备注、tag等等
 	private String CheckStatus =CheckStatus_UnChecked;
 	private String AssetType = AssetType_C;
 	private String EntryType = EntryType_Web;
