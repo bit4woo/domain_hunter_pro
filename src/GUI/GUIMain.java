@@ -1,5 +1,15 @@
 package GUI;
 
+import java.awt.EventQueue;
+import java.io.File;
+import java.io.PrintWriter;
+import java.util.Map;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
+import javax.swing.SwingWorker;
+
 import Tools.ToolPanel;
 import burp.BurpExtender;
 import burp.Commons;
@@ -7,67 +17,61 @@ import burp.DBHelper;
 import burp.dbFileChooser;
 import config.ConfigPanel;
 import domain.DomainPanel;
-import domain.target.TargetTableModel;
 import title.TitlePanel;
-
-import javax.swing.*;
-import java.awt.*;
-import java.io.File;
-import java.io.PrintWriter;
-import java.util.Map;
 
 
 public class GUIMain extends JFrame {
 
-	public static DomainPanel domainPanel;
-	public static TitlePanel titlePanel;
-	private static File currentDBFile;
-	public static ProjectMenu projectMenu;
+	//当多个实例都有相同的是static field时，对象间对static属性的修改会互相影响，因为多个对象共享一个属性的copy！！
+	public DomainPanel domainPanel;
+	public TitlePanel titlePanel;
+	public ToolPanel toolPanel;
+	public ConfigPanel configPanel;
 	
-	private PrintWriter stdout;
-	private PrintWriter stderr;
-	public static dbFileChooser dbfc = new dbFileChooser();
+	public File currentDBFile;
+	public ProjectMenu projectMenu;
 	
-	private ToolPanel toolPanel;
-	private ConfigPanel configPanel;
+	public PrintWriter stdout;
+	public PrintWriter stderr;
+	
+	public dbFileChooser dbfc = new dbFileChooser();
 
-	public static ProjectMenu getProjectMenu() {
-		return projectMenu;
-	}
-
-	public static void setProjectMenu(ProjectMenu projectMenu) {
-		GUIMain.projectMenu = projectMenu;
-	}
-
-	public static DomainPanel getDomainPanel() {
+	public DomainPanel getDomainPanel() {
 		return domainPanel;
 	}
-
-	public static TitlePanel getTitlePanel() {
+	public void setDomainPanel(DomainPanel domainPanel) {
+		this.domainPanel = domainPanel;
+	}
+	public TitlePanel getTitlePanel() {
 		return titlePanel;
 	}
-
-
+	public void setTitlePanel(TitlePanel titlePanel) {
+		this.titlePanel = titlePanel;
+	}
 	public ToolPanel getToolPanel() {
 		return toolPanel;
 	}
-	
+	public void setToolPanel(ToolPanel toolPanel) {
+		this.toolPanel = toolPanel;
+	}
 	public ConfigPanel getConfigPanel() {
 		return configPanel;
 	}
-
 	public void setConfigPanel(ConfigPanel configPanel) {
 		this.configPanel = configPanel;
 	}
-
-	public static File getCurrentDBFile() {
+	public File getCurrentDBFile() {
 		return currentDBFile;
 	}
-
-	public static void setCurrentDBFile(File currentDBFile) {
-		GUIMain.currentDBFile = currentDBFile;
+	public void setCurrentDBFile(File currentDBFile) {
+		this.currentDBFile = currentDBFile;
 	}
-
+	public ProjectMenu getProjectMenu() {
+		return projectMenu;
+	}
+	public void setProjectMenu(ProjectMenu projectMenu) {
+		this.projectMenu = projectMenu;
+	}
 	/**
 	 * Create the frame.
 	 */
@@ -94,6 +98,7 @@ public class GUIMain extends JFrame {
 		tabbedWrapper.addTab("Tools", null,toolPanel,null);
 		tabbedWrapper.addTab("Config", null,configPanel,null);
 	}
+	
 	/**
 	 * 仅仅锁住图形界面，不影响后台处理数据
 	 */
@@ -117,7 +122,7 @@ public class GUIMain extends JFrame {
 		}
 	}
 
-	public static void LoadData(String dbFilePath){
+	public void LoadData(String dbFilePath){
 		SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
 			@Override
 			protected Map doInBackground() throws Exception {
@@ -131,7 +136,7 @@ public class GUIMain extends JFrame {
 		worker.execute();
 	}
 
-	private static boolean LoadDataPrivate(String dbFilePath){
+	private boolean LoadDataPrivate(String dbFilePath){
 		try {//这其中的异常会导致burp退出
 			System.out.println("=================================");
 			System.out.println("==Start Loading Data From: " + dbFilePath+" "+Commons.getNowTimeString()+"==");
@@ -141,18 +146,15 @@ public class GUIMain extends JFrame {
 				BurpExtender.getStdout().println("==Load database file [" + dbFilePath+"] failed,file does not exist "+Commons.getNowTimeString()+"==");
 				return false;
 			}
-			GUIMain.setCurrentDBFile(currentDBFile);
-
+			
 			DBHelper dbhelper = new DBHelper(dbFilePath);
 
-			DomainPanel.setDomainResult(dbhelper.getDomainObj());//为了兼容就版本，
-			DomainPanel.getTargetTable().loadData(dbhelper.getTargets());
+			domainPanel.getTargetTable().setTargetModel(dbhelper.getTargets());
 			domainPanel.LoadData(dbhelper.getDomainObj());
 			titlePanel.loadData(dbhelper.getTitles());
 			
-
 			ConfigPanel.getLineConfig().setDbfilepath(currentDBFile.getAbsolutePath());
-			GUIMain.displayProjectName();
+			displayProjectName();
 			System.out.println("==End Loading Data From: "+ dbFilePath+" "+Commons.getNowTimeString() +"==");//输出到debug console
 			BurpExtender.getStdout().println("==End Loading Data From: "+ dbFilePath+" "+Commons.getNowTimeString() +"==");
 			return true;
@@ -165,16 +167,16 @@ public class GUIMain extends JFrame {
 	}
 
 	//显示项目名称，加载多个该插件时，进行区分，避免混淆
-	public static void displayProjectName() {
+	public void displayProjectName() {
 		if (DomainPanel.getDomainResult() !=null){
-			String name = GUIMain.currentDBFile.getName();
+			String name = currentDBFile.getName();
 			//String newName = String.format(BurpExtender.getFullExtenderName()+" [%s]",name);
 			//v2021.8的版本中，邮件菜单会用到插件名称，所以减小名称的长度
 			String newName = String.format(BurpExtender.getExtenderName()+" [%s]",name);
 			
 			BurpExtender.getCallbacks().setExtensionName(newName); //新插件名称
-			GUIMain.getProjectMenu().AddDBNameMenuItem(name);
-			GUIMain.getProjectMenu().AddDBNameTab(name);
+			getProjectMenu().AddDBNameMenuItem(name);
+			getProjectMenu().AddDBNameTab(name);
 			//gui.repaint();//NO need
 		}
 	}
@@ -227,6 +229,5 @@ public class GUIMain extends JFrame {
 			}
 		});
 	}
-
 
 }
