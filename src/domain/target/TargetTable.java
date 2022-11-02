@@ -29,7 +29,7 @@ public class TargetTable extends JTable{
 	private TargetTableModel targetModel = new TargetTableModel();
 	private PrintWriter stderr;
 	private PrintWriter stdout;
-
+	
 	public TargetTable() {
 
 		try {
@@ -94,6 +94,12 @@ public class TargetTable extends JTable{
 		setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
 	}
 	
+	public TargetTable(TargetTableModel targetModel) {
+		this();
+		this.setModel(targetModel);
+	}
+	
+	
 	public void tableHeaderLengthInit(){
 		Font f = this.getFont();
 		FontMetrics fm = this.getFontMetrics(f);
@@ -134,7 +140,7 @@ public class TargetTable extends JTable{
 
 	/**
 	 * JTable已经实现的方法，会被已有逻辑调用。
-	 * 不对其进行修改，自己的项目代码中也不要调用这个方法！
+	 * 不对其进行修改，自己的项目代码中也不要调用这个方法！！！
 	 * 
 	 */
 	@Override
@@ -150,52 +156,9 @@ public class TargetTable extends JTable{
 	public void setTargetModel(TargetTableModel targetModel) {
 		this.targetModel = targetModel;
 		setModel(this.targetModel);//没有这个行代码，就数据就不会显示！
-		this.targetModel.addListener();//setModel之后，原来的listener会失效！！！导致不能及时写入DB，这里重新添加！！！
 	}
 
 	public TargetTableModel getTargetModel() {
 		return getModel();
-	}
-
-	/**
-	 * 这里加载数据的过程中使用了setModel来设置新的model对象，这个操作会导致原来的listener失效！
-	 * 而titlePanel中的loadData是修改model中的数据对象，而不是直接更换model。
-	 * @param targetTableModel
-	 */
-	public void loadData(TargetTableModel targetTableModel){
-		if (targetTableModel == null) {//兼容旧版本
-			DomainPanel.backupDB();
-			targetTableModel = new TargetTableModel();
-			IndexedHashMap<String, TargetEntry> entries = rootDomainToTarget(DomainPanel.getDomainResult());
-			targetTableModel.setData(entries);
-		}
-		setTargetModel(targetTableModel);//这句很关键，否则无法显示整个表的头和内容
-	}
-
-	public static IndexedHashMap<String, TargetEntry> rootDomainToTarget(DomainManager domainManager){
-		IndexedHashMap<String, TargetEntry> entries = new IndexedHashMap<String, TargetEntry>();
-		//兼容旧版本
-		if (domainManager.getRootDomainMap().size() >0 ) {
-			for (Map.Entry<String, String> entry : DomainPanel.getDomainResult().getRootDomainMap().entrySet()) {
-				String key = entry.getKey();
-				if (key.startsWith("[exclude]")) {
-					key = key.replaceFirst("\\[exclude\\]", "");
-					TargetEntry targetEntry = new TargetEntry(key, false);
-					targetEntry.setBlack(true);
-					entries.put(key,targetEntry);
-				} else {
-					entries.put(key, new TargetEntry(key, false));//直接操作entries，避免触发监听器，频繁操作数据库
-				}
-			}
-		}
-
-		//兼容旧版本
-		if (domainManager.getSubnetSet().size() >0 ) {
-			for (String IPorSubnet : DomainPanel.getDomainResult().getSubnetSet()) {
-				entries.put(IPorSubnet,new TargetEntry(IPorSubnet));
-			}
-		}
-
-		return entries;
 	}
 }

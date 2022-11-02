@@ -57,22 +57,8 @@ public class TargetTableModel extends AbstractTableModel {
 			stdout = new PrintWriter(System.out, true);
 			stderr = new PrintWriter(System.out, true);
 		}
-		addListener();//构造函数中已经有了添加listener了的操作了，为什么会在Jtable.setModel()函数后失效呢？奇怪！
-	}
-
-	public void addListener(){
-		/**
-		 *
-		 * 注意，所有直接对TargetTableModel中数据的修改，都不会触发该tableChanged监听器。
-		 * 除非操作的逻辑中包含了firexxxx来主动通知监听器。
-		 * DomainPanel.domainTableModel.fireTableChanged(null);
-		 */
-		addTableModelListener(new TableModelListener() {
-			@Override
-			public void tableChanged(TableModelEvent e) {
-				saveTargetToDB();
-			}
-		});
+		//addListener();//构造函数中已经有了添加listener了的操作了，为什么会在Jtable.setModel()函数后失效呢？奇怪！
+		//不再使用监听器来更新数据库
 	}
 
 	//getter setter是为了序列化和反序列化
@@ -101,23 +87,7 @@ public class TargetTableModel extends AbstractTableModel {
 		return new Gson().fromJson(instanceString, TargetTableModel.class);
 	}
 
-	public void saveTargetToDB() {
-		File file = GUIMain.getCurrentDBFile();
-		if (file == null) {
-			if (null == DomainPanel.getDomainResult()) return;//有数据才弹对话框指定文件位置。
-			file = BurpExtender.getGui().dbfc.dialog(false,".db");
-			GUIMain.setCurrentDBFile(file);
-		}
-		if (file != null) {
-			DBHelper dbHelper = new DBHelper(file.toString());
-			boolean success = dbHelper.saveTargets(this);
-			if (success) {
-				log.info("target data saved");
-			}else {
-				log.error("target data save failed");
-			}
-		}
-	}
+	/////////////AbstractTableModel的实现函数////////////////////
 
 	@Override
 	public int getRowCount() {
@@ -197,6 +167,8 @@ public class TargetTableModel extends AbstractTableModel {
 			return false;
 		}
 	}
+	/////////////^^^^^AbstractTableModel的实现函数^^^^^////////////////////
+
 
 	public void clear() {
 		int size = targetEntries.size();
@@ -209,7 +181,7 @@ public class TargetTableModel extends AbstractTableModel {
 	 * 用于加载数据时，直接初始化
 	 * @param targetEntries
 	 */
-	public void setData(IndexedHashMap<String,TargetEntry> targetEntries) {
+	public void setDataDeprecated(IndexedHashMap<String,TargetEntry> targetEntries) {
 		clear();
 		this.targetEntries = targetEntries;
 		int size = targetEntries.size();
@@ -218,6 +190,11 @@ public class TargetTableModel extends AbstractTableModel {
 		}
 	}
 
+	/**
+	 * TargetEntry的有效性检查
+	 * @param entry
+	 * @return
+	 */
 	public static boolean ifValid(TargetEntry entry) {
 		if (entry.getTarget() == null || entry.getTarget().equals("")) {
 			return false;
@@ -236,41 +213,27 @@ public class TargetTableModel extends AbstractTableModel {
 		return true;
 	}
 
+	/**
+	 * 应该包含数据库写入操作
+	 * @param entry
+	 */
 	public void addRowIfValid(TargetEntry entry) {
 		if (ifValid(entry)){
-			synchronized (targetEntries) {
-				//因为后台的流量分析进程是多线程，可能同事添加数据！
-				String key = entry.getTarget();
-				TargetEntry oldentry = targetEntries.get(key);
-				if (oldentry != null) {//如果有旧的记录，就需要用旧的内容做修改
-					entry.setBlack(oldentry.isBlack());
-					entry.setComment(oldentry.getComment());
-					entry.setKeyword(oldentry.getKeyword());
-				}
-				addRow(key, entry);
+			//因为后台的流量分析进程是多线程，可能同事添加数据！
+			String key = entry.getTarget();
+			TargetEntry oldentry = targetEntries.get(key);
+			if (oldentry != null) {//如果有旧的记录，就需要用旧的内容做修改
+				entry.setBlack(oldentry.isBlack());
+				entry.setComment(oldentry.getComment());
+				entry.setKeyword(oldentry.getKeyword());
 			}
-		}
-	}
-
-
-	public void addRowWithoutFireIfValid(TargetEntry entry) {
-		if (ifValid(entry)){
-			synchronized (targetEntries) {
-				//因为后台的流量分析进程是多线程，可能同事添加数据！
-				String key = entry.getTarget();
-				TargetEntry oldentry = targetEntries.get(key);
-				if (oldentry != null) {//如果有旧的记录，就需要用旧的内容做修改
-					entry.setBlack(oldentry.isBlack());
-					entry.setComment(oldentry.getComment());
-					entry.setKeyword(oldentry.getKeyword());
-				}
-				addRowWithoutFire(key, entry);
-			}
+			addRow(key, entry);
 		}
 	}
 
 	/**
 	 * 数据的增删查改：新增
+	 * TODO 应该操作数据库
 	 * @param key
 	 * @param entry
 	 */
@@ -291,16 +254,6 @@ public class TargetTableModel extends AbstractTableModel {
 		}else {//新增
 			fireTableRowsInserted(rowIndex,rowIndex);
 		}
-	}
-
-
-	/**
-	 * 数据的增删查改：新增
-	 * @param key
-	 * @param entry
-	 */
-	private void addRowWithoutFire(String key,TargetEntry entry) {
-		targetEntries.put(key,entry);
 	}
 
 	/**
@@ -345,7 +298,7 @@ public class TargetTableModel extends AbstractTableModel {
 	public String fetchRootDomains() {
 		return String.join(System.lineSeparator(), targetEntries.keySet());
 	}
-	
+
 
 	/**
 	 * 返回目标集合，包含域名、IP、网段。
@@ -418,9 +371,6 @@ public class TargetTableModel extends AbstractTableModel {
 			if (ifValid(entry)) {
 				if (!entry.isBlack()) {
 					if (entry.getTarget() == null || entry.getType() == null) continue;
-					if (entry.getType().equals(TargetEntry.Target_Type_IPaddress)) {
-						result.add(entry.getTarget());
-					}
 					if (entry.getType().equals(TargetEntry.Target_Type_Subnet)) {
 						List<String> tmpIPs = IPAddressUtils.toIPList(entry.getTarget());
 						result.addAll(tmpIPs);
@@ -455,8 +405,6 @@ public class TargetTableModel extends AbstractTableModel {
 		for (TargetEntry entry:targetEntries.values()) {
 			if (!ifValid(entry)) continue;
 			if (entry.isBlack()) {
-				if (entry.getType().equals(TargetEntry.Target_Type_IPaddress))
-					result.add(entry.getTarget());
 				if (entry.getType().equals(TargetEntry.Target_Type_Subnet)) {
 					List<String> tmpIPs = IPAddressUtils.toIPList(entry.getTarget());
 					result.addAll(tmpIPs);
@@ -497,23 +445,8 @@ public class TargetTableModel extends AbstractTableModel {
 	}
 
 	public void ZoneTransferCheckAll() {
-		for (String rootDomain : fetchTargetDomainSet()) {
-			Set<String> NS = DomainNameUtils.GetAuthoritativeNameServer(rootDomain);
-			for (String Server : NS) {
-				//stdout.println("checking [Server: "+Server+" Domain: "+rootDomain+"]");
-				List<String> Records = DomainNameUtils.ZoneTransferCheck(rootDomain, Server);
-				if (Records.size() > 0) {
-					try {
-						//stdout.println("!!! "+Server+" is zoneTransfer vulnerable for domain "+rootDomain+" !");
-						File file = new File(Server + "-ZoneTransfer-" + Commons.getNowTimeString() + ".txt");
-						file.createNewFile();
-						FileUtils.writeLines(file, Records);
-						stdout.println("!!! Records saved to " + file.getAbsolutePath());
-					} catch (IOException e1) {
-						e1.printStackTrace();
-					}
-				}
-			}
+		for (TargetEntry entry: targetEntries.values()) {
+			entry.zoneTransferCheck();
 		}
 	}
 
@@ -544,38 +477,11 @@ public class TargetTableModel extends AbstractTableModel {
 		if (fetchBlackIPSet().contains(domain)){
 			return true;
 		}
-		
+
 		if (DomainPanel.getDomainResult().getNotTargetIPSet().contains(domain)) {
 			return true;
 		}
 		return false;
-	}
-
-	/**
-	 * 用于判断收集到的域名或IP是不是我们的有效目标
-	 * @param domain
-	 * @return
-	 */
-	@Deprecated //
-	public boolean isTargetDep(String domain) {
-		if (domain.contains(":")) {//处理带有端口号的域名
-			domain = domain.substring(0,domain.indexOf(":"));
-		}
-		if (!(DomainNameUtils.isValidDomain(domain)||
-				IPAddressUtils.isValidIP(domain))) {
-			return false;
-		}
-
-		if (isBlack(domain))return false;
-		//先过黑名单，如果在黑名单中，直接排除
-
-		for (String rootdomain:fetchTargetDomainSet()) {
-			if (domain.endsWith("."+rootdomain)||domain.equalsIgnoreCase(rootdomain)){
-				return true;
-			}
-		}
-
-		return fetchTargetIPSet().contains(domain);
 	}
 
 	public void debugPrint(String domain,int type,String reason) {
@@ -696,10 +602,10 @@ public class TargetTableModel extends AbstractTableModel {
 			return DomainManager.USELESS;
 		}
 	}
-	
-	
+
+
 	public int emailType(String email) {
-		
+
 		for (String rootDomain:fetchTargetDomainSet()) {
 			if (rootDomain.length() >= 2 && email.toLowerCase().endsWith(rootDomain.toLowerCase())) {
 				return DomainManager.CERTAIN_EMAIL;
@@ -712,7 +618,7 @@ public class TargetTableModel extends AbstractTableModel {
 		}
 		return DomainManager.USELESS;
 	}
-	
+
 
 	public String getTLDDomainToAdd(String domain) {
 		domain = DomainNameUtils.clearDomainWithoutPort(domain);
@@ -736,15 +642,15 @@ public class TargetTableModel extends AbstractTableModel {
 
 
 	public void updateComments(int[] rows, String commentAdd) {
-			//because thread let the delete action not in order, so we must loop in here.
-			//list length and index changed after every remove.the origin index not point to right item any more.
-			Arrays.sort(rows); //升序
-			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
-				TargetEntry checked = targetEntries.get(rows[i]);
-				checked.addComment(commentAdd);
-			}
-			fireUpdated(rows);
+		//because thread let the delete action not in order, so we must loop in here.
+		//list length and index changed after every remove.the origin index not point to right item any more.
+		Arrays.sort(rows); //升序
+		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
+			TargetEntry checked = targetEntries.get(rows[i]);
+			checked.addComment(commentAdd);
 		}
+		fireUpdated(rows);
+	}
 
 	private void fireUpdated(int[] rows) {
 		List<int[]> slice = IntArraySlice.slice(rows);
@@ -774,7 +680,7 @@ public class TargetTableModel extends AbstractTableModel {
 		System.out.println(ifValid(aaa));
 		System.out.println(IPAddressUtils.isValidSubnet("103.125.112.0/23"));
 	}
-	
+
 	public static void main(String[] args) {
 		test();
 	}

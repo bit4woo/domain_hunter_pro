@@ -472,14 +472,17 @@ public class DomainManager {
 
 	/**
 	 * 根据规则重新过一遍所有的数据
-	 * 相关域名:来自证书信息不能清空。
+	 * 相关域名集合，在添加规则时已处理，这里不再操作
+	 * 
+	 * TODO 详细review目标添加和刷新规则。
+	 * 假如用户手动编辑了target。那么就需要依靠刷新的操作来更新数据。所以单纯靠添加时的处理逻辑是不够的。
 	 * 子域名、相似域名、包名 都重新识别归类。
 	 * Email不做变化
 	 */
 	public void freshBaseRule() {
 		BurpExtender.getStdout().println("before refresh--> "+getSummary());
 		Set<String> tmpDomains = new HashSet<>();
-		tmpDomains.addAll(relatedDomainSet);
+		//tmpDomains.addAll(relatedDomainSet);
 
 		tmpDomains.addAll(subDomainSet);
 		tmpDomains.addAll(similarDomainSet);
@@ -536,7 +539,7 @@ public class DomainManager {
 						e.printStackTrace(BurpExtender.getStderr());
 					}
 				}
-				fetchTargetModel().saveTargetToDB();//添加完成后需要主动调用一次保存！
+				fetchTargetModel().saveTargetToDB111();//添加完成后需要主动调用一次保存！
 				freshBaseRule();
 				//relatedDomainSet.clear();//TargetEntry的构造函数中就会自动移除，不需要这行代码了
 			}

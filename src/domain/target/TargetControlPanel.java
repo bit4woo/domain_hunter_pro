@@ -88,7 +88,7 @@ public class TargetControlPanel extends JPanel {
 		});
 
 		
-		JButton btnFresh = new JButton("Fresh");
+		JButton btnFresh = new JButton("Refresh");
 		btnFresh.addActionListener(new ActionListener() {
 
 			@Override
