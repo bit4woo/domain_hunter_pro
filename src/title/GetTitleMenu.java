@@ -1,19 +1,22 @@
 package title;
 
-import ASN.ASNQuery;
-import GUI.GUIMain;
-import GUI.RunnerGUI;
-import burp.BurpExtender;
-import com.google.common.collect.Iterables;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.io.PrintWriter;
-import java.util.*;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.swing.AbstractAction;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
+import javax.swing.SwingWorker;
+
+import GUI.GUIMain;
+import GUI.RunnerGUI;
+import burp.BurpExtender;
 
 public class GetTitleMenu extends JPopupMenu {
 
@@ -50,7 +53,7 @@ public class GetTitleMenu extends JPopupMenu {
 					@Override
 					protected Map doInBackground() throws Exception {
 						getTitleItem.setEnabled(false);
-						GUIMain.getTitlePanel().getAllTitle();
+						GUIMain.instance.getTitlePanel().getAllTitle();
 						//btnGettitle.setEnabled(true);
 						return new HashMap<String, String>();
 						//no use ,the return.
@@ -77,7 +80,7 @@ public class GetTitleMenu extends JPopupMenu {
 					@Override
 					protected Map doInBackground() throws Exception {
 						GetExtendtitleItem.setEnabled(false);
-						GUIMain.getTitlePanel().getExtendTitle();
+						GUIMain.instance.getTitlePanel().getExtendTitle();
 						//btnGetExtendtitle.setEnabled(true);
 						return new HashMap<String, String>();
 						//no use ,the return.
@@ -103,7 +106,7 @@ public class GetTitleMenu extends JPopupMenu {
 					@Override
 					protected Map doInBackground() throws Exception {
 						GettitleOfJustNewFoundItem.setEnabled(false);
-						GUIMain.getTitlePanel().getTitleOfNewDomain();
+						GUIMain.instance.getTitlePanel().getTitleOfNewDomain();
 						return new HashMap<String, String>();
 						//no use ,the return.
 					}
@@ -134,7 +137,7 @@ public class GetTitleMenu extends JPopupMenu {
 
 						int publicSubnets = JOptionPane.showConfirmDialog(null,"Just get [Pulic] IP Subnets ?");
 
-						String subnetsString = GUIMain.getTitlePanel().getSubnet(result == JOptionPane.YES_OPTION?true:false,publicSubnets == JOptionPane.YES_OPTION?true:false);
+						String subnetsString = GUIMain.instance.getTitlePanel().getSubnet(result == JOptionPane.YES_OPTION?true:false,publicSubnets == JOptionPane.YES_OPTION?true:false);
 
 						Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 						StringSelection selection = new StringSelection(subnetsString);

@@ -190,13 +190,13 @@ public class DomainManager {
 	}
 
 	public TargetTableModel fetchTargetModel() {
-		return BurpExtender.getGui().getDomainPanel().getTargetTable().getTargetModel();
+		return GUIMain.instance.getDomainPanel().getTargetTable().getTargetModel();
 	}
 
 	public String getSummary() {
 		String filename = "unknown";
-		if (BurpExtender.getGui().getCurrentDBFile() != null) {
-			filename = BurpExtender.getGui().getCurrentDBFile().getName();
+		if (GUIMain.instance.getCurrentDBFile() != null) {
+			filename = GUIMain.instance.getCurrentDBFile().getName();
 		}
 		String tmpsummary = String.format("  FileName:%s  Root-domain:%s  Related-domain:%s  Sub-domain:%s  Similar-domain:%s  Email:%s "
 				+ "IPOfSubnet:%s IPOfCert:%s ^_^",
@@ -223,7 +223,7 @@ public class DomainManager {
 		String status = getSummary();
 		if (!status.equals(summary) && !summary.equals("")){
 			summary = getSummary();
-			BurpExtender.getGui().getDomainPanel().getLblSummary().setText(summary);
+			GUIMain.instance.getDomainPanel().getLblSummary().setText(summary);
 			return true;
 		}else {
 			return false;
@@ -375,14 +375,14 @@ public class DomainManager {
 
 	public void addToTargetAndSubDomain(String enteredRootDomain, boolean autoSub) {
 		if (enteredRootDomain == null) return;
-		BurpExtender.getGui().getDomainPanel().fetchTargetModel().addRowIfValid(new TargetEntry(enteredRootDomain, autoSub));
+		GUIMain.instance.getDomainPanel().fetchTargetModel().addRowIfValid(new TargetEntry(enteredRootDomain, autoSub));
 	}
 
 	public void addTLDToTargetAndSubDomain(String enteredRootDomain) {
 		if (enteredRootDomain == null) return;
-		String tldDomainToAdd  = BurpExtender.getGui().getDomainPanel().fetchTargetModel().getTLDDomainToAdd(enteredRootDomain);
+		String tldDomainToAdd  = GUIMain.instance.getDomainPanel().fetchTargetModel().getTLDDomainToAdd(enteredRootDomain);
 		TargetEntry tmp = new TargetEntry(tldDomainToAdd, false);
-		BurpExtender.getGui().getDomainPanel().fetchTargetModel().addRowIfValid(tmp);
+		GUIMain.instance.getDomainPanel().fetchTargetModel().addRowIfValid(tmp);
 	}
 
 	public void addIfValid(Set<String> domains) {
@@ -505,11 +505,11 @@ public class DomainManager {
 		
 		tmpEmalis.addAll(EmailSet);
 		tmpEmalis.addAll(similarEmailSet);
-		tmpEmalis.addAll(BurpExtender.getGui().getDomainPanel().collectEmails());
+		tmpEmalis.addAll(GUIMain.instance.getDomainPanel().collectEmails());
 		
 		EmailSet.clear();
 		similarEmailSet.clear();
-		BurpExtender.getGui().getDomainPanel().getDomainResult().addIfValidEmail(tmpEmalis);
+		GUIMain.instance.getDomainPanel().getDomainResult().addIfValidEmail(tmpEmalis);
 		BurpExtender.getStdout().println("after refresh--> "+getSummary());
 	}
 

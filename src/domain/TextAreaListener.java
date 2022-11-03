@@ -6,7 +6,7 @@ import javax.swing.event.DocumentListener;
 import GUI.GUIMain;
 
 /*
-//用于各种domain的手动编辑后的保存（不包含rootdomain）
+ * 用于各种domain的手动编辑后的保存（不包含rootdomain）
  */
 public class TextAreaListener implements DocumentListener {
 

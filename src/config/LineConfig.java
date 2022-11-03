@@ -243,14 +243,14 @@ public class LineConfig {
 		try {
 			ConfigPanel.saveToConfigFromGUI();
 			this.setSearchHistory(History.getInstance());
-			this.setDbfilepath(BurpExtender.getGui().getCurrentDBFile().getAbsolutePath());
+			this.setDbfilepath(GUIMain.instance.getCurrentDBFile().getAbsolutePath());
 		} catch (Exception e1) {
 			e1.printStackTrace();
 			e1.printStackTrace(BurpExtender.getStderr());
 		}
 		
 		try {
-			File localFile = new File(localdir+File.separator+BurpExtender.getGui().getCurrentDBFile().getName()+".config");
+			File localFile = new File(localdir+File.separator+GUIMain.instance.getCurrentDBFile().getName()+".config");
 			FileUtils.write(localFile, this.ToJson());
 			BurpExtender.getStdout().println("Saving Tool Panel Config To Disk");
 			return localFile.toString();

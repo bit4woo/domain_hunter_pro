@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+import GUI.GUIMain;
 import burp.BurpExtender;
 import burp.Commons;
 import burp.DomainNameUtils;
@@ -35,7 +36,7 @@ public class TempLineEntry {
 	Set<String> certDomains = new HashSet<>();
 
 	public TempLineEntry(String host){
-		DomainManager domainResult = DomainPanel.getDomainResult();
+		DomainManager domainResult = GUIMain.instance.getDomainPanel().getDomainResult();
 		if (hostCheckAndParse(host) && domainResult != null){
 			hostToURL(this.host);
 			GetIPAndCDN(this.host);
@@ -47,7 +48,7 @@ public class TempLineEntry {
 		if (host ==null) return new HashSet<>();//无效host直接返回
 
 		if (ConfigPanel.ignoreWrongCAHost.isSelected()){
-			if (DomainPanel.getDomainResult().isTargetByCertInfo(certDomains)){
+			if (GUIMain.instance.getDomainPanel().getDomainResult().isTargetByCertInfo(certDomains)){
 				return new HashSet<>();
 			};
 		}

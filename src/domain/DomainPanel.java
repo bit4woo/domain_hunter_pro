@@ -158,10 +158,10 @@ public class DomainPanel extends JPanel {
 		int user_input = JOptionPane.showOptionDialog(null, "You should Create or Open a DB file", "Chose Your Action",
 				JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null, options, options[0]);
 		if (user_input == 0) {
-			BurpExtender.getGui().getProjectMenu().createNewDb(BurpExtender.getGui());
+			GUIMain.instance.getProjectMenu().createNewDb(GUIMain.instance);
 		}
 		if (user_input == 1) {
-			BurpExtender.getGui().getProjectMenu().openDb();
+			GUIMain.instance.getProjectMenu().openDb();
 		}
 	}
 
@@ -680,7 +680,7 @@ public class DomainPanel extends JPanel {
 			public void mouseClicked(MouseEvent e) {
 				if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2) {//左键双击
 					try {
-						Commons.OpenFolder(BurpExtender.getGui().getCurrentDBFile().getParent());
+						Commons.OpenFolder(GUIMain.instance.getCurrentDBFile().getParent());
 					} catch (Exception e2) {
 						e2.printStackTrace(stderr);
 					}
@@ -693,7 +693,7 @@ public class DomainPanel extends JPanel {
 			@Override
 			public void mouseEntered(MouseEvent e) {
 				lblSummary.setForeground(Color.RED);
-				lblSummary.setToolTipText(BurpExtender.getGui().getCurrentDBFile().toString());
+				lblSummary.setToolTipText(GUIMain.instance.getCurrentDBFile().toString());
 			}
 
 			@Override
@@ -912,7 +912,7 @@ public class DomainPanel extends JPanel {
 	 */
 	public File saveDomainOnly() {
 		try {
-			File file = BurpExtender.getGui().dbfc.dialog(false,".db");
+			File file = GUIMain.instance.dbfc.dialog(false,".db");
 			if (file != null) {
 				DBHelper dbHelper = new DBHelper(file.toString());
 				if (dbHelper.saveDomainObject(domainResult) && dbHelper.saveTargets(fetchTargetModel())) {
@@ -933,11 +933,11 @@ public class DomainPanel extends JPanel {
 	 */
 	public void saveDomainDataToDB() {
 		try {
-			File file = BurpExtender.getGui().getCurrentDBFile();
+			File file = GUIMain.instance.getCurrentDBFile();
 
 			if (file == null || !file.exists()) {
-				file = BurpExtender.getGui().dbfc.dialog(false,".db");
-				BurpExtender.getGui().setCurrentDBFile(file);
+				file = GUIMain.instance.dbfc.dialog(false,".db");
+				GUIMain.instance.setCurrentDBFile(file);
 			}
 
 			DBHelper dbHelper = new DBHelper(file.toString());
@@ -978,7 +978,7 @@ public class DomainPanel extends JPanel {
 	}
 
 	public static void backupDB() {
-		File file = BurpExtender.getGui().getCurrentDBFile();
+		File file = GUIMain.instance.getCurrentDBFile();
 		if (file == null) return;
 		File bakfile = new File(file.getAbsoluteFile().toString() + ".bak" + Commons.getNowTimeString());
 		try {

@@ -10,6 +10,7 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
+import GUI.GUIMain;
 import burp.BurpExtender;
 import burp.Commons;
 import burp.IPAddressUtils;
@@ -244,9 +245,9 @@ public class TitlePanel extends JPanel {
 		Set<String> domains = new HashSet<>();//新建一个对象，直接赋值后的删除操作，实质是对domainResult的操作。
 
 		//将新发现的域名也移动到子域名集合中，以便跑一次全量。 ---DomainConsumer.QueueToResult()中的逻辑已经保证了SubDomainSet一直是最全的。
-		domains.addAll(DomainPanel.getDomainResult().getSubDomainSet());
-		domains.addAll(DomainPanel.fetchTargetModel().fetchTargetIPSet());//确定的IP网段，用户自己输入的
-		domains.addAll(DomainPanel.getDomainResult().getSpecialPortTargets());//特殊端口目标
+		domains.addAll(GUIMain.instance.getDomainPanel().getDomainResult().getSubDomainSet());
+		domains.addAll(GUIMain.instance.getDomainPanel().fetchTargetModel().fetchTargetIPSet());//确定的IP网段，用户自己输入的
+		domains.addAll(GUIMain.instance.getDomainPanel().getDomainResult().getSpecialPortTargets());//特殊端口目标
 		//remove domains in black list that is not our target
 		//domains.removeAll(DomainPanel.getDomainResult().fetchNotTargetIPList());//无需移除，会标记出来的。
 		tempConfig = new GetTitleTempConfig(domains.size());
@@ -297,9 +298,9 @@ public class TitlePanel extends JPanel {
 
 		DomainPanel.backupDB();
 
-		Set<String> newDomains = new HashSet<>(DomainPanel.getDomainResult().getSubDomainSet());//新建一个对象，直接赋值后的删除操作，实质是对domainResult的操作。
-		Set<String> targetIPSet = new HashSet<>(DomainPanel.getTargetTable().getTargetModel().fetchTargetIPSet());
-		Set<String> newDomainsWithPort = new HashSet<>(DomainPanel.getDomainResult().getSpecialPortTargets());
+		Set<String> newDomains = new HashSet<>(GUIMain.instance.getDomainPanel().getDomainResult().getSubDomainSet());//新建一个对象，直接赋值后的删除操作，实质是对domainResult的操作。
+		Set<String> targetIPSet = new HashSet<>(GUIMain.instance.getDomainPanel().getTargetTable().getTargetModel().fetchTargetIPSet());
+		Set<String> newDomainsWithPort = new HashSet<>(GUIMain.instance.getDomainPanel().getDomainResult().getSpecialPortTargets());
 
 		newDomains.addAll(targetIPSet);
 		newDomains.addAll(newDomainsWithPort);
@@ -308,7 +309,7 @@ public class TitlePanel extends JPanel {
 		newDomains.removeAll(hostsInTitle);
 
 		//remove domains in black list
-		newDomains.removeAll(DomainPanel.getDomainResult().getNotTargetIPSet());
+		newDomains.removeAll(GUIMain.instance.getDomainPanel().getDomainResult().getNotTargetIPSet());
 		tempConfig = new GetTitleTempConfig(newDomains.size());
 		if (tempConfig.getThreadNumber() <=0) {
 			return;
@@ -326,7 +327,7 @@ public class TitlePanel extends JPanel {
 		if (isCurrent) {//获取的是现有可成功连接的IP集合+用户指定的IP网段集合
 			subnets = titleTableModel.GetSubnets();
 		}else {//重新解析所有域名的IP
-			ThreadGetSubnet thread = new ThreadGetSubnet(DomainPanel.getDomainResult().getSubDomainSet());
+			ThreadGetSubnet thread = new ThreadGetSubnet(GUIMain.instance.getDomainPanel().getDomainResult().getSubDomainSet());
 			thread.start();
 			try {
 				thread.join();
@@ -335,7 +336,7 @@ public class TitlePanel extends JPanel {
 				return "thread Interrupted";
 			}
 			Set<String> IPsOfDomain = thread.IPset;
-			Set<String> IPsOfcertainSubnets = DomainPanel.fetchTargetModel().fetchTargetIPSet();//用户配置的确定IP+网段
+			Set<String> IPsOfcertainSubnets = GUIMain.instance.getDomainPanel().fetchTargetModel().fetchTargetIPSet();//用户配置的确定IP+网段
 			IPsOfDomain.addAll(IPsOfcertainSubnets);
 			subnets = IPAddressUtils.toSmallerSubNets(IPsOfDomain);
 		}

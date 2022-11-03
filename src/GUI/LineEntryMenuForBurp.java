@@ -99,7 +99,7 @@ public class LineEntryMenuForBurp{
 
 			JMenu domainHunterPro = new JMenu("^_^ Domain Hunter Pro");
 			if (!ProjectMenu.isAlone()) {
-				String fileName = GUIMain.getCurrentDBFile().getName();
+				String fileName = GUIMain.instance.getCurrentDBFile().getName();
 				domainHunterPro.setText(String.format("^_^ Domain Hunter Pro [%s]",fileName));
 			}
 			result.add(domainHunterPro);
@@ -564,12 +564,12 @@ public class LineEntryMenuForBurp{
 
 	public static void addToDomain(IHttpRequestResponse[] messages) {
 
-		DomainManager domainResult = DomainPanel.getDomainResult();
+		DomainManager domainResult = GUIMain.instance.getDomainPanel().getDomainResult();
 		for(IHttpRequestResponse message:messages) {
 			String host = message.getHttpService().getHost();
 			domainResult.addToTargetAndSubDomain(host,true);
 		}
-		DomainPanel.saveDomainDataToDB();
+		GUIMain.instance.getDomainPanel().saveDomainDataToDB();
 	}
 
 	public static void addToRequest(IHttpRequestResponse[] messages) {
@@ -607,7 +607,7 @@ public class LineEntryMenuForBurp{
 			}
 
 			String host = message.getHttpService().getHost();
-			DomainPanel.getDomainResult().addIfValid(host); //add domain
+			GUIMain.instance.getDomainPanel().getDomainResult().addIfValid(host); //add domain
 	}
 
 	public static void addRequests(IHttpRequestResponse[] messages) {
@@ -639,7 +639,7 @@ public class LineEntryMenuForBurp{
 			}
 
 			String host = message.getHttpService().getHost();
-			DomainPanel.getDomainResult().addIfValid(host); //add domain
+			GUIMain.instance.getDomainPanel().getDomainResult().addIfValid(host); //add domain
 		}
 	}
 }

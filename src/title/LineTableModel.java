@@ -12,6 +12,7 @@ import java.util.Set;
 
 import javax.swing.table.AbstractTableModel;
 
+import GUI.GUIMain;
 import burp.BurpExtender;
 import burp.Commons;
 import burp.DomainNameUtils;
@@ -285,9 +286,9 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	public Set<String> GetExtendIPSet() {
 
 		Set<String> IPsOfDomain = getIPSetFromTitle();//title记录中的IP
-		Set<String> IPsOfcertainSubnets = DomainPanel.fetchTargetModel().fetchTargetIPSet();//用户配置的确定IP+网段
+		Set<String> IPsOfcertainSubnets = GUIMain.instance.getDomainPanel().fetchTargetModel().fetchTargetIPSet();//用户配置的确定IP+网段
 		IPsOfDomain.addAll(IPsOfcertainSubnets);
-		IPsOfDomain.removeAll(DomainPanel.getDomainResult().getNotTargetIPSet());
+		IPsOfDomain.removeAll(GUIMain.instance.getDomainPanel().getDomainResult().getNotTargetIPSet());
 		//计算网段前，将CDN和云服务的IP排除在外，这就是这个集合的主要作用！
 
 		Set<String> subnets = IPAddressUtils.toSmallerSubNets(IPsOfDomain);//当前所有title结果+确定IP/网段计算出的IP网段
@@ -308,7 +309,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	 */
 	public Set<String> GetSubnets() {
 		Set<String> IPsOfDomain = getIPSetFromTitle();//title记录中的IP
-		Set<String> IPsOfcertainSubnets = DomainPanel.fetchTargetModel().fetchTargetIPSet();//用户配置的确定IP+网段
+		Set<String> IPsOfcertainSubnets = GUIMain.instance.getDomainPanel().fetchTargetModel().fetchTargetIPSet();//用户配置的确定IP+网段
 		IPsOfDomain.addAll(IPsOfcertainSubnets);
 		//Set<String> CSubNetIPs = Commons.subNetsToIPSet(Commons.toSubNets(IPsOfDomain));
 		Set<String> subnets = IPAddressUtils.toSmallerSubNets(IPsOfDomain);
@@ -569,7 +570,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		Arrays.sort(rows); //升序
 		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
 			LineEntry entry = lineEntries.get(rows[i]);
-			DomainPanel.getDomainResult().getNotTargetIPSet().addAll(entry.getIPSet());
+			GUIMain.instance.getDomainPanel().getDomainResult().getNotTargetIPSet().addAll(entry.getIPSet());
 			entry.getEntryTags().add(LineEntry.Tag_NotTargetBaseOnBlackList);
 			stdout.println("### IP address "+ entry.getIPSet().toString() +" added to black list");
 		}
@@ -588,7 +589,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	public HashSet<String> getDomainsForBypassCheck(){
 
 		HashSet<String> allDomainSet = new HashSet<String>();//所有子域名列表
-		allDomainSet.addAll(DomainPanel.getDomainResult().getSubDomainSet());
+		allDomainSet.addAll(GUIMain.instance.getDomainPanel().getDomainResult().getSubDomainSet());
 
 		HashSet<String> tmp = new HashSet<String>();
 

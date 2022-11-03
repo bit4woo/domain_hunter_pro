@@ -77,18 +77,18 @@ public class ProjectMenu extends JMenu{
 
 				IndexedHashMap<String, TargetEntry> entries = TargetTable.rootDomainToTarget(NewManager);
 				for (TargetEntry entry:entries.values()){
-					DomainPanel.fetchTargetModel().addRowIfValid(entry);
+					GUIMain.instance.getDomainPanel().fetchTargetModel().addRowIfValid(entry);
 				}
 
 				//DomainPanel.getDomainResult().getRootDomainMap().putAll(NewManager.getRootDomainMap());//合并rootDomain
-				DomainPanel.getDomainResult().getRelatedDomainSet().addAll(NewManager.getRelatedDomainSet());
-				DomainPanel.getDomainResult().getSubDomainSet().addAll(NewManager.getSubDomainSet());
-				DomainPanel.getDomainResult().getSimilarDomainSet().addAll(NewManager.getSimilarDomainSet());
-				DomainPanel.getDomainResult().getEmailSet().addAll(NewManager.getEmailSet());
-				DomainPanel.getDomainResult().getPackageNameSet().addAll(NewManager.getPackageNameSet());
+				gui.getDomainPanel().getDomainResult().getRelatedDomainSet().addAll(NewManager.getRelatedDomainSet());
+				gui.getDomainPanel().getDomainResult().getSubDomainSet().addAll(NewManager.getSubDomainSet());
+				gui.getDomainPanel().getDomainResult().getSimilarDomainSet().addAll(NewManager.getSimilarDomainSet());
+				gui.getDomainPanel().getDomainResult().getEmailSet().addAll(NewManager.getEmailSet());
+				gui.getDomainPanel().getDomainResult().getPackageNameSet().addAll(NewManager.getPackageNameSet());
 
 				gui.getDomainPanel().showDataToDomainGUI();
-				DomainPanel.saveDomainDataToDB();
+				gui.getDomainPanel().saveDomainDataToDB();
 
 				IndexedHashMap<String, LineEntry> titles = dbhelper.getTitles();
 				for (LineEntry entry:titles.values()) {
@@ -128,7 +128,7 @@ public class ProjectMenu extends JMenu{
 								break;
 							}else {
 								for (String item:tmp) {
-									DomainPanel.getDomainResult().addIfValid(item);
+									gui.getDomainPanel().getDomainResult().addIfValid(item);
 								}
 							}
 						}
@@ -161,7 +161,7 @@ public class ProjectMenu extends JMenu{
 		{
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				BurpExtender.getGui().lockUnlock();
+				GUIMain.instance.lockUnlock();
 			}
 		});
 		this.add(lockMenu);
@@ -176,7 +176,7 @@ public class ProjectMenu extends JMenu{
 	public void createNewDb(GUIMain gui) {
 		File file = gui.dbfc.dialog(false,".db");//通过保存对话指定文件，这会是一个空文件。
 		if (null != file) {
-			DomainPanel.setDomainResult(new DomainManager(file.getName()));
+			gui.getDomainPanel().setDomainResult(new DomainManager(file.getName()));
 			gui.saveData(file.toString(),true);
 			gui.LoadData(file.toString());//然后加载，就是一个新的空项目了。
 		}

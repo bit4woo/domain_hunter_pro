@@ -70,10 +70,10 @@ public class TextAreaMenu extends JPopupMenu {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 
-				JTabbedPane aa= (JTabbedPane) BurpExtender.getGui().getContentPane();
+				JTabbedPane aa= (JTabbedPane) GUIMain.instance.getContentPane();
 				aa.setSelectedIndex(1);
 				//只会影响Domain Hunter中的选中，当选中的是proxy，使用这个方法并不能自动切换到domain hunter。
-				//stdout.println(BurpExtender.getGui().getRootPane().getName());//null
+				//stdout.println(GUIMain.instance.getRootPane().getName());//null
 				if (selectedItems.size() >0 ) {
 					TitlePanel.getTextFieldSearch().setText(SearchDork.HOST.toString() + ":" + selectedItems.get(0));
 				}

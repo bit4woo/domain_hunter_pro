@@ -39,7 +39,8 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	private static final String Extension_Setting_Name_DB_File = "DomainHunterProDbFilePath";
 	private static final Logger log=LogManager.getLogger(BurpExtender.class);
 	
-	private static GUIMain gui; //必须要有一个static变量，否则其他类如何找到对象的入口呢？
+	private GUIMain gui; 
+	public static BurpExtender instance;//必须要有一个static变量，否则其他类如何找到对象的入口呢？
 	
 	private DomainProducer liveAnalysisTread;
 	private BlockingQueue<IHttpRequestResponse> liveinputQueue = new LinkedBlockingQueue<IHttpRequestResponse>();
@@ -76,7 +77,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		return github;
 	}
 
-	public static GUIMain getGui() {
+	public GUIMain getGui() {
 		return gui;
 	}
 
@@ -89,6 +90,37 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		return ExtenderName+" "+Version+" "+Author;
 	}
 
+	public Set<String> getHttpsChecked() {
+		return httpsChecked;
+	}
+
+	public void setHttpsChecked(Set<String> httpsChecked) {
+		this.httpsChecked = httpsChecked;
+	}
+	
+	public DomainProducer getLiveAnalysisTread() {
+		return liveAnalysisTread;
+	}
+
+	public void setLiveAnalysisTread(DomainProducer liveAnalysisTread) {
+		this.liveAnalysisTread = liveAnalysisTread;
+	}
+
+	public BlockingQueue<IHttpRequestResponse> getLiveinputQueue() {
+		return liveinputQueue;
+	}
+
+	public void setLiveinputQueue(BlockingQueue<IHttpRequestResponse> liveinputQueue) {
+		this.liveinputQueue = liveinputQueue;
+	}
+
+	public BlockingQueue<IHttpRequestResponse> getInputQueue() {
+		return inputQueue;
+	}
+
+	public void setInputQueue(BlockingQueue<IHttpRequestResponse> inputQueue) {
+		this.inputQueue = inputQueue;
+	}
 
 	@Deprecated
 	public void saveDBfilepathToExtension() {
@@ -166,6 +198,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		String projectConfigFile = RecentModel.fetchRecent();//返回值可能为null
 		gui.getConfigPanel().loadConfigToGUI(projectConfigFile);//包含db文件的加载
 		startLiveCapture();
+		instance = this;
 	}
 
 	@Override

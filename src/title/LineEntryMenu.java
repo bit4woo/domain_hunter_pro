@@ -602,7 +602,7 @@ public class LineEntryMenu extends JPopupMenu {
 				//					String keyword = BurpExtender.textFieldSearch.getText().trim();
 				//					lineTable.search(keyword);
 				//				}
-				BurpExtender.getGui().titlePanel.digStatus();
+				GUIMain.instance.titlePanel.digStatus();
 			}
 		});
 
@@ -793,7 +793,7 @@ public class LineEntryMenu extends JPopupMenu {
 				int result = JOptionPane.showConfirmDialog(null,"Are you sure to DELETE these items ?");
 				if (result == JOptionPane.YES_OPTION) {
 					lineTable.getLineTableModel().removeRows(modleRows);
-					GUIMain.titlePanel.digStatus();
+					GUIMain.instance.titlePanel.digStatus();
 				}else {
 					return;
 				}
@@ -818,8 +818,8 @@ public class LineEntryMenu extends JPopupMenu {
 					//如果有 domain domain:8888 两个记录，这种方式就会删错对象
 					java.util.List<String> hostAndPort = lineTable.getLineTableModel().getHostsAndPorts(modleRows);//包含端口，如果原始记录
 					for(String item:hostAndPort) {
-						if (!DomainPanel.getDomainResult().getSubDomainSet().remove(item)) {
-							DomainPanel.getDomainResult().getSubDomainSet().remove(item.split(":")[0]);
+						if (!GUIMain.instance.getDomainPanel().getDomainResult().getSubDomainSet().remove(item)) {
+							GUIMain.instance.getDomainPanel().getDomainResult().getSubDomainSet().remove(item.split(":")[0]);
 						}
 					}
 				}
@@ -853,7 +853,7 @@ public class LineEntryMenu extends JPopupMenu {
 				if (result == JOptionPane.YES_OPTION) {
 					lineTable.getLineTableModel().addIPToTargetBlackList(modleRows);
 					lineTable.getLineTableModel().removeRows(modleRows);
-					GUIMain.titlePanel.digStatus();
+					GUIMain.instance.titlePanel.digStatus();
 				}
 			}
 		});

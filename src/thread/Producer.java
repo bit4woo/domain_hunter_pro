@@ -109,7 +109,7 @@ public class Producer extends Thread {//Producer do
 	}
 
 	public static LineEntry findHistory(String url) {
-		IndexedHashMap<String,LineEntry> HistoryLines = GUIMain.getTitlePanel().getBackupLineEntries();
+		IndexedHashMap<String,LineEntry> HistoryLines = GUIMain.instance.getTitlePanel().getBackupLineEntries();
 		if (HistoryLines == null) return null;
 		LineEntry found = HistoryLines.get(url);
 		if (found != null) {

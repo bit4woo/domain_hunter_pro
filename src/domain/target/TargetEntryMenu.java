@@ -11,12 +11,12 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 
+import GUI.GUIMain;
 import burp.BurpExtender;
 import burp.Commons;
 import burp.DomainNameUtils;
 import burp.IPAddressUtils;
 import config.ConfigPanel;
-import domain.DomainPanel;
 
 public class TargetEntryMenu extends JPopupMenu {
 
@@ -24,7 +24,7 @@ public class TargetEntryMenu extends JPopupMenu {
 	private static final long serialVersionUID = 1L;
 	PrintWriter stdout = BurpExtender.getStdout();
 	PrintWriter stderr = BurpExtender.getStderr();
-	private static TargetTable rootDomainTable;
+	private TargetTable rootDomainTable;
 
 	public TargetEntryMenu(final TargetTable rootDomainTable, final int[] modelRows, final int columnIndex){
 		this.rootDomainTable = rootDomainTable;
@@ -35,7 +35,7 @@ public class TargetEntryMenu extends JPopupMenu {
 				String results = "";
 				for (int row:modelRows) {
 					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,0);
-					String line = BurpExtender.getGui().getDomainPanel().getDomainResult().fetchSubDomainsOf(rootDomain);
+					String line = GUIMain.instance.getDomainPanel().getDomainResult().fetchSubDomainsOf(rootDomain);
 					results = results+System.lineSeparator()+line;
 				}
 
@@ -118,7 +118,7 @@ public class TargetEntryMenu extends JPopupMenu {
 		JMenuItem addToBlackItem = new JMenuItem(new AbstractAction("Add To Black List") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				BurpExtender.getGui().getDomainPanel().getControlPanel().selectedToBalck();
+				GUIMain.instance.getDomainPanel().getControlPanel().selectedToBalck();
 			}
 		});
 

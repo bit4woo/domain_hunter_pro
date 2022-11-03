@@ -32,12 +32,12 @@ public class ThreadSearhDomain extends Thread{
 	public void run(){
 		stdout.println("~~~~~~~~~~~~~Start Search Domain~~~~~~~~~~~~~");
 
-		BurpExtender.inputQueue.addAll(messages);
+		BurpExtender.instance.getInputQueue().addAll(messages);
 
 		plist = new ArrayList<DomainProducer>();
 
 		for (int i=0;i<=20;i++) {
-			DomainProducer p = new DomainProducer(BurpExtender.inputQueue,i);
+			DomainProducer p = new DomainProducer(BurpExtender.instance.getInputQueue(),i);
 			p.setDaemon(true);
 			p.start();
 			plist.add(p);

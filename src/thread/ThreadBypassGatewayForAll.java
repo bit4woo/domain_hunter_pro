@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import GUI.GUIMain;
 import GUI.RunnerGUI;
 import burp.BurpExtender;
 import burp.Commons;
@@ -40,7 +41,7 @@ public class ThreadBypassGatewayForAll extends Thread{
 
 	public static HashSet<String> getDomainsForBypassCheck(){
 		HashSet<String> tmpSet = new HashSet<String>();//所有子域名列表
-		tmpSet.addAll(DomainPanel.getDomainResult().getSubDomainSet());
+		tmpSet.addAll(GUIMain.instance.getDomainPanel().getDomainResult().getSubDomainSet());
 
 		HashSet<String> unreachableSet = new HashSet<String>();
 		Collection<LineEntry> entries = TitlePanel.getTitleTableModel().getLineEntries().values();

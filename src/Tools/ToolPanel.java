@@ -54,6 +54,7 @@ import javax.swing.event.DocumentListener;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.text.StringEscapeUtils;
 
+import GUI.GUIMain;
 import burp.BurpExtender;
 import burp.Commons;
 import burp.DomainNameUtils;
@@ -198,7 +199,7 @@ public class ToolPanel extends JPanel {
 					ArrayList<String> tmpList = new ArrayList<String>(domains);
 					Collections.sort(tmpList,new DomainComparator());
 					outputTextArea.setText(String.join(System.lineSeparator(), tmpList));
-					DomainPanel.getDomainResult().addIfValid(domains);
+					GUIMain.instance.getDomainPanel().getDomainResult().addIfValid(domains);
 				}
 			}
 		});

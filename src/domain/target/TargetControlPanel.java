@@ -112,7 +112,7 @@ public class TargetControlPanel extends JPanel {
 						try {
 							//to clear sub and similar domains
 							domainPanel.getDomainResult().freshBaseRule();
-							BurpExtender.getGui().getDomainPanel().showDataToDomainGUI();
+							GUIMain.instance.getDomainPanel().showDataToDomainGUI();
 							domainPanel.saveDomainDataToDB();
 						} catch (Exception exception) {
 							exception.printStackTrace();
@@ -149,7 +149,7 @@ public class TargetControlPanel extends JPanel {
 						try {
 							if (domainPanel.getDomainResult().autoAddRelatedToRoot) {
 								domainPanel.getDomainResult().relatedToRoot();
-								BurpExtender.getGui().getDomainPanel().showDataToDomainGUI();
+								GUIMain.instance.getDomainPanel().showDataToDomainGUI();
 								domainPanel.saveDomainDataToDB();
 							}
 						} catch (Exception exception) {
