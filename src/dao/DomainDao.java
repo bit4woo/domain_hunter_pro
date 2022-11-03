@@ -89,5 +89,12 @@ public class DomainDao {
 		String sql="DELETE FROM DOMAINObject where Type= ?";
 		return jdbcTemplate.update(sql, new Object[] { Type }) >0;
 	}
+	
+	
+	public DomainManager getDomainManager(){
+		
+		String sql ="select Content from DOMAINObject where Type = ?";
+		return jdbcTemplate.queryForObject(sql, new Object[] { Type },new DomainObjectMapper());
+	}
 
 }

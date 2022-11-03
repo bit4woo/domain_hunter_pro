@@ -18,6 +18,7 @@ public class JScrollPanelWithHeader extends JScrollPane{
 	private JLabel headLabel;
 	private String tipText;
 	private String headLabelText;
+	private String PanelID;//
 	
 	public JScrollPanelWithHeader(String headerViewText,String tipText) {
 		this.textArea = new JTextArea();

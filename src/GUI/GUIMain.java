@@ -16,6 +16,7 @@ import burp.Commons;
 import burp.DBHelper;
 import burp.dbFileChooser;
 import config.ConfigPanel;
+import dao.DomainDao;
 import domain.DomainPanel;
 import title.TitlePanel;
 
@@ -150,12 +151,11 @@ public class GUIMain extends JFrame {
 				BurpExtender.getStdout().println("==Load database file [" + dbFilePath+"] failed,file does not exist "+Commons.getNowTimeString()+"==");
 				return false;
 			}
-
-			DBHelper dbhelper = new DBHelper(dbFilePath);
-
-			domainPanel.getTargetTable().setTargetModel(dbhelper.getTargets());
-			domainPanel.LoadData(dbhelper.getDomainObj());
-			titlePanel.loadData(dbhelper.getTitles());
+			//TODO 重新梳理数据加载逻辑
+			domainPanel.LoadTargetsData(currentDBFile);
+			domainPanel.LoadDomainData(currentDBFile);//TODO
+			titlePanel.loadData(currentDBFile);
+			configPanel.loadData(currentDBFile);
 
 			ConfigPanel.getLineConfig().setDbfilepath(currentDBFile.getAbsolutePath());
 			displayProjectName();

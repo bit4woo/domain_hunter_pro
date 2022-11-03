@@ -12,26 +12,20 @@ public class TextAreaListener implements DocumentListener {
 
 	@Override
 	public void removeUpdate(DocumentEvent e) {
-		if (DomainPanel.isListenerIsOn()) {
 			GUIMain.getDomainPanel().saveTextAreas();
 			DomainPanel.saveDomainDataToDB();
-		}
 	}
 
 	@Override
 	public void insertUpdate(DocumentEvent e) {
-		if (DomainPanel.isListenerIsOn()) {
 			GUIMain.getDomainPanel().saveTextAreas();
 			DomainPanel.saveDomainDataToDB();
-		}
 	}
 
 	@Override
 	public void changedUpdate(DocumentEvent arg0) {
-		if (DomainPanel.isListenerIsOn()) {
 			GUIMain.getDomainPanel().saveTextAreas();
 			DomainPanel.saveDomainDataToDB();
-		}
 	}
 }
 

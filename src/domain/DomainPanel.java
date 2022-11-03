@@ -48,7 +48,6 @@ import com.google.common.net.InternetDomainName;
 
 import GUI.GUIMain;
 import GUI.JScrollPanelWithHeader;
-import GUI.ProjectMenu;
 import burp.BurpExtender;
 import burp.Commons;
 import burp.DBHelper;
@@ -57,7 +56,10 @@ import burp.IHttpRequestResponse;
 import burp.IHttpService;
 import burp.IScanIssue;
 import config.ConfigPanel;
+import dao.DomainDao;
+import dao.TargetDao;
 import domain.target.TargetControlPanel;
+import domain.target.TargetEntry;
 import domain.target.TargetTable;
 import domain.target.TargetTableModel;
 import thread.ThreadSearhDomain;
@@ -778,9 +780,32 @@ public class DomainPanel extends JPanel {
 		stdout.println("Load Domain Panel Data Done, " + domainResult.getSummary());
 	}
 
-	public void LoadData(DomainManager domainResult) {
+	private void LoadData(DomainManager domainResult) {
 		setDomainResult(domainResult);
 		showDataToDomainGUI();
+	}
+	/**
+	 * 
+	 * @param dbFilePath
+	 */
+	public void LoadDomainData(String dbFilePath) {
+		DomainDao domainDao = new DomainDao(dbFilePath);
+		domainResult = new DomainManager();
+		domainDao.se
+		//TODO
+		setDomainResult(domainResult);
+		showDataToDomainGUI();
+	}
+	
+	/**
+	 * 加载数据的的方式就是重新设置TableModel
+	 * @param dbFilePath
+	 */
+	public void LoadTargetsData(String dbFilePath) {
+		TargetDao targetDao = new TargetDao(dbFilePath);
+		List<TargetEntry> targets = targetDao.selectAll();
+		TargetTableModel targetModel = new TargetTableModel(targets);
+		targetTable.setTargetModel(targetModel);
 	}
 
 

@@ -49,6 +49,7 @@ public class TargetTableModel extends AbstractTableModel {
 	public static List<String> getTitletList() {
 		return titletList;
 	}
+	
 	public TargetTableModel(){
 		try{
 			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
@@ -59,6 +60,15 @@ public class TargetTableModel extends AbstractTableModel {
 		}
 		//addListener();//构造函数中已经有了添加listener了的操作了，为什么会在Jtable.setModel()函数后失效呢？奇怪！
 		//不再使用监听器来更新数据库
+	}
+	
+	public TargetTableModel(List<TargetEntry> entries){
+		this();
+		for (TargetEntry entry:entries) {
+			if (ifValid(entry)) {
+				targetEntries.put(entry.getTarget(), entry);
+			}
+		}
 	}
 
 	//getter setter是为了序列化和反序列化
