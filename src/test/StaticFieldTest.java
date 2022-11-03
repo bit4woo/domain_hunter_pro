@@ -6,6 +6,10 @@ package test;
 public class StaticFieldTest {
 	
     public static void main(String[] args) {
+    	test2();
+    }
+    
+    public static void test1(){
     	Book book = new Book();
         Book book1 = new Book();
         
@@ -23,6 +27,14 @@ public class StaticFieldTest {
         
         System.out.println(book1.toString());
     }
+    
+    public static void test2(){
+    	pen aa = new pen("钢笔");
+    	pen bbb  = new pen("铅笔");
+    	
+    	System.out.println(aa.instance);
+    	System.out.println(bbb.instance);
+    }
 }
 
 class Book {
@@ -31,5 +43,20 @@ class Book {
 	
 	public String toString(){
 		return name+" "+ author;
+	}
+}
+
+
+class pen {
+	public String name = "";
+	public static pen instance;
+	
+	pen(String name){
+		this.name = name;
+		instance = this;
+	}
+	
+	public String toString(){
+		return name;
 	}
 }
