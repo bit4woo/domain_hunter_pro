@@ -478,7 +478,7 @@ public class TargetTableModel extends AbstractTableModel {
 			return true;
 		}
 
-		if (DomainPanel.getDomainResult().getNotTargetIPSet().contains(domain)) {
+		if (BurpExtender.getGui().getDomainPanel().getDomainResult().getNotTargetIPSet().contains(domain)) {
 			return true;
 		}
 		return false;

@@ -9,7 +9,8 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import javax.swing.*;
+import javax.swing.JMenuItem;
+import javax.swing.SwingUtilities;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,7 +18,6 @@ import org.apache.logging.log4j.Logger;
 import GUI.GUIMain;
 import GUI.LineEntryMenuForBurp;
 import GUI.ProjectMenu;
-import Tools.ToolPanel;
 import bsh.This;
 import config.ConfigPanel;
 import domain.DomainPanel;
@@ -28,7 +28,6 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1L;
 	private static IBurpExtenderCallbacks callbacks;
 	private static PrintWriter stdout;
 	private static PrintWriter stderr;
@@ -36,17 +35,18 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	private static String Version =  This.class.getPackage().getImplementationVersion();
 	private static String Author = "by bit4woo";
 	private static String github = "https://github.com/bit4woo/domain_hunter_pro";
-	private static GUIMain gui;
-	public static final String Extension_Setting_Name_Line_Config = "domain-Hunter-pro-line-config";
+	private static final String Extension_Setting_Name_Line_Config = "domain-Hunter-pro-line-config";
 	private static final String Extension_Setting_Name_DB_File = "DomainHunterProDbFilePath";
-
 	private static final Logger log=LogManager.getLogger(BurpExtender.class);
-	public static DomainProducer liveAnalysisTread;
-	public static BlockingQueue<IHttpRequestResponse> liveinputQueue = new LinkedBlockingQueue<IHttpRequestResponse>();
+	
+	private static GUIMain gui; //必须要有一个static变量，否则其他类如何找到对象的入口呢？
+	
+	private DomainProducer liveAnalysisTread;
+	private BlockingQueue<IHttpRequestResponse> liveinputQueue = new LinkedBlockingQueue<IHttpRequestResponse>();
 	//use to store messageInfo of proxy live
-	public static BlockingQueue<IHttpRequestResponse> inputQueue = new LinkedBlockingQueue<IHttpRequestResponse>();
+	private BlockingQueue<IHttpRequestResponse> inputQueue = new LinkedBlockingQueue<IHttpRequestResponse>();
 	//use to store messageInfo
-	public static Set<String> httpsChecked = new CopyOnWriteArraySet<>();
+	private Set<String> httpsChecked = new CopyOnWriteArraySet<>();
 	//temp variable to identify checked https用于记录已经做过HTTPS证书信息获取的httpService
 
 	public static PrintWriter getStdout() {
@@ -91,11 +91,11 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 
 
 	@Deprecated
-	public static void saveDBfilepathToExtension() {
+	public void saveDBfilepathToExtension() {
 		//to save domain result to extensionSetting
 		//仅仅存储sqllite数据库的名称,也就是domainResult的项目名称
-		if (GUIMain.getCurrentDBFile() != null) {
-			String dbfilepath = GUIMain.getCurrentDBFile().getAbsolutePath();
+		if (gui.getCurrentDBFile() != null) {
+			String dbfilepath = gui.getCurrentDBFile().getAbsolutePath();
 			stdout.println("Saving Current DB File Path To Disk: "+dbfilepath);
 			System.out.println("Loaded DB File Path From Disk: "+dbfilepath);
 			callbacks.saveExtensionSetting(Extension_Setting_Name_DB_File, dbfilepath);
@@ -118,7 +118,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	}
 
 	public void startLiveCapture(){
-		liveAnalysisTread = new DomainProducer(BurpExtender.liveinputQueue,9999);//必须是9999，才能保证流量进程不退出。
+		liveAnalysisTread = new DomainProducer(liveinputQueue,9999);//必须是9999，才能保证流量进程不退出。
 		liveAnalysisTread.start();
 	}
 
@@ -157,8 +157,8 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 			public void run()
 			{
 				BurpExtender.callbacks.addSuiteTab(BurpExtender.this); 
-				GUIMain.setProjectMenu(new ProjectMenu(gui));
-				GUIMain.getProjectMenu().Add();
+				gui.setProjectMenu(new ProjectMenu(gui));
+				gui.getProjectMenu().Add();
 				//这里的BurpExtender.this实质是指ITab对象，也就是getUiComponent()中的contentPane.这个参数由GUI()函数初始化。
 				//如果这里报java.lang.NullPointerException: Component cannot be null 错误，需要排查contentPane的初始化是否正确。
 			}
@@ -171,7 +171,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	@Override
 	public void extensionUnloaded() {
 		try {//避免这里错误导致保存逻辑的失效
-			GUIMain.getProjectMenu().remove();
+			gui.getProjectMenu().remove();
 			stopLiveCapture();
 			if (TitlePanel.threadGetTitle != null) {
 				TitlePanel.threadGetTitle.interrupt();//maybe null
@@ -185,10 +185,10 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 
 		
 		try {
-			if (null == DomainPanel.getDomainResult()) return;//有数据才弹对话框指定文件位置。
-			if (DomainPanel.getDomainResult().isEmpty()) return;
+			if (null == gui.getDomainPanel().getDomainResult()) return;//有数据才弹对话框指定文件位置。
+			if (gui.getDomainPanel().getDomainResult().isEmpty()) return;
 			
-			DomainPanel.saveDomainDataToDB();//域名面板自动保存逻辑有点复杂，退出前再自动保存一次
+			gui.getDomainPanel().saveDomainDataToDB();//域名面板自动保存逻辑有点复杂，退出前再自动保存一次
 			gui.getConfigPanel();
 			String configFilePath = ConfigPanel.getLineConfig().saveToDisk();//包含db文件位置
 			RecentModel.saveRecent(configFilePath);

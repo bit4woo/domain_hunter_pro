@@ -1,5 +1,8 @@
 package test;
 
+/**
+ * 结论：应当尽量避免使用static
+ */
 public class StaticFieldTest {
 	
     public static void main(String[] args) {

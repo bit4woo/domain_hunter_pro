@@ -174,10 +174,15 @@ public class LineTable extends JTable
 		JTabbedPane ResponsePanel = new JTabbedPane();
 		RequestDetailPanel.setRightComponent(ResponsePanel);
 
-		requestViewer = BurpExtender.getCallbacks().createMessageEditor(getLineTableModel(), false);
-		responseViewer = BurpExtender.getCallbacks().createMessageEditor(getLineTableModel(), false);
-		RequestPanel.addTab("Request", requestViewer.getComponent());
-		ResponsePanel.addTab("Response", responseViewer.getComponent());
+		try {
+			requestViewer = BurpExtender.getCallbacks().createMessageEditor(getLineTableModel(), false);
+			responseViewer = BurpExtender.getCallbacks().createMessageEditor(getLineTableModel(), false);
+			RequestPanel.addTab("Request", requestViewer.getComponent());
+			ResponsePanel.addTab("Response", responseViewer.getComponent());
+		} catch (Exception e) {
+			//捕获异常，以便程序以非burp插件运行时可以启动
+			//e.printStackTrace();
+		}
 
 		this.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);//配合横向滚动条
 

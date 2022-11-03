@@ -25,10 +25,10 @@ public class LineConfig {
 
 	//跑title时根据各字段过滤某些条目
 	//private static Set<String> blacklistHostSet = new HashSet<String>(); //其实不需要
-	private static Set<String> blacklistStatusCodeSet = new HashSet<String>(); 
-	private static Set<String> blacklistIPSet = new HashSet<String>(); 
-	private static Set<String> blacklistCDNSet = new HashSet<String>(); 
-	private static Set<String> blacklistWebContainerSet = new HashSet<String>(); 
+	private Set<String> blacklistStatusCodeSet = new HashSet<String>(); 
+	private Set<String> blacklistIPSet = new HashSet<String>(); 
+	private Set<String> blacklistCDNSet = new HashSet<String>(); 
+	private Set<String> blacklistWebContainerSet = new HashSet<String>(); 
 	//对于内外网域名或IP的处理分为2种情况：
 	//1、外网模式，即在自己公司挖掘别人公司的漏洞。这个是时候收集到的域名如果是解析到私有IP的，仅仅显示就可以了；如果是私有IP地址则直接忽略。
 	//2、内网模式，即在自己公司挖掘自己公司的漏洞。这个时候所有域名一视同仁，全部和外网域名一样进行请求并获取title，因为内网的IP也是可以访问的。
@@ -76,50 +76,51 @@ public class LineConfig {
 	public void setMaximumEntries(int maximumEntries) {
 		MaximumEntries = maximumEntries;
 	}
-
-	//	public static Set<String> getBlacklistHostSet() {
-	//		return blacklistHostSet;
-	//	}
-	//
-	//	public static void setBlacklistHostSet(Set<String> blacklistHostSet) {
-	//		LineConfig.blacklistHostSet = blacklistHostSet;
-	//	}
-
-	public static Set<String> getBlacklistStatusCodeSet() {
-		return blacklistStatusCodeSet;
-	}
-
-	public static void setBlacklistStatusCodeSet(Set<String> blacklistStatusCodeSet) {
-		LineConfig.blacklistStatusCodeSet = blacklistStatusCodeSet;
-	}
-
-	public static Set<String> getBlacklistIPSet() {
-		return blacklistIPSet;
-	}
-
-	public static void setBlacklistIPSet(Set<String> blacklistIPSet) {
-		LineConfig.blacklistIPSet = blacklistIPSet;
-	}
-
-	public static Set<String> getBlacklistCDNSet() {
-		return blacklistCDNSet;
-	}
-
-	public static void setBlacklistCDNSet(Set<String> blacklistCDNSet) {
-		LineConfig.blacklistCDNSet = blacklistCDNSet;
-	}
-
-	public static Set<String> getBlacklistWebContainerSet() {
-		return blacklistWebContainerSet;
-	}
-
-	public static void setBlacklistWebContainerSet(Set<String> blacklistWebContainerSet) {
-		LineConfig.blacklistWebContainerSet = blacklistWebContainerSet;
-	}
+	
 
 	public static boolean isIgnoreHttpsOrHttpIfOneOK() {
 		return ConfigPanel.ignoreHTTPS.isSelected();
 	}
+
+	public Set<String> getBlacklistStatusCodeSet() {
+		return blacklistStatusCodeSet;
+	}
+
+
+	public void setBlacklistStatusCodeSet(Set<String> blacklistStatusCodeSet) {
+		this.blacklistStatusCodeSet = blacklistStatusCodeSet;
+	}
+
+
+	public Set<String> getBlacklistIPSet() {
+		return blacklistIPSet;
+	}
+
+
+	public void setBlacklistIPSet(Set<String> blacklistIPSet) {
+		this.blacklistIPSet = blacklistIPSet;
+	}
+
+
+	public Set<String> getBlacklistCDNSet() {
+		return blacklistCDNSet;
+	}
+
+
+	public void setBlacklistCDNSet(Set<String> blacklistCDNSet) {
+		this.blacklistCDNSet = blacklistCDNSet;
+	}
+
+
+	public Set<String> getBlacklistWebContainerSet() {
+		return blacklistWebContainerSet;
+	}
+
+
+	public void setBlacklistWebContainerSet(Set<String> blacklistWebContainerSet) {
+		this.blacklistWebContainerSet = blacklistWebContainerSet;
+	}
+
 
 	public static void setIgnoreHttpsIfHttpOK(boolean ignoreHttpsIfHttpOK) {
 		ConfigPanel.ignoreHTTPS.setSelected(ignoreHttpsIfHttpOK);
@@ -242,14 +243,14 @@ public class LineConfig {
 		try {
 			ConfigPanel.saveToConfigFromGUI();
 			this.setSearchHistory(History.getInstance());
-			this.setDbfilepath(GUIMain.getCurrentDBFile().getAbsolutePath());
+			this.setDbfilepath(BurpExtender.getGui().getCurrentDBFile().getAbsolutePath());
 		} catch (Exception e1) {
 			e1.printStackTrace();
 			e1.printStackTrace(BurpExtender.getStderr());
 		}
 		
 		try {
-			File localFile = new File(localdir+File.separator+GUIMain.getCurrentDBFile().getName()+".config");
+			File localFile = new File(localdir+File.separator+BurpExtender.getGui().getCurrentDBFile().getName()+".config");
 			FileUtils.write(localFile, this.ToJson());
 			BurpExtender.getStdout().println("Saving Tool Panel Config To Disk");
 			return localFile.toString();

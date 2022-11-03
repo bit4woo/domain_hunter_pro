@@ -75,9 +75,8 @@ public class DomainPanel extends JPanel {
 	private JTextField textFieldUploadURL;
 	private JButton btnSearch;
 	private JButton btnCrawl;
-	private static JLabel lblSummary;
-	private TargetControlPanel ControlPanel;
-
+	private JLabel lblSummary;
+	
 	JScrollPanelWithHeader ScrollPaneSpecialPortTargets;
 	JScrollPanelWithHeader ScrollPaneRelatedDomains;
 	JScrollPanelWithHeader ScrollPaneSubdomains;
@@ -90,8 +89,9 @@ public class DomainPanel extends JPanel {
 	JScrollPanelWithHeader PanelBlackIPList;
 	JScrollPanelWithHeader PanelSimilarEmails;
 
-	private static TargetTable targetTable;
-	private static JPanel HeaderPanel;
+	private TargetTable targetTable;
+	private JPanel HeaderPanel;
+	private TargetControlPanel ControlPanel;
 
 	//流量分析进程需要用到这个变量，标记为volatile以获取正确的值。
 	/**
@@ -101,31 +101,15 @@ public class DomainPanel extends JPanel {
 	 * targetTable可以从DomainPanel中获取，是GUI的线路关系
 	 * targetTableModel则对应地从DomainManager中的对象获取，是数据模型的线路关系
 	 */
-	private volatile static DomainManager domainResult = new DomainManager();//getter setter
+	private volatile DomainManager domainResult = new DomainManager();//getter setter
 	private PrintWriter stdout;
 	private PrintWriter stderr;
 
-	private static boolean listenerIsOn = true;
 	private static final Logger log = LogManager.getLogger(DomainPanel.class);
 
 
-	public static boolean isListenerIsOn() {
-		return listenerIsOn;
-	}
 
-	public static void setListenerIsOn(boolean listenerIsOn) {
-		DomainPanel.listenerIsOn = listenerIsOn;
-	}
-
-	public static DomainManager getDomainResult() {
-		return domainResult;
-	}
-
-	public static void setDomainResult(DomainManager domainResult) {
-		DomainPanel.domainResult = domainResult;
-	}
-
-	public static TargetTable getTargetTable() {
+	public TargetTable getTargetTable() {
 		return targetTable;
 	}
 
@@ -133,25 +117,40 @@ public class DomainPanel extends JPanel {
 		this.targetTable = targetTable;
 	}
 
-	public static TargetTableModel fetchTargetModel() {
+	public TargetTableModel fetchTargetModel() {
 		return targetTable.getTargetModel();
 	}
 
-	public static JLabel getLblSummary() {
+	public JLabel getLblSummary() {
 		return lblSummary;
 	}
 
-	//	public static TargetTableModel getTargetTableModel() {
-	//		return targetTableModel;
-	//	}
-	//
-	//	public static void setTargetTableModel(TargetTableModel targetTableModel) {
-	//		DomainPanel.targetTableModel = targetTableModel;
-	//	}
-
-
-	public static JPanel getHeaderPanel() {
+	public JPanel getHeaderPanel() {
 		return HeaderPanel;
+	}
+	
+	public TargetControlPanel getControlPanel() {
+		return ControlPanel;
+	}
+
+	public void setControlPanel(TargetControlPanel controlPanel) {
+		ControlPanel = controlPanel;
+	}
+
+	public DomainManager getDomainResult() {
+		return domainResult;
+	}
+
+	public void setDomainResult(DomainManager domainResult) {
+		this.domainResult = domainResult;
+	}
+
+	public void setLblSummary(JLabel lblSummary) {
+		this.lblSummary = lblSummary;
+	}
+
+	public void setHeaderPanel(JPanel headerPanel) {
+		HeaderPanel = headerPanel;
 	}
 
 	public static void createOrOpenDB() {
@@ -159,10 +158,10 @@ public class DomainPanel extends JPanel {
 		int user_input = JOptionPane.showOptionDialog(null, "You should Create or Open a DB file", "Chose Your Action",
 				JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null, options, options[0]);
 		if (user_input == 0) {
-			ProjectMenu.createNewDb(BurpExtender.getGui());
+			BurpExtender.getGui().getProjectMenu().createNewDb(BurpExtender.getGui());
 		}
 		if (user_input == 1) {
-			ProjectMenu.openDb();
+			BurpExtender.getGui().getProjectMenu().openDb();
 		}
 	}
 
@@ -455,7 +454,7 @@ public class DomainPanel extends JPanel {
 		targetTable = new TargetTable();
 		PanelWest1.setViewportView(targetTable);
 
-		ControlPanel = new TargetControlPanel();
+		ControlPanel = new TargetControlPanel(this);
 		TargetPane.setRightComponent(ControlPanel);
 
 
@@ -681,7 +680,7 @@ public class DomainPanel extends JPanel {
 			public void mouseClicked(MouseEvent e) {
 				if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2) {//左键双击
 					try {
-						Commons.OpenFolder(GUIMain.getCurrentDBFile().getParent());
+						Commons.OpenFolder(BurpExtender.getGui().getCurrentDBFile().getParent());
 					} catch (Exception e2) {
 						e2.printStackTrace(stderr);
 					}
@@ -694,7 +693,7 @@ public class DomainPanel extends JPanel {
 			@Override
 			public void mouseEntered(MouseEvent e) {
 				lblSummary.setForeground(Color.RED);
-				lblSummary.setToolTipText(GUIMain.getCurrentDBFile().toString());
+				lblSummary.setToolTipText(BurpExtender.getGui().getCurrentDBFile().toString());
 			}
 
 			@Override
@@ -757,8 +756,6 @@ public class DomainPanel extends JPanel {
 	 * 未包含target信息
 	 */
 	public void showDataToDomainGUI() {
-		listenerIsOn = false;
-
 		textFieldUploadURL.setText(domainResult.uploadURL);
 
 		ScrollPaneSpecialPortTargets.getTextArea().setText(domainResult.fetchSpecialPortTargets());
@@ -775,12 +772,10 @@ public class DomainPanel extends JPanel {
 
 
 		lblSummary.setText(domainResult.getSummary());
-		TargetControlPanel.rdbtnAddRelatedToRoot.setSelected(domainResult.autoAddRelatedToRoot);
+		ControlPanel.getRdbtnAddRelatedToRoot().setSelected(domainResult.autoAddRelatedToRoot);
 
 		System.out.println("Load Domain Panel Data Done, " + domainResult.getSummary());
 		stdout.println("Load Domain Panel Data Done, " + domainResult.getSummary());
-
-		listenerIsOn = true;
 	}
 
 	public void LoadData(DomainManager domainResult) {
@@ -817,7 +812,7 @@ public class DomainPanel extends JPanel {
 	 * 从issue中提取Email
 	 * @return
 	 */
-	public static Set<String> collectEmails() {
+	public Set<String> collectEmails() {
 		Set<String> Emails = new HashSet<>();
 		IScanIssue[] issues = BurpExtender.getCallbacks().getScanIssues(null);
 
@@ -932,16 +927,17 @@ public class DomainPanel extends JPanel {
 		return null;
 	}
 
-	/*
+	/**
+	 * 
     自动保存，根据currentDBFile，如果currentDBFile为空或者不存在，就提示选择文件。
 	 */
-	public static void saveDomainDataToDB() {
+	public void saveDomainDataToDB() {
 		try {
-			File file = GUIMain.getCurrentDBFile();
+			File file = BurpExtender.getGui().getCurrentDBFile();
 
 			if (file == null || !file.exists()) {
-				file = GUIMain.dbfc.dialog(false,".db");
-				GUIMain.setCurrentDBFile(file);
+				file = BurpExtender.getGui().dbfc.dialog(false,".db");
+				BurpExtender.getGui().setCurrentDBFile(file);
 			}
 
 			DBHelper dbHelper = new DBHelper(file.toString());
@@ -982,7 +978,7 @@ public class DomainPanel extends JPanel {
 	}
 
 	public static void backupDB() {
-		File file = GUIMain.getCurrentDBFile();
+		File file = BurpExtender.getGui().getCurrentDBFile();
 		if (file == null) return;
 		File bakfile = new File(file.getAbsoluteFile().toString() + ".bak" + Commons.getNowTimeString());
 		try {

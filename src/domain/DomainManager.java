@@ -190,13 +190,13 @@ public class DomainManager {
 	}
 
 	public TargetTableModel fetchTargetModel() {
-		return DomainPanel.getTargetTable().getTargetModel();
+		return BurpExtender.getGui().getDomainPanel().getTargetTable().getTargetModel();
 	}
 
 	public String getSummary() {
 		String filename = "unknown";
-		if (GUIMain.getCurrentDBFile() != null) {
-			filename = GUIMain.getCurrentDBFile().getName();
+		if (BurpExtender.getGui().getCurrentDBFile() != null) {
+			filename = BurpExtender.getGui().getCurrentDBFile().getName();
 		}
 		String tmpsummary = String.format("  FileName:%s  Root-domain:%s  Related-domain:%s  Sub-domain:%s  Similar-domain:%s  Email:%s "
 				+ "IPOfSubnet:%s IPOfCert:%s ^_^",
@@ -223,7 +223,7 @@ public class DomainManager {
 		String status = getSummary();
 		if (!status.equals(summary) && !summary.equals("")){
 			summary = getSummary();
-			DomainPanel.getLblSummary().setText(summary);
+			BurpExtender.getGui().getDomainPanel().getLblSummary().setText(summary);
 			return true;
 		}else {
 			return false;
@@ -375,14 +375,14 @@ public class DomainManager {
 
 	public void addToTargetAndSubDomain(String enteredRootDomain, boolean autoSub) {
 		if (enteredRootDomain == null) return;
-		DomainPanel.fetchTargetModel().addRowIfValid(new TargetEntry(enteredRootDomain, autoSub));
+		BurpExtender.getGui().getDomainPanel().fetchTargetModel().addRowIfValid(new TargetEntry(enteredRootDomain, autoSub));
 	}
 
 	public void addTLDToTargetAndSubDomain(String enteredRootDomain) {
 		if (enteredRootDomain == null) return;
-		String tldDomainToAdd  = DomainPanel.fetchTargetModel().getTLDDomainToAdd(enteredRootDomain);
+		String tldDomainToAdd  = BurpExtender.getGui().getDomainPanel().fetchTargetModel().getTLDDomainToAdd(enteredRootDomain);
 		TargetEntry tmp = new TargetEntry(tldDomainToAdd, false);
-		DomainPanel.fetchTargetModel().addRowIfValid(tmp);
+		BurpExtender.getGui().getDomainPanel().fetchTargetModel().addRowIfValid(tmp);
 	}
 
 	public void addIfValid(Set<String> domains) {
@@ -505,11 +505,11 @@ public class DomainManager {
 		
 		tmpEmalis.addAll(EmailSet);
 		tmpEmalis.addAll(similarEmailSet);
-		tmpEmalis.addAll(DomainPanel.collectEmails());
+		tmpEmalis.addAll(BurpExtender.getGui().getDomainPanel().collectEmails());
 		
 		EmailSet.clear();
 		similarEmailSet.clear();
-		DomainPanel.getDomainResult().addIfValidEmail(tmpEmalis);
+		BurpExtender.getGui().getDomainPanel().getDomainResult().addIfValidEmail(tmpEmalis);
 		BurpExtender.getStdout().println("after refresh--> "+getSummary());
 	}
 
@@ -525,11 +525,8 @@ public class DomainManager {
 								continue;
 							}
 
-							//addToTargetAndSubDomain(relatedDomain, true);
+							addToTargetAndSubDomain(relatedDomain, true);
 							//底层调用了addRow，没调用一次都会触发数据库写操作。这个逻辑中应该避免。
-
-							fetchTargetModel().addRowWithoutFireIfValid(new TargetEntry(relatedDomain, true));
-							//添加完成后需要主动调用一次保存！
 
 						} else {
 							System.out.println("error related domain : " + relatedDomain);
@@ -539,9 +536,7 @@ public class DomainManager {
 						e.printStackTrace(BurpExtender.getStderr());
 					}
 				}
-				fetchTargetModel().saveTargetToDB111();//添加完成后需要主动调用一次保存！
 				freshBaseRule();
-				//relatedDomainSet.clear();//TargetEntry的构造函数中就会自动移除，不需要这行代码了
 			}
 		}
 	}

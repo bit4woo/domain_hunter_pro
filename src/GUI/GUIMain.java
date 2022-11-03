@@ -21,19 +21,21 @@ import title.TitlePanel;
 
 
 public class GUIMain extends JFrame {
+	
+	public static GUIMain instance;
 
 	//当多个实例都有相同的是static field时，对象间对static属性的修改会互相影响，因为多个对象共享一个属性的copy！！
 	public DomainPanel domainPanel;
 	public TitlePanel titlePanel;
 	public ToolPanel toolPanel;
 	public ConfigPanel configPanel;
-	
+
 	public File currentDBFile;
 	public ProjectMenu projectMenu;
-	
+
 	public PrintWriter stdout;
 	public PrintWriter stderr;
-	
+
 	public dbFileChooser dbfc = new dbFileChooser();
 
 	public DomainPanel getDomainPanel() {
@@ -97,8 +99,10 @@ public class GUIMain extends JFrame {
 		tabbedWrapper.addTab("Titles", null, titlePanel, null);
 		tabbedWrapper.addTab("Tools", null,toolPanel,null);
 		tabbedWrapper.addTab("Config", null,configPanel,null);
+		
+		instance = this;
 	}
-	
+
 	/**
 	 * 仅仅锁住图形界面，不影响后台处理数据
 	 */
@@ -146,13 +150,13 @@ public class GUIMain extends JFrame {
 				BurpExtender.getStdout().println("==Load database file [" + dbFilePath+"] failed,file does not exist "+Commons.getNowTimeString()+"==");
 				return false;
 			}
-			
+
 			DBHelper dbhelper = new DBHelper(dbFilePath);
 
 			domainPanel.getTargetTable().setTargetModel(dbhelper.getTargets());
 			domainPanel.LoadData(dbhelper.getDomainObj());
 			titlePanel.loadData(dbhelper.getTitles());
-			
+
 			ConfigPanel.getLineConfig().setDbfilepath(currentDBFile.getAbsolutePath());
 			displayProjectName();
 			System.out.println("==End Loading Data From: "+ dbFilePath+" "+Commons.getNowTimeString() +"==");//输出到debug console
@@ -168,12 +172,12 @@ public class GUIMain extends JFrame {
 
 	//显示项目名称，加载多个该插件时，进行区分，避免混淆
 	public void displayProjectName() {
-		if (DomainPanel.getDomainResult() !=null){
+		if (domainPanel.getDomainResult() !=null){
 			String name = currentDBFile.getName();
 			//String newName = String.format(BurpExtender.getFullExtenderName()+" [%s]",name);
 			//v2021.8的版本中，邮件菜单会用到插件名称，所以减小名称的长度
 			String newName = String.format(BurpExtender.getExtenderName()+" [%s]",name);
-			
+
 			BurpExtender.getCallbacks().setExtensionName(newName); //新插件名称
 			getProjectMenu().AddDBNameMenuItem(name);
 			getProjectMenu().AddDBNameTab(name);
@@ -191,13 +195,13 @@ public class GUIMain extends JFrame {
 			if (dbFilePath != null){
 				DBHelper dbHelper = new DBHelper(dbFilePath.toString());
 				if (domainOnly){
-					if (dbHelper.saveDomainObject(DomainPanel.getDomainResult())){
+					if (dbHelper.saveDomainObject(domainPanel.getDomainResult())){
 						stdout.println("Save Domain Only Success! "+ Commons.getNowTimeString());
 						return true;
 					}
 				}else {
-					boolean targetSaved = dbHelper.saveTargets(DomainPanel.getTargetTable().getTargetModel());
-					boolean domainSaved = dbHelper.saveDomainObject(DomainPanel.getDomainResult());
+					boolean targetSaved = dbHelper.saveTargets(domainPanel.getTargetTable().getTargetModel());
+					boolean domainSaved = dbHelper.saveDomainObject(domainPanel.getDomainResult());
 					boolean titleSaved = dbHelper.addTitles(TitlePanel.getTitleTableModel().getLineEntries());
 					if (targetSaved && domainSaved && titleSaved){
 						stdout.println("Save Domain And Title Success! "+ Commons.getNowTimeString());

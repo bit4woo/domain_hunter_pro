@@ -26,25 +26,13 @@ import title.IndexedHashMap;
 import title.LineEntry;
 import title.TitlePanel;
 
+/**
+ * 构造项目菜单
+ *
+ */
 public class ProjectMenu extends JMenu{
 	GUIMain gui;
 	JMenuItem lockMenu;
-
-	public static void createNewDb(GUIMain gui) {
-		File file = GUIMain.dbfc.dialog(false,".db");//通过保存对话指定文件，这会是一个空文件。
-		if (null != file) {
-			DomainPanel.setDomainResult(new DomainManager(file.getName()));
-			gui.saveData(file.toString(),true);
-			GUIMain.LoadData(file.toString());//然后加载，就是一个新的空项目了。
-		}
-	}
-
-	public static void openDb() {
-		File file = GUIMain.dbfc.dialog(true,".db");
-		if (null != file) {
-			GUIMain.LoadData(file.toString());
-		}
-	}
 
 	public ProjectMenu(GUIMain gui){
 		this.gui = gui;
@@ -99,7 +87,7 @@ public class ProjectMenu extends JMenu{
 				DomainPanel.getDomainResult().getEmailSet().addAll(NewManager.getEmailSet());
 				DomainPanel.getDomainResult().getPackageNameSet().addAll(NewManager.getPackageNameSet());
 
-				GUIMain.getDomainPanel().showDataToDomainGUI();
+				gui.getDomainPanel().showDataToDomainGUI();
 				DomainPanel.saveDomainDataToDB();
 
 				IndexedHashMap<String, LineEntry> titles = dbhelper.getTitles();
@@ -145,8 +133,8 @@ public class ProjectMenu extends JMenu{
 							}
 						}
 
-						GUIMain.getDomainPanel().showDataToDomainGUI();
-						GUIMain.getDomainPanel().saveDomainDataToDB();
+						gui.getDomainPanel().showDataToDomainGUI();
+						gui.getDomainPanel().saveDomainDataToDB();
 						return null;
 					}
 					@Override
@@ -169,20 +157,35 @@ public class ProjectMenu extends JMenu{
 		});
 		//this.add(detachMenu);
 
-		lockMenu = new JMenuItem(new AbstractAction()
+		lockMenu = new JMenuItem(new AbstractAction("Lock")
 		{
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				BurpExtender.getGui().lockUnlock();
 			}
 		});
-		lockMenu.setText("Lock");
 		this.add(lockMenu);
 
 		//为了菜单能够区分
-		File dbFile = GUIMain.getCurrentDBFile();
+		File dbFile = gui.getCurrentDBFile();
 		if (dbFile != null){
 			AddDBNameMenuItem(dbFile.getName());
+		}
+	}
+	
+	public void createNewDb(GUIMain gui) {
+		File file = gui.dbfc.dialog(false,".db");//通过保存对话指定文件，这会是一个空文件。
+		if (null != file) {
+			DomainPanel.setDomainResult(new DomainManager(file.getName()));
+			gui.saveData(file.toString(),true);
+			gui.LoadData(file.toString());//然后加载，就是一个新的空项目了。
+		}
+	}
+
+	public void openDb() {
+		File file = gui.dbfc.dialog(true,".db");
+		if (null != file) {
+			gui.LoadData(file.toString());
 		}
 	}
 
