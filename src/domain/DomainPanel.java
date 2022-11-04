@@ -37,8 +37,6 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
@@ -50,7 +48,6 @@ import GUI.GUIMain;
 import GUI.JScrollPanelWithHeader;
 import burp.BurpExtender;
 import burp.Commons;
-import burp.DBHelper;
 import burp.IBurpExtenderCallbacks;
 import burp.IHttpRequestResponse;
 import burp.IHttpService;
@@ -74,7 +71,6 @@ import toElastic.VMP;
  */
 public class DomainPanel extends JPanel {
 
-	private JTextField textFieldUploadURL;
 	private JButton btnSearch;
 	private JButton btnCrawl;
 	private JLabel lblSummary;
@@ -547,7 +543,6 @@ public class DomainPanel extends JPanel {
 	public void showDataToDomainGUI() {
 		listenerIsOn = false;
 
-		textFieldUploadURL.setText(domainResult.uploadURL);
 		ScrollPaneSpecialPortTargets.getTextArea().setText(domainResult.fetchSpecialPortTargets());
 		ScrollPaneSubdomains.getTextArea().setText(domainResult.fetchSubDomains());
 		ScrollPaneSimilarDomains.getTextArea().setText(domainResult.fetchSimilarDomains());
@@ -746,8 +741,9 @@ public class DomainPanel extends JPanel {
 		try {
 			File file = GUIMain.instance.dbfc.dialog(false,".db");
 			if (file != null) {
-				DBHelper dbHelper = new DBHelper(file.toString());
-				if (dbHelper.saveDomainObject(domainResult) && dbHelper.saveTargets(fetchTargetModel())) {
+				DomainDao dao = new DomainDao(file.toString());
+				TargetDao dao1 = new TargetDao(file.toString());
+				if (dao.saveDomainManager(domainResult) && dao1.addOrUpdateTargets(fetchTargetModel().getTargetEntries())) {
 					stdout.println("Save Domain Only Success! " + Commons.getNowTimeString());
 					return file;
 				}

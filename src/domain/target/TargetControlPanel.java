@@ -44,12 +44,13 @@ public class TargetControlPanel extends JPanel {
 		addButton.setToolTipText("add Top-Level domain");
 		addButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if (domainPanel.getDomainResult() == null) {
+				if (domainPanel.getDomainResult() == null || GUIMain.instance.getCurrentDBFile() == null) {
 					DomainPanel.createOrOpenDB();
 				} else {
 					String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
 					TargetEntry entry = new TargetEntry(enteredRootDomain);
 					domainPanel.fetchTargetModel().addRowIfValid(entry);
+					//TODO need refresh
 					domainPanel.saveDomainDataToDB();
 				}
 			}

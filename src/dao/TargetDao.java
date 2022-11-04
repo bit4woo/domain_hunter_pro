@@ -9,6 +9,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import domain.target.TargetEntry;
+import title.IndexedHashMap;
 
 public class TargetDao {
 
@@ -28,7 +29,8 @@ public class TargetDao {
 	}
 
 	public boolean createTable() {
-		String sqlTitle = "CREATE TABLE IF NOT EXISTS Target" +
+		//使用和旧版本不同的表名称,避免冲突
+		String sqlTitle = "CREATE TABLE IF NOT EXISTS TargetTable" +
 				"(ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +//自动增长 https://www.sqlite.org/autoinc.html
 				" target           TEXT    NOT NULL," +
 				" type        TEXT    NOT NULL,"+
@@ -41,7 +43,7 @@ public class TargetDao {
 		
 		//https://www.sqlitetutorial.net/sqlite-replace-statement/
 		//让target字段成为replace操作判断是否重复的判断条件。
-		String sqlcreateIndex = "CREATE UNIQUE INDEX idx_Target_target ON Target (target)";
+		String sqlcreateIndex = "CREATE UNIQUE INDEX IF NOT EXISTS idx_Target_target ON TargetTable (target)";
 		jdbcTemplate.execute(sqlcreateIndex);
 		return true;
 	}
@@ -52,7 +54,7 @@ public class TargetDao {
 	 * @return
 	 */
 	public boolean addOrUpdateTarget(TargetEntry entry){
-		String sql = "insert or replace into Target (target,type,keyword,ZoneTransfer,isBlack,comment,useTLD)"
+		String sql = "insert or replace into TargetTable (target,type,keyword,ZoneTransfer,isBlack,comment,useTLD)"
 					+ " values(?,?,?,?,?,?,?)";
 
 		int result = jdbcTemplate.update(sql, entry.getTarget(),entry.getType(),entry.getKeyword(),entry.isZoneTransfer(),
@@ -73,6 +75,15 @@ public class TargetDao {
 		return num==entries.size();
 	}
 
+	public boolean addOrUpdateTargets(IndexedHashMap<String, TargetEntry> entries){
+		int num=0;
+		for (TargetEntry entry:entries.values()) {
+			if (addOrUpdateTarget(entry)) {
+				num++;
+			};
+		}
+		return num==entries.size();
+	}
 
 
 	/**
@@ -80,14 +91,14 @@ public class TargetDao {
 	 * @return
 	 */
 	public List<TargetEntry> selectAll(){
-		String sql = "select * from Target";
+		String sql = "select * from TargetTable";
 		return jdbcTemplate.query(sql,new TargetMapper());
 	}
 
 	@Deprecated
 	public TargetEntry selectByID(int id){
 		try {
-			String sql = "select * from Target where id=?";
+			String sql = "select * from TargetTable where id=?";
 			return jdbcTemplate.queryForObject(sql, new Object[] { id },new TargetMapper());
 		} catch (DataAccessException e) {
 			//e.printStackTrace();
@@ -102,7 +113,7 @@ public class TargetDao {
 	 */
 	public TargetEntry selectByRowIndex(int rowIndex){
 		try {//查询第一行，就是limit 1 offset 0;第二行就是limit 1 offset 1.所以从0开始的RowIndex恰好作为offset值
-			String sql = "select * from Target LIMIT 1 OFFSET ?";
+			String sql = "select * from TargetTable LIMIT 1 OFFSET ?";
 			return jdbcTemplate.queryForObject(sql, new Object[] { rowIndex },new TargetMapper());
 		} catch (DataAccessException e) {
 			//e.printStackTrace();
@@ -141,11 +152,6 @@ public class TargetDao {
 	public boolean deleteByID(int id) {
 		String sql = "delete from Target where ID=?";
 		return jdbcTemplate.update(sql, id) > 0;
-	}
-
-	public boolean deleteByRowIndex(int rowIndex) {
-		String sql = "delete from Target limit 1 offset rowIndex";
-		return jdbcTemplate.update(sql, rowIndex) > 0;
 	}
 	
 	public boolean deleteByTarget(String targetDomain) {

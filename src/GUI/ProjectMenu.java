@@ -17,14 +17,10 @@ import javax.swing.JTabbedPane;
 import javax.swing.SwingWorker;
 
 import burp.BurpExtender;
-import burp.DBHelper;
 import dao.DomainDao;
 import dao.TitleDao;
 import domain.DomainManager;
 import domain.DomainPanel;
-import domain.target.TargetEntry;
-import domain.target.TargetTable;
-import title.IndexedHashMap;
 import title.LineEntry;
 import title.TitlePanel;
 

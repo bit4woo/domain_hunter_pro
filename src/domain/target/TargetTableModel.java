@@ -1,7 +1,5 @@
 package domain.target;
 
-import java.io.File;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,11 +7,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -24,18 +19,17 @@ import com.google.gson.Gson;
 import GUI.GUIMain;
 import burp.BurpExtender;
 import burp.Commons;
-import burp.DBHelper;
 import burp.DomainNameUtils;
 import burp.IPAddressUtils;
 import burp.IntArraySlice;
+import dao.TargetDao;
 import domain.DomainManager;
-import domain.DomainPanel;
 import title.IndexedHashMap;
 
 public class TargetTableModel extends AbstractTableModel {
 
 	private IndexedHashMap<String,TargetEntry> targetEntries =new IndexedHashMap<String,TargetEntry>();
-
+	private TargetDao targetDao;
 	transient PrintWriter stdout;
 	transient PrintWriter stderr;
 
@@ -58,8 +52,7 @@ public class TargetTableModel extends AbstractTableModel {
 			stdout = new PrintWriter(System.out, true);
 			stderr = new PrintWriter(System.out, true);
 		}
-		//addListener();//构造函数中已经有了添加listener了的操作了，为什么会在Jtable.setModel()函数后失效呢？奇怪！
-		//不再使用监听器来更新数据库
+		targetDao = new TargetDao(GUIMain.instance.getCurrentDBFile());
 	}
 	
 	public TargetTableModel(List<TargetEntry> entries){
@@ -180,26 +173,6 @@ public class TargetTableModel extends AbstractTableModel {
 	/////////////^^^^^AbstractTableModel的实现函数^^^^^////////////////////
 
 
-	public void clear() {
-		int size = targetEntries.size();
-		targetEntries = new IndexedHashMap<String,TargetEntry>();
-		System.out.println("clean targets of old data,"+size+" targets cleaned");
-		if (size-1 >=0)	fireTableRowsDeleted(0, size-1);
-	}
-
-	/**
-	 * 用于加载数据时，直接初始化
-	 * @param targetEntries
-	 */
-	public void setDataDeprecated(IndexedHashMap<String,TargetEntry> targetEntries) {
-		clear();
-		this.targetEntries = targetEntries;
-		int size = targetEntries.size();
-		if (size >=1) {
-			fireTableRowsInserted(0, size-1);
-		}
-	}
-
 	/**
 	 * TargetEntry的有效性检查
 	 * @param entry
@@ -229,14 +202,7 @@ public class TargetTableModel extends AbstractTableModel {
 	 */
 	public void addRowIfValid(TargetEntry entry) {
 		if (ifValid(entry)){
-			//因为后台的流量分析进程是多线程，可能同事添加数据！
 			String key = entry.getTarget();
-			TargetEntry oldentry = targetEntries.get(key);
-			if (oldentry != null) {//如果有旧的记录，就需要用旧的内容做修改
-				entry.setBlack(oldentry.isBlack());
-				entry.setComment(oldentry.getComment());
-				entry.setKeyword(oldentry.getKeyword());
-			}
 			addRow(key, entry);
 		}
 	}
@@ -248,13 +214,13 @@ public class TargetTableModel extends AbstractTableModel {
 	 * @param entry
 	 */
 	private void addRow(String key,TargetEntry entry) {
-		TargetEntry originalEntry = targetEntries.get(key);
-		if (originalEntry != null){
-			String entryStr = JSON.toJSONString(originalEntry);
-			if(entryStr.equals(JSON.toJSONString(entry))){
-				return;
-			}
+		TargetEntry oldentry = targetEntries.get(key);
+		if (oldentry != null) {//如果有旧的记录，就需要用旧的内容做修改
+			entry.setBlack(oldentry.isBlack());
+			entry.setComment(oldentry.getComment());
+			entry.setKeyword(oldentry.getKeyword());
 		}
+		
 		int oldsize = targetEntries.size();
 		targetEntries.put(key,entry);
 		int rowIndex = targetEntries.IndexOfKey(key);
@@ -264,6 +230,7 @@ public class TargetTableModel extends AbstractTableModel {
 		}else {//新增
 			fireTableRowsInserted(rowIndex,rowIndex);
 		}
+		targetDao.addOrUpdateTarget(entry);
 	}
 
 	/**
@@ -271,8 +238,10 @@ public class TargetTableModel extends AbstractTableModel {
 	 * @param rowIndex
 	 */
 	public void removeRow(int rowIndex) {
+		String key = targetEntries.get(rowIndex).getTarget();
 		targetEntries.remove(rowIndex);
 		fireTableRowsDeleted(rowIndex, rowIndex);
+		targetDao.deleteByTarget(key);
 	}
 
 	/**
@@ -282,6 +251,7 @@ public class TargetTableModel extends AbstractTableModel {
 		int rowIndex = targetEntries.IndexOfKey(key);
 		targetEntries.remove(key);
 		fireTableRowsDeleted(rowIndex, rowIndex);
+		targetDao.deleteByTarget(key);
 	}
 
 	/**
@@ -658,6 +628,7 @@ public class TargetTableModel extends AbstractTableModel {
 		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
 			TargetEntry checked = targetEntries.get(rows[i]);
 			checked.addComment(commentAdd);
+			targetDao.addOrUpdateTarget(checked);
 		}
 		fireUpdated(rows);
 	}
@@ -671,6 +642,12 @@ public class TargetTableModel extends AbstractTableModel {
 	}
 
 	public void removeRows(int[] rows) {
+		Arrays.sort(rows); //升序
+		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
+			TargetEntry checked = targetEntries.get(rows[i]);
+			targetEntries.remove(i);
+			targetDao.deleteTarget(checked);
+		}
 		fireDeleted(rows);
 	}
 

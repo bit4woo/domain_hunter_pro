@@ -13,10 +13,11 @@ import javax.swing.SwingWorker;
 import Tools.ToolPanel;
 import burp.BurpExtender;
 import burp.Commons;
-import burp.DBHelper;
 import burp.dbFileChooser;
 import config.ConfigPanel;
 import dao.DomainDao;
+import dao.TargetDao;
+import dao.TitleDao;
 import domain.DomainPanel;
 import title.TitlePanel;
 
@@ -197,17 +198,22 @@ public class GUIMain extends JFrame {
 	 */
 	public Boolean saveData(String dbFilePath,boolean domainOnly) {
 		try{
-			if (dbFilePath != null){
-				DBHelper dbHelper = new DBHelper(dbFilePath.toString());
-				if (domainOnly){
-					if (dbHelper.saveDomainObject(domainPanel.getDomainResult())){
-						stdout.println("Save Domain Only Success! "+ Commons.getNowTimeString());
+			if (dbFilePath != null && new File(dbFilePath).exists()){
+				DomainDao domainDao = new DomainDao(dbFilePath.toString());
+				TargetDao targetDao = new TargetDao(dbFilePath.toString());
+				
+				boolean targetSaved = targetDao.addOrUpdateTargets(domainPanel.fetchTargetModel().getTargetEntries());
+				boolean domainSaved = domainDao.saveDomainManager(domainPanel.getDomainResult());
+				
+				if (domainOnly) {
+					if ( targetSaved && domainSaved	) {
+						stdout.println("Save Domain Only Success! " + Commons.getNowTimeString());
 						return true;
 					}
+					return false;
 				}else {
-					boolean targetSaved = dbHelper.saveTargets(domainPanel.getTargetTable().getTargetModel());
-					boolean domainSaved = dbHelper.saveDomainObject(domainPanel.getDomainResult());
-					boolean titleSaved = dbHelper.addTitles(TitlePanel.getTitleTableModel().getLineEntries());
+					TitleDao titleDao = new TitleDao(dbFilePath.toString());
+					boolean titleSaved  = titleDao.addOrUpdateTitles(TitlePanel.getTitleTableModel().getLineEntries());
 					if (targetSaved && domainSaved && titleSaved){
 						stdout.println("Save Domain And Title Success! "+ Commons.getNowTimeString());
 						return true;
