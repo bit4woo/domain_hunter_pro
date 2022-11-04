@@ -104,12 +104,20 @@ public class DomainPanel extends JPanel {
 	 * targetTableModel则对应地从DomainManager中的对象获取，是数据模型的线路关系
 	 */
 	private volatile DomainManager domainResult = new DomainManager();//getter setter
+	private boolean listenerIsOn = true;
 	private PrintWriter stdout;
 	private PrintWriter stderr;
 
 	private static final Logger log = LogManager.getLogger(DomainPanel.class);
 
 
+	public boolean isListenerIsOn() {
+		return listenerIsOn;
+	}
+
+	public void setListenerIsOn(boolean listenerIsOn) {
+		this.listenerIsOn = listenerIsOn;
+	}
 
 	public TargetTable getTargetTable() {
 		return targetTable;
@@ -466,17 +474,17 @@ public class DomainPanel extends JPanel {
 		BodyPane.setLayout(new GridLayout(2, 5, 0, 0));
 
 
-		ScrollPaneRelatedDomains = new JScrollPanelWithHeader("Related Domains","Related Domains"); //E2
-		ScrollPaneSubdomains = new JScrollPanelWithHeader("Sub Domains","Sub Domains");
-		ScrollPaneSimilarDomains = new JScrollPanelWithHeader("Similar Domains","Similar Domains");
-		ScrollPaneEmails = new JScrollPanelWithHeader("Emails","Emails");
-		PanelSimilarEmails = new JScrollPanelWithHeader("Similar Emails","Similar Emails");
+		ScrollPaneRelatedDomains = new JScrollPanelWithHeader(TextAreaType.RelatedDomain,"Related Domains","Related Domains"); //E2
+		ScrollPaneSubdomains = new JScrollPanelWithHeader(TextAreaType.SubDomain,"Sub Domains","Sub Domains");
+		ScrollPaneSimilarDomains = new JScrollPanelWithHeader(TextAreaType.SimilarDomain,"Similar Domains","Similar Domains");
+		ScrollPaneEmails = new JScrollPanelWithHeader(TextAreaType.Email,"Emails","Emails");
+		PanelSimilarEmails = new JScrollPanelWithHeader(TextAreaType.SimilarEmail,"Similar Emails","Similar Emails");
 
-		ScrollPaneSpecialPortTargets = new JScrollPanelWithHeader("Custom Assets","you can put your custom assets here");
-		PanelIPOfSubnet = new JScrollPanelWithHeader("IP Of Subnet","IP Of Subnet");
-		PanelIPOfCert = new JScrollPanelWithHeader("IP Of Cert","IP Of Cert");
-		ScrollPanePackageNames = new JScrollPanelWithHeader("Package Names","Package Names");
-		PanelBlackIPList = new JScrollPanelWithHeader("Black IP List","Black IP List");
+		ScrollPaneSpecialPortTargets = new JScrollPanelWithHeader(TextAreaType.SpecialPortTarget,"Custom Assets","you can put your custom assets here");
+		PanelIPOfSubnet = new JScrollPanelWithHeader(TextAreaType.IPSetOfSubnet,"IP Of Subnet","IP Of Subnet");
+		PanelIPOfCert = new JScrollPanelWithHeader(TextAreaType.IPSetOfCert,"IP Of Cert","IP Of Cert");
+		ScrollPanePackageNames = new JScrollPanelWithHeader(TextAreaType.PackageName,"Package Names","Package Names");
+		PanelBlackIPList = new JScrollPanelWithHeader(TextAreaType.BlackIP,"Black IP List","Black IP List");
 
 		BodyPane.add(ScrollPaneRelatedDomains);
 		BodyPane.add(ScrollPaneSubdomains);
@@ -755,11 +763,13 @@ public class DomainPanel extends JPanel {
 
 	/**
 	 * 显示DomainPanel中的数据。
-	 * 未包含target信息
+	 * 无论是用户的手动输入编辑文本框内容，还是调用setText方法，都将触发DocumentListener!(见JTextAreaListenerTest.java)
+	 * 所以show()函数的设计都应该关闭监听器的开关。
 	 */
 	public void showDataToDomainGUI() {
+		listenerIsOn = false;
+		
 		textFieldUploadURL.setText(domainResult.uploadURL);
-
 		ScrollPaneSpecialPortTargets.getTextArea().setText(domainResult.fetchSpecialPortTargets());
 		ScrollPaneSubdomains.getTextArea().setText(domainResult.fetchSubDomains());
 		ScrollPaneSimilarDomains.getTextArea().setText(domainResult.fetchSimilarDomains());
@@ -778,6 +788,8 @@ public class DomainPanel extends JPanel {
 
 		System.out.println("Load Domain Panel Data Done, " + domainResult.getSummary());
 		stdout.println("Load Domain Panel Data Done, " + domainResult.getSummary());
+		
+		listenerIsOn = true;
 	}
 
 	private void LoadData(DomainManager domainResult) {
@@ -785,14 +797,14 @@ public class DomainPanel extends JPanel {
 		showDataToDomainGUI();
 	}
 	/**
-	 * 
+	 * 数据加载过程分为两步：
+	 * 1、从DB到DomainManager；
+	 * 2、从DomainManager到UI。
 	 * @param dbFilePath
 	 */
 	public void LoadDomainData(String dbFilePath) {
 		DomainDao domainDao = new DomainDao(dbFilePath);
-		domainResult = new DomainManager();
-		domainDao.se
-		//TODO
+		domainResult = domainDao.getDomainManager();
 		setDomainResult(domainResult);
 		showDataToDomainGUI();
 	}
@@ -978,20 +990,12 @@ public class DomainPanel extends JPanel {
 		}
 	}
 
-	public void saveTextAreas() {
-
-		domainResult.setSpecialPortTargets(getSetFromTextArea(ScrollPaneSpecialPortTargets.getTextArea()));
-		domainResult.setRelatedDomainSet(getSetFromTextArea(ScrollPaneRelatedDomains.getTextArea()));
-		domainResult.setSubDomainSet(getSetFromTextArea(ScrollPaneSubdomains.getTextArea()));
-		domainResult.setSimilarDomainSet(getSetFromTextArea(ScrollPaneSimilarDomains.getTextArea()));
-		domainResult.setEmailSet(getSetFromTextArea(ScrollPaneEmails.getTextArea()));
-		domainResult.setPackageNameSet(getSetFromTextArea(ScrollPanePackageNames.getTextArea()));
-		
-		domainResult.setIPSetOfSubnet(getSetFromTextArea(PanelIPOfSubnet.getTextArea()));
-		domainResult.setIPSetOfCert(getSetFromTextArea(PanelIPOfCert.getTextArea()));
-		domainResult.setNotTargetIPSet(getSetFromTextArea(PanelBlackIPList.getTextArea()));
-		domainResult.setSimilarEmailSet(getSetFromTextArea(PanelSimilarEmails.getTextArea()));
-		
+	/**
+	 * 从UI文本框到DomainManager的过程。
+	 * 由listener负责。
+	 */
+	@Deprecated
+	public void saveTextAreas() {		
 		domainResult.getSummary();
 	}
 

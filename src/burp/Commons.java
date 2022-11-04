@@ -321,10 +321,17 @@ public class Commons {
 		}
 		return urlString;
 	}
+	
+	public static Set<String> getSetFromTextArea(JTextArea textarea) {
+		Set<String> domainList = new HashSet<>(textToLines(textarea.getText()));
+		domainList.remove("");
+		return domainList;
+	}
 
 	public static List<String> getLinesFromTextArea(JTextArea textarea){
 		return textToLines(textarea.getText());
 	}
+	
 
 	/**
 	 * 换行符的可能性有三种，都必须考虑到
