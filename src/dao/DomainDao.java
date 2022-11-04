@@ -82,7 +82,54 @@ public class DomainDao {
 		for (TextAreaType type:TextAreaType.values()) {
 			String sql ="select Content from DOMAINObject where Type = ?";
 			Set<String> content = jdbcTemplate.queryForObject(sql, new Object[] { type },new DomainObjectMapper());
+			result.fillContentByType(type, content);
 		}
+		return result;
+	}
+	
+	public void saveDomainManager(DomainManager domainResult){
+		for (TextAreaType type:TextAreaType.values()) {
+			switch (type) {
+			case SubDomain:
+				createOrUpdateByType(domainResult.getSubDomainSet(),type);
+				break;
+			case RelatedDomain:
+				createOrUpdateByType(domainResult.getRelatedDomainSet(),type);
+				break;
+			case SimilarDomain:
+				createOrUpdateByType(domainResult.getSimilarDomainSet(),type);
+				break;
+			case Email:
+				createOrUpdateByType(domainResult.getEmailSet(),type);
+				break;
+			case SimilarEmail:
+				createOrUpdateByType(domainResult.getSimilarEmailSet(),type);
+				break;
+			case IPSetOfSubnet:
+				createOrUpdateByType(domainResult.getIPSetOfSubnet(),type);
+				break;
+			case IPSetOfCert:
+				createOrUpdateByType(domainResult.getIPSetOfCert(),type);
+				break;
+			case SpecialPortTarget:
+				createOrUpdateByType(domainResult.getSpecialPortTargets(),type);
+				break;
+			case PackageName:
+				createOrUpdateByType(domainResult.getPackageNameSet(),type);
+				break;
+			case BlackIP:
+				createOrUpdateByType(domainResult.getNotTargetIPSet(),type);
+				break;
+			}
+		}
+	}
+	
+	/**
+	 * 上面没有提供setter函数，由此代替
+	 * @param type
+	 * @param content
+	 */
+	public void fillContentByType(TextAreaType type,Set<String> content) {
 		
 	}
 

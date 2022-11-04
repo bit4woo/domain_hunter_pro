@@ -24,6 +24,7 @@ import burp.IMessageEditorController;
 import burp.IPAddressUtils;
 import burp.IntArraySlice;
 import domain.DomainPanel;
+import domain.target.TargetEntry;
 
 
 public class LineTableModel extends AbstractTableModel implements IMessageEditorController,Serializable {
@@ -67,6 +68,12 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		this.lineEntries = lineEntries;
 	}
 
+	public LineTableModel(List<LineEntry> entries){
+		this();
+		for (LineEntry entry:entries) {
+			lineEntries.put(entry.getUrl(), entry);
+		}
+	}
 	////////getter setter//////////
 
 	public IndexedHashMap<String, LineEntry> getLineEntries() {

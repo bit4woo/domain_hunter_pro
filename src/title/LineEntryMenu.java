@@ -9,7 +9,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Base64;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -27,16 +26,13 @@ import ASN.ASNEntry;
 import ASN.ASNQuery;
 import GUI.GUIMain;
 import GUI.LineEntryMenuForBurp;
-import GUI.RunnerGUI;
 import burp.BurpExtender;
 import burp.Commons;
 import burp.DomainNameUtils;
 import burp.Getter;
 import burp.IBurpExtenderCallbacks;
-import burp.IHttpRequestResponse;
 import burp.IPAddressUtils;
 import config.ConfigPanel;
-import domain.DomainPanel;
 import title.search.SearchDork;
 
 public class LineEntryMenu extends JPopupMenu {
@@ -464,30 +460,6 @@ public class LineEntryMenu extends JPopupMenu {
 		doPortScan.setText("Do Port Scan");
 		doPortScan.addActionListener(new NmapScanAction(lineTable, modleRows));
 
-		JMenuItem doGateWayByPassCheck = new JMenuItem(new AbstractAction("Do GateWay ByPass Check") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-				HashMap<String, IHttpRequestResponse> targetMap = new HashMap<String,IHttpRequestResponse>();
-
-				Set<String> IPs = lineTable.getLineTableModel().getIPs(modleRows);
-				if (IPs.size() >= 50){//避免一次开太多导致系统卡死
-					BurpExtender.getStderr().println("too many task");
-					return;
-				}
-
-				for (int row: modleRows){//根据IP地址去重
-					LineEntry entry = lineTable.getLineTableModel().getLineEntries().get(row);
-					targetMap.put(entry.getIPSet().toString(), new LineMessageInfo(entry));
-				}
-				for (IHttpRequestResponse messageInfo:targetMap.values()) {
-					RunnerGUI runnergui = new RunnerGUI(messageInfo);
-					runnergui.begainRunChangeHostInHeader();
-					runnergui.setVisible(true);
-				}
-			}
-		});
-
-
 		JMenuItem openURLwithBrowserItem = new JMenuItem(new AbstractAction("Open With Browser(double click url)") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -883,7 +855,7 @@ public class LineEntryMenu extends JPopupMenu {
 		DoMenu.add(openURLwithBrowserItem);
 		DoMenu.add(doPortScan);
 		DoMenu.add(dirSearchItem);
-		DoMenu.add(doGateWayByPassCheck);
+		//DoMenu.add(doGateWayByPassCheck);
 		//this.add(iconHashItem);
 
 		JMenu SearchMenu = new JMenu("Search");

@@ -45,7 +45,7 @@ public class DomainManager {
 	private CopyOnWriteArraySet<String> similarEmailSet = new CopyOnWriteArraySet<String>();
 	private CopyOnWriteArraySet<String> PackageNameSet = new CopyOnWriteArraySet<String>();
 	private CopyOnWriteArraySet<String> SpecialPortTargets = new CopyOnWriteArraySet<String>();//用于存放指定了特殊端口的目标
-	
+
 	private CopyOnWriteArraySet<String> IPSetOfSubnet = new CopyOnWriteArraySet<String>();
 	private CopyOnWriteArraySet<String> IPSetOfCert = new CopyOnWriteArraySet<String>();
 
@@ -58,7 +58,7 @@ public class DomainManager {
 	public static int TLD_DOMAIN = 4; //比如baidu.net是baidu.com的TLD domain。xxx.baiu.net和xxx.baidu.com也是
 	public static int NEED_CONFIRM_IP = 5; //根据目标无法判断的类型。
 	public static int USELESS = -1;
-	
+
 	public static int CERTAIN_EMAIL = 10;
 	public static int SIMILAR_EMAIL = 11;
 	//public static int BLACKLIST = -2;
@@ -123,6 +123,67 @@ public class DomainManager {
 		return IPSetOfCert;
 	}
 
+	/**
+	 * 上面没有提供setter函数，由此代替
+	 * @param type
+	 * @param content
+	 */
+	public void fillContentByType(TextAreaType type,Set<String> content) {
+		switch (type) {
+		case SubDomain:
+			//dao.createOrUpdateByType(content, type);
+			getSubDomainSet().clear();
+			getSubDomainSet().addAll(content);
+			getSummary();
+			break;
+		case RelatedDomain:
+			getRelatedDomainSet().clear();
+			getRelatedDomainSet().addAll(content);
+			getSummary();
+			break;
+		case SimilarDomain:
+			getSimilarDomainSet().clear();
+			getSimilarDomainSet().addAll(content);
+			getSummary();
+			break;
+		case Email:
+			getEmailSet().clear();
+			getEmailSet().addAll(content);
+			getSummary();
+			break;
+		case SimilarEmail:
+			getSimilarEmailSet().clear();
+			getSimilarEmailSet().addAll(content);
+			getSummary();
+			break;
+		case IPSetOfSubnet:
+			getIPSetOfSubnet().clear();
+			getIPSetOfSubnet().addAll(content);
+			getSummary();
+			break;
+		case IPSetOfCert:
+			getIPSetOfCert().clear();
+			getIPSetOfCert().addAll(content);
+			getSummary();
+			break;
+		case SpecialPortTarget:
+			getSpecialPortTargets().clear();
+			getSpecialPortTargets().addAll(content);
+			getSummary();
+			break;
+		case PackageName:
+			getPackageNameSet().clear();
+			getPackageNameSet().addAll(content);
+			getSummary();
+			break;
+		case BlackIP:
+			getNotTargetIPSet().clear();
+			getNotTargetIPSet().addAll(content);
+			getSummary();
+			break;
+		}
+	}
+
 	public TargetTableModel fetchTargetModel() {
 		return GUIMain.instance.getDomainPanel().getTargetTable().getTargetModel();
 	}
@@ -138,10 +199,10 @@ public class DomainManager {
 				IPSetOfSubnet.size(),IPSetOfCert.size());
 		return tmpsummary;
 	}
-	
+
 	public boolean isEmpty() {
 		return (fetchTargetModel().getRowCount()+ relatedDomainSet.size()+
-		subDomainSet.size()+similarDomainSet.size()+EmailSet.size()) == 0;
+				subDomainSet.size()+similarDomainSet.size()+EmailSet.size()) == 0;
 	}
 
 	public void setSummary(String Summary) {
@@ -227,25 +288,25 @@ public class DomainManager {
 	public String fetchPackageNames() {
 		return String.join(System.lineSeparator(), PackageNameSet);
 	}
-	
+
 	public String fetchSimilarEmails() {
 		List<String> tmplist = new ArrayList<>(similarEmailSet);
 		Collections.sort(tmplist);
 		return String.join(System.lineSeparator(), tmplist);
 	}
-	
+
 	public String fetchIPSetOfSubnet() {
 		List<String> tmplist = new ArrayList<>(IPSetOfSubnet);
 		Collections.sort(tmplist);
 		return String.join(System.lineSeparator(), tmplist);
 	}
-	
+
 	public String fetchIPSetOfCert() {
 		List<String> tmplist = new ArrayList<>(IPSetOfCert);
 		Collections.sort(tmplist);
 		return String.join(System.lineSeparator(), tmplist);
 	}
-	
+
 	public String fetchIPBlackList() {
 		List<String> tmplist = new ArrayList<>(NotTargetIPSet);
 		Collections.sort(tmplist);
@@ -328,23 +389,23 @@ public class DomainManager {
 		} else if (type == DomainManager.IP_ADDRESS){
 			IPSetOfSubnet.add(domain);
 			return true;
-		//不再直接添加收集到但是无法确认所属关系的IP，误报太高
-		//		} else if (type == DomainManager.NEED_CONFIRM_IP){
-		//			SpecialPortTargets.add(domain);
-		//			return true;
+			//不再直接添加收集到但是无法确认所属关系的IP，误报太高
+			//		} else if (type == DomainManager.NEED_CONFIRM_IP){
+			//			SpecialPortTargets.add(domain);
+			//			return true;
 		}else{
 			return false;
 		}//Email的没有处理
 	}
-	
-	
+
+
 	public void addIfValidEmail(Set<String> emails) {
 		for (String email:emails) {
 			addIfValidEmail(email);
 		}
 	}
-	
-	
+
+
 	/**
 	 * 根据已有配置进行添加，不是强行直接添加
 	 *
@@ -399,11 +460,11 @@ public class DomainManager {
 
 		//处理Email
 		HashSet<String > tmpEmalis = new HashSet<>();
-		
+
 		tmpEmalis.addAll(EmailSet);
 		tmpEmalis.addAll(similarEmailSet);
 		tmpEmalis.addAll(GUIMain.instance.getDomainPanel().collectEmails());
-		
+
 		EmailSet.clear();
 		similarEmailSet.clear();
 		GUIMain.instance.getDomainPanel().getDomainResult().addIfValidEmail(tmpEmalis);

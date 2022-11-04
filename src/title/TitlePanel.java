@@ -14,6 +14,7 @@ import GUI.GUIMain;
 import burp.BurpExtender;
 import burp.Commons;
 import burp.IPAddressUtils;
+import dao.TitleDao;
 import domain.DomainPanel;
 import thread.ThreadGetSubnet;
 import thread.ThreadGetTitleWithForceStop;
@@ -258,7 +259,7 @@ public class TitlePanel extends JPanel {
 		BackupLineEntries = titleTableModel.getLineEntries();
 
 		//clear tableModel
-		titleTableModel.clear(true);//clear
+		titleTableModel = new LineTableModel();//clear
 
 		//转移以前手动保存的记录
 		transferManualSavedItems();
@@ -361,33 +362,18 @@ public class TitlePanel extends JPanel {
 	 * 用于从DB文件中加载数据，没有去重检查。
 	 * 这种加载方式没有改变tableModel，所以tableModelListener也还在。
 	 */
-	public void loadData(IndexedHashMap<String,LineEntry> lineEntries) {
-		//titleTableModel.setLineEntries(new ArrayList<LineEntry>());//clear
-		//这里没有fire delete事件，会导致排序号加载文件出错，但是如果fire了又会触发tableModel的删除事件，导致数据库删除。改用clear()
-		titleTableModel.clear(false);//clear
-		titleTableModel.setListenerIsOn(false);
-		int row = lineEntries.size();
-		titleTableModel.setLineEntries(lineEntries);//如果listener是on，将触发listener--同步到db文件
-		if (row>=1) {
-			titleTableModel.fireTableRowsInserted(0, row-1);
-		}
-		titleTableModel.setListenerIsOn(true);
+	public void loadData(String currentDBFile) {
+		TitleDao dao = new TitleDao(currentDBFile);
+		List<LineEntry> lines = dao.selectAllTitle();
+		titleTableModel = new LineTableModel(lines);
+		titleTable.setModel(titleTableModel);
+		int row = lines.size();
 		System.out.println(row+" title entries loaded from database file");
 		stdout.println(row+" title entries loaded from database file");
 		digStatus();
 		TitlePanel.getTitleTable().search("");// hide checked items
 	}
 
-	/**
-	 *
-	 * @param lineEntries
-	 */
-	@Deprecated//TODO 不知为何没有起作用
-	public void loadDataNewNotWork(IndexedHashMap<String,LineEntry> lineEntries) {
-		LineTableModel tmp = new LineTableModel();
-		tmp.setLineEntries(lineEntries);
-		getTitleTable().setLineTableModel(tmp);
-	}
 
 	public void digStatus() {
 		String status = titleTableModel.getStatusSummary();

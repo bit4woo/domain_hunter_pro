@@ -18,6 +18,8 @@ import javax.swing.SwingWorker;
 
 import burp.BurpExtender;
 import burp.DBHelper;
+import dao.DomainDao;
+import dao.TitleDao;
 import domain.DomainManager;
 import domain.DomainPanel;
 import domain.target.TargetEntry;
@@ -71,16 +73,13 @@ public class ProjectMenu extends JMenu{
 				if (null ==file) {
 					return;
 				}
-
-				DBHelper dbhelper = new DBHelper(file.getAbsolutePath());
-				DomainManager NewManager = dbhelper.getDomainObj();
-
-				IndexedHashMap<String, TargetEntry> entries = TargetTable.rootDomainToTarget(NewManager);
-				for (TargetEntry entry:entries.values()){
-					GUIMain.instance.getDomainPanel().fetchTargetModel().addRowIfValid(entry);
+				if (file.toString().equals(gui.getCurrentDBFile().toString())) {
+					return;
 				}
 
-				//DomainPanel.getDomainResult().getRootDomainMap().putAll(NewManager.getRootDomainMap());//合并rootDomain
+				DomainDao dao = new DomainDao(file.getAbsolutePath());
+				DomainManager NewManager = dao.getDomainManager();
+
 				gui.getDomainPanel().getDomainResult().getRelatedDomainSet().addAll(NewManager.getRelatedDomainSet());
 				gui.getDomainPanel().getDomainResult().getSubDomainSet().addAll(NewManager.getSubDomainSet());
 				gui.getDomainPanel().getDomainResult().getSimilarDomainSet().addAll(NewManager.getSimilarDomainSet());
@@ -90,8 +89,9 @@ public class ProjectMenu extends JMenu{
 				gui.getDomainPanel().showDataToDomainGUI();
 				gui.getDomainPanel().saveDomainDataToDB();
 
-				IndexedHashMap<String, LineEntry> titles = dbhelper.getTitles();
-				for (LineEntry entry:titles.values()) {
+				TitleDao titledao = new TitleDao(file.getAbsolutePath());
+				List<LineEntry> titles = titledao.selectAllTitle();
+				for (LineEntry entry:titles) {
 					TitlePanel.getTitleTableModel().addNewLineEntry(entry);
 				}
 				System.out.println("Import finished");

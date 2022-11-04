@@ -23,6 +23,11 @@
 					<!-- 这是JDK的版本 -->
 					<source>1.8</source>
 					<target>1.8</target>
+					<excludes>
+						<!-- 编译时排除Deprecated包及下面的资源 -->
+						<exclude>**/Deprecated/**</exclude>
+						<exclude>**/test/**</exclude>
+					</excludes>
 				</configuration>
 			</plugin>
 

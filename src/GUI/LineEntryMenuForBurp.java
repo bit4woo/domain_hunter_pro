@@ -25,7 +25,6 @@ import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
 import config.ConfigPanel;
 import domain.DomainManager;
-import domain.DomainPanel;
 import title.LineEntry;
 import title.LineTable;
 import title.TitlePanel;
@@ -45,11 +44,11 @@ public class LineEntryMenuForBurp{
 		3、对某一个请求添加comment，如果请求不存在，放弃；添加请求包含步骤1和2的行为。
 		 */
 
-		JMenuItem runWithSamePathItem = new JMenuItem("^_^ Run Targets with this path");
-		runWithSamePathItem.addActionListener(new runWithSamePath(invocation));
+		//JMenuItem runWithSamePathItem = new JMenuItem("^_^ Run Targets with this path");
+		//runWithSamePathItem.addActionListener(new runWithSamePath(invocation));
 
-		JMenuItem doDirBruteItem = new JMenuItem("^_^ Do Dir Brute");
-		doDirBruteItem.addActionListener(new doDirBrute(invocation));
+		//JMenuItem doDirBruteItem = new JMenuItem("^_^ Do Dir Brute");
+		//doDirBruteItem.addActionListener(new doDirBrute(invocation));
 
 		JMenuItem addDomainToDomainHunter = new JMenuItem("^_^ Add Domain");
 		addDomainToDomainHunter.addActionListener(new addHostToRootDomain(invocation));
@@ -91,7 +90,7 @@ public class LineEntryMenuForBurp{
 
 		JMenuItemList.add(addDomainToDomainHunter);
 		//JMenuItemList.add(doDirBruteItem);
-		JMenuItemList.add(runWithSamePathItem);
+		//JMenuItemList.add(runWithSamePathItem);
 		JMenuItemList.add(sendToToolPanel);
 
 		if (ConfigPanel.showItemsInOne.isSelected()) {
@@ -204,35 +203,6 @@ public class LineEntryMenuForBurp{
 	}
 
 
-	public class runWithSamePath implements ActionListener{
-		private IContextMenuInvocation invocation;
-		runWithSamePath(IContextMenuInvocation invocation) {
-			this.invocation  = invocation;
-		}
-		@Override
-		public void actionPerformed(ActionEvent e)
-		{
-			SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-				//using SwingWorker to prevent blocking burp main UI.
-
-				@Override
-				protected Map doInBackground() throws Exception {
-
-					IHttpRequestResponse[] messages = invocation.getSelectedMessages();
-					IHttpRequestResponse messageInfo =messages[0];
-
-					RunnerGUI runnergui = new RunnerGUI(messageInfo);
-					runnergui.begainRun();
-					return null;
-				}
-				@Override
-				protected void done() {
-				}
-			};
-			worker.execute();
-		}
-	}
-
 	public class sendToToolPanel implements ActionListener{
 		private IContextMenuInvocation invocation;
 		sendToToolPanel(IContextMenuInvocation invocation) {
@@ -304,34 +274,6 @@ public class LineEntryMenuForBurp{
 		}
 	}
 
-	public class doDirBrute implements ActionListener{
-		private IContextMenuInvocation invocation;
-		doDirBrute(IContextMenuInvocation invocation) {
-			this.invocation  = invocation;
-		}
-		@Override
-		public void actionPerformed(ActionEvent e)
-		{
-			SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-				//using SwingWorker to prevent blocking burp main UI.
-
-				@Override
-				protected Map doInBackground() throws Exception {
-
-					IHttpRequestResponse[] messages = invocation.getSelectedMessages();
-					IHttpRequestResponse messageInfo =messages[0];
-
-					RunnerGUI runnergui = new RunnerGUI(messageInfo);
-					runnergui.begainDirBrute();
-					return null;
-				}
-				@Override
-				protected void done() {
-				}
-			};
-			worker.execute();
-		}
-	}
 
 	/*
 	 * 如果能找到与全URL匹配的记录，就更新这个全URL对应的记录，即精确匹配。

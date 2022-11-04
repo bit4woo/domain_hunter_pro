@@ -15,7 +15,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingWorker;
 
 import GUI.GUIMain;
-import GUI.RunnerGUI;
 import burp.BurpExtender;
 
 public class GetTitleMenu extends JPopupMenu {
@@ -173,26 +172,6 @@ public class GetTitleMenu extends JPopupMenu {
 			}
 		});
 
-		JMenuItem doGateWayByPassCheck = new JMenuItem(new AbstractAction("Do GateWay ByPass Check For All") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-					//using SwingWorker to prevent blocking burp main UI.
-					@Override
-					protected Map doInBackground() throws Exception {
-
-						RunnerGUI runnergui = new RunnerGUI();
-						runnergui.begainGatewayBypassCheck();
-						runnergui.setVisible(true);
-						return null;
-					}
-					@Override
-					protected void done() {
-					}
-				};
-				worker.execute();
-			}
-		});
 
 		FreshASNInfo = new JMenuItem(new AbstractAction("Fresh ASN Info") {
 			@Override

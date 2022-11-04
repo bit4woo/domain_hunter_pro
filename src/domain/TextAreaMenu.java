@@ -143,7 +143,7 @@ public class TextAreaMenu extends JPopupMenu {
 				if (selectedItems.size() >=50) {
 					return;
 				}
-				DomainManager domainResult = DomainPanel.getDomainResult();
+				DomainManager domainResult = GUIMain.instance.getDomainPanel().getDomainResult();
 				for (String item:selectedItems) {
 					try {
 						domainResult.addToTargetAndSubDomain(item,true);
@@ -151,7 +151,7 @@ public class TextAreaMenu extends JPopupMenu {
 						e2.printStackTrace(stderr);
 					}
 				}
-				DomainPanel.saveDomainDataToDB();
+				GUIMain.instance.getDomainPanel().saveDomainDataToDB();
 			}
 		});
 
@@ -201,7 +201,7 @@ public class TextAreaMenu extends JPopupMenu {
 		JMenuItem removeMd5DomainItem = new JMenuItem(new AbstractAction("Remove MD5 Domain") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				DomainPanel.getDomainResult().removeMd5Domain();
+				GUIMain.instance.getDomainPanel().getDomainResult().removeMd5Domain();
 			}
 		});
 
@@ -235,10 +235,10 @@ public class TextAreaMenu extends JPopupMenu {
 		});
 
 
-		JMenuItem SortFresh = new JMenuItem(new AbstractAction("Fresh") {
+		JMenuItem SortFresh = new JMenuItem(new AbstractAction("Refresh") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				GUIMain.getDomainPanel().showDataToDomainGUI();
+				GUIMain.instance.getDomainPanel().showDataToDomainGUI();
 			}
 		});
 		

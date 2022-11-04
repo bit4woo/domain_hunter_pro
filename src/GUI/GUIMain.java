@@ -141,6 +141,11 @@ public class GUIMain extends JFrame {
 		worker.execute();
 	}
 
+	/**
+	 * 从DB文件中加载数据
+	 * @param dbFilePath
+	 * @return
+	 */
 	private boolean LoadDataPrivate(String dbFilePath){
 		try {//这其中的异常会导致burp退出
 			System.out.println("=================================");
@@ -151,11 +156,11 @@ public class GUIMain extends JFrame {
 				BurpExtender.getStdout().println("==Load database file [" + dbFilePath+"] failed,file does not exist "+Commons.getNowTimeString()+"==");
 				return false;
 			}
-			//TODO 重新梳理数据加载逻辑
-			domainPanel.LoadTargetsData(currentDBFile);
-			domainPanel.LoadDomainData(currentDBFile);//TODO
-			titlePanel.loadData(currentDBFile);
-			configPanel.loadData(currentDBFile);
+			
+			domainPanel.LoadTargetsData(currentDBFile.toString());
+			domainPanel.LoadDomainData(currentDBFile.toString());//TODO
+			titlePanel.loadData(currentDBFile.toString());
+			//configPanel.loadData(currentDBFile);
 
 			ConfigPanel.getLineConfig().setDbfilepath(currentDBFile.getAbsolutePath());
 			displayProjectName();

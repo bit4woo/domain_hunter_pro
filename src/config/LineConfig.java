@@ -51,6 +51,7 @@ public class LineConfig {
 	private String elasticApiUrl = "http://10.12.72.55:9200/";
 	private String elasticUsernameAndPassword = "elastic:changeme";
 	private String uploadApiToken = "";
+	private String uploadUrl = "";
 	private boolean showItemsInOne = false;
 	private boolean enableElastic = false;
 	private String dbfilepath ="";
@@ -200,6 +201,16 @@ public class LineConfig {
 		this.uploadApiToken = uploadApiToken;
 	}
 
+
+
+	public String getUploadUrl() {
+		return uploadUrl;
+	}
+
+
+	public void setUploadUrl(String uploadUrl) {
+		this.uploadUrl = uploadUrl;
+	}
 
 
 	public boolean isShowItemsInOne() {

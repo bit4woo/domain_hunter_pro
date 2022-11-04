@@ -5,7 +5,7 @@ DB ---daoQuery---> DomainManager---show()-->UI
 当用户编辑文本框：
 UI--listener--->DomainManager
 UI--listener--->DB
-当后台逻辑直接编辑DomainManager时： 
+当后台逻辑直接编辑DomainManager时，比如流量分析获取到了内容： 
 DomainManager--->DB
 DomainManager--show()---->UI----listener--->DomainManager
                           UI----listener--->DB

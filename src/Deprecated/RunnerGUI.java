@@ -195,7 +195,7 @@ public class RunnerGUI extends JFrame {
 			public void windowClosing(WindowEvent e) {
 				// TODO 关闭多线程
 				try{
-					runnerTableModel.clear(false);
+					runnerTableModel = null;
 				}catch (Exception e1){
 					e1.printStackTrace();
 				}
