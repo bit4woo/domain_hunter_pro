@@ -48,6 +48,7 @@ public class DomainManager {
 
 	private CopyOnWriteArraySet<String> IPSetOfSubnet = new CopyOnWriteArraySet<String>();
 	private CopyOnWriteArraySet<String> IPSetOfCert = new CopyOnWriteArraySet<String>();
+	private GUIMain guiMain;
 
 	//private Set<String> newAndNotGetTitleDomainSet = new CopyOnWriteArraySet<String>();
 
@@ -69,7 +70,10 @@ public class DomainManager {
 
 	public DomainManager(String projectName) {
 	}
-
+	
+	public DomainManager(GUIMain guiMain) {
+		this.guiMain = guiMain;
+	}
 
 	public boolean isAutoAddRelatedToRoot() {
 		return autoAddRelatedToRoot;
@@ -185,13 +189,13 @@ public class DomainManager {
 	}
 
 	public TargetTableModel fetchTargetModel() {
-		return GUIMain.instance.getDomainPanel().getTargetTable().getTargetModel();
+		return guiMain.getDomainPanel().getTargetTable().getTargetModel();
 	}
 
 	public String getSummary() {
 		String filename = "unknown";
-		if (GUIMain.instance.getCurrentDBFile() != null) {
-			filename = GUIMain.instance.getCurrentDBFile().getName();
+		if (guiMain.getCurrentDBFile() != null) {
+			filename = guiMain.getCurrentDBFile().getName();
 		}
 		String tmpsummary = String.format("  FileName:%s  Root-domain:%s  Related-domain:%s  Sub-domain:%s  Similar-domain:%s  Email:%s "
 				+ "IPOfSubnet:%s IPOfCert:%s ^_^",
@@ -218,7 +222,7 @@ public class DomainManager {
 		String status = getSummary();
 		if (!status.equals(summary) && !summary.equals("")){
 			summary = getSummary();
-			GUIMain.instance.getDomainPanel().getLblSummary().setText(summary);
+			guiMain.getDomainPanel().getLblSummary().setText(summary);
 			return true;
 		}else {
 			return false;
@@ -333,14 +337,14 @@ public class DomainManager {
 
 	public void addToTargetAndSubDomain(String enteredRootDomain, boolean autoSub) {
 		if (enteredRootDomain == null) return;
-		GUIMain.instance.getDomainPanel().fetchTargetModel().addRowIfValid(new TargetEntry(enteredRootDomain, autoSub));
+		guiMain.getDomainPanel().fetchTargetModel().addRowIfValid(new TargetEntry(enteredRootDomain, autoSub));
 	}
 
 	public void addTLDToTargetAndSubDomain(String enteredRootDomain) {
 		if (enteredRootDomain == null) return;
-		String tldDomainToAdd  = GUIMain.instance.getDomainPanel().fetchTargetModel().getTLDDomainToAdd(enteredRootDomain);
+		String tldDomainToAdd  = guiMain.getDomainPanel().fetchTargetModel().getTLDDomainToAdd(enteredRootDomain);
 		TargetEntry tmp = new TargetEntry(tldDomainToAdd, false);
-		GUIMain.instance.getDomainPanel().fetchTargetModel().addRowIfValid(tmp);
+		guiMain.getDomainPanel().fetchTargetModel().addRowIfValid(tmp);
 	}
 
 	public void addIfValid(Set<String> domains) {
@@ -463,11 +467,11 @@ public class DomainManager {
 
 		tmpEmalis.addAll(EmailSet);
 		tmpEmalis.addAll(similarEmailSet);
-		tmpEmalis.addAll(GUIMain.instance.getDomainPanel().collectEmails());
+		tmpEmalis.addAll(guiMain.getDomainPanel().collectEmails());
 
 		EmailSet.clear();
 		similarEmailSet.clear();
-		GUIMain.instance.getDomainPanel().getDomainResult().addIfValidEmail(tmpEmalis);
+		guiMain.getDomainPanel().getDomainResult().addIfValidEmail(tmpEmalis);
 		BurpExtender.getStdout().println("after refresh--> "+getSummary());
 	}
 

@@ -163,10 +163,11 @@ public class GetTitleMenu extends JPopupMenu {
 		StopItem = new JMenuItem(new AbstractAction("Force Stop Get Title Threads") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				if (TitlePanel.threadGetTitle != null && TitlePanel.threadGetTitle.isAlive() ){
+				if (GUIMain.instance.getTitlePanel().getThreadGetTitle() != null && 
+						GUIMain.instance.getTitlePanel().getThreadGetTitle().isAlive() ){
 					int result = JOptionPane.showConfirmDialog(null,"Are You Sure To [Force Stop] All Get Title Threads ?");
 					if (result == JOptionPane.YES_OPTION){
-						TitlePanel.threadGetTitle.forceStopThreads();
+						GUIMain.instance.getTitlePanel().getThreadGetTitle().forceStopThreads();
 					}
 				}
 			}
@@ -193,7 +194,7 @@ public class GetTitleMenu extends JPopupMenu {
 								ASNQuery.batchQueryFromApi(partition);//接口有限制，请求过快，过频繁会被封。查网段是不错的选择
 							}
 							 */
-							TitlePanel.getTitleTableModel().freshAllASNInfo();
+							GUIMain.instance.getTitlePanel().getTitleTableModel().freshAllASNInfo();
 						} catch (Exception e) {
 							e.printStackTrace();
 						}

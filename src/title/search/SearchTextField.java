@@ -60,7 +60,7 @@ public class SearchTextField extends JTextField{
 				}
 				if (e.getButton() == MouseEvent.BUTTON3) {//鼠标右键
 					// 弹出菜单
-					SearchMenu sm = new SearchMenu();
+					SearchMenu sm = new SearchMenu(SearchTextField.this);
 					sm.show(SearchTextField.this, e.getX(), e.getY());
 				}
 			}

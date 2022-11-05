@@ -15,3 +15,5 @@ DomainManager--show()---->UI----listener--->DomainManager
 所以show()函数的设计都应该关闭监听器的开关。
                  
 Title Panel中JTable的数据处理逻辑：
+
+

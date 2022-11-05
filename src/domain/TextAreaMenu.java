@@ -36,9 +36,10 @@ public class TextAreaMenu extends JPopupMenu {
 	JTextArea textArea;
 	String selectedText;
 	List<String> selectedItems = new ArrayList<>();
+	private GUIMain guiMain;
 
-	TextAreaMenu(JTextArea textArea){
-
+	TextAreaMenu(GUIMain guiMain,JTextArea textArea){
+		this.guiMain = guiMain;
 		this.textArea = textArea;
 		selectedText = textArea.getSelectedText();
 		if (selectedText != null && !selectedText.equalsIgnoreCase("")){
@@ -70,12 +71,12 @@ public class TextAreaMenu extends JPopupMenu {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 
-				JTabbedPane aa= (JTabbedPane) GUIMain.instance.getContentPane();
+				JTabbedPane aa= (JTabbedPane) guiMain.getContentPane();
 				aa.setSelectedIndex(1);
 				//只会影响Domain Hunter中的选中，当选中的是proxy，使用这个方法并不能自动切换到domain hunter。
-				//stdout.println(GUIMain.instance.getRootPane().getName());//null
+				//stdout.println(guiMain.getRootPane().getName());//null
 				if (selectedItems.size() >0 ) {
-					TitlePanel.getTextFieldSearch().setText(SearchDork.HOST.toString() + ":" + selectedItems.get(0));
+					guiMain.getTitlePanel().getTextFieldSearch().setText(SearchDork.HOST.toString() + ":" + selectedItems.get(0));
 				}
 			}
 		});
@@ -143,7 +144,7 @@ public class TextAreaMenu extends JPopupMenu {
 				if (selectedItems.size() >=50) {
 					return;
 				}
-				DomainManager domainResult = GUIMain.instance.getDomainPanel().getDomainResult();
+				DomainManager domainResult = guiMain.getDomainPanel().getDomainResult();
 				for (String item:selectedItems) {
 					try {
 						domainResult.addToTargetAndSubDomain(item,true);
@@ -151,7 +152,7 @@ public class TextAreaMenu extends JPopupMenu {
 						e2.printStackTrace(stderr);
 					}
 				}
-				GUIMain.instance.getDomainPanel().saveDomainDataToDB();
+				guiMain.getDomainPanel().saveDomainDataToDB();
 			}
 		});
 
@@ -201,7 +202,7 @@ public class TextAreaMenu extends JPopupMenu {
 		JMenuItem removeMd5DomainItem = new JMenuItem(new AbstractAction("Remove MD5 Domain") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				GUIMain.instance.getDomainPanel().getDomainResult().removeMd5Domain();
+				guiMain.getDomainPanel().getDomainResult().removeMd5Domain();
 			}
 		});
 
@@ -238,7 +239,7 @@ public class TextAreaMenu extends JPopupMenu {
 		JMenuItem SortFresh = new JMenuItem(new AbstractAction("Refresh") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				GUIMain.instance.getDomainPanel().showDataToDomainGUI();
+				guiMain.getDomainPanel().showDataToDomainGUI();
 			}
 		});
 		

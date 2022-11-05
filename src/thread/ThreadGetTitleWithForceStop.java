@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import GUI.GUIMain;
 import burp.BurpExtender;
 import burp.IBurpExtenderCallbacks;
 import burp.IExtensionHelpers;
@@ -20,8 +21,12 @@ public class ThreadGetTitleWithForceStop extends Thread{
 	public PrintWriter stderr = new PrintWriter(callbacks.getStderr(), true);
 	public IExtensionHelpers helpers = callbacks.getHelpers();
 	private int threadNumber;
+	private GUIMain guiMain;
+	
+	
 
-	public ThreadGetTitleWithForceStop(Set<String> domains,int threadNumber) {
+	public ThreadGetTitleWithForceStop(GUIMain guiMain,Set<String> domains,int threadNumber) {
+		this.guiMain = guiMain;
 		this.domains = domains;
 		this.threadNumber = threadNumber;
 	}
@@ -36,7 +41,7 @@ public class ThreadGetTitleWithForceStop extends Thread{
 		plist = new ArrayList<Producer>();
 
 		for (int i=0;i<threadNumber;i++) {
-			Producer p = new Producer(domainQueue,i);
+			Producer p = new Producer(guiMain,domainQueue,i);
 			//Producer p = new Producer(callbacks,domainQueue,sharedQueue,i);
 			p.setDaemon(true);//将子线程设置为守护线程，会随着主线程的结束而立即结束。只有当JVM也退出时才可以！
 			p.start();

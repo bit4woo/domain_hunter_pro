@@ -44,8 +44,8 @@ public class TargetControlPanel extends JPanel {
 		addButton.setToolTipText("add Top-Level domain");
 		addButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if (domainPanel.getDomainResult() == null || GUIMain.instance.getCurrentDBFile() == null) {
-					DomainPanel.createOrOpenDB();
+				if (domainPanel.getDomainResult() == null || domainPanel.getGuiMain().getCurrentDBFile() == null) {
+					domainPanel.createOrOpenDB();
 				} else {
 					String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
 					TargetEntry entry = new TargetEntry(enteredRootDomain);
@@ -62,7 +62,7 @@ public class TargetControlPanel extends JPanel {
 		addButton1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (domainPanel.getDomainResult() == null) {
-					DomainPanel.createOrOpenDB();
+					domainPanel.createOrOpenDB();
 				} else {
 					String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
 					TargetEntry entry = new TargetEntry(enteredRootDomain,false);
@@ -113,7 +113,7 @@ public class TargetControlPanel extends JPanel {
 						try {
 							//to clear sub and similar domains
 							domainPanel.getDomainResult().freshBaseRule();
-							GUIMain.instance.getDomainPanel().showDataToDomainGUI();
+							domainPanel.getGuiMain().getDomainPanel().showDataToDomainGUI();
 							domainPanel.saveDomainDataToDB();
 						} catch (Exception exception) {
 							exception.printStackTrace();
@@ -150,7 +150,7 @@ public class TargetControlPanel extends JPanel {
 						try {
 							if (domainPanel.getDomainResult().autoAddRelatedToRoot) {
 								domainPanel.getDomainResult().relatedToRoot();
-								GUIMain.instance.getDomainPanel().showDataToDomainGUI();
+								domainPanel.showDataToDomainGUI();
 								domainPanel.saveDomainDataToDB();
 							}
 						} catch (Exception exception) {

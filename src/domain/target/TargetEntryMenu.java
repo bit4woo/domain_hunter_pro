@@ -25,9 +25,11 @@ public class TargetEntryMenu extends JPopupMenu {
 	PrintWriter stdout = BurpExtender.getStdout();
 	PrintWriter stderr = BurpExtender.getStderr();
 	private TargetTable rootDomainTable;
+	private GUIMain guiMain;
 
-	public TargetEntryMenu(final TargetTable rootDomainTable, final int[] modelRows, final int columnIndex){
+	public TargetEntryMenu(GUIMain guiMain,final TargetTable rootDomainTable, final int[] modelRows, final int columnIndex){
 		this.rootDomainTable = rootDomainTable;
+		this.guiMain = guiMain;
 
 		JMenuItem getSubDomainsOf = new JMenuItem(new AbstractAction("Get All Subdomin Of This") {
 			@Override
@@ -35,7 +37,7 @@ public class TargetEntryMenu extends JPopupMenu {
 				String results = "";
 				for (int row:modelRows) {
 					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,0);
-					String line = GUIMain.instance.getDomainPanel().getDomainResult().fetchSubDomainsOf(rootDomain);
+					String line = guiMain.getDomainPanel().getDomainResult().fetchSubDomainsOf(rootDomain);
 					results = results+System.lineSeparator()+line;
 				}
 
@@ -118,7 +120,7 @@ public class TargetEntryMenu extends JPopupMenu {
 		JMenuItem addToBlackItem = new JMenuItem(new AbstractAction("Add To Black List") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				GUIMain.instance.getDomainPanel().getControlPanel().selectedToBalck();
+				guiMain.getDomainPanel().getControlPanel().selectedToBalck();
 			}
 		});
 

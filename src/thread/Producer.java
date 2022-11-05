@@ -36,8 +36,10 @@ public class Producer extends Thread {//Producer do
 	public PrintWriter stdout = new PrintWriter(callbacks.getStdout(), true);
 	public PrintWriter stderr = new PrintWriter(callbacks.getStderr(), true);
 	public IExtensionHelpers helpers = callbacks.getHelpers();
+	private GUIMain guiMain;
 
-	public Producer(BlockingQueue<String> domainQueue,int threadNo) {
+	public Producer(GUIMain guiMain,BlockingQueue<String> domainQueue,int threadNo) {
+		this.guiMain = guiMain;
 		this.domainQueue = domainQueue;
 		stopflag= false;
 		this.setName(this.getClass().getName()+threadNo);
@@ -94,7 +96,7 @@ public class Producer extends Thread {//Producer do
 						}
 					}
 
-					TitlePanel.getTitleTableModel().addNewLineEntry(item);
+					guiMain.getTitlePanel().getTitleTableModel().addNewLineEntry(item);
 
 					//stdout.println(new LineEntry(messageinfo,true).ToJson());
 
@@ -108,8 +110,8 @@ public class Producer extends Thread {//Producer do
 		}
 	}
 
-	public static LineEntry findHistory(String url) {
-		IndexedHashMap<String,LineEntry> HistoryLines = GUIMain.instance.getTitlePanel().getBackupLineEntries();
+	public LineEntry findHistory(String url) {
+		IndexedHashMap<String,LineEntry> HistoryLines = guiMain.getTitlePanel().getBackupLineEntries();
 		if (HistoryLines == null) return null;
 		LineEntry found = HistoryLines.get(url);
 		if (found != null) {

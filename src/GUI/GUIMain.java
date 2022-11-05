@@ -4,6 +4,8 @@ import java.awt.EventQueue;
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -13,6 +15,7 @@ import javax.swing.SwingWorker;
 import Tools.ToolPanel;
 import burp.BurpExtender;
 import burp.Commons;
+import burp.IBurpExtender;
 import burp.dbFileChooser;
 import config.ConfigPanel;
 import dao.DomainDao;
@@ -24,9 +27,8 @@ import title.TitlePanel;
 
 public class GUIMain extends JFrame {
 	
-	public static GUIMain instance;
-
 	//当多个实例都有相同的是static field时，对象间对static属性的修改会互相影响，因为多个对象共享一个属性的copy！！
+	public IBurpExtender burp;
 	public DomainPanel domainPanel;
 	public TitlePanel titlePanel;
 	public ToolPanel toolPanel;
@@ -39,7 +41,9 @@ public class GUIMain extends JFrame {
 	public PrintWriter stderr;
 
 	public dbFileChooser dbfc = new dbFileChooser();
-
+	//use to store messageInfo
+	private Set<String> httpsChecked = new CopyOnWriteArraySet<>();
+		
 	public DomainPanel getDomainPanel() {
 		return domainPanel;
 	}
@@ -76,6 +80,19 @@ public class GUIMain extends JFrame {
 	public void setProjectMenu(ProjectMenu projectMenu) {
 		this.projectMenu = projectMenu;
 	}
+	
+	public Set<String> getHttpsChecked() {
+		return httpsChecked;
+	}
+
+	public void setHttpsChecked(Set<String> httpsChecked) {
+		this.httpsChecked = httpsChecked;
+	}
+	
+	public GUIMain(IBurpExtender burp) {//构造函数
+		this();
+		this.burp = burp;
+	}
 	/**
 	 * Create the frame.
 	 */
@@ -102,7 +119,9 @@ public class GUIMain extends JFrame {
 		tabbedWrapper.addTab("Tools", null,toolPanel,null);
 		tabbedWrapper.addTab("Config", null,configPanel,null);
 		
-		instance = this;
+		setProjectMenu(new ProjectMenu(this));
+		getProjectMenu().Add();
+		
 	}
 
 	/**
@@ -213,7 +232,7 @@ public class GUIMain extends JFrame {
 					return false;
 				}else {
 					TitleDao titleDao = new TitleDao(dbFilePath.toString());
-					boolean titleSaved  = titleDao.addOrUpdateTitles(TitlePanel.getTitleTableModel().getLineEntries());
+					boolean titleSaved  = titleDao.addOrUpdateTitles(getTitlePanel().getTitleTableModel().getLineEntries());
 					if (targetSaved && domainSaved && titleSaved){
 						stdout.println("Save Domain And Title Success! "+ Commons.getNowTimeString());
 						return true;

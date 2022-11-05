@@ -63,7 +63,7 @@ public class ProjectMenu extends JMenu{
 		JMenuItem ImportMenu = new JMenuItem(new AbstractAction("Import DB") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				DomainPanel.backupDB();//导入前的备份。
+				gui.getDomainPanel().backupDB();//导入前的备份。
 
 				File file = gui.dbfc.dialog(true,".db");
 				if (null ==file) {
@@ -88,7 +88,7 @@ public class ProjectMenu extends JMenu{
 				TitleDao titledao = new TitleDao(file.getAbsolutePath());
 				List<LineEntry> titles = titledao.selectAllTitle();
 				for (LineEntry entry:titles) {
-					TitlePanel.getTitleTableModel().addNewLineEntry(entry);
+					gui.getTitlePanel().getTitleTableModel().addNewLineEntry(entry);
 				}
 				System.out.println("Import finished");
 				BurpExtender.getStdout().println("Import finished");
@@ -109,7 +109,7 @@ public class ProjectMenu extends JMenu{
 				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
 					@Override
 					protected Map doInBackground() throws Exception {
-						DomainPanel.backupDB();//导入前的备份。
+						gui.getDomainPanel().backupDB();//导入前的备份。
 
 						File file = gui.dbfc.dialog(true,".txt");
 						if (null ==file) {
@@ -157,7 +157,7 @@ public class ProjectMenu extends JMenu{
 		{
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				GUIMain.instance.lockUnlock();
+				gui.lockUnlock();
 			}
 		});
 		this.add(lockMenu);

@@ -32,6 +32,7 @@ public class ConfigPanel extends JPanel{
 	PrintWriter stdout;
 	PrintWriter stderr;
 	private JTextField textFieldUploadURL;
+	private GUIMain gui;
 	private static JTextField BrowserPath;
 
 	public static JRadioButton showItemsInOne;
@@ -51,6 +52,10 @@ public class ConfigPanel extends JPanel{
 	
 	public static LineConfig getLineConfig() {
 		return lineConfig;
+	}
+	
+	public ConfigPanel(GUIMain gui) {
+		this.gui = gui;
 	}
 	
 	/**
@@ -84,7 +89,7 @@ public class ConfigPanel extends JPanel{
 		String dbFilePath = lineConfig.getDbfilepath();
 
 		if (dbFilePath != null && dbFilePath.endsWith(".db")) {
-			GUIMain.instance.LoadData(dbFilePath);
+			gui.LoadData(dbFilePath);
 		}
 		//这里的修改也会触发textFieldListener监听器。
 		//由于我们是多个组件共用一个保存逻辑，当前对一个组件设置值的时候，触发保存，从而导致整体数据的修改！！！

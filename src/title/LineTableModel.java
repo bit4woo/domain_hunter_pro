@@ -720,11 +720,11 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
 		Getter getter = new Getter(helpers);
 		URL fullurl = getter.getFullURL(message);
-		LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(fullurl.toString());
+		LineEntry entry = GUIMain.instance.getTitlePanel().getTitleTableModel().findLineEntry(fullurl.toString());
 		if (entry == null) {
 			URL shortUrl = getter.getShortURL(message);
 			if(!fullurl.equals(shortUrl)) {
-				entry = TitlePanel.getTitleTableModel().findLineEntry(shortUrl.toString());
+				entry = GUIMain.instance.getTitlePanel().getTitleTableModel().findLineEntry(shortUrl.toString());
 			}
 		}
 		return entry;

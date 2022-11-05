@@ -20,8 +20,10 @@ public class JScrollPanelWithHeader extends JScrollPane{
 	private String tipText;
 	private String headLabelText;
 	private TextAreaType textAreaType;
+	private GUIMain guiMain;
 	
-	public JScrollPanelWithHeader(TextAreaType type,String headerViewText,String tipText) {
+	public JScrollPanelWithHeader(GUIMain guiMain,TextAreaType type,String headerViewText,String tipText) {
+		this.guiMain = guiMain;
 		this.textAreaType = type;
 		this.textArea = new JTextArea();
 		this.tipText = tipText;
@@ -29,8 +31,8 @@ public class JScrollPanelWithHeader extends JScrollPane{
 		
 		textArea.setColumns(10);
 		textArea.setToolTipText(this.tipText);
-		textArea.getDocument().addDocumentListener(new TextAreaListener(this));
-		textArea.addMouseListener(new TextAreaMouseListener(textArea));
+		textArea.getDocument().addDocumentListener(new TextAreaListener(guiMain,this));
+		textArea.addMouseListener(new TextAreaMouseListener(guiMain,textArea));
 		this.setViewportView(textArea);
 		
 		Border blackline = BorderFactory.createLineBorder(Color.black);

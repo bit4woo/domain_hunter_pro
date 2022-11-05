@@ -40,14 +40,12 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	private static final Logger log=LogManager.getLogger(BurpExtender.class);
 	
 	private GUIMain gui; 
-	public static BurpExtender instance;//必须要有一个static变量，否则其他类如何找到对象的入口呢？
+	public BurpExtender instance;//必须要有一个static变量，否则其他类如何找到对象的入口呢？
 	
 	private DomainProducer liveAnalysisTread;
 	private BlockingQueue<IHttpRequestResponse> liveinputQueue = new LinkedBlockingQueue<IHttpRequestResponse>();
 	//use to store messageInfo of proxy live
 	private BlockingQueue<IHttpRequestResponse> inputQueue = new LinkedBlockingQueue<IHttpRequestResponse>();
-	//use to store messageInfo
-	private Set<String> httpsChecked = new CopyOnWriteArraySet<>();
 	//temp variable to identify checked https用于记录已经做过HTTPS证书信息获取的httpService
 
 	public static PrintWriter getStdout() {
@@ -90,13 +88,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		return ExtenderName+" "+Version+" "+Author;
 	}
 
-	public Set<String> getHttpsChecked() {
-		return httpsChecked;
-	}
 
-	public void setHttpsChecked(Set<String> httpsChecked) {
-		this.httpsChecked = httpsChecked;
-	}
 	
 	public DomainProducer getLiveAnalysisTread() {
 		return liveAnalysisTread;
@@ -150,7 +142,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	}
 
 	public void startLiveCapture(){
-		liveAnalysisTread = new DomainProducer(liveinputQueue,9999);//必须是9999，才能保证流量进程不退出。
+		liveAnalysisTread = new DomainProducer(gui,liveinputQueue,9999);//必须是9999，才能保证流量进程不退出。
 		liveAnalysisTread.start();
 	}
 
@@ -172,31 +164,24 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		stdout.println(getFullExtenderName());
 		stdout.println(github);
 
-		if (TitlePanel.threadGetTitle != null) {
-			TitlePanel.threadGetTitle.interrupt();//maybe null
-			//以前项目的数据可能加入到当前项目！当以前项目gettitle的线程未结束时
-		}//必须要先结束线程，否则获取数据的操作根本无法结束，因为线程一直通过sync占用资源
-
 		callbacks.setExtensionName(getFullExtenderName()); //插件名称
 		callbacks.registerExtensionStateListener(this);
 		callbacks.registerContextMenuFactory(this);
 		callbacks.registerHttpListener(this);//主动根据流量收集信息
 
-		gui = new GUIMain();
-
 		SwingUtilities.invokeLater(new Runnable()
 		{//create GUI
 			public void run()
 			{
-				BurpExtender.callbacks.addSuiteTab(BurpExtender.this); 
-				gui.setProjectMenu(new ProjectMenu(gui));
-				gui.getProjectMenu().Add();
+				gui = new GUIMain(BurpExtender.this);
+				callbacks.addSuiteTab(BurpExtender.this); 
 				//这里的BurpExtender.this实质是指ITab对象，也就是getUiComponent()中的contentPane.这个参数由GUI()函数初始化。
 				//如果这里报java.lang.NullPointerException: Component cannot be null 错误，需要排查contentPane的初始化是否正确。
+				String projectConfigFile = RecentModel.fetchRecent();//返回值可能为null
+				gui.getConfigPanel().loadConfigToGUI(projectConfigFile);//包含db文件的加载
 			}
 		});
-		String projectConfigFile = RecentModel.fetchRecent();//返回值可能为null
-		gui.getConfigPanel().loadConfigToGUI(projectConfigFile);//包含db文件的加载
+
 		startLiveCapture();
 		instance = this;
 	}
@@ -206,11 +191,11 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		try {//避免这里错误导致保存逻辑的失效
 			gui.getProjectMenu().remove();
 			stopLiveCapture();
-			if (TitlePanel.threadGetTitle != null) {
-				TitlePanel.threadGetTitle.interrupt();//maybe null
+			if (gui.getTitlePanel().getThreadGetTitle() != null) {
+				gui.getTitlePanel().getThreadGetTitle().interrupt();//maybe null
 				inputQueue.clear();
 				liveinputQueue.clear();
-				httpsChecked.clear();
+				gui.getHttpsChecked().clear();
 			}//必须要先结束线程，否则获取数据的操作根本无法结束，因为线程一直通过sync占用资源
 		} catch (Exception e) {
 			e.printStackTrace(stderr);
@@ -243,7 +228,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	@Override
 	public List<JMenuItem> createMenuItems(IContextMenuInvocation invocation) {
 		if (ConfigPanel.DisplayContextMenuOfBurp.isSelected()) {
-			return new LineEntryMenuForBurp().createMenuItemsForBurp(invocation);
+			return new LineEntryMenuForBurp(gui).createMenuItemsForBurp(invocation);
 		}else {
 			return null;
 		}

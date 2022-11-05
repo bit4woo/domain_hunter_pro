@@ -18,6 +18,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.LineBorder;
 import javax.swing.table.TableModel;
 
+import GUI.GUIMain;
 import burp.BurpExtender;
 import domain.DomainManager;
 import domain.DomainPanel;
@@ -29,6 +30,12 @@ public class TargetTable extends JTable{
 	private TargetTableModel targetModel = new TargetTableModel();
 	private PrintWriter stderr;
 	private PrintWriter stdout;
+	private GUIMain guiMain;
+	
+	public TargetTable(GUIMain guiMain) {
+		this();
+		this.guiMain = guiMain;
+	}
 	
 	public TargetTable() {
 
@@ -71,7 +78,7 @@ public class TargetTable extends JTable{
 						int col = ((JTable) e.getSource()).columnAtPoint(e.getPoint()); // 获得列位置
 						if (rows.length > 0) {
 							rows = SelectedRowsToModelRows(getSelectedRows());
-							new TargetEntryMenu(TargetTable.this, rows, col).show(e.getComponent(), e.getX(), e.getY());
+							new TargetEntryMenu(guiMain,TargetTable.this, rows, col).show(e.getComponent(), e.getX(), e.getY());
 						} else {//在table的空白处显示右键菜单
 							//https://stackoverflow.com/questions/8903040/right-click-mouselistener-on-whole-jtable-component
 							//new LineEntryMenu(_this).show(e.getComponent(), e.getX(), e.getY());

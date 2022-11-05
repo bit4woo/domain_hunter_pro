@@ -27,24 +27,26 @@ public class TitlePanel extends JPanel {
 	 */
 	private static final long serialVersionUID = 1L;
 	private JPanel buttonPanel;
-	private static LineTable titleTable;
 	private JLabel lblSummaryOfTitle;
-	public static JRadioButton rdbtnUnCheckedItems;
-	public static JRadioButton rdbtnCheckingItems;
-	public static JRadioButton rdbtnCheckedItems;
-	public static JRadioButton rdbtnMoreActionItems;
+	private JRadioButton rdbtnUnCheckedItems;
+	private JRadioButton rdbtnCheckingItems;
+	private JRadioButton rdbtnCheckedItems;
+	private JRadioButton rdbtnMoreActionItems;
+	private SearchTextField textFieldSearch;
 
 	//add table and tablemodel to GUI
-	private static LineTableModel titleTableModel = new LineTableModel();
+	private LineTable titleTable;
+	private LineTableModel titleTableModel = new LineTableModel();
+	private TitleDao titleDao;
 	PrintWriter stdout;
 	PrintWriter stderr;
-	public static ThreadGetTitleWithForceStop threadGetTitle;
-	public static GetTitleTempConfig tempConfig; //每次获取title过程中的配置。
+	private ThreadGetTitleWithForceStop threadGetTitle;
+	private GetTitleTempConfig tempConfig; //每次获取title过程中的配置。
 	private IndexedHashMap<String,LineEntry> BackupLineEntries;
 
-	private static SearchTextField textFieldSearch;
+	
 
-	public static JTextField getTextFieldSearch() {
+	public JTextField getTextFieldSearch() {
 		return textFieldSearch;
 	}
 
@@ -53,16 +55,72 @@ public class TitlePanel extends JPanel {
 		TitlePanel.textFieldSearch = textFieldSearch;
 	}*/
 
-	public static LineTable getTitleTable() {
+	public LineTable getTitleTable() {
 		return titleTable;
 	}
 
-	public static LineTableModel getTitleTableModel() {
+	public LineTableModel getTitleTableModel() {
 		return titleTableModel;
 	}
 
 	public IndexedHashMap<String,LineEntry> getBackupLineEntries() {
 		return BackupLineEntries;
+	}
+
+	public GetTitleTempConfig getTempConfig() {
+		return tempConfig;
+	}
+
+	public void setTempConfig(GetTitleTempConfig tempConfig) {
+		this.tempConfig = tempConfig;
+	}
+
+	public JLabel getLblSummaryOfTitle() {
+		return lblSummaryOfTitle;
+	}
+
+	public void setLblSummaryOfTitle(JLabel lblSummaryOfTitle) {
+		this.lblSummaryOfTitle = lblSummaryOfTitle;
+	}
+
+	public JRadioButton getRdbtnUnCheckedItems() {
+		return rdbtnUnCheckedItems;
+	}
+
+	public void setRdbtnUnCheckedItems(JRadioButton rdbtnUnCheckedItems) {
+		this.rdbtnUnCheckedItems = rdbtnUnCheckedItems;
+	}
+
+	public JRadioButton getRdbtnCheckingItems() {
+		return rdbtnCheckingItems;
+	}
+
+	public void setRdbtnCheckingItems(JRadioButton rdbtnCheckingItems) {
+		this.rdbtnCheckingItems = rdbtnCheckingItems;
+	}
+
+	public JRadioButton getRdbtnCheckedItems() {
+		return rdbtnCheckedItems;
+	}
+
+	public void setRdbtnCheckedItems(JRadioButton rdbtnCheckedItems) {
+		this.rdbtnCheckedItems = rdbtnCheckedItems;
+	}
+
+	public JRadioButton getRdbtnMoreActionItems() {
+		return rdbtnMoreActionItems;
+	}
+
+	public void setRdbtnMoreActionItems(JRadioButton rdbtnMoreActionItems) {
+		this.rdbtnMoreActionItems = rdbtnMoreActionItems;
+	}
+
+	public ThreadGetTitleWithForceStop getThreadGetTitle() {
+		return threadGetTitle;
+	}
+
+	public void setThreadGetTitle(ThreadGetTitleWithForceStop threadGetTitle) {
+		this.threadGetTitle = threadGetTitle;
 	}
 
 	public TitlePanel() {//构造函数
@@ -228,7 +286,7 @@ public class TitlePanel extends JPanel {
 		}
 		for (LineEntry entry:BackupLineEntries.values()) {
 			if (entry.getEntrySource().equalsIgnoreCase(LineEntry.Source_Manual_Saved)) {
-				TitlePanel.getTitleTableModel().addNewLineEntry(entry);
+				titleTableModel.addNewLineEntry(entry);
 			}
 		}
 	}
@@ -264,8 +322,8 @@ public class TitlePanel extends JPanel {
 		//转移以前手动保存的记录
 		transferManualSavedItems();
 
-		threadGetTitle = new ThreadGetTitleWithForceStop(domains,tempConfig.getThreadNumber());
-		threadGetTitle.start();
+		setThreadGetTitle(new ThreadGetTitleWithForceStop(domains,tempConfig.getThreadNumber()));
+		getThreadGetTitle().start();
 	}
 
 
@@ -284,8 +342,8 @@ public class TitlePanel extends JPanel {
 		}
 
 
-		threadGetTitle = new ThreadGetTitleWithForceStop(extendIPSet,tempConfig.getThreadNumber());
-		threadGetTitle.start();
+		setThreadGetTitle(new ThreadGetTitleWithForceStop(extendIPSet,tempConfig.getThreadNumber()));
+		getThreadGetTitle().start();
 
 	}
 
@@ -317,8 +375,8 @@ public class TitlePanel extends JPanel {
 		}
 
 
-		threadGetTitle = new ThreadGetTitleWithForceStop(newDomains,tempConfig.getThreadNumber());
-		threadGetTitle.start();
+		setThreadGetTitle(new ThreadGetTitleWithForceStop(newDomains,tempConfig.getThreadNumber()));
+		getThreadGetTitle().start();
 	}
 
 
@@ -363,15 +421,15 @@ public class TitlePanel extends JPanel {
 	 * 这种加载方式没有改变tableModel，所以tableModelListener也还在。
 	 */
 	public void loadData(String currentDBFile) {
-		TitleDao dao = new TitleDao(currentDBFile);
-		List<LineEntry> lines = dao.selectAllTitle();
+		titleDao = new TitleDao(currentDBFile);
+		List<LineEntry> lines = titleDao.selectAllTitle();
 		titleTableModel = new LineTableModel(lines);
 		titleTable.setModel(titleTableModel);
 		int row = lines.size();
 		System.out.println(row+" title entries loaded from database file");
 		stdout.println(row+" title entries loaded from database file");
 		digStatus();
-		TitlePanel.getTitleTable().search("");// hide checked items
+		getTitleTable().search("");// hide checked items
 	}
 
 
@@ -386,7 +444,7 @@ public class TitlePanel extends JPanel {
 	 * @return
 	 */
 	public boolean stopGetTitleThread(boolean askBeforeStop){
-		if (threadGetTitle != null && threadGetTitle.isAlive()){
+		if (getThreadGetTitle() != null && getThreadGetTitle().isAlive()){
 			if (askBeforeStop){
 				int confirm = JOptionPane.showConfirmDialog(null,"Other Get Title Thread Is Running," +
 						"Are you sure to stop it and run this task?");
@@ -394,7 +452,7 @@ public class TitlePanel extends JPanel {
 					return false;
 				}
 			}
-			threadGetTitle.interrupt();
+			getThreadGetTitle().interrupt();
 			return true;
 		}
 		return true;

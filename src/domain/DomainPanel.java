@@ -33,7 +33,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
@@ -101,8 +100,11 @@ public class DomainPanel extends JPanel {
 	 */
 	private volatile DomainManager domainResult = new DomainManager();//getter setter
 	private boolean listenerIsOn = true;
+	private DomainDao domainDao;
+	private TargetDao targetDao;
 	private PrintWriter stdout;
 	private PrintWriter stderr;
+	private GUIMain guiMain;
 
 	private static final Logger log = LogManager.getLogger(DomainPanel.class);
 
@@ -159,16 +161,29 @@ public class DomainPanel extends JPanel {
 		HeaderPanel = headerPanel;
 	}
 
-	public static void createOrOpenDB() {
+	
+	public GUIMain getGuiMain() {
+		return guiMain;
+	}
+
+	public void setGuiMain(GUIMain guiMain) {
+		this.guiMain = guiMain;
+	}
+
+	public void createOrOpenDB() {
 		Object[] options = { "Create","Open"};
 		int user_input = JOptionPane.showOptionDialog(null, "You should Create or Open a DB file", "Chose Your Action",
 				JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null, options, options[0]);
 		if (user_input == 0) {
-			GUIMain.instance.getProjectMenu().createNewDb(GUIMain.instance);
+			guiMain.getProjectMenu().createNewDb(guiMain);
 		}
 		if (user_input == 1) {
-			GUIMain.instance.getProjectMenu().openDb();
+			guiMain.getProjectMenu().openDb();
 		}
+	}
+	
+	public DomainPanel(GUIMain guiMain) {//构造函数
+		this.guiMain = guiMain;
 	}
 
 	public DomainPanel() {//构造函数
@@ -367,7 +382,7 @@ public class DomainPanel extends JPanel {
 		JButton btnBuckupDB = new JButton("Backup DB");
 		btnBuckupDB.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				DomainPanel.backupDB();
+				backupDB();
 			}
 		});
 		HeaderPanel.add(btnBuckupDB);
@@ -442,17 +457,17 @@ public class DomainPanel extends JPanel {
 		BodyPane.setLayout(new GridLayout(2, 5, 0, 0));
 
 
-		ScrollPaneRelatedDomains = new JScrollPanelWithHeader(TextAreaType.RelatedDomain,"Related Domains","Related Domains"); //E2
-		ScrollPaneSubdomains = new JScrollPanelWithHeader(TextAreaType.SubDomain,"Sub Domains","Sub Domains");
-		ScrollPaneSimilarDomains = new JScrollPanelWithHeader(TextAreaType.SimilarDomain,"Similar Domains","Similar Domains");
-		ScrollPaneEmails = new JScrollPanelWithHeader(TextAreaType.Email,"Emails","Emails");
-		PanelSimilarEmails = new JScrollPanelWithHeader(TextAreaType.SimilarEmail,"Similar Emails","Similar Emails");
+		ScrollPaneRelatedDomains = new JScrollPanelWithHeader(guiMain,TextAreaType.RelatedDomain,"Related Domains","Related Domains"); //E2
+		ScrollPaneSubdomains = new JScrollPanelWithHeader(guiMain,TextAreaType.SubDomain,"Sub Domains","Sub Domains");
+		ScrollPaneSimilarDomains = new JScrollPanelWithHeader(guiMain,TextAreaType.SimilarDomain,"Similar Domains","Similar Domains");
+		ScrollPaneEmails = new JScrollPanelWithHeader(guiMain,TextAreaType.Email,"Emails","Emails");
+		PanelSimilarEmails = new JScrollPanelWithHeader(guiMain,TextAreaType.SimilarEmail,"Similar Emails","Similar Emails");
 
-		ScrollPaneSpecialPortTargets = new JScrollPanelWithHeader(TextAreaType.SpecialPortTarget,"Custom Assets","you can put your custom assets here");
-		PanelIPOfSubnet = new JScrollPanelWithHeader(TextAreaType.IPSetOfSubnet,"IP Of Subnet","IP Of Subnet");
-		PanelIPOfCert = new JScrollPanelWithHeader(TextAreaType.IPSetOfCert,"IP Of Cert","IP Of Cert");
-		ScrollPanePackageNames = new JScrollPanelWithHeader(TextAreaType.PackageName,"Package Names","Package Names");
-		PanelBlackIPList = new JScrollPanelWithHeader(TextAreaType.BlackIP,"Black IP List","Black IP List");
+		ScrollPaneSpecialPortTargets = new JScrollPanelWithHeader(guiMain,TextAreaType.SpecialPortTarget,"Custom Assets","you can put your custom assets here");
+		PanelIPOfSubnet = new JScrollPanelWithHeader(guiMain,TextAreaType.IPSetOfSubnet,"IP Of Subnet","IP Of Subnet");
+		PanelIPOfCert = new JScrollPanelWithHeader(guiMain,TextAreaType.IPSetOfCert,"IP Of Cert","IP Of Cert");
+		ScrollPanePackageNames = new JScrollPanelWithHeader(guiMain,TextAreaType.PackageName,"Package Names","Package Names");
+		PanelBlackIPList = new JScrollPanelWithHeader(guiMain,TextAreaType.BlackIP,"Black IP List","Black IP List");
 
 		BodyPane.add(ScrollPaneRelatedDomains);
 		BodyPane.add(ScrollPaneSubdomains);
@@ -509,7 +524,7 @@ public class DomainPanel extends JPanel {
 			public void mouseClicked(MouseEvent e) {
 				if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2) {//左键双击
 					try {
-						Commons.OpenFolder(GUIMain.instance.getCurrentDBFile().getParent());
+						Commons.OpenFolder(guiMain.getCurrentDBFile().getParent());
 					} catch (Exception e2) {
 						e2.printStackTrace(stderr);
 					}
@@ -522,7 +537,7 @@ public class DomainPanel extends JPanel {
 			@Override
 			public void mouseEntered(MouseEvent e) {
 				lblSummary.setForeground(Color.RED);
-				lblSummary.setToolTipText(GUIMain.instance.getCurrentDBFile().toString());
+				lblSummary.setToolTipText(guiMain.getCurrentDBFile().toString());
 			}
 
 			@Override
@@ -574,7 +589,7 @@ public class DomainPanel extends JPanel {
 	 * DB---> DomainManager ---> UI
 	 */
 	public void LoadDomainData(String dbFilePath) {
-		DomainDao domainDao = new DomainDao(dbFilePath);
+		domainDao = new DomainDao(dbFilePath);
 		domainResult = domainDao.getDomainManager();
 		setDomainResult(domainResult);
 		showDataToDomainGUI();
@@ -585,10 +600,10 @@ public class DomainPanel extends JPanel {
 	 */
 	public void saveDomainDataToDB() {
 		try {
-			File file = GUIMain.instance.getCurrentDBFile();
+			File file = guiMain.getCurrentDBFile();
 			if (file == null || !file.exists()) {
-				file = GUIMain.instance.dbfc.dialog(false,".db");
-				GUIMain.instance.setCurrentDBFile(file);
+				file = guiMain.dbfc.dialog(false,".db");
+				guiMain.setCurrentDBFile(file);
 			}
 			DomainDao dao = new DomainDao(file.toString());
 			dao.saveDomainManager(domainResult);
@@ -604,7 +619,7 @@ public class DomainPanel extends JPanel {
 	 * @param dbFilePath
 	 */
 	public void LoadTargetsData(String dbFilePath) {
-		TargetDao targetDao = new TargetDao(dbFilePath);
+		targetDao = new TargetDao(dbFilePath);
 		List<TargetEntry> targets = targetDao.selectAll();
 		TargetTableModel targetModel = new TargetTableModel(targets);
 		targetTable.setTargetModel(targetModel);
@@ -739,7 +754,7 @@ public class DomainPanel extends JPanel {
 	 */
 	public File saveDomainOnly() {
 		try {
-			File file = GUIMain.instance.dbfc.dialog(false,".db");
+			File file = guiMain.dbfc.dialog(false,".db");
 			if (file != null) {
 				DomainDao dao = new DomainDao(file.toString());
 				TargetDao dao1 = new TargetDao(file.toString());
@@ -772,8 +787,8 @@ public class DomainPanel extends JPanel {
 		return domainList;
 	}
 
-	public static void backupDB() {
-		File file = GUIMain.instance.getCurrentDBFile();
+	public void backupDB() {
+		File file = guiMain.getCurrentDBFile();
 		if (file == null) return;
 		File bakfile = new File(file.getAbsoluteFile().toString() + ".bak" + Commons.getNowTimeString());
 		try {

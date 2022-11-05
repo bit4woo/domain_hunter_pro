@@ -57,6 +57,8 @@ public class LineConfig {
 	private String dbfilepath ="";
 	private History searchHistory;
 
+	private GUIMain gui;
+
 	LineConfig(){
 		if (Commons.isMac()) {
 			browserPath = macDefaultBrowserPath;
@@ -67,6 +69,10 @@ public class LineConfig {
 				}
 			}
 		}
+	}
+	
+	LineConfig(GUIMain gui){
+		this.gui = gui;
 	}
 
 
@@ -254,14 +260,14 @@ public class LineConfig {
 		try {
 			ConfigPanel.saveToConfigFromGUI();
 			this.setSearchHistory(History.getInstance());
-			this.setDbfilepath(GUIMain.instance.getCurrentDBFile().getAbsolutePath());
+			this.setDbfilepath(gui.getCurrentDBFile().getAbsolutePath());
 		} catch (Exception e1) {
 			e1.printStackTrace();
 			e1.printStackTrace(BurpExtender.getStderr());
 		}
 		
 		try {
-			File localFile = new File(localdir+File.separator+GUIMain.instance.getCurrentDBFile().getName()+".config");
+			File localFile = new File(localdir+File.separator+gui.getCurrentDBFile().getName()+".config");
 			FileUtils.write(localFile, this.ToJson());
 			BurpExtender.getStdout().println("Saving Tool Panel Config To Disk");
 			return localFile.toString();

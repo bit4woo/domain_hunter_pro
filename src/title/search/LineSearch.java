@@ -9,28 +9,34 @@ import java.util.regex.Pattern;
 
 public class LineSearch {
 	
+	private TitlePanel titlePanel;
+
+	public LineSearch(TitlePanel panel){
+		this.titlePanel = panel;
+	}
+	
 	//根据状态过滤
-	public static boolean entryNeedToShow(LineEntry entry) {
-		if (!(TitlePanel.rdbtnCheckedItems.isSelected()||TitlePanel.rdbtnCheckingItems.isSelected()||
-				TitlePanel.rdbtnUnCheckedItems.isSelected()||TitlePanel.rdbtnMoreActionItems.isSelected())) {
+	public boolean entryNeedToShow(LineEntry entry) {
+		if (!(titlePanel.getRdbtnUnCheckedItems().isSelected()||titlePanel.getRdbtnCheckingItems().isSelected()||
+				titlePanel.getRdbtnUnCheckedItems().isSelected()||titlePanel.getRdbtnUnCheckedItems().isSelected())) {
 			//全部未选中时，全部返回。一来为了满足用户习惯全部未选择时全部返回，
 			//二来是为了解决之前乱改CheckStatus常理带来的bug，之前CheckStatus_Checked == "Checked",现在CheckStatus_Checked== "done"导致选中checked的时候，Checked的那部分就不会被显示出来。
 			return true;
 		}
 
-		if (TitlePanel.rdbtnCheckedItems.isSelected()&& entry.getCheckStatus().equals(LineEntry.CheckStatus_Checked)) {
+		if (titlePanel.getRdbtnUnCheckedItems().isSelected()&& entry.getCheckStatus().equals(LineEntry.CheckStatus_Checked)) {
 			return true;
 		}
 
-		if (TitlePanel.rdbtnCheckingItems.isSelected()&& entry.getCheckStatus().equals(LineEntry.CheckStatus_Checking)) {
+		if (titlePanel.getRdbtnCheckingItems().isSelected()&& entry.getCheckStatus().equals(LineEntry.CheckStatus_Checking)) {
 			return true;//小心 == 和 equals的区别，之前这里使用 ==就导致了checking状态的条目的消失。
 		}
 
-		if (TitlePanel.rdbtnUnCheckedItems.isSelected()&& entry.getCheckStatus().equals(LineEntry.CheckStatus_UnChecked)) {
+		if (titlePanel.getRdbtnUnCheckedItems().isSelected()&& entry.getCheckStatus().equals(LineEntry.CheckStatus_UnChecked)) {
 			return true;
 		}
 		
-		if (TitlePanel.rdbtnMoreActionItems.isSelected()&& entry.getCheckStatus().equals(LineEntry.CheckStatus_MoreAction)) {
+		if (titlePanel.getRdbtnUnCheckedItems().isSelected()&& entry.getCheckStatus().equals(LineEntry.CheckStatus_MoreAction)) {
 			return true;
 		}
 

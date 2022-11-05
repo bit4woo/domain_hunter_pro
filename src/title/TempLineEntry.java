@@ -96,7 +96,7 @@ public class TempLineEntry {
 
 	private void GetIPAndCDN(String host){
 		//第一步：IP解析
-		boolean isInPrivateNetwork = TitlePanel.tempConfig.isHandlePriavte();
+		boolean isInPrivateNetwork = GUIMain.instance.getTitlePanel().getTempConfig().isHandlePriavte();
 
 		if (IPAddressUtils.isValidIP(host)) {//目标是一个IP
 			if (IPAddressUtils.isPrivateIPv4(host) && !isInPrivateNetwork) {//外网模式，内网IP，直接返回。
@@ -126,7 +126,7 @@ public class TempLineEntry {
 
 	private Set<LineEntry> doGetTitle(){
 		Set<LineEntry> resultSet = new HashSet<>();
-		boolean isInPrivateNetwork = TitlePanel.tempConfig.isHandlePriavte();
+		boolean isInPrivateNetwork = GUIMain.instance.getTitlePanel().getTempConfig().isHandlePriavte();
 
 		if (IPSet.size() <= 0) {
 			//TODO 是否应该移除无效域名？理清楚：无效域名，黑名单域名，无响应域名等情况。
@@ -225,7 +225,7 @@ public class TempLineEntry {
 	//Just do request
 	private static LineEntry doRequest(URL url) {
 		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
-		String cookie = TitlePanel.tempConfig.getCookie();
+		String cookie = GUIMain.instance.getTitlePanel().getTempConfig().getCookie();
 
 		byte[] byteRequest = helpers.buildHttpRequest(url);//GET
 		byteRequest = Commons.buildCookieRequest(helpers,cookie,byteRequest);

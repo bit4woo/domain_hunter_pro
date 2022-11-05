@@ -30,6 +30,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
+import GUI.GUIMain;
 import burp.BurpExtender;
 import burp.Commons;
 import burp.IMessageEditor;
@@ -54,6 +55,7 @@ public class LineTable extends JTable
 	PrintWriter stdout;
 	PrintWriter stderr;
 	private LineTableModel lineTableModel;
+	private TitlePanel titlepanel;
 
 	private JSplitPane tableAndDetailSplitPane;//table area + detail area
 	public JSplitPane getTableAndDetailSplitPane() {
@@ -96,6 +98,7 @@ public class LineTable extends JTable
 		this.setFillsViewportHeight(true);//在table的空白区域显示右键菜单
 		//https://stackoverflow.com/questions/8903040/right-click-mouselistener-on-whole-jtable-component
 		this.setLineTableModel(lineTableModel);
+		titlepanel = GUIMain.instance.getTitlePanel();
 
 		tableinit();
 		tableRowSorter = new TableRowSorter<LineTableModel>(lineTableModel);
@@ -301,7 +304,7 @@ public class LineTable extends JTable
 	 * @param keyword
 	 */
 	public void search(String keyword) {
-		SearchTextField searchTextField = (SearchTextField)TitlePanel.getTextFieldSearch();
+		SearchTextField searchTextField = (SearchTextField)titlepanel.getTextFieldSearch();
 		boolean caseSensitive = searchTextField.isCaseSensitive();
 		search(keyword,caseSensitive);
 	}
@@ -322,7 +325,7 @@ public class LineTable extends JTable
 				LineEntry line = getLineTableModel().getLineEntries().get(row);
 
 				//第一层判断，根据按钮状态进行判断，如果为true，进行后面的逻辑判断，false直接返回。
-				if (!LineSearch.entryNeedToShow(line)) {
+				if (!new LineSearch(titlepanel).entryNeedToShow(line)) {
 					return false;
 				}
 				//目前只处理&&（and）逻辑的表达式
@@ -443,7 +446,7 @@ public class LineTable extends JTable
 						int modelCol = LineTable.this.convertColumnIndexToModel(col);
 						if (rows.length>0){
 							int[] modelRows = SelectedRowsToModelRows(rows);
-							new LineEntryMenu(LineTable.this, modelRows, modelCol).show(e.getComponent(), e.getX(), e.getY());
+							new LineEntryMenu(titlepanel, modelRows, modelCol).show(e.getComponent(), e.getX(), e.getY());
 						}else{//在table的空白处显示右键菜单
 							//https://stackoverflow.com/questions/8903040/right-click-mouselistener-on-whole-jtable-component
 							//new LineEntryMenu(_this).show(e.getComponent(), e.getX(), e.getY());
@@ -470,21 +473,21 @@ public class LineTable extends JTable
 			//鼠标移动到证书信息时，浮动显示完整内容
 			@Deprecated //效果不是很好，弃用
 			public void displayCDNAndCertInfo(MouseEvent evt){
-				int row = TitlePanel.getTitleTable().rowAtPoint(evt.getPoint());
-				int modelRow = TitlePanel.getTitleTable().convertRowIndexToModel(row);
+				int row = titlepanel.getTitleTable().rowAtPoint(evt.getPoint());
+				int modelRow = titlepanel.getTitleTable().convertRowIndexToModel(row);
 
-				int colunm = TitlePanel.getTitleTable().columnAtPoint(evt.getPoint());
-				int modelColunm = TitlePanel.getTitleTable().convertColumnIndexToModel(colunm);
+				int colunm = titlepanel.getTitleTable().columnAtPoint(evt.getPoint());
+				int modelColunm = titlepanel.getTitleTable().convertColumnIndexToModel(colunm);
 
 				int headerIndex = LineTableModel.getTitletList().indexOf("CDN|CertInfo");
 
 				if (modelColunm == headerIndex) {
-					String informations = TitlePanel.getTitleTable().getValueAt(row, colunm).toString();
+					String informations = titlepanel.getTitleTable().getValueAt(row, colunm).toString();
 					//调用的是原始Jtable中的getValueAt，有一次自动转换行列index的过程！
 					//String value = LineTable.this.lineTableModel.getValueAt(modelRow,modelColunm).toString();
 					//调用的是我们自己实现TableModel类中的getValueAt,没有行列index自动转换！！！
 					if  (informations.length()>=15) {
-						TitlePanel.getTitleTable().setToolTipText(informations);
+						titlepanel.getTitleTable().setToolTipText(informations);
 						ToolTipManager.sharedInstance().setDismissDelay(5000);// 设置为5秒
 					}
 				}

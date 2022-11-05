@@ -39,9 +39,11 @@ public class DomainProducer extends Thread {//Producer do
 	public PrintWriter stdout = new PrintWriter(callbacks.getStdout(), true);
 	public PrintWriter stderr = new PrintWriter(callbacks.getStderr(), true);
 	public IExtensionHelpers helpers = callbacks.getHelpers();
+	private GUIMain guiMain;
 
-	public DomainProducer(BlockingQueue<IHttpRequestResponse> inputQueue,
+	public DomainProducer(GUIMain gui,BlockingQueue<IHttpRequestResponse> inputQueue,
 						  int threadNo) {
+		this.guiMain = gui;
 		this.threadNo = threadNo;
 		this.inputQueue = inputQueue;
 		this.setName(this.getClass().getName()+threadNo);//方便调试
@@ -54,7 +56,7 @@ public class DomainProducer extends Thread {//Producer do
 
 	@Override
 	public void run() {
-		DomainPanel DomainPanel = GUIMain.instance.getDomainPanel();
+		DomainPanel DomainPanel = guiMain.getDomainPanel();
 		while(true){
 			try {
 				if (threadNo == 9999){//9999是流量进程，除非关闭，否则一直不退出。
@@ -124,7 +126,7 @@ public class DomainProducer extends Thread {//Producer do
 
 				//第二步：处理HTTPS证书
 				if (type !=DomainManager.USELESS && protocol.equalsIgnoreCase("https")){//get related domains
-					if (BurpExtender.instance.getHttpsChecked().add(shortURL)) {//httpService checked or not
+					if (guiMain.getHttpsChecked().add(shortURL)) {//httpService checked or not
 						//如果set中已存在，返回false，如果不存在，返回true。
 						//必须先添加，否则执行在执行https链接的过程中，已经有很多请求通过检测进行相同的请求了。
 						Set<String> tmpDomains = CertInfo.getSANsbyKeyword(shortURL,DomainPanel.fetchTargetModel().fetchKeywordSet());
@@ -186,7 +188,7 @@ public class DomainProducer extends Thread {//Producer do
 	public boolean isTargetByCertInfoForTarget(String shortURL) throws Exception {
 		Set<String> certDomains = CertInfo.getAllSANs(shortURL);
 		for (String domain : certDomains) {
-			int type = GUIMain.instance.getDomainPanel().fetchTargetModel().assetType(domain);
+			int type = guiMain.getDomainPanel().fetchTargetModel().assetType(domain);
 			if (type == DomainManager.SUB_DOMAIN || type == DomainManager.TLD_DOMAIN) {
 				return true;
 			}

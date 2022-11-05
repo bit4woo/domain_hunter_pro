@@ -16,20 +16,22 @@ import dao.DomainDao;
  */
 public class TextAreaListener implements DocumentListener {
 	JScrollPanelWithHeader TextAreaPanel;
-	boolean lis;
-	public TextAreaListener(JScrollPanelWithHeader panel){
+	private GUIMain guiMain;
+	
+	public TextAreaListener(GUIMain guiMain, JScrollPanelWithHeader panel){
+		this.guiMain = guiMain;
 		this.TextAreaPanel = panel;
 	}
 
 	public void saveDomainDataToDB(){
-		File dbfile = GUIMain.instance.getCurrentDBFile();
+		File dbfile = guiMain.getCurrentDBFile();
 		DomainDao dao = new DomainDao(dbfile);
 
 		Set<String> content = Commons.getSetFromTextArea(TextAreaPanel.getTextArea());
 		TextAreaType type = TextAreaPanel.getTextAreaType();
 		dao.createOrUpdateByType(content, type);
 
-		DomainManager dominResult = GUIMain.instance.getDomainPanel().getDomainResult();
+		DomainManager dominResult = guiMain.getDomainPanel().getDomainResult();
 		switch (type) {
 		
 		case SubDomain:

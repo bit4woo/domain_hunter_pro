@@ -41,7 +41,8 @@ public class LineEntryMenu extends JPopupMenu {
 	private static final long serialVersionUID = 1L;
 	PrintWriter stdout = BurpExtender.getStdout();
 	PrintWriter stderr = BurpExtender.getStderr();
-	private static LineTable lineTable;
+	private LineTable lineTable;
+	private TitlePanel titlepanel;
 
 	/**
 	 * 这处理传入的行index数据是经过转换的 model中的index，不是原始的JTable中的index。
@@ -49,8 +50,9 @@ public class LineEntryMenu extends JPopupMenu {
 	 * @param modleRows
 	 * @param columnIndex
 	 */
-	LineEntryMenu(final LineTable lineTable, final int[] modleRows,final int columnIndex){
-		this.lineTable = lineTable;
+	LineEntryMenu(final TitlePanel titlePanel, final int[] modleRows,final int columnIndex){
+		this.titlepanel = titlePanel;
+		this.lineTable = titlePanel.getTitleTable();
 
 		JMenuItem itemNumber = new JMenuItem(new AbstractAction(modleRows.length+" Items Selected") {
 			@Override
@@ -297,28 +299,28 @@ public class LineEntryMenu extends JPopupMenu {
 
 				if (columnName.equalsIgnoreCase("Status")){
 					int status = firstEntry.getStatuscode();
-					TitlePanel.getTextFieldSearch().setText(SearchDork.STATUS.toString()+":"+status);
+					titlepanel.getTextFieldSearch().setText(SearchDork.STATUS.toString()+":"+status);
 				}else if (columnName.equalsIgnoreCase("length")){
 					int length = firstEntry.getContentLength();
-					TitlePanel.getTextFieldSearch().setText(length+"");
+					titlepanel.getTextFieldSearch().setText(length+"");
 				}else if (columnName.equalsIgnoreCase("title")){
 					String title = firstEntry.getTitle();
-					TitlePanel.getTextFieldSearch().setText(SearchDork.TITLE.toString()+":"+title);
+					titlepanel.getTextFieldSearch().setText(SearchDork.TITLE.toString()+":"+title);
 				}else if (columnName.equalsIgnoreCase("comments")){
 					String comment = firstEntry.getComments().toString();
-					TitlePanel.getTextFieldSearch().setText(SearchDork.COMMENT.toString()+":"+comment);
+					titlepanel.getTextFieldSearch().setText(SearchDork.COMMENT.toString()+":"+comment);
 				}else if (columnName.equalsIgnoreCase("IP")){
 					String ip = firstEntry.getIPSet().toString();
-					TitlePanel.getTextFieldSearch().setText(ip);
+					titlepanel.getTextFieldSearch().setText(ip);
 				}else if (columnName.equalsIgnoreCase("CNAME|CertInfo")){
 					String cdn = firstEntry.getCNAMESet().toString();
-					TitlePanel.getTextFieldSearch().setText(cdn);
+					titlepanel.getTextFieldSearch().setText(cdn);
 				}else if (columnName.equalsIgnoreCase("IconHash")){
 					String hash = firstEntry.getIcon_hash();
-					TitlePanel.getTextFieldSearch().setText(hash);
+					titlepanel.getTextFieldSearch().setText(hash);
 				}else {
 					String host = firstEntry.getHost();
-					TitlePanel.getTextFieldSearch().setText(SearchDork.HOST.toString()+":"+host);
+					titlepanel.getTextFieldSearch().setText(SearchDork.HOST.toString()+":"+host);
 				}
 			}
 		});
@@ -420,7 +422,7 @@ public class LineEntryMenu extends JPopupMenu {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				try{
-					HashSet<String> domains = TitlePanel.getTitleTableModel().getDomainsForBypassCheck();
+					HashSet<String> domains = titlepanel.getTitleTableModel().getDomainsForBypassCheck();
 					String textUrls = String.join(System.lineSeparator(), domains);
 
 					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -533,7 +535,7 @@ public class LineEntryMenu extends JPopupMenu {
 		JMenuItem checkingItem = new JMenuItem(new AbstractAction("Checking") {//checking
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				TitlePanel.getTitleTableModel().updateRowsStatus(modleRows,LineEntry.CheckStatus_Checking);
+				titlepanel.getTitleTableModel().updateRowsStatus(modleRows,LineEntry.CheckStatus_Checking);
 				java.util.List<String> urls = lineTable.getLineTableModel().getURLs(modleRows);
 				IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
 				for(String url:urls) {
@@ -551,7 +553,7 @@ public class LineEntryMenu extends JPopupMenu {
 		JMenuItem moreActionItem = new JMenuItem(new AbstractAction("Need More Action") {//checking
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				TitlePanel.getTitleTableModel().updateRowsStatus(modleRows,LineEntry.CheckStatus_MoreAction);
+				titlepanel.getTitleTableModel().updateRowsStatus(modleRows,LineEntry.CheckStatus_MoreAction);
 				java.util.List<String> urls = lineTable.getLineTableModel().getURLs(modleRows);
 				IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
 				for(String url:urls) {
@@ -569,7 +571,7 @@ public class LineEntryMenu extends JPopupMenu {
 		JMenuItem checkedItem = new JMenuItem(new AbstractAction("Check Done") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				TitlePanel.getTitleTableModel().updateRowsStatus(modleRows,LineEntry.CheckStatus_Checked);
+				titlepanel.getTitleTableModel().updateRowsStatus(modleRows,LineEntry.CheckStatus_Checked);
 				//				if (BurpExtender.rdbtnHideCheckedItems.isSelected()) {//实现自动隐藏，为了避免误操作，不启用
 				//					String keyword = BurpExtender.textFieldSearch.getText().trim();
 				//					lineTable.search(keyword);
@@ -590,14 +592,14 @@ public class LineEntryMenu extends JPopupMenu {
 				while(Comments.trim().equals("")){
 					Comments = JOptionPane.showInputDialog("Comments", null).trim();
 				}
-				TitlePanel.getTitleTableModel().updateComments(modleRows,Comments);
+				titlepanel.getTitleTableModel().updateComments(modleRows,Comments);
 			}
 		});
 
 		JMenuItem batchFreshASNInfoItem = new JMenuItem(new AbstractAction("Fresh ASN Info") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				TitlePanel.getTitleTableModel().freshASNInfo(modleRows);
+				titlepanel.getTitleTableModel().freshASNInfo(modleRows);
 			}
 		});
 
@@ -610,7 +612,7 @@ public class LineEntryMenu extends JPopupMenu {
 				String alias = JOptionPane.showInputDialog("Input Alias",asnEntry.getAsname_long());
 				asnEntry.setAlias(alias);
 				ASNQuery.saveRecentToFile();
-				TitlePanel.getTitleTableModel().freshASNInfo(modleRows);
+				titlepanel.getTitleTableModel().freshASNInfo(modleRows);
 			}
 		});
 

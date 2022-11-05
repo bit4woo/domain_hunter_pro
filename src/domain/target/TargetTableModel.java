@@ -32,6 +32,7 @@ public class TargetTableModel extends AbstractTableModel {
 	private TargetDao targetDao;
 	transient PrintWriter stdout;
 	transient PrintWriter stderr;
+	private GUIMain guiMain;
 
 	private static final transient String[] standardTitles = new String[] {
 			"Domain/Subnet/IP", "Keyword", "Comment","Black"};
@@ -44,6 +45,11 @@ public class TargetTableModel extends AbstractTableModel {
 		return titletList;
 	}
 	
+	public TargetTableModel (GUIMain guiMain){
+		this();
+		this.guiMain = guiMain;
+	}
+	
 	public TargetTableModel(){
 		try{
 			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
@@ -52,7 +58,7 @@ public class TargetTableModel extends AbstractTableModel {
 			stdout = new PrintWriter(System.out, true);
 			stderr = new PrintWriter(System.out, true);
 		}
-		targetDao = new TargetDao(GUIMain.instance.getCurrentDBFile());
+		targetDao = new TargetDao(guiMain.getCurrentDBFile());
 	}
 	
 	public TargetTableModel(List<TargetEntry> entries){
@@ -458,7 +464,7 @@ public class TargetTableModel extends AbstractTableModel {
 			return true;
 		}
 
-		if (GUIMain.instance.getDomainPanel().getDomainResult().getNotTargetIPSet().contains(domain)) {
+		if (guiMain.getDomainPanel().getDomainResult().getNotTargetIPSet().contains(domain)) {
 			return true;
 		}
 		return false;
