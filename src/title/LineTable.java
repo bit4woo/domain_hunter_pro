@@ -55,7 +55,6 @@ public class LineTable extends JTable
 	PrintWriter stdout;
 	PrintWriter stderr;
 	private LineTableModel lineTableModel;
-	private TitlePanel titlepanel;
 
 	private JSplitPane tableAndDetailSplitPane;//table area + detail area
 	private GUIMain guiMain;
@@ -100,11 +99,8 @@ public class LineTable extends JTable
 		//https://stackoverflow.com/questions/8903040/right-click-mouselistener-on-whole-jtable-component
 		//this.setLineTableModel(lineTableModel);
 		this.guiMain = guiMain;
-		this.titlepanel = guiMain.getTitlePanel();
-
 		tableinit();
 		
-		//addClickSort();
 		//FitTableColumns(this);
 		//this.setAutoCreateRowSorter(true);
 
@@ -153,6 +149,20 @@ public class LineTable extends JTable
 	public void setLineTableModel(LineTableModel lineTableModel) {
 		this.lineTableModel = lineTableModel;//自己保存一份，避免调用getModel后进行类型转换失败。
 		setModel(lineTableModel);
+	}
+
+	public TableRowSorter<LineTableModel> getTableRowSorter() {
+		return tableRowSorter;
+	}
+
+	public void setTableRowSorter(TableRowSorter<LineTableModel> tableRowSorter) {
+		this.tableRowSorter = tableRowSorter;
+	}
+
+	@Override
+	@Deprecated
+	public void setRowSorter(RowSorter<? extends TableModel> sorter) {
+		System.out.println("you called wrong method");
 	}
 
 
@@ -275,37 +285,12 @@ public class LineTable extends JTable
 		}
 	}
 
-	@Deprecated //还是没能解决添加数据时排序报错的问题
-	public void addClickSort() {//双击header头进行排序
-		tableRowSorter = new TableRowSorter<LineTableModel>((LineTableModel) dataModel);
-		setRowSorter(tableRowSorter);
-
-		JTableHeader header = this.getTableHeader();
-		header.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				try {
-					if (LineTable.this.getModel() != null) {////当Jtable中无数据时，jtable.getRowSorter()是nul
-						//https://bugs.openjdk.java.net/browse/JDK-6386900
-						//当model中还在添加数据时，如果进行排序，就会导致出错
-						int col = ((LineTable) e.getSource()).columnAtPoint(e.getPoint()); // 获得列位置
-						List<RowSorter.SortKey> keys = (List<RowSorter.SortKey>) LineTable.this.getRowSorter().getSortKeys();
-						keys.add(new RowSorter.SortKey(col, SortOrder.ASCENDING));
-						tableRowSorter.setSortKeys(keys);
-					}
-				} catch (Exception e1) {
-					e1.printStackTrace(stderr);
-				}
-			}
-		});
-	}
-
 	/**
 	 * 搜索功能，自动获取caseSensitive的值
 	 * @param keyword
 	 */
 	public void search(String keyword) {
-		SearchTextField searchTextField = (SearchTextField)titlepanel.getTextFieldSearch();
+		SearchTextField searchTextField = (SearchTextField)guiMain.getTitlePanel().getTextFieldSearch();
 		boolean caseSensitive = searchTextField.isCaseSensitive();
 		search(keyword,caseSensitive);
 	}
@@ -326,7 +311,7 @@ public class LineTable extends JTable
 				LineEntry line = getLineTableModel().getLineEntries().get(row);
 
 				//第一层判断，根据按钮状态进行判断，如果为true，进行后面的逻辑判断，false直接返回。
-				if (!new LineSearch(titlepanel).entryNeedToShow(line)) {
+				if (!new LineSearch(guiMain.getTitlePanel()).entryNeedToShow(line)) {
 					return false;
 				}
 				//目前只处理&&（and）逻辑的表达式
@@ -426,7 +411,7 @@ public class LineTable extends JTable
 							SystemUtils.writeToClipboard(selecteEntry.getASNInfo());
 						}
 					} else{//LineTableModel.getTitletList().indexOf("CDN|CertInfo")
-						//String value = TitlePanel.getTitleTable().getValueAt(rows[0], col).toString();//rows[0]是转换过的，不能再转换
+						//String value = guiMain.getTitlePanel().getTitleTable().getValueAt(rows[0], col).toString();//rows[0]是转换过的，不能再转换
 						//调用的是原始Jtable中的getValueAt，它本质上也是调用model中的getValueAt，但是有一次转换的过程！！！
 						String value = getModel().getValueAt(rows[0],modelCol).toString();
 						//调用的是我们自己实现的TableModel类中的getValueAt,相比Jtable类中的同名方法，就少了一次转换的过程！！！
@@ -474,21 +459,21 @@ public class LineTable extends JTable
 			//鼠标移动到证书信息时，浮动显示完整内容
 			@Deprecated //效果不是很好，弃用
 			public void displayCDNAndCertInfo(MouseEvent evt){
-				int row = titlepanel.getTitleTable().rowAtPoint(evt.getPoint());
-				int modelRow = titlepanel.getTitleTable().convertRowIndexToModel(row);
+				int row = guiMain.getTitlePanel().getTitleTable().rowAtPoint(evt.getPoint());
+				int modelRow = guiMain.getTitlePanel().getTitleTable().convertRowIndexToModel(row);
 
-				int colunm = titlepanel.getTitleTable().columnAtPoint(evt.getPoint());
-				int modelColunm = titlepanel.getTitleTable().convertColumnIndexToModel(colunm);
+				int colunm = guiMain.getTitlePanel().getTitleTable().columnAtPoint(evt.getPoint());
+				int modelColunm = guiMain.getTitlePanel().getTitleTable().convertColumnIndexToModel(colunm);
 
 				int headerIndex = LineTableModel.getTitletList().indexOf("CDN|CertInfo");
 
 				if (modelColunm == headerIndex) {
-					String informations = titlepanel.getTitleTable().getValueAt(row, colunm).toString();
+					String informations = guiMain.getTitlePanel().getTitleTable().getValueAt(row, colunm).toString();
 					//调用的是原始Jtable中的getValueAt，有一次自动转换行列index的过程！
 					//String value = LineTable.this.lineTableModel.getValueAt(modelRow,modelColunm).toString();
 					//调用的是我们自己实现TableModel类中的getValueAt,没有行列index自动转换！！！
 					if  (informations.length()>=15) {
-						titlepanel.getTitleTable().setToolTipText(informations);
+						guiMain.getTitlePanel().getTitleTable().setToolTipText(informations);
 						ToolTipManager.sharedInstance().setDismissDelay(5000);// 设置为5秒
 					}
 				}

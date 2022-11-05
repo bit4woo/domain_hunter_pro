@@ -428,7 +428,7 @@ public class TitlePanel extends JPanel {
 		titleTableModel = new LineTableModel(guiMain,lines);
 		titleTable.setModel(titleTableModel);
 		TableRowSorter<LineTableModel> tableRowSorter = new TableRowSorter<LineTableModel>(titleTableModel);
-		titleTable.setRowSorter(tableRowSorter);
+		titleTable.setTableRowSorter(tableRowSorter);
 		int row = lines.size();
 		System.out.println(row+" title entries loaded from database file");
 		stdout.println(row+" title entries loaded from database file");

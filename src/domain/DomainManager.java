@@ -144,52 +144,42 @@ public class DomainManager {
 			//dao.createOrUpdateByType(content, type);
 			getSubDomainSet().clear();
 			getSubDomainSet().addAll(content);
-			getSummary();
 			break;
 		case RelatedDomain:
 			getRelatedDomainSet().clear();
 			getRelatedDomainSet().addAll(content);
-			getSummary();
 			break;
 		case SimilarDomain:
 			getSimilarDomainSet().clear();
 			getSimilarDomainSet().addAll(content);
-			getSummary();
 			break;
 		case Email:
 			getEmailSet().clear();
 			getEmailSet().addAll(content);
-			getSummary();
 			break;
 		case SimilarEmail:
 			getSimilarEmailSet().clear();
 			getSimilarEmailSet().addAll(content);
-			getSummary();
 			break;
 		case IPSetOfSubnet:
 			getIPSetOfSubnet().clear();
 			getIPSetOfSubnet().addAll(content);
-			getSummary();
 			break;
 		case IPSetOfCert:
 			getIPSetOfCert().clear();
 			getIPSetOfCert().addAll(content);
-			getSummary();
 			break;
 		case SpecialPortTarget:
 			getSpecialPortTargets().clear();
 			getSpecialPortTargets().addAll(content);
-			getSummary();
 			break;
 		case PackageName:
 			getPackageNameSet().clear();
 			getPackageNameSet().addAll(content);
-			getSummary();
 			break;
 		case BlackIP:
 			getNotTargetIPSet().clear();
 			getNotTargetIPSet().addAll(content);
-			getSummary();
 			break;
 		}
 	}
