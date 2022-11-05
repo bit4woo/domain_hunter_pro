@@ -59,7 +59,8 @@ public class LineConfig {
 
 	private GUIMain gui;
 
-	LineConfig(){
+	LineConfig(GUIMain gui){
+		this.gui = gui;
 		if (Commons.isMac()) {
 			browserPath = macDefaultBrowserPath;
 		}else {
@@ -70,11 +71,6 @@ public class LineConfig {
 			}
 		}
 	}
-	
-	LineConfig(GUIMain gui){
-		this.gui = gui;
-	}
-
 
 	public static int getMaximumEntries() {
 		return MaximumEntries;
@@ -278,9 +274,9 @@ public class LineConfig {
 		}
 	}
 
-	public static LineConfig loadFromDisk(String projectFile) {
+	public LineConfig loadFromDisk(String projectFile) {
 		if (projectFile == null) {
-			return new LineConfig();
+			return this;
 		}
 		try {
 			File localFile = new File(projectFile);
@@ -293,7 +289,7 @@ public class LineConfig {
 			e.printStackTrace();
 			e.printStackTrace(BurpExtender.getStderr());
 		}
-		return new LineConfig();
+		return this;
 	}
 
 

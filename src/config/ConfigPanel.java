@@ -78,7 +78,7 @@ public class ConfigPanel extends JPanel{
 	 */
 	public void loadConfigToGUI(String projectConfigFile) {
 		BurpExtender.getStdout().println("Loading Tool Panel Config From Disk");
-		lineConfig = LineConfig.loadFromDisk(projectConfigFile);//projectConfigFile可能为null
+		lineConfig = new LineConfig(gui).loadFromDisk(projectConfigFile);//projectConfigFile可能为null
 
 		History.setInstance(lineConfig.getSearchHistory());
 

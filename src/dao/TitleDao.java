@@ -8,6 +8,7 @@ import javax.sql.DataSource;
 
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 
 import com.alibaba.fastjson.JSON;
 
@@ -40,8 +41,12 @@ public class TitleDao {
 			//使用和旧版本不同的表名称,避免冲突
 			//String sql = "select * from TitleTable limit 1";
 			String sql = "SELECT count(*) FROM sqlite_master WHERE type='table' AND name = 'TitleTable'";
-			jdbcTemplate.execute(sql);
-			return true;
+			SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
+			if (result.getRow() > 0 && result.getInt(0) > 0) {
+				return true;
+			}else {
+				return false;
+			}
 		} catch (DataAccessException e) {
 			e.printStackTrace();
 			return false;

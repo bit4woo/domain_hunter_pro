@@ -433,7 +433,7 @@ public class TitlePanel extends JPanel {
 		System.out.println(row+" title entries loaded from database file");
 		stdout.println(row+" title entries loaded from database file");
 		digStatus();
-		getTitleTable().search("");// hide checked items
+		titleTable.search("");// hide checked items
 	}
 
 

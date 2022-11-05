@@ -7,6 +7,7 @@ import javax.sql.DataSource;
 
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 
 import domain.target.TargetEntry;
 import title.IndexedHashMap;
@@ -136,8 +137,12 @@ public class TargetDao {
 		try {
 			//String sql = "select * from TargetTable limit 1";
 			String sql = "SELECT count(*) FROM sqlite_master WHERE type='table' AND name = 'TargetTable'";
-			jdbcTemplate.execute(sql);
-			return true;
+			SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
+			if (result.getRow() > 0 && result.getInt(0) > 0) {
+				return true;
+			}else {
+				return false;
+			}
 		} catch (DataAccessException e) {
 			e.printStackTrace();
 			return false;
