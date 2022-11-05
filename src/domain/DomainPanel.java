@@ -170,6 +170,23 @@ public class DomainPanel extends JPanel {
 		this.guiMain = guiMain;
 	}
 
+	
+	public DomainDao getDomainDao() {
+		return domainDao;
+	}
+
+	public void setDomainDao(DomainDao domainDao) {
+		this.domainDao = domainDao;
+	}
+
+	public TargetDao getTargetDao() {
+		return targetDao;
+	}
+
+	public void setTargetDao(TargetDao targetDao) {
+		this.targetDao = targetDao;
+	}
+
 	public void createOrOpenDB() {
 		Object[] options = { "Create","Open"};
 		int user_input = JOptionPane.showOptionDialog(null, "You should Create or Open a DB file", "Chose Your Action",

@@ -9,6 +9,7 @@ import javax.sql.DataSource;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 
 import com.alibaba.fastjson.JSON;
 
@@ -20,6 +21,10 @@ public class DomainDao {
 	private DataSource dataSource;
 	private JdbcTemplate jdbcTemplate;
 	
+	public static void main(String[] args) {
+		System.out.println(new DomainDao("C:\\Users\\P52\\Documents\\test.db").testSelect());
+	}
+
 	public DomainDao(String dbFilePath){
 		dataSource = DBUtils.getSqliteDataSource(dbFilePath);
 		jdbcTemplate = new JdbcTemplate(dataSource);
@@ -35,11 +40,16 @@ public class DomainDao {
 	public boolean testSelect(){
 		try {
 			//使用和旧版本不同的表名称,避免冲突
-			String sql = "select * from DomainTable limit 1";
-			jdbcTemplate.execute(sql);
-			return true;
+			//String sql = "select * from DomainTable limit 1";
+			String sql = "SELECT count(*) FROM sqlite_master WHERE type='table' AND name = 'TargetTable'";
+			SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
+			if (result.getRow() > 0 && result.getInt(0) > 0) {
+				return true;
+			}else {
+				return false;
+			}
 		} catch (DataAccessException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 			return false;
 		}
 	}
@@ -77,8 +87,8 @@ public class DomainDao {
 		String sql="DELETE FROM DomainTable where Type= ?";
 		return jdbcTemplate.update(sql, new Object[] { Type }) >0;
 	}
-	
-	
+
+
 	public DomainManager getDomainManager(){
 		DomainManager result = new DomainManager();
 		for (TextAreaType type:TextAreaType.values()) {
@@ -93,7 +103,7 @@ public class DomainDao {
 		}
 		return result;
 	}
-	
+
 	public boolean saveDomainManager(DomainManager domainResult){
 		try {
 			for (TextAreaType type:TextAreaType.values()) {

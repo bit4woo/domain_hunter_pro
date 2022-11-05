@@ -124,7 +124,7 @@ public class TargetDao {
 
 	public TargetEntry selectByTarget(String target){
 		try {
-			String sql = "select * from Target where target=?";
+			String sql = "select * from TargetTable where target=?";
 			return jdbcTemplate.queryForObject(sql, new Object[] { target },new TargetMapper());
 		} catch (DataAccessException e) {
 			//e.printStackTrace();
@@ -134,7 +134,7 @@ public class TargetDao {
 	
 	public boolean testSelect(){
 		try {
-			String sql = "select * from Target limit 1";
+			String sql = "select * from TargetTable limit 1";
 			jdbcTemplate.execute(sql);
 			return true;
 		} catch (DataAccessException e) {

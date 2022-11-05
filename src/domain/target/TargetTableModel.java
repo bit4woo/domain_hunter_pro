@@ -29,7 +29,6 @@ import title.IndexedHashMap;
 public class TargetTableModel extends AbstractTableModel {
 
 	private IndexedHashMap<String,TargetEntry> targetEntries =new IndexedHashMap<String,TargetEntry>();
-	private TargetDao targetDao;
 	transient PrintWriter stdout;
 	transient PrintWriter stderr;
 	private GUIMain guiMain;
@@ -58,7 +57,6 @@ public class TargetTableModel extends AbstractTableModel {
 			stdout = new PrintWriter(System.out, true);
 			stderr = new PrintWriter(System.out, true);
 		}
-		targetDao = new TargetDao(guiMain.getCurrentDBFile());
 	}
 	
 	public TargetTableModel(GUIMain guiMain,List<TargetEntry> entries){
@@ -236,7 +234,7 @@ public class TargetTableModel extends AbstractTableModel {
 		}else {//新增
 			fireTableRowsInserted(rowIndex,rowIndex);
 		}
-		targetDao.addOrUpdateTarget(entry);
+		guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(entry);
 	}
 
 	/**
@@ -247,7 +245,7 @@ public class TargetTableModel extends AbstractTableModel {
 		String key = targetEntries.get(rowIndex).getTarget();
 		targetEntries.remove(rowIndex);
 		fireTableRowsDeleted(rowIndex, rowIndex);
-		targetDao.deleteByTarget(key);
+		guiMain.getDomainPanel().getTargetDao().deleteByTarget(key);
 	}
 
 	/**
@@ -257,7 +255,7 @@ public class TargetTableModel extends AbstractTableModel {
 		int rowIndex = targetEntries.IndexOfKey(key);
 		targetEntries.remove(key);
 		fireTableRowsDeleted(rowIndex, rowIndex);
-		targetDao.deleteByTarget(key);
+		guiMain.getDomainPanel().getTargetDao().deleteByTarget(key);
 	}
 
 	/**
@@ -634,7 +632,7 @@ public class TargetTableModel extends AbstractTableModel {
 		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
 			TargetEntry checked = targetEntries.get(rows[i]);
 			checked.addComment(commentAdd);
-			targetDao.addOrUpdateTarget(checked);
+			guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(checked);
 		}
 		fireUpdated(rows);
 	}
@@ -652,7 +650,7 @@ public class TargetTableModel extends AbstractTableModel {
 		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
 			TargetEntry checked = targetEntries.get(rows[i]);
 			targetEntries.remove(i);
-			targetDao.deleteTarget(checked);
+			guiMain.getDomainPanel().getTargetDao().deleteTarget(checked);
 		}
 		fireDeleted(rows);
 	}
