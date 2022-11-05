@@ -168,31 +168,34 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 
 	@Override
 	public void extensionUnloaded() {
-		try {//避免这里错误导致保存逻辑的失效
-			gui.getProjectMenu().remove();
-			stopLiveCapture();
-			if (gui.getTitlePanel().getThreadGetTitle() != null) {
-				gui.getTitlePanel().getThreadGetTitle().interrupt();//maybe null
-				gui.getInputQueue().clear();
-				gui.getLiveinputQueue().clear();
-				gui.getHttpsChecked().clear();
-			}//必须要先结束线程，否则获取数据的操作根本无法结束，因为线程一直通过sync占用资源
-		} catch (Exception e) {
-			e.printStackTrace(stderr);
-		}
+		SwingUtilities.invokeLater(new Runnable()
+		{
+			public void run()
+			{
+				try {//避免这里错误导致保存逻辑的失效
+					gui.getProjectMenu().remove();
+					stopLiveCapture();
+					if (gui.getTitlePanel().getThreadGetTitle() != null) {
+						gui.getTitlePanel().getThreadGetTitle().interrupt();//maybe null
+						gui.getInputQueue().clear();
+						gui.getLiveinputQueue().clear();
+						gui.getHttpsChecked().clear();
+					}//必须要先结束线程，否则获取数据的操作根本无法结束，因为线程一直通过sync占用资源
+				} catch (Exception e) {
+					e.printStackTrace(stderr);
+				}
 
-		
-		try {
-			if (null == gui.getDomainPanel().getDomainResult()) return;//有数据才弹对话框指定文件位置。
-			if (gui.getDomainPanel().getDomainResult().isEmpty()) return;
-			
-			gui.getDomainPanel().saveDomainDataToDB();//域名面板自动保存逻辑有点复杂，退出前再自动保存一次
-			gui.getConfigPanel();
-			String configFilePath = ConfigPanel.getLineConfig().saveToDisk();//包含db文件位置
-			RecentModel.saveRecent(configFilePath);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+				
+				try {
+					if (null == gui.getDomainPanel().getDomainResult()) return;//有数据才弹对话框指定文件位置。
+					gui.getDomainPanel().saveDomainDataToDB();//域名面板自动保存逻辑有点复杂，退出前再自动保存一次
+					String configFilePath = ConfigPanel.getLineConfig().saveToDisk();//包含db文件位置
+					RecentModel.saveRecent(configFilePath);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
 	}
 
 	//ITab必须实现的两个方法

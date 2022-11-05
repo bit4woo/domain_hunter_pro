@@ -134,7 +134,8 @@ public class TargetDao {
 	
 	public boolean testSelect(){
 		try {
-			String sql = "select * from TargetTable limit 1";
+			//String sql = "select * from TargetTable limit 1";
+			String sql = "SELECT count(*) FROM sqlite_master WHERE type='table' AND name = 'TargetTable'";
 			jdbcTemplate.execute(sql);
 			return true;
 		} catch (DataAccessException e) {

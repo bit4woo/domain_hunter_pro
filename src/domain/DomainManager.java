@@ -68,10 +68,16 @@ public class DomainManager {
 		//to resolve "default constructor not found" error
 	}
 
-	public DomainManager(String projectName) {
-	}
-	
 	public DomainManager(GUIMain guiMain) {
+		this.guiMain = guiMain;
+	}
+
+	
+	public GUIMain getGuiMain() {
+		return guiMain;
+	}
+
+	public void setGuiMain(GUIMain guiMain) {
 		this.guiMain = guiMain;
 	}
 
@@ -197,16 +203,32 @@ public class DomainManager {
 		if (guiMain.getCurrentDBFile() != null) {
 			filename = guiMain.getCurrentDBFile().getName();
 		}
+		int targetSum = 0;
+		try {
+			targetSum += fetchTargetModel().getRowCount();
+		} catch (Exception e) {
+			//e.printStackTrace();
+		}
 		String tmpsummary = String.format("  FileName:%s  Root-domain:%s  Related-domain:%s  Sub-domain:%s  Similar-domain:%s  Email:%s "
 				+ "IPOfSubnet:%s IPOfCert:%s ^_^",
-				filename, fetchTargetModel().getRowCount(), relatedDomainSet.size(), subDomainSet.size(), similarDomainSet.size(), EmailSet.size(),
+				filename, targetSum, relatedDomainSet.size(), subDomainSet.size(), similarDomainSet.size(), EmailSet.size(),
 				IPSetOfSubnet.size(),IPSetOfCert.size());
 		return tmpsummary;
 	}
 
 	public boolean isEmpty() {
-		return (fetchTargetModel().getRowCount()+ relatedDomainSet.size()+
-				subDomainSet.size()+similarDomainSet.size()+EmailSet.size()) == 0;
+		int sum = 0;
+		try {
+			sum += fetchTargetModel().getRowCount();
+		} catch (Exception e) {
+			//e.printStackTrace();
+		}
+		sum += relatedDomainSet.size();
+		sum += subDomainSet.size();
+		sum += similarDomainSet.size();
+		sum += EmailSet.size();
+		sum += similarEmailSet.size();
+		return sum == 0;
 	}
 
 	public void setSummary(String Summary) {

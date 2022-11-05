@@ -38,7 +38,8 @@ public class TitleDao {
 	public boolean testSelect(){
 		try {
 			//使用和旧版本不同的表名称,避免冲突
-			String sql = "select * from TitleTable limit 1";
+			//String sql = "select * from TitleTable limit 1";
+			String sql = "SELECT count(*) FROM sqlite_master WHERE type='table' AND name = 'TitleTable'";
 			jdbcTemplate.execute(sql);
 			return true;
 		} catch (DataAccessException e) {

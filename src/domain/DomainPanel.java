@@ -98,7 +98,7 @@ public class DomainPanel extends JPanel {
 	 * targetTable可以从DomainPanel中获取，是GUI的线路关系
 	 * targetTableModel则对应地从DomainManager中的对象获取，是数据模型的线路关系
 	 */
-	private volatile DomainManager domainResult = new DomainManager();//getter setter
+	private volatile DomainManager domainResult;//getter setter
 	private boolean listenerIsOn = true;
 	private DomainDao domainDao;
 	private TargetDao targetDao;
@@ -609,6 +609,7 @@ public class DomainPanel extends JPanel {
 	public void LoadDomainData(String dbFilePath) {
 		domainDao = new DomainDao(dbFilePath);
 		domainResult = domainDao.getDomainManager();
+		domainResult.setGuiMain(guiMain);
 		setDomainResult(domainResult);
 		showDataToDomainGUI();
 	}

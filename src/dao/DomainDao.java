@@ -22,6 +22,7 @@ public class DomainDao {
 	private JdbcTemplate jdbcTemplate;
 	
 	public static void main(String[] args) {
+		System.out.println("111");
 		System.out.println(new DomainDao("C:\\Users\\P52\\Documents\\test.db").testSelect());
 	}
 
@@ -41,7 +42,7 @@ public class DomainDao {
 		try {
 			//使用和旧版本不同的表名称,避免冲突
 			//String sql = "select * from DomainTable limit 1";
-			String sql = "SELECT count(*) FROM sqlite_master WHERE type='table' AND name = 'TargetTable'";
+			String sql = "SELECT count(*) FROM sqlite_master WHERE type='table' AND name = 'DomainTable'";
 			SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
 			if (result.getRow() > 0 && result.getInt(0) > 0) {
 				return true;
@@ -88,7 +89,11 @@ public class DomainDao {
 		return jdbcTemplate.update(sql, new Object[] { Type }) >0;
 	}
 
-
+	
+	/**
+	 * 从数据库中恢复出DomainManager对象，记得设置GUIMain参数
+	 * @return
+	 */
 	public DomainManager getDomainManager(){
 		DomainManager result = new DomainManager();
 		for (TextAreaType type:TextAreaType.values()) {

@@ -172,7 +172,7 @@ public class ProjectMenu extends JMenu{
 	public void createNewDb(GUIMain gui) {
 		File file = gui.dbfc.dialog(false,".db");//通过保存对话指定文件，这会是一个空文件。
 		if (null != file) {
-			gui.getDomainPanel().setDomainResult(new DomainManager(file.getName()));
+			gui.getDomainPanel().setDomainResult(new DomainManager(gui));
 			gui.saveData(file.toString(),true);
 			gui.LoadData(file.toString());//然后加载，就是一个新的空项目了。
 		}

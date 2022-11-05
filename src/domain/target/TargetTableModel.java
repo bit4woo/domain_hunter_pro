@@ -44,12 +44,9 @@ public class TargetTableModel extends AbstractTableModel {
 		return titletList;
 	}
 	
-	public TargetTableModel (GUIMain guiMain){
-		this();
-		this.guiMain = guiMain;
-	}
 	
-	private TargetTableModel(){
+	private TargetTableModel(GUIMain guiMain){
+		this.guiMain = guiMain;
 		try{
 			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
 			stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
@@ -60,7 +57,7 @@ public class TargetTableModel extends AbstractTableModel {
 	}
 	
 	public TargetTableModel(GUIMain guiMain,List<TargetEntry> entries){
-		this();
+		this(guiMain);
 		for (TargetEntry entry:entries) {
 			if (ifValid(entry)) {
 				targetEntries.put(entry.getTarget(), entry);
