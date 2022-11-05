@@ -27,7 +27,7 @@ import title.LineTableModel;
 
 public class TargetTable extends JTable{
 
-	private TargetTableModel targetModel = new TargetTableModel();
+	private TargetTableModel targetModel;
 	private PrintWriter stderr;
 	private PrintWriter stdout;
 	private GUIMain guiMain;
@@ -37,7 +37,7 @@ public class TargetTable extends JTable{
 		this.guiMain = guiMain;
 	}
 	
-	public TargetTable() {
+	private TargetTable() {
 
 		try {
 			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);

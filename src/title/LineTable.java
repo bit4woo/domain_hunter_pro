@@ -85,7 +85,7 @@ public class LineTable extends JTable
 		return rows;
 	}
 
-	public LineTable(GUIMain guiMain,LineTableModel lineTableModel)
+	public LineTable(GUIMain guiMain)
 	{
 		//super(lineTableModel);//这个方法创建的表没有header
 		try{
@@ -98,13 +98,12 @@ public class LineTable extends JTable
 
 		this.setFillsViewportHeight(true);//在table的空白区域显示右键菜单
 		//https://stackoverflow.com/questions/8903040/right-click-mouselistener-on-whole-jtable-component
-		this.setLineTableModel(lineTableModel);
+		//this.setLineTableModel(lineTableModel);
 		this.guiMain = guiMain;
 		this.titlepanel = guiMain.getTitlePanel();
 
 		tableinit();
-		tableRowSorter = new TableRowSorter<LineTableModel>(lineTableModel);
-		setRowSorter(tableRowSorter);
+		
 		//addClickSort();
 		//FitTableColumns(this);
 		//this.setAutoCreateRowSorter(true);

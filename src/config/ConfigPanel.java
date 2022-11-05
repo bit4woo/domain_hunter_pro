@@ -54,10 +54,6 @@ public class ConfigPanel extends JPanel{
 		return lineConfig;
 	}
 	
-	public ConfigPanel(GUIMain gui) {
-		this.gui = gui;
-	}
-	
 	/**
 	 * Launch the application.
 	 */
@@ -67,7 +63,7 @@ public class ConfigPanel extends JPanel{
 				try {
 					JFrame frame = new JFrame();
 					frame.setVisible(true);
-					frame.setContentPane(new ConfigPanel());
+					frame.setContentPane(new ConfigPanel(null));
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -129,7 +125,8 @@ public class ConfigPanel extends JPanel{
 		lineConfig.setEnableElastic(rdbtnSaveTrafficTo.isSelected());
 	}	
 
-	public ConfigPanel() {
+	public ConfigPanel(GUIMain gui) {
+		this.gui = gui;
 		setLayout(new GridLayout(20, 2));
 		JLabel lblNewLabel = new JLabel("Browser Path:");
 		

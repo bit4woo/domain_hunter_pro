@@ -9,6 +9,7 @@ import java.util.*;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.TableRowSorter;
 
 import GUI.GUIMain;
 import burp.BurpExtender;
@@ -151,7 +152,7 @@ public class TitlePanel extends JPanel {
 		//		titleTable = new LineTable(titleTableModel);
 		//		TargetAndTitlePanel.setRightComponent(titleTable.getTableAndDetailSplitPane());
 
-		titleTable = new LineTable(guiMain,titleTableModel);
+		titleTable = new LineTable(guiMain);
 		this.add(titleTable.getTableAndDetailSplitPane(),BorderLayout.CENTER);
 	}
 
@@ -271,7 +272,7 @@ public class TitlePanel extends JPanel {
 
 		lblSummaryOfTitle = new JLabel("^_^");
 		buttonPanel.add(lblSummaryOfTitle);
-		buttonPanel.setToolTipText(titleTableModel.getStatusSummary());
+		buttonPanel.setToolTipText("");
 
 		return buttonPanel;
 	}
@@ -426,6 +427,8 @@ public class TitlePanel extends JPanel {
 		List<LineEntry> lines = titleDao.selectAllTitle();
 		titleTableModel = new LineTableModel(guiMain,lines);
 		titleTable.setModel(titleTableModel);
+		TableRowSorter<LineTableModel> tableRowSorter = new TableRowSorter<LineTableModel>(titleTableModel);
+		titleTable.setRowSorter(tableRowSorter);
 		int row = lines.size();
 		System.out.println(row+" title entries loaded from database file");
 		stdout.println(row+" title entries loaded from database file");

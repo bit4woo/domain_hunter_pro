@@ -50,7 +50,7 @@ public class TargetTableModel extends AbstractTableModel {
 		this.guiMain = guiMain;
 	}
 	
-	public TargetTableModel(){
+	private TargetTableModel(){
 		try{
 			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
 			stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
@@ -61,7 +61,7 @@ public class TargetTableModel extends AbstractTableModel {
 		targetDao = new TargetDao(guiMain.getCurrentDBFile());
 	}
 	
-	public TargetTableModel(List<TargetEntry> entries){
+	public TargetTableModel(GUIMain guiMain,List<TargetEntry> entries){
 		this();
 		for (TargetEntry entry:entries) {
 			if (ifValid(entry)) {

@@ -40,13 +40,9 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	private static final Logger log=LogManager.getLogger(BurpExtender.class);
 	
 	private GUIMain gui; 
-	public BurpExtender instance;//必须要有一个static变量，否则其他类如何找到对象的入口呢？
 	
 	private DomainProducer liveAnalysisTread;
-	private BlockingQueue<IHttpRequestResponse> liveinputQueue = new LinkedBlockingQueue<IHttpRequestResponse>();
-	//use to store messageInfo of proxy live
-	private BlockingQueue<IHttpRequestResponse> inputQueue = new LinkedBlockingQueue<IHttpRequestResponse>();
-	//temp variable to identify checked https用于记录已经做过HTTPS证书信息获取的httpService
+
 
 	public static PrintWriter getStdout() {
 		//不同的时候调用这个参数，可能得到不同的值
@@ -98,21 +94,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		this.liveAnalysisTread = liveAnalysisTread;
 	}
 
-	public BlockingQueue<IHttpRequestResponse> getLiveinputQueue() {
-		return liveinputQueue;
-	}
 
-	public void setLiveinputQueue(BlockingQueue<IHttpRequestResponse> liveinputQueue) {
-		this.liveinputQueue = liveinputQueue;
-	}
-
-	public BlockingQueue<IHttpRequestResponse> getInputQueue() {
-		return inputQueue;
-	}
-
-	public void setInputQueue(BlockingQueue<IHttpRequestResponse> inputQueue) {
-		this.inputQueue = inputQueue;
-	}
 
 	@Deprecated
 	public void saveDBfilepathToExtension() {
@@ -142,7 +124,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	}
 
 	public void startLiveCapture(){
-		liveAnalysisTread = new DomainProducer(gui,liveinputQueue,9999);//必须是9999，才能保证流量进程不退出。
+		liveAnalysisTread = new DomainProducer(gui,gui.getLiveinputQueue(),9999);//必须是9999，才能保证流量进程不退出。
 		liveAnalysisTread.start();
 	}
 
@@ -179,11 +161,9 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 				//如果这里报java.lang.NullPointerException: Component cannot be null 错误，需要排查contentPane的初始化是否正确。
 				String projectConfigFile = RecentModel.fetchRecent();//返回值可能为null
 				gui.getConfigPanel().loadConfigToGUI(projectConfigFile);//包含db文件的加载
+				startLiveCapture();
 			}
 		});
-
-		startLiveCapture();
-		instance = this;
 	}
 
 	@Override
@@ -193,8 +173,8 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 			stopLiveCapture();
 			if (gui.getTitlePanel().getThreadGetTitle() != null) {
 				gui.getTitlePanel().getThreadGetTitle().interrupt();//maybe null
-				inputQueue.clear();
-				liveinputQueue.clear();
+				gui.getInputQueue().clear();
+				gui.getLiveinputQueue().clear();
 				gui.getHttpsChecked().clear();
 			}//必须要先结束线程，否则获取数据的操作根本无法结束，因为线程一直通过sync占用资源
 		} catch (Exception e) {
@@ -244,7 +224,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 				toolFlag == IBurpExtenderCallbacks.TOOL_INTRUDER ||
 				toolFlag == IBurpExtenderCallbacks.TOOL_REPEATER) 
 				&& !messageIsRequest) {
-			liveinputQueue.add(messageInfo);
+			gui.getLiveinputQueue().add(messageInfo);
 		}
 	}
 

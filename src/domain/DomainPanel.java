@@ -183,6 +183,7 @@ public class DomainPanel extends JPanel {
 	}
 	
 	public DomainPanel(GUIMain guiMain) {//构造函数
+		this();
 		this.guiMain = guiMain;
 	}
 
@@ -444,7 +445,7 @@ public class DomainPanel extends JPanel {
 
 		JScrollPane PanelWest1 = new JScrollPane();
 		TargetPane.setLeftComponent(PanelWest1);
-		targetTable = new TargetTable();
+		targetTable = new TargetTable(guiMain);
 		PanelWest1.setViewportView(targetTable);
 
 		ControlPanel = new TargetControlPanel(this);
@@ -621,7 +622,7 @@ public class DomainPanel extends JPanel {
 	public void LoadTargetsData(String dbFilePath) {
 		targetDao = new TargetDao(dbFilePath);
 		List<TargetEntry> targets = targetDao.selectAll();
-		TargetTableModel targetModel = new TargetTableModel(targets);
+		TargetTableModel targetModel = new TargetTableModel(guiMain,targets);
 		targetTable.setTargetModel(targetModel);
 	}
 

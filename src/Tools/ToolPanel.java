@@ -65,7 +65,8 @@ import domain.DomainPanel;
 import domain.DomainProducer;
 import title.WebIcon;
 
-/*
+/**
+ * 
  * 所有配置的修改，界面的操作，都立即写入LineConfig对象，如有必要保存到磁盘，再调用一次SaveConfig函数，思路要清晰
  * 加载： 磁盘文件-->LineConfig对象--->具体控件的值
  * 保存： 具体各个控件的值---->LineConfig对象---->磁盘文件
@@ -108,7 +109,7 @@ public class ToolPanel extends JPanel {
 		this.guiMain = guiMain;
 	}
 
-	public ToolPanel() {
+	private ToolPanel() {
 		setForeground(Color.DARK_GRAY);//构造函数
 		this.setBorder(new EmptyBorder(5, 5, 5, 5));
 		this.setLayout(new BorderLayout(0, 0));
