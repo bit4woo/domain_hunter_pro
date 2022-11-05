@@ -58,6 +58,7 @@ public class LineTable extends JTable
 	private TitlePanel titlepanel;
 
 	private JSplitPane tableAndDetailSplitPane;//table area + detail area
+	private GUIMain guiMain;
 	public JSplitPane getTableAndDetailSplitPane() {
 		return tableAndDetailSplitPane;
 	}
@@ -84,7 +85,7 @@ public class LineTable extends JTable
 		return rows;
 	}
 
-	public LineTable(LineTableModel lineTableModel)
+	public LineTable(GUIMain guiMain,LineTableModel lineTableModel)
 	{
 		//super(lineTableModel);//这个方法创建的表没有header
 		try{
@@ -98,7 +99,8 @@ public class LineTable extends JTable
 		this.setFillsViewportHeight(true);//在table的空白区域显示右键菜单
 		//https://stackoverflow.com/questions/8903040/right-click-mouselistener-on-whole-jtable-component
 		this.setLineTableModel(lineTableModel);
-		titlepanel = GUIMain.instance.getTitlePanel();
+		this.guiMain = guiMain;
+		this.titlepanel = guiMain.getTitlePanel();
 
 		tableinit();
 		tableRowSorter = new TableRowSorter<LineTableModel>(lineTableModel);
@@ -446,7 +448,7 @@ public class LineTable extends JTable
 						int modelCol = LineTable.this.convertColumnIndexToModel(col);
 						if (rows.length>0){
 							int[] modelRows = SelectedRowsToModelRows(rows);
-							new LineEntryMenu(titlepanel, modelRows, modelCol).show(e.getComponent(), e.getX(), e.getY());
+							new LineEntryMenu(guiMain, modelRows, modelCol).show(e.getComponent(), e.getX(), e.getY());
 						}else{//在table的空白处显示右键菜单
 							//https://stackoverflow.com/questions/8903040/right-click-mouselistener-on-whole-jtable-component
 							//new LineEntryMenu(_this).show(e.getComponent(), e.getX(), e.getY());

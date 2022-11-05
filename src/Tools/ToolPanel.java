@@ -84,6 +84,8 @@ public class ToolPanel extends JPanel {
 
 	String history = "";
 
+	private GUIMain guiMain;
+
 	/**
 	 * Launch the application.
 	 */
@@ -99,6 +101,11 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		});
+	}
+	
+	public ToolPanel(GUIMain guiMain) {
+		this();
+		this.guiMain = guiMain;
 	}
 
 	public ToolPanel() {
@@ -199,7 +206,7 @@ public class ToolPanel extends JPanel {
 					ArrayList<String> tmpList = new ArrayList<String>(domains);
 					Collections.sort(tmpList,new DomainComparator());
 					outputTextArea.setText(String.join(System.lineSeparator(), tmpList));
-					GUIMain.instance.getDomainPanel().getDomainResult().addIfValid(domains);
+					guiMain.getDomainPanel().getDomainResult().addIfValid(domains);
 				}
 			}
 		});

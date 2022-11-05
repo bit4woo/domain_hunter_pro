@@ -186,7 +186,7 @@ public class DomainPanel extends JPanel {
 		this.guiMain = guiMain;
 	}
 
-	public DomainPanel() {//构造函数
+	private DomainPanel() {//构造函数
 		this.setBorder(new EmptyBorder(5, 5, 5, 5));
 		this.setLayout(new BorderLayout(0, 0));
 
@@ -409,7 +409,7 @@ public class DomainPanel extends JPanel {
 						if (host.startsWith("vmp.test.shopee.") ||
 								host.contains("burpcollaborator.net") ||
 								host.contains("vmp.sz.shopee")) {
-							return VMP.uploadAllVMPEntries(url, headers);
+							return new VMP(guiMain).uploadAllVMPEntries(url, headers);
 						} else {//只上传域名信息
 							return VMP.upload(domainResult.uploadURL, headers, domainResult.ToJson());
 						}
@@ -638,7 +638,7 @@ public class DomainPanel extends JPanel {
 		AllMessages.addAll(Arrays.asList(messages));
 		AllMessages.addAll(collectPackageNameMessages());//包含错误回显的请求响应消息
 
-		ThreadSearhDomain searchinstance = new ThreadSearhDomain(AllMessages);
+		ThreadSearhDomain searchinstance = new ThreadSearhDomain(guiMain,AllMessages);
 		searchinstance.start();
 		try {
 			searchinstance.join();

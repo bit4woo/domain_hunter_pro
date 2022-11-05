@@ -70,7 +70,7 @@ public class Producer extends Thread {//Producer do
 				int leftTaskNum = domainQueue.size();
 
 				stdout.print(String.format("%s tasks left ",leftTaskNum));
-				TempLineEntry tmpLine = new TempLineEntry(host);
+				TempLineEntry tmpLine = new TempLineEntry(guiMain,host);
 				Set<LineEntry> resultSet  = tmpLine.getFinalLineEntry();
 				//根据请求有效性分类处理
 				Iterator<LineEntry> it = resultSet.iterator();

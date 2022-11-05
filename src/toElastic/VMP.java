@@ -12,14 +12,20 @@ import title.TitlePanel;
 
 public class VMP {
 
+	GUIMain guiMain;
 	/**
 	 * upload all vmp entry
 	 * @return
 	 */
-	public static Collection<VMPEntry> getAllVmpEntry() {
+	
+	public VMP(GUIMain guiMain) {
+		this.guiMain = guiMain;
+	}
+	
+	public Collection<VMPEntry> getAllVmpEntry() {
 		HashMap<String,VMPEntry> result = new HashMap<String,VMPEntry>();//使用hashmap实现去重
 
-		Collection<LineEntry> titleEntries = GUIMain.instance.getTitlePanel().getTitleTableModel().getLineEntries().values();
+		Collection<LineEntry> titleEntries = guiMain.getTitlePanel().getTitleTableModel().getLineEntries().values();
 		for (LineEntry entry:titleEntries) {
 			String url = entry.getUrl();
 			String host = entry.getHost();
@@ -34,7 +40,7 @@ public class VMP {
 		return result.values();
 	}
 
-	public static boolean uploadAllVMPEntries(String ApiUrl,HashMap<String, String> headers) {
+	public boolean uploadAllVMPEntries(String ApiUrl,HashMap<String, String> headers) {
 		if (!isApiOk(ApiUrl,headers)) {
 			System.out.println("API test failed,please check your config");
 			return false;

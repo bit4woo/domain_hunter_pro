@@ -34,9 +34,11 @@ public class TempLineEntry {
 	Set<String> IPSet = new HashSet<>();
 	Set<String> CDNSet = new HashSet<>();
 	Set<String> certDomains = new HashSet<>();
+	GUIMain guiMain;
 
-	public TempLineEntry(String host){
-		DomainManager domainResult = GUIMain.instance.getDomainPanel().getDomainResult();
+	public TempLineEntry(GUIMain guiMain,String host){
+		this.guiMain = guiMain;
+		DomainManager domainResult = guiMain.getDomainPanel().getDomainResult();
 		if (hostCheckAndParse(host) && domainResult != null){
 			hostToURL(this.host);
 			GetIPAndCDN(this.host);
@@ -48,7 +50,7 @@ public class TempLineEntry {
 		if (host ==null) return new HashSet<>();//无效host直接返回
 
 		if (ConfigPanel.ignoreWrongCAHost.isSelected()){
-			if (GUIMain.instance.getDomainPanel().getDomainResult().isTargetByCertInfo(certDomains)){
+			if (guiMain.getDomainPanel().getDomainResult().isTargetByCertInfo(certDomains)){
 				return new HashSet<>();
 			};
 		}
@@ -96,7 +98,7 @@ public class TempLineEntry {
 
 	private void GetIPAndCDN(String host){
 		//第一步：IP解析
-		boolean isInPrivateNetwork = GUIMain.instance.getTitlePanel().getTempConfig().isHandlePriavte();
+		boolean isInPrivateNetwork = guiMain.getTitlePanel().getTempConfig().isHandlePriavte();
 
 		if (IPAddressUtils.isValidIP(host)) {//目标是一个IP
 			if (IPAddressUtils.isPrivateIPv4(host) && !isInPrivateNetwork) {//外网模式，内网IP，直接返回。
@@ -126,7 +128,7 @@ public class TempLineEntry {
 
 	private Set<LineEntry> doGetTitle(){
 		Set<LineEntry> resultSet = new HashSet<>();
-		boolean isInPrivateNetwork = GUIMain.instance.getTitlePanel().getTempConfig().isHandlePriavte();
+		boolean isInPrivateNetwork = guiMain.getTitlePanel().getTempConfig().isHandlePriavte();
 
 		if (IPSet.size() <= 0) {
 			//TODO 是否应该移除无效域名？理清楚：无效域名，黑名单域名，无响应域名等情况。
@@ -223,9 +225,9 @@ public class TempLineEntry {
 	}
 
 	//Just do request
-	private static LineEntry doRequest(URL url) {
+	private LineEntry doRequest(URL url) {
 		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
-		String cookie = GUIMain.instance.getTitlePanel().getTempConfig().getCookie();
+		String cookie = guiMain.getTitlePanel().getTempConfig().getCookie();
 
 		byte[] byteRequest = helpers.buildHttpRequest(url);//GET
 		byteRequest = Commons.buildCookieRequest(helpers,cookie,byteRequest);
@@ -237,7 +239,7 @@ public class TempLineEntry {
 	}
 
 	public static void test(){
-		TempLineEntry tmp = new TempLineEntry("10.162.32.16:9100");
+		TempLineEntry tmp = new TempLineEntry(null,"10.162.32.16:9100");
 		tmp.getFinalLineEntry();
 	}
 

@@ -43,6 +43,7 @@ public class LineEntryMenu extends JPopupMenu {
 	PrintWriter stderr = BurpExtender.getStderr();
 	private LineTable lineTable;
 	private TitlePanel titlepanel;
+	private GUIMain guiMain;
 
 	/**
 	 * 这处理传入的行index数据是经过转换的 model中的index，不是原始的JTable中的index。
@@ -50,9 +51,10 @@ public class LineEntryMenu extends JPopupMenu {
 	 * @param modleRows
 	 * @param columnIndex
 	 */
-	LineEntryMenu(final TitlePanel titlePanel, final int[] modleRows,final int columnIndex){
-		this.titlepanel = titlePanel;
-		this.lineTable = titlePanel.getTitleTable();
+	LineEntryMenu(final GUIMain guiMain, final int[] modleRows,final int columnIndex){
+		this.guiMain = guiMain;
+		this.titlepanel = guiMain.getTitlePanel();
+		this.lineTable = titlepanel.getTitleTable();
 
 		JMenuItem itemNumber = new JMenuItem(new AbstractAction(modleRows.length+" Items Selected") {
 			@Override
@@ -576,7 +578,7 @@ public class LineEntryMenu extends JPopupMenu {
 				//					String keyword = BurpExtender.textFieldSearch.getText().trim();
 				//					lineTable.search(keyword);
 				//				}
-				GUIMain.instance.titlePanel.digStatus();
+				titlepanel.digStatus();
 			}
 		});
 
@@ -767,7 +769,7 @@ public class LineEntryMenu extends JPopupMenu {
 				int result = JOptionPane.showConfirmDialog(null,"Are you sure to DELETE these items ?");
 				if (result == JOptionPane.YES_OPTION) {
 					lineTable.getLineTableModel().removeRows(modleRows);
-					GUIMain.instance.titlePanel.digStatus();
+					titlepanel.digStatus();
 				}else {
 					return;
 				}
@@ -792,8 +794,8 @@ public class LineEntryMenu extends JPopupMenu {
 					//如果有 domain domain:8888 两个记录，这种方式就会删错对象
 					java.util.List<String> hostAndPort = lineTable.getLineTableModel().getHostsAndPorts(modleRows);//包含端口，如果原始记录
 					for(String item:hostAndPort) {
-						if (!GUIMain.instance.getDomainPanel().getDomainResult().getSubDomainSet().remove(item)) {
-							GUIMain.instance.getDomainPanel().getDomainResult().getSubDomainSet().remove(item.split(":")[0]);
+						if (!guiMain.getDomainPanel().getDomainResult().getSubDomainSet().remove(item)) {
+							guiMain.getDomainPanel().getDomainResult().getSubDomainSet().remove(item.split(":")[0]);
 						}
 					}
 				}
@@ -827,7 +829,7 @@ public class LineEntryMenu extends JPopupMenu {
 				if (result == JOptionPane.YES_OPTION) {
 					lineTable.getLineTableModel().addIPToTargetBlackList(modleRows);
 					lineTable.getLineTableModel().removeRows(modleRows);
-					GUIMain.instance.titlePanel.digStatus();
+					titlepanel.digStatus();
 				}
 			}
 		});

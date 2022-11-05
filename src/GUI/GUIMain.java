@@ -5,7 +5,9 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -16,6 +18,7 @@ import Tools.ToolPanel;
 import burp.BurpExtender;
 import burp.Commons;
 import burp.IBurpExtender;
+import burp.IHttpRequestResponse;
 import burp.dbFileChooser;
 import config.ConfigPanel;
 import dao.DomainDao;
@@ -43,6 +46,11 @@ public class GUIMain extends JFrame {
 	public dbFileChooser dbfc = new dbFileChooser();
 	//use to store messageInfo
 	private Set<String> httpsChecked = new CopyOnWriteArraySet<>();
+	
+	private BlockingQueue<IHttpRequestResponse> liveinputQueue = new LinkedBlockingQueue<IHttpRequestResponse>();
+	//use to store messageInfo of proxy live
+	private BlockingQueue<IHttpRequestResponse> inputQueue = new LinkedBlockingQueue<IHttpRequestResponse>();
+	//temp variable to identify checked https用于记录已经做过HTTPS证书信息获取的httpService
 		
 	public DomainPanel getDomainPanel() {
 		return domainPanel;
@@ -89,6 +97,22 @@ public class GUIMain extends JFrame {
 		this.httpsChecked = httpsChecked;
 	}
 	
+	public BlockingQueue<IHttpRequestResponse> getLiveinputQueue() {
+		return liveinputQueue;
+	}
+
+	public void setLiveinputQueue(BlockingQueue<IHttpRequestResponse> liveinputQueue) {
+		this.liveinputQueue = liveinputQueue;
+	}
+
+	public BlockingQueue<IHttpRequestResponse> getInputQueue() {
+		return inputQueue;
+	}
+
+	public void setInputQueue(BlockingQueue<IHttpRequestResponse> inputQueue) {
+		this.inputQueue = inputQueue;
+	}
+	
 	public GUIMain(IBurpExtender burp) {//构造函数
 		this();
 		this.burp = burp;
@@ -110,10 +134,10 @@ public class GUIMain extends JFrame {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 1174, 497);
 		setContentPane(tabbedWrapper);
-		domainPanel = new DomainPanel();
-		titlePanel = new TitlePanel();
-		toolPanel = new ToolPanel();
-		configPanel = new ConfigPanel();
+		domainPanel = new DomainPanel(this);
+		titlePanel = new TitlePanel(this);
+		toolPanel = new ToolPanel(this);
+		configPanel = new ConfigPanel(this);
 		tabbedWrapper.addTab("Domains", null, domainPanel, null);
 		tabbedWrapper.addTab("Titles", null, titlePanel, null);
 		tabbedWrapper.addTab("Tools", null,toolPanel,null);

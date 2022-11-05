@@ -29,6 +29,12 @@ public class GetTitleMenu extends JPopupMenu {
 	JMenuItem CopySubnetItem;
 	JMenuItem StopItem;
 	JMenuItem FreshASNInfo;
+	private GUIMain guiMain;
+	
+	public GetTitleMenu(GUIMain guiMain){
+		this();
+		this.guiMain = guiMain;
+	}
 
 	GetTitleMenu(){
 
@@ -52,7 +58,7 @@ public class GetTitleMenu extends JPopupMenu {
 					@Override
 					protected Map doInBackground() throws Exception {
 						getTitleItem.setEnabled(false);
-						GUIMain.instance.getTitlePanel().getAllTitle();
+						guiMain.getTitlePanel().getAllTitle();
 						//btnGettitle.setEnabled(true);
 						return new HashMap<String, String>();
 						//no use ,the return.
@@ -79,7 +85,7 @@ public class GetTitleMenu extends JPopupMenu {
 					@Override
 					protected Map doInBackground() throws Exception {
 						GetExtendtitleItem.setEnabled(false);
-						GUIMain.instance.getTitlePanel().getExtendTitle();
+						guiMain.getTitlePanel().getExtendTitle();
 						//btnGetExtendtitle.setEnabled(true);
 						return new HashMap<String, String>();
 						//no use ,the return.
@@ -105,7 +111,7 @@ public class GetTitleMenu extends JPopupMenu {
 					@Override
 					protected Map doInBackground() throws Exception {
 						GettitleOfJustNewFoundItem.setEnabled(false);
-						GUIMain.instance.getTitlePanel().getTitleOfNewDomain();
+						guiMain.getTitlePanel().getTitleOfNewDomain();
 						return new HashMap<String, String>();
 						//no use ,the return.
 					}
@@ -136,7 +142,7 @@ public class GetTitleMenu extends JPopupMenu {
 
 						int publicSubnets = JOptionPane.showConfirmDialog(null,"Just get [Pulic] IP Subnets ?");
 
-						String subnetsString = GUIMain.instance.getTitlePanel().getSubnet(result == JOptionPane.YES_OPTION?true:false,publicSubnets == JOptionPane.YES_OPTION?true:false);
+						String subnetsString = guiMain.getTitlePanel().getSubnet(result == JOptionPane.YES_OPTION?true:false,publicSubnets == JOptionPane.YES_OPTION?true:false);
 
 						Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 						StringSelection selection = new StringSelection(subnetsString);
@@ -163,11 +169,11 @@ public class GetTitleMenu extends JPopupMenu {
 		StopItem = new JMenuItem(new AbstractAction("Force Stop Get Title Threads") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				if (GUIMain.instance.getTitlePanel().getThreadGetTitle() != null && 
-						GUIMain.instance.getTitlePanel().getThreadGetTitle().isAlive() ){
+				if (guiMain.getTitlePanel().getThreadGetTitle() != null && 
+						guiMain.getTitlePanel().getThreadGetTitle().isAlive() ){
 					int result = JOptionPane.showConfirmDialog(null,"Are You Sure To [Force Stop] All Get Title Threads ?");
 					if (result == JOptionPane.YES_OPTION){
-						GUIMain.instance.getTitlePanel().getThreadGetTitle().forceStopThreads();
+						guiMain.getTitlePanel().getThreadGetTitle().forceStopThreads();
 					}
 				}
 			}
@@ -194,7 +200,7 @@ public class GetTitleMenu extends JPopupMenu {
 								ASNQuery.batchQueryFromApi(partition);//接口有限制，请求过快，过频繁会被封。查网段是不错的选择
 							}
 							 */
-							GUIMain.instance.getTitlePanel().getTitleTableModel().freshAllASNInfo();
+							guiMain.getTitlePanel().getTitleTableModel().freshAllASNInfo();
 						} catch (Exception e) {
 							e.printStackTrace();
 						}
