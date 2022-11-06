@@ -179,8 +179,11 @@ public class LineEntry {
 				statuscode = responseInfo.getStatusCode();
 
 				HelperPlus getter = new HelperPlus(helpers);
+				String tmpServer = getter.getHeaderValueOf(false, response, "Server");
+				if (tmpServer != null){
+					webcontainer = tmpServer;
+				}
 
-				webcontainer = getter.getHeaderValueOf(false, response, "Server");
 				byte[] byteBody = HelperPlus.getBody(false, response);
 				try{
 					contentLength = Integer.parseInt(getter.getHeaderValueOf(false, response, "Content-Length").trim());

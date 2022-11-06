@@ -421,6 +421,8 @@ public class TitlePanel extends JPanel {
 		try {
 			requestViewer = BurpExtender.getCallbacks().createMessageEditor(titleTable.getLineTableModel(), false);
 			responseViewer = BurpExtender.getCallbacks().createMessageEditor(titleTable.getLineTableModel(), false);
+			RequestPanel.removeAll();
+			ResponsePanel.removeAll();
 			RequestPanel.addTab("Request", requestViewer.getComponent());
 			ResponsePanel.addTab("Response", responseViewer.getComponent());
 		} catch (Exception e) {
