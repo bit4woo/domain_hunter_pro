@@ -24,6 +24,7 @@ import javax.swing.RowSorter;
 import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
+import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
@@ -53,13 +54,7 @@ public class LineTable extends JTable
 
 	PrintWriter stdout;
 	PrintWriter stderr;
-	private LineTableModel lineTableModel;
-
-	private JSplitPane tableAndDetailSplitPane;//table area + detail area
 	private GUIMain guiMain;
-	public JSplitPane getTableAndDetailSplitPane() {
-		return tableAndDetailSplitPane;
-	}
 
 	@Override//参考javax.swing.JTable中的函数，每次都有主动进行转换
 	public Object getValueAt(int row, int column) {
@@ -98,8 +93,7 @@ public class LineTable extends JTable
 		//https://stackoverflow.com/questions/8903040/right-click-mouselistener-on-whole-jtable-component
 		//this.setLineTableModel(lineTableModel);
 		this.guiMain = guiMain;
-		tableinit();
-		
+
 		//FitTableColumns(this);
 		//this.setAutoCreateRowSorter(true);
 
@@ -121,28 +115,6 @@ public class LineTable extends JTable
 		super.changeSelection(row, col, toggle, extend);
 	}
 
-
-	/**
-	 * 使用Jtable本身已实现的getModel和setModel函数，
-	 * 可以避免自行实现很多功能，比如：
-	 * 数据加载过程中，控制监听器等。
-	 */
-	@Override
-	@Deprecated
-	public TableModel getModel(){
-		return super.getModel();
-	}
-
-	/**
-	 * 自己实现的逻辑中不要调用这个函数，它会被JTable的已有功能调用
-	 * @param dataModel
-	 */
-	@Override
-	@Deprecated
-	public void setModel(TableModel dataModel) {
-		super.setModel(dataModel);
-	}
-
 	public LineTableModel getLineTableModel(){
 		return (LineTableModel)super.getModel();
 	}
@@ -151,15 +123,6 @@ public class LineTable extends JTable
 		//this.lineTableModel = lineTableModel;//自己保存一份，避免调用getModel后进行类型转换失败。
 		super.setModel(lineTableModel);
 	}
-
-//	@Override
-//	@Deprecated
-//	public void setRowSorter(RowSorter<? extends TableModel> sorter) {
-//		System.out.println("you called wrong method");
-//	}
-
-
-
 
 	public void tableinit(){
 		//Font f = new Font("Arial", Font.PLAIN, 12);
@@ -189,7 +152,7 @@ public class LineTable extends JTable
 					this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex(header)).setPreferredWidth(width*multiNumber);
 				}
 			}catch (Exception e){
-
+				e.printStackTrace();
 			}
 		}
 		this.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);//配合横向滚动条

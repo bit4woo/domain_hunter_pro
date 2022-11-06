@@ -50,8 +50,9 @@ public class TitlePanel extends JPanel {
 	private GetTitleTempConfig tempConfig; //每次获取title过程中的配置。
 	private IndexedHashMap<String,LineEntry> BackupLineEntries;
 	private GUIMain guiMain;
+	private JTabbedPane RequestPanel;
+	private JTabbedPane ResponsePanel;
 
-	
 
 	public JTextField getTextFieldSearch() {
 		return textFieldSearch;
@@ -245,21 +246,12 @@ public class TitlePanel extends JPanel {
 		RequestDetailPanel.setResizeWeight(0.5);
 
 
-		JTabbedPane RequestPanel = new JTabbedPane();
+		RequestPanel = new JTabbedPane();
 		RequestDetailPanel.setLeftComponent(RequestPanel);
 
-		JTabbedPane ResponsePanel = new JTabbedPane();
+		ResponsePanel = new JTabbedPane();
 		RequestDetailPanel.setRightComponent(ResponsePanel);
 
-		try {
-			requestViewer = BurpExtender.getCallbacks().createMessageEditor(titleTable.getLineTableModel(), false);
-			responseViewer = BurpExtender.getCallbacks().createMessageEditor(titleTable.getLineTableModel(), false);
-			RequestPanel.addTab("Request", requestViewer.getComponent());
-			ResponsePanel.addTab("Response", responseViewer.getComponent());
-		} catch (Exception e) {
-			//捕获异常，以便程序以非burp插件运行时可以启动
-			//e.printStackTrace();
-		}
 
 		return RequestDetailPanel;
 	}
@@ -420,6 +412,19 @@ public class TitlePanel extends JPanel {
 		stdout.println(row+" title entries loaded from database file");
 		digStatus();
 		titleTable.search("");// hide checked items
+
+		try {
+
+			requestViewer = BurpExtender.getCallbacks().createMessageEditor(titleTable.getLineTableModel(), false);
+			responseViewer = BurpExtender.getCallbacks().createMessageEditor(titleTable.getLineTableModel(), false);
+			RequestPanel.addTab("Request", requestViewer.getComponent());
+			ResponsePanel.addTab("Response", responseViewer.getComponent());
+		} catch (Exception e) {
+			//捕获异常，以便程序以非burp插件运行时可以启动
+			//e.printStackTrace();
+		}
+		titleTable.tableinit();
+
 	}
 
 
