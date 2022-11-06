@@ -86,6 +86,7 @@ public class TitleDao {
 		jdbcTemplate.execute(sqlTitle);
 
 		//https://www.sqlitetutorial.net/sqlite-replace-statement/
+		//确保replace语句是根据url作为判断依据的。
 		String sqlcreateIndex = "CREATE UNIQUE INDEX IF NOT EXISTS idx_Title_url ON TitleTable (url)";
 		jdbcTemplate.execute(sqlcreateIndex);
 

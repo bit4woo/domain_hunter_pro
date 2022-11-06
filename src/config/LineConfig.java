@@ -72,6 +72,13 @@ public class LineConfig {
 		}
 	}
 
+	/**
+	 * 用于JSON的序列化反序列化
+	 */
+	LineConfig(){
+
+	}
+
 	public static int getMaximumEntries() {
 		return MaximumEntries;
 	}

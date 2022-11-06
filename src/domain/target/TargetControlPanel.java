@@ -113,7 +113,7 @@ public class TargetControlPanel extends JPanel {
 						try {
 							//to clear sub and similar domains
 							domainPanel.getDomainResult().freshBaseRule();
-							domainPanel.getGuiMain().getDomainPanel().showDataToDomainGUI();
+							domainPanel.showDataToDomainGUI();
 							domainPanel.saveDomainDataToDB();
 						} catch (Exception exception) {
 							exception.printStackTrace();

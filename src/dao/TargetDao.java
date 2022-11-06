@@ -61,8 +61,6 @@ public class TargetDao {
 		int result = jdbcTemplate.update(sql, entry.getTarget(),entry.getType(),entry.getKeyword(),entry.isZoneTransfer(),
 				entry.isBlack(),entry.getComment(),entry.isUseTLD());
 
-		String key = entry.getTarget();
-
 		return result > 0;
 	}
 	
@@ -176,5 +174,4 @@ public class TargetDao {
 		return jdbcTemplate.queryForObject(
 				sql, Integer.class);
 	}
-
 }

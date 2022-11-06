@@ -10,16 +10,16 @@ import java.awt.event.MouseEvent;
 public class TextAreaMouseListener extends MouseAdapter{
 
     private final JTextArea textArea;
-	private GUIMain guiMain;
+	private DomainPanel domainPanel;
 
-    public TextAreaMouseListener(GUIMain guiMain,JTextArea textArea){
+    public TextAreaMouseListener(DomainPanel domainPanel,JTextArea textArea){
         this.textArea = textArea;
-        this.guiMain = guiMain;
+        this.domainPanel = domainPanel;
     }
 
     @Override
     public void mouseClicked(MouseEvent arg0) {
-    	JPopupMenu jp = new TextAreaMenu(guiMain,textArea);
+    	JPopupMenu jp = new TextAreaMenu(domainPanel,textArea);
 		jp.add("Be Happy ^_^");
         if (arg0.getButton() == MouseEvent.BUTTON3) {
             // 弹出菜单

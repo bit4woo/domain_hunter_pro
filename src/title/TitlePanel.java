@@ -163,7 +163,7 @@ public class TitlePanel extends JPanel {
 		JButton btnAction = new JButton("Action");
 		btnAction.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				new GetTitleMenu().show(btnAction, btnAction.getX(), btnAction.getY());
+				new GetTitleMenu(guiMain).show(btnAction, btnAction.getX(), btnAction.getY());
 			}
 		});
 		buttonPanel.add(btnAction);

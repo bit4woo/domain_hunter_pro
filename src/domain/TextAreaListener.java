@@ -16,75 +16,19 @@ import dao.DomainDao;
  */
 public class TextAreaListener implements DocumentListener {
 	JScrollPanelWithHeader TextAreaPanel;
-	private GUIMain guiMain;
+	private DomainPanel domainPanel;
 	
-	public TextAreaListener(GUIMain guiMain, JScrollPanelWithHeader panel){
-		this.guiMain = guiMain;
+	public TextAreaListener(DomainPanel domainPanel, JScrollPanelWithHeader panel){
+		this.domainPanel = domainPanel;
 		this.TextAreaPanel = panel;
 	}
 
 	public void saveDomainDataToDB(){
-		File dbfile = guiMain.getCurrentDBFile();
-		DomainDao dao = new DomainDao(dbfile);
-
-		Set<String> content = Commons.getSetFromTextArea(TextAreaPanel.getTextArea());
-		TextAreaType type = TextAreaPanel.getTextAreaType();
-		dao.createOrUpdateByType(content, type);
-
-		DomainManager dominResult = guiMain.getDomainPanel().getDomainResult();
-		switch (type) {
-		
-		case SubDomain:
-			//dao.createOrUpdateByType(content, type);
-			dominResult.getSubDomainSet().clear();
-			dominResult.getSubDomainSet().addAll(content);
-			dominResult.getSummary();
-			break;
-		case RelatedDomain:
-			dominResult.getRelatedDomainSet().clear();
-			dominResult.getRelatedDomainSet().addAll(content);
-			dominResult.getSummary();
-			break;
-		case SimilarDomain:
-			dominResult.getSimilarDomainSet().clear();
-			dominResult.getSimilarDomainSet().addAll(content);
-			dominResult.getSummary();
-			break;
-		case Email:
-			dominResult.getEmailSet().clear();
-			dominResult.getEmailSet().addAll(content);
-			dominResult.getSummary();
-			break;
-		case SimilarEmail:
-			dominResult.getSimilarEmailSet().clear();
-			dominResult.getSimilarEmailSet().addAll(content);
-			dominResult.getSummary();
-			break;
-		case IPSetOfSubnet:
-			dominResult.getIPSetOfSubnet().clear();
-			dominResult.getIPSetOfSubnet().addAll(content);
-			dominResult.getSummary();
-			break;
-		case IPSetOfCert:
-			dominResult.getIPSetOfCert().clear();
-			dominResult.getIPSetOfCert().addAll(content);
-			dominResult.getSummary();
-			break;
-		case SpecialPortTarget:
-			dominResult.getSpecialPortTargets().clear();
-			dominResult.getSpecialPortTargets().addAll(content);
-			dominResult.getSummary();
-			break;
-		case PackageName:
-			dominResult.getPackageNameSet().clear();
-			dominResult.getPackageNameSet().addAll(content);
-			dominResult.getSummary();
-			break;
-		case BlackIP:
-			dominResult.getNotTargetIPSet().clear();
-			dominResult.getNotTargetIPSet().addAll(content);
-			dominResult.getSummary();
-			break;
+		if (domainPanel.isListenerIsOn()){
+			DomainDao dao = new DomainDao(domainPanel.getGuiMain().currentDBFile);
+			Set<String> content = Commons.getSetFromTextArea(TextAreaPanel.getTextArea());
+			TextAreaType type = TextAreaPanel.getTextAreaType();
+			dao.createOrUpdateByType(content, type);
 		}
 	}
 

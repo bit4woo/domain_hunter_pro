@@ -30,13 +30,10 @@ public class GetTitleMenu extends JPopupMenu {
 	JMenuItem StopItem;
 	JMenuItem FreshASNInfo;
 	private GUIMain guiMain;
-	
-	public GetTitleMenu(GUIMain guiMain){
-		this();
-		this.guiMain = guiMain;
-	}
 
-	GetTitleMenu(){
+
+	public GetTitleMenu(GUIMain guiMain){
+		this.guiMain = guiMain;
 
 		getTitleItem = new JMenuItem(new AbstractAction("Get Title") {
 			@Override

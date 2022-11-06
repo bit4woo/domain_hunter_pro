@@ -475,17 +475,17 @@ public class DomainPanel extends JPanel {
 		BodyPane.setLayout(new GridLayout(2, 5, 0, 0));
 
 
-		ScrollPaneRelatedDomains = new JScrollPanelWithHeader(guiMain,TextAreaType.RelatedDomain,"Related Domains","Related Domains"); //E2
-		ScrollPaneSubdomains = new JScrollPanelWithHeader(guiMain,TextAreaType.SubDomain,"Sub Domains","Sub Domains");
-		ScrollPaneSimilarDomains = new JScrollPanelWithHeader(guiMain,TextAreaType.SimilarDomain,"Similar Domains","Similar Domains");
-		ScrollPaneEmails = new JScrollPanelWithHeader(guiMain,TextAreaType.Email,"Emails","Emails");
-		PanelSimilarEmails = new JScrollPanelWithHeader(guiMain,TextAreaType.SimilarEmail,"Similar Emails","Similar Emails");
+		ScrollPaneRelatedDomains = new JScrollPanelWithHeader(this,TextAreaType.RelatedDomain,"Related Domains","Related Domains"); //E2
+		ScrollPaneSubdomains = new JScrollPanelWithHeader(this,TextAreaType.SubDomain,"Sub Domains","Sub Domains");
+		ScrollPaneSimilarDomains = new JScrollPanelWithHeader(this,TextAreaType.SimilarDomain,"Similar Domains","Similar Domains");
+		ScrollPaneEmails = new JScrollPanelWithHeader(this,TextAreaType.Email,"Emails","Emails");
+		PanelSimilarEmails = new JScrollPanelWithHeader(this,TextAreaType.SimilarEmail,"Similar Emails","Similar Emails");
 
-		ScrollPaneSpecialPortTargets = new JScrollPanelWithHeader(guiMain,TextAreaType.SpecialPortTarget,"Custom Assets","you can put your custom assets here");
-		PanelIPOfSubnet = new JScrollPanelWithHeader(guiMain,TextAreaType.IPSetOfSubnet,"IP Of Subnet","IP Of Subnet");
-		PanelIPOfCert = new JScrollPanelWithHeader(guiMain,TextAreaType.IPSetOfCert,"IP Of Cert","IP Of Cert");
-		ScrollPanePackageNames = new JScrollPanelWithHeader(guiMain,TextAreaType.PackageName,"Package Names","Package Names");
-		PanelBlackIPList = new JScrollPanelWithHeader(guiMain,TextAreaType.BlackIP,"Black IP List","Black IP List");
+		ScrollPaneSpecialPortTargets = new JScrollPanelWithHeader(this,TextAreaType.SpecialPortTarget,"Custom Assets","you can put your custom assets here");
+		PanelIPOfSubnet = new JScrollPanelWithHeader(this,TextAreaType.IPSetOfSubnet,"IP Of Subnet","IP Of Subnet");
+		PanelIPOfCert = new JScrollPanelWithHeader(this,TextAreaType.IPSetOfCert,"IP Of Cert","IP Of Cert");
+		ScrollPanePackageNames = new JScrollPanelWithHeader(this,TextAreaType.PackageName,"Package Names","Package Names");
+		PanelBlackIPList = new JScrollPanelWithHeader(this,TextAreaType.BlackIP,"Black IP List","Black IP List");
 
 		BodyPane.add(ScrollPaneRelatedDomains);
 		BodyPane.add(ScrollPaneSubdomains);
@@ -565,6 +565,7 @@ public class DomainPanel extends JPanel {
 		});
 
 	}
+
 
 	/**
 	 * 显示DomainPanel中的数据。

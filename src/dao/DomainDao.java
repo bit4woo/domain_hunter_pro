@@ -20,7 +20,7 @@ public class DomainDao {
 
 	private DataSource dataSource;
 	private JdbcTemplate jdbcTemplate;
-	
+
 	public static void main(String[] args) {
 		System.out.println("111");
 		System.out.println(new DomainDao("C:\\Users\\P52\\Documents\\test.db").testSelect());
@@ -61,16 +61,22 @@ public class DomainDao {
 	 */
 	public boolean createTable() {
 		String sql = "CREATE TABLE IF NOT EXISTS DomainTable" +
-				"(ID INT PRIMARY KEY     NOT NULL," +
+				"(ID INT PRIMARY KEY AUTOINCREMENT NOT NULL," +
 				" Type           TEXT    NOT NULL," +
 				" Content        TEXT    NOT NULL)";
 		jdbcTemplate.execute(sql);
+
+		//https://www.sqlitetutorial.net/sqlite-replace-statement/
+		//确保replace语句是根据Type作为判断依据的。
+		String sqlcreateIndex = "CREATE UNIQUE INDEX IF NOT EXISTS idx_DomainTable_Type ON DomainTable (Type)";
+		jdbcTemplate.execute(sqlcreateIndex);
+
 		return true;
 	}
 
 	public boolean createOrUpdateByType(Set<String> content,TextAreaType Type){
-		String sql = "insert or replace into DomainTable (ID, Type,Content)"
-				+ " values(1,?,?)";
+		String sql = "insert or replace into DomainTable (Type,Content)"
+				+ " values(?,?)";
 
 		int result = jdbcTemplate.update(sql, Type, JSON.toJSONString(content));
 		return result>0;
@@ -89,7 +95,7 @@ public class DomainDao {
 		return jdbcTemplate.update(sql, new Object[] { Type }) >0;
 	}
 
-	
+
 	/**
 	 * 从数据库中恢复出DomainManager对象，记得设置GUIMain参数
 	 * @return
@@ -110,9 +116,15 @@ public class DomainDao {
 	}
 
 	public boolean saveDomainManager(DomainManager domainResult){
+		for (TextAreaType type:TextAreaType.values()) {
+			saveDomainManagerByType(domainResult,type);
+		}
+		return true;
+	}
+
+	public boolean saveDomainManagerByType(DomainManager domainResult,TextAreaType type){
 		try {
-			for (TextAreaType type:TextAreaType.values()) {
-				switch (type) {
+			switch (type) {
 				case SubDomain:
 					createOrUpdateByType(domainResult.getSubDomainSet(),type);
 					break;
@@ -143,11 +155,9 @@ public class DomainDao {
 				case BlackIP:
 					createOrUpdateByType(domainResult.getNotTargetIPSet(),type);
 					break;
-				}
 			}
 			return true;
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return false;
 		}
