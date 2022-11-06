@@ -33,10 +33,10 @@ public class ConfigPanel extends JPanel{
 	PrintWriter stderr;
 	private JTextField textFieldUploadURL;
 	private GUIMain gui;
-	private static JTextField BrowserPath;
+	private LineConfig lineConfig;
 
+	public static JTextField BrowserPath;
 	public static JRadioButton showItemsInOne;
-	private static LineConfig lineConfig;
 	public static JRadioButton ignoreHTTPS;
 	public static JRadioButton ignoreHTTPStaus500;
 	public static JRadioButton ignoreHTTPStaus400;
@@ -50,7 +50,7 @@ public class ConfigPanel extends JPanel{
 	public static JTextField textFieldElasticUserPass;
 	public static JTextField textFieldUploadApiToken;
 	
-	public static LineConfig getLineConfig() {
+	public LineConfig getLineConfig() {
 		return lineConfig;
 	}
 	
@@ -111,7 +111,7 @@ public class ConfigPanel extends JPanel{
 	}
 
 
-	public static void saveToConfigFromGUI() {
+	public void saveToConfigFromGUI() {
 		lineConfig.setBrowserPath(BrowserPath.getText());
 		lineConfig.setDirSearchPath(textFieldDirSearch.getText());
 		lineConfig.setBruteDict(textFieldDirBruteDict.getText());

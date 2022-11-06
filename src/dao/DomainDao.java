@@ -60,8 +60,9 @@ public class DomainDao {
 	 * @return
 	 */
 	public boolean createTable() {
+		//AUTOINCREMENT is only allowed on an INTEGER PRIMARY KEY
 		String sql = "CREATE TABLE IF NOT EXISTS DomainTable" +
-				"(ID INT PRIMARY KEY AUTOINCREMENT NOT NULL," +
+				"(ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +
 				" Type           TEXT    NOT NULL," +
 				" Content        TEXT    NOT NULL)";
 		jdbcTemplate.execute(sql);

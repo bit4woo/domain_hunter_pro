@@ -376,7 +376,7 @@ public class LineTable extends JTable
 							if (url != null && !url.toLowerCase().startsWith("http://") && !url.toLowerCase().startsWith("https://")) {
 								url = "http://"+url;//针对DNS记录中URL字段是host的情况
 							}
-							Commons.browserOpen(url,ConfigPanel.getLineConfig().getBrowserPath());
+							Commons.browserOpen(url,guiMain.getConfigPanel().getLineConfig().getBrowserPath());
 						}catch (Exception e1){
 							e1.printStackTrace(stderr);
 						}

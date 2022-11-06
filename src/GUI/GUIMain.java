@@ -206,7 +206,7 @@ public class GUIMain extends JFrame {
 			titlePanel.loadData(currentDBFile.toString());
 			//configPanel.loadData(currentDBFile);
 
-			ConfigPanel.getLineConfig().setDbfilepath(currentDBFile.getAbsolutePath());
+			configPanel.getLineConfig().setDbfilepath(currentDBFile.getAbsolutePath());
 			displayProjectName();
 			System.out.println("==End Loading Data From: "+ dbFilePath+" "+Commons.getNowTimeString() +"==");//输出到debug console
 			BurpExtender.getStdout().println("==End Loading Data From: "+ dbFilePath+" "+Commons.getNowTimeString() +"==");

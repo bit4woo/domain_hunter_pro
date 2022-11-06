@@ -90,7 +90,7 @@ public class TextAreaMenu extends JPopupMenu {
 				for (String item:selectedItems) {
 					String url= "https://"+item;
 					try {
-						Commons.browserOpen(url, ConfigPanel.getLineConfig().getBrowserPath());
+						Commons.browserOpen(url, domainPanel.getGuiMain().getConfigPanel().getLineConfig().getBrowserPath());
 					} catch (Exception e) {
 						e.printStackTrace(stderr);
 					}

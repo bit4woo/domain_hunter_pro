@@ -122,7 +122,7 @@ public class ASNEntry {
             try {
                 String start = prefix.split("-")[0];
                 String end = prefix.split("-")[1];
-                return IPAddressUtils.checkIPIsInGivenRange(IP,start,end);
+                return IPAddressUtils.checkIPIsInGivenRange(IP,start,end);//
             } catch (AddressStringException e) {
                 e.printStackTrace();
                 return false;

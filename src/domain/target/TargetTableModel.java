@@ -141,6 +141,7 @@ public class TargetTableModel extends AbstractTableModel {
 			entry.setBlack(valueStr);
 			fireTableCellUpdated(row, col);
 		}
+		guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(entry);
 	}
 
 	@Override

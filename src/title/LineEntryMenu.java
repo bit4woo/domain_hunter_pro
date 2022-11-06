@@ -440,7 +440,7 @@ public class LineEntryMenu extends JPopupMenu {
 
 		JMenuItem dirSearchItem = new JMenuItem();
 		dirSearchItem.setText("Do Dir Search");
-		dirSearchItem.addActionListener(new DirSearchAction(lineTable, modleRows));
+		dirSearchItem.addActionListener(new DirSearchAction(guiMain,lineTable, modleRows));
 
 		JMenuItem iconHashItem = new JMenuItem();
 		iconHashItem.setText("Do Get Icon Hash");
@@ -462,7 +462,7 @@ public class LineEntryMenu extends JPopupMenu {
 
 		JMenuItem doPortScan = new JMenuItem();
 		doPortScan.setText("Do Port Scan");
-		doPortScan.addActionListener(new NmapScanAction(lineTable, modleRows));
+		doPortScan.addActionListener(new NmapScanAction(guiMain,lineTable, modleRows));
 
 		JMenuItem openURLwithBrowserItem = new JMenuItem(new AbstractAction("Open With Browser(double click url)") {
 			@Override
@@ -473,7 +473,7 @@ public class LineEntryMenu extends JPopupMenu {
 						return;
 					}
 					for (String url:urls){
-						Commons.browserOpen(url,ConfigPanel.getLineConfig().getBrowserPath());
+						Commons.browserOpen(url,guiMain.getConfigPanel().getLineConfig().getBrowserPath());
 					}
 				}
 				catch (Exception e1)

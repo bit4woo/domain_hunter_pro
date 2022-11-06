@@ -290,7 +290,7 @@ public class ToolPanel extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (inputTextAreaChanged) {//default is true
-					urls = Arrays.asList(ConfigPanel.getLineConfig().getToolPanelText().replaceAll(" ","").replaceAll("\r\n", "\n").split("\n"));
+					urls = Arrays.asList(guiMain.getConfigPanel().getLineConfig().getToolPanelText().replaceAll(" ","").replaceAll("\r\n", "\n").split("\n"));
 					totalNumber = urls.size();
 					left = urls.size();
 					it = urls.iterator();
@@ -305,15 +305,15 @@ public class ToolPanel extends JPanel {
 							url = "http://"+url;
 							URL tmpUrl = new URL(url);
 							if (tmpUrl.getPort() == -1) {
-								Commons.browserOpen(url, ConfigPanel.getLineConfig().getBrowserPath());
-								Commons.browserOpen(url.replaceFirst("http://", "https://"), ConfigPanel.getLineConfig().getBrowserPath());
+								Commons.browserOpen(url, guiMain.getConfigPanel().getLineConfig().getBrowserPath());
+								Commons.browserOpen(url.replaceFirst("http://", "https://"), guiMain.getConfigPanel().getLineConfig().getBrowserPath());
 							}else if (Integer.toString(tmpUrl.getPort()).endsWith("443")) {
-								Commons.browserOpen(url.replaceFirst("http://", "https://"), ConfigPanel.getLineConfig().getBrowserPath());
+								Commons.browserOpen(url.replaceFirst("http://", "https://"), guiMain.getConfigPanel().getLineConfig().getBrowserPath());
 							}else {
-								Commons.browserOpen(url, ConfigPanel.getLineConfig().getBrowserPath());
+								Commons.browserOpen(url, guiMain.getConfigPanel().getLineConfig().getBrowserPath());
 							}
 						}else {
-							Commons.browserOpen(url, ConfigPanel.getLineConfig().getBrowserPath());
+							Commons.browserOpen(url, guiMain.getConfigPanel().getLineConfig().getBrowserPath());
 						}
 						i--;
 						left--;
@@ -337,7 +337,7 @@ public class ToolPanel extends JPanel {
 					@Override
 					protected Map doInBackground() throws Exception {
 						ArrayList<String> result = new ArrayList<String>();
-						List<String> urls = Arrays.asList(ConfigPanel.getLineConfig().getToolPanelText().replaceAll(" ","").replaceAll("\r\n", "\n").split("\n"));
+						List<String> urls = Arrays.asList(guiMain.getConfigPanel().getLineConfig().getToolPanelText().replaceAll(" ","").replaceAll("\r\n", "\n").split("\n"));
 						Iterator<String> it = urls.iterator();
 						while(it.hasNext()) {
 							String url = it.next();
@@ -369,7 +369,7 @@ public class ToolPanel extends JPanel {
 					@Override
 					protected Map doInBackground() throws Exception {
 						ArrayList<String> result = new ArrayList<String>();
-						List<String> urls = Arrays.asList(ConfigPanel.getLineConfig().getToolPanelText().replaceAll(" ","").replaceAll("\r\n", "\n").split("\n"));
+						List<String> urls = Arrays.asList(guiMain.getConfigPanel().getLineConfig().getToolPanelText().replaceAll(" ","").replaceAll("\r\n", "\n").split("\n"));
 						Iterator<String> it = urls.iterator();
 						while(it.hasNext()) {
 							String url = it.next();
@@ -401,7 +401,7 @@ public class ToolPanel extends JPanel {
 					@Override
 					protected Map doInBackground() throws Exception {
 						ArrayList<String> result = new ArrayList<String>();
-						List<String> urls = Arrays.asList(ConfigPanel.getLineConfig().getToolPanelText().replaceAll(" ","").replaceAll("\r\n", "\n").split("\n"));
+						List<String> urls = Arrays.asList(guiMain.getConfigPanel().getLineConfig().getToolPanelText().replaceAll(" ","").replaceAll("\r\n", "\n").split("\n"));
 						Iterator<String> it = urls.iterator();
 						while(it.hasNext()) {
 							String url = it.next();
@@ -434,7 +434,7 @@ public class ToolPanel extends JPanel {
 					@Override
 					protected Map doInBackground() throws Exception {
 						try {
-							List<String> urls = Arrays.asList(ConfigPanel.getLineConfig().getToolPanelText().replaceAll(" ","").replaceAll("\r\n", "\n").split("\n"));
+							List<String> urls = Arrays.asList(guiMain.getConfigPanel().getLineConfig().getToolPanelText().replaceAll(" ","").replaceAll("\r\n", "\n").split("\n"));
 							Iterator<String> it = urls.iterator();
 							while(it.hasNext()) {
 								String url = it.next();
@@ -469,7 +469,7 @@ public class ToolPanel extends JPanel {
 					@Override
 					protected Map doInBackground() throws Exception {
 						try {
-							List<String> domains = Arrays.asList(ConfigPanel.getLineConfig().getToolPanelText().replaceAll(" ","").replaceAll("\r\n", "\n").split("\n"));
+							List<String> domains = Arrays.asList(guiMain.getConfigPanel().getLineConfig().getToolPanelText().replaceAll(" ","").replaceAll("\r\n", "\n").split("\n"));
 							Iterator<String> it = domains.iterator();
 							while(it.hasNext()) {
 								String domain = it.next();
@@ -1038,7 +1038,7 @@ public class ToolPanel extends JPanel {
 		@Override
 		public void removeUpdate(DocumentEvent e) {
 			if (ConfigPanel.listenerIsOn) {
-				ConfigPanel.getLineConfig().setToolPanelText(inputTextArea.getText());
+				guiMain.getConfigPanel().getLineConfig().setToolPanelText(inputTextArea.getText());
 				inputTextAreaChanged = true;
 			}
 		}
@@ -1046,7 +1046,7 @@ public class ToolPanel extends JPanel {
 		@Override
 		public void insertUpdate(DocumentEvent e) {
 			if (ConfigPanel.listenerIsOn) {
-				ConfigPanel.getLineConfig().setToolPanelText(inputTextArea.getText());
+				guiMain.getConfigPanel().getLineConfig().setToolPanelText(inputTextArea.getText());
 				inputTextAreaChanged = true;
 			}
 		}
@@ -1054,7 +1054,7 @@ public class ToolPanel extends JPanel {
 		@Override
 		public void changedUpdate(DocumentEvent arg0) {
 			if (ConfigPanel.listenerIsOn) {
-				ConfigPanel.getLineConfig().setToolPanelText(inputTextArea.getText());
+				guiMain.getConfigPanel().getLineConfig().setToolPanelText(inputTextArea.getText());
 				inputTextAreaChanged = true;
 			}
 		}

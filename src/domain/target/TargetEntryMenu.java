@@ -98,7 +98,7 @@ public class TargetEntryMenu extends JPopupMenu {
 				for (int row:modelRows) {
 					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,0);
 					try {
-						Commons.browserOpen("https://"+rootDomain, ConfigPanel.getLineConfig().getBrowserPath());
+						Commons.browserOpen("https://"+rootDomain, guiMain.getConfigPanel().getLineConfig().getBrowserPath());
 					} catch (Exception e) {
 						e.printStackTrace();
 					}

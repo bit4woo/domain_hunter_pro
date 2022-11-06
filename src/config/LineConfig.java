@@ -261,7 +261,7 @@ public class LineConfig {
 
 	public String saveToDisk() {
 		try {
-			ConfigPanel.saveToConfigFromGUI();
+			gui.getConfigPanel().saveToConfigFromGUI();
 			this.setSearchHistory(History.getInstance());
 			this.setDbfilepath(gui.getCurrentDBFile().getAbsolutePath());
 		} catch (Exception e1) {
