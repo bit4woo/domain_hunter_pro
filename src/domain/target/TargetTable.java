@@ -23,12 +23,7 @@ public class TargetTable extends JTable{
 	private GUIMain guiMain;
 	
 	public TargetTable(GUIMain guiMain) {
-		this();
 		this.guiMain = guiMain;
-	}
-	
-	private TargetTable() {
-
 		try {
 			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
 			stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
@@ -107,13 +102,7 @@ public class TargetTable extends JTable{
 		setFillsViewportHeight(true);
 		setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
 	}
-	
-	public TargetTable(TargetTableModel targetModel) {
-		this();
-		this.setModel(targetModel);
-	}
-	
-	
+
 	public void tableHeaderLengthInit(){
 		Font f = this.getFont();
 		FontMetrics fm = this.getFontMetrics(f);
