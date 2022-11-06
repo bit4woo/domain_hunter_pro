@@ -1,29 +1,19 @@
 package domain.target;
 
-import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.Font;
-import java.awt.FontMetrics;
+import GUI.GUIMain;
+import burp.BurpExtender;
+import title.LineTableModel;
+
+import javax.swing.*;
+import javax.swing.border.LineBorder;
+import javax.swing.table.TableModel;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
-import javax.swing.SortOrder;
-import javax.swing.SwingUtilities;
-import javax.swing.border.LineBorder;
-import javax.swing.table.TableModel;
-
-import GUI.GUIMain;
-import burp.BurpExtender;
-import domain.DomainManager;
-import domain.DomainPanel;
-import title.IndexedHashMap;
-import title.LineTableModel;
 
 public class TargetTable extends JTable{
 
@@ -83,6 +73,23 @@ public class TargetTable extends JTable{
 							//https://stackoverflow.com/questions/8903040/right-click-mouselistener-on-whole-jtable-component
 							//new LineEntryMenu(_this).show(e.getComponent(), e.getX(), e.getY());
 						}
+					}
+				}
+			}
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				//双击进行google搜索、双击浏览器打开url、双击切换Check状态
+				if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2){//左键双击
+					int[] rows = SelectedRowsToModelRows(getSelectedRows());
+
+					int col = ((TargetTable) e.getSource()).columnAtPoint(e.getPoint()); // 获得列位置
+					int modelCol = TargetTable.this.convertColumnIndexToModel(col);
+
+					TargetEntry selecteEntry = getTargetModel().getTargetEntries().get(rows[0]);
+					if (modelCol == TargetTableModel.getTitletList().indexOf("Black")) {
+						selecteEntry.setBlack(!selecteEntry.isBlack());
+						guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(selecteEntry);
+						getTargetModel().fireTableRowsUpdated(rows[0], rows[0]);
 					}
 				}
 			}
