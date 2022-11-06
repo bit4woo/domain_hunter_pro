@@ -298,7 +298,7 @@ public class TitlePanel extends JPanel {
 
 		//clear tableModel
 		titleTableModel = new LineTableModel(guiMain);//clear
-
+		loadData(titleTableModel);
 		//转移以前手动保存的记录
 		transferManualSavedItems();
 
@@ -404,17 +404,21 @@ public class TitlePanel extends JPanel {
 		titleDao = new TitleDao(currentDBFile);
 		List<LineEntry> lines = titleDao.selectAllTitle();
 		titleTableModel = new LineTableModel(guiMain,lines);
+		loadData(titleTableModel);
+	}
+
+	private void loadData(LineTableModel titleTableModel){
+
 		titleTable.setLineTableModel(titleTableModel);
 		TableRowSorter<LineTableModel> tableRowSorter = new TableRowSorter<LineTableModel>(titleTableModel);
 		titleTable.setRowSorter(tableRowSorter);
-		int row = lines.size();
+		int row = titleTableModel.getLineEntries().size();
 		System.out.println(row+" title entries loaded from database file");
 		stdout.println(row+" title entries loaded from database file");
 		digStatus();
 		titleTable.search("");// hide checked items
 
 		try {
-
 			requestViewer = BurpExtender.getCallbacks().createMessageEditor(titleTable.getLineTableModel(), false);
 			responseViewer = BurpExtender.getCallbacks().createMessageEditor(titleTable.getLineTableModel(), false);
 			RequestPanel.addTab("Request", requestViewer.getComponent());
@@ -424,7 +428,6 @@ public class TitlePanel extends JPanel {
 			//e.printStackTrace();
 		}
 		titleTable.tableinit();
-
 	}
 
 

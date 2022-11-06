@@ -2,6 +2,7 @@ package title;
 
 import GUI.GUIMain;
 import burp.*;
+import dao.TitleDao;
 
 import javax.swing.table.AbstractTableModel;
 import java.io.PrintWriter;
@@ -17,6 +18,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	 * LineTableModel中数据如果类型不匹配，或者有其他问题，可能导致图形界面加载异常！
 	 */
 	private static final long serialVersionUID = 1L;
+	private final TitleDao titleDao;
 	private LineEntry currentlyDisplayedItem;
 	private IndexedHashMap<String,LineEntry> lineEntries =new IndexedHashMap<String,LineEntry>();
 
@@ -38,6 +40,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 
 	public LineTableModel(GUIMain guiMain){
 		this.guiMain = guiMain;
+		titleDao = new TitleDao(guiMain.getCurrentDBFile());
 		try{
 			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
 			stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
@@ -484,6 +487,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
 			String url = lineEntries.get(rows[i]).getUrl();
 			lineEntries.remove(rows[i]);
+			titleDao.deleteTitleByUrl(url);//写入数据库
 			stdout.println("!!! "+url+" deleted");
 		}
 		fireDeleted(rows);
@@ -498,6 +502,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			if (status.equalsIgnoreCase(LineEntry.CheckStatus_Checked)) {
 				checked.setTime(Commons.getNowTimeString());
 			}
+			titleDao.addOrUpdateTitle(checked);//写入数据库
 			//				lineEntries.remove(rows[i]);
 			//				lineEntries.add(rows[i], checked);
 			//				//https://stackoverflow.com/questions/4352885/how-do-i-update-the-element-at-a-certain-position-in-an-arraylist
@@ -517,6 +522,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			LineEntry checked = lineEntries.get(rows[i]);
 			if (assetType.equalsIgnoreCase(checked.getAssetType())) continue;
 			checked.setAssetType(assetType);
+			titleDao.addOrUpdateTitle(checked);//写入数据库
 			stdout.println(String.format("$$$ %s updated [AssetType-->%s]",checked.getUrl(),assetType));
 			//this.fireTableRowsUpdated(rows[i], rows[i]);
 		}
@@ -531,6 +537,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
 			LineEntry checked = lineEntries.get(rows[i]);
 			checked.addComment(commentAdd);
+			titleDao.addOrUpdateTitle(checked);//写入数据库
 			//				lineEntries.remove(rows[i]);
 			//				lineEntries.add(rows[i], checked);
 			//				//https://stackoverflow.com/questions/4352885/how-do-i-update-the-element-at-a-certain-position-in-an-arraylist
@@ -548,6 +555,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
 			LineEntry checked = lineEntries.get(rows[i]);
 			checked.freshASNInfo();
+			titleDao.addOrUpdateTitle(checked);//写入数据库
 			stdout.println("$$$ "+checked.getUrl()+"ASN Info updated");
 		}
 		fireUpdated(rows);
@@ -642,6 +650,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		lineEntries.put(key,lineEntry);
 		int index = lineEntries.IndexOfKey(key);
 		fireTableRowsInserted(index, index);
+		titleDao.addOrUpdateTitle(lineEntry);//写入数据库
 	}
 
 	/**
@@ -656,6 +665,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		lineEntries.put(key,lineEntry);
 		int index = lineEntries.IndexOfKey(key);
 		fireTableRowsInserted(index, index);
+		titleDao.addOrUpdateTitle(lineEntry);//写入数据库
 	}
 
 	public void addNewLineEntry(LineEntry lineEntry){
@@ -677,6 +687,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		}else {//新增
 			fireTableRowsInserted(index, index);
 		}
+		titleDao.addOrUpdateTitle(lineEntry);//写入数据库
 
 		//need to use row-1 when add setRowSorter to table. why??
 		//https://stackoverflow.com/questions/6165060/after-adding-a-tablerowsorter-adding-values-to-model-cause-java-lang-indexoutofb
@@ -754,8 +765,6 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		}
 		return result;
 	}
-
-
 
 	public void freshAllASNInfo(){
 		for (LineEntry entry : lineEntries.values()) {
