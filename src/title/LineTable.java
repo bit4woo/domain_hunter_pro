@@ -48,10 +48,9 @@ public class LineTable extends JTable
 	 *
 	 */
 	private static final long serialVersionUID = 1L;
-	private TableRowSorter<LineTableModel> tableRowSorter;//TableRowSorter vs. RowSorter
+	//private TableRowSorter<LineTableModel> tableRowSorter;//TableRowSorter vs. RowSorter
 
-	private IMessageEditor requestViewer;
-	private IMessageEditor responseViewer;
+
 	PrintWriter stdout;
 	PrintWriter stderr;
 	private LineTableModel lineTableModel;
@@ -64,7 +63,7 @@ public class LineTable extends JTable
 
 	@Override//参考javax.swing.JTable中的函数，每次都有主动进行转换
 	public Object getValueAt(int row, int column) {
-		return getModel().getValueAt(convertRowIndexToModel(row),
+		return getLineTableModel().getValueAt(convertRowIndexToModel(row),
 				convertColumnIndexToModel(column));
 	}
 
@@ -106,7 +105,7 @@ public class LineTable extends JTable
 
 		registerListeners();
 
-		tableAndDetailSplitPane = tableAndDetailPanel();
+		this.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);//配合横向滚动条
 	}
 
 	@Override
@@ -116,8 +115,8 @@ public class LineTable extends JTable
 		//LineEntry Entry = this.lineTableModel.getLineEntries().get(super.convertRowIndexToModel(row));
 		LineEntry Entry = this.getRowAt(row);
 
-		requestViewer.setMessage(Entry.getRequest(), true);
-		responseViewer.setMessage(Entry.getResponse(), false);
+		guiMain.getTitlePanel().getRequestViewer().setMessage(Entry.getRequest(), true);
+		guiMain.getTitlePanel().getResponseViewer().setMessage(Entry.getResponse(), false);
 		getLineTableModel().setCurrentlyDisplayedItem(Entry);
 		super.changeSelection(row, col, toggle, extend);
 	}
@@ -129,6 +128,7 @@ public class LineTable extends JTable
 	 * 数据加载过程中，控制监听器等。
 	 */
 	@Override
+	@Deprecated
 	public TableModel getModel(){
 		return super.getModel();
 	}
@@ -138,70 +138,28 @@ public class LineTable extends JTable
 	 * @param dataModel
 	 */
 	@Override
+	@Deprecated
 	public void setModel(TableModel dataModel) {
 		super.setModel(dataModel);
 	}
 
 	public LineTableModel getLineTableModel(){
-		return lineTableModel;
+		return (LineTableModel)super.getModel();
 	}
 
 	public void setLineTableModel(LineTableModel lineTableModel) {
-		this.lineTableModel = lineTableModel;//自己保存一份，避免调用getModel后进行类型转换失败。
-		setModel(lineTableModel);
+		//this.lineTableModel = lineTableModel;//自己保存一份，避免调用getModel后进行类型转换失败。
+		super.setModel(lineTableModel);
 	}
 
-	public TableRowSorter<LineTableModel> getTableRowSorter() {
-		return tableRowSorter;
-	}
-
-	public void setTableRowSorter(TableRowSorter<LineTableModel> tableRowSorter) {
-		this.tableRowSorter = tableRowSorter;
-	}
-
-	@Override
-	@Deprecated
-	public void setRowSorter(RowSorter<? extends TableModel> sorter) {
-		System.out.println("you called wrong method");
-	}
+//	@Override
+//	@Deprecated
+//	public void setRowSorter(RowSorter<? extends TableModel> sorter) {
+//		System.out.println("you called wrong method");
+//	}
 
 
-	public JSplitPane tableAndDetailPanel(){
-		JSplitPane splitPane = new JSplitPane();//table area + detail area
-		splitPane.setResizeWeight(0.5);
-		splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
-		//TitlePanel.add(splitPane, BorderLayout.CENTER); // getTitlePanel to get it
 
-		JScrollPane scrollPaneRequests = new JScrollPane(this,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);//table area
-		//允许横向滚动条
-		//scrollPaneRequests.setViewportView(titleTable);//titleTable should lay here.
-		splitPane.setLeftComponent(scrollPaneRequests);
-
-		JSplitPane RequestDetailPanel = new JSplitPane();//request and response
-		RequestDetailPanel.setResizeWeight(0.5);
-		splitPane.setRightComponent(RequestDetailPanel);
-
-		JTabbedPane RequestPanel = new JTabbedPane();
-		RequestDetailPanel.setLeftComponent(RequestPanel);
-
-		JTabbedPane ResponsePanel = new JTabbedPane();
-		RequestDetailPanel.setRightComponent(ResponsePanel);
-
-		try {
-			requestViewer = BurpExtender.getCallbacks().createMessageEditor(getLineTableModel(), false);
-			responseViewer = BurpExtender.getCallbacks().createMessageEditor(getLineTableModel(), false);
-			RequestPanel.addTab("Request", requestViewer.getComponent());
-			ResponsePanel.addTab("Response", responseViewer.getComponent());
-		} catch (Exception e) {
-			//捕获异常，以便程序以非burp插件运行时可以启动
-			//e.printStackTrace();
-		}
-
-		this.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);//配合横向滚动条
-
-		return splitPane;
-	}
 
 	public void tableinit(){
 		//Font f = new Font("Arial", Font.PLAIN, 12);
@@ -234,7 +192,6 @@ public class LineTable extends JTable
 
 			}
 		}
-		//this.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
 		this.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);//配合横向滚动条
 	}
 
@@ -339,7 +296,7 @@ public class LineTable extends JTable
 				}
 			}
 		};
-		tableRowSorter.setRowFilter(filter);
+		((TableRowSorter)LineTable.this.getRowSorter()).setRowFilter(filter);
 	}
 
 
@@ -413,7 +370,7 @@ public class LineTable extends JTable
 					} else{//LineTableModel.getTitletList().indexOf("CDN|CertInfo")
 						//String value = guiMain.getTitlePanel().getTitleTable().getValueAt(rows[0], col).toString();//rows[0]是转换过的，不能再转换
 						//调用的是原始Jtable中的getValueAt，它本质上也是调用model中的getValueAt，但是有一次转换的过程！！！
-						String value = getModel().getValueAt(rows[0],modelCol).toString();
+						String value = getLineTableModel().getValueAt(rows[0],modelCol).toString();
 						//调用的是我们自己实现的TableModel类中的getValueAt,相比Jtable类中的同名方法，就少了一次转换的过程！！！
 						//String CDNAndCertInfo = selecteEntry.getCDN();
 						SystemUtils.writeToClipboard(value);

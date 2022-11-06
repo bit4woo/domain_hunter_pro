@@ -416,7 +416,7 @@ public class DomainPanel extends JPanel {
 					@Override
 					protected Boolean doInBackground() throws Exception {
 						btnUpload.setEnabled(false);
-						String url = domainResult.uploadURL;
+						String url = guiMain.getConfigPanel().getLineConfig().getUploadUrl();
 						String host = new URL(url).getHost();
 						String token = ConfigPanel.textFieldUploadApiToken.getText().trim();
 						HashMap<String, String> headers = new HashMap<String, String>();
@@ -429,7 +429,7 @@ public class DomainPanel extends JPanel {
 								host.contains("vmp.sz.shopee")) {
 							return new VMP(guiMain).uploadAllVMPEntries(url, headers);
 						} else {//只上传域名信息
-							return VMP.upload(domainResult.uploadURL, headers, domainResult.ToJson());
+							return VMP.upload(url, headers, domainResult.ToJson());
 						}
 					}
 

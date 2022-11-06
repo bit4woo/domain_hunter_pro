@@ -27,7 +27,6 @@ import domain.target.TargetTableModel;
 	//DomainPanel.autoSave();
  */
 public class DomainManager {
-	public String uploadURL = "Input Upload URL Here";
 	public String summary = "";
 	public boolean autoAddRelatedToRoot = false;
 

@@ -14,6 +14,7 @@ import javax.swing.table.TableRowSorter;
 import GUI.GUIMain;
 import burp.BurpExtender;
 import burp.Commons;
+import burp.IMessageEditor;
 import burp.IPAddressUtils;
 import dao.TitleDao;
 import domain.DomainPanel;
@@ -34,6 +35,10 @@ public class TitlePanel extends JPanel {
 	private JRadioButton rdbtnCheckedItems;
 	private JRadioButton rdbtnMoreActionItems;
 	private SearchTextField textFieldSearch;
+
+	private IMessageEditor requestViewer;
+	private IMessageEditor responseViewer;
+	private JSplitPane detailPanel;
 
 	//add table and tablemodel to GUI
 	private LineTable titleTable;
@@ -117,6 +122,14 @@ public class TitlePanel extends JPanel {
 		this.rdbtnMoreActionItems = rdbtnMoreActionItems;
 	}
 
+	public IMessageEditor getRequestViewer() {
+		return requestViewer;
+	}
+
+	public IMessageEditor getResponseViewer() {
+		return responseViewer;
+	}
+
 	public ThreadGetTitleWithForceStop getThreadGetTitle() {
 		return threadGetTitle;
 	}
@@ -139,21 +152,22 @@ public class TitlePanel extends JPanel {
 		this.setLayout(new BorderLayout(0, 0));
 		this.add(createButtonPanel(), BorderLayout.NORTH);
 
-		/////////////////////////////////////////
-		//		JSplitPane TargetAndTitlePanel = new JSplitPane();//存放目标域名
-		//		TargetAndTitlePanel.setResizeWeight(0.2);
-		//		this.add(TargetAndTitlePanel,BorderLayout.CENTER);
-		//
-		//		JScrollPane TargetMapPane = new JScrollPane();
-		//		TargetMapPane.setPreferredSize(new Dimension(200, 200));
-		//		TargetAndTitlePanel.setLeftComponent(TargetMapPane);
-		//
-		//
-		//		titleTable = new LineTable(titleTableModel);
-		//		TargetAndTitlePanel.setRightComponent(titleTable.getTableAndDetailSplitPane());
+
 
 		titleTable = new LineTable(guiMain);
-		this.add(titleTable.getTableAndDetailSplitPane(),BorderLayout.CENTER);
+		detailPanel = DetailPanel();
+
+		JSplitPane splitPane = new JSplitPane();//table area + detail area
+		splitPane.setResizeWeight(0.5);
+		splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
+
+		JScrollPane scrollPaneRequests = new JScrollPane(titleTable,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);//table area
+
+		splitPane.setLeftComponent(scrollPaneRequests);
+		splitPane.setRightComponent(detailPanel);
+		this.add(splitPane,BorderLayout.CENTER);
+
 	}
 
 	public JPanel createButtonPanel() {
@@ -168,58 +182,6 @@ public class TitlePanel extends JPanel {
 		});
 		buttonPanel.add(btnAction);
 
-		/*
-		//通过tableModelListener实现自动保存后，无需这个模块了
-		JButton btnSaveState = new JButton("Save");
-		btnSaveState.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-					@Override
-					protected Map doInBackground() throws Exception {
-						btnSaveState.setEnabled(false);
-						btnSaveState.setEnabled(true);
-						return new HashMap<String, String>();
-						//no use ,the return.
-					}
-					@Override
-					protected void done() {
-						btnSaveState.setEnabled(true);
-					}
-				};
-				worker.execute();
-			}
-		});
-		btnSaveState.setToolTipText("Save Data To DataBase");
-		//buttonPanel.add(btnSaveState);
-
-
-		InputMap inputMap1 = btnSaveState.getInputMap(JButton.WHEN_IN_FOCUSED_WINDOW);
-		KeyStroke Save = KeyStroke.getKeyStroke(KeyEvent.VK_S,ActionEvent.CTRL_MASK); //Ctrl+S
-		inputMap1.put(Save, "Save");
-
-		btnSaveState.getActionMap().put("Save", new AbstractAction() {
-			public void actionPerformed(ActionEvent evt) {
-				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-					@Override
-					protected Map doInBackground() throws Exception {
-						btnSaveState.setEnabled(false);
-						//saveDBfileToExtension();
-						btnSaveState.setEnabled(true);
-						return new HashMap<String, String>();
-						//no use ,the return.
-					}
-					@Override
-					protected void done() {
-						btnSaveState.setEnabled(true);
-					}
-				};
-				worker.execute();
-			}
-		});
-		 */
-
-
-		
 		JButton buttonSearch = new JButton("Search");
 		textFieldSearch = new SearchTextField("",buttonSearch);
 		buttonPanel.add(textFieldSearch);
@@ -277,6 +239,30 @@ public class TitlePanel extends JPanel {
 		return buttonPanel;
 	}
 
+	public JSplitPane DetailPanel(){
+
+		JSplitPane RequestDetailPanel = new JSplitPane();//request and response
+		RequestDetailPanel.setResizeWeight(0.5);
+
+
+		JTabbedPane RequestPanel = new JTabbedPane();
+		RequestDetailPanel.setLeftComponent(RequestPanel);
+
+		JTabbedPane ResponsePanel = new JTabbedPane();
+		RequestDetailPanel.setRightComponent(ResponsePanel);
+
+		try {
+			requestViewer = BurpExtender.getCallbacks().createMessageEditor(titleTable.getLineTableModel(), false);
+			responseViewer = BurpExtender.getCallbacks().createMessageEditor(titleTable.getLineTableModel(), false);
+			RequestPanel.addTab("Request", requestViewer.getComponent());
+			ResponsePanel.addTab("Response", responseViewer.getComponent());
+		} catch (Exception e) {
+			//捕获异常，以便程序以非burp插件运行时可以启动
+			//e.printStackTrace();
+		}
+
+		return RequestDetailPanel;
+	}
 	/**
 	 * 转移手动保存的记录
 	 */
@@ -426,9 +412,9 @@ public class TitlePanel extends JPanel {
 		titleDao = new TitleDao(currentDBFile);
 		List<LineEntry> lines = titleDao.selectAllTitle();
 		titleTableModel = new LineTableModel(guiMain,lines);
-		titleTable.setModel(titleTableModel);
+		titleTable.setLineTableModel(titleTableModel);
 		TableRowSorter<LineTableModel> tableRowSorter = new TableRowSorter<LineTableModel>(titleTableModel);
-		titleTable.setTableRowSorter(tableRowSorter);
+		titleTable.setRowSorter(tableRowSorter);
 		int row = lines.size();
 		System.out.println(row+" title entries loaded from database file");
 		stdout.println(row+" title entries loaded from database file");

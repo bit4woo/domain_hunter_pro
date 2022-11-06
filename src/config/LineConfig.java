@@ -1,20 +1,20 @@
 package config;
 
-import GUI.GUIMain;
-import Tools.ToolPanel;
-import burp.BurpExtender;
-import burp.Commons;
-import burp.HelperPlus;
-import com.google.gson.Gson;
-import org.apache.commons.io.FileUtils;
-import title.LineEntry;
-import title.search.History;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.Set;
+
+import org.apache.commons.io.FileUtils;
+
+import com.alibaba.fastjson.JSON;
+
+import GUI.GUIMain;
+import burp.BurpExtender;
+import burp.Commons;
+import title.LineEntry;
+import title.search.History;
 
 public class LineConfig {
 	private static int MaximumEntries = 1000;//控制显示的条目数，减少内存占用
@@ -70,6 +70,10 @@ public class LineConfig {
 				}
 			}
 		}
+	}
+	
+	public static void main(String[] args) {
+		System.out.println(new LineConfig().ToJson());
 	}
 
 	/**
@@ -301,15 +305,15 @@ public class LineConfig {
 
 
 	public String ToJson() {
-		//return JSON.toJSONString(this);
+		return JSON.toJSONString(this);
 		//https://blog.csdn.net/qq_27093465/article/details/73277291
-		return new Gson().toJson(this);
+		//return new Gson().toJson(this);
 	}
 
 
 	public  static LineConfig FromJson(String instanceString) {// throws Exception {
-		//return JSON.parseObject(instanceString,LineConfig.class);
-		return new Gson().fromJson(instanceString, LineConfig.class);
+		return JSON.parseObject(instanceString,LineConfig.class);
+		//return new Gson().fromJson(instanceString, LineConfig.class);
 	}
 
 	/*
