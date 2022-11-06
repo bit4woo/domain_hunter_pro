@@ -234,16 +234,16 @@ public class DomainPanel extends JPanel {
 		});
 		HeaderPanel.add(btnSaveDomainOnly);
 
-		/*
+		
 		JButton test = new JButton("test");
 		test.setToolTipText("Only save data in Domain Panel");
 		test.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				GUI.getProjectMenu().changeTabName("");
+				guiMain.stopLiveCapture();
 			}});
 		HeaderPanel.add(test);
 
-		 */
+		
 
 		/*
 		btnBrute = new JButton("Brute");

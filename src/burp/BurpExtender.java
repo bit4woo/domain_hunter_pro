@@ -4,10 +4,6 @@ import java.awt.Component;
 import java.io.PrintWriter;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
@@ -17,12 +13,8 @@ import org.apache.logging.log4j.Logger;
 
 import GUI.GUIMain;
 import GUI.LineEntryMenuForBurp;
-import GUI.ProjectMenu;
 import bsh.This;
 import config.ConfigPanel;
-import domain.DomainPanel;
-import domain.DomainProducer;
-import title.TitlePanel;
 
 public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListener, IContextMenuFactory, IHttpListener {
     /**
@@ -41,7 +33,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 
     private GUIMain gui;
 
-    private DomainProducer liveAnalysisTread;
+    
 
 
     public static PrintWriter getStdout() {
@@ -85,15 +77,6 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
     }
 
 
-    public DomainProducer getLiveAnalysisTread() {
-        return liveAnalysisTread;
-    }
-
-    public void setLiveAnalysisTread(DomainProducer liveAnalysisTread) {
-        this.liveAnalysisTread = liveAnalysisTread;
-    }
-
-
     @Deprecated
     public void saveDBfilepathToExtension() {
         //to save domain result to extensionSetting
@@ -122,17 +105,6 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
         return dbfilepath;
     }
 
-    public void startLiveCapture() {
-        liveAnalysisTread = new DomainProducer(gui, gui.getLiveinputQueue(), 9999);//必须是9999，才能保证流量进程不退出。
-        liveAnalysisTread.start();
-    }
-
-    public void stopLiveCapture() {
-        if (null != liveAnalysisTread) {
-            liveAnalysisTread.interrupt();
-            //9999线程只能这样结束，不受stopflag的影响
-        }
-    }
 
     //插件加载过程中需要做的事
     @Override
@@ -157,16 +129,16 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
                 //如果这里报java.lang.NullPointerException: Component cannot be null 错误，需要排查contentPane的初始化是否正确。
                 String projectConfigFile = RecentModel.fetchRecent();//返回值可能为null
                 gui.getConfigPanel().loadConfigToGUI(projectConfigFile);//包含db文件的加载
-                startLiveCapture();
+                gui.startLiveCapture();
             }
         });
     }
 
     @Override
     public void extensionUnloaded() {
+        gui.stopLiveCapture();
         try {//避免这里错误导致保存逻辑的失效
             gui.getProjectMenu().remove();
-            stopLiveCapture();
             if (gui.getTitlePanel().getThreadGetTitle() != null) {
                 gui.getTitlePanel().getThreadGetTitle().interrupt();//maybe null
                 gui.getInputQueue().clear();

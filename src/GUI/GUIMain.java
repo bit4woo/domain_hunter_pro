@@ -25,6 +25,7 @@ import dao.DomainDao;
 import dao.TargetDao;
 import dao.TitleDao;
 import domain.DomainPanel;
+import domain.DomainProducer;
 import title.TitlePanel;
 
 
@@ -51,6 +52,8 @@ public class GUIMain extends JFrame {
 	//use to store messageInfo of proxy live
 	private BlockingQueue<IHttpRequestResponse> inputQueue = new LinkedBlockingQueue<IHttpRequestResponse>();
 	//temp variable to identify checked https用于记录已经做过HTTPS证书信息获取的httpService
+	
+	private DomainProducer liveAnalysisTread;
 		
 	public DomainPanel getDomainPanel() {
 		return domainPanel;
@@ -113,6 +116,26 @@ public class GUIMain extends JFrame {
 		this.inputQueue = inputQueue;
 	}
 	
+    public DomainProducer getLiveAnalysisTread() {
+        return liveAnalysisTread;
+    }
+
+    public void setLiveAnalysisTread(DomainProducer liveAnalysisTread) {
+        this.liveAnalysisTread = liveAnalysisTread;
+    }
+    
+    public void startLiveCapture() {
+        liveAnalysisTread = new DomainProducer(this, liveinputQueue, 9999);//必须是9999，才能保证流量进程不退出。
+        liveAnalysisTread.start();
+    }
+
+    public void stopLiveCapture() {
+        if (null != liveAnalysisTread) {
+            liveAnalysisTread.interrupt();
+            //9999线程只能这样结束，不受stopflag的影响
+        }
+    }
+	
 	public GUIMain(IBurpExtender burp) {//构造函数
 		this();
 		this.burp = burp;
@@ -145,7 +168,6 @@ public class GUIMain extends JFrame {
 		
 		setProjectMenu(new ProjectMenu(this));
 		getProjectMenu().Add();
-		
 	}
 
 	/**
@@ -202,7 +224,7 @@ public class GUIMain extends JFrame {
 			}
 			
 			domainPanel.LoadTargetsData(currentDBFile.toString());
-			domainPanel.LoadDomainData(currentDBFile.toString());//TODO
+			domainPanel.LoadDomainData(currentDBFile.toString());
 			titlePanel.loadData(currentDBFile.toString());
 			//configPanel.loadData(currentDBFile);
 
