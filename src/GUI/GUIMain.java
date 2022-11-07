@@ -137,13 +137,7 @@ public class GUIMain extends JFrame {
     }
 	
 	public GUIMain(IBurpExtender burp) {//构造函数
-		this();
 		this.burp = burp;
-	}
-	/**
-	 * Create the frame.
-	 */
-	public GUIMain() {//构造函数
 		try{
 			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
 			stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
@@ -301,7 +295,7 @@ public class GUIMain extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					GUIMain frame = new GUIMain();
+					GUIMain frame = new GUIMain(null);
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();

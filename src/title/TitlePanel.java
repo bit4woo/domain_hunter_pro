@@ -245,13 +245,21 @@ public class TitlePanel extends JPanel {
 		JSplitPane RequestDetailPanel = new JSplitPane();//request and response
 		RequestDetailPanel.setResizeWeight(0.5);
 
-
 		RequestPanel = new JTabbedPane();
 		RequestDetailPanel.setLeftComponent(RequestPanel);
 
 		ResponsePanel = new JTabbedPane();
 		RequestDetailPanel.setRightComponent(ResponsePanel);
 
+		try {
+			requestViewer = BurpExtender.getCallbacks().createMessageEditor(titleTable.getLineTableModel(), false);
+			responseViewer = BurpExtender.getCallbacks().createMessageEditor(titleTable.getLineTableModel(), false);
+			RequestPanel.addTab("Request", requestViewer.getComponent());
+			ResponsePanel.addTab("Response", responseViewer.getComponent());
+		} catch (Exception e) {
+			//捕获异常，以便程序以非burp插件运行时可以启动
+			//e.printStackTrace();
+		}
 
 		return RequestDetailPanel;
 	}
@@ -417,18 +425,6 @@ public class TitlePanel extends JPanel {
 		stdout.println(row+" title entries loaded from database file");
 		digStatus();
 		titleTable.search("");// hide checked items
-
-		try {
-			requestViewer = BurpExtender.getCallbacks().createMessageEditor(titleTable.getLineTableModel(), false);
-			responseViewer = BurpExtender.getCallbacks().createMessageEditor(titleTable.getLineTableModel(), false);
-			RequestPanel.removeAll();
-			ResponsePanel.removeAll();
-			RequestPanel.addTab("Request", requestViewer.getComponent());
-			ResponsePanel.addTab("Response", responseViewer.getComponent());
-		} catch (Exception e) {
-			//捕获异常，以便程序以非burp插件运行时可以启动
-			//e.printStackTrace();
-		}
 		titleTable.tableinit();
 	}
 

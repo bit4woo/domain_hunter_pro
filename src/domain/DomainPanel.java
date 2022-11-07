@@ -198,13 +198,10 @@ public class DomainPanel extends JPanel {
 			guiMain.getProjectMenu().openDb();
 		}
 	}
-	
-	public DomainPanel(GUIMain guiMain) {//构造函数
-		this();
-		this.guiMain = guiMain;
-	}
 
-	private DomainPanel() {//构造函数
+
+	private DomainPanel(GUIMain guiMain) {//构造函数
+		this.guiMain = guiMain;
 		this.setBorder(new EmptyBorder(5, 5, 5, 5));
 		this.setLayout(new BorderLayout(0, 0));
 
