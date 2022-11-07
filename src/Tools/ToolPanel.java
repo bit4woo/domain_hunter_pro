@@ -103,7 +103,7 @@ public class ToolPanel extends JPanel {
         });
     }
 
-    private ToolPanel(GUIMain guiMain) {
+    public ToolPanel(GUIMain guiMain) {
         this.guiMain = guiMain;
         setForeground(Color.DARK_GRAY);//构造函数
         this.setBorder(new EmptyBorder(5, 5, 5, 5));

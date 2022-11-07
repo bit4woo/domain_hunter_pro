@@ -276,7 +276,7 @@ public class LineConfig {
 		try {
 			File localFile = new File(localdir+File.separator+gui.getCurrentDBFile().getName()+".config");
 			FileUtils.write(localFile, this.ToJson());
-			BurpExtender.getStdout().println("Saving Tool Panel Config To Disk");
+			BurpExtender.getStdout().println("Tool Panel Config Saved To Disk!");
 			return localFile.toString();
 		} catch (IOException e) {
 			e.printStackTrace();

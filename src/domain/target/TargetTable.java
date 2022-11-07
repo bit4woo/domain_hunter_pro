@@ -83,7 +83,7 @@ public class TargetTable extends JTable{
 					TargetEntry selecteEntry = getTargetModel().getTargetEntries().get(rows[0]);
 					if (modelCol == TargetTableModel.getTitletList().indexOf("Black")) {
 						selecteEntry.setBlack(!selecteEntry.isBlack());
-						guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(selecteEntry);//TODO guiMain ==null
+						guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(selecteEntry);
 						getTargetModel().fireTableRowsUpdated(rows[0], rows[0]);
 					}
 				}

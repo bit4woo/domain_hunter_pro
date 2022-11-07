@@ -200,7 +200,7 @@ public class DomainPanel extends JPanel {
 	}
 
 
-	private DomainPanel(GUIMain guiMain) {//构造函数
+	public DomainPanel(GUIMain guiMain) {//构造函数
 		this.guiMain = guiMain;
 		this.setBorder(new EmptyBorder(5, 5, 5, 5));
 		this.setLayout(new BorderLayout(0, 0));
