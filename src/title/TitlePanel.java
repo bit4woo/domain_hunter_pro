@@ -407,7 +407,7 @@ public class TitlePanel extends JPanel {
 
 	private void loadData(LineTableModel titleTableModel){
 
-		titleTable.setLineTableModel(titleTableModel);
+		titleTable.setLineTableModel(titleTableModel);//TODO IndexOutOfBoundsException size为0，为什么会越界
 		TableRowSorter<LineTableModel> tableRowSorter = new TableRowSorter<LineTableModel>(titleTableModel);
 		titleTable.setRowSorter(tableRowSorter);
 		int row = titleTableModel.getLineEntries().size();

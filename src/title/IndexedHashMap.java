@@ -89,6 +89,9 @@ public class IndexedHashMap<K,V> extends ConcurrentHashMap<K,V> {
     }
 
     private V getValueAtIndex(int i){
+        if (i >= Index.size()) {
+            throw new ArrayIndexOutOfBoundsException(i + " >= " + Index.size());
+        }
         return (V) super.get(Index.get(i));
     }
 

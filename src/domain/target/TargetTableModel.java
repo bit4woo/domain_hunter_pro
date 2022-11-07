@@ -105,6 +105,9 @@ public class TargetTableModel extends AbstractTableModel {
 
 	@Override
 	public Object getValueAt(int rowIndex, int columnIndex) {
+		if (rowIndex>=targetEntries.size()){
+			return "xxxxx";//TODO test
+		}
 		TargetEntry entry = targetEntries.get(rowIndex);
 		if (entry == null) return "";
 		if (columnIndex == titletList.indexOf("Domain/Subnet/IP")) {
