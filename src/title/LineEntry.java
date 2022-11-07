@@ -8,6 +8,7 @@ import com.google.common.hash.HashCode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.*;
@@ -351,6 +352,8 @@ public class LineEntry {
 				System.out.println("正将编码从"+originalCharSet+"转换为"+systemCharSet+"[windows系统编码]");
 				byte[] newResponse = new String(response,originalCharSet).getBytes(systemCharSet);
 				return new String(newResponse,systemCharSet);
+			} catch (UnsupportedEncodingException e){
+				//DO Nothing
 			} catch (Exception e) {
 				e.printStackTrace(BurpExtender.getStderr());
 				log.error(e);
