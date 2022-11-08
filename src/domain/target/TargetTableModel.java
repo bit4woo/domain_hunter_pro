@@ -40,7 +40,7 @@ public class TargetTableModel extends AbstractTableModel {
 	private static final transient Logger log = LogManager.getLogger(TargetTableModel.class);
 
 	//为了实现动态表结构
-	public static List<String> getTitletList() {
+	public static List<String> getTitleList() {
 		return titletList;
 	}
 	

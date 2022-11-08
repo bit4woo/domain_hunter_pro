@@ -127,7 +127,14 @@ public class ConfigPanel extends JPanel{
 
 	public ConfigPanel(GUIMain gui) {
 		this.gui = gui;
-		setLayout(new GridLayout(20, 2));
+		GridBagLayout gbl_fourFourthPanel = new GridBagLayout();
+		gbl_fourFourthPanel.columnWidths = new int[]{215, 215, 0};
+		gbl_fourFourthPanel.rowHeights = new int[]{27, 0, 0, 0, 27, 0, 0, 0, 0, 0, 27, 27, 27, 27, 0, 0, 0, 0};
+		gbl_fourFourthPanel.columnWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
+		gbl_fourFourthPanel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		setLayout(gbl_fourFourthPanel);
+		setLayout(gbl_fourFourthPanel);
+		//setLayout(new GridLayout(20, 2));
 		JLabel lblNewLabel = new JLabel("Browser Path:");
 		
 		BrowserPath = new JTextField();
@@ -254,8 +261,8 @@ public class ConfigPanel extends JPanel{
 		ignoreHTTPS = new JRadioButton("Ignore HTTPS if HTTP is OK || Ignore HTTP if HTTPS is OK");
 		ignoreHTTPS.setSelected(true);
 		
-		add(label_2, new MyGridBagLayout(20,1));
-		add(ignoreHTTPS, new MyGridBagLayout(20,2));
+		add(label_2, new MyGridBagLayout(11,1));
+		add(ignoreHTTPS, new MyGridBagLayout(11,2));
 
 		
 		JLabel label_3 = new JLabel("");
@@ -263,8 +270,8 @@ public class ConfigPanel extends JPanel{
 		ignoreHTTPStaus500 = new JRadioButton("Ignore items which Status >= 500");
 		ignoreHTTPStaus500.setSelected(true);
 		
-		add(label_3, new MyGridBagLayout(21,1));
-		add(ignoreHTTPStaus500, new MyGridBagLayout(21,2));
+		add(label_3, new MyGridBagLayout(12,1));
+		add(ignoreHTTPStaus500, new MyGridBagLayout(12,2));
 
 		
 		JLabel label_4 = new JLabel("");
@@ -272,16 +279,16 @@ public class ConfigPanel extends JPanel{
 		ignoreHTTPStaus400 = new JRadioButton("Ignore http Status 400(The plain HTTP request was sent to HTTPS port)");
 		ignoreHTTPStaus400.setSelected(true);
 		
-		add(label_4, new MyGridBagLayout(22,1));
-		add(ignoreHTTPStaus400, new MyGridBagLayout(22,2));
+		add(label_4, new MyGridBagLayout(13,1));
+		add(ignoreHTTPStaus400, new MyGridBagLayout(13,2));
 
 		JLabel label_5 = new JLabel("");
 		
 		ignoreWrongCAHost = new JRadioButton("Ignore Host that IP Address and Certificate Authority not match");
 		ignoreWrongCAHost.setSelected(false);
 
-		add(label_5, new MyGridBagLayout(23,1));
-		add(ignoreWrongCAHost, new MyGridBagLayout(23,2));
+		add(label_5, new MyGridBagLayout(14,1));
+		add(ignoreWrongCAHost, new MyGridBagLayout(14,2));
 
 		
 		rdbtnSaveTrafficTo = new JRadioButton("Save traffic to Elastic");
@@ -289,8 +296,8 @@ public class ConfigPanel extends JPanel{
 		
 		JLabel label_6 = new JLabel("");
 		
-		add(label_6, new MyGridBagLayout(24,1));
-		add(rdbtnSaveTrafficTo, new MyGridBagLayout(24,2));
+		add(label_6, new MyGridBagLayout(15,1));
+		add(rdbtnSaveTrafficTo, new MyGridBagLayout(15,2));
 		
 		
 	}

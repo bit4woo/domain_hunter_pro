@@ -81,7 +81,7 @@ public class TargetTable extends JTable{
 					int modelCol = TargetTable.this.convertColumnIndexToModel(col);
 
 					TargetEntry selecteEntry = getTargetModel().getTargetEntries().get(rows[0]);
-					if (modelCol == TargetTableModel.getTitletList().indexOf("Black")) {
+					if (modelCol == TargetTableModel.getTitleList().indexOf("Black")) {
 						selecteEntry.setBlack(!selecteEntry.isBlack());
 						guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(selecteEntry);
 						getTargetModel().fireTableRowsUpdated(rows[0], rows[0]);
@@ -111,7 +111,7 @@ public class TargetTable extends JTable{
 		Map<String,Integer> preferredWidths = new HashMap<String,Integer>();
 		preferredWidths.put("Comments",20);
 		preferredWidths.put("Black"," Black".length());
-		for(String header:LineTableModel.getTitletList()){
+		for(String header:LineTableModel.getTitleList()){
 			try{//避免动态删除表字段时，出错
 				int multiNumber = preferredWidths.get(header);
 				this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex(header)).setPreferredWidth(width*multiNumber);

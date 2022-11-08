@@ -28,13 +28,13 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 
 	private static final String[] standardTitles = new String[] {
 			"#", "URL", "Status", "Length", "Title","Comments","Server","isChecked",
-			"AssetType","CheckDoneTime","IP", "CNAME|CertInfo","ASNInfo","IconHash"};
-	private static List<String> titletList = new ArrayList<>(Arrays.asList(standardTitles));
+			"AssetType","Source","CheckDoneTime","IP", "CNAME|CertInfo","ASNInfo","IconHash"};
+	private static List<String> titleList = new ArrayList<>(Arrays.asList(standardTitles));
 	//为了实现动态表结构
-	public static List<String> getTitletList() {
+	public static List<String> getTitleList() {
 		//titletList.remove("Server");
 		//titletList.remove("Time");
-		return titletList;
+		return titleList;
 	}
 
 
@@ -86,25 +86,22 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	@Override
 	public int getColumnCount()
 	{
-		return titletList.size();//the one is the request String + response String,for search
+		return titleList.size();//the one is the request String + response String,for search
 	}
 
 	@Override
 	public Class<?> getColumnClass(int columnIndex)
 	{
-		if (columnIndex == titletList.indexOf("#")) {
+		if (columnIndex == titleList.indexOf("#")) {
 			return Integer.class;//id
 		}
-		if (columnIndex == titletList.indexOf("Status")) {
+		if (columnIndex == titleList.indexOf("Status")) {
 			return Integer.class;//id
 		}
-		if (columnIndex == titletList.indexOf("Length")) {
+		if (columnIndex == titleList.indexOf("Length")) {
 			return Integer.class;//id
 		}
-		if (columnIndex == titletList.indexOf("isNew")) {
-			return boolean.class;//id
-		}
-		if (columnIndex == titletList.indexOf("isChecked")) {
+		if (columnIndex == titleList.indexOf("isChecked")) {
 			return String.class;//id
 		}
 		return String.class;
@@ -119,8 +116,8 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	//define header of table???
 	@Override
 	public String getColumnName(int columnIndex) {
-		if (columnIndex >= 0 && columnIndex <= titletList.size()) {
-			return titletList.get(columnIndex);
+		if (columnIndex >= 0 && columnIndex <= titleList.size()) {
+			return titleList.get(columnIndex);
 		}else {
 			return "";
 		}
@@ -128,7 +125,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 
 	@Override
 	public boolean isCellEditable(int rowIndex, int columnIndex) {
-		if (titletList.get(columnIndex).equals("Comments")) {//可以编辑comment
+		if (titleList.get(columnIndex).equals("Comments")) {//可以编辑comment
 			return true;
 		}else {
 			return false;
@@ -142,47 +139,50 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		LineEntry entry = lineEntries.get(rowIndex);
 		//entry.parse();---
 		//"#", "URL", "Status", "Length", "Server","Title", "IP", "CDN", "Comments","Time","isChecked"};
-		if (columnIndex == titletList.indexOf("#")) {
+		if (columnIndex == titleList.indexOf("#")) {
 			return rowIndex;
 		}
-		if (columnIndex == titletList.indexOf("URL")){
+		if (columnIndex == titleList.indexOf("URL")){
 			return entry.getUrl();
 		}
-		if (columnIndex == titletList.indexOf("Status")){
+		if (columnIndex == titleList.indexOf("Status")){
 			return entry.getStatuscode();
 		}
-		if (columnIndex == titletList.indexOf("Length")){
+		if (columnIndex == titleList.indexOf("Length")){
 			return entry.getContentLength();
 		}
-		if (columnIndex == titletList.indexOf("Server")){
+		if (columnIndex == titleList.indexOf("Server")){
 			return entry.getWebcontainer();
 		}
-		if (columnIndex == titletList.indexOf("Title")){
+		if (columnIndex == titleList.indexOf("Title")){
 			return entry.getTitle();
 		}
-		if (columnIndex == titletList.indexOf("IP")){
+		if (columnIndex == titleList.indexOf("IP")){
 			return String.join(",", entry.getIPSet());
 		}
-		if (columnIndex == titletList.indexOf("CNAME|CertInfo")){
+		if (columnIndex == titleList.indexOf("CNAME|CertInfo")){
 			return entry.fetchCNAMEAndCertInfo();
 		}
-		if (columnIndex == titletList.indexOf("Comments")){
+		if (columnIndex == titleList.indexOf("Comments")){
 			return String.join(",", entry.getComments());
 		}
-		if (columnIndex == titletList.indexOf("CheckDoneTime")){
+		if (columnIndex == titleList.indexOf("CheckDoneTime")){
 			return entry.getTime();
 		}
-		if (columnIndex == titletList.indexOf("isChecked")){
+		if (columnIndex == titleList.indexOf("isChecked")){
 			return entry.getCheckStatus();
 		}
-		if (columnIndex == titletList.indexOf("AssetType")){
+		if (columnIndex == titleList.indexOf("AssetType")){
 			return entry.getAssetType();
 		}
-		if (columnIndex == titletList.indexOf("IconHash")){
+		if (columnIndex == titleList.indexOf("IconHash")){
 			return entry.getIcon_hash();
 		}
-		if (columnIndex == titletList.indexOf("ASNInfo")){
+		if (columnIndex == titleList.indexOf("ASNInfo")){
 			return entry.getASNInfo();
+		}
+		if (columnIndex == titleList.indexOf("Source")) {
+			return entry.getEntrySource();
 		}
 		return "";
 	}
@@ -190,7 +190,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	@Override
 	public void setValueAt(Object value, int row, int col) {
 		LineEntry entry = lineEntries.get(row);
-		if (col == titletList.indexOf("Comments")){
+		if (col == titleList.indexOf("Comments")){
 			String valueStr = ((String) value).trim();
 			entry.setComments(new HashSet<>(Arrays.asList(valueStr.split(","))));
 			fireTableCellUpdated(row, col);
