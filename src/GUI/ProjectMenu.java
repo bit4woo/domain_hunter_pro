@@ -86,7 +86,7 @@ public class ProjectMenu extends JMenu{
 				TitleDao titledao = new TitleDao(file.getAbsolutePath());
 				List<LineEntry> titles = titledao.selectAllTitle();
 				for (LineEntry entry:titles) {
-					gui.getTitlePanel().getTitleTableModel().addNewLineEntry(entry);
+					gui.getTitlePanel().getTitleTable().getLineTableModel().addNewLineEntry(entry);
 				}
 				System.out.println("Import finished");
 				BurpExtender.getStdout().println("Import finished");

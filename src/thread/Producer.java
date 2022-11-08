@@ -99,7 +99,7 @@ public class Producer extends Thread {//Producer do
 					}
 					
 					item.setEntrySource(type);
-					guiMain.getTitlePanel().getTitleTableModel().addNewLineEntry(item);
+					guiMain.getTitlePanel().getTitleTable().getLineTableModel().addNewLineEntry(item);
 
 					//stdout.println(new LineEntry(messageinfo,true).ToJson());
 

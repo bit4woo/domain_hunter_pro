@@ -151,7 +151,7 @@ public class LineEntryMenuForBurp{
 						if (messages== null || messages.length == 0 ||messages[0] ==null) {
 							return;
 						}
-						LineEntry entry = titlepanel.getTitleTableModel().findLineEntryByMessage(messages[0]);
+						LineEntry entry = titlepanel.getTitleTable().getLineTableModel().findLineEntryByMessage(messages[0]);
 						
 						if (entry != null) {
 							entry.setAssetType(e.getActionCommand());
@@ -305,7 +305,7 @@ public class LineEntryMenuForBurp{
 					String host = message.getHttpService().getHost();
 					int port = message.getHttpService().getPort();
 
-					List<LineEntry> entries = titlepanel.getTitleTableModel().findLineEntriesByHostAndPort(host, port);
+					List<LineEntry> entries = titlepanel.getTitleTable().getLineTableModel().findLineEntriesByHostAndPort(host, port);
 
 					if (entries.size() == 0) {
 						//Do Nothing
@@ -352,7 +352,7 @@ public class LineEntryMenuForBurp{
 			//还是要简化逻辑，如果找不到就不执行！
 			try{
 				IHttpRequestResponse[] messages = invocation.getSelectedMessages();
-				List<LineEntry> entries = titlepanel.getTitleTableModel().findLineEntriesByHostAndPort(messages[0].getHttpService().getHost()
+				List<LineEntry> entries = titlepanel.getTitleTable().getLineTableModel().findLineEntriesByHostAndPort(messages[0].getHttpService().getHost()
 						,messages[0].getHttpService().getPort());
 
 				if (entries.size() > 0) {
@@ -382,15 +382,15 @@ public class LineEntryMenuForBurp{
 				Getter getter = new Getter(helpers);
 				String host = getter.getHost(messages[0]);
 				int port = messages[0].getHttpService().getPort();
-				List<LineEntry> entries = titlepanel.getTitleTableModel().findLineEntriesByHostAndPort(host,port);
+				List<LineEntry> entries = titlepanel.getTitleTable().getLineTableModel().findLineEntriesByHostAndPort(host,port);
 
 				if (entries.size() > 0) {
 					for (LineEntry entry:entries) {
 						entry.setCheckStatus(LineEntry.CheckStatus_Checked);
 						entry.setTime(Commons.getNowTimeString());
-						int index = titlepanel.getTitleTableModel().getLineEntries().IndexOfKey(entry.getUrl());
+						int index = titlepanel.getTitleTable().getLineTableModel().getLineEntries().IndexOfKey(entry.getUrl());
 						stdout.println("$$$ "+entry.getUrl()+"status has been set to "+LineEntry.CheckStatus_Checked);
-						titlepanel.getTitleTableModel().fireTableRowsUpdated(index,index);//主动通知更新，否则不会写入数据库!!!
+						titlepanel.getTitleTable().getLineTableModel().fireTableRowsUpdated(index,index);//主动通知更新，否则不会写入数据库!!!
 						//这里不用一次fire多个行，否则还得去查找index,会花费更多时间。
 					}
 				}
@@ -428,11 +428,11 @@ public class LineEntryMenuForBurp{
 					IHttpRequestResponse[] messages = invocation.getSelectedMessages();
 					Getter getter = new Getter(helpers);
 					URL fullurl = getter.getFullURL(messages[0]);
-					LineEntry entry = titlepanel.getTitleTableModel().findLineEntry(fullurl.toString());
+					LineEntry entry = titlepanel.getTitleTable().getLineTableModel().findLineEntry(fullurl.toString());
 					if (entry == null) {
 						URL shortUrl = getter.getShortURL(messages[0]);
 						if(!fullurl.equals(shortUrl)) {
-							entry = titlepanel.getTitleTableModel().findLineEntry(shortUrl.toString());
+							entry = titlepanel.getTitleTable().getLineTableModel().findLineEntry(shortUrl.toString());
 						}
 					}
 
@@ -478,10 +478,10 @@ public class LineEntryMenuForBurp{
 	 * @param entry
 	 */
 	public void addCommentForLine(LineEntry entry,String comment) {
-		int index = titlepanel.getTitleTableModel().getLineEntries().IndexOfKey(entry.getUrl());
+		int index = titlepanel.getTitleTable().getLineTableModel().getLineEntries().IndexOfKey(entry.getUrl());
 		if (comment != null) {
 			entry.addComment(comment);
-			titlepanel.getTitleTableModel().fireTableRowsUpdated(index,index);//主动通知更新，否则不会写入数据库!!!
+			titlepanel.getTitleTable().getLineTableModel().fireTableRowsUpdated(index,index);//主动通知更新，否则不会写入数据库!!!
 		}
 	}
 
@@ -491,10 +491,10 @@ public class LineEntryMenuForBurp{
 	 */
 	public void addCommentForLines(List<LineEntry> entries,String comment) {
 		for (LineEntry entry:entries){
-			int index = titlepanel.getTitleTableModel().getLineEntries().IndexOfKey(entry.getUrl());
+			int index = titlepanel.getTitleTable().getLineTableModel().getLineEntries().IndexOfKey(entry.getUrl());
 			if (comment != null) {
 				entry.addComment(comment);
-				titlepanel.getTitleTableModel().fireTableRowsUpdated(index,index);//主动通知更新，否则不会写入数据库!!!
+				titlepanel.getTitleTable().getLineTableModel().fireTableRowsUpdated(index,index);//主动通知更新，否则不会写入数据库!!!
 			}
 		}
 	}
@@ -534,13 +534,13 @@ public class LineEntryMenuForBurp{
 
 			//当时为啥要用这个key来存储新增的Request？URL地址一样而数据包不一样的情况？
 			//String hashKey = HashCode.fromBytes(message.getRequest()).toString();
-			if (titlepanel.getTitleTableModel() ==null) {
+			if (titlepanel.getTitleTable().getLineTableModel() ==null) {
 				stderr.println("Title Table Model is Null, Maybe no database file loaded yet.");
 				return;
 			}
 			Getter getter = new Getter(helpers);
 			URL fullurl = getter.getFullURL(message);
-			LineEntry entry = titlepanel.getTitleTableModel().findLineEntry(fullurl.toString());
+			LineEntry entry = titlepanel.getTitleTable().getLineTableModel().findLineEntry(fullurl.toString());
 
 			LineEntry newEntry = new LineEntry(message);
 			newEntry.setEntrySource(LineEntry.Source_Manual_Saved);
@@ -549,13 +549,13 @@ public class LineEntryMenuForBurp{
 			if (entry != null) {//存在相同URL的记录
 				int user_input = JOptionPane.showConfirmDialog(null, "Do you want to overwrite?","Item already exist",JOptionPane.YES_NO_CANCEL_OPTION);
 				if (JOptionPane.YES_OPTION == user_input) {
-					titlepanel.getTitleTableModel().addNewLineEntry(newEntry); //add request，覆盖
+					titlepanel.getTitleTable().getLineTableModel().addNewLineEntry(newEntry); //add request，覆盖
 				}else if(JOptionPane.NO_OPTION == user_input){//不覆盖,修改后新增
 					newEntry.setUrl(entry.getUrl()+"#"+System.currentTimeMillis());
-					titlepanel.getTitleTableModel().addNewLineEntry(newEntry); //add request，修改URL(加#时间戳)后新增
+					titlepanel.getTitleTable().getLineTableModel().addNewLineEntry(newEntry); //add request，修改URL(加#时间戳)后新增
 				}//cancel,do nothing
 			}else {//不存在相同记录，直接新增
-				titlepanel.getTitleTableModel().addNewLineEntry(newEntry); //add request，新增
+				titlepanel.getTitleTable().getLineTableModel().addNewLineEntry(newEntry); //add request，新增
 			}
 
 			String host = message.getHttpService().getHost();
@@ -567,7 +567,7 @@ public class LineEntryMenuForBurp{
 		if (user_input != JOptionPane.YES_OPTION && user_input != JOptionPane.NO_OPTION){
 			return;
 		}
-		if (titlepanel.getTitleTableModel() ==null) {
+		if (titlepanel.getTitleTable().getLineTableModel() ==null) {
 			stderr.println("Title Table Model is Null, Maybe no database file loaded yet.");
 			return;
 		}
@@ -577,7 +577,7 @@ public class LineEntryMenuForBurp{
 
 			Getter getter = new Getter(helpers);
 			URL fullurl = getter.getFullURL(message);
-			LineEntry entry = titlepanel.getTitleTableModel().findLineEntry(fullurl.toString());
+			LineEntry entry = titlepanel.getTitleTable().getLineTableModel().findLineEntry(fullurl.toString());
 
 			LineEntry newEntry = new LineEntry(message);
 			newEntry.setEntrySource(LineEntry.Source_Manual_Saved);
@@ -585,13 +585,13 @@ public class LineEntryMenuForBurp{
 
 			if (entry != null) {//存在相同URL的记录
 				if (JOptionPane.YES_OPTION == user_input) {
-					titlepanel.getTitleTableModel().addNewLineEntry(newEntry); //add request，覆盖
+					titlepanel.getTitleTable().getLineTableModel().addNewLineEntry(newEntry); //add request，覆盖
 				}else {//不覆盖,修改后新增
 					newEntry.setUrl(entry.getUrl()+"#"+System.currentTimeMillis());
-					titlepanel.getTitleTableModel().addNewLineEntry(newEntry); //add request，修改URL(加#时间戳)后新增
+					titlepanel.getTitleTable().getLineTableModel().addNewLineEntry(newEntry); //add request，修改URL(加#时间戳)后新增
 				}//cancel,do nothing
 			}else {//不存在相同记录，直接新增
-				titlepanel.getTitleTableModel().addNewLineEntry(newEntry); //add request，新增
+				titlepanel.getTitleTable().getLineTableModel().addNewLineEntry(newEntry); //add request，新增
 			}
 
 			String host = message.getHttpService().getHost();

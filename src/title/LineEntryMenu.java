@@ -423,7 +423,7 @@ public class LineEntryMenu extends JPopupMenu {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				try{
-					HashSet<String> domains = titlepanel.getTitleTableModel().getDomainsForBypassCheck();
+					HashSet<String> domains = titlepanel.getTitleTable().getLineTableModel().getDomainsForBypassCheck();
 					String textUrls = String.join(System.lineSeparator(), domains);
 
 					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -536,7 +536,7 @@ public class LineEntryMenu extends JPopupMenu {
 		JMenuItem checkingItem = new JMenuItem(new AbstractAction("Checking") {//checking
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				titlepanel.getTitleTableModel().updateRowsStatus(modleRows,LineEntry.CheckStatus_Checking);
+				titlepanel.getTitleTable().getLineTableModel().updateRowsStatus(modleRows,LineEntry.CheckStatus_Checking);
 				java.util.List<String> urls = lineTable.getLineTableModel().getURLs(modleRows);
 				IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
 				for(String url:urls) {
@@ -554,7 +554,7 @@ public class LineEntryMenu extends JPopupMenu {
 		JMenuItem moreActionItem = new JMenuItem(new AbstractAction("Need More Action") {//checking
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				titlepanel.getTitleTableModel().updateRowsStatus(modleRows,LineEntry.CheckStatus_MoreAction);
+				titlepanel.getTitleTable().getLineTableModel().updateRowsStatus(modleRows,LineEntry.CheckStatus_MoreAction);
 				java.util.List<String> urls = lineTable.getLineTableModel().getURLs(modleRows);
 				IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
 				for(String url:urls) {
@@ -572,7 +572,7 @@ public class LineEntryMenu extends JPopupMenu {
 		JMenuItem checkedItem = new JMenuItem(new AbstractAction("Check Done") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				titlepanel.getTitleTableModel().updateRowsStatus(modleRows,LineEntry.CheckStatus_Checked);
+				titlepanel.getTitleTable().getLineTableModel().updateRowsStatus(modleRows,LineEntry.CheckStatus_Checked);
 				//				if (BurpExtender.rdbtnHideCheckedItems.isSelected()) {//实现自动隐藏，为了避免误操作，不启用
 				//					String keyword = BurpExtender.textFieldSearch.getText().trim();
 				//					lineTable.search(keyword);
@@ -593,14 +593,14 @@ public class LineEntryMenu extends JPopupMenu {
 				while(Comments.trim().equals("")){
 					Comments = JOptionPane.showInputDialog("Comments", null).trim();
 				}
-				titlepanel.getTitleTableModel().updateComments(modleRows,Comments);
+				titlepanel.getTitleTable().getLineTableModel().updateComments(modleRows,Comments);
 			}
 		});
 
 		JMenuItem batchFreshASNInfoItem = new JMenuItem(new AbstractAction("Fresh ASN Info") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				titlepanel.getTitleTableModel().freshASNInfo(modleRows);
+				titlepanel.getTitleTable().getLineTableModel().freshASNInfo(modleRows);
 			}
 		});
 
@@ -613,7 +613,7 @@ public class LineEntryMenu extends JPopupMenu {
 				String alias = JOptionPane.showInputDialog("Input Alias",asnEntry.getAsname_long());
 				asnEntry.setAlias(alias);
 				ASNQuery.saveRecentToFile();
-				titlepanel.getTitleTableModel().freshASNInfo(modleRows);
+				titlepanel.getTitleTable().getLineTableModel().freshASNInfo(modleRows);
 			}
 		});
 

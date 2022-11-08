@@ -272,7 +272,7 @@ public class GUIMain extends JFrame {
 					return false;
 				}else {
 					TitleDao titleDao = new TitleDao(dbFilePath.toString());
-					boolean titleSaved  = titleDao.addOrUpdateTitles(getTitlePanel().getTitleTableModel().getLineEntries());
+					boolean titleSaved  = titleDao.addOrUpdateTitles(getTitlePanel().getTitleTable().getLineTableModel().getLineEntries());
 					if (targetSaved && domainSaved && titleSaved){
 						stdout.println("Save Domain And Title Success! "+ Commons.getNowTimeString());
 						return true;

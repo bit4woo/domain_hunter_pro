@@ -24,7 +24,7 @@ public class VMP {
 	public Collection<VMPEntry> getAllVmpEntry() {
 		HashMap<String,VMPEntry> result = new HashMap<String,VMPEntry>();//使用hashmap实现去重
 
-		Collection<LineEntry> titleEntries = guiMain.getTitlePanel().getTitleTableModel().getLineEntries().values();
+		Collection<LineEntry> titleEntries = guiMain.getTitlePanel().getTitleTable().getLineTableModel().getLineEntries().values();
 		for (LineEntry entry:titleEntries) {
 			String url = entry.getUrl();
 			String host = entry.getHost();

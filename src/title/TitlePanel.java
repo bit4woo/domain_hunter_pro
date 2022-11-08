@@ -53,7 +53,6 @@ public class TitlePanel extends JPanel {
 
 	//add table and tablemodel to GUI
 	private LineTable titleTable;
-	private LineTableModel titleTableModel;
 	private TitleDao titleDao;
 	PrintWriter stdout;
 	PrintWriter stderr;
@@ -76,10 +75,6 @@ public class TitlePanel extends JPanel {
 
 	public LineTable getTitleTable() {
 		return titleTable;
-	}
-
-	public LineTableModel getTitleTableModel() {
-		return titleTableModel;
 	}
 
 	public IndexedHashMap<String,LineEntry> getBackupLineEntries() {
@@ -275,7 +270,7 @@ public class TitlePanel extends JPanel {
 		}
 		for (LineEntry entry:BackupLineEntries.values()) {
 			if (entry.getEntrySource().equalsIgnoreCase(LineEntry.Source_Manual_Saved)) {
-				titleTableModel.addNewLineEntry(entry);
+				titleTable.getLineTableModel().addNewLineEntry(entry);
 			}
 		}
 	}
@@ -320,10 +315,10 @@ public class TitlePanel extends JPanel {
 			return;
 		}
 		//backup to history
-		BackupLineEntries = titleTableModel.getLineEntries();
+		BackupLineEntries = titleTable.getLineTableModel().getLineEntries();
 
 		//clear tableModel
-		titleTableModel = new LineTableModel(guiMain);//clear
+		LineTableModel titleTableModel = new LineTableModel(guiMain);//clear
 		loadData(titleTableModel);
 		//转移以前手动保存的记录
 		transferManualSavedItems();
@@ -341,7 +336,7 @@ public class TitlePanel extends JPanel {
 
 		HashMap<String,String> extendIPs = new HashMap<String,String>();//新建一个对象，直接赋值后的删除操作，实质是对domainResult的操作。
 
-		Set<String> extendIPSet = titleTableModel.GetExtendIPSet();
+		Set<String> extendIPSet = titleTable.getLineTableModel().GetExtendIPSet();
 		stdout.println(extendIPSet.size()+" targets to request");
 		stdout.println(extendIPSet.size()+" extend IP Address founded"+extendIPSet);
 		if (extendIPSet.size() <= 0) return;
@@ -374,7 +369,7 @@ public class TitlePanel extends JPanel {
 		newDomains.addAll(guiMain.getDomainPanel().getDomainResult().getSpecialPortTargets());
 		newDomains.addAll(guiMain.getDomainPanel().getDomainResult().getIPSetOfCert());
 
-		Set<String> hostsInTitle = titleTableModel.GetHostsWithSpecialPort();
+		Set<String> hostsInTitle = titleTable.getLineTableModel().GetHostsWithSpecialPort();
 		newDomains.removeAll(hostsInTitle);
 
 		//remove domains in black list
@@ -400,7 +395,7 @@ public class TitlePanel extends JPanel {
 		//stdout.println(" "+isCurrent+justPulic);
 		Set<String> subnets;
 		if (isCurrent) {//获取的是现有可成功连接的IP集合+用户指定的IP网段集合
-			subnets = titleTableModel.GetSubnets();
+			subnets = titleTable.getLineTableModel().GetSubnets();
 		}else {//重新解析所有域名的IP
 			ThreadGetSubnet thread = new ThreadGetSubnet(guiMain.getDomainPanel().getDomainResult().getSubDomainSet());
 			thread.start();
@@ -439,15 +434,16 @@ public class TitlePanel extends JPanel {
 	public void loadData(String currentDBFile) {
 		titleDao = new TitleDao(currentDBFile);
 		List<LineEntry> lines = titleDao.selectAllTitle();
-		titleTableModel = new LineTableModel(guiMain,lines);
+		LineTableModel titleTableModel = new LineTableModel(guiMain, lines);
 		loadData(titleTableModel);
 	}
 
 	private void loadData(LineTableModel titleTableModel){
 
-		titleTable.setLineTableModel(titleTableModel);//TODO IndexOutOfBoundsException size为0，为什么会越界
+		titleTable.setModel(titleTableModel);//TODO IndexOutOfBoundsException size为0，为什么会越界
 		TableRowSorter<LineTableModel> tableRowSorter = new TableRowSorter<LineTableModel>(titleTableModel);
 		titleTable.setRowSorter(tableRowSorter);
+
 		int row = titleTableModel.getLineEntries().size();
 		System.out.println(row+" title entries loaded from database file");
 		stdout.println(row+" title entries loaded from database file");
@@ -470,7 +466,7 @@ public class TitlePanel extends JPanel {
 
 
 	public void digStatus() {
-		String status = titleTableModel.getStatusSummary();
+		String status = titleTable.getLineTableModel().getStatusSummary();
 		lblSummaryOfTitle.setText(status);
 	}
 

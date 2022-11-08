@@ -197,7 +197,7 @@ public class GetTitleMenu extends JPopupMenu {
 								ASNQuery.batchQueryFromApi(partition);//接口有限制，请求过快，过频繁会被封。查网段是不错的选择
 							}
 							 */
-							guiMain.getTitlePanel().getTitleTableModel().freshAllASNInfo();
+							guiMain.getTitlePanel().getTitleTable().getLineTableModel().freshAllASNInfo();
 						} catch (Exception e) {
 							e.printStackTrace();
 						}

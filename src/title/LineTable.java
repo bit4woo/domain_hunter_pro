@@ -93,20 +93,15 @@ public class LineTable extends JTable
 		// show the log entry for the selected row
 		//LineEntry Entry = this.lineTableModel.getLineEntries().get(super.convertRowIndexToModel(row));
 		LineEntry Entry = this.getRowAt(row);
-
+		getLineTableModel().setCurrentlyDisplayedItem(Entry);
 		guiMain.getTitlePanel().getRequestViewer().setMessage(Entry.getRequest(), true);
 		guiMain.getTitlePanel().getResponseViewer().setMessage(Entry.getResponse(), false);
-		getLineTableModel().setCurrentlyDisplayedItem(Entry);
+
 		super.changeSelection(row, col, toggle, extend);
 	}
 
 	public LineTableModel getLineTableModel(){
-		return (LineTableModel)super.getModel();
-	}
-
-	public void setLineTableModel(LineTableModel lineTableModel) {
-		//this.lineTableModel = lineTableModel;//自己保存一份，避免调用getModel后进行类型转换失败。
-		super.setModel(lineTableModel);
+		return (LineTableModel)getModel();
 	}
 
 	public void tableinit(){

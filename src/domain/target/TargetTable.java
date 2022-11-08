@@ -24,7 +24,6 @@ import title.LineTableModel;
 
 public class TargetTable extends JTable{
 
-	private TargetTableModel targetModel;
 	private PrintWriter stderr;
 	private PrintWriter stdout;
 	private GUIMain guiMain;
@@ -142,34 +141,9 @@ public class TargetTable extends JTable{
 	 * setModel和getModel是JTable本来就实现了的函数。但是其中Model的类型是DefaultTableModel,
 	 * DefaultTableModel extends AbstractTableModel。而我们自己实现的model虽然也是继承于AbstractTableModel，
 	 * 但是其中有一些自己实现的方法，想要方便地进行其中方法的调用，就不能使用原本的setModel和getModel方法。
+	 * @return
 	 */
-	//@Override
-	public TargetTableModel getModel() {
-		return this.targetModel;
-	}
-
-	/**
-	 * JTable已经实现的方法，会被已有逻辑调用。
-	 * 不对其进行修改，自己的项目代码中也不要调用这个方法！！！
-	 * 
-	 */
-	@Override
-	public void setModel(TableModel model) {
-		super.setModel(model);
-		//父类的setModel函数包含了显示Table Header的逻辑 tableChanged(new TableModelEvent(dataModel, TableModelEvent.HEADER_ROW));
-	}
-
-	/**
-	 * 自己实现的targetModel的getter和setter，用于自己调用其中函数时，避免对象转换的问题。
-	 * 通过getModel、setModel方法进行对象转换，会失败！
-	 * @param targetModel
-	 */
-	public void setTargetModel(TargetTableModel targetModel) {
-		this.targetModel = targetModel;
-		setModel(this.targetModel);//没有这个行代码，就数据就不会显示！
-	}
-
 	public TargetTableModel getTargetModel() {
-		return getModel();
+		return (TargetTableModel)getModel();
 	}
 }
