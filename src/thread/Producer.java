@@ -118,13 +118,14 @@ public class Producer extends Thread {//Producer do
 		if (HistoryLines == null) return null;
 		LineEntry found = HistoryLines.get(url);
 		if (found != null) {
-			HistoryLines.replace(url,null);//不使用remove和put操作，避免//ConcurrentModificationException问题
-			//因为这2个操作都会让map的长度发生变化，从而导致问题
+			//HistoryLines.remove(url,null);
+			//当对象是HashMap时不使用remove和put操作，避免ConcurrentModificationException问题，因为这2个操作都会让map的长度发生变化，从而导致问题
+			//但是当线程对象是ConcurrentHashMap时，可以直接remove。
+			//但是为了效率考虑不进行删除操，以前为什么要替换成null？？？忘记了
 			return found;
 		}
 
 		//根据host进行查找的逻辑，不会导致手动保存的条目被替换为null，因为手动保存的条目IP列表为空
-		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
 		for (LineEntry line:HistoryLines.values()) {
 			if (line== null) {
 				continue;
@@ -136,7 +137,7 @@ public class Producer extends Thread {//Producer do
 				lineHost.add(line.getHost());
 				if (lineHost.contains(host)) {
 					//HistoryLines.remove(line.getUrl());//如果有相同URL的记录，就删除这个记录。//ConcurrentModificationException
-					HistoryLines.replace(url,null);
+					//HistoryLines.replace(url,null);
 					return line;
 				}
 			}catch (Exception e){

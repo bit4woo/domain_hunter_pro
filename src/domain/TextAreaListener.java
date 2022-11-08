@@ -23,28 +23,34 @@ public class TextAreaListener implements DocumentListener {
 		this.TextAreaPanel = panel;
 	}
 
-	public void saveDomainDataToDB(){
+	/**
+	 * 当UI中的数据发生变化时,需要同步到数据模型、并写入数据库
+	 */
+	public void saveToDBAndSyncModel(){
 		if (domainPanel.isListenerIsOn()){
 			DomainDao dao = new DomainDao(domainPanel.getGuiMain().currentDBFile);
 			Set<String> content = Commons.getSetFromTextArea(TextAreaPanel.getTextArea());
 			TextAreaType type = TextAreaPanel.getTextAreaType();
+			domainPanel.getDomainResult().fillContentByType(type,content);
 			dao.createOrUpdateByType(content, type);
+
 		}
 	}
 
 	@Override
 	public void removeUpdate(DocumentEvent e) {
-		saveDomainDataToDB();
+		saveToDBAndSyncModel();
+
 	}
 
 	@Override
 	public void insertUpdate(DocumentEvent e) {
-		saveDomainDataToDB();
+		saveToDBAndSyncModel();
 	}
 
 	@Override
 	public void changedUpdate(DocumentEvent arg0) {
-		saveDomainDataToDB();
+		saveToDBAndSyncModel();
 	}
 }
 
