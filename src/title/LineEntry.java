@@ -45,7 +45,7 @@ public class LineEntry {
 	public static final String EntryType_DNS = "DNS";
 
 	//记录的来源
-	public static final String Source_Sub_domain = "subdomain"; //来自subdomain
+	public static final String Source_Certain = "certain"; //确定属于目标范围的:子域名\指定的网段\确定属于网段的IP地址\根据证书信息确定属于目标的IP。
 	public static final String Source_Custom_Input = "custom"; //来自用户自定义输入
 	public static final String Source_Subnet_Extend = "extend"; //来自网段扩展汇算
 	public static final String Source_Manual_Saved = "saved"; //来自用户手动保存

@@ -2,7 +2,9 @@ package thread;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -13,7 +15,7 @@ import burp.IBurpExtenderCallbacks;
 import burp.IExtensionHelpers;
 
 public class ThreadGetTitleWithForceStop extends Thread{
-	private Set<String> domains;
+	private HashMap<String,String> domains;
 	private List<Producer> plist;
 
 	private static IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();//静态变量，burp插件的逻辑中，是可以保证它被初始化的。;
@@ -25,7 +27,7 @@ public class ThreadGetTitleWithForceStop extends Thread{
 	
 	
 
-	public ThreadGetTitleWithForceStop(GUIMain guiMain,Set<String> domains,int threadNumber) {
+	public ThreadGetTitleWithForceStop(GUIMain guiMain,HashMap<String,String> domains,int threadNumber) {
 		this.guiMain = guiMain;
 		this.domains = domains;
 		this.threadNumber = threadNumber;
@@ -35,8 +37,8 @@ public class ThreadGetTitleWithForceStop extends Thread{
 	public void run(){
 		stdout.println(String.format("~~~~~~~~~~~~~use %s threads~~~~~~~~~~~~~",threadNumber));
 		stdout.println("~~~~~~~~~~~~~Start threading Get Title~~~~~~~~~~~~~ total task number: "+domains.size());
-		BlockingQueue<String> domainQueue = new LinkedBlockingQueue<String>();//use to store domains
-		domainQueue.addAll(domains);
+		BlockingQueue<Map.Entry<String,String>> domainQueue = new LinkedBlockingQueue<Map.Entry<String,String>>();//use to store domains
+		domainQueue.addAll(domains.entrySet());
 
 		plist = new ArrayList<Producer>();
 

@@ -3,6 +3,7 @@ package thread;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 
@@ -28,7 +29,7 @@ import title.TempLineEntry;
  */
 
 public class Producer extends Thread {//Producer do
-	private final BlockingQueue<String> domainQueue;//use to store domains
+	private final BlockingQueue<Map.Entry<String,String>> domainQueue;//use to store domains
 	private volatile boolean stopflag = false;
 
 	private static IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();//静态变量，burp插件的逻辑中，是可以保证它被初始化的。;
@@ -37,7 +38,7 @@ public class Producer extends Thread {//Producer do
 	public IExtensionHelpers helpers = callbacks.getHelpers();
 	private GUIMain guiMain;
 
-	public Producer(GUIMain guiMain,BlockingQueue<String> domainQueue,int threadNo) {
+	public Producer(GUIMain guiMain,BlockingQueue<Map.Entry<String,String>> domainQueue,int threadNo) {
 		this.guiMain = guiMain;
 		this.domainQueue = domainQueue;
 		stopflag= false;
@@ -65,7 +66,9 @@ public class Producer extends Thread {//Producer do
 					break;
 				}
 
-				String host = domainQueue.take();
+				Map.Entry<String,String> entry = domainQueue.take();
+				String host = entry.getKey();
+				String type = entry.getValue();
 				int leftTaskNum = domainQueue.size();
 
 				stdout.print(String.format("%s tasks left ",leftTaskNum));
@@ -94,7 +97,8 @@ public class Producer extends Thread {//Producer do
 							}
 						}
 					}
-
+					
+					item.setEntrySource(type);
 					guiMain.getTitlePanel().getTitleTableModel().addNewLineEntry(item);
 
 					//stdout.println(new LineEntry(messageinfo,true).ToJson());

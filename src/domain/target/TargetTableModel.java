@@ -32,7 +32,7 @@ public class TargetTableModel extends AbstractTableModel {
 	private GUIMain guiMain;
 
 	private static final transient String[] standardTitles = new String[] {
-			"Domain/Subnet/IP", "Keyword", "Comment","Black"};
+			"Domain/Subnet", "Keyword", "Comment","Black"};
 	private static transient List<String> titletList = new ArrayList<>(Arrays.asList(standardTitles));
 
 	private static final transient Logger log = LogManager.getLogger(TargetTableModel.class);
@@ -108,7 +108,7 @@ public class TargetTableModel extends AbstractTableModel {
 		}
 		TargetEntry entry = targetEntries.get(rowIndex);
 		if (entry == null) return "";
-		if (columnIndex == titletList.indexOf("Domain/Subnet/IP")) {
+		if (columnIndex == titletList.indexOf("Domain/Subnet")) {
 			return entry.getTarget();
 		}
 		if (columnIndex == titletList.indexOf("Keyword")) {

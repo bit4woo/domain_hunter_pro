@@ -7,6 +7,7 @@ import java.awt.event.ActionListener;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -278,6 +279,14 @@ public class TitlePanel extends JPanel {
 			}
 		}
 	}
+	
+	public static void AddWithSoureType(HashMap<String,String> domains,Set<String> input,String type) {
+		if (input != null && domains != null) {
+			for (String in:input) {
+				domains.put(in, type);
+			}
+		}
+	}
 
 	/**
 	 *
@@ -285,18 +294,27 @@ public class TitlePanel extends JPanel {
 	 */
 	public void getAllTitle(){
 		if (!stopGetTitleThread(true)){//其他get title线程未停止
+			stdout.println("still have get title thread is running, will do nothing.");
 			return;
 		}
 		guiMain.getDomainPanel().backupDB();
 
-		Set<String> domains = new HashSet<>();//新建一个对象，直接赋值后的删除操作，实质是对domainResult的操作。
-
-		//将新发现的域名也移动到子域名集合中，以便跑一次全量。 ---DomainConsumer.QueueToResult()中的逻辑已经保证了SubDomainSet一直是最全的。
-		domains.addAll(guiMain.getDomainPanel().getDomainResult().getSubDomainSet());
-		domains.addAll(guiMain.getDomainPanel().fetchTargetModel().fetchTargetIPSet());//确定的IP网段，用户自己输入的
-		domains.addAll(guiMain.getDomainPanel().getDomainResult().getSpecialPortTargets());//特殊端口目标
-		//remove domains in black list that is not our target
-		//domains.removeAll(DomainPanel.getDomainResult().fetchNotTargetIPList());//无需移除，会标记出来的。
+		Set<String> targetsToReq = new HashSet<String>();
+		targetsToReq.addAll(guiMain.getDomainPanel().getDomainResult().getSubDomainSet());
+		targetsToReq.addAll(guiMain.getDomainPanel().fetchTargetModel().fetchTargetIPSet());
+		targetsToReq.addAll(guiMain.getDomainPanel().getDomainResult().getIPSetOfCert());
+		targetsToReq.removeAll(guiMain.getDomainPanel().getDomainResult().getNotTargetIPSet());
+		
+		HashMap<String,String> domains = new HashMap<String,String>();//新建一个对象，直接赋值后的删除操作，实质是对domainResult的操作。
+		AddWithSoureType(domains,targetsToReq,LineEntry.Source_Certain);
+		
+		targetsToReq = new HashSet<String>();
+		targetsToReq.addAll(guiMain.getDomainPanel().getDomainResult().getSpecialPortTargets());
+		targetsToReq.removeAll(guiMain.getDomainPanel().getDomainResult().getNotTargetIPSet());
+		AddWithSoureType(domains,targetsToReq,LineEntry.Source_Custom_Input);
+		
+		stdout.println(domains.size()+" targets to request");
+		if (domains.size() <= 0) return;
 		tempConfig = new GetTitleTempConfig(domains.size());
 		if (tempConfig.getThreadNumber() <=0) {
 			return;
@@ -321,16 +339,21 @@ public class TitlePanel extends JPanel {
 		}
 		guiMain.getDomainPanel().backupDB();
 
+		HashMap<String,String> extendIPs = new HashMap<String,String>();//新建一个对象，直接赋值后的删除操作，实质是对domainResult的操作。
+
 		Set<String> extendIPSet = titleTableModel.GetExtendIPSet();
+		stdout.println(extendIPSet.size()+" targets to request");
 		stdout.println(extendIPSet.size()+" extend IP Address founded"+extendIPSet);
+		if (extendIPSet.size() <= 0) return;
+
+		AddWithSoureType(extendIPs,extendIPSet,LineEntry.Source_Subnet_Extend);
 		
 		tempConfig = new GetTitleTempConfig(extendIPSet.size());
 		if (tempConfig.getThreadNumber() <=0) {
 			return;
 		}
 
-
-		setThreadGetTitle(new ThreadGetTitleWithForceStop(guiMain,extendIPSet,tempConfig.getThreadNumber()));
+		setThreadGetTitle(new ThreadGetTitleWithForceStop(guiMain,extendIPs,tempConfig.getThreadNumber()));
 		getThreadGetTitle().start();
 
 	}
@@ -346,24 +369,29 @@ public class TitlePanel extends JPanel {
 		guiMain.getDomainPanel().backupDB();
 
 		Set<String> newDomains = new HashSet<>(guiMain.getDomainPanel().getDomainResult().getSubDomainSet());//新建一个对象，直接赋值后的删除操作，实质是对domainResult的操作。
-		Set<String> targetIPSet = new HashSet<>(guiMain.getDomainPanel().getTargetTable().getTargetModel().fetchTargetIPSet());
-		Set<String> newDomainsWithPort = new HashSet<>(guiMain.getDomainPanel().getDomainResult().getSpecialPortTargets());
 
-		newDomains.addAll(targetIPSet);
-		newDomains.addAll(newDomainsWithPort);
+		newDomains.addAll(guiMain.getDomainPanel().getTargetTable().getTargetModel().fetchTargetIPSet());
+		newDomains.addAll(guiMain.getDomainPanel().getDomainResult().getSpecialPortTargets());
+		newDomains.addAll(guiMain.getDomainPanel().getDomainResult().getIPSetOfCert());
 
 		Set<String> hostsInTitle = titleTableModel.GetHostsWithSpecialPort();
 		newDomains.removeAll(hostsInTitle);
 
 		//remove domains in black list
 		newDomains.removeAll(guiMain.getDomainPanel().getDomainResult().getNotTargetIPSet());
+		stdout.println(newDomains.size()+" targets to request");
+		
+		if (newDomains.size() <= 0) return;
 		tempConfig = new GetTitleTempConfig(newDomains.size());
 		if (tempConfig.getThreadNumber() <=0) {
 			return;
 		}
 
+		HashMap<String,String> newDomainsMap = new HashMap<String,String>();//新建一个对象，直接赋值后的删除操作，实质是对domainResult的操作。
 
-		setThreadGetTitle(new ThreadGetTitleWithForceStop(guiMain,newDomains,tempConfig.getThreadNumber()));
+		AddWithSoureType(newDomainsMap,newDomains,LineEntry.Source_Certain);
+		
+		setThreadGetTitle(new ThreadGetTitleWithForceStop(guiMain,newDomainsMap,tempConfig.getThreadNumber()));
 		getThreadGetTitle().start();
 	}
 

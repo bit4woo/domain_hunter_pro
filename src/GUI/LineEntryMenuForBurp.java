@@ -534,7 +534,10 @@ public class LineEntryMenuForBurp{
 
 			//当时为啥要用这个key来存储新增的Request？URL地址一样而数据包不一样的情况？
 			//String hashKey = HashCode.fromBytes(message.getRequest()).toString();
-
+			if (titlepanel.getTitleTableModel() ==null) {
+				stderr.println("Title Table Model is Null, Maybe no database file loaded yet.");
+				return;
+			}
 			Getter getter = new Getter(helpers);
 			URL fullurl = getter.getFullURL(message);
 			LineEntry entry = titlepanel.getTitleTableModel().findLineEntry(fullurl.toString());
@@ -562,6 +565,10 @@ public class LineEntryMenuForBurp{
 	public void addRequests(IHttpRequestResponse[] messages) {
 		int user_input = JOptionPane.showConfirmDialog(null, "Do you want to overwrite if item already exist?","Chose Your Action",JOptionPane.YES_NO_CANCEL_OPTION);
 		if (user_input != JOptionPane.YES_OPTION && user_input != JOptionPane.NO_OPTION){
+			return;
+		}
+		if (titlepanel.getTitleTableModel() ==null) {
+			stderr.println("Title Table Model is Null, Maybe no database file loaded yet.");
 			return;
 		}
 		for(IHttpRequestResponse message:messages) {
