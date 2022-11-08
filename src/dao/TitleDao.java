@@ -10,8 +10,6 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 
-import com.alibaba.fastjson.JSON;
-
 import burp.SetAndStr;
 import title.IndexedHashMap;
 import title.LineEntry;

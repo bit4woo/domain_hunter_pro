@@ -18,15 +18,12 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 
-import GUI.GUIMain;
 import Tools.DomainComparator;
 import Tools.LengthComparator;
 import burp.BurpExtender;
 import burp.Commons;
 import burp.DomainNameUtils;
 import burp.IPAddressUtils;
-import config.ConfigPanel;
-import title.TitlePanel;
 import title.search.SearchDork;
 
 public class TextAreaMenu extends JPopupMenu {

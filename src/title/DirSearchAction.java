@@ -6,7 +6,6 @@ import java.awt.event.ActionListener;
 import GUI.GUIMain;
 import burp.BurpExtender;
 import burp.SystemUtils;
-import config.ConfigPanel;
 
 class DirSearchAction implements ActionListener{
 

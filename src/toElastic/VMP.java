@@ -8,7 +8,6 @@ import com.github.kevinsawicki.http.HttpRequest;
 import GUI.GUIMain;
 import burp.IPAddressUtils;
 import title.LineEntry;
-import title.TitlePanel;
 
 public class VMP {
 

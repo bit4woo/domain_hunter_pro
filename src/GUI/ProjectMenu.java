@@ -20,9 +20,7 @@ import burp.BurpExtender;
 import dao.DomainDao;
 import dao.TitleDao;
 import domain.DomainManager;
-import domain.DomainPanel;
 import title.LineEntry;
-import title.TitlePanel;
 
 /**
  * 构造项目菜单

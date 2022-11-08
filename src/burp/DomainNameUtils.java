@@ -1,15 +1,26 @@
 package burp;
 
-import com.google.common.net.InternetDomainName;
-import domain.DomainPanel;
-import org.xbill.DNS.Record;
-import org.xbill.DNS.*;
-
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.xbill.DNS.ARecord;
+import org.xbill.DNS.Lookup;
+import org.xbill.DNS.NSRecord;
+import org.xbill.DNS.Name;
+import org.xbill.DNS.Record;
+import org.xbill.DNS.Resolver;
+import org.xbill.DNS.SimpleResolver;
+import org.xbill.DNS.ZoneTransferIn;
+
+import com.google.common.net.InternetDomainName;
 
 public class DomainNameUtils {
 

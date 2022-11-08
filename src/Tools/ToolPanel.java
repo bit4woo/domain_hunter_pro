@@ -61,7 +61,6 @@ import burp.DomainNameUtils;
 import burp.IPAddressUtils;
 import config.ConfigPanel;
 import domain.CertInfo;
-import domain.DomainPanel;
 import domain.DomainProducer;
 import title.WebIcon;
 

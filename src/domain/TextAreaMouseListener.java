@@ -1,11 +1,10 @@
 package domain;
 
-import javax.swing.*;
-
-import GUI.GUIMain;
-
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+
+import javax.swing.JPopupMenu;
+import javax.swing.JTextArea;
 
 public class TextAreaMouseListener extends MouseAdapter{
 

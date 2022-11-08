@@ -16,7 +16,6 @@ import burp.BurpExtender;
 import burp.Commons;
 import burp.DomainNameUtils;
 import burp.IPAddressUtils;
-import config.ConfigPanel;
 
 public class TargetEntryMenu extends JPopupMenu {
 

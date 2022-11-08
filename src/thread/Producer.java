@@ -13,7 +13,6 @@ import burp.IExtensionHelpers;
 import title.IndexedHashMap;
 import title.LineEntry;
 import title.TempLineEntry;
-import title.TitlePanel;
 
 /** 
  * @author bit4woo

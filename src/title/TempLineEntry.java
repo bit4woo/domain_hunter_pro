@@ -18,7 +18,6 @@ import config.ConfigPanel;
 import config.LineConfig;
 import domain.CertInfo;
 import domain.DomainManager;
-import domain.DomainPanel;
 
 public class TempLineEntry {
 	public static final String NotTargetBaseOnCertDomains = "NotTargetBaseOnCertDomains";

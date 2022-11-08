@@ -7,7 +7,6 @@ import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 
 import burp.BurpExtender;
-import burp.Commons;
 import burp.DomainNameUtils;
 import burp.IBurpExtenderCallbacks;
 import burp.IExtensionHelpers;

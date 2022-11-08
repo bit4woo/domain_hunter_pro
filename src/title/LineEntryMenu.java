@@ -32,7 +32,6 @@ import burp.DomainNameUtils;
 import burp.Getter;
 import burp.IBurpExtenderCallbacks;
 import burp.IPAddressUtils;
-import config.ConfigPanel;
 import title.search.SearchDork;
 
 public class LineEntryMenu extends JPopupMenu {

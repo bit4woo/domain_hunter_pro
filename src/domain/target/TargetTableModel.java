@@ -12,7 +12,6 @@ import javax.swing.table.AbstractTableModel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.alibaba.fastjson.JSON;
 import com.google.common.net.InternetDomainName;
 import com.google.gson.Gson;
 
@@ -22,7 +21,6 @@ import burp.Commons;
 import burp.DomainNameUtils;
 import burp.IPAddressUtils;
 import burp.IntArraySlice;
-import dao.TargetDao;
 import domain.DomainManager;
 import title.IndexedHashMap;
 

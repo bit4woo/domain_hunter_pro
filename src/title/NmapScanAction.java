@@ -10,12 +10,11 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
-import GUI.GUIMain;
 import org.apache.commons.io.FileUtils;
 
+import GUI.GUIMain;
 import burp.BurpExtender;
 import burp.Commons;
-import config.ConfigPanel;
 
 class NmapScanAction implements ActionListener{
 

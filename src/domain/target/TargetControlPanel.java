@@ -1,7 +1,6 @@
 package domain.target;
 
 import java.awt.Color;
-import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -18,7 +17,6 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingWorker;
 import javax.swing.border.LineBorder;
 
-import GUI.GUIMain;
 import burp.BurpExtender;
 import domain.DomainPanel;
 
