@@ -41,11 +41,11 @@ public class LineTable extends JTable
 	PrintWriter stderr;
 	private GUIMain guiMain;
 
-//	@Override//参考javax.swing.JTable中的函数，每次都有主动进行转换
-//	public Object getValueAt(int row, int column) {
-//		return getLineTableModel().getValueAt(convertRowIndexToModel(row),
-//				convertColumnIndexToModel(column));
-//	}
+	@Override//参考javax.swing.JTable中的函数，每次都有主动进行转换
+	public Object getValueAt(int row, int column) {
+		return getLineTableModel().getValueAt(convertRowIndexToModel(row),
+				convertColumnIndexToModel(column));
+	}
 
 	public LineEntry getRowAt(int row) {
 		return getLineTableModel().getLineEntries().get(convertRowIndexToModel(row));
@@ -76,14 +76,8 @@ public class LineTable extends JTable
 
 		this.setFillsViewportHeight(true);//在table的空白区域显示右键菜单
 		//https://stackoverflow.com/questions/8903040/right-click-mouselistener-on-whole-jtable-component
-		//this.setLineTableModel(lineTableModel);
 		this.guiMain = guiMain;
-
-		//FitTableColumns(this);
-		//this.setAutoCreateRowSorter(true);
-
 		registerListeners();
-
 		this.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);//配合横向滚动条
 	}
 
@@ -104,6 +98,9 @@ public class LineTable extends JTable
 		return (LineTableModel)getModel();
 	}
 
+	/**
+	 * 必须在model设置过后调用才有效
+	 */
 	public void tableinit(){
 		//Font f = new Font("Arial", Font.PLAIN, 12);
 		Font f = this.getFont();

@@ -640,6 +640,7 @@ public class DomainPanel extends JPanel {
 		List<TargetEntry> targets = targetDao.selectAll();
 		TargetTableModel targetModel = new TargetTableModel(guiMain,targets);
 		targetTable.setModel(targetModel);
+		targetTable.tableHeaderLengthInit();
 	}
 
 

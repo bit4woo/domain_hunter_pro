@@ -16,7 +16,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
 import javax.swing.border.LineBorder;
-import javax.swing.table.TableModel;
 
 import GUI.GUIMain;
 import burp.BurpExtender;
