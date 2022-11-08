@@ -1,19 +1,26 @@
 package domain.target;
 
-import GUI.GUIMain;
-import burp.BurpExtender;
-import title.LineTableModel;
-
-import javax.swing.*;
-import javax.swing.border.LineBorder;
-import javax.swing.table.TableModel;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.SortOrder;
+import javax.swing.SwingUtilities;
+import javax.swing.border.LineBorder;
+import javax.swing.table.TableModel;
+
+import GUI.GUIMain;
+import burp.BurpExtender;
+import title.LineTableModel;
 
 public class TargetTable extends JTable{
 
@@ -149,6 +156,7 @@ public class TargetTable extends JTable{
 	@Override
 	public void setModel(TableModel model) {
 		super.setModel(model);
+		//父类的setModel函数包含了显示Table Header的逻辑 tableChanged(new TableModelEvent(dataModel, TableModelEvent.HEADER_ROW));
 	}
 
 	/**

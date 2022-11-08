@@ -1,5 +1,23 @@
 package title;
 
+import java.awt.Desktop;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.PrintWriter;
+import java.net.URI;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.swing.JTable;
+import javax.swing.RowFilter;
+import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
+import javax.swing.table.TableRowSorter;
+
 import GUI.GUIMain;
 import burp.BurpExtender;
 import burp.Commons;
@@ -8,19 +26,6 @@ import title.search.History;
 import title.search.LineSearch;
 import title.search.SearchDork;
 import title.search.SearchTextField;
-
-import javax.swing.*;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableRowSorter;
-import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.io.PrintWriter;
-import java.net.URI;
-import java.util.List;
-import java.util.*;
 
 
 public class LineTable extends JTable
@@ -36,11 +41,11 @@ public class LineTable extends JTable
 	PrintWriter stderr;
 	private GUIMain guiMain;
 
-	@Override//参考javax.swing.JTable中的函数，每次都有主动进行转换
-	public Object getValueAt(int row, int column) {
-		return getLineTableModel().getValueAt(convertRowIndexToModel(row),
-				convertColumnIndexToModel(column));
-	}
+//	@Override//参考javax.swing.JTable中的函数，每次都有主动进行转换
+//	public Object getValueAt(int row, int column) {
+//		return getLineTableModel().getValueAt(convertRowIndexToModel(row),
+//				convertColumnIndexToModel(column));
+//	}
 
 	public LineEntry getRowAt(int row) {
 		return getLineTableModel().getLineEntries().get(convertRowIndexToModel(row));
@@ -138,52 +143,6 @@ public class LineTable extends JTable
 		this.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);//配合横向滚动条
 	}
 
-	@Deprecated//据说自动调整行宽度，测试了一下没用啊
-	public void FitTableColumns(JTable myTable){
-		JTableHeader header = myTable.getTableHeader();
-		int rowCount = myTable.getRowCount();
-		Enumeration columns = myTable.getColumnModel().getColumns();
-		while(columns.hasMoreElements()){
-			TableColumn column = (TableColumn)columns.nextElement();
-			int col = header.getColumnModel().getColumnIndex(column.getIdentifier());
-			int width = (int)myTable.getTableHeader().getDefaultRenderer()
-					.getTableCellRendererComponent(myTable, column.getIdentifier()
-							, false, false, -1, col).getPreferredSize().getWidth();
-			for(int row = 0; row<rowCount; row++){
-				int preferedWidth = (int)myTable.getCellRenderer(row, col).getTableCellRendererComponent(myTable,
-						myTable.getValueAt(row, col), false, false, row, col).getPreferredSize().getWidth();
-				width = Math.max(width, preferedWidth);
-			}
-			header.setResizingColumn(column); // 此行很重要
-			column.setWidth(width+myTable.getIntercellSpacing().width);
-		}
-	}
-
-	//TODO,还没弄明白
-	@Deprecated
-	public void setColor(int inputRow) {
-		try {
-			DefaultTableCellRenderer dtcr = new DefaultTableCellRenderer() {
-				//重写getTableCellRendererComponent 方法
-				@Override
-				public Component getTableCellRendererComponent(JTable table,Object value, boolean isSelected, boolean hasFocus,int row, int column) {
-					Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-					if (row == 1) {
-						c.setBackground(Color.RED);
-					}
-					return c;
-				}
-			};
-			//对每行的每一个单元格
-			int columnCount = this.getColumnCount();
-			for (int i = 0; i < columnCount; i++) {
-				this.getColumn(this.getColumnName(i)).setCellRenderer(dtcr);
-			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
 
 	/**
 	 * 搜索功能，自动获取caseSensitive的值
