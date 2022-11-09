@@ -101,7 +101,7 @@ public class LineTable extends JTable
 	/**
 	 * 必须在model设置过后调用才有效
 	 */
-	public void tableinit(){
+	public void tableHeaderWidthinit(){
 		//Font f = new Font("Arial", Font.PLAIN, 12);
 		Font f = this.getFont();
 		FontMetrics fm = this.getFontMetrics(f);
@@ -193,7 +193,9 @@ public class LineTable extends JTable
 		((TableRowSorter)LineTable.this.getRowSorter()).setRowFilter(filter);
 	}
 
-
+	/**
+	 * 鼠标事件
+	 */
 	public void registerListeners(){
 		LineTable.this.setRowSelectionAllowed(true);
 		this.addMouseListener( new MouseAdapter()

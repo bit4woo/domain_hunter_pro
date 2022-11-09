@@ -16,6 +16,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
 import javax.swing.border.LineBorder;
+import javax.swing.table.TableColumn;
 
 import GUI.GUIMain;
 import burp.BurpExtender;
@@ -26,7 +27,7 @@ public class TargetTable extends JTable{
 	private PrintWriter stderr;
 	private PrintWriter stdout;
 	private GUIMain guiMain;
-	
+
 	public TargetTable(GUIMain guiMain) {
 		this.guiMain = guiMain;
 		try {
@@ -39,8 +40,8 @@ public class TargetTable extends JTable{
 
 		setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		setBorder(new LineBorder(new Color(0, 0, 0)));
-		//tableHeaderLengthInit();
-		
+		//tableHeaderLengthInit();//这个时候还没有设置model，其中的默认model类型是javax.swing.table.DefaultTableModel
+
 		getTableHeader().addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -108,22 +109,30 @@ public class TargetTable extends JTable{
 		setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
 	}
 
+	/**
+	 * 需要在数据加载后，即setModel后才有效果!
+	 */
 	public void tableHeaderLengthInit(){
 		Font f = this.getFont();
 		FontMetrics fm = this.getFontMetrics(f);
 		int width = fm.stringWidth("A");//一个字符的宽度
-
-		Map<String,Integer> preferredWidths = new HashMap<String,Integer>();
-		preferredWidths.put("Comments",20);
-		preferredWidths.put("Black"," Black".length());
-		for(String header:LineTableModel.getTitleList()){
-			try{//避免动态删除表字段时，出错
-				int multiNumber = preferredWidths.get(header);
-				this.getColumnModel().getColumn(this.getColumnModel().getColumnIndex(header)).setPreferredWidth(width*multiNumber);
-			}catch (Exception e){
-
+		//"Domain/Subnet", "Keyword", "Comment","Black"
+		
+		for (int index=0;index<this.getColumnCount();index++) {
+			TableColumn column = this.getColumnModel().getColumn(index);
+			if (column.getIdentifier().equals("Black")) {
+				column.setMaxWidth(width*"Black".length());
+			}
+			
+			if (column.getIdentifier().equals("Domain/Subnet")) {
+				column.setPreferredWidth(width*"Domain/Subnet".length());
+			}
+			
+			if (column.getIdentifier().equals("Keyword")) {
+				column.setPreferredWidth(width*"Keyword".length());
 			}
 		}
+		//this.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);//配合横向滚动条
 	}
 
 	public int[] SelectedRowsToModelRows(int[] SelectedRows) {

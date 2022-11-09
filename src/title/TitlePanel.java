@@ -455,7 +455,7 @@ public class TitlePanel extends JPanel {
 		stdout.println(row+" title entries loaded from database file");
 		digStatus();
 		titleTable.search("");// hide checked items
-		titleTable.tableinit();
+		titleTable.tableHeaderWidthinit();//设置header宽度
 
 		try {
 			requestViewer = BurpExtender.getCallbacks().createMessageEditor(titleTable.getLineTableModel(), false);

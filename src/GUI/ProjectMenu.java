@@ -52,6 +52,17 @@ public class ProjectMenu extends JMenu{
 		});
 		openMenu.setToolTipText("Open Domain Hunter Project File(DB File)");
 		this.add(openMenu);
+		
+
+		JMenuItem renameMenu = new JMenuItem(new AbstractAction("Rename")
+		{
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {//实质就是save一个空的项目
+				createNewDb(gui);//save as
+			}
+		});
+		renameMenu.setToolTipText("Rename current DB File");
+		//this.add(renameMenu);TODO
 
 		/**
 		 * 导入db文件，将数据和当前DB文件进行合并。
