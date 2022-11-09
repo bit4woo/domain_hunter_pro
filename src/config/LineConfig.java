@@ -36,7 +36,7 @@ public class LineConfig {
 			"C:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe",
 			"C:\\Program Files\\Mozilla Firefox\\firefox.exe",
 			"D:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe",
-			"D:\\Program Files\\Mozilla Firefox\\firefox.exe"};
+	"D:\\Program Files\\Mozilla Firefox\\firefox.exe"};
 	public static final String defaultNmap = "nmap -Pn -sT -sV --min-rtt-timeout 1ms "
 			+ "--max-rtt-timeout 1000ms --max-retries 0 --max-scan-delay 0 --min-rate 3000 {host}";
 	public static final String defaultDirSearch = "python3 dirsearch.py -t 8 --proxy=127.0.0.1:8080 "
@@ -56,8 +56,15 @@ public class LineConfig {
 	private boolean enableElastic = false;
 	private String dbfilepath ="";
 	private History searchHistory;
-
 	private GUIMain gui;
+
+	/**
+	 * 当从文件恢复出当前对象后，需要通过setter来设置gui
+	 * @param gui
+	 */
+	public void setGui(GUIMain gui) {
+		this.gui = gui;
+	}
 
 	LineConfig(GUIMain gui){
 		this.gui = gui;
@@ -71,7 +78,7 @@ public class LineConfig {
 			}
 		}
 	}
-	
+
 	public static void main(String[] args) {
 		System.out.println(new LineConfig().ToJson());
 	}
@@ -90,7 +97,7 @@ public class LineConfig {
 	public void setMaximumEntries(int maximumEntries) {
 		MaximumEntries = maximumEntries;
 	}
-	
+
 
 	public static boolean isIgnoreHttpsOrHttpIfOneOK() {
 		return ConfigPanel.ignoreHTTPS.isSelected();
@@ -267,12 +274,12 @@ public class LineConfig {
 		try {
 			gui.getConfigPanel().saveToConfigFromGUI();
 			this.setSearchHistory(History.getInstance());
-			this.setDbfilepath(gui.getCurrentDBFile().getAbsolutePath());
+			//this.setDbfilepath(gui.getCurrentDBFile().getAbsolutePath());//加载数据库时有设置，无需再次获取。
 		} catch (Exception e1) {
 			e1.printStackTrace();
 			e1.printStackTrace(BurpExtender.getStderr());
 		}
-		
+
 		try {
 			File localFile = new File(localdir+File.separator+gui.getCurrentDBFile().getName()+".config");
 			FileUtils.write(localFile, this.ToJson());
@@ -285,9 +292,14 @@ public class LineConfig {
 		}
 	}
 
-	public LineConfig loadFromDisk(String projectFile) {
-		if (projectFile == null) {
-			return this;
+	/**
+	 * 注意：这里获取到的lineConfig对象，其中的gui属性是null
+	 * @param projectFile
+	 * @return
+	 */
+	public static LineConfig loadFromDisk(String projectFile) {
+		if (projectFile == null){
+			return  null;
 		}
 		try {
 			File localFile = new File(projectFile);
@@ -300,7 +312,7 @@ public class LineConfig {
 			e.printStackTrace();
 			e.printStackTrace(BurpExtender.getStderr());
 		}
-		return this;
+		return null;
 	}
 
 

@@ -45,11 +45,11 @@ public class ConfigPanel extends JPanel{
 	public static JTextField textFieldElasticURL;
 	public static JTextField textFieldElasticUserPass;
 	public static JTextField textFieldUploadApiToken;
-	
+
 	public LineConfig getLineConfig() {
 		return lineConfig;
 	}
-	
+
 	/**
 	 * Launch the application.
 	 */
@@ -66,23 +66,23 @@ public class ConfigPanel extends JPanel{
 			}
 		});
 	}
-	
-	
+
+
 	/**
 	 * 加载： 磁盘文件-->LineConfig对象--->具体控件的值
 	 * 注意对监听器的影响
 	 */
 	public void loadConfigToGUI(String projectConfigFile) {
 		BurpExtender.getStdout().println("Loading Tool Panel Config From Disk");
-		lineConfig = new LineConfig(gui).loadFromDisk(projectConfigFile);//projectConfigFile可能为null
+		lineConfig = LineConfig.loadFromDisk(projectConfigFile);//projectConfigFile可能为null
+		if (lineConfig == null){
+			lineConfig = new LineConfig(gui);
+		}else{
+			lineConfig.setGui(gui);
+		}
 
 		History.setInstance(lineConfig.getSearchHistory());
 
-		String dbFilePath = lineConfig.getDbfilepath();
-
-		if (dbFilePath != null && dbFilePath.endsWith(".db")) {
-			gui.LoadData(dbFilePath);
-		}
 		//这里的修改也会触发textFieldListener监听器。
 		//由于我们是多个组件共用一个保存逻辑，当前对一个组件设置值的时候，触发保存，从而导致整体数据的修改！！！
 		//所以和domain和title中一样，显示数据时关闭监听器。
@@ -132,7 +132,7 @@ public class ConfigPanel extends JPanel{
 		setLayout(gbl_fourFourthPanel);
 		//setLayout(new GridLayout(20, 2));
 		JLabel lblNewLabel = new JLabel("Browser Path:");
-		
+
 		BrowserPath = new JTextField();
 		BrowserPath.setColumns(50);
 		BrowserPath.getDocument().addDocumentListener(new textFieldListener());
@@ -146,11 +146,11 @@ public class ConfigPanel extends JPanel{
 				}
 			}
 		});
-		
+
 		textFieldPortScanner = new JTextField();
 		textFieldPortScanner.setColumns(50);
 		textFieldPortScanner.getDocument().addDocumentListener(new textFieldListener());
-		
+
 		add(lblNewLabel, new MyGridBagLayout(1,1));
 		add(BrowserPath, new MyGridBagLayout(1,2));
 		add(lblPortScanner, new MyGridBagLayout(2,1));
@@ -170,21 +170,21 @@ public class ConfigPanel extends JPanel{
 		textFieldDirSearch = new JTextField();
 		textFieldDirSearch.setColumns(50);
 		textFieldDirSearch.getDocument().addDocumentListener(new textFieldListener());
-		
+
 		add(lblDirSearch, new MyGridBagLayout(3,1));
 		add(textFieldDirSearch, new MyGridBagLayout(3,2));
 
-		
+
 		JLabel lblDirBruteDict = new JLabel("Dir Brute Dict:");
-	
+
 		textFieldDirBruteDict = new JTextField();
 		textFieldDirBruteDict.setToolTipText("path of dict");
 		textFieldDirBruteDict.setColumns(50);
 		textFieldDirBruteDict.getDocument().addDocumentListener(new textFieldListener());
-	
+
 		add(lblDirBruteDict, new MyGridBagLayout(4,1));
 		add(textFieldDirBruteDict, new MyGridBagLayout(4,2));
-		
+
 
 		JLabel lblElasticURL = new JLabel("Elastic URL:");
 
@@ -199,16 +199,16 @@ public class ConfigPanel extends JPanel{
 		add(lblElasticURL, new MyGridBagLayout(5,1));
 		add(textFieldElasticURL, new MyGridBagLayout(5,2));
 
-		
+
 		JLabel lblDirElasticUserPass = new JLabel("Elastic Username Password:");
-	
+
 		textFieldElasticUserPass = new JTextField();
 		textFieldElasticUserPass.setText("elastic:changeme");
 		textFieldElasticUserPass.setToolTipText("username and password of elastic API");
 		textFieldElasticUserPass.getDocument().addDocumentListener(new textFieldListener());
 		//textFieldElasticUserPass.addFocusListener(new JTextFieldHintListener(textFieldElasticUserPass,"elastic:changeme"));
 		textFieldElasticUserPass.setColumns(50);
-		
+
 		add(lblDirElasticUserPass, new MyGridBagLayout(6,1));
 		add(textFieldElasticUserPass, new MyGridBagLayout(6,2));
 
@@ -221,23 +221,23 @@ public class ConfigPanel extends JPanel{
 
 		add(lblUploadAPIToken, new MyGridBagLayout(7,1));
 		add(textFieldUploadApiToken, new MyGridBagLayout(7,2));
-		
+
 		JLabel lblUploadUrl = new JLabel("Upload URL:");
-		
+
 		textFieldUploadURL = new JTextField();
 		textFieldUploadURL.setColumns(30);
 		textFieldUploadURL.setToolTipText("input upload url here");
 		textFieldUploadURL.getDocument().addDocumentListener(new textFieldListener());
-		
+
 		add(lblUploadUrl, new MyGridBagLayout(8,1));
 		add(textFieldUploadURL,new MyGridBagLayout(8,2));
-		
-		
+
+
 		///////下方是JRadioButton/////
-			
+
 		DisplayContextMenuOfBurp = new JRadioButton("Display Context Menu Of Burp");
 		DisplayContextMenuOfBurp.setSelected(true);
-	
+
 		add(new JLabel(""), new MyGridBagLayout(9,1));
 		add(DisplayContextMenuOfBurp, new MyGridBagLayout(9,2));
 
@@ -253,49 +253,49 @@ public class ConfigPanel extends JPanel{
 		add(showItemsInOne, new MyGridBagLayout(10,2));
 
 		JLabel label_2 = new JLabel("");
-		
+
 		ignoreHTTPS = new JRadioButton("Ignore HTTPS if HTTP is OK || Ignore HTTP if HTTPS is OK");
 		ignoreHTTPS.setSelected(true);
-		
+
 		add(label_2, new MyGridBagLayout(11,1));
 		add(ignoreHTTPS, new MyGridBagLayout(11,2));
 
-		
+
 		JLabel label_3 = new JLabel("");
-		
+
 		ignoreHTTPStaus500 = new JRadioButton("Ignore items which Status >= 500");
 		ignoreHTTPStaus500.setSelected(true);
-		
+
 		add(label_3, new MyGridBagLayout(12,1));
 		add(ignoreHTTPStaus500, new MyGridBagLayout(12,2));
 
-		
+
 		JLabel label_4 = new JLabel("");
-		
+
 		ignoreHTTPStaus400 = new JRadioButton("Ignore http Status 400(The plain HTTP request was sent to HTTPS port)");
 		ignoreHTTPStaus400.setSelected(true);
-		
+
 		add(label_4, new MyGridBagLayout(13,1));
 		add(ignoreHTTPStaus400, new MyGridBagLayout(13,2));
 
 		JLabel label_5 = new JLabel("");
-		
+
 		ignoreWrongCAHost = new JRadioButton("Ignore Host that IP Address and Certificate Authority not match");
 		ignoreWrongCAHost.setSelected(false);
 
 		add(label_5, new MyGridBagLayout(14,1));
 		add(ignoreWrongCAHost, new MyGridBagLayout(14,2));
 
-		
+
 		rdbtnSaveTrafficTo = new JRadioButton("Save traffic to Elastic");
 		rdbtnSaveTrafficTo.setSelected(false);
-		
+
 		JLabel label_6 = new JLabel("");
-		
+
 		add(label_6, new MyGridBagLayout(15,1));
 		add(rdbtnSaveTrafficTo, new MyGridBagLayout(15,2));
-		
-		
+
+
 	}
 	//保存各个路径设置参数，自动保存的listener
 	class textFieldListener implements DocumentListener {
@@ -304,6 +304,7 @@ public class ConfigPanel extends JPanel{
 		public void removeUpdate(DocumentEvent e) {
 			if (listenerIsOn) {
 				saveToConfigFromGUI();
+				lineConfig.saveToDisk();
 			}
 		}
 
@@ -311,6 +312,7 @@ public class ConfigPanel extends JPanel{
 		public void insertUpdate(DocumentEvent e) {
 			if (listenerIsOn) {
 				saveToConfigFromGUI();
+				lineConfig.saveToDisk();
 			}
 		}
 
@@ -318,6 +320,7 @@ public class ConfigPanel extends JPanel{
 		public void changedUpdate(DocumentEvent arg0) {
 			if (listenerIsOn) {
 				saveToConfigFromGUI();
+				lineConfig.saveToDisk();
 			}
 		}
 	}

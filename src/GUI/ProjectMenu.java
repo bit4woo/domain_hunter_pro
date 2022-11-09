@@ -52,7 +52,7 @@ public class ProjectMenu extends JMenu{
 		});
 		openMenu.setToolTipText("Open Domain Hunter Project File(DB File)");
 		this.add(openMenu);
-		
+
 
 		JMenuItem renameMenu = new JMenuItem(new AbstractAction("Rename")
 		{
@@ -177,19 +177,19 @@ public class ProjectMenu extends JMenu{
 			AddDBNameMenuItem(dbFile.getName());
 		}
 	}
-	
+
 	public void createNewDb(GUIMain gui) {
 		File file = gui.dbfc.dialog(false,".db");//通过保存对话指定文件，这会是一个空文件。
 		if (null != file) {
 			gui.getDomainPanel().setDomainResult(new DomainManager(gui));
-			gui.LoadData(file.toString());//然后加载，就是一个新的空项目了。
+			gui.loadDataBase(file.toString());//然后加载，就是一个新的空项目了。
 		}
 	}
 
 	public void openDb() {
 		File file = gui.dbfc.dialog(true,".db");
 		if (null != file) {
-			gui.LoadData(file.toString());
+			gui.loadDataBase(file.toString());
 		}
 	}
 
