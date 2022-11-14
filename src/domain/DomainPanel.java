@@ -397,7 +397,7 @@ public class DomainPanel extends JPanel {
 		JButton btnBuckupDB = new JButton("Backup DB");
 		btnBuckupDB.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				backupDB();
+				backupDB(null);
 			}
 		});
 		HeaderPanel.add(btnBuckupDB);
@@ -805,10 +805,15 @@ public class DomainPanel extends JPanel {
 		return domainList;
 	}
 
-	public void backupDB() {
+	public void backupDB(String keyword) {
 		File file = guiMain.getCurrentDBFile();
 		if (file == null) return;
-		File bakfile = new File(file.getAbsoluteFile().toString() + ".bak" + Commons.getNowTimeString());
+		String suffix = ".bak" + Commons.getNowTimeString();
+		if (keyword!=null && !keyword.equals("")) {
+			keyword = keyword.replaceAll("\\s+", "-");
+			suffix += keyword;
+		}
+		File bakfile = new File(file.getAbsoluteFile().toString() + suffix);
 		try {
 			FileUtils.copyFile(file, bakfile);
 			BurpExtender.getStdout().println("DB File Backed Up:" + bakfile.getAbsolutePath());

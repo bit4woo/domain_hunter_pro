@@ -71,7 +71,7 @@ public class DomainManager {
 		this.guiMain = guiMain;
 	}
 
-	
+
 	public GUIMain getGuiMain() {
 		return guiMain;
 	}
@@ -445,15 +445,19 @@ public class DomainManager {
 
 	/**
 	 * 根据规则重新过一遍所有的数据
-	 * 相关域名集合，在添加规则时已处理，这里不再操作
 	 * 
-	 * TODO 详细review目标添加和刷新规则。
+	 * 1、子域名、相似域名、子网IP、邮箱、相似邮箱、package name 都很好处理。与目标有明确的关联关系
+	 * 2、相关域名、IPofCert都是根据证书信息进行关联的，有点不好处理。
+	 * 相关域名只能在原始数据的基础上做排除，已在子域名中的，就无需存储在相关域名中了
+	 * IPofCert就只能先不做处理，除非能记录器证书信息，或者从title中查询其信息进行判断。
+	 * IPofCert也可以排除已在IPSetOfSubnet中的部分
+	 *
 	 * 假如用户手动编辑了target。那么就需要依靠刷新的操作来更新数据。所以单纯靠添加时的处理逻辑是不够的。
-	 * 子域名、相似域名、包名 都重新识别归类。
-	 * Email不做变化
 	 */
 	public void freshBaseRule() {
+		guiMain.getDomainPanel().backupDB("before refresh");
 		BurpExtender.getStdout().println("before refresh--> "+getSummary());
+
 		Set<String> tmpDomains = new HashSet<>();
 		//tmpDomains.addAll(relatedDomainSet);
 
@@ -467,11 +471,11 @@ public class DomainManager {
 		PackageNameSet.clear();
 		IPSetOfSubnet.clear();
 
-		for (String domain : tmpDomains) {
-			if(addIfValid(domain)){
-				relatedDomainSet.remove(domain);
-			}
-		}
+		addIfValid(tmpDomains);
+
+		//相关域名、IPofCert都是根据证书信息进行关联的，目前就只做排除操作。
+		relatedDomainSet.removeAll(subDomainSet);
+		IPSetOfCert.removeAll(IPSetOfSubnet);
 
 		//处理Email
 		HashSet<String > tmpEmalis = new HashSet<>();
@@ -483,6 +487,7 @@ public class DomainManager {
 		EmailSet.clear();
 		similarEmailSet.clear();
 		guiMain.getDomainPanel().getDomainResult().addIfValidEmail(tmpEmalis);
+
 		BurpExtender.getStdout().println("after refresh--> "+getSummary());
 	}
 
@@ -499,7 +504,7 @@ public class DomainManager {
 							}
 
 							addToTargetAndSubDomain(relatedDomain, true);
-							//底层调用了addRow，没调用一次都会触发数据库写操作。这个逻辑中应该避免。
+							//底层调用了addRow，每调用一次都会触发数据库写操作。重构后是新增一条记录
 
 						} else {
 							System.out.println("error related domain : " + relatedDomain);

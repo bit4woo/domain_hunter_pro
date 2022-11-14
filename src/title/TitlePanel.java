@@ -292,7 +292,7 @@ public class TitlePanel extends JPanel {
 			stdout.println("still have get title thread is running, will do nothing.");
 			return;
 		}
-		guiMain.getDomainPanel().backupDB();
+		guiMain.getDomainPanel().backupDB("before-getTitle");
 
 		Set<String> targetsToReq = new HashSet<String>();
 		targetsToReq.addAll(guiMain.getDomainPanel().getDomainResult().getSubDomainSet());
@@ -332,7 +332,7 @@ public class TitlePanel extends JPanel {
 		if (!stopGetTitleThread(true)){//其他get title线程未停止
 			return;
 		}
-		guiMain.getDomainPanel().backupDB();
+		guiMain.getDomainPanel().backupDB("before-getExtendTitle");
 
 		HashMap<String,String> extendIPs = new HashMap<String,String>();//新建一个对象，直接赋值后的删除操作，实质是对domainResult的操作。
 
@@ -361,7 +361,7 @@ public class TitlePanel extends JPanel {
 			return;
 		}
 
-		guiMain.getDomainPanel().backupDB();
+		guiMain.getDomainPanel().backupDB("before-getTitleOfNewDomain");
 
 		Set<String> newDomains = new HashSet<>(guiMain.getDomainPanel().getDomainResult().getSubDomainSet());//新建一个对象，直接赋值后的删除操作，实质是对domainResult的操作。
 

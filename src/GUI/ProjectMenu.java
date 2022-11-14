@@ -72,7 +72,7 @@ public class ProjectMenu extends JMenu{
 		JMenuItem ImportMenu = new JMenuItem(new AbstractAction("Import DB") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				gui.getDomainPanel().backupDB();//导入前的备份。
+				gui.getDomainPanel().backupDB("before import");//导入前的备份。
 
 				File file = gui.dbfc.dialog(true,".db");
 				if (null ==file) {
@@ -118,7 +118,7 @@ public class ProjectMenu extends JMenu{
 				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
 					@Override
 					protected Map doInBackground() throws Exception {
-						gui.getDomainPanel().backupDB();//导入前的备份。
+						gui.getDomainPanel().backupDB("before import");//导入前的备份。
 
 						File file = gui.dbfc.dialog(true,".txt");
 						if (null ==file) {
