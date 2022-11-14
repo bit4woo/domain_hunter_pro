@@ -274,13 +274,63 @@ public class TitlePanel extends JPanel {
 			}
 		}
 	}
-	
-	public static void AddWithSoureType(HashMap<String,String> domains,Set<String> input,String type) {
+
+	public static HashMap<String,String> AddWithSoureType(Set<String> input,String type) {
+		HashMap<String,String> domains = new HashMap<String,String>();
 		if (input != null && domains != null) {
 			for (String in:input) {
 				domains.put(in, type);
 			}
 		}
+		return domains;
+	}
+
+	/**
+	 *
+	 * 多线程获取title的方法
+	 */
+	public void getTitleBase(HashMap<String,String> domainsWithSource){
+		if (!stopGetTitleThread(true)){//其他get title线程未停止
+			stdout.println("still have get title thread is running, will do nothing.");
+			return;
+		}
+
+		stdout.println(domainsWithSource.size()+" targets to request");
+		if (domainsWithSource.size() <= 0) {
+			return;
+		}
+		tempConfig = new GetTitleTempConfig(domainsWithSource.size());
+		if (tempConfig.getThreadNumber() <=0) {
+			return;
+		}
+
+		setThreadGetTitle(new ThreadGetTitleWithForceStop(guiMain,domainsWithSource,tempConfig.getThreadNumber()));
+		getThreadGetTitle().start();
+	}
+
+	/**
+	 * 获取所有明确属于目标范围的域名、IP；排除了黑名单中的内容
+	 * 子域名+确定的网段+证书IP-黑名单IP
+	 * @return
+	 */
+	public Set<String> getCertainDomains() {
+		Set<String> targetsToReq = new HashSet<String>();
+		targetsToReq.addAll(guiMain.getDomainPanel().getDomainResult().getSubDomainSet());
+		targetsToReq.addAll(guiMain.getDomainPanel().fetchTargetModel().fetchTargetIPSet());
+		targetsToReq.addAll(guiMain.getDomainPanel().getDomainResult().getIPSetOfCert());
+		targetsToReq.removeAll(guiMain.getDomainPanel().getDomainResult().getNotTargetIPSet());
+		return targetsToReq;
+	}
+
+	/**
+	 * 获取所有用户自定义输入的域名、IP；排除了黑名单中的内容
+	 * @return
+	 */
+	public Set<String> getCustomDomains() {
+		Set<String> targetsToReq = new HashSet<String>();
+		targetsToReq.addAll(guiMain.getDomainPanel().getDomainResult().getSpecialPortTargets());
+		targetsToReq.removeAll(guiMain.getDomainPanel().getDomainResult().getNotTargetIPSet());
+		return targetsToReq;
 	}
 
 	/**
@@ -288,106 +338,57 @@ public class TitlePanel extends JPanel {
 	 * 根据所有已知域名获取title
 	 */
 	public void getAllTitle(){
-		if (!stopGetTitleThread(true)){//其他get title线程未停止
-			stdout.println("still have get title thread is running, will do nothing.");
-			return;
-		}
 		guiMain.getDomainPanel().backupDB("before-getTitle");
-
-		Set<String> targetsToReq = new HashSet<String>();
-		targetsToReq.addAll(guiMain.getDomainPanel().getDomainResult().getSubDomainSet());
-		targetsToReq.addAll(guiMain.getDomainPanel().fetchTargetModel().fetchTargetIPSet());
-		targetsToReq.addAll(guiMain.getDomainPanel().getDomainResult().getIPSetOfCert());
-		targetsToReq.removeAll(guiMain.getDomainPanel().getDomainResult().getNotTargetIPSet());
-		
-		HashMap<String,String> domains = new HashMap<String,String>();//新建一个对象，直接赋值后的删除操作，实质是对domainResult的操作。
-		AddWithSoureType(domains,targetsToReq,LineEntry.Source_Certain);
-		
-		targetsToReq = new HashSet<String>();
-		targetsToReq.addAll(guiMain.getDomainPanel().getDomainResult().getSpecialPortTargets());
-		targetsToReq.removeAll(guiMain.getDomainPanel().getDomainResult().getNotTargetIPSet());
-		AddWithSoureType(domains,targetsToReq,LineEntry.Source_Custom_Input);
-		
-		stdout.println(domains.size()+" targets to request");
-		if (domains.size() <= 0) return;
-		tempConfig = new GetTitleTempConfig(domains.size());
-		if (tempConfig.getThreadNumber() <=0) {
-			return;
-		}
 		//backup to history
 		BackupLineEntries = titleTable.getLineTableModel().getLineEntries();
-
 		//clear tableModel
 		LineTableModel titleTableModel = new LineTableModel(guiMain);//clear
 		loadData(titleTableModel);
 		//转移以前手动保存的记录
 		transferManualSavedItems();
 
-		setThreadGetTitle(new ThreadGetTitleWithForceStop(guiMain,domains,tempConfig.getThreadNumber()));
-		getThreadGetTitle().start();
-	}
+		HashMap<String,String> mapToRun = AddWithSoureType(getCertainDomains(),LineEntry.Source_Certain);
+		HashMap<String,String> mapToRun1 = AddWithSoureType(getCustomDomains(),LineEntry.Source_Custom_Input);
+		mapToRun.putAll(mapToRun1);
 
-
-	public void getExtendTitle(){
-		if (!stopGetTitleThread(true)){//其他get title线程未停止
-			return;
-		}
-		guiMain.getDomainPanel().backupDB("before-getExtendTitle");
-
-		HashMap<String,String> extendIPs = new HashMap<String,String>();//新建一个对象，直接赋值后的删除操作，实质是对domainResult的操作。
-
-		Set<String> extendIPSet = titleTable.getLineTableModel().GetExtendIPSet();
-		stdout.println(extendIPSet.size()+" targets to request");
-		stdout.println(extendIPSet.size()+" extend IP Address founded"+extendIPSet);
-		if (extendIPSet.size() <= 0) return;
-
-		AddWithSoureType(extendIPs,extendIPSet,LineEntry.Source_Subnet_Extend);
-		
-		tempConfig = new GetTitleTempConfig(extendIPSet.size());
-		if (tempConfig.getThreadNumber() <=0) {
-			return;
-		}
-
-		setThreadGetTitle(new ThreadGetTitleWithForceStop(guiMain,extendIPs,tempConfig.getThreadNumber()));
-		getThreadGetTitle().start();
-
+		getTitleBase(mapToRun);
 	}
 
 	/**
-	 * 获取新发现域名的title，这里会尝试之前请求失败的域名，可能需要更多时间
+	 * 需要跑的IP集合 = 网段汇算结果-黑名单-已请求域名的IP集合
+	 */
+	public void getExtendTitle(){
+		guiMain.getDomainPanel().backupDB("before-getExtendTitle");
+
+		Set<String> extendIPSet = titleTable.getLineTableModel().GetExtendIPSet();
+		Set<String> hostsInTitle = titleTable.getLineTableModel().GetHostsWithSpecialPort();
+		extendIPSet.removeAll(guiMain.getDomainPanel().getDomainResult().getNotTargetIPSet());
+		extendIPSet.removeAll(hostsInTitle);
+		HashMap<String,String> mapToRun = AddWithSoureType(extendIPSet,LineEntry.Source_Subnet_Extend);
+
+		getTitleBase(mapToRun);
+	}
+
+	/**
+	 * 获取新发现域名、IP的title
+	 * setToRun = 子域名+确定的网段+证书IP-黑名单IP-已请求域名的IP集合
 	 */
 	public void getTitleOfNewDomain(){
-		if (!stopGetTitleThread(true)){//其他get title线程未停止
-			return;
-		}
-
 		guiMain.getDomainPanel().backupDB("before-getTitleOfNewDomain");
 
-		Set<String> newDomains = new HashSet<>(guiMain.getDomainPanel().getDomainResult().getSubDomainSet());//新建一个对象，直接赋值后的删除操作，实质是对domainResult的操作。
-
-		newDomains.addAll(guiMain.getDomainPanel().getTargetTable().getTargetModel().fetchTargetIPSet());
-		newDomains.addAll(guiMain.getDomainPanel().getDomainResult().getSpecialPortTargets());
-		newDomains.addAll(guiMain.getDomainPanel().getDomainResult().getIPSetOfCert());
-
 		Set<String> hostsInTitle = titleTable.getLineTableModel().GetHostsWithSpecialPort();
+
+		Set<String> newDomains = getCertainDomains();
 		newDomains.removeAll(hostsInTitle);
+		HashMap<String,String> mapToRun = AddWithSoureType(newDomains,LineEntry.Source_Certain);
 
-		//remove domains in black list
-		newDomains.removeAll(guiMain.getDomainPanel().getDomainResult().getNotTargetIPSet());
-		stdout.println(newDomains.size()+" targets to request");
-		
-		if (newDomains.size() <= 0) return;
-		tempConfig = new GetTitleTempConfig(newDomains.size());
-		if (tempConfig.getThreadNumber() <=0) {
-			return;
-		}
+		newDomains = getCustomDomains();
+		newDomains.removeAll(hostsInTitle);
+		HashMap<String,String> mapToRun1 = AddWithSoureType(newDomains,LineEntry.Source_Custom_Input);
 
-		HashMap<String,String> newDomainsMap = new HashMap<String,String>();//新建一个对象，直接赋值后的删除操作，实质是对domainResult的操作。
+		mapToRun.putAll(mapToRun1);
 
-		AddWithSoureType(newDomainsMap,newDomains,LineEntry.Source_Certain);
-		
-		setThreadGetTitle(new ThreadGetTitleWithForceStop(guiMain,newDomainsMap,tempConfig.getThreadNumber()));
-		getThreadGetTitle().start();
+		getTitleBase(mapToRun);
 	}
 
 
@@ -440,9 +441,9 @@ public class TitlePanel extends JPanel {
 
 	private void loadData(LineTableModel titleTableModel){
 
-//		TableRowSorter<LineTableModel> tableRowSorter = new TableRowSorter<LineTableModel>(titleTableModel);
-//		titleTable.setRowSorter(tableRowSorter);
-//		titleTable.setModel(titleTableModel);
+		//		TableRowSorter<LineTableModel> tableRowSorter = new TableRowSorter<LineTableModel>(titleTableModel);
+		//		titleTable.setRowSorter(tableRowSorter);
+		//		titleTable.setModel(titleTableModel);
 		//IndexOutOfBoundsException size为0，为什么会越界？
 		//!!!注意：这里必须先setRowSorter，然后再setModel。否则就会出现越界问题。因为当setModel时，会触发数据变更事件，这个时候会调用Sorter。
 		// 而这个时候的Sorter中还是旧数据，就会认为按照旧数据的容量去获取数据，从而导致越界。

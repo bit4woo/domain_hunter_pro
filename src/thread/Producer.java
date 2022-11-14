@@ -69,9 +69,7 @@ public class Producer extends Thread {//Producer do
 				Map.Entry<String,String> entry = domainQueue.take();
 				String host = entry.getKey();
 				String type = entry.getValue();
-				int leftTaskNum = domainQueue.size();
-
-				stdout.print(String.format("%s tasks left ",leftTaskNum));
+				
 				TempLineEntry tmpLine = new TempLineEntry(guiMain,host);
 				Set<LineEntry> resultSet  = tmpLine.getFinalLineEntry();
 				//根据请求有效性分类处理
@@ -87,7 +85,7 @@ public class Producer extends Thread {//Producer do
 							item.getComments().addAll(linefound.getComments());
 							item.setAssetType(linefound.getAssetType());
 							try {
-								//长度的判断不准确，不再使用，就记录以前的状态！时间就记录上传完成渗透的时间
+								//长度的判断不准确，不再使用，就记录以前的状态！时间就记录上次完成渗透的时间
 								if (url.equalsIgnoreCase(linefound.getUrl())) {
 									item.setCheckStatus(linefound.getCheckStatus());
 									item.setTime(linefound.getTime());
@@ -102,8 +100,8 @@ public class Producer extends Thread {//Producer do
 					guiMain.getTitlePanel().getTitleTable().getLineTableModel().addNewLineEntry(item);
 
 					//stdout.println(new LineEntry(messageinfo,true).ToJson());
-
-					stdout.println(String.format("+++ [%s] +++ get title done",url));
+					int leftTaskNum = domainQueue.size();
+					stdout.println(String.format("+++ [%s] +++ get title done %s tasks left",url,leftTaskNum));
 				}
 			} catch (Exception error) {
 				error.printStackTrace(stderr);

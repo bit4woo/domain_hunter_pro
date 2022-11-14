@@ -656,40 +656,21 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		titleDao.addOrUpdateTitle(lineEntry);//写入数据库
 	}
 
-	/**
-	 * 用于Host碰撞场景
-	 * @param lineEntry
-	 */
-	public void addNewLineEntryWithHost(LineEntry lineEntry,String Host){
-		if (lineEntry == null) {
-			return;
-		}
-		String key = lineEntry.getUrl()+Host;
-		lineEntries.put(key,lineEntry);
-		int index = lineEntries.IndexOfKey(key);
-		fireTableRowsInserted(index, index);
-		titleDao.addOrUpdateTitle(lineEntry);//写入数据库
-	}
-
 	public void addNewLineEntry(LineEntry lineEntry){
 		if (lineEntry == null) {
 			return;
 		}
-		//			while(lineEntries.size() >= LineConfig.getMaximumEntries()){
-		//				ListenerIsOn = false;
-		//				final LineEntry removed = lineEntries.remove(0);
-		//				ListenerIsOn = true;
-		//			}
-		int oldsize = lineEntries.size();
 		String key = lineEntry.getUrl();
-		lineEntries.put(key,lineEntry);
-		int newsize = lineEntries.size();
+		LineEntry ret = lineEntries.put(key,lineEntry);
+		//以前的做法是，put之后再次统计size来判断是新增还是替换，这种方法在多线程时可能不准确，偶尔的IndexOutOfBoundsException错误可能就是这个原因导致的
+		//concurrentHashMap的put方法会在替换时返回原来的值，可用于判断是替换还是新增
 		int index = lineEntries.IndexOfKey(key);
-		if (oldsize == newsize) {//覆盖
-			fireTableRowsUpdated(index, index);
-		}else {//新增
+		if (ret == null) {
 			fireTableRowsInserted(index, index);
+		}else {
+			fireTableRowsUpdated(index, index);
 		}
+
 		titleDao.addOrUpdateTitle(lineEntry);//写入数据库
 
 		//need to use row-1 when add setRowSorter to table. why??
