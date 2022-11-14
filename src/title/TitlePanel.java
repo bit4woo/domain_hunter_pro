@@ -441,15 +441,16 @@ public class TitlePanel extends JPanel {
 
 	private void loadData(LineTableModel titleTableModel){
 
-		//		TableRowSorter<LineTableModel> tableRowSorter = new TableRowSorter<LineTableModel>(titleTableModel);
-		//		titleTable.setRowSorter(tableRowSorter);
-		//		titleTable.setModel(titleTableModel);
+		TableRowSorter<LineTableModel> tableRowSorter = new TableRowSorter<LineTableModel>(titleTableModel);
+		titleTable.setRowSorter(tableRowSorter);
+		titleTable.setModel(titleTableModel);
 		//IndexOutOfBoundsException size为0，为什么会越界？
 		//!!!注意：这里必须先setRowSorter，然后再setModel。否则就会出现越界问题。因为当setModel时，会触发数据变更事件，这个时候会调用Sorter。
 		// 而这个时候的Sorter中还是旧数据，就会认为按照旧数据的容量去获取数据，从而导致越界。
 
-		titleTable.setAutoCreateRowSorter(true);//这样应该也可以
-		titleTable.setModel(titleTableModel);
+		//titleTable.setAutoCreateRowSorter(true);//这样应该也可以❎，
+		//这里设置后就进行了创建，创建过程会getModel这个时候新model还未设置呢，保险起见不使用这个方式
+		//titleTable.setModel(titleTableModel);
 
 		int row = titleTableModel.getLineEntries().size();
 		System.out.println(row+" title entries loaded from database file");
