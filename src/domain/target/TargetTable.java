@@ -121,7 +121,8 @@ public class TargetTable extends JTable{
 		for (int index=0;index<this.getColumnCount();index++) {
 			TableColumn column = this.getColumnModel().getColumn(index);
 			if (column.getIdentifier().equals("Black")) {
-				column.setMaxWidth(width*"Black".length());
+				column.setMaxWidth(width*"Black++".length());
+				//需要预留排序时箭头符合的位置，2个字符宽度
 			}
 			
 			if (column.getIdentifier().equals("Domain/Subnet")) {

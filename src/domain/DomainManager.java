@@ -465,6 +465,7 @@ public class DomainManager {
 		tmpDomains.addAll(similarDomainSet);
 		tmpDomains.addAll(PackageNameSet);
 		tmpDomains.addAll(IPSetOfSubnet);
+		tmpDomains.addAll(relatedDomainSet);
 
 		subDomainSet.clear();
 		similarDomainSet.clear();
