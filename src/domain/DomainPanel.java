@@ -51,6 +51,7 @@ import burp.IBurpExtenderCallbacks;
 import burp.IHttpRequestResponse;
 import burp.IHttpService;
 import burp.IScanIssue;
+import burp.GrepUtils;
 import config.ConfigPanel;
 import dao.DomainDao;
 import dao.TargetDao;
@@ -309,7 +310,7 @@ public class DomainPanel extends JPanel {
 						//System.out.println(rootDomains.toString());
 						//System.out.println("xxx"+keywords.toString());
 						btnSearch.setEnabled(false);
-						domainResult.getEmailSet().addAll(collectEmails());
+						collectEmailFromIssue();
 						return search(rootDomains, keywords);
 					}
 
@@ -672,12 +673,10 @@ public class DomainPanel extends JPanel {
 	 * 从issue中提取Email
 	 * @return
 	 */
-	public Set<String> collectEmails() {
-		Set<String> Emails = new HashSet<>();
+	public void collectEmailFromIssue() {
 		IScanIssue[] issues = BurpExtender.getCallbacks().getScanIssues(null);
 
-		final String REGEX_EMAIL = "[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+";
-		Pattern pDomainNameOnly = Pattern.compile(REGEX_EMAIL);
+		Pattern pDomainNameOnly = Pattern.compile(GrepUtils.REGEX_EMAIL);
 
 		for (IScanIssue issue : issues) {
 			if (issue.getIssueName().equalsIgnoreCase("Email addresses disclosed")) {
@@ -686,13 +685,14 @@ public class DomainPanel extends JPanel {
 				while (matcher.find()) {//多次查找
 					String email = matcher.group();
 					if (fetchTargetModel().emailType(email) == DomainManager.CERTAIN_EMAIL) {
-						Emails.add(matcher.group());
+						domainResult.getEmailSet().add(email);
 					}
-					System.out.println(matcher.group());
+					if (fetchTargetModel().emailType(email) == DomainManager.SIMILAR_EMAIL) {
+						domainResult.getSimilarEmailSet().add(email);
+					}
 				}
 			}
 		}
-		return Emails;
 	}
 
 

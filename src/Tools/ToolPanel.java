@@ -58,6 +58,7 @@ import GUI.GUIMain;
 import burp.BurpExtender;
 import burp.Commons;
 import burp.DomainNameUtils;
+import burp.GrepUtils;
 import burp.IPAddressUtils;
 import config.ConfigPanel;
 import domain.CertInfo;
@@ -195,7 +196,7 @@ public class ToolPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 String content = inputTextArea.getText();
                 if (null != content) {
-                    Set<String> domains = DomainProducer.grepDomain(content);
+                    Set<String> domains = GrepUtils.grepDomain(content);
                     ArrayList<String> tmpList = new ArrayList<String>(domains);
                     Collections.sort(tmpList, new DomainComparator());
                     outputTextArea.setText(String.join(System.lineSeparator(), tmpList));
@@ -212,7 +213,7 @@ public class ToolPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 String content = inputTextArea.getText();
                 if (null != content) {
-                    List<String> urls = DomainProducer.grepURL(content);
+                    List<String> urls = GrepUtils.grepURL(content);
                     outputTextArea.setText(String.join(System.lineSeparator(), urls));
                 }
             }
@@ -225,7 +226,7 @@ public class ToolPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 String content = inputTextArea.getText();
                 if (null != content) {
-                    List<String> iplist = DomainProducer.grepIP(content);
+                    List<String> iplist = GrepUtils.grepIP(content);
                     outputTextArea.setText(String.join(System.lineSeparator(), iplist));
                 }
             }
@@ -238,7 +239,7 @@ public class ToolPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 String content = inputTextArea.getText();
                 if (null != content) {
-                    List<String> iplist = DomainProducer.grepIPAndPort(content);
+                    List<String> iplist = GrepUtils.grepIPAndPort(content);
                     outputTextArea.setText(String.join(System.lineSeparator(), iplist));
                 }
             }
@@ -251,7 +252,7 @@ public class ToolPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 String content = inputTextArea.getText();
                 if (null != content) {
-                    List<String> subnets = DomainProducer.grepSubnet(content);
+                    List<String> subnets = GrepUtils.grepSubnet(content);
                     outputTextArea.setText(String.join(System.lineSeparator(), subnets));
                 }
             }
@@ -264,7 +265,7 @@ public class ToolPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 String content = inputTextArea.getText();
                 if (null != content) {
-                    Set<String> emails = DomainProducer.grepEmail(content);
+                    Set<String> emails = GrepUtils.grepEmail(content);
                     outputTextArea.setText(String.join(System.lineSeparator(), emails));
                 }
             }

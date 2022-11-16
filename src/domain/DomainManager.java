@@ -16,6 +16,7 @@ import com.google.common.net.InternetDomainName;
 import GUI.GUIMain;
 import Tools.DomainComparator;
 import burp.BurpExtender;
+import burp.GrepUtils;
 import domain.target.TargetEntry;
 import domain.target.TargetTableModel;
 
@@ -370,8 +371,8 @@ public class DomainManager {
 	 * @return boolean 执行了添加返回true，没有执行添加返回false。
 	 */
 	public boolean addIfValid(String domain) {
-		Set<String> domains = DomainProducer.grepDomain(domain);//这样以支持domain:port形式的资产
-		List<String> ips = DomainProducer.grepIPAndPort(domain);
+		Set<String> domains = GrepUtils.grepDomain(domain);//这样以支持domain:port形式的资产
+		List<String> ips = GrepUtils.grepIPAndPort(domain);
 		if (domains.size() !=0 ){
 			domain = new ArrayList<String>(domains).get(0);
 		} else if(ips.size() !=0){
@@ -481,9 +482,9 @@ public class DomainManager {
 		//处理Email
 		HashSet<String > tmpEmalis = new HashSet<>();
 
+		guiMain.getDomainPanel().collectEmailFromIssue();
 		tmpEmalis.addAll(EmailSet);
 		tmpEmalis.addAll(similarEmailSet);
-		tmpEmalis.addAll(guiMain.getDomainPanel().collectEmails());
 
 		EmailSet.clear();
 		similarEmailSet.clear();
