@@ -133,7 +133,7 @@ public class DomainNameUtils {
 		domainRegex = domainRegex.replaceAll("\\.","\\\\.");//  . ---> \.  即域名中的点表示原意,不是正则中的点
 
 		domainRegex = domainRegex.replaceAll("\\*","\\.\\*");//  * ---> .*  即*就是正则中的.*
-		System.out.println(domainRegex);
+		//System.out.println(domainRegex);
 		Pattern pDomainNameOnly = Pattern.compile(domainRegex);
 		Matcher matcher = pDomainNameOnly.matcher(StrDomain);
 		return matcher.matches();
