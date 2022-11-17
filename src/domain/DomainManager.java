@@ -349,7 +349,9 @@ public class DomainManager {
 
 	public void addToTargetAndSubDomain(String enteredRootDomain, boolean autoSub) {
 		if (enteredRootDomain == null) return;
-		guiMain.getDomainPanel().fetchTargetModel().addRowIfValid(new TargetEntry(enteredRootDomain, autoSub));
+		if (guiMain.getDomainPanel().fetchTargetModel().addRowIfValid(new TargetEntry(enteredRootDomain, autoSub))) {
+			subDomainSet.add(enteredRootDomain);
+		};
 	}
 
 	public void addTLDToTargetAndSubDomain(String enteredRootDomain) {
@@ -357,6 +359,9 @@ public class DomainManager {
 		String tldDomainToAdd  = guiMain.getDomainPanel().fetchTargetModel().getTLDDomainToAdd(enteredRootDomain);
 		TargetEntry tmp = new TargetEntry(tldDomainToAdd, false);
 		guiMain.getDomainPanel().fetchTargetModel().addRowIfValid(tmp);
+		if (guiMain.getDomainPanel().fetchTargetModel().addRowIfValid(tmp)) {
+			subDomainSet.add(enteredRootDomain);
+		};
 	}
 
 	public void addIfValid(Set<String> domains) {
@@ -493,6 +498,10 @@ public class DomainManager {
 		BurpExtender.getStdout().println("after refresh--> "+getSummary());
 	}
 
+	/**
+	 * 当UI界面操作时，会被调用
+	 * 还有当自动化搜集时，会调用
+	 */
 	public void relatedToRoot() {
 		if (this.autoAddRelatedToRoot) {
 			if (relatedDomainSet.size() >0){
@@ -504,10 +513,8 @@ public class DomainManager {
 							if (fetchTargetModel().isBlack(relatedDomain)) {
 								continue;
 							}
-
 							addToTargetAndSubDomain(relatedDomain, true);
 							//底层调用了addRow，每调用一次都会触发数据库写操作。重构后是新增一条记录
-
 						} else {
 							System.out.println("error related domain : " + relatedDomain);
 						}
@@ -516,7 +523,6 @@ public class DomainManager {
 						e.printStackTrace(BurpExtender.getStderr());
 					}
 				}
-				freshBaseRule();
 			}
 		}
 	}

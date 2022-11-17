@@ -643,6 +643,31 @@ public class DomainPanel extends JPanel {
 		targetTable.setModel(targetModel);
 		targetTable.tableHeaderLengthInit();
 	}
+	
+	/**
+	 * //执行刷新、数据显示、数据保存
+	 */
+	public void refreshInBackground() {
+		SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+			@Override
+			protected Map doInBackground() throws Exception {
+				try {//执行刷新、数据显示、数据保存
+					getDomainResult().freshBaseRule();
+					showDataToDomainGUI();
+					saveDomainDataToDB();
+				} catch (Exception exception) {
+					exception.printStackTrace();
+				}
+				return null;
+			}
+
+			@Override
+			protected void done(){
+				
+			}
+		};
+		worker.execute();
+	}
 
 
 	//////////////////////////////methods//////////////////////////////////////

@@ -203,11 +203,13 @@ public class TargetTableModel extends AbstractTableModel {
 	 * 应该包含数据库写入操作
 	 * @param entry
 	 */
-	public void addRowIfValid(TargetEntry entry) {
+	public boolean addRowIfValid(TargetEntry entry) {
 		if (ifValid(entry)){
 			String key = entry.getTarget();
 			addRow(key, entry);
+			return true;
 		}
+		return false;
 	}
 
 	/**

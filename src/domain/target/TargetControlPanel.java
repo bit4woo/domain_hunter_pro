@@ -48,9 +48,8 @@ public class TargetControlPanel extends JPanel {
 					String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
 					TargetEntry entry = new TargetEntry(enteredRootDomain);
 					domainPanel.fetchTargetModel().addRowIfValid(entry);
-					domainPanel.getDomainResult().freshBaseRule();
-					domainPanel.saveDomainDataToDB();
 				}
+				domainPanel.refreshInBackground();
 			}
 		});
 
@@ -101,65 +100,29 @@ public class TargetControlPanel extends JPanel {
 		
 		JButton btnFresh = new JButton("Refresh");
 		btnFresh.addActionListener(new ActionListener() {
-
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-
-					@Override
-					protected Map doInBackground() throws Exception {
-						btnFresh.setEnabled(false);
-						try {
-							//to clear sub and similar domains
-							domainPanel.getDomainResult().freshBaseRule();
-							domainPanel.showDataToDomainGUI();
-							domainPanel.saveDomainDataToDB();
-						} catch (Exception exception) {
-							exception.printStackTrace();
-						}
-						btnFresh.setEnabled(true);
-						return null;
-					}
-				};
-				worker.execute();
+				btnFresh.setEnabled(false);
+				domainPanel.refreshInBackground();
+				btnFresh.setEnabled(true);
 			}
 		});
 
-		/*
-		JButton btnCopy = new JButton("Copy");
-		btnCopy.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-				StringSelection selection = new StringSelection(domainResult.fetchRootDomains());
-				clipboard.setContents(selection, null);
-			}
-		});
-		btnCopy.setToolTipText("Copy Root Domains To ClipBoard");
-		add(btnCopy);*/
-		
 		rdbtnAddRelatedToRoot = new JRadioButton("Auto Add Related Domain To Root Domain");
 		rdbtnAddRelatedToRoot.setVerticalAlignment(SwingConstants.TOP);
 		rdbtnAddRelatedToRoot.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-					@Override
-					protected Map doInBackground() throws Exception {
-						domainPanel.getDomainResult().autoAddRelatedToRoot = rdbtnAddRelatedToRoot.isSelected();
-						rdbtnAddRelatedToRoot.setEnabled(false);
-						try {
-							if (domainPanel.getDomainResult().autoAddRelatedToRoot) {
-								domainPanel.getDomainResult().relatedToRoot();
-								domainPanel.showDataToDomainGUI();
-								domainPanel.saveDomainDataToDB();
-							}
-						} catch (Exception exception) {
-							exception.printStackTrace(BurpExtender.getStderr());
-						}
-						rdbtnAddRelatedToRoot.setEnabled(true);
-						return null;
+				rdbtnAddRelatedToRoot.setEnabled(false);
+				try {
+					domainPanel.getDomainResult().autoAddRelatedToRoot = rdbtnAddRelatedToRoot.isSelected();
+					if (domainPanel.getDomainResult().autoAddRelatedToRoot) {
+						domainPanel.getDomainResult().relatedToRoot();
 					}
-				};
-				worker.execute();
+				} catch (Exception exception) {
+					exception.printStackTrace(BurpExtender.getStderr());
+				}
+				domainPanel.refreshInBackground();
+				rdbtnAddRelatedToRoot.setEnabled(true);
 			}
 		});
 		rdbtnAddRelatedToRoot.setSelected(false);
