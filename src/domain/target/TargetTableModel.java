@@ -188,14 +188,6 @@ public class TargetTableModel extends AbstractTableModel {
 		if (entry.getType() == null || !TargetEntry.TargetTypeList.contains(entry.getType())) {
 			return false;
 		}
-
-		String target = entry.getTarget();
-		if (!(DomainNameUtils.isValidDomain(target) ||
-				IPAddressUtils.isValidIP(target)||
-				IPAddressUtils.isValidSubnet(target)||
-				DomainNameUtils.isValidWildCardDomain(target))) {
-			return false;
-		}
 		return true;
 	}
 

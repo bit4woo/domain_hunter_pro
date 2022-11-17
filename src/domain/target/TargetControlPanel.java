@@ -24,6 +24,7 @@ public class TargetControlPanel extends JPanel {
 	
 	JRadioButton rdbtnAddRelatedToRoot;
 	DomainPanel domainPanel;
+	private JButton btnFresh;
 
 	public JRadioButton getRdbtnAddRelatedToRoot() {
 		return rdbtnAddRelatedToRoot;
@@ -47,9 +48,10 @@ public class TargetControlPanel extends JPanel {
 				} else {
 					String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
 					TargetEntry entry = new TargetEntry(enteredRootDomain);
-					domainPanel.fetchTargetModel().addRowIfValid(entry);
+					if(domainPanel.fetchTargetModel().addRowIfValid(entry)){
+						btnFresh.doClick();
+					}
 				}
-				domainPanel.refreshInBackground();
 			}
 		});
 
@@ -63,9 +65,9 @@ public class TargetControlPanel extends JPanel {
 				} else {
 					String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
 					TargetEntry entry = new TargetEntry(enteredRootDomain,false);
-					domainPanel.fetchTargetModel().addRowIfValid(entry);
-					domainPanel.getDomainResult().freshBaseRule();
-					domainPanel.saveDomainDataToDB();
+					if(domainPanel.fetchTargetModel().addRowIfValid(entry)){
+						btnFresh.doClick();
+					}
 				}
 			}
 		});
@@ -98,13 +100,24 @@ public class TargetControlPanel extends JPanel {
 		});
 
 		
-		JButton btnFresh = new JButton("Refresh");
+		btnFresh = new JButton("Refresh");
 		btnFresh.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				btnFresh.setEnabled(false);
-				domainPanel.refreshInBackground();
-				btnFresh.setEnabled(true);
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+					@Override
+					protected Map doInBackground() throws Exception {
+						btnFresh.setEnabled(false);
+						domainPanel.refreshShowSave();
+						return null;
+					}
+
+					@Override
+					protected void done(){
+						btnFresh.setEnabled(true);
+					}
+				};
+				worker.execute();
 			}
 		});
 
@@ -117,11 +130,11 @@ public class TargetControlPanel extends JPanel {
 					domainPanel.getDomainResult().autoAddRelatedToRoot = rdbtnAddRelatedToRoot.isSelected();
 					if (domainPanel.getDomainResult().autoAddRelatedToRoot) {
 						domainPanel.getDomainResult().relatedToRoot();
+						btnFresh.doClick();
 					}
 				} catch (Exception exception) {
 					exception.printStackTrace(BurpExtender.getStderr());
 				}
-				domainPanel.refreshInBackground();
 				rdbtnAddRelatedToRoot.setEnabled(true);
 			}
 		});

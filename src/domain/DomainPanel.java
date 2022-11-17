@@ -162,7 +162,7 @@ public class DomainPanel extends JPanel {
 		HeaderPanel = headerPanel;
 	}
 
-	
+
 	public GUIMain getGuiMain() {
 		return guiMain;
 	}
@@ -171,7 +171,7 @@ public class DomainPanel extends JPanel {
 		this.guiMain = guiMain;
 	}
 
-	
+
 	public DomainDao getDomainDao() {
 		return domainDao;
 	}
@@ -232,7 +232,7 @@ public class DomainPanel extends JPanel {
 		});
 		HeaderPanel.add(btnSaveDomainOnly);
 
-		
+
 		JButton test = new JButton("test");
 		test.setToolTipText("Only save data in Domain Panel");
 		test.addActionListener(new ActionListener() {
@@ -241,7 +241,7 @@ public class DomainPanel extends JPanel {
 			}});
 		HeaderPanel.add(test);
 
-		
+
 
 		/*
 		btnBrute = new JButton("Brute");
@@ -643,30 +643,19 @@ public class DomainPanel extends JPanel {
 		targetTable.setModel(targetModel);
 		targetTable.tableHeaderLengthInit();
 	}
-	
-	/**
-	 * //执行刷新、数据显示、数据保存
-	 */
-	public void refreshInBackground() {
-		SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-			@Override
-			protected Map doInBackground() throws Exception {
-				try {//执行刷新、数据显示、数据保存
-					getDomainResult().freshBaseRule();
-					showDataToDomainGUI();
-					saveDomainDataToDB();
-				} catch (Exception exception) {
-					exception.printStackTrace();
-				}
-				return null;
-			}
 
-			@Override
-			protected void done(){
-				
-			}
-		};
-		worker.execute();
+
+	/**
+	 * 执行刷新、数据显示、数据保存
+	 */
+	public void refreshShowSave() {
+		try {//执行刷新、数据显示、数据保存
+			getDomainResult().freshBaseRule();
+			showDataToDomainGUI();
+			saveDomainDataToDB();
+		} catch (Exception exception) {
+			exception.printStackTrace();
+		}
 	}
 
 

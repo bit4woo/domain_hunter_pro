@@ -459,6 +459,8 @@ public class DomainManager {
 	 * IPofCert也可以排除已在IPSetOfSubnet中的部分
 	 *
 	 * 假如用户手动编辑了target。那么就需要依靠刷新的操作来更新数据。所以单纯靠添加时的处理逻辑是不够的。
+	 * 
+	 * 新增的刷新逻辑还可以简化，子域名等无需再次分析。
 	 */
 	public void freshBaseRule() {
 		guiMain.getDomainPanel().backupDB("before refresh");
