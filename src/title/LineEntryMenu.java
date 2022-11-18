@@ -273,8 +273,10 @@ public class LineEntryMenu extends JPopupMenu {
 				for (int row:modleRows) {
 					LineEntry firstEntry = lineTable.getLineTableModel().getLineEntries().get(row);
 					String searchContent = firstEntry.getIcon_hash();
-					String url= "https://www.zoomeye.org/searchResult?q=iconhash:\"%s\"";
-					url= String.format(url, searchContent);
+					searchContent= String.format("iconhash:\"%s\"", searchContent);
+					searchContent = URLEncoder.encode(searchContent);
+					
+					String url= "https://www.zoomeye.org/searchResult?q="+searchContent;
 					try {
 						Commons.browserOpen(url, null);
 					} catch (Exception e) {
