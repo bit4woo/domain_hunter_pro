@@ -33,12 +33,9 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
@@ -48,16 +45,18 @@ import com.google.common.net.InternetDomainName;
 
 import GUI.GUIMain;
 import GUI.JScrollPanelWithHeader;
-import GUI.ProjectMenu;
 import burp.BurpExtender;
 import burp.Commons;
-import burp.DBHelper;
 import burp.IBurpExtenderCallbacks;
 import burp.IHttpRequestResponse;
 import burp.IHttpService;
 import burp.IScanIssue;
+import burp.GrepUtils;
 import config.ConfigPanel;
+import dao.DomainDao;
+import dao.TargetDao;
 import domain.target.TargetControlPanel;
+import domain.target.TargetEntry;
 import domain.target.TargetTable;
 import domain.target.TargetTableModel;
 import thread.ThreadSearhDomain;
@@ -72,11 +71,9 @@ import toElastic.VMP;
  */
 public class DomainPanel extends JPanel {
 
-	private JTextField textFieldUploadURL;
 	private JButton btnSearch;
 	private JButton btnCrawl;
-	private static JLabel lblSummary;
-	private TargetControlPanel ControlPanel;
+	private JLabel lblSummary;
 
 	JScrollPanelWithHeader ScrollPaneSpecialPortTargets;
 	JScrollPanelWithHeader ScrollPaneRelatedDomains;
@@ -90,8 +87,9 @@ public class DomainPanel extends JPanel {
 	JScrollPanelWithHeader PanelBlackIPList;
 	JScrollPanelWithHeader PanelSimilarEmails;
 
-	private static TargetTable targetTable;
-	private static JPanel HeaderPanel;
+	private TargetTable targetTable;
+	private JPanel HeaderPanel;
+	private TargetControlPanel ControlPanel;
 
 	//流量分析进程需要用到这个变量，标记为volatile以获取正确的值。
 	/**
@@ -101,31 +99,26 @@ public class DomainPanel extends JPanel {
 	 * targetTable可以从DomainPanel中获取，是GUI的线路关系
 	 * targetTableModel则对应地从DomainManager中的对象获取，是数据模型的线路关系
 	 */
-	private volatile static DomainManager domainResult = new DomainManager();//getter setter
+	private volatile DomainManager domainResult;//getter setter
+	private boolean listenerIsOn = true;
+	private DomainDao domainDao;
+	private TargetDao targetDao;
 	private PrintWriter stdout;
 	private PrintWriter stderr;
+	private GUIMain guiMain;
 
-	private static boolean listenerIsOn = true;
 	private static final Logger log = LogManager.getLogger(DomainPanel.class);
 
 
-	public static boolean isListenerIsOn() {
+	public boolean isListenerIsOn() {
 		return listenerIsOn;
 	}
 
-	public static void setListenerIsOn(boolean listenerIsOn) {
-		DomainPanel.listenerIsOn = listenerIsOn;
+	public void setListenerIsOn(boolean listenerIsOn) {
+		this.listenerIsOn = listenerIsOn;
 	}
 
-	public static DomainManager getDomainResult() {
-		return domainResult;
-	}
-
-	public static void setDomainResult(DomainManager domainResult) {
-		DomainPanel.domainResult = domainResult;
-	}
-
-	public static TargetTable getTargetTable() {
+	public TargetTable getTargetTable() {
 		return targetTable;
 	}
 
@@ -133,40 +126,83 @@ public class DomainPanel extends JPanel {
 		this.targetTable = targetTable;
 	}
 
-	public static TargetTableModel fetchTargetModel() {
+	public TargetTableModel fetchTargetModel() {
 		return targetTable.getTargetModel();
 	}
 
-	public static JLabel getLblSummary() {
+	public JLabel getLblSummary() {
 		return lblSummary;
 	}
 
-	//	public static TargetTableModel getTargetTableModel() {
-	//		return targetTableModel;
-	//	}
-	//
-	//	public static void setTargetTableModel(TargetTableModel targetTableModel) {
-	//		DomainPanel.targetTableModel = targetTableModel;
-	//	}
-
-
-	public static JPanel getHeaderPanel() {
+	public JPanel getHeaderPanel() {
 		return HeaderPanel;
 	}
 
-	public static void createOrOpenDB() {
+	public TargetControlPanel getControlPanel() {
+		return ControlPanel;
+	}
+
+	public void setControlPanel(TargetControlPanel controlPanel) {
+		ControlPanel = controlPanel;
+	}
+
+	public DomainManager getDomainResult() {
+		return domainResult;
+	}
+
+	public void setDomainResult(DomainManager domainResult) {
+		this.domainResult = domainResult;
+	}
+
+	public void setLblSummary(JLabel lblSummary) {
+		this.lblSummary = lblSummary;
+	}
+
+	public void setHeaderPanel(JPanel headerPanel) {
+		HeaderPanel = headerPanel;
+	}
+
+
+	public GUIMain getGuiMain() {
+		return guiMain;
+	}
+
+	public void setGuiMain(GUIMain guiMain) {
+		this.guiMain = guiMain;
+	}
+
+
+	public DomainDao getDomainDao() {
+		return domainDao;
+	}
+
+	public void setDomainDao(DomainDao domainDao) {
+		this.domainDao = domainDao;
+	}
+
+	public TargetDao getTargetDao() {
+		return targetDao;
+	}
+
+	public void setTargetDao(TargetDao targetDao) {
+		this.targetDao = targetDao;
+	}
+
+	public void createOrOpenDB() {
 		Object[] options = { "Create","Open"};
 		int user_input = JOptionPane.showOptionDialog(null, "You should Create or Open a DB file", "Chose Your Action",
 				JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null, options, options[0]);
 		if (user_input == 0) {
-			ProjectMenu.createNewDb(BurpExtender.getGui());
+			guiMain.getProjectMenu().createNewDb(guiMain);
 		}
 		if (user_input == 1) {
-			ProjectMenu.openDb();
+			guiMain.getProjectMenu().openDb();
 		}
 	}
 
-	public DomainPanel() {//构造函数
+
+	public DomainPanel(GUIMain guiMain) {//构造函数
+		this.guiMain = guiMain;
 		this.setBorder(new EmptyBorder(5, 5, 5, 5));
 		this.setLayout(new BorderLayout(0, 0));
 
@@ -196,16 +232,16 @@ public class DomainPanel extends JPanel {
 		});
 		HeaderPanel.add(btnSaveDomainOnly);
 
-		/*
+
 		JButton test = new JButton("test");
 		test.setToolTipText("Only save data in Domain Panel");
 		test.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				GUI.getProjectMenu().changeTabName("");
+				guiMain.stopLiveCapture();
 			}});
 		HeaderPanel.add(test);
 
-		 */
+
 
 		/*
 		btnBrute = new JButton("Brute");
@@ -274,7 +310,7 @@ public class DomainPanel extends JPanel {
 						//System.out.println(rootDomains.toString());
 						//System.out.println("xxx"+keywords.toString());
 						btnSearch.setEnabled(false);
-						domainResult.getEmailSet().addAll(collectEmails());
+						collectEmailFromIssue();
 						return search(rootDomains, keywords);
 					}
 
@@ -362,40 +398,12 @@ public class DomainPanel extends JPanel {
 		JButton btnBuckupDB = new JButton("Backup DB");
 		btnBuckupDB.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				DomainPanel.backupDB();
+				backupDB(null);
 			}
 		});
 		HeaderPanel.add(btnBuckupDB);
 
-		textFieldUploadURL = new JTextField();
-		textFieldUploadURL.setColumns(30);
-		textFieldUploadURL.setToolTipText("input upload url here");
-		HeaderPanel.add(textFieldUploadURL);
-		// Listen for changes in the text
-		textFieldUploadURL.getDocument().addDocumentListener(new DocumentListener() {
-			public void changedUpdate(DocumentEvent e) {
-				saveURL();
-			}
 
-			public void removeUpdate(DocumentEvent e) {
-				saveURL();
-			}
-
-			public void insertUpdate(DocumentEvent e) {
-				saveURL();
-			}
-
-			public void saveURL() {
-				String url = textFieldUploadURL.getText();
-				try {
-					new URL(url);
-					domainResult.uploadURL = url;
-					saveDomainDataToDB();
-				} catch (Exception e) {
-
-				}
-			}
-		});
 
 
 		JButton btnUpload = new JButton("Upload");
@@ -406,7 +414,7 @@ public class DomainPanel extends JPanel {
 					@Override
 					protected Boolean doInBackground() throws Exception {
 						btnUpload.setEnabled(false);
-						String url = domainResult.uploadURL;
+						String url = guiMain.getConfigPanel().getLineConfig().getUploadUrl();
 						String host = new URL(url).getHost();
 						String token = ConfigPanel.textFieldUploadApiToken.getText().trim();
 						HashMap<String, String> headers = new HashMap<String, String>();
@@ -417,9 +425,9 @@ public class DomainPanel extends JPanel {
 						if (host.startsWith("vmp.test.shopee.") ||
 								host.contains("burpcollaborator.net") ||
 								host.contains("vmp.sz.shopee")) {
-							return VMP.uploadAllVMPEntries(url, headers);
+							return new VMP(guiMain).uploadAllVMPEntries(url, headers);
 						} else {//只上传域名信息
-							return VMP.upload(domainResult.uploadURL, headers, domainResult.ToJson());
+							return VMP.upload(url, headers, domainResult.ToJson());
 						}
 					}
 
@@ -452,10 +460,10 @@ public class DomainPanel extends JPanel {
 
 		JScrollPane PanelWest1 = new JScrollPane();
 		TargetPane.setLeftComponent(PanelWest1);
-		targetTable = new TargetTable();
+		targetTable = new TargetTable(guiMain);
 		PanelWest1.setViewportView(targetTable);
 
-		ControlPanel = new TargetControlPanel();
+		ControlPanel = new TargetControlPanel(this);
 		TargetPane.setRightComponent(ControlPanel);
 
 
@@ -465,17 +473,17 @@ public class DomainPanel extends JPanel {
 		BodyPane.setLayout(new GridLayout(2, 5, 0, 0));
 
 
-		ScrollPaneRelatedDomains = new JScrollPanelWithHeader("Related Domains","Related Domains"); //E2
-		ScrollPaneSubdomains = new JScrollPanelWithHeader("Sub Domains","Sub Domains");
-		ScrollPaneSimilarDomains = new JScrollPanelWithHeader("Similar Domains","Similar Domains");
-		ScrollPaneEmails = new JScrollPanelWithHeader("Emails","Emails");
-		PanelSimilarEmails = new JScrollPanelWithHeader("Similar Emails","Similar Emails");
+		ScrollPaneRelatedDomains = new JScrollPanelWithHeader(this,TextAreaType.RelatedDomain,"Related Domains","Related Domains"); //E2
+		ScrollPaneSubdomains = new JScrollPanelWithHeader(this,TextAreaType.SubDomain,"Sub Domains","Sub Domains");
+		ScrollPaneSimilarDomains = new JScrollPanelWithHeader(this,TextAreaType.SimilarDomain,"Similar Domains","Similar Domains");
+		ScrollPaneEmails = new JScrollPanelWithHeader(this,TextAreaType.Email,"Emails","Emails");
+		PanelSimilarEmails = new JScrollPanelWithHeader(this,TextAreaType.SimilarEmail,"Similar Emails","Similar Emails");
 
-		ScrollPaneSpecialPortTargets = new JScrollPanelWithHeader("Custom Assets","you can put your custom assets here");
-		PanelIPOfSubnet = new JScrollPanelWithHeader("IP Of Subnet","IP Of Subnet");
-		PanelIPOfCert = new JScrollPanelWithHeader("IP Of Cert","IP Of Cert");
-		ScrollPanePackageNames = new JScrollPanelWithHeader("Package Names","Package Names");
-		PanelBlackIPList = new JScrollPanelWithHeader("Black IP List","Black IP List");
+		ScrollPaneSpecialPortTargets = new JScrollPanelWithHeader(this,TextAreaType.SpecialPortTarget,"Custom Assets","you can put your custom assets here");
+		PanelIPOfSubnet = new JScrollPanelWithHeader(this,TextAreaType.IPSetOfSubnet,"IP Of Subnet","IP Of Subnet");
+		PanelIPOfCert = new JScrollPanelWithHeader(this,TextAreaType.IPSetOfCert,"IP Of Cert","IP Of Cert");
+		ScrollPanePackageNames = new JScrollPanelWithHeader(this,TextAreaType.PackageName,"Package Names","Package Names");
+		PanelBlackIPList = new JScrollPanelWithHeader(this,TextAreaType.BlackIP,"Black IP List","Black IP List");
 
 		BodyPane.add(ScrollPaneRelatedDomains);
 		BodyPane.add(ScrollPaneSubdomains);
@@ -487,155 +495,6 @@ public class DomainPanel extends JPanel {
 		BodyPane.add(PanelIPOfCert);
 		BodyPane.add(ScrollPanePackageNames);
 		BodyPane.add(PanelBlackIPList);
-
-
-
-		/*
-		/////如下使用JSplitPane多次分割，可以拖拽变换大小，但是效果不佳
-
-		//多次分割命名说明：
-		//最初的bodyPanel为A; 分割得到的b1,b2; b1再次分割得到C1,c2,b2再次分割得到c3,c4;以此类推。
-		//子域名、相关域名、相似域名、邮箱、相似邮箱、包名、根据网段确定的IP、根据证书确定的IP、IP黑名单、用户自定义输入目标；目标规则Table、Table控制按钮。至少需要12个格子
-
-		//第一层分割
-		JSplitPane BodyPanelAliasAPanel = new JSplitPane();//中间的大模块，一分为二
-		BodyPanelAliasAPanel.setResizeWeight(0.5);
-		BodyPanelAliasAPanel.setOrientation(JSplitPane.VERTICAL_SPLIT);
-		this.add(BodyPanelAliasAPanel, BorderLayout.CENTER);
-
-
-		//第二层分割，左边 B1
-		JSplitPane B1Panel = new JSplitPane();//放入左边的分区。再讲左边的分区一分为二
-		B1Panel.setResizeWeight(0.5);
-		BodyPanelAliasAPanel.setLeftComponent(B1Panel);
-
-		//第二层分割，右边 B2
-		JSplitPane B2Panel = new JSplitPane();//放入右半部分分区，
-		B2Panel.setResizeWeight(0.5);
-		BodyPanelAliasAPanel.setRightComponent(B2Panel);
-
-
-		//第三层分割，得到C1,C2,C3,C4
-		JSplitPane C1Panel = new JSplitPane();
-		C1Panel.setResizeWeight(0.5);
-		B1Panel.setLeftComponent(C1Panel);
-
-		JSplitPane C2Panel = new JSplitPane();
-		C2Panel.setResizeWeight(0.5);
-		B1Panel.setRightComponent(C2Panel);
-
-
-		JSplitPane C3Panel = new JSplitPane();
-		C3Panel.setResizeWeight(0.5);
-		B2Panel.setLeftComponent(C3Panel);
-
-		JSplitPane C4Panel = new JSplitPane();
-		C4Panel.setResizeWeight(0.5);
-		B2Panel.setRightComponent(C4Panel);
-
-		//第四层分割，得到D1~D8
-		JSplitPane D1Panel = new JSplitPane();
-		D1Panel.setResizeWeight(0.5);
-		C1Panel.setLeftComponent(D1Panel);
-
-		JSplitPane D2Panel = new JSplitPane();
-		D2Panel.setResizeWeight(0.5);
-		C1Panel.setRightComponent(D2Panel);
-
-		JSplitPane D3Panel = new JSplitPane();
-		D3Panel.setResizeWeight(0.5);
-		C2Panel.setLeftComponent(D3Panel);
-
-		JSplitPane D4Panel = new JSplitPane();
-		D4Panel.setResizeWeight(0.5);
-		C2Panel.setRightComponent(D4Panel);
-
-		JSplitPane D5Panel = new JSplitPane();
-		D5Panel.setResizeWeight(0.5);
-		C3Panel.setLeftComponent(D5Panel);
-
-		JSplitPane D6Panel = new JSplitPane();
-		D6Panel.setResizeWeight(0.5);
-		C3Panel.setRightComponent(D6Panel);
-
-		JSplitPane D7Panel = new JSplitPane();
-		D7Panel.setResizeWeight(0.5);
-		C4Panel.setLeftComponent(D7Panel);
-
-		JSplitPane D8Panel = new JSplitPane();
-		D8Panel.setResizeWeight(0.5);
-		C4Panel.setRightComponent(D8Panel);
-
-		//第五层分割，得到E1~E16
-		JScrollPane E1Panel = new JScrollPane();
-		D1Panel.setLeftComponent(E1Panel);
-
-		//E1放入目标控制table
-		E1Panel.setViewportBorder(new LineBorder(new Color(0, 0, 0)));
-		targetTable = new TargetTable();
-		E1Panel.setViewportView(targetTable);
-
-
-		//JScrollPane E2Panel = new JScrollPane();
-		ScrollPaneRelatedDomains = new JScrollPanelWithHeader("Related Domains","Related Domains"); //E2
-		D1Panel.setRightComponent(ScrollPaneRelatedDomains);
-
-		//JScrollPane E3Panel = new JScrollPane();
-		ScrollPaneSubdomains = new JScrollPanelWithHeader("Sub Domains","Sub Domains");
-		D2Panel.setLeftComponent(ScrollPaneSubdomains);
-
-		//JScrollPane E4Panel = new JScrollPane();
-		ScrollPaneSimilarDomains = new JScrollPanelWithHeader("Similar Domains","Similar Domains");
-		D2Panel.setRightComponent(ScrollPaneSimilarDomains);
-
-		//JScrollPane E5Panel = new JScrollPane();
-		ScrollPaneEmails = new JScrollPanelWithHeader("Emails","Emails");
-		D3Panel.setLeftComponent(ScrollPaneEmails);
-
-		//JScrollPane E6Panel = new JScrollPane();
-		PanelSimilarEmails = new JScrollPanelWithHeader("Similar Emails","Similar Emails");
-		D3Panel.setRightComponent(PanelSimilarEmails);
-
-		//JScrollPane E7Panel = new JScrollPane();
-		D4Panel.setLeftComponent(null);
-		//预留位置，设为空，会在界面上隐藏
-
-		//JScrollPane E8Panel = new JScrollPane();
-		D4Panel.setRightComponent(null);
-		//预留位置，设为空，会在界面上隐藏
-
-		//JScrollPane E9Panel = new JScrollPane();
-		//D5Panel.setLeftComponent(E9Panel);
-		//对应E9位置，左下角第一个
-		JPanel ControlPanel = new TargetControlPanel();
-		D5Panel.setLeftComponent(ControlPanel);
-
-		//JScrollPane E10Panel = new JScrollPane();
-		ScrollPaneSpecialPortTargets = new JScrollPanelWithHeader("Targets With Port","Targets With Port/Your Custom Targets");
-		D5Panel.setRightComponent(ScrollPaneSpecialPortTargets);
-
-		//JScrollPane E11Panel = new JScrollPane();
-		PanelIPOfSubnet = new JScrollPanelWithHeader("IP Of Subnet","IP Of Subnet");
-		D6Panel.setLeftComponent(PanelIPOfSubnet);
-
-		//JScrollPane E12Panel = new JScrollPane();
-		PanelIPOfCert = new JScrollPanelWithHeader("IP Of Cert","IP Of Cert");
-		D6Panel.setRightComponent(PanelIPOfCert);
-
-		//JScrollPane E13Panel = new JScrollPane();
-		ScrollPanePackageNames = new JScrollPanelWithHeader("Package Names","Package Names");
-		D7Panel.setLeftComponent(ScrollPanePackageNames);
-
-		//JScrollPane E14Panel = new JScrollPane();
-		PanelBlackIPList = new JScrollPanelWithHeader("Black IP List","Black IP List");
-		D7Panel.setRightComponent(PanelBlackIPList);
-
-		//JScrollPane E15Panel = new JScrollPane();
-		D8Panel.setLeftComponent(null);
-
-		//JScrollPane E16Panel = new JScrollPane();
-		D8Panel.setRightComponent(null);
-		 */
 
 
 		///////////////////////////FooterPanel//////////////////
@@ -681,7 +540,7 @@ public class DomainPanel extends JPanel {
 			public void mouseClicked(MouseEvent e) {
 				if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2) {//左键双击
 					try {
-						Commons.OpenFolder(GUIMain.getCurrentDBFile().getParent());
+						Commons.OpenFolder(guiMain.getCurrentDBFile().getParent());
 					} catch (Exception e2) {
 						e2.printStackTrace(stderr);
 					}
@@ -694,7 +553,7 @@ public class DomainPanel extends JPanel {
 			@Override
 			public void mouseEntered(MouseEvent e) {
 				lblSummary.setForeground(Color.RED);
-				lblSummary.setToolTipText(GUIMain.getCurrentDBFile().toString());
+				lblSummary.setToolTipText(guiMain.getCurrentDBFile().toString());
 			}
 
 			@Override
@@ -703,63 +562,18 @@ public class DomainPanel extends JPanel {
 			}
 		});
 
-
-		//搜索域名，但是效果不怎么好
-		//		JTextField textFieldSearch = new JTextField("");
-		//		textFieldSearch.addFocusListener(new FocusAdapter() {
-		//			@Override
-		//			public void focusGained(FocusEvent e) {
-		//				if (textFieldSearch.getText().equals("Input text to search")) {
-		//					textFieldSearch.setText("");
-		//				}
-		//			}
-		//			@Override
-		//			public void focusLost(FocusEvent e) {
-		//				/*
-		//				 * if (textFieldSearch.getText().equals("")) {
-		//				 * textFieldSearch.setText("Input text to search"); }
-		//				 */
-		//
-		//			}
-		//		});
-		//
-		//		textFieldSearch.addActionListener(new ActionListener() {
-		//			public void actionPerformed(ActionEvent e) {
-		//				String keyword = textFieldSearch.getText().trim();
-		//				domainPanelSearch(keyword);
-		//			}
-		//
-		//			public void domainPanelSearch(String keyword) {
-		//				try {
-		//					Highlighter h = textAreaSubdomains.getHighlighter();
-		//					h.removeAllHighlights();
-		//					int pos = textAreaSubdomains.getText().indexOf(keyword, 0);
-		//					h.addHighlight(pos ,
-		//					               pos  + keyword.length(),
-		//					               DefaultHighlighter.DefaultPainter);
-		//					textAreaRelatedDomains = new JTextArea();
-		//					textAreaSubdomains = new JTextArea();
-		//					textAreaSimilarDomains = new JTextArea();
-		//					textAreaEmails = new JTextArea();
-		//					textAreaPackages = new JTextArea();
-		//				} catch (BadLocationException e) {
-		//					e.printStackTrace(stderr);
-		//				}
-		//			}
-		//		});
-		//
-		//		textFieldSearch.setColumns(30);
-		//		footerPanel.add(textFieldSearch);
 	}
+
 
 	/**
 	 * 显示DomainPanel中的数据。
-	 * 未包含target信息
+	 * 无论是用户的手动输入编辑文本框内容，还是调用setText方法，都将触发DocumentListener!(见JTextAreaListenerTest.java)
+	 * 所以show()函数的设计都应该关闭监听器的开关。
+	 * 
+	 * DomainManager ---> UI
 	 */
 	public void showDataToDomainGUI() {
 		listenerIsOn = false;
-
-		textFieldUploadURL.setText(domainResult.uploadURL);
 
 		ScrollPaneSpecialPortTargets.getTextArea().setText(domainResult.fetchSpecialPortTargets());
 		ScrollPaneSubdomains.getTextArea().setText(domainResult.fetchSubDomains());
@@ -775,7 +589,7 @@ public class DomainPanel extends JPanel {
 
 
 		lblSummary.setText(domainResult.getSummary());
-		TargetControlPanel.rdbtnAddRelatedToRoot.setSelected(domainResult.autoAddRelatedToRoot);
+		ControlPanel.getRdbtnAddRelatedToRoot().setSelected(domainResult.autoAddRelatedToRoot);
 
 		System.out.println("Load Domain Panel Data Done, " + domainResult.getSummary());
 		stdout.println("Load Domain Panel Data Done, " + domainResult.getSummary());
@@ -783,9 +597,65 @@ public class DomainPanel extends JPanel {
 		listenerIsOn = true;
 	}
 
-	public void LoadData(DomainManager domainResult) {
+	/**
+	 * 数据加载过程分为两步：
+	 * 1、从DB到DomainManager；
+	 * 2、从DomainManager到UI。
+	 * @param dbFilePath
+	 * 
+	 * DB---> DomainManager ---> UI
+	 */
+	public void LoadDomainData(String dbFilePath) {
+		domainDao = new DomainDao(dbFilePath);
+		domainResult = domainDao.getDomainManager();
+		domainResult.setGuiMain(guiMain);
 		setDomainResult(domainResult);
 		showDataToDomainGUI();
+	}
+
+	/**
+	 * DomainManager ---> DB
+	 */
+	public void saveDomainDataToDB() {
+		try {
+			File file = guiMain.getCurrentDBFile();
+			if (file == null || !file.exists()) {
+				file = guiMain.dbfc.dialog(false,".db");
+				guiMain.setCurrentDBFile(file);
+			}
+			DomainDao dao = new DomainDao(file.toString());
+			dao.saveDomainManager(domainResult);
+			log.info("domain data saved");
+		} catch (Exception e) {
+			e.printStackTrace();
+			e.printStackTrace(BurpExtender.getStderr());
+		}
+	}
+
+	/**
+	 * 加载数据的的方式就是重新设置TableModel
+	 * @param dbFilePath
+	 */
+	public void LoadTargetsData(String dbFilePath) {
+		targetDao = new TargetDao(dbFilePath);
+		List<TargetEntry> targets = targetDao.selectAll();
+		TargetTableModel targetModel = new TargetTableModel(guiMain,targets);
+		targetTable.setModel(targetModel);
+		targetTable.tableHeaderLengthInit();
+	}
+
+
+	/**
+	 * 执行刷新、数据显示、数据保存
+	 */
+	public void refreshShowSave() {
+		try {//执行刷新、数据显示、数据保存
+			getDomainResult().freshBaseRule();
+			showDataToDomainGUI();
+			saveDomainDataToDB();
+		} catch (Exception exception) {
+			exception.printStackTrace();
+		}
 	}
 
 
@@ -801,7 +671,7 @@ public class DomainPanel extends JPanel {
 		AllMessages.addAll(Arrays.asList(messages));
 		AllMessages.addAll(collectPackageNameMessages());//包含错误回显的请求响应消息
 
-		ThreadSearhDomain searchinstance = new ThreadSearhDomain(AllMessages);
+		ThreadSearhDomain searchinstance = new ThreadSearhDomain(guiMain,AllMessages);
 		searchinstance.start();
 		try {
 			searchinstance.join();
@@ -817,12 +687,10 @@ public class DomainPanel extends JPanel {
 	 * 从issue中提取Email
 	 * @return
 	 */
-	public static Set<String> collectEmails() {
-		Set<String> Emails = new HashSet<>();
+	public void collectEmailFromIssue() {
 		IScanIssue[] issues = BurpExtender.getCallbacks().getScanIssues(null);
 
-		final String REGEX_EMAIL = "[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+";
-		Pattern pDomainNameOnly = Pattern.compile(REGEX_EMAIL);
+		Pattern pDomainNameOnly = Pattern.compile(GrepUtils.REGEX_EMAIL);
 
 		for (IScanIssue issue : issues) {
 			if (issue.getIssueName().equalsIgnoreCase("Email addresses disclosed")) {
@@ -831,13 +699,14 @@ public class DomainPanel extends JPanel {
 				while (matcher.find()) {//多次查找
 					String email = matcher.group();
 					if (fetchTargetModel().emailType(email) == DomainManager.CERTAIN_EMAIL) {
-						Emails.add(matcher.group());
+						domainResult.getEmailSet().add(email);
 					}
-					System.out.println(matcher.group());
+					if (fetchTargetModel().emailType(email) == DomainManager.SIMILAR_EMAIL) {
+						domainResult.getSimilarEmailSet().add(email);
+					}
 				}
 			}
 		}
-		return Emails;
 	}
 
 
@@ -917,10 +786,11 @@ public class DomainPanel extends JPanel {
 	 */
 	public File saveDomainOnly() {
 		try {
-			File file = BurpExtender.getGui().dbfc.dialog(false,".db");
+			File file = guiMain.dbfc.dialog(false,".db");
 			if (file != null) {
-				DBHelper dbHelper = new DBHelper(file.toString());
-				if (dbHelper.saveDomainObject(domainResult) && dbHelper.saveTargets(fetchTargetModel())) {
+				DomainDao dao = new DomainDao(file.toString());
+				TargetDao dao1 = new TargetDao(file.toString());
+				if (dao.saveDomainManager(domainResult) && dao1.addOrUpdateTargets(fetchTargetModel().getTargetEntries())) {
 					stdout.println("Save Domain Only Success! " + Commons.getNowTimeString());
 					return file;
 				}
@@ -932,45 +802,13 @@ public class DomainPanel extends JPanel {
 		return null;
 	}
 
-	/*
-    自动保存，根据currentDBFile，如果currentDBFile为空或者不存在，就提示选择文件。
+
+	/**
+	 * 从UI文本框到DomainManager的过程。
+	 * 由listener负责。
 	 */
-	public static void saveDomainDataToDB() {
-		try {
-			File file = GUIMain.getCurrentDBFile();
-
-			if (file == null || !file.exists()) {
-				file = GUIMain.dbfc.dialog(false,".db");
-				GUIMain.setCurrentDBFile(file);
-			}
-
-			DBHelper dbHelper = new DBHelper(file.toString());
-			boolean success = dbHelper.saveDomainObject(domainResult);
-			if (success) {
-				log.info("domain data saved");
-			}else {
-				log.error("domain data save failed");
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			e.printStackTrace(BurpExtender.getStderr());
-		}
-	}
-
-	public void saveTextAreas() {
-
-		domainResult.setSpecialPortTargets(getSetFromTextArea(ScrollPaneSpecialPortTargets.getTextArea()));
-		domainResult.setRelatedDomainSet(getSetFromTextArea(ScrollPaneRelatedDomains.getTextArea()));
-		domainResult.setSubDomainSet(getSetFromTextArea(ScrollPaneSubdomains.getTextArea()));
-		domainResult.setSimilarDomainSet(getSetFromTextArea(ScrollPaneSimilarDomains.getTextArea()));
-		domainResult.setEmailSet(getSetFromTextArea(ScrollPaneEmails.getTextArea()));
-		domainResult.setPackageNameSet(getSetFromTextArea(ScrollPanePackageNames.getTextArea()));
-		
-		domainResult.setIPSetOfSubnet(getSetFromTextArea(PanelIPOfSubnet.getTextArea()));
-		domainResult.setIPSetOfCert(getSetFromTextArea(PanelIPOfCert.getTextArea()));
-		domainResult.setNotTargetIPSet(getSetFromTextArea(PanelBlackIPList.getTextArea()));
-		domainResult.setSimilarEmailSet(getSetFromTextArea(PanelSimilarEmails.getTextArea()));
-		
+	@Deprecated
+	public void saveTextAreas() {		
 		domainResult.getSummary();
 	}
 
@@ -981,10 +819,15 @@ public class DomainPanel extends JPanel {
 		return domainList;
 	}
 
-	public static void backupDB() {
-		File file = GUIMain.getCurrentDBFile();
+	public void backupDB(String keyword) {
+		File file = guiMain.getCurrentDBFile();
 		if (file == null) return;
-		File bakfile = new File(file.getAbsoluteFile().toString() + ".bak" + Commons.getNowTimeString());
+		String suffix = ".bak" + Commons.getNowTimeString();
+		if (keyword!=null && !keyword.equals("")) {
+			keyword = keyword.replaceAll("\\s+", "-");
+			suffix += keyword;
+		}
+		File bakfile = new File(file.getAbsoluteFile().toString() + suffix);
 		try {
 			FileUtils.copyFile(file, bakfile);
 			BurpExtender.getStdout().println("DB File Backed Up:" + bakfile.getAbsolutePath());

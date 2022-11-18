@@ -8,6 +8,8 @@ import com.google.common.hash.HashCode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -15,17 +17,17 @@ import java.util.regex.Pattern;
 
 public class LineEntry {
 	private static final Logger log=LogManager.getLogger(LineEntry.class);
+
+	//资产重要性
 	public static final String AssetType_A = "重要目标";//像管理后台、统一登录等等一旦有漏洞就危害很高的系统。
 	public static final String AssetType_B = "无价值无需再挖";//像官网、首页等对信息收集、目标界定有用；但是对“挖漏洞”来说没有价值的记录。
 	public static final String AssetType_C = "未分类";//默认值，还未进行区分的资产或者普通价值资产
 	public static final String AssetType_D = "非目标资产";//非目标资产，通常跑网段都会出现这类资产。
 
-	//	public static final String Tag_Manager = "管理端";
-	//	public static final String Tag_UserEnd = "用户端";
-	//	public static final String Tag_TestEnvironment = "测试环境";
+	public static final String[] AssetTypeArray = {LineEntry.AssetType_A, LineEntry.AssetType_B, 
+			LineEntry.AssetType_C, LineEntry.AssetType_D};
 
-	public static final String[] AssetTypeArray = {LineEntry.AssetType_A, LineEntry.AssetType_B, LineEntry.AssetType_C, LineEntry.AssetType_D};
-
+	//对当前资产的检测进度
 	public static final String CheckStatus_UnChecked = "UnChecked";
 	public static final String CheckStatus_Checked = "Done";
 	public static final String CheckStatus_Checking = "Checking";
@@ -34,16 +36,27 @@ public class LineEntry {
 	public static final String[] CheckStatusArray = {LineEntry.CheckStatus_UnChecked, LineEntry.CheckStatus_Checking,
 			LineEntry.CheckStatus_Checked,LineEntry.CheckStatus_MoreAction};
 
-	public static final String NotTargetBaseOnCertInfo = "CertInfoNotMatch";
-	public static final String NotTargetBaseOnBlackList = "IPInBlackList";
+	//资产归属判断依据
+	public static final String Tag_NotTargetBaseOnCertInfo = "CertNotMatch";
+	public static final String Tag_NotTargetBaseOnBlackList = "IPIsBlack";
+	public static final String Tag_NotTargetByUser = "NotTarget";
 
 	public static final String EntryType_Web = "Web";
 	public static final String EntryType_DNS = "DNS";
-	public static final String EntryType_Manual_Saved = "Manual_Saved";
+
+	//记录的来源
+	public static final String Source_Certain = "certain"; //确定属于目标范围的:子域名\指定的网段\确定属于网段的IP地址\根据证书信息确定属于目标的IP。
+	public static final String Source_Custom_Input = "custom"; //来自用户自定义输入
+	public static final String Source_Subnet_Extend = "extend"; //来自网段扩展汇算
+	public static final String Source_Manual_Saved = "saved"; //来自用户手动保存
 
 
 	public static String systemCharSet = getSystemCharSet();
 
+	/**
+	 * 从burp的角度，一个数据包由三部分组成：request、response、httpService
+	 * 而httpService又可以分为：protocol、host、port
+	 */
 	private int port =-1;
 	private String host = "";
 	private String protocol ="";
@@ -52,18 +65,25 @@ public class LineEntry {
 	private byte[] request = {};
 	private byte[] response = {};
 	// request+response+httpService == IHttpRequestResponse,burp的划分方式
-
-	//used in UI,the fields to show,平常的划分方式
+	
+	/**
+	 * 如下是显示界面使用到的字段，部分来自数据包本身，部分需要额外的请求
+	 *
+	 */
 	private String url = "";
 	private int statuscode = -1;
 	private int contentLength = -1;
 	private String title = "";
-	private String IP = "";
-	private String CDN = "";
 	private String webcontainer = "";
-	private String time = "";
+	//如上几个字段都是来自数据包本身
+	
+	private Set<String> IPSet = new HashSet<String>();
+	private Set<String> CNAMESet = new HashSet<String>();
+	private Set<String> CertDomainSet = new HashSet<String>();
 	private String icon_hash = "";
 	private String ASNInfo = "";
+	private String time = "";
+	//如上几个字段需要网络请求或查询
 
 	//Gson中，加了transient表示不序列化，是最简单的方法
 	//给不想被序列化的属性增加transient属性---java特性
@@ -71,20 +91,15 @@ public class LineEntry {
 	//private transient String bodyText = "";//use to adjust the response changed or not
 	//don't store these two field to reduce config file size.
 
-	//field for user
-	private transient boolean isChecked =false;
+	//field for user用户标记的字段，表明状态、类型、来源、备注、tag等等
 	private String CheckStatus =CheckStatus_UnChecked;
 	private String AssetType = AssetType_C;
 	private String EntryType = EntryType_Web;
-	private String comment ="";
-	private boolean isManualSaved = false;
-
-	private transient IHttpRequestResponse messageinfo;
+	private String EntrySource = "";
+	private Set<String> comments = new HashSet<String>();
+	private Set<String> EntryTags = new HashSet<String>();
 
 	//remove IHttpRequestResponse field ,replace with request+response+httpService(host port protocol). for convert to json.
-
-	private transient IExtensionHelpers helpers;
-	private transient IBurpExtenderCallbacks callbacks;
 
 	/**
 	 * 默认构造函数，序列化、反序列化所需
@@ -103,47 +118,27 @@ public class LineEntry {
 		this.host = host;
 		this.port = 80;
 		this.protocol ="http";
-
-		if (this.IP != null) {
-			this.IP = IPset.toString().replace("[", "").replace("]", "");
-		}
+		this.IPSet = IPset;
 		this.EntryType = EntryType_DNS;
 		this.CheckStatus = CheckStatus_Checked;
 	}
 
 	public LineEntry(IHttpRequestResponse messageinfo) {
-		this.messageinfo = messageinfo;
-		this.callbacks = BurpExtender.getCallbacks();
-		this.helpers = this.callbacks.getHelpers();
-		parse();
+		parse(messageinfo);
+	}
+
+	/**
+	 * 用于从数据库中恢复对象
+	 */
+	public LineEntry(URL url,byte[] request,byte[] response) {
+		parse(url,request,response);
 	}
 
 	public LineEntry(IHttpRequestResponse messageinfo,String CheckStatus,String comment) {
-		this.messageinfo = messageinfo;
-		this.callbacks = BurpExtender.getCallbacks();
-		this.helpers = this.callbacks.getHelpers();
-		parse();
+		parse(messageinfo);
 
 		this.CheckStatus = CheckStatus;
-		this.comment = comment;
-	}
-
-	@Deprecated
-	private LineEntry(IHttpRequestResponse messageinfo,boolean isNew,String CheckStatus,String comment,Set<String> IPset,Set<String> CDNset) {
-		this.messageinfo = messageinfo;
-		this.callbacks = BurpExtender.getCallbacks();
-		this.helpers = this.callbacks.getHelpers();
-		parse();
-
-		this.CheckStatus = CheckStatus;
-		this.comment = comment;
-		if (this.IP != null) {
-			this.IP = IPset.toString().replace("[", "").replace("]", "");
-		}
-
-		if (this.CDN != null) {
-			this.CDN = CDNset.toString().replace("[", "").replace("]", "");
-		}
+		addComment(comment);
 	}
 
 	public String ToJson(){//注意函数名称，如果是get set开头，会被认为是Getter和Setter函数，会在序列化过程中被调用。
@@ -154,40 +149,45 @@ public class LineEntry {
 		return JSON.parseObject(json, LineEntry.class);
 	}
 
-	private void parse() {
+	private void parse(IHttpRequestResponse messageinfo) {
+		if (messageinfo == null) return;
+		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
+		URL tmpurl = helpers.analyzeRequest(messageinfo).getUrl();//包含了默认端口
+		parse(tmpurl,messageinfo.getRequest(),messageinfo.getResponse());
+	}
+
+
+	/**
+	 * 可以用于从数据库中恢复对象
+	 * @param url
+	 * @param request
+	 * @param response
+	 */
+	private void parse(URL url,byte[] request,byte[] response) {
 		try {
+			this.url = url.toString();
+			port = url.getPort()== -1 ? url.getDefaultPort():url.getPort();
+			host = url.getHost();
+			protocol = url.getProtocol();
 
-			//time = Commons.getNowTimeString();//这是动态的，会跟随系统时间自动变化,why?--是因为之前LineTableModel的getValueAt函数每次都主动调用了该函数。
+			if (request != null) this.request = request;
 
-			IHttpService service = this.messageinfo.getHttpService();
+			if (response != null) {
+				this.response = response;
 
-			//url = service.toString();
-			url = helpers.analyzeRequest(messageinfo).getUrl().toString();//包含了默认端口
-			port = service.getPort();
-			host = service.getHost();
-			protocol = service.getProtocol();
-
-			if (messageinfo.getRequest() != null){
-				request = messageinfo.getRequest();
-			}
-
-			if (messageinfo.getResponse() != null){
-				response = messageinfo.getResponse();
+				IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
 				IResponseInfo responseInfo = helpers.analyzeResponse(response);
 				statuscode = responseInfo.getStatusCode();
 
-				//				MIMEtype = responseInfo.getStatedMimeType();
-				//				if(MIMEtype == null) {
-				//					MIMEtype = responseInfo.getInferredMimeType();
-				//				}
+				HelperPlus getter = new HelperPlus(helpers);
+				String tmpServer = getter.getHeaderValueOf(false, response, "Server");
+				if (tmpServer != null){
+					webcontainer = tmpServer;
+				}
 
-
-				Getter getter = new Getter(helpers);
-
-				webcontainer = getter.getHeaderValueOf(false, messageinfo, "Server");
-				byte[] byteBody = getter.getBody(false, messageinfo);
+				byte[] byteBody = HelperPlus.getBody(false, response);
 				try{
-					contentLength = Integer.parseInt(getter.getHeaderValueOf(false, messageinfo, "Content-Length").trim());
+					contentLength = Integer.parseInt(getter.getHeaderValueOf(false, response, "Content-Length").trim());
 				}catch (Exception e){
 					if (contentLength==-1 && byteBody!=null) {
 						contentLength = byteBody.length;
@@ -195,7 +195,6 @@ public class LineEntry {
 				}
 
 				title = fetchTitle(response);
-
 			}
 		}catch(Exception e) {
 			e.printStackTrace(BurpExtender.getStderr());
@@ -267,42 +266,42 @@ public class LineEntry {
 		this.title = title;
 	}
 
-	//IPString 222.79.64.33, 124.225.183.63
-	public String getIP() {
-		return IP;
+	public Set<String> getIPSet() {
+		return IPSet;
 	}
 
-	//return IP 的集合
-	public HashSet<String> fetchIPSet() {
-		HashSet<String> result = new HashSet<String>();
-		for (String ip: IP.split(",")) {
-			result.add(ip.trim());
+	public void setIPSet(Set<String> iPSet) {
+		IPSet = iPSet;
+	}
+
+	//用于序列化
+	public Set<String> getCNAMESet() {
+		return CNAMESet;
+	}
+	//用于序列化
+	public void setCNAMESet(Set<String> cNAMESet) {
+		CNAMESet = cNAMESet;
+	}
+
+	public Set<String> getCertDomainSet() {
+		return CertDomainSet;
+	}
+
+	public void setCertDomainSet(Set<String> certDomainSet) {
+		CertDomainSet = certDomainSet;
+	}
+
+	public String fetchCNAMEAndCertInfo() {
+		String CNames = String.join(",", getCNAMESet());
+		String CertDomains = String.join(",", getCertDomainSet());
+		Set<String> tmp = new HashSet<>();
+		if (!CNames.equals("")) {
+			tmp.add(CNames);
 		}
-		return result;
-	}
-
-	public void setIP(String iP) {
-		IP = iP;
-	}
-
-	public void setIPWithSet(Set<String> ipSet) {
-		IP = ipSet.toString().replace("[", "").replace("]", "");
-	}
-	//用于序列化
-	public String getCDN() {
-		return CDN;
-	}
-	//用于序列化
-	public void setCDN(String cDN) {
-		CDN = cDN;
-	}
-
-	public void setCDNWithSet(Set<String> cDNSet) {
-		CDN = cDNSet.toString().replace("[", "").replace("]", "");
-	}
-
-	public void setCertDomainWithSet(Set<String> certDomains) {
-		CDN += " | "+certDomains.toString().replace("[", "").replace("]", "");
+		if (!CertDomains.equals("")) {
+			tmp.add(CertDomains);
+		}
+		return String.join("|", tmp);
 	}
 
 	public String getWebcontainer() {
@@ -330,26 +329,6 @@ public class LineEntry {
 		this.icon_hash = icon_hash;
 	}
 
-	public IHttpRequestResponse getMessageinfo() {
-		//		if (messageinfo == null){
-		//			try{
-		//				messageinfo = callbacks.getHelpers().buildHttpMessage()
-		//				IHttpRequestResponse messageinfo = new IHttpRequestResponse();
-		//				messageinfo.setRequest(this.request);//始终为空，why??? because messageinfo is null ,no object to set content.
-		//				messageinfo.setRequest(this.response);
-		//				IHttpService service = callbacks.getHelpers().buildHttpService(this.host,this.port,this.protocol);
-		//				messageinfo.setHttpService(service);
-		//			}catch (Exception e){
-		//				System.out.println("error "+url);
-		//			}
-		//		}
-		return messageinfo;
-	}
-
-	public void setMessageinfo(IHttpRequestResponse messageinfo) {
-		this.messageinfo = messageinfo;
-	}
-
 	public String getBodyText() {
 		Getter getter = new Getter(BurpExtender.getCallbacks().getHelpers());
 		byte[] byte_body = getter.getBody(false, response);
@@ -364,7 +343,7 @@ public class LineEntry {
 	}
 
 
-	public String covertCharSet(byte[] response) {
+	public static String covertCharSet(byte[] response) {
 		String originalCharSet = Commons.detectCharset(response);
 		//BurpExtender.getStderr().println(url+"---"+originalCharSet);
 
@@ -373,6 +352,8 @@ public class LineEntry {
 				System.out.println("正将编码从"+originalCharSet+"转换为"+systemCharSet+"[windows系统编码]");
 				byte[] newResponse = new String(response,originalCharSet).getBytes(systemCharSet);
 				return new String(newResponse,systemCharSet);
+			} catch (UnsupportedEncodingException e){
+				//DO Nothing
 			} catch (Exception e) {
 				e.printStackTrace(BurpExtender.getStderr());
 				log.error(e);
@@ -382,67 +363,80 @@ public class LineEntry {
 		return new String(response);
 	}
 
+	/**
+	 * 
+	 * @param response
+	 * @return
+	 */
 	public String fetchTitle(byte[] response) {
-		String bodyText = covertCharSet(response);
-
-		Pattern p = Pattern.compile("<title(.*?)</title>");
-		//<title ng-bind="service.title">The Evolution of the Producer-Consumer Problem in Java - DZone Java</title>
-		Matcher m  = p.matcher(bodyText);
-		while ( m.find() ) {
-			title = m.group(0);
-		}
-		if (title.equals("")) {
-			Pattern ph = Pattern.compile("<title [.*?]>(.*?)</title>");
-			Matcher mh  = ph.matcher(bodyText);
-			while ( mh.find() ) {
-				title = mh.group(0);
-			}
-		}
-		if (title.equals("")) {
-			Pattern ph = Pattern.compile("<h[1-6]>(.*?)</h[1-6]>");
-			Matcher mh  = ph.matcher(bodyText);
-			while ( mh.find() ) {
-				title = mh.group(0);
-			}
-		}
-		title = title.replaceAll("<.*?>", "");
+		if (response == null) return "";
 
 		//https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Redirections
 		if (statuscode >= 300 && statuscode <= 308) {
-			String Locationurl = getHeaderValueOf(false,"Location");
+			IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
+			Getter getter = new Getter(helpers);
+
+			String Locationurl = getter.getHeaderValueOf(false, response, "Location");
 			if (null != Locationurl) {
 				title  = " --> "+Locationurl;
+				return title;
+			}
+		}
+
+		String bodyText = covertCharSet(response);
+
+		return grepTitle(bodyText);
+	}
+
+	public String getHeaderValueOf(boolean isRequest, String headerName){
+		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
+		Getter getter = new Getter(helpers);
+		try {
+			if (isRequest) {
+				String value = getter.getHeaderValueOf(false, request, headerName);
+			}else {
+				String value = getter.getHeaderValueOf(false, response, headerName);
+			}
+			return title;
+		} catch (Exception e) {
+			//e.printStackTrace();
+			return "";
+		}
+	}
+	/**
+	 * 从响应包中提取title
+	 * <title>Kênh Quản Lý Shop - Phần Mềm Quản Lý Bán Hàng Miễn Phí</title>
+	 * <title ng-bind="service.title">The Evolution of the Producer-Consumer Problem in Java - DZone Java</title>
+	 * 
+	 * 正则要求：
+	 * 1、title名称不能区分大小写
+	 * TITLE
+	 * @param bodyText
+	 * @return
+	 */
+	private static String grepTitle(String bodyText) {
+		String title = "";
+
+		String regex = "<title(.*?)>(.*?)</title>";
+		Pattern p = Pattern.compile(regex,Pattern.CASE_INSENSITIVE);
+		Matcher m  = p.matcher(bodyText);
+		while ( m.find() ) {
+			title = m.group(2);//注意
+			if (title !=null && !title.equals("")) {
+				return title;
+			}
+		}
+
+		String regex1 = "<h[1-6](.*?)>(.*?)</h[1-6]>";
+		Pattern ph = Pattern.compile(regex1,Pattern.CASE_INSENSITIVE);
+		Matcher mh  = ph.matcher(bodyText);
+		while ( mh.find() ) {
+			title = mh.group(2);
+			if (title !=null && !title.equals("")) {
+				return title;
 			}
 		}
 		return title;
-	}
-
-	public String getHeaderValueOf(boolean messageIsRequest,String headerName) {
-		helpers = BurpExtender.getCallbacks().getHelpers();
-		List<String> headers=null;
-		if(messageIsRequest) {
-			if (this.request == null) {
-				return null;
-			}
-			IRequestInfo analyzeRequest = helpers.analyzeRequest(this.request);
-			headers = analyzeRequest.getHeaders();
-		}else {
-			if (this.response == null) {
-				return null;
-			}
-			IResponseInfo analyzeResponse = helpers.analyzeResponse(this.response);
-			headers = analyzeResponse.getHeaders();
-		}
-
-
-		headerName = headerName.toLowerCase().replace(":", "");
-		String Header_Spliter = ": ";
-		for (String header : headers) {
-			if (header.toLowerCase().startsWith(headerName)) {
-				return header.split(Header_Spliter, 2)[1];//分成2部分，Location: https://www.jd.com
-			}
-		}
-		return null;
 	}
 
 	public int getPort() {
@@ -485,25 +479,6 @@ public class LineEntry {
 		this.response = response;
 	}
 
-	//程序中不再需要使用 isChecked函数（Checked属性的getter），完全移除
-	@Deprecated//在反序列化时，还会需要这个函数，唯一的使用点。
-	public void setChecked(boolean isChecked) {
-		//如果是旧数据，将这个值设置到新的属性，为了向下兼容需要保留这个函数。
-		try {
-			if (isChecked) {
-				CheckStatus = CheckStatus_Checked;
-			}else {
-				CheckStatus = CheckStatus_UnChecked;
-			}
-			//DBHelper dbHelper = new DBHelper(GUI.currentDBFile.toString());
-			//dbHelper.updateTitle(this);
-			//不能在这里就进行写入，可能对象的属性都还没设置全呢，会导致数据丢失
-		} catch (Exception e) {
-
-		}
-		this.isChecked = isChecked;
-	}
-
 	public String getCheckStatus() {
 		return CheckStatus;
 	}
@@ -531,12 +506,28 @@ public class LineEntry {
 		EntryType = entryType;
 	}
 
-	public String getComment() {
-		return comment;
+	public String getEntrySource() {
+		return EntrySource;
 	}
 
-	public void setComment(String comment) {
-		this.comment = comment;
+	public void setEntrySource(String entrySource) {
+		EntrySource = entrySource;
+	}
+
+	public Set<String> getComments() {
+		return comments;
+	}
+
+	public void setComments(Set<String> comments) {
+		this.comments = comments;
+	}
+
+	public Set<String> getEntryTags() {
+		return EntryTags;
+	}
+
+	public void setEntryTags(Set<String> entryTags) {
+		EntryTags = entryTags;
 	}
 
 	public String getASNInfo() {
@@ -548,7 +539,7 @@ public class LineEntry {
 	}
 
 	public String getFirstIP(){
-		Iterator<String> it = this.fetchIPSet().iterator();
+		Iterator<String> it = this.IPSet.iterator();
 		if (it.hasNext()) {
 			String ip = it.next();
 			return ip;
@@ -557,7 +548,7 @@ public class LineEntry {
 	}
 	public void freshASNInfo() {
 		try {
-			Iterator<String> it = this.fetchIPSet().iterator();
+			Iterator<String> it = this.IPSet.iterator();
 			if (it.hasNext()){
 				String ip = it.next();
 				if (IPAddressUtils.isValidIP(ip) && !IPAddressUtils.isPrivateIPv4(ip)){
@@ -572,62 +563,32 @@ public class LineEntry {
 		}
 	}
 
-	private List<String> getCommentList() {
-		ArrayList<String> result = new ArrayList<String>();
-		if (comment == null || comment.trim().equals("")){
-			return result;
-		}else{
-			String[] comments = comment.split(",");
-			for (String comment:comments) {
-				if (!result.contains(comment)) {
-					result.add(comment);
-				}
-			}
-			return result;
-		}
-	}
+
 	public void addComment(String commentToAdd) {
 		if (commentToAdd ==null || commentToAdd.trim().equals("")) return;
 
-		List<String> comments = getCommentList();
 		if (!comments.contains(commentToAdd)) {
 			comments.add(commentToAdd);
-			this.setComment(String.join(",", comments));
 		}
 	}
 
 	public void removeComment(String commentToRemove) {
 		if (commentToRemove ==null || commentToRemove.trim().equals("")) return;
 
-		List<String> comments = getCommentList();
-		if (comments.contains(commentToRemove)) {
-			comments.remove(commentToRemove);
-			this.setComment(String.join(",", comments));
-		}
+		comments.remove(commentToRemove);
 	}
 
-	public boolean isManualSaved() {
-		return isManualSaved;
+
+	public static void testGrepTitle() {
+		String aa = " <title>Kênh Quản Lý Shop - Phần Mềm Quản Lý Bán Hàng Miễn Phí</title>";
+		String bb = "<title ng-bind=\"service.title\">The Evolution of the Producer-Consumer Problem in Java - DZone Java</title>";
+		String cc = " <TITLE>Kênh Quản Lý Shop - Phần Mềm Quản Lý Bán Hàng Miễn Phí</title>";
+		String dd = " <h1aaa>h1</h1>";
+
+		System.out.println(grepTitle(dd));
 	}
 
-	public void setManualSaved(boolean isManualSaved) {
-		this.isManualSaved = isManualSaved;
-	}
-
-	public IExtensionHelpers getHelpers() {
-		return helpers;
-	}
-
-	public void setHelpers(IExtensionHelpers helpers) {
-		this.helpers = helpers;
-	}
-
-	public Object getValue(int columnIndex) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public static void main(String args[]) {
+	public static void test() {
 		//		LineEntry x = new LineEntry();
 		//		x.setRequest("xxxxxx".getBytes());
 		//		//		System.out.println(yy);
@@ -642,5 +603,9 @@ public class LineEntry {
 		System.out.println(entry.getTime());
 		String key = HashCode.fromBytes(entry.getRequest()).toString();
 		System.out.println(key);
+	}
+
+	public static void main(String args[]) {
+		testGrepTitle();
 	}
 }

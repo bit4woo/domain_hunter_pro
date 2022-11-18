@@ -11,12 +11,11 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 
+import GUI.GUIMain;
 import burp.BurpExtender;
 import burp.Commons;
 import burp.DomainNameUtils;
 import burp.IPAddressUtils;
-import config.ConfigPanel;
-import domain.DomainPanel;
 
 public class TargetEntryMenu extends JPopupMenu {
 
@@ -24,10 +23,12 @@ public class TargetEntryMenu extends JPopupMenu {
 	private static final long serialVersionUID = 1L;
 	PrintWriter stdout = BurpExtender.getStdout();
 	PrintWriter stderr = BurpExtender.getStderr();
-	private static TargetTable rootDomainTable;
+	private TargetTable rootDomainTable;
+	private GUIMain guiMain;
 
-	public TargetEntryMenu(final TargetTable rootDomainTable, final int[] modelRows, final int columnIndex){
+	public TargetEntryMenu(GUIMain guiMain,final TargetTable rootDomainTable, final int[] modelRows, final int columnIndex){
 		this.rootDomainTable = rootDomainTable;
+		this.guiMain = guiMain;
 
 		JMenuItem getSubDomainsOf = new JMenuItem(new AbstractAction("Get All Subdomin Of This") {
 			@Override
@@ -35,7 +36,7 @@ public class TargetEntryMenu extends JPopupMenu {
 				String results = "";
 				for (int row:modelRows) {
 					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,0);
-					String line = DomainPanel.getDomainResult().fetchSubDomainsOf(rootDomain);
+					String line = guiMain.getDomainPanel().getDomainResult().fetchSubDomainsOf(rootDomain);
 					results = results+System.lineSeparator()+line;
 				}
 
@@ -96,7 +97,7 @@ public class TargetEntryMenu extends JPopupMenu {
 				for (int row:modelRows) {
 					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,0);
 					try {
-						Commons.browserOpen("https://"+rootDomain, ConfigPanel.getLineConfig().getBrowserPath());
+						Commons.browserOpen("https://"+rootDomain, guiMain.getConfigPanel().getLineConfig().getBrowserPath());
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -118,16 +119,42 @@ public class TargetEntryMenu extends JPopupMenu {
 		JMenuItem addToBlackItem = new JMenuItem(new AbstractAction("Add To Black List") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				TargetControlPanel.selectedToBalck();
+				guiMain.getDomainPanel().getControlPanel().selectedToBalck();
+			}
+		});
+		
+		/**
+		 * 查找邮箱的搜索引擎
+		 */
+		JMenuItem SearchOnHunterIOItem = new JMenuItem(new AbstractAction("Seach On hunter.io") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+
+				if (modelRows.length >=50) {
+					return;
+				}
+				for (int row:modelRows) {
+					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,0);
+					String url= "https://hunter.io/try/search/%s";
+					//https://hunter.io/try/search/shopee.com?locale=en
+					url= String.format(url, rootDomain);
+					try {
+						Commons.browserOpen(url, null);
+					} catch (Exception e) {
+						e.printStackTrace(stderr);
+					}
+				}
 			}
 		});
 
 		this.add(getSubDomainsOf);
-		this.add(whoisItem);
-		this.add(ASNInfoItem);
-		this.add(OpenWithBrowserItem);
 		this.add(batchAddCommentsItem);
 		this.add(addToBlackItem);
+		this.addSeparator();
+		this.add(OpenWithBrowserItem);
+		this.add(whoisItem);
+		this.add(ASNInfoItem);
+		this.add(SearchOnHunterIOItem);
 	}
 
 }

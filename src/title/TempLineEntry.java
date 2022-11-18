@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+import GUI.GUIMain;
 import burp.BurpExtender;
 import burp.Commons;
 import burp.DomainNameUtils;
@@ -17,7 +18,6 @@ import config.ConfigPanel;
 import config.LineConfig;
 import domain.CertInfo;
 import domain.DomainManager;
-import domain.DomainPanel;
 
 public class TempLineEntry {
 	public static final String NotTargetBaseOnCertDomains = "NotTargetBaseOnCertDomains";
@@ -33,9 +33,11 @@ public class TempLineEntry {
 	Set<String> IPSet = new HashSet<>();
 	Set<String> CDNSet = new HashSet<>();
 	Set<String> certDomains = new HashSet<>();
+	GUIMain guiMain;
 
-	public TempLineEntry(String host){
-		DomainManager domainResult = DomainPanel.getDomainResult();
+	public TempLineEntry(GUIMain guiMain,String host){
+		this.guiMain = guiMain;
+		DomainManager domainResult = guiMain.getDomainPanel().getDomainResult();
 		if (hostCheckAndParse(host) && domainResult != null){
 			hostToURL(this.host);
 			GetIPAndCDN(this.host);
@@ -47,7 +49,7 @@ public class TempLineEntry {
 		if (host ==null) return new HashSet<>();//无效host直接返回
 
 		if (ConfigPanel.ignoreWrongCAHost.isSelected()){
-			if (DomainPanel.getDomainResult().isTargetByCertInfo(certDomains)){
+			if (guiMain.getDomainPanel().getDomainResult().isTargetByCertInfo(certDomains)){
 				return new HashSet<>();
 			};
 		}
@@ -95,7 +97,7 @@ public class TempLineEntry {
 
 	private void GetIPAndCDN(String host){
 		//第一步：IP解析
-		boolean isInPrivateNetwork = TitlePanel.tempConfig.isHandlePriavte();
+		boolean isInPrivateNetwork = guiMain.getTitlePanel().getTempConfig().isHandlePriavte();
 
 		if (IPAddressUtils.isValidIP(host)) {//目标是一个IP
 			if (IPAddressUtils.isPrivateIPv4(host) && !isInPrivateNetwork) {//外网模式，内网IP，直接返回。
@@ -125,7 +127,7 @@ public class TempLineEntry {
 
 	private Set<LineEntry> doGetTitle(){
 		Set<LineEntry> resultSet = new HashSet<>();
-		boolean isInPrivateNetwork = TitlePanel.tempConfig.isHandlePriavte();
+		boolean isInPrivateNetwork = guiMain.getTitlePanel().getTempConfig().isHandlePriavte();
 
 		if (IPSet.size() <= 0) {
 			//TODO 是否应该移除无效域名？理清楚：无效域名，黑名单域名，无响应域名等情况。
@@ -215,16 +217,16 @@ public class TempLineEntry {
 
 	private void addInfoToEntry(LineEntry entry) {
 		if (entry == null) return;
-		entry.setIPWithSet(IPSet);
-		entry.setCDNWithSet(CDNSet);
-		entry.setCertDomainWithSet(certDomains);
+		entry.setIPSet(IPSet);
+		entry.setCNAMESet(CDNSet);
+		entry.setCertDomainSet(certDomains);
 		entry.freshASNInfo();
 	}
 
 	//Just do request
-	private static LineEntry doRequest(URL url) {
+	private LineEntry doRequest(URL url) {
 		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
-		String cookie = TitlePanel.tempConfig.getCookie();
+		String cookie = guiMain.getTitlePanel().getTempConfig().getCookie();
 
 		byte[] byteRequest = helpers.buildHttpRequest(url);//GET
 		byteRequest = Commons.buildCookieRequest(helpers,cookie,byteRequest);
@@ -236,7 +238,7 @@ public class TempLineEntry {
 	}
 
 	public static void test(){
-		TempLineEntry tmp = new TempLineEntry("10.162.32.16:9100");
+		TempLineEntry tmp = new TempLineEntry(null,"10.162.32.16:9100");
 		tmp.getFinalLineEntry();
 	}
 

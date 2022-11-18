@@ -2,11 +2,8 @@ package title;
 
 import GUI.GUIMain;
 import burp.*;
-import domain.DomainPanel;
-import domain.target.TargetEntry;
+import dao.TitleDao;
 
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import java.io.PrintWriter;
 import java.io.Serializable;
@@ -21,40 +18,29 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	 * LineTableModel中数据如果类型不匹配，或者有其他问题，可能导致图形界面加载异常！
 	 */
 	private static final long serialVersionUID = 1L;
+	private final TitleDao titleDao;
 	private LineEntry currentlyDisplayedItem;
-
-	/*
-	 * 为了提高LineEntry的查找速度，改为使用LinkedHashMap,
-	 * http://infotechgems.blogspot.com/2011/11/java-collections-performance-time.html
-	 *
-	 * LinkedHashMap是继承于HashMap，是基于HashMap和双向链表来实现的。
-	 * HashMap无序；LinkedHashMap有序，可分为插入顺序和访问顺序两种。默认是插入顺序。
-	 * 如果是访问顺序，那put和get操作已存在的Entry时，都会把Entry移动到双向链表的表尾(其实是先删除再插入)。
-	 * LinkedHashMap是线程不安全的。
-	 */
-	private IndexedLinkedHashMap<String,LineEntry> lineEntries =new IndexedLinkedHashMap<String,LineEntry>();
-	private IndexedLinkedHashMap<String,Set<String>> noResponseDomain =new IndexedLinkedHashMap<String,Set<String>>();
-	//private boolean EnableSearch = Runtime.getRuntime().totalMemory()/1024/1024/1024 > 16;//if memory >16GB enable Search. else disable.
-	private boolean ListenerIsOn = true;
-	//private PrintWriter stderr = new PrintWriter(BurpExtender.callbacks.getStderr(), true);
+	private IndexedHashMap<String,LineEntry> lineEntries =new IndexedHashMap<String,LineEntry>();
 
 	PrintWriter stdout;
 	PrintWriter stderr;
+	private GUIMain guiMain;
 
 	private static final String[] standardTitles = new String[] {
 			"#", "URL", "Status", "Length", "Title","Comments","Server","isChecked",
-			"AssetType","CheckDoneTime","IP", "CDN|CertInfo","ASNInfo","IconHash"};
-	private static List<String> titletList = new ArrayList<>(Arrays.asList(standardTitles));
+			"AssetType","Source","CheckDoneTime","IP", "CNAME|CertInfo","ASNInfo","IconHash"};
+	private static List<String> titleList = new ArrayList<>(Arrays.asList(standardTitles));
 	//为了实现动态表结构
-	public static List<String> getTitletList() {
-		return titletList;
+	public static List<String> getTitleList() {
+		//titletList.remove("Server");
+		//titletList.remove("Time");
+		return titleList;
 	}
 
 
-	public LineTableModel(){
-
-		//titletList.remove("Server");
-		//titletList.remove("Time");
+	public LineTableModel(GUIMain guiMain){
+		this.guiMain = guiMain;
+		titleDao = new TitleDao(guiMain.getCurrentDBFile());
 		try{
 			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
 			stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
@@ -62,156 +48,63 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			stdout = new PrintWriter(System.out, true);
 			stderr = new PrintWriter(System.out, true);
 		}
-		/*
-		关于这个listener，主要的目标的是当数据发生改变时，更新到数据库。通过fireTableRowsxxxx来触发。
-		但是clear()中对lineEntries的操作也触发了，注意
-		The call to fireTableRowsDeleted simply fires off the event to indicate rows have been deleted, you still need to actually remove them from the model.
-		 */
-		this.addTableModelListener(new TableModelListener() {//表格模型监听
-			@Override
-			public void tableChanged(TableModelEvent e) {
-				if (ListenerIsOn) {//开关，加载数据文件的过程中，这时关闭这个监听
-					int type = e.getType();//获取事件类型(增、删、改等)
-					int rowstart = e.getFirstRow();//获取触发事件的行索引，即是fireTableRowxxx中的2个参数。
-					int rowend = e.getLastRow();
-					//int column = e.getColumn();//获取触发事件的列索引
-					//stdout.println(rowstart+"---"+rowend);
-
-					DBHelper dbHelper = new DBHelper(GUIMain.getCurrentDBFile().toString());
-					if (type == TableModelEvent.INSERT) {//插入事件使用批量方法好像不行，都是一个个插入的，每次都会触发
-						//从使用场景来看也无需使用批量
-						for (int i = rowstart; i <= rowend; i++) {
-							dbHelper.addTitle(lineEntries.get(i));
-						}
-					} else if (type == TableModelEvent.UPDATE) {
-						/*
-						for (int i = rowstart; i <= rowend; i++) {
-							String key = lineEntries.getKeyAtIndex(i);
-							LineEntry entry = lineEntries.get(key);
-							entry.setTime(Commons.getNowTimeString());
-							dbHelper.updateTitle(entry);
-						}
-						 */
-
-						List<LineEntry> entries = new ArrayList<LineEntry>();
-						for (int i = rowstart; i <= rowend; i++) {
-							LineEntry entry = lineEntries.get(i);
-							//entry.setTime(Commons.getNowTimeString());
-							//这里不再更新时间，时间只表示CheckDone的时间
-							entries.add(entry);
-						}
-						dbHelper.updateTitles(entries);
-
-					} else if (type == TableModelEvent.DELETE) {//可以批量操作
-						/*
-						for (int i = rowstart; i <= rowend; i++) {
-							String key = lineEntries.getKeyAtIndex(i);
-							dbHelper.deleteTitle(lineEntries.get(key));
-							lineEntries.remove(key);
-						}
-						 */
-
-
-						//必须从高位index进行删除，否则删除的对象会和预期不一致！！！
-						List<String> urls = new ArrayList<String>();
-						for (int i = rowend; i >= rowstart; i--) {
-							String url = lineEntries.get(i).getUrl();
-							urls.add(url);
-							lineEntries.remove(i);//删除tableModel中的元素。
-							stdout.println("### "+url+" deleted");
-						}
-						dbHelper.deleteTitlesByUrl(urls);//删除数据库中的元素
-
-
-
-						/*
-						List<String> urls = new ArrayList<String>();
-						for (int i = rowend; i >= rowstart; i--) {
-							String key = lineEntries.getKeyAtIndex(i);
-							urls.add(key);
-						}
-						dbHelper.deleteTitlesByUrl(urls);//删除数据库中的元素
-						for(String url:urls) {
-							lineEntries.remove(url);//删除tableModel中的元素。
-							stdout.println("### "+url+" deleted");
-						}
-						 */
-
-
-					} else {
-						//System.out.println("此事件是由其他原因触发");
-					}
-
-				}
-			}
-		});
+		//TableModelListener的主要作用是用来通知view即GUI数据发生了改变，不应该用于进行数据库的操作。
 	}
 
-	public IndexedLinkedHashMap<String, LineEntry> getLineEntries() {
-		return lineEntries;
-	}
-
-	public void setLineEntries(IndexedLinkedHashMap<String, LineEntry> lineEntries) {
+	public LineTableModel(GUIMain guiMain,IndexedHashMap<String,LineEntry> lineEntries){
+		this(guiMain);
 		this.lineEntries = lineEntries;
 	}
 
-	public boolean isListenerIsOn() {
-		return ListenerIsOn;
+	public LineTableModel(GUIMain guiMain,List<LineEntry> entries){
+		this(guiMain);
+		for (LineEntry entry:entries) {
+			lineEntries.put(entry.getUrl(), entry);
+		}
+	}
+	////////getter setter//////////
+
+	public IndexedHashMap<String, LineEntry> getLineEntries() {
+		return lineEntries;
 	}
 
-	public void setListenerIsOn(boolean listenerIsOn) {
-		this.ListenerIsOn = listenerIsOn;
+	public void setLineEntries(IndexedHashMap<String, LineEntry> lineEntries) {
+		this.lineEntries = lineEntries;
+	}
+	
+	public LineEntry getCurrentlyDisplayedItem() {
+		return this.currentlyDisplayedItem;
 	}
 
+	public void setCurrentlyDisplayedItem(LineEntry currentlyDisplayedItem) {
+		this.currentlyDisplayedItem = currentlyDisplayedItem;
+	}
+	//////// ^^^^getter setter^^^^//////////
 
 	////////////////////// extend AbstractTableModel////////////////////////////////
 
 	@Override
 	public int getColumnCount()
 	{
-		return titletList.size();//the one is the request String + response String,for search
+		return titleList.size();//the one is the request String + response String,for search
 	}
 
 	@Override
 	public Class<?> getColumnClass(int columnIndex)
 	{
-
-		if (columnIndex == titletList.indexOf("#")) {
+		if (columnIndex == titleList.indexOf("#")) {
 			return Integer.class;//id
 		}
-		if (columnIndex == titletList.indexOf("Status")) {
+		if (columnIndex == titleList.indexOf("Status")) {
 			return Integer.class;//id
 		}
-		if (columnIndex == titletList.indexOf("Length")) {
+		if (columnIndex == titleList.indexOf("Length")) {
 			return Integer.class;//id
 		}
-		if (columnIndex == titletList.indexOf("isNew")) {
-			return boolean.class;//id
-		}
-		if (columnIndex == titletList.indexOf("isChecked")) {
+		if (columnIndex == titleList.indexOf("isChecked")) {
 			return String.class;//id
 		}
 		return String.class;
-
-
-
-		//		
-		//		switch(columnIndex)
-		//		{	
-		//			case 0:
-		//				return Integer.class;//id
-		//			case 2:
-		//				return Integer.class;//Status
-		//			case 3:
-		//				return Integer.class;//Length
-		//			case 11:
-		//				return boolean.class;//isNew
-		//			case 12:
-		//				return boolean.class;//isChecked
-		//			default:
-		//				return String.class;
-		//		}//0-id, 1-url,2-status, 3-length,4-mimetype,5-server, 6-title, 7-ip, 8-cdn, 9-comments, 10-time, 11-isnew, 12-ischecked
-
 	}
 
 	@Override
@@ -223,8 +116,8 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	//define header of table???
 	@Override
 	public String getColumnName(int columnIndex) {
-		if (columnIndex >= 0 && columnIndex <= titletList.size()) {
-			return titletList.get(columnIndex);
+		if (columnIndex >= 0 && columnIndex <= titleList.size()) {
+			return titleList.get(columnIndex);
 		}else {
 			return "";
 		}
@@ -232,7 +125,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 
 	@Override
 	public boolean isCellEditable(int rowIndex, int columnIndex) {
-		if (titletList.get(columnIndex).equals("Comments")) {//可以编辑comment
+		if (titleList.get(columnIndex).equals("Comments")) {//可以编辑comment
 			return true;
 		}else {
 			return false;
@@ -243,118 +136,118 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	@Override
 	public Object getValueAt(int rowIndex, int columnIndex)
 	{
+		if (rowIndex >= lineEntries.size()) {
+			return "IndexOutOfBoundsException";
+		}
 		LineEntry entry = lineEntries.get(rowIndex);
 		//entry.parse();---
 		//"#", "URL", "Status", "Length", "Server","Title", "IP", "CDN", "Comments","Time","isChecked"};
-		if (columnIndex == titletList.indexOf("#")) {
+		if (columnIndex == titleList.indexOf("#")) {
 			return rowIndex;
 		}
-		if (columnIndex == titletList.indexOf("URL")){
+		if (columnIndex == titleList.indexOf("URL")){
 			return entry.getUrl();
 		}
-		if (columnIndex == titletList.indexOf("Status")){
+		if (columnIndex == titleList.indexOf("Status")){
 			return entry.getStatuscode();
 		}
-		if (columnIndex == titletList.indexOf("Length")){
+		if (columnIndex == titleList.indexOf("Length")){
 			return entry.getContentLength();
 		}
-		if (columnIndex == titletList.indexOf("Server")){
+		if (columnIndex == titleList.indexOf("Server")){
 			return entry.getWebcontainer();
 		}
-		if (columnIndex == titletList.indexOf("Title")){
+		if (columnIndex == titleList.indexOf("Title")){
 			return entry.getTitle();
 		}
-		if (columnIndex == titletList.indexOf("IP")){
-			return entry.getIP();
+		if (columnIndex == titleList.indexOf("IP")){
+			return String.join(",", entry.getIPSet());
 		}
-		if (columnIndex == titletList.indexOf("CDN|CertInfo")){
-			return entry.getCDN();
+		if (columnIndex == titleList.indexOf("CNAME|CertInfo")){
+			return entry.fetchCNAMEAndCertInfo();
 		}
-		if (columnIndex == titletList.indexOf("Comments")){
-			return entry.getComment();
+		if (columnIndex == titleList.indexOf("Comments")){
+			return String.join(",", entry.getComments());
 		}
-		if (columnIndex == titletList.indexOf("CheckDoneTime")){
+		if (columnIndex == titleList.indexOf("CheckDoneTime")){
 			return entry.getTime();
 		}
-		if (columnIndex == titletList.indexOf("isChecked")){
+		if (columnIndex == titleList.indexOf("isChecked")){
 			return entry.getCheckStatus();
 		}
-		if (columnIndex == titletList.indexOf("AssetType")){
+		if (columnIndex == titleList.indexOf("AssetType")){
 			return entry.getAssetType();
 		}
-		if (columnIndex == titletList.indexOf("IconHash")){
+		if (columnIndex == titleList.indexOf("IconHash")){
 			return entry.getIcon_hash();
 		}
-		if (columnIndex == titletList.indexOf("ASNInfo")){
+		if (columnIndex == titleList.indexOf("ASNInfo")){
 			return entry.getASNInfo();
+		}
+		if (columnIndex == titleList.indexOf("Source")) {
+			return entry.getEntrySource();
 		}
 		return "";
 	}
 
-
 	@Override
 	public void setValueAt(Object value, int row, int col) {
 		LineEntry entry = lineEntries.get(row);
-		if (col == titletList.indexOf("Comments")){
+		if (col == titleList.indexOf("Comments")){
 			String valueStr = ((String) value).trim();
-			//if (valueStr.equals("")) return;
-			entry.setComment(valueStr);
+			entry.setComments(new HashSet<>(Arrays.asList(valueStr.split(","))));
 			fireTableCellUpdated(row, col);
 		}
 	}
-	//////////////////////extend AbstractTableModel////////////////////////////////
+	//////////////////////^^^extend AbstractTableModel^^^////////////////////////////////
 
+	///////////////////// implement IMessageEditorController ////////////////////////////////
+	// this allows our request/response viewers to obtain details about the messages being displayed
 
-
-	public void clear(boolean syncToFile) {
-		//		if (syncToFile){
-		//			this.setListenerIsOn(true);
-		//		}else {
-		//			this.setListenerIsOn(false);
-		//		}
-		this.setListenerIsOn(false);//这里之所以要关闭listener，是因为LineEntries为空时，执行listener中的逻辑将出错而退出。而后续获取title的逻辑就会中断。就丢失了title的历史记录。
-		int rows = this.getRowCount();
-		stderr.print("rows:"+rows);
-		//this.setLineEntries(new ArrayList<LineEntry>());//这个方式无法通过listenser去同步数据库，因为LineEntries已经空了。
-		//虽然触发了，却无法更新数据库。
-		if (syncToFile){
-			try {
-				if (GUIMain.getCurrentDBFile().delete()){
-					GUIMain.getCurrentDBFile().createNewFile();//文件存在时，不会创建新文件!必须先删除就文件
-				}
-				DBHelper dbHelper = new DBHelper(GUIMain.getCurrentDBFile().toString());
-				dbHelper.saveDomainObject(DomainPanel.getDomainResult());//效果等同于删除所有title。速度更快
-				//dbHelper.deleteTitles(this.getLineEntries());
-			}catch (Exception e){
-				e.printStackTrace(stderr);
-			}
-
+	@Override
+	public byte[] getRequest()
+	{
+		LineEntry item = getCurrentlyDisplayedItem();
+		if(item==null) {
+			return "".getBytes();
 		}
-		this.setLineEntries(new IndexedLinkedHashMap<String,LineEntry>());//如果ListenerIsOn，将会触发listener
-		System.out.println("clean lines of old data,"+rows+" lines cleaned");
-		if (rows-1 >=0)	fireTableRowsDeleted(0, rows-1);
-		this.setListenerIsOn(true);
+		return item.getRequest();
 	}
 
+	@Override
+	public byte[] getResponse()
+	{
+		LineEntry item = getCurrentlyDisplayedItem();
+		if(item==null) {
+			return "".getBytes();
+		}
+		return item.getResponse();
+	}
+
+	@Override
+	public IHttpService getHttpService()
+	{
+		LineEntry item = getCurrentlyDisplayedItem();
+		if(item==null) {
+			return null;
+		}
+		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
+		IHttpService service = helpers.buildHttpService(item.getHost(),
+				item.getPort(), item.getProtocol());
+		return service;
+	}
+	///////////////////// ^^^^implement IMessageEditorController^^^^ ////////////////////////////////
+
+	
 	/**
 	 *
 	 * @return 获取已成功获取title的Entry的IP地址集合
 	 */
 	Set<String> getIPSetFromTitle() {
 		Set<String> result = new HashSet<String>();
-		//lineEntries.addAll(hidenLineEntries);
+
 		for(LineEntry line:lineEntries.values()) {
-			String IPString = line.getIP();
-			if (IPString == null || IPString.length() <7) continue;//处理保存的请求，没有IP的情况
-			HashSet<String> ips = line.fetchIPSet();
-			for (String ip:ips){
-				ip = IPAddressUtils.ipClean(ip);
-				if (IPAddressUtils.isValidIP(ip)){
-					result.add(ip);
-				}else {
-					System.out.println(ip + "invalid IP address, skip to handle it!");
-				}
-			}
+			result.addAll(line.getIPSet());
 		}
 
 		return result;
@@ -391,9 +284,9 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	public Set<String> GetExtendIPSet() {
 
 		Set<String> IPsOfDomain = getIPSetFromTitle();//title记录中的IP
-		Set<String> IPsOfcertainSubnets = DomainPanel.fetchTargetModel().fetchTargetIPSet();//用户配置的确定IP+网段
+		Set<String> IPsOfcertainSubnets = guiMain.getDomainPanel().fetchTargetModel().fetchTargetIPSet();//用户配置的确定IP+网段
 		IPsOfDomain.addAll(IPsOfcertainSubnets);
-		IPsOfDomain.removeAll(DomainPanel.getDomainResult().getNotTargetIPSet());
+		IPsOfDomain.removeAll(guiMain.getDomainPanel().getDomainResult().getNotTargetIPSet());
 		//计算网段前，将CDN和云服务的IP排除在外，这就是这个集合的主要作用！
 
 		Set<String> subnets = IPAddressUtils.toSmallerSubNets(IPsOfDomain);//当前所有title结果+确定IP/网段计算出的IP网段
@@ -414,7 +307,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	 */
 	public Set<String> GetSubnets() {
 		Set<String> IPsOfDomain = getIPSetFromTitle();//title记录中的IP
-		Set<String> IPsOfcertainSubnets = DomainPanel.fetchTargetModel().fetchTargetIPSet();//用户配置的确定IP+网段
+		Set<String> IPsOfcertainSubnets = guiMain.getDomainPanel().fetchTargetModel().fetchTargetIPSet();//用户配置的确定IP+网段
 		IPsOfDomain.addAll(IPsOfcertainSubnets);
 		//Set<String> CSubNetIPs = Commons.subNetsToIPSet(Commons.toSubNets(IPsOfDomain));
 		Set<String> subnets = IPAddressUtils.toSmallerSubNets(IPsOfDomain);
@@ -433,13 +326,9 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		HashSet<String> result = new HashSet<>();
 		for (LineEntry entry:lineEntries.values()){
 			try{
-				if (entry.getEntryType().equalsIgnoreCase(LineEntry.EntryType_Manual_Saved)){
+				if (entry.getEntrySource().equalsIgnoreCase(LineEntry.Source_Manual_Saved)){
 					continue;
 				}
-				if (entry.getComment().contains("Manual-Saved")){
-					continue;
-				}
-
 				if (entry.getPort() !=80 && entry.getPort() !=443){
 					result.add(entry.getHost()+":"+entry.getPort());
 				}else {
@@ -460,7 +349,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	public HashSet<String> getIPURLs() {
 		HashSet<String> urls = new HashSet<>();
 		for (LineEntry line:lineEntries.values()) {
-			for (String ip:line.fetchIPSet()) {
+			for (String ip:line.getIPSet()) {
 				String url = line.getProtocol()+"://"+ip+":"+line.getPort();
 				urls.add(url);
 			}
@@ -483,114 +372,115 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	///////////////////多个行内容的增删查改/////////////////////////////////
 
 	public List<String> getHosts(int[] rows) {
-		synchronized (lineEntries) {
-			Arrays.sort(rows); //升序
-			List<String> hosts = new ArrayList<>();
+		Arrays.sort(rows); //升序
+		List<String> hosts = new ArrayList<>();
 
-			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
-				String host = lineEntries.get(rows[i]).getHost();
-				hosts.add(host);
-			}
-			return hosts;
+		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
+			String host = lineEntries.get(rows[i]).getHost();
+			hosts.add(host);
 		}
+		return hosts;
 	}
 
 	public List<String> getHostsAndPorts(int[] rows) {
-		synchronized (lineEntries) {
-			Arrays.sort(rows); //升序
-			List<String> hosts = new ArrayList<>();
+		Arrays.sort(rows); //升序
+		List<String> hosts = new ArrayList<>();
 
-			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
-				LineEntry line = lineEntries.get(rows[i]);
-				String hostAndPort = line.getHost()+":"+line.getPort();
-				hosts.add(hostAndPort);
-			}
-			return hosts;
+		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
+			LineEntry line = lineEntries.get(rows[i]);
+			String hostAndPort = line.getHost()+":"+line.getPort();
+			hosts.add(hostAndPort);
 		}
+		return hosts;
+	}
+	
+	public List<String> getHostsAndIPAddresses(int[] rows) {
+		Arrays.sort(rows); //升序
+		List<String> hosts = new ArrayList<>();
+
+		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
+			LineEntry line = lineEntries.get(rows[i]);
+			String hostAndPort = line.getHost()+"\t"+String.join(",", line.getIPSet());
+			hosts.add(hostAndPort);
+		}
+		return hosts;
 	}
 
 	public Set<String> getIPs(int[] rows) {
-		synchronized (lineEntries) {
-			Arrays.sort(rows); //升序
-			Set<String> Result = new HashSet<>();
+		Arrays.sort(rows); //升序
+		Set<String> Result = new HashSet<>();
 
-			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
-				Set<String> IPs = lineEntries.get(rows[i]).fetchIPSet();
-				Result.addAll(IPs);
-			}
-			return Result;
+		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
+			Set<String> IPs = lineEntries.get(rows[i]).getIPSet();
+			Result.addAll(IPs);
 		}
+		return Result;
 	}
 
 	public List<String> getURLs(int[] rows) {
-		synchronized (lineEntries) {
-			Arrays.sort(rows); //升序
-			List<String> urls = new ArrayList<>();
+		Arrays.sort(rows); //升序
+		List<String> urls = new ArrayList<>();
 
-			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
-				String url = lineEntries.get(rows[i]).getUrl();
-				urls.add(url);
-			}
-			return urls;
+		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
+			String url = lineEntries.get(rows[i]).getUrl();
+			urls.add(url);
 		}
+		return urls;
 	}
 
 	public List<String> getCommonURLs(int[] rows) {
-		synchronized (lineEntries) {
-			Arrays.sort(rows); //升序
-			List<String> urls = new ArrayList<>();
+		Arrays.sort(rows); //升序
+		List<String> urls = new ArrayList<>();
 
-			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
-				String url = lineEntries.get(rows[i]).fetchUrlWithCommonFormate();
-				urls.add(url);
-			}
-			return urls;
+		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
+			String url = lineEntries.get(rows[i]).fetchUrlWithCommonFormate();
+			urls.add(url);
 		}
+		return urls;
 	}
 
 	public List<String> getLocationUrls(int[] rows) {
-		synchronized (lineEntries) {
-			Arrays.sort(rows); //升序
-			List<String> urls = new ArrayList<>();
+		Arrays.sort(rows); //升序
+		List<String> urls = new ArrayList<>();
 
-			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
-				LineEntry entry = lineEntries.get(rows[i]);
-				String url = entry.getUrl();
-				String Locationurl = entry.getHeaderValueOf(false,"Location");
-				if (url !=null){
-					urls.add(url+" "+Locationurl);
-				}
+		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
+		Getter getter = new Getter(helpers);
+
+		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
+			LineEntry entry = lineEntries.get(rows[i]);
+			String url = entry.getUrl();
+			byte[] resp = entry.getResponse();
+			if (resp == null) continue;
+			String Locationurl = getter.getHeaderValueOf(false,entry.getResponse(),"Location");
+			if (url !=null){
+				urls.add(url+" "+Locationurl);
 			}
-			return urls;
 		}
+		return urls;
 	}
 
 	public List<String> getCDNAndCertInfos(int[] rows) {
-		synchronized (lineEntries) {
-			Arrays.sort(rows); //升序
-			List<String> results = new ArrayList<>();
+		Arrays.sort(rows); //升序
+		List<String> results = new ArrayList<>();
 
-			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
-				LineEntry entry = lineEntries.get(rows[i]);
-				String CDNAndCertInfo = entry.getCDN();
-				results.add(CDNAndCertInfo);
-			}
-			return results;
+		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
+			LineEntry entry = lineEntries.get(rows[i]);
+			String CDNAndCertInfo = entry.fetchCNAMEAndCertInfo();
+			results.add(CDNAndCertInfo);
 		}
+		return results;
 	}
 
 	public List<String> getIconHashes(int[] rows) {
-		synchronized (lineEntries) {
-			Arrays.sort(rows); //升序
-			List<String> results = new ArrayList<>();
+		Arrays.sort(rows); //升序
+		List<String> results = new ArrayList<>();
 
-			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
-				LineEntry entry = lineEntries.get(rows[i]);
-				String hash = entry.getIcon_hash();
-				results.add(hash);
-			}
-			return results;
+		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
+			LineEntry entry = lineEntries.get(rows[i]);
+			String hash = entry.getIcon_hash();
+			results.add(hash);
 		}
+		return results;
 	}
 
 	public int[] getIndexes(List<LineEntry> entries) {
@@ -605,118 +495,99 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		return indexes;
 	}
 
-	/*
-	//如果使用了tableModelListener,就需要注意：在监听事件中去执行具体动作，这里只是起通知作用！！！！
-	尤其是改变了lineEntries数量的操作！index将发生改变。
-	 */
+	/////删改操作，需要操作数据库了//TODO/////
+
 	public void removeRows(int[] rows) {
-		fireDeleted(rows);
-
-		/*
-		synchronized (lineEntries) {
-			//because thread let the delete action not in order, so we must loop in here.
-			//list length and index changed after every remove.the origin index not point to right item any more.
-			Arrays.sort(rows); //升序
-
-
-			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
-//				String url = lineEntries.get(rows[i]).getUrl();
-//				lineEntries.remove(rows[i]);//在监听事件中去执行具体动作，这里只是起通知作用！！！！
-//				stdout.println("!!! "+url+" deleted");
-				this.fireTableRowsDeleted(rows[i], rows[i]);
-			}
+		Arrays.sort(rows); //升序
+		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
+			String url = lineEntries.get(rows[i]).getUrl();
+			lineEntries.remove(rows[i]);
+			titleDao.deleteTitleByUrl(url);//写入数据库
+			stdout.println("!!! "+url+" deleted");
 		}
-		 */
+		fireDeleted(rows);
 	}
 
 
 	public void updateRowsStatus(int[] rows,String status) {
-		synchronized (lineEntries) {
-			//because thread let the delete action not in order, so we must loop in here.
-			//list length and index changed after every remove.the origin index not point to right item any more.
-			Arrays.sort(rows); //升序
-			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
-				LineEntry checked = lineEntries.get(rows[i]);
-				checked.setCheckStatus(status);
-				if (status.equalsIgnoreCase(LineEntry.CheckStatus_Checked)) {
-					checked.setTime(Commons.getNowTimeString());
-				}
-				//				lineEntries.remove(rows[i]);
-				//				lineEntries.add(rows[i], checked);
-				//				//https://stackoverflow.com/questions/4352885/how-do-i-update-the-element-at-a-certain-position-in-an-arraylist
-				//lineEntries.set(rows[i], checked);
-				stdout.println("$$$ "+checked.getUrl()+" updated");
-				//this.fireTableRowsUpdated(rows[i], rows[i]);
+		Arrays.sort(rows); //升序
+		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
+			LineEntry checked = lineEntries.get(rows[i]);
+			checked.setCheckStatus(status);
+			if (status.equalsIgnoreCase(LineEntry.CheckStatus_Checked)) {
+				checked.setTime(Commons.getNowTimeString());
 			}
-			fireUpdated(rows);
-			//this.fireTableRowsUpdated(rows[0], rows[rows.length-1]);
-			//最好还是一行一行地触发监听事件，因为自定义排序后的行号可能不是连续的，如果用批量触发，会做很多无用功，导致操作变慢。
+			titleDao.addOrUpdateTitle(checked);//写入数据库
+			//				lineEntries.remove(rows[i]);
+			//				lineEntries.add(rows[i], checked);
+			//				//https://stackoverflow.com/questions/4352885/how-do-i-update-the-element-at-a-certain-position-in-an-arraylist
+			//lineEntries.set(rows[i], checked);
+			stdout.println("$$$ "+checked.getUrl()+" updated");
+			//this.fireTableRowsUpdated(rows[i], rows[i]);
 		}
+		fireUpdated(rows);
+		//this.fireTableRowsUpdated(rows[0], rows[rows.length-1]);
+		//最好还是一行一行地触发监听事件，因为自定义排序后的行号可能不是连续的，如果用批量触发，会做很多无用功，导致操作变慢。
 	}
 
 
 	public void updateAssetTypeOfRows(int[] rows,String assetType) {
-		synchronized (lineEntries) {
-			Arrays.sort(rows); //升序
-			for (int i=rows.length-1;i>=0 ;i-- ) {
-				LineEntry checked = lineEntries.get(rows[i]);
-				if (assetType.equalsIgnoreCase(checked.getAssetType())) continue;
-				checked.setAssetType(assetType);
-				stdout.println(String.format("$$$ %s updated [AssetType-->%s]",checked.getUrl(),assetType));
-				//this.fireTableRowsUpdated(rows[i], rows[i]);
-			}
-			fireUpdated(rows);
+		Arrays.sort(rows); //升序
+		for (int i=rows.length-1;i>=0 ;i-- ) {
+			LineEntry checked = lineEntries.get(rows[i]);
+			if (assetType.equalsIgnoreCase(checked.getAssetType())) continue;
+			checked.setAssetType(assetType);
+			titleDao.addOrUpdateTitle(checked);//写入数据库
+			stdout.println(String.format("$$$ %s updated [AssetType-->%s]",checked.getUrl(),assetType));
+			//this.fireTableRowsUpdated(rows[i], rows[i]);
 		}
+		fireUpdated(rows);
 	}
 
 
 	public void updateComments(int[] rows, String commentAdd) {
-		synchronized (lineEntries) {
-			//because thread let the delete action not in order, so we must loop in here.
-			//list length and index changed after every remove.the origin index not point to right item any more.
-			Arrays.sort(rows); //升序
-			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
-				LineEntry checked = lineEntries.get(rows[i]);
-				checked.addComment(commentAdd);
-				//				lineEntries.remove(rows[i]);
-				//				lineEntries.add(rows[i], checked);
-				//				//https://stackoverflow.com/questions/4352885/how-do-i-update-the-element-at-a-certain-position-in-an-arraylist
-				stdout.println("$$$ "+checked.getUrl()+" updated");
-				//this.fireTableRowsUpdated(rows[i], rows[i]);
-			}
-			//this.fireTableRowsUpdated(rows[0], rows[rows.length-1]);
-			fireUpdated(rows);
+		//because thread let the delete action not in order, so we must loop in here.
+		//list length and index changed after every remove.the origin index not point to right item any more.
+		Arrays.sort(rows); //升序
+		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
+			LineEntry checked = lineEntries.get(rows[i]);
+			checked.addComment(commentAdd);
+			titleDao.addOrUpdateTitle(checked);//写入数据库
+			//				lineEntries.remove(rows[i]);
+			//				lineEntries.add(rows[i], checked);
+			//				//https://stackoverflow.com/questions/4352885/how-do-i-update-the-element-at-a-certain-position-in-an-arraylist
+			stdout.println("$$$ "+checked.getUrl()+" updated");
+			//this.fireTableRowsUpdated(rows[i], rows[i]);
 		}
+		//this.fireTableRowsUpdated(rows[0], rows[rows.length-1]);
+		fireUpdated(rows);
 	}
 
 	public void freshASNInfo(int[] rows) {
-		synchronized (lineEntries) {
-			//because thread let the delete action not in order, so we must loop in here.
-			//list length and index changed after every remove.the origin index not point to right item any more.
-			Arrays.sort(rows); //升序
-			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
-				LineEntry checked = lineEntries.get(rows[i]);
-				checked.freshASNInfo();
-				stdout.println("$$$ "+checked.getUrl()+"ASN Info updated");
-			}
-			fireUpdated(rows);
+		//because thread let the delete action not in order, so we must loop in here.
+		//list length and index changed after every remove.the origin index not point to right item any more.
+		Arrays.sort(rows); //升序
+		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
+			LineEntry checked = lineEntries.get(rows[i]);
+			checked.freshASNInfo();
+			titleDao.addOrUpdateTitle(checked);//写入数据库
+			stdout.println("$$$ "+checked.getUrl()+"ASN Info updated");
 		}
+		fireUpdated(rows);
 	}
 
 	/**
 	 * 	主要用于记录CDN或者云服务的IP地址，在做网段汇算时排除这些IP。
 	 */
 	public void addIPToTargetBlackList(int[] rows) {
-		synchronized (lineEntries) {
-			//because thread let the delete action not in order, so we must loop in here.
-			//list length and index changed after every remove.the origin index not point to right item any more.
-			Arrays.sort(rows); //升序
-			for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
-				LineEntry entry = lineEntries.get(rows[i]);
-				DomainPanel.getDomainResult().getNotTargetIPSet().addAll(entry.fetchIPSet());
-				entry.addComment(LineEntry.NotTargetBaseOnBlackList);
-				stdout.println("### IP address "+ entry.fetchIPSet().toString() +" added to black list");
-			}
+		//because thread let the delete action not in order, so we must loop in here.
+		//list length and index changed after every remove.the origin index not point to right item any more.
+		Arrays.sort(rows); //升序
+		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
+			LineEntry entry = lineEntries.get(rows[i]);
+			guiMain.getDomainPanel().getDomainResult().getNotTargetIPSet().addAll(entry.getIPSet());
+			entry.getEntryTags().add(LineEntry.Tag_NotTargetBaseOnBlackList);
+			stdout.println("### IP address "+ entry.getIPSet().toString() +" added to black list");
 		}
 	}
 
@@ -733,7 +604,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	public HashSet<String> getDomainsForBypassCheck(){
 
 		HashSet<String> allDomainSet = new HashSet<String>();//所有子域名列表
-		allDomainSet.addAll(DomainPanel.getDomainResult().getSubDomainSet());
+		allDomainSet.addAll(guiMain.getDomainPanel().getDomainResult().getSubDomainSet());
 
 		HashSet<String> tmp = new HashSet<String>();
 
@@ -748,7 +619,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 
 		Collection<LineEntry> entries = getLineEntries().values();
 		for (LineEntry entry:entries) {
-			String ip = entry.getIP().split(",")[0];//这里可能不严谨，如果IP解析既有外网地址又有内网地址就会出错
+			String ip = new ArrayList<String>(entry.getIPSet()).get(0);//这里可能不严谨，如果IP解析既有外网地址又有内网地址就会出错
 			if (!IPAddressUtils.isPrivateIPv4(ip)) {//移除公网解析记录；剩下无解析记录和内网解析记录
 				if (entry.getStatuscode() == 403 && DomainNameUtils.isValidDomain(entry.getHost())) {
 					//do Nothing
@@ -780,7 +651,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	}
 
 
-	///////////////////多个行内容的增删查改/////////////////////////////////
+	///////////////////^^^多个行内容的增删查改^^^/////////////////////////////////
 
 	/**
 	 * 仅用于runner中，某个特殊场景:URL相同host不同的情况
@@ -790,55 +661,35 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		if (lineEntry == null) {
 			return;
 		}
-		synchronized (lineEntries) {
-			String key = lineEntry.getUrl()+System.currentTimeMillis();
-			lineEntries.put(key,lineEntry);
-			int index = lineEntries.IndexOfKey(key);
-			fireTableRowsInserted(index, index);
-		}
-	}
-
-	/**
-	 * 用于Host碰撞场景
-	 * @param lineEntry
-	 */
-	public void addNewLineEntryWithHost(LineEntry lineEntry,String Host){
-		if (lineEntry == null) {
-			return;
-		}
-		synchronized (lineEntries) {
-			String key = lineEntry.getUrl()+Host;
-			lineEntries.put(key,lineEntry);
-			int index = lineEntries.IndexOfKey(key);
-			fireTableRowsInserted(index, index);
-		}
+		String key = lineEntry.getUrl()+System.currentTimeMillis();
+		lineEntries.put(key,lineEntry);
+		int index = lineEntries.IndexOfKey(key);
+		fireTableRowsInserted(index, index);
+		titleDao.addOrUpdateTitle(lineEntry);//写入数据库
 	}
 
 	public void addNewLineEntry(LineEntry lineEntry){
 		if (lineEntry == null) {
 			return;
 		}
-		synchronized (lineEntries) {
-			//			while(lineEntries.size() >= LineConfig.getMaximumEntries()){
-			//				ListenerIsOn = false;
-			//				final LineEntry removed = lineEntries.remove(0);
-			//				ListenerIsOn = true;
-			//			}
-			int oldsize = lineEntries.size();
-			String key = lineEntry.getUrl();
-			lineEntries.put(key,lineEntry);
-			int newsize = lineEntries.size();
-			int index = lineEntries.IndexOfKey(key);
-			if (oldsize == newsize) {//覆盖
-				fireTableRowsUpdated(index, index);
-			}else {//新增
-				fireTableRowsInserted(index, index);
-			}
-
-			//need to use row-1 when add setRowSorter to table. why??
-			//https://stackoverflow.com/questions/6165060/after-adding-a-tablerowsorter-adding-values-to-model-cause-java-lang-indexoutofb
-			//fireTableRowsInserted(newsize-1, newsize-1);
+		String key = lineEntry.getUrl();
+		LineEntry ret = lineEntries.put(key,lineEntry);
+		//以前的做法是，put之后再次统计size来判断是新增还是替换，这种方法在多线程时可能不准确，
+		//concurrentHashMap的put方法会在替换时返回原来的值，可用于判断是替换还是新增
+		int index = lineEntries.IndexOfKey(key);
+		if (ret == null) {
+			fireTableRowsInserted(index, index);
+			//这里偶尔出现IndexOutOfBoundsException错误,
+			// 但是debug发现javax.swing.DefaultRowSorter.checkAgainstModel在条件为false时(即未越界)抛出了异常，奇怪！
+		}else {
+			fireTableRowsUpdated(index, index);
 		}
+
+		titleDao.addOrUpdateTitle(lineEntry);//写入数据库
+
+		//need to use row-1 when add setRowSorter to table. why??
+		//https://stackoverflow.com/questions/6165060/after-adding-a-tablerowsorter-adding-values-to-model-cause-java-lang-indexoutofb
+		//fireTableRowsInserted(newsize-1, newsize-1);
 	}
 	/*
 	这个方法更新了URL的比对方法，无论是否包含默认端口都可以成功匹配
@@ -863,11 +714,11 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
 		Getter getter = new Getter(helpers);
 		URL fullurl = getter.getFullURL(message);
-		LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(fullurl.toString());
+		LineEntry entry = findLineEntry(fullurl.toString());
 		if (entry == null) {
 			URL shortUrl = getter.getShortURL(message);
 			if(!fullurl.equals(shortUrl)) {
-				entry = TitlePanel.getTitleTableModel().findLineEntry(shortUrl.toString());
+				entry = findLineEntry(shortUrl.toString());
 			}
 		}
 		return entry;
@@ -913,83 +764,10 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		return result;
 	}
 
-	public LineEntry getCurrentlyDisplayedItem() {
-		return this.currentlyDisplayedItem;
-	}
-
-	public void setCurrentlyDisplayedItem(LineEntry currentlyDisplayedItem) {
-		this.currentlyDisplayedItem = currentlyDisplayedItem;
-	}
-
-	//
-	// implement IMessageEditorController
-	// this allows our request/response viewers to obtain details about the messages being displayed
-	//
-
-	@Override
-	public byte[] getRequest()
-	{
-		LineEntry item = getCurrentlyDisplayedItem();
-		if(item==null) {
-			return "".getBytes();
-		}
-		return item.getRequest();
-	}
-
-	@Override
-	public byte[] getResponse()
-	{
-		LineEntry item = getCurrentlyDisplayedItem();
-		if(item==null) {
-			return "".getBytes();
-		}
-		return item.getResponse();
-	}
-
-	@Override
-	public IHttpService getHttpService()
-	{
-		LineEntry item = getCurrentlyDisplayedItem();
-		if(item==null) {
-			return null;
-		}
-		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
-		IHttpService service = helpers.buildHttpService(item.getHost(),
-				item.getPort(), item.getProtocol());
-		return service;
-	}
-
 	public void freshAllASNInfo(){
 		for (LineEntry entry : lineEntries.values()) {
 			entry.freshASNInfo();
 		}
 		fireTableRowsUpdated(0,lineEntries.size()-1);
 	}
-
-
-
-	/*    public class LineTable extends JTable
-    {	
-	 *//**
-	 *
-	 *//*
-    	private static final long serialVersionUID = 1L;
-        public LineTable(LineTableModel lineTableModel)
-        {
-            super(lineTableModel);
-        }
-
-        @Override
-        public void changeSelection(int row, int col, boolean toggle, boolean extend)
-        {
-            // show the log entry for the selected row
-        	LineEntry Entry = lineEntries.get(super.convertRowIndexToModel(row));
-            requestViewer.setMessage(Entry.messageinfo.getRequest(), true);
-            responseViewer.setMessage(Entry.messageinfo.getResponse(), false);
-            currentlyDisplayedItem = Entry.messageinfo;
-            super.changeSelection(row, col, toggle, extend);
-        }
-    }*/
-
-
 }

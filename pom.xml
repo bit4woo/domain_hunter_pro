@@ -7,10 +7,15 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.bit4woo.burp</groupId>
 	<artifactId>domain_hunter_pro</artifactId>
-	<version>v1.8</version>
+	<version>v1.9-alpha</version>
 
-	<!-- <repositories> <repository> <id>jitpack.io</id> <url>https://jitpack.io</url> 
-		</repository> </repositories> -->
+
+	<!-- <repositories>
+		<repository>
+			<id>jitpack.io</id>
+			<url>https://jitpack.io</url>
+		</repository>
+	</repositories> -->
 
 	<build>
 		<sourceDirectory>src</sourceDirectory>
@@ -23,6 +28,11 @@
 					<!-- 这是JDK的版本 -->
 					<source>1.8</source>
 					<target>1.8</target>
+					<excludes>
+						<!-- 编译时排除Deprecated包及下面的资源 -->
+						<exclude>**/Deprecated/**</exclude>
+						<exclude>**/test/**</exclude>
+					</excludes>
 				</configuration>
 			</plugin>
 
@@ -206,5 +216,13 @@
 			<artifactId>ipaddress</artifactId>
 			<version>5.3.3</version>
 		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.springframework/spring-jdbc -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-jdbc</artifactId>
+			<version>5.3.21</version>
+		</dependency>
+
 	</dependencies>
 </project>

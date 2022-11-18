@@ -9,28 +9,34 @@ import java.util.regex.Pattern;
 
 public class LineSearch {
 	
+	private TitlePanel titlePanel;
+
+	public LineSearch(TitlePanel panel){
+		this.titlePanel = panel;
+	}
+	
 	//根据状态过滤
-	public static boolean entryNeedToShow(LineEntry entry) {
-		if (!(TitlePanel.rdbtnCheckedItems.isSelected()||TitlePanel.rdbtnCheckingItems.isSelected()||
-				TitlePanel.rdbtnUnCheckedItems.isSelected()||TitlePanel.rdbtnMoreActionItems.isSelected())) {
+	public boolean entryNeedToShow(LineEntry entry) {
+		if (!(titlePanel.getRdbtnUnCheckedItems().isSelected()||titlePanel.getRdbtnCheckingItems().isSelected()||
+				titlePanel.getRdbtnCheckedItems().isSelected()||titlePanel.getRdbtnMoreActionItems().isSelected())) {
 			//全部未选中时，全部返回。一来为了满足用户习惯全部未选择时全部返回，
 			//二来是为了解决之前乱改CheckStatus常理带来的bug，之前CheckStatus_Checked == "Checked",现在CheckStatus_Checked== "done"导致选中checked的时候，Checked的那部分就不会被显示出来。
 			return true;
 		}
 
-		if (TitlePanel.rdbtnCheckedItems.isSelected()&& entry.getCheckStatus().equals(LineEntry.CheckStatus_Checked)) {
+		if (titlePanel.getRdbtnCheckedItems().isSelected()&& entry.getCheckStatus().equals(LineEntry.CheckStatus_Checked)) {
 			return true;
 		}
 
-		if (TitlePanel.rdbtnCheckingItems.isSelected()&& entry.getCheckStatus().equals(LineEntry.CheckStatus_Checking)) {
+		if (titlePanel.getRdbtnCheckingItems().isSelected()&& entry.getCheckStatus().equals(LineEntry.CheckStatus_Checking)) {
 			return true;//小心 == 和 equals的区别，之前这里使用 ==就导致了checking状态的条目的消失。
 		}
 
-		if (TitlePanel.rdbtnUnCheckedItems.isSelected()&& entry.getCheckStatus().equals(LineEntry.CheckStatus_UnChecked)) {
+		if (titlePanel.getRdbtnUnCheckedItems().isSelected()&& entry.getCheckStatus().equals(LineEntry.CheckStatus_UnChecked)) {
 			return true;
 		}
 		
-		if (TitlePanel.rdbtnMoreActionItems.isSelected()&& entry.getCheckStatus().equals(LineEntry.CheckStatus_MoreAction)) {
+		if (titlePanel.getRdbtnMoreActionItems().isSelected()&& entry.getCheckStatus().equals(LineEntry.CheckStatus_MoreAction)) {
 			return true;
 		}
 
@@ -57,9 +63,9 @@ public class LineSearch {
 			}else {
 				contentList.add(line.getUrl());//本质是domain name
 			}
-			contentList.add(line.getIP());
-			contentList.add(line.getCDN());
-			contentList.add(line.getComment());
+			contentList.add(line.getIPSet().toString());
+			contentList.add(line.getCNAMESet().toString());
+			contentList.add(line.getComments().toString());
 			contentList.add(line.getTitle());
 			contentList.add(line.getIcon_hash());
 			contentList.add(line.getASNInfo());
@@ -139,7 +145,7 @@ public class LineSearch {
 			}
 
 			if (dork.equalsIgnoreCase(SearchDork.COMMENT.toString())) {
-				tempContent = line.getComment();
+				tempContent = line.getComments().toString();
 			}
 			
 			if (dork.equalsIgnoreCase(SearchDork.TITLE.toString())) {
@@ -179,13 +185,13 @@ public class LineSearch {
 			if (pRegex.matcher(line.getUrl()).find()) {
 				return true;
 			}
-			if (pRegex.matcher(line.getIP()).find()) {
+			if (pRegex.matcher(line.getIPSet().toString()).find()) {
 				return true;
 			}
-			if (pRegex.matcher(line.getCDN()).find()) {
+			if (pRegex.matcher(line.getCNAMESet().toString()).find()) {
 				return true;
 			}
-			if (pRegex.matcher(line.getComment()).find()) {
+			if (pRegex.matcher(line.getComments().toString()).find()) {
 				return true;
 			}
 			if (pRegex.matcher(line.getASNInfo()).find()) {

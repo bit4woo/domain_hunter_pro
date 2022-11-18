@@ -148,7 +148,8 @@ public class RunnerGUI extends JFrame {
 	 * 数据源都来自Domain Hunter
 	 * @param messageInfo
 	 */
-	public RunnerGUI() {
+	public RunnerGUI(IHttpRequestResponse messageInfo) {
+		this.messageInfo = messageInfo;
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		//if use "EXIT_ON_CLOSE",burp will exit!!
 		setVisible(true);
@@ -195,7 +196,7 @@ public class RunnerGUI extends JFrame {
 			public void windowClosing(WindowEvent e) {
 				// TODO 关闭多线程
 				try{
-					runnerTableModel.clear(false);
+					runnerTableModel = null;
 				}catch (Exception e1){
 					e1.printStackTrace();
 				}
@@ -248,12 +249,6 @@ public class RunnerGUI extends JFrame {
 
 		//准备工作
 	}
-	
-	public RunnerGUI(IHttpRequestResponse messageInfo) {
-		this();
-		this.messageInfo = messageInfo;
-	}
-		
 	
 	/**
 	 * 对所有收集到的域名和IP进行Host碰撞

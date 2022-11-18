@@ -1,9 +1,5 @@
 package domain;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
-
 @Deprecated //暂未启用
 public class SubDomainEntry {
 	

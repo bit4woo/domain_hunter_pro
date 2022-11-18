@@ -12,16 +12,18 @@ import java.net.URL;
 
 import org.apache.commons.io.FileUtils;
 
+import GUI.GUIMain;
 import burp.BurpExtender;
 import burp.Commons;
-import config.ConfigPanel;
 
 class NmapScanAction implements ActionListener{
 
+	private final GUIMain guiMain;
 	public LineTable lineTable;
 	int[] rows;
 
-	public NmapScanAction(final LineTable lineTable, final int[] rows) {
+	public NmapScanAction(GUIMain guiMain,final LineTable lineTable, final int[] rows) {
+		this.guiMain = guiMain;
 		this.lineTable = lineTable;
 		this.rows  = rows;
 	}
@@ -43,11 +45,11 @@ class NmapScanAction implements ActionListener{
 		}
 	}
 	
-	public static String genbatFile(String host) {
+	public String genbatFile(String host) {
 		try {
 			String basedir = (String) System.getProperties().get("java.io.tmpdir");
 			
-			String nmapPath = ConfigPanel.getLineConfig().getNmapPath();
+			String nmapPath = guiMain.getConfigPanel().getLineConfig().getNmapPath();
 			String command = nmapPath.replace("{host}", host.trim());
 
 			//将命令写入剪切板

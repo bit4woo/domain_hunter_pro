@@ -5,15 +5,30 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.PrintWriter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.TableRowSorter;
 
+import GUI.GUIMain;
 import burp.BurpExtender;
-import burp.Commons;
+import burp.IMessageEditor;
 import burp.IPAddressUtils;
-import domain.DomainPanel;
+import dao.TitleDao;
 import thread.ThreadGetSubnet;
 import thread.ThreadGetTitleWithForceStop;
 import title.search.SearchTextField;
@@ -25,24 +40,31 @@ public class TitlePanel extends JPanel {
 	 */
 	private static final long serialVersionUID = 1L;
 	private JPanel buttonPanel;
-	private static LineTable titleTable;
 	private JLabel lblSummaryOfTitle;
-	public static JRadioButton rdbtnUnCheckedItems;
-	public static JRadioButton rdbtnCheckingItems;
-	public static JRadioButton rdbtnCheckedItems;
-	public static JRadioButton rdbtnMoreActionItems;
+	private JRadioButton rdbtnUnCheckedItems;
+	private JRadioButton rdbtnCheckingItems;
+	private JRadioButton rdbtnCheckedItems;
+	private JRadioButton rdbtnMoreActionItems;
+	private SearchTextField textFieldSearch;
+
+	private IMessageEditor requestViewer;
+	private IMessageEditor responseViewer;
+	private JSplitPane detailPanel;
 
 	//add table and tablemodel to GUI
-	private static LineTableModel titleTableModel = new LineTableModel();
+	private LineTable titleTable;
+	private TitleDao titleDao;
 	PrintWriter stdout;
 	PrintWriter stderr;
-	public static ThreadGetTitleWithForceStop threadGetTitle;
-	public static GetTitleTempConfig tempConfig; //每次获取title过程中的配置。
-	private IndexedLinkedHashMap<String,LineEntry> BackupLineEntries;
+	private ThreadGetTitleWithForceStop threadGetTitle;
+	private GetTitleTempConfig tempConfig; //每次获取title过程中的配置。
+	private IndexedHashMap<String,LineEntry> BackupLineEntries;
+	private GUIMain guiMain;
+	private JTabbedPane RequestPanel;
+	private JTabbedPane ResponsePanel;
 
-	private static SearchTextField textFieldSearch;
 
-	public static JTextField getTextFieldSearch() {
+	public JTextField getTextFieldSearch() {
 		return textFieldSearch;
 	}
 
@@ -51,20 +73,80 @@ public class TitlePanel extends JPanel {
 		TitlePanel.textFieldSearch = textFieldSearch;
 	}*/
 
-	public static LineTable getTitleTable() {
+	public LineTable getTitleTable() {
 		return titleTable;
 	}
 
-	public static LineTableModel getTitleTableModel() {
-		return titleTableModel;
-	}
-
-	public IndexedLinkedHashMap<String,LineEntry> getBackupLineEntries() {
+	public IndexedHashMap<String,LineEntry> getBackupLineEntries() {
 		return BackupLineEntries;
 	}
 
-	public TitlePanel() {//构造函数
+	public GetTitleTempConfig getTempConfig() {
+		return tempConfig;
+	}
 
+	public void setTempConfig(GetTitleTempConfig tempConfig) {
+		this.tempConfig = tempConfig;
+	}
+
+	public JLabel getLblSummaryOfTitle() {
+		return lblSummaryOfTitle;
+	}
+
+	public void setLblSummaryOfTitle(JLabel lblSummaryOfTitle) {
+		this.lblSummaryOfTitle = lblSummaryOfTitle;
+	}
+
+	public JRadioButton getRdbtnUnCheckedItems() {
+		return rdbtnUnCheckedItems;
+	}
+
+	public void setRdbtnUnCheckedItems(JRadioButton rdbtnUnCheckedItems) {
+		this.rdbtnUnCheckedItems = rdbtnUnCheckedItems;
+	}
+
+	public JRadioButton getRdbtnCheckingItems() {
+		return rdbtnCheckingItems;
+	}
+
+	public void setRdbtnCheckingItems(JRadioButton rdbtnCheckingItems) {
+		this.rdbtnCheckingItems = rdbtnCheckingItems;
+	}
+
+	public JRadioButton getRdbtnCheckedItems() {
+		return rdbtnCheckedItems;
+	}
+
+	public void setRdbtnCheckedItems(JRadioButton rdbtnCheckedItems) {
+		this.rdbtnCheckedItems = rdbtnCheckedItems;
+	}
+
+	public JRadioButton getRdbtnMoreActionItems() {
+		return rdbtnMoreActionItems;
+	}
+
+	public void setRdbtnMoreActionItems(JRadioButton rdbtnMoreActionItems) {
+		this.rdbtnMoreActionItems = rdbtnMoreActionItems;
+	}
+
+	public IMessageEditor getRequestViewer() {
+		return requestViewer;
+	}
+
+	public IMessageEditor getResponseViewer() {
+		return responseViewer;
+	}
+
+	public ThreadGetTitleWithForceStop getThreadGetTitle() {
+		return threadGetTitle;
+	}
+
+	public void setThreadGetTitle(ThreadGetTitleWithForceStop threadGetTitle) {
+		this.threadGetTitle = threadGetTitle;
+	}
+
+	public TitlePanel(GUIMain guiMain) {//构造函数
+		this.guiMain = guiMain;
 		try{
 			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
 			stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
@@ -77,21 +159,22 @@ public class TitlePanel extends JPanel {
 		this.setLayout(new BorderLayout(0, 0));
 		this.add(createButtonPanel(), BorderLayout.NORTH);
 
-		/////////////////////////////////////////
-		//		JSplitPane TargetAndTitlePanel = new JSplitPane();//存放目标域名
-		//		TargetAndTitlePanel.setResizeWeight(0.2);
-		//		this.add(TargetAndTitlePanel,BorderLayout.CENTER);
-		//
-		//		JScrollPane TargetMapPane = new JScrollPane();
-		//		TargetMapPane.setPreferredSize(new Dimension(200, 200));
-		//		TargetAndTitlePanel.setLeftComponent(TargetMapPane);
-		//
-		//
-		//		titleTable = new LineTable(titleTableModel);
-		//		TargetAndTitlePanel.setRightComponent(titleTable.getTableAndDetailSplitPane());
 
-		titleTable = new LineTable(titleTableModel);
-		this.add(titleTable.getTableAndDetailSplitPane(),BorderLayout.CENTER);
+
+		titleTable = new LineTable(guiMain);
+		detailPanel = DetailPanel();
+
+		JSplitPane splitPane = new JSplitPane();//table area + detail area
+		splitPane.setResizeWeight(0.5);
+		splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
+
+		JScrollPane scrollPaneRequests = new JScrollPane(titleTable,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);//table area
+
+		splitPane.setLeftComponent(scrollPaneRequests);
+		splitPane.setRightComponent(detailPanel);
+		this.add(splitPane,BorderLayout.CENTER);
+
 	}
 
 	public JPanel createButtonPanel() {
@@ -101,63 +184,11 @@ public class TitlePanel extends JPanel {
 		JButton btnAction = new JButton("Action");
 		btnAction.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				new GetTitleMenu().show(btnAction, btnAction.getX(), btnAction.getY());
+				new GetTitleMenu(guiMain).show(btnAction, btnAction.getX(), btnAction.getY());
 			}
 		});
 		buttonPanel.add(btnAction);
 
-		/*
-		//通过tableModelListener实现自动保存后，无需这个模块了
-		JButton btnSaveState = new JButton("Save");
-		btnSaveState.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-					@Override
-					protected Map doInBackground() throws Exception {
-						btnSaveState.setEnabled(false);
-						btnSaveState.setEnabled(true);
-						return new HashMap<String, String>();
-						//no use ,the return.
-					}
-					@Override
-					protected void done() {
-						btnSaveState.setEnabled(true);
-					}
-				};
-				worker.execute();
-			}
-		});
-		btnSaveState.setToolTipText("Save Data To DataBase");
-		//buttonPanel.add(btnSaveState);
-
-
-		InputMap inputMap1 = btnSaveState.getInputMap(JButton.WHEN_IN_FOCUSED_WINDOW);
-		KeyStroke Save = KeyStroke.getKeyStroke(KeyEvent.VK_S,ActionEvent.CTRL_MASK); //Ctrl+S
-		inputMap1.put(Save, "Save");
-
-		btnSaveState.getActionMap().put("Save", new AbstractAction() {
-			public void actionPerformed(ActionEvent evt) {
-				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-					@Override
-					protected Map doInBackground() throws Exception {
-						btnSaveState.setEnabled(false);
-						//saveDBfileToExtension();
-						btnSaveState.setEnabled(true);
-						return new HashMap<String, String>();
-						//no use ,the return.
-					}
-					@Override
-					protected void done() {
-						btnSaveState.setEnabled(true);
-					}
-				};
-				worker.execute();
-			}
-		});
-		 */
-
-
-		
 		JButton buttonSearch = new JButton("Search");
 		textFieldSearch = new SearchTextField("",buttonSearch);
 		buttonPanel.add(textFieldSearch);
@@ -210,11 +241,24 @@ public class TitlePanel extends JPanel {
 
 		lblSummaryOfTitle = new JLabel("^_^");
 		buttonPanel.add(lblSummaryOfTitle);
-		buttonPanel.setToolTipText(titleTableModel.getStatusSummary());
+		buttonPanel.setToolTipText("");
 
 		return buttonPanel;
 	}
 
+	public JSplitPane DetailPanel(){
+
+		JSplitPane RequestDetailPanel = new JSplitPane();//request and response
+		RequestDetailPanel.setResizeWeight(0.5);
+
+		RequestPanel = new JTabbedPane();
+		RequestDetailPanel.setLeftComponent(RequestPanel);
+
+		ResponsePanel = new JTabbedPane();
+		RequestDetailPanel.setRightComponent(ResponsePanel);
+
+		return RequestDetailPanel;
+	}
 	/**
 	 * 转移手动保存的记录
 	 */
@@ -225,11 +269,68 @@ public class TitlePanel extends JPanel {
 			return;
 		}
 		for (LineEntry entry:BackupLineEntries.values()) {
-			if (entry.getEntryType().equalsIgnoreCase(LineEntry.EntryType_Manual_Saved) ||
-					entry.getComment().toLowerCase().contains("manual-saved")) {
-				TitlePanel.getTitleTableModel().addNewLineEntry(entry);
+			if (entry.getEntrySource().equalsIgnoreCase(LineEntry.Source_Manual_Saved)) {
+				titleTable.getLineTableModel().addNewLineEntry(entry);
 			}
 		}
+	}
+
+	public static HashMap<String,String> AddWithSoureType(Set<String> input,String type) {
+		HashMap<String,String> domains = new HashMap<String,String>();
+		if (input != null && domains != null) {
+			for (String in:input) {
+				domains.put(in, type);
+			}
+		}
+		return domains;
+	}
+
+	/**
+	 *
+	 * 多线程获取title的方法
+	 */
+	public void getTitleBase(HashMap<String,String> domainsWithSource){
+		if (!stopGetTitleThread(true)){//其他get title线程未停止
+			stdout.println("still have get title thread is running, will do nothing.");
+			return;
+		}
+
+		stdout.println(domainsWithSource.size()+" targets to request");
+		if (domainsWithSource.size() <= 0) {
+			return;
+		}
+		tempConfig = new GetTitleTempConfig(domainsWithSource.size());
+		if (tempConfig.getThreadNumber() <=0) {
+			return;
+		}
+
+		setThreadGetTitle(new ThreadGetTitleWithForceStop(guiMain,domainsWithSource,tempConfig.getThreadNumber()));
+		getThreadGetTitle().start();
+	}
+
+	/**
+	 * 获取所有明确属于目标范围的域名、IP；排除了黑名单中的内容
+	 * 子域名+确定的网段+证书IP-黑名单IP
+	 * @return
+	 */
+	public Set<String> getCertainDomains() {
+		Set<String> targetsToReq = new HashSet<String>();
+		targetsToReq.addAll(guiMain.getDomainPanel().getDomainResult().getSubDomainSet());
+		targetsToReq.addAll(guiMain.getDomainPanel().fetchTargetModel().fetchTargetIPSet());
+		targetsToReq.addAll(guiMain.getDomainPanel().getDomainResult().getIPSetOfCert());
+		targetsToReq.removeAll(guiMain.getDomainPanel().getDomainResult().getNotTargetIPSet());
+		return targetsToReq;
+	}
+
+	/**
+	 * 获取所有用户自定义输入的域名、IP；排除了黑名单中的内容
+	 * @return
+	 */
+	public Set<String> getCustomDomains() {
+		Set<String> targetsToReq = new HashSet<String>();
+		targetsToReq.addAll(guiMain.getDomainPanel().getDomainResult().getSpecialPortTargets());
+		targetsToReq.removeAll(guiMain.getDomainPanel().getDomainResult().getNotTargetIPSet());
+		return targetsToReq;
 	}
 
 	/**
@@ -237,87 +338,57 @@ public class TitlePanel extends JPanel {
 	 * 根据所有已知域名获取title
 	 */
 	public void getAllTitle(){
-		if (!stopGetTitleThread(true)){//其他get title线程未停止
-			return;
-		}
-		DomainPanel.backupDB();
-
-		Set<String> domains = new HashSet<>();//新建一个对象，直接赋值后的删除操作，实质是对domainResult的操作。
-
-		//将新发现的域名也移动到子域名集合中，以便跑一次全量。 ---DomainConsumer.QueueToResult()中的逻辑已经保证了SubDomainSet一直是最全的。
-		domains.addAll(DomainPanel.getDomainResult().getSubDomainSet());
-		domains.addAll(DomainPanel.fetchTargetModel().fetchTargetIPSet());//确定的IP网段，用户自己输入的
-		domains.addAll(DomainPanel.getDomainResult().getSpecialPortTargets());//特殊端口目标
-		//remove domains in black list that is not our target
-		//domains.removeAll(DomainPanel.getDomainResult().fetchNotTargetIPList());//无需移除，会标记出来的。
-		tempConfig = new GetTitleTempConfig(domains.size());
-		if (tempConfig.getThreadNumber() <=0) {
-			return;
-		}
+		guiMain.getDomainPanel().backupDB("before-getTitle");
 		//backup to history
-		BackupLineEntries = titleTableModel.getLineEntries();
-
+		BackupLineEntries = titleTable.getLineTableModel().getLineEntries();
 		//clear tableModel
-		titleTableModel.clear(true);//clear
-
+		LineTableModel titleTableModel = new LineTableModel(guiMain);//clear
+		loadData(titleTableModel);
 		//转移以前手动保存的记录
 		transferManualSavedItems();
 
-		threadGetTitle = new ThreadGetTitleWithForceStop(domains,tempConfig.getThreadNumber());
-		threadGetTitle.start();
-	}
+		HashMap<String,String> mapToRun = AddWithSoureType(getCertainDomains(),LineEntry.Source_Certain);
+		HashMap<String,String> mapToRun1 = AddWithSoureType(getCustomDomains(),LineEntry.Source_Custom_Input);
+		mapToRun.putAll(mapToRun1);
 
-
-	public void getExtendTitle(){
-		if (!stopGetTitleThread(true)){//其他get title线程未停止
-			return;
-		}
-		DomainPanel.backupDB();
-
-		Set<String> extendIPSet = titleTableModel.GetExtendIPSet();
-		stdout.println(extendIPSet.size()+" extend IP Address founded"+extendIPSet);
-		
-		tempConfig = new GetTitleTempConfig(extendIPSet.size());
-		if (tempConfig.getThreadNumber() <=0) {
-			return;
-		}
-
-
-		threadGetTitle = new ThreadGetTitleWithForceStop(extendIPSet,tempConfig.getThreadNumber());
-		threadGetTitle.start();
-
+		getTitleBase(mapToRun);
 	}
 
 	/**
-	 * 获取新发现域名的title，这里会尝试之前请求失败的域名，可能需要更多时间
+	 * 需要跑的IP集合 = 网段汇算结果-黑名单-已请求域名的IP集合
+	 */
+	public void getExtendTitle(){
+		guiMain.getDomainPanel().backupDB("before-getExtendTitle");
+
+		Set<String> extendIPSet = titleTable.getLineTableModel().GetExtendIPSet();
+		Set<String> hostsInTitle = titleTable.getLineTableModel().GetHostsWithSpecialPort();
+		extendIPSet.removeAll(guiMain.getDomainPanel().getDomainResult().getNotTargetIPSet());
+		extendIPSet.removeAll(hostsInTitle);
+		HashMap<String,String> mapToRun = AddWithSoureType(extendIPSet,LineEntry.Source_Subnet_Extend);
+
+		getTitleBase(mapToRun);
+	}
+
+	/**
+	 * 获取新发现域名、IP的title
+	 * setToRun = 子域名+确定的网段+证书IP-黑名单IP-已请求域名的IP集合
 	 */
 	public void getTitleOfNewDomain(){
-		if (!stopGetTitleThread(true)){//其他get title线程未停止
-			return;
-		}
+		guiMain.getDomainPanel().backupDB("before-getTitleOfNewDomain");
 
-		DomainPanel.backupDB();
+		Set<String> hostsInTitle = titleTable.getLineTableModel().GetHostsWithSpecialPort();
 
-		Set<String> newDomains = new HashSet<>(DomainPanel.getDomainResult().getSubDomainSet());//新建一个对象，直接赋值后的删除操作，实质是对domainResult的操作。
-		Set<String> targetIPSet = new HashSet<>(DomainPanel.getTargetTable().getTargetModel().fetchTargetIPSet());
-		Set<String> newDomainsWithPort = new HashSet<>(DomainPanel.getDomainResult().getSpecialPortTargets());
-
-		newDomains.addAll(targetIPSet);
-		newDomains.addAll(newDomainsWithPort);
-
-		Set<String> hostsInTitle = titleTableModel.GetHostsWithSpecialPort();
+		Set<String> newDomains = getCertainDomains();
 		newDomains.removeAll(hostsInTitle);
+		HashMap<String,String> mapToRun = AddWithSoureType(newDomains,LineEntry.Source_Certain);
 
-		//remove domains in black list
-		newDomains.removeAll(DomainPanel.getDomainResult().getNotTargetIPSet());
-		tempConfig = new GetTitleTempConfig(newDomains.size());
-		if (tempConfig.getThreadNumber() <=0) {
-			return;
-		}
+		newDomains = getCustomDomains();
+		newDomains.removeAll(hostsInTitle);
+		HashMap<String,String> mapToRun1 = AddWithSoureType(newDomains,LineEntry.Source_Custom_Input);
 
+		mapToRun.putAll(mapToRun1);
 
-		threadGetTitle = new ThreadGetTitleWithForceStop(newDomains,tempConfig.getThreadNumber());
-		threadGetTitle.start();
+		getTitleBase(mapToRun);
 	}
 
 
@@ -325,9 +396,9 @@ public class TitlePanel extends JPanel {
 		//stdout.println(" "+isCurrent+justPulic);
 		Set<String> subnets;
 		if (isCurrent) {//获取的是现有可成功连接的IP集合+用户指定的IP网段集合
-			subnets = titleTableModel.GetSubnets();
+			subnets = titleTable.getLineTableModel().GetSubnets();
 		}else {//重新解析所有域名的IP
-			ThreadGetSubnet thread = new ThreadGetSubnet(DomainPanel.getDomainResult().getSubDomainSet());
+			ThreadGetSubnet thread = new ThreadGetSubnet(guiMain.getDomainPanel().getDomainResult().getSubDomainSet());
 			thread.start();
 			try {
 				thread.join();
@@ -336,7 +407,7 @@ public class TitlePanel extends JPanel {
 				return "thread Interrupted";
 			}
 			Set<String> IPsOfDomain = thread.IPset;
-			Set<String> IPsOfcertainSubnets = DomainPanel.fetchTargetModel().fetchTargetIPSet();//用户配置的确定IP+网段
+			Set<String> IPsOfcertainSubnets = guiMain.getDomainPanel().fetchTargetModel().fetchTargetIPSet();//用户配置的确定IP+网段
 			IPsOfDomain.addAll(IPsOfcertainSubnets);
 			subnets = IPAddressUtils.toSmallerSubNets(IPsOfDomain);
 		}
@@ -361,36 +432,49 @@ public class TitlePanel extends JPanel {
 	 * 用于从DB文件中加载数据，没有去重检查。
 	 * 这种加载方式没有改变tableModel，所以tableModelListener也还在。
 	 */
-	public void loadData(IndexedLinkedHashMap<String,LineEntry> lineEntries) {
-		//titleTableModel.setLineEntries(new ArrayList<LineEntry>());//clear
-		//这里没有fire delete事件，会导致排序号加载文件出错，但是如果fire了又会触发tableModel的删除事件，导致数据库删除。改用clear()
-		titleTableModel.clear(false);//clear
-		titleTableModel.setListenerIsOn(false);
-		int row = lineEntries.size();
-		titleTableModel.setLineEntries(lineEntries);//如果listener是on，将触发listener--同步到db文件
-		if (row>=1) {
-			titleTableModel.fireTableRowsInserted(0, row-1);
-		}
-		titleTableModel.setListenerIsOn(true);
+	public void loadData(String currentDBFile) {
+		titleDao = new TitleDao(currentDBFile);
+		List<LineEntry> lines = titleDao.selectAllTitle();
+		LineTableModel titleTableModel = new LineTableModel(guiMain, lines);
+		loadData(titleTableModel);
+	}
+
+	private void loadData(LineTableModel titleTableModel){
+
+		TableRowSorter<LineTableModel> tableRowSorter = new TableRowSorter<LineTableModel>(titleTableModel);
+		titleTable.setRowSorter(tableRowSorter);
+		titleTable.setModel(titleTableModel);
+		//IndexOutOfBoundsException size为0，为什么会越界？
+		//!!!注意：这里必须先setRowSorter，然后再setModel。否则就会出现越界问题。因为当setModel时，会触发数据变更事件，这个时候会调用Sorter。
+		// 而这个时候的Sorter中还是旧数据，就会认为按照旧数据的容量去获取数据，从而导致越界。
+
+		//titleTable.setAutoCreateRowSorter(true);//这样应该也可以❎，
+		//这里设置后就进行了创建，创建过程会getModel这个时候新model还未设置呢，保险起见不使用这个方式
+		//titleTable.setModel(titleTableModel);
+
+		int row = titleTableModel.getLineEntries().size();
 		System.out.println(row+" title entries loaded from database file");
 		stdout.println(row+" title entries loaded from database file");
 		digStatus();
-		TitlePanel.getTitleTable().search("");// hide checked items
+		titleTable.search("");// hide checked items
+		titleTable.tableHeaderWidthinit();//设置header宽度
+
+		try {
+			requestViewer = BurpExtender.getCallbacks().createMessageEditor(titleTable.getLineTableModel(), false);
+			responseViewer = BurpExtender.getCallbacks().createMessageEditor(titleTable.getLineTableModel(), false);
+			RequestPanel.removeAll();
+			ResponsePanel.removeAll();
+			RequestPanel.addTab("Request", requestViewer.getComponent());
+			ResponsePanel.addTab("Response", responseViewer.getComponent());
+		} catch (Exception e) {
+			//捕获异常，以便程序以非burp插件运行时可以启动
+			//e.printStackTrace();
+		}
 	}
 
-	/**
-	 *
-	 * @param lineEntries
-	 */
-	@Deprecated//TODO 不知为何没有起作用
-	public void loadDataNewNotWork(IndexedLinkedHashMap<String,LineEntry> lineEntries) {
-		LineTableModel tmp = new LineTableModel();
-		tmp.setLineEntries(lineEntries);
-		getTitleTable().setLineTableModel(tmp);
-	}
 
 	public void digStatus() {
-		String status = titleTableModel.getStatusSummary();
+		String status = titleTable.getLineTableModel().getStatusSummary();
 		lblSummaryOfTitle.setText(status);
 	}
 
@@ -400,7 +484,7 @@ public class TitlePanel extends JPanel {
 	 * @return
 	 */
 	public boolean stopGetTitleThread(boolean askBeforeStop){
-		if (threadGetTitle != null && threadGetTitle.isAlive()){
+		if (getThreadGetTitle() != null && getThreadGetTitle().isAlive()){
 			if (askBeforeStop){
 				int confirm = JOptionPane.showConfirmDialog(null,"Other Get Title Thread Is Running," +
 						"Are you sure to stop it and run this task?");
@@ -408,7 +492,7 @@ public class TitlePanel extends JPanel {
 					return false;
 				}
 			}
-			threadGetTitle.interrupt();
+			getThreadGetTitle().interrupt();
 			return true;
 		}
 		return true;

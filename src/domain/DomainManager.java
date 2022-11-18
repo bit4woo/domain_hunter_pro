@@ -6,7 +6,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -17,7 +16,7 @@ import com.google.common.net.InternetDomainName;
 import GUI.GUIMain;
 import Tools.DomainComparator;
 import burp.BurpExtender;
-import burp.DomainNameUtils;
+import burp.GrepUtils;
 import domain.target.TargetEntry;
 import domain.target.TargetTableModel;
 
@@ -29,34 +28,27 @@ import domain.target.TargetTableModel;
 	//DomainPanel.autoSave();
  */
 public class DomainManager {
-	public String uploadURL = "Input Upload URL Here";
 	public String summary = "";
 	public boolean autoAddRelatedToRoot = false;
 
-	private ConcurrentHashMap<String, String> rootDomainMap = new ConcurrentHashMap<String, String>();
-	//旧版本中用于存放目标域名范围的地方,为了兼容不能删除
-	//private LinkedHashMap<String,String> rootBlackDomainMap = new LinkedHashMap<String,String>();
-	// LinkedHashMap to keep the insert order
-	private Set<String> subnetSet = new CopyOnWriteArraySet<String>();//旧版本中用于指定目标IP和网段的地方,为了兼容不能删除
-
-	
-	private Set<String> subDomainSet = new CopyOnWriteArraySet<String>();
-	private Set<String> similarDomainSet = new CopyOnWriteArraySet<String>();
-	private Set<String> relatedDomainSet = new CopyOnWriteArraySet<String>();
+	private CopyOnWriteArraySet<String> subDomainSet = new CopyOnWriteArraySet<String>();
+	private CopyOnWriteArraySet<String> similarDomainSet = new CopyOnWriteArraySet<String>();
+	private CopyOnWriteArraySet<String> relatedDomainSet = new CopyOnWriteArraySet<String>();
 	//private Set<String> IsTargetButUselessDomainSet = new CopyOnWriteArraySet<String>();
 	//有效(能解析IP)但无用的域名，比如JD的网店域名、首页域名等对信息收集、聚合网段、目标界定有用，但是本身几乎不可能有漏洞的资产。
 
-	private Set<String> NotTargetIPSet = new CopyOnWriteArraySet<String>();
+	private CopyOnWriteArraySet<String> NotTargetIPSet = new CopyOnWriteArraySet<String>();
 	//存储域名解析到的CDN或云服务的IP。这类IP在做网段汇算时，应当被排除在外。
 
 	//private ConcurrentHashMap<String, Integer> unkownDomainMap = new ConcurrentHashMap<String, Integer>();//记录域名和解析失败的次数，大于五次就从子域名中删除。
-	private Set<String> EmailSet = new CopyOnWriteArraySet<String>();
-	private Set<String> similarEmailSet = new CopyOnWriteArraySet<String>();
-	private Set<String> PackageNameSet = new CopyOnWriteArraySet<String>();
-	private Set<String> SpecialPortTargets = new CopyOnWriteArraySet<String>();//用于存放指定了特殊端口的目标
-	
-	private Set<String> IPSetOfSubnet = new CopyOnWriteArraySet<String>();
-	private Set<String> IPSetOfCert = new CopyOnWriteArraySet<String>();
+	private CopyOnWriteArraySet<String> EmailSet = new CopyOnWriteArraySet<String>();
+	private CopyOnWriteArraySet<String> similarEmailSet = new CopyOnWriteArraySet<String>();
+	private CopyOnWriteArraySet<String> PackageNameSet = new CopyOnWriteArraySet<String>();
+	private CopyOnWriteArraySet<String> SpecialPortTargets = new CopyOnWriteArraySet<String>();//用于存放指定了特殊端口的目标
+
+	private CopyOnWriteArraySet<String> IPSetOfSubnet = new CopyOnWriteArraySet<String>();
+	private CopyOnWriteArraySet<String> IPSetOfCert = new CopyOnWriteArraySet<String>();
+	private GUIMain guiMain;
 
 	//private Set<String> newAndNotGetTitleDomainSet = new CopyOnWriteArraySet<String>();
 
@@ -67,25 +59,26 @@ public class DomainManager {
 	public static int TLD_DOMAIN = 4; //比如baidu.net是baidu.com的TLD domain。xxx.baiu.net和xxx.baidu.com也是
 	public static int NEED_CONFIRM_IP = 5; //根据目标无法判断的类型。
 	public static int USELESS = -1;
-	
+
 	public static int CERTAIN_EMAIL = 10;
 	public static int SIMILAR_EMAIL = 11;
 	//public static int BLACKLIST = -2;
 
-
-	DomainManager() {
+	public DomainManager() {
 		//to resolve "default constructor not found" error
 	}
 
-	public DomainManager(String projectName) {
+	public DomainManager(GUIMain guiMain) {
+		this.guiMain = guiMain;
 	}
 
-	public String getUploadURL() {
-		return uploadURL;
+
+	public GUIMain getGuiMain() {
+		return guiMain;
 	}
 
-	public void setUploadURL(String uploadURL) {
-		this.uploadURL = uploadURL;
+	public void setGuiMain(GUIMain guiMain) {
+		this.guiMain = guiMain;
 	}
 
 	public boolean isAutoAddRelatedToRoot() {
@@ -96,118 +89,136 @@ public class DomainManager {
 		this.autoAddRelatedToRoot = autoAddRelatedToRoot;
 	}
 
-	public ConcurrentHashMap<String, String> getRootDomainMap() {
-		return rootDomainMap;
-	}
-
-	public void setRootDomainMap(ConcurrentHashMap<String, String> rootDomainMap) {
-		this.rootDomainMap = rootDomainMap;
-	}
-
-	//兼容旧版本而保留的
-	public Set<String> getSubnetSet() {
-		return subnetSet;
-	}
-
+	/**
+	 * 
+	 * @return
+	 */
 	public Set<String> getSubDomainSet() {
 		return subDomainSet;
-	}
-
-	public void setSubDomainSet(Set<String> subDomainSet) {
-		this.subDomainSet = subDomainSet;
 	}
 
 	public Set<String> getSimilarDomainSet() {
 		return similarDomainSet;
 	}
 
-	public void setSimilarDomainSet(Set<String> similarDomainSet) {
-		this.similarDomainSet = similarDomainSet;
-	}
-
 	public Set<String> getRelatedDomainSet() {
 		return relatedDomainSet;
-	}
-
-	public void setRelatedDomainSet(Set<String> relatedDomainSet) {
-		this.relatedDomainSet = relatedDomainSet;
-	}
-
-	public Set<String> getEmailSet() {
-		return EmailSet;
-	}
-
-	public void setEmailSet(Set<String> emailSet) {
-		EmailSet = emailSet;
-	}
-
-	public Set<String> getSimilarEmailSet() {
-		return similarEmailSet;
-	}
-
-	public void setSimilarEmailSet(Set<String> similarEmailSet) {
-		this.similarEmailSet = similarEmailSet;
-	}
-	
-	public Set<String> getIPSetOfSubnet() {
-		return IPSetOfSubnet;
-	}
-
-	public void setIPSetOfSubnet(Set<String> iPSetOfSubnet) {
-		IPSetOfSubnet = iPSetOfSubnet;
-	}
-
-	public Set<String> getIPSetOfCert() {
-		return IPSetOfCert;
-	}
-
-	public void setIPSetOfCert(Set<String> iPSetOfCert) {
-		IPSetOfCert = iPSetOfCert;
 	}
 
 	public Set<String> getNotTargetIPSet() {
 		return NotTargetIPSet;
 	}
 
-	public void setNotTargetIPSet(Set<String> notTargetIPSet) {
-		NotTargetIPSet = notTargetIPSet;
+	public Set<String> getEmailSet() {
+		return EmailSet;
+	}
+
+	public Set<String> getSimilarEmailSet() {
+		return similarEmailSet;
 	}
 
 	public Set<String> getPackageNameSet() {
 		return PackageNameSet;
 	}
 
-	public void setPackageNameSet(Set<String> packageNameSet) {
-		PackageNameSet = packageNameSet;
-	}
-
 	public Set<String> getSpecialPortTargets() {
 		return SpecialPortTargets;
 	}
 
-	public void setSpecialPortTargets(Set<String> specialPortTargets) {
-		SpecialPortTargets = specialPortTargets;
+	public Set<String> getIPSetOfSubnet() {
+		return IPSetOfSubnet;
+	}
+
+	public Set<String> getIPSetOfCert() {
+		return IPSetOfCert;
+	}
+
+	/**
+	 * 上面没有提供setter函数，由此代替
+	 * @param type
+	 * @param content
+	 */
+	public void fillContentByType(TextAreaType type,Set<String> content) {
+		switch (type) {
+		case SubDomain:
+			//dao.createOrUpdateByType(content, type);
+			getSubDomainSet().clear();
+			getSubDomainSet().addAll(content);
+			break;
+		case RelatedDomain:
+			getRelatedDomainSet().clear();
+			getRelatedDomainSet().addAll(content);
+			break;
+		case SimilarDomain:
+			getSimilarDomainSet().clear();
+			getSimilarDomainSet().addAll(content);
+			break;
+		case Email:
+			getEmailSet().clear();
+			getEmailSet().addAll(content);
+			break;
+		case SimilarEmail:
+			getSimilarEmailSet().clear();
+			getSimilarEmailSet().addAll(content);
+			break;
+		case IPSetOfSubnet:
+			getIPSetOfSubnet().clear();
+			getIPSetOfSubnet().addAll(content);
+			break;
+		case IPSetOfCert:
+			getIPSetOfCert().clear();
+			getIPSetOfCert().addAll(content);
+			break;
+		case SpecialPortTarget:
+			getSpecialPortTargets().clear();
+			getSpecialPortTargets().addAll(content);
+			break;
+		case PackageName:
+			getPackageNameSet().clear();
+			getPackageNameSet().addAll(content);
+			break;
+		case BlackIP:
+			getNotTargetIPSet().clear();
+			getNotTargetIPSet().addAll(content);
+			break;
+		}
 	}
 
 	public TargetTableModel fetchTargetModel() {
-		return DomainPanel.getTargetTable().getTargetModel();
+		return guiMain.getDomainPanel().getTargetTable().getTargetModel();
 	}
 
 	public String getSummary() {
 		String filename = "unknown";
-		if (GUIMain.getCurrentDBFile() != null) {
-			filename = GUIMain.getCurrentDBFile().getName();
+		if (guiMain.getCurrentDBFile() != null) {
+			filename = guiMain.getCurrentDBFile().getName();
+		}
+		int targetSum = 0;
+		try {
+			targetSum += fetchTargetModel().getRowCount();
+		} catch (Exception e) {
+			//e.printStackTrace();
 		}
 		String tmpsummary = String.format("  FileName:%s  Root-domain:%s  Related-domain:%s  Sub-domain:%s  Similar-domain:%s  Email:%s "
 				+ "IPOfSubnet:%s IPOfCert:%s ^_^",
-				filename, fetchTargetModel().getRowCount(), relatedDomainSet.size(), subDomainSet.size(), similarDomainSet.size(), EmailSet.size(),
+				filename, targetSum, relatedDomainSet.size(), subDomainSet.size(), similarDomainSet.size(), EmailSet.size(),
 				IPSetOfSubnet.size(),IPSetOfCert.size());
 		return tmpsummary;
 	}
-	
+
 	public boolean isEmpty() {
-		return (fetchTargetModel().getRowCount()+ relatedDomainSet.size()+
-		subDomainSet.size()+similarDomainSet.size()+EmailSet.size()) == 0;
+		int sum = 0;
+		try {
+			sum += fetchTargetModel().getRowCount();
+		} catch (Exception e) {
+			//e.printStackTrace();
+		}
+		sum += relatedDomainSet.size();
+		sum += subDomainSet.size();
+		sum += similarDomainSet.size();
+		sum += EmailSet.size();
+		sum += similarEmailSet.size();
+		return sum == 0;
 	}
 
 	public void setSummary(String Summary) {
@@ -223,7 +234,7 @@ public class DomainManager {
 		String status = getSummary();
 		if (!status.equals(summary) && !summary.equals("")){
 			summary = getSummary();
-			DomainPanel.getLblSummary().setText(summary);
+			guiMain.getDomainPanel().getLblSummary().setText(summary);
 			return true;
 		}else {
 			return false;
@@ -293,25 +304,25 @@ public class DomainManager {
 	public String fetchPackageNames() {
 		return String.join(System.lineSeparator(), PackageNameSet);
 	}
-	
+
 	public String fetchSimilarEmails() {
 		List<String> tmplist = new ArrayList<>(similarEmailSet);
 		Collections.sort(tmplist);
 		return String.join(System.lineSeparator(), tmplist);
 	}
-	
+
 	public String fetchIPSetOfSubnet() {
 		List<String> tmplist = new ArrayList<>(IPSetOfSubnet);
 		Collections.sort(tmplist);
 		return String.join(System.lineSeparator(), tmplist);
 	}
-	
+
 	public String fetchIPSetOfCert() {
 		List<String> tmplist = new ArrayList<>(IPSetOfCert);
 		Collections.sort(tmplist);
 		return String.join(System.lineSeparator(), tmplist);
 	}
-	
+
 	public String fetchIPBlackList() {
 		List<String> tmplist = new ArrayList<>(NotTargetIPSet);
 		Collections.sort(tmplist);
@@ -336,53 +347,21 @@ public class DomainManager {
 		return false;
 	}
 
-
-
-	@Deprecated //不就等于put操作吗
-	private void AddToRootDomainMap(String key, String value) {
-		if (this.rootDomainMap.containsKey(key) && this.rootDomainMap.containsValue(value)) {
-			//do nothing
-		} else {
-			this.rootDomainMap.put(key, value);//这个操作不会触发TableChanged事件。
-		}
-		//1\主动触发监听器，让监听器去执行数据的保存。
-		//DomainPanel.domainTableModel.fireTableChanged(null);
-		//2\或者主动调用显示和保存的函数直接完成，不经过监听器。
-		//GUI.getDomainPanel().showToDomainUI();
-		//DomainPanel.autoSave();
-	}
-
-	/**
-	 * 这里是任何域名都强行直接添加。
-	 * 将一个域名作为rootdomain加到map中，如果autoSub为true，就自动截取。比如 www.baidu.com-->baidu.com。
-	 * 否则不截取
-	 *
-	 * @param enteredRootDomain
-	 * @param autoSub
-	 */
-	@Deprecated//旧版本函数启用
-	public void addToRootDomainAndSubDomainDep(String enteredRootDomain, boolean autoSub) {
-		enteredRootDomain = DomainNameUtils.clearDomainWithoutPort(enteredRootDomain);
-		if (enteredRootDomain == null) return;
-		subDomainSet.add(enteredRootDomain);
-		if (autoSub) {
-			enteredRootDomain = InternetDomainName.from(enteredRootDomain).topPrivateDomain().toString();
-		}
-		String keyword = enteredRootDomain.substring(0, enteredRootDomain.indexOf("."));
-		rootDomainMap.put(enteredRootDomain, keyword);
-		relatedDomainSet.remove(enteredRootDomain);//刷新时不能清空，所有要有删除操作。
-	}
-
 	public void addToTargetAndSubDomain(String enteredRootDomain, boolean autoSub) {
 		if (enteredRootDomain == null) return;
-		DomainPanel.fetchTargetModel().addRowIfValid(new TargetEntry(enteredRootDomain, autoSub));
+		if (guiMain.getDomainPanel().fetchTargetModel().addRowIfValid(new TargetEntry(enteredRootDomain, autoSub))) {
+			subDomainSet.add(enteredRootDomain);
+		};
 	}
 
 	public void addTLDToTargetAndSubDomain(String enteredRootDomain) {
 		if (enteredRootDomain == null) return;
-		String tldDomainToAdd  = DomainPanel.fetchTargetModel().getTLDDomainToAdd(enteredRootDomain);
+		String tldDomainToAdd  = guiMain.getDomainPanel().fetchTargetModel().getTLDDomainToAdd(enteredRootDomain);
 		TargetEntry tmp = new TargetEntry(tldDomainToAdd, false);
-		DomainPanel.fetchTargetModel().addRowIfValid(tmp);
+		guiMain.getDomainPanel().fetchTargetModel().addRowIfValid(tmp);
+		if (guiMain.getDomainPanel().fetchTargetModel().addRowIfValid(tmp)) {
+			subDomainSet.add(enteredRootDomain);
+		};
 	}
 
 	public void addIfValid(Set<String> domains) {
@@ -397,8 +376,8 @@ public class DomainManager {
 	 * @return boolean 执行了添加返回true，没有执行添加返回false。
 	 */
 	public boolean addIfValid(String domain) {
-		Set<String> domains = DomainProducer.grepDomain(domain);//这样以支持domain:port形式的资产
-		List<String> ips = DomainProducer.grepIPAndPort(domain);
+		Set<String> domains = GrepUtils.grepDomain(domain);//这样以支持domain:port形式的资产
+		List<String> ips = GrepUtils.grepIPAndPort(domain);
 		if (domains.size() !=0 ){
 			domain = new ArrayList<String>(domains).get(0);
 		} else if(ips.size() !=0){
@@ -431,23 +410,23 @@ public class DomainManager {
 		} else if (type == DomainManager.IP_ADDRESS){
 			IPSetOfSubnet.add(domain);
 			return true;
-		//不再直接添加收集到但是无法确认所属关系的IP，误报太高
-		//		} else if (type == DomainManager.NEED_CONFIRM_IP){
-		//			SpecialPortTargets.add(domain);
-		//			return true;
+			//不再直接添加收集到但是无法确认所属关系的IP，误报太高
+			//		} else if (type == DomainManager.NEED_CONFIRM_IP){
+			//			SpecialPortTargets.add(domain);
+			//			return true;
 		}else{
 			return false;
 		}//Email的没有处理
 	}
-	
-	
+
+
 	public void addIfValidEmail(Set<String> emails) {
 		for (String email:emails) {
 			addIfValidEmail(email);
 		}
 	}
-	
-	
+
+
 	/**
 	 * 根据已有配置进行添加，不是强行直接添加
 	 *
@@ -472,44 +451,59 @@ public class DomainManager {
 
 	/**
 	 * 根据规则重新过一遍所有的数据
-	 * 相关域名:来自证书信息不能清空。
-	 * 子域名、相似域名、包名 都重新识别归类。
-	 * Email不做变化
+	 * 
+	 * 1、子域名、相似域名、子网IP、邮箱、相似邮箱、package name 都很好处理。与目标有明确的关联关系
+	 * 2、相关域名、IPofCert都是根据证书信息进行关联的，有点不好处理。
+	 * 相关域名只能在原始数据的基础上做排除，已在子域名中的，就无需存储在相关域名中了
+	 * IPofCert就只能先不做处理，除非能记录器证书信息，或者从title中查询其信息进行判断。
+	 * IPofCert也可以排除已在IPSetOfSubnet中的部分
+	 *
+	 * 假如用户手动编辑了target。那么就需要依靠刷新的操作来更新数据。所以单纯靠添加时的处理逻辑是不够的。
+	 * 
+	 * 新增的刷新逻辑还可以简化，子域名等无需再次分析。
 	 */
 	public void freshBaseRule() {
+		guiMain.getDomainPanel().backupDB("before refresh");
 		BurpExtender.getStdout().println("before refresh--> "+getSummary());
+
 		Set<String> tmpDomains = new HashSet<>();
-		tmpDomains.addAll(relatedDomainSet);
+		//tmpDomains.addAll(relatedDomainSet);
 
 		tmpDomains.addAll(subDomainSet);
 		tmpDomains.addAll(similarDomainSet);
 		tmpDomains.addAll(PackageNameSet);
 		tmpDomains.addAll(IPSetOfSubnet);
+		tmpDomains.addAll(relatedDomainSet);
 
 		subDomainSet.clear();
 		similarDomainSet.clear();
 		PackageNameSet.clear();
 		IPSetOfSubnet.clear();
 
-		for (String domain : tmpDomains) {
-			if(addIfValid(domain)){
-				relatedDomainSet.remove(domain);
-			}
-		}
+		addIfValid(tmpDomains);
+
+		//相关域名、IPofCert都是根据证书信息进行关联的，目前就只做排除操作。
+		relatedDomainSet.removeAll(subDomainSet);
+		IPSetOfCert.removeAll(IPSetOfSubnet);
 
 		//处理Email
 		HashSet<String > tmpEmalis = new HashSet<>();
-		
+
+		guiMain.getDomainPanel().collectEmailFromIssue();
 		tmpEmalis.addAll(EmailSet);
 		tmpEmalis.addAll(similarEmailSet);
-		tmpEmalis.addAll(DomainPanel.collectEmails());
-		
+
 		EmailSet.clear();
 		similarEmailSet.clear();
-		DomainPanel.getDomainResult().addIfValidEmail(tmpEmalis);
+		guiMain.getDomainPanel().getDomainResult().addIfValidEmail(tmpEmalis);
+
 		BurpExtender.getStdout().println("after refresh--> "+getSummary());
 	}
 
+	/**
+	 * 当UI界面操作时，会被调用
+	 * 还有当自动化搜集时，会调用
+	 */
 	public void relatedToRoot() {
 		if (this.autoAddRelatedToRoot) {
 			if (relatedDomainSet.size() >0){
@@ -521,13 +515,8 @@ public class DomainManager {
 							if (fetchTargetModel().isBlack(relatedDomain)) {
 								continue;
 							}
-
-							//addToTargetAndSubDomain(relatedDomain, true);
-							//底层调用了addRow，没调用一次都会触发数据库写操作。这个逻辑中应该避免。
-
-							fetchTargetModel().addRowWithoutFireIfValid(new TargetEntry(relatedDomain, true));
-							//添加完成后需要主动调用一次保存！
-
+							addToTargetAndSubDomain(relatedDomain, true);
+							//底层调用了addRow，每调用一次都会触发数据库写操作。重构后是新增一条记录
 						} else {
 							System.out.println("error related domain : " + relatedDomain);
 						}
@@ -536,9 +525,6 @@ public class DomainManager {
 						e.printStackTrace(BurpExtender.getStderr());
 					}
 				}
-				fetchTargetModel().saveTargetToDB();//添加完成后需要主动调用一次保存！
-				freshBaseRule();
-				//relatedDomainSet.clear();//TargetEntry的构造函数中就会自动移除，不需要这行代码了
 			}
 		}
 	}

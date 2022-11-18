@@ -21,7 +21,7 @@ import org.sqlite.SQLiteException;
 
 import domain.DomainManager;
 import domain.target.TargetTableModel;
-import title.IndexedLinkedHashMap;
+import title.IndexedHashMap;
 import title.LineEntry;
 
 /*
@@ -308,7 +308,7 @@ public class DBHelper {
 
 
 
-	public synchronized boolean addTitles(LinkedHashMap<String,LineEntry> lineEntries){
+	public boolean addTitles(IndexedHashMap<String,LineEntry> lineEntries){
 		try {
 			conn = getConnection();
 			String sql="insert into Title(NAME,Content) values(?,?)";
@@ -340,8 +340,8 @@ public class DBHelper {
 	}
 
 
-	public IndexedLinkedHashMap<String,LineEntry> getTitles(){
-		IndexedLinkedHashMap<String,LineEntry> lineEntriesMap=new IndexedLinkedHashMap<String,LineEntry>();
+	public IndexedHashMap<String,LineEntry> getTitles(){
+		IndexedHashMap<String,LineEntry> lineEntriesMap=new IndexedHashMap<String,LineEntry>();
 		try {
 			conn = getConnection();
 			String sql="select * from Title";

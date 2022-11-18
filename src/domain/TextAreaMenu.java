@@ -18,15 +18,12 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 
-import GUI.GUIMain;
 import Tools.DomainComparator;
 import Tools.LengthComparator;
 import burp.BurpExtender;
 import burp.Commons;
 import burp.DomainNameUtils;
 import burp.IPAddressUtils;
-import config.ConfigPanel;
-import title.TitlePanel;
 import title.search.SearchDork;
 
 public class TextAreaMenu extends JPopupMenu {
@@ -36,9 +33,10 @@ public class TextAreaMenu extends JPopupMenu {
 	JTextArea textArea;
 	String selectedText;
 	List<String> selectedItems = new ArrayList<>();
+	private DomainPanel domainPanel;
 
-	TextAreaMenu(JTextArea textArea){
-
+	TextAreaMenu(DomainPanel domainPanel,JTextArea textArea){
+		this.domainPanel = domainPanel;
 		this.textArea = textArea;
 		selectedText = textArea.getSelectedText();
 		if (selectedText != null && !selectedText.equalsIgnoreCase("")){
@@ -66,16 +64,16 @@ public class TextAreaMenu extends JPopupMenu {
 		}
 
 
-		JMenuItem goToItem = new JMenuItem(new AbstractAction("Go To Tilte Panel") {
+		JMenuItem SearchInTitlePanelItem = new JMenuItem(new AbstractAction("Search This In Tilte Panel") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 
-				JTabbedPane aa= (JTabbedPane) BurpExtender.getGui().getContentPane();
+				JTabbedPane aa= (JTabbedPane) domainPanel.getGuiMain().getContentPane();
 				aa.setSelectedIndex(1);
 				//只会影响Domain Hunter中的选中，当选中的是proxy，使用这个方法并不能自动切换到domain hunter。
-				//stdout.println(BurpExtender.getGui().getRootPane().getName());//null
+				//stdout.println(guiMain.getRootPane().getName());//null
 				if (selectedItems.size() >0 ) {
-					TitlePanel.getTextFieldSearch().setText(SearchDork.HOST.toString() + ":" + selectedItems.get(0));
+					domainPanel.getGuiMain().getTitlePanel().getTextFieldSearch().setText(SearchDork.HOST.toString() + ":" + selectedItems.get(0));
 				}
 			}
 		});
@@ -89,7 +87,7 @@ public class TextAreaMenu extends JPopupMenu {
 				for (String item:selectedItems) {
 					String url= "https://"+item;
 					try {
-						Commons.browserOpen(url, ConfigPanel.getLineConfig().getBrowserPath());
+						Commons.browserOpen(url, domainPanel.getGuiMain().getConfigPanel().getLineConfig().getBrowserPath());
 					} catch (Exception e) {
 						e.printStackTrace(stderr);
 					}
@@ -143,7 +141,7 @@ public class TextAreaMenu extends JPopupMenu {
 				if (selectedItems.size() >=50) {
 					return;
 				}
-				DomainManager domainResult = DomainPanel.getDomainResult();
+				DomainManager domainResult = domainPanel.getGuiMain().getDomainPanel().getDomainResult();
 				for (String item:selectedItems) {
 					try {
 						domainResult.addToTargetAndSubDomain(item,true);
@@ -151,7 +149,7 @@ public class TextAreaMenu extends JPopupMenu {
 						e2.printStackTrace(stderr);
 					}
 				}
-				DomainPanel.saveDomainDataToDB();
+				domainPanel.getGuiMain().getDomainPanel().saveDomainDataToDB();
 			}
 		});
 
@@ -201,14 +199,14 @@ public class TextAreaMenu extends JPopupMenu {
 		JMenuItem removeMd5DomainItem = new JMenuItem(new AbstractAction("Remove MD5 Domain") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				DomainPanel.getDomainResult().removeMd5Domain();
+				domainPanel.getGuiMain().getDomainPanel().getDomainResult().removeMd5Domain();
 			}
 		});
 
 
 
 		/////不需要选中内容的菜单
-		JMenuItem Sort = new JMenuItem(new AbstractAction("Sort") {
+		JMenuItem Sort = new JMenuItem(new AbstractAction("Sort(ascending order)") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				Collections.sort(AllItems);
@@ -235,10 +233,10 @@ public class TextAreaMenu extends JPopupMenu {
 		});
 
 
-		JMenuItem SortFresh = new JMenuItem(new AbstractAction("Fresh") {
+		JMenuItem ReFresh = new JMenuItem(new AbstractAction("Refresh") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				GUIMain.getDomainPanel().showDataToDomainGUI();
+				domainPanel.getGuiMain().getDomainPanel().showDataToDomainGUI();
 			}
 		});
 		
@@ -312,23 +310,23 @@ public class TextAreaMenu extends JPopupMenu {
 
 		SortDomain.setToolTipText("search something");
 
+		this.add(addTosubdomain);
+		this.addSeparator();
 		//对选中内容起作用的菜单
 		this.add(whoisItem);
 		this.add(ASNInfoItem);
 		this.add(googleSearchItem);
 		this.add(SearchOnGithubItem);
 		this.add(openWithBrowserItem);
-		this.add(addTosubdomain);
+		this.add(SearchInTitlePanelItem);
 		this.addSeparator();
 
 		//无需选中的全局菜单
-		this.add(SortFresh);
+		this.add(ReFresh);
 		this.add(SearchDomain);
 		this.add(Sort);
 		this.add(SortDomain);
 		this.add(SortByLength);
-		this.add(goToItem);
-
 		this.add(removeMd5DomainItem);
 	}
 }

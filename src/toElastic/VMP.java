@@ -5,25 +5,31 @@ import java.util.HashMap;
 
 import com.github.kevinsawicki.http.HttpRequest;
 
+import GUI.GUIMain;
 import burp.IPAddressUtils;
 import title.LineEntry;
-import title.TitlePanel;
 
 public class VMP {
 
+	GUIMain guiMain;
 	/**
 	 * upload all vmp entry
 	 * @return
 	 */
-	public static Collection<VMPEntry> getAllVmpEntry() {
+	
+	public VMP(GUIMain guiMain) {
+		this.guiMain = guiMain;
+	}
+	
+	public Collection<VMPEntry> getAllVmpEntry() {
 		HashMap<String,VMPEntry> result = new HashMap<String,VMPEntry>();//使用hashmap实现去重
 
-		Collection<LineEntry> titleEntries = TitlePanel.getTitleTableModel().getLineEntries().values();
+		Collection<LineEntry> titleEntries = guiMain.getTitlePanel().getTitleTable().getLineTableModel().getLineEntries().values();
 		for (LineEntry entry:titleEntries) {
 			String url = entry.getUrl();
 			String host = entry.getHost();
 			String title = entry.getTitle();
-			String IPStr = entry.getIP();
+			String IPStr = entry.getIPSet().toString();
 			String header = entry.getHeaderValueOf(false, "Server");
 			if (!IPAddressUtils.isValidIP(host)) {
 				VMPEntry tmp = new VMPEntry(url,title,IPStr,header);
@@ -33,7 +39,7 @@ public class VMP {
 		return result.values();
 	}
 
-	public static boolean uploadAllVMPEntries(String ApiUrl,HashMap<String, String> headers) {
+	public boolean uploadAllVMPEntries(String ApiUrl,HashMap<String, String> headers) {
 		if (!isApiOk(ApiUrl,headers)) {
 			System.out.println("API test failed,please check your config");
 			return false;

@@ -1,7 +1,6 @@
 package domain.target;
 
 import java.awt.Color;
-import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -18,28 +17,40 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingWorker;
 import javax.swing.border.LineBorder;
 
-import GUI.GUIMain;
 import burp.BurpExtender;
 import domain.DomainPanel;
 
 public class TargetControlPanel extends JPanel {
 	
-	public static JRadioButton rdbtnAddRelatedToRoot;
+	JRadioButton rdbtnAddRelatedToRoot;
+	DomainPanel domainPanel;
+	private JButton btnFresh;
 
-	public TargetControlPanel() {
+	public JRadioButton getRdbtnAddRelatedToRoot() {
+		return rdbtnAddRelatedToRoot;
+	}
+
+	public void setRdbtnAddRelatedToRoot(JRadioButton rdbtnAddRelatedToRoot) {
+		this.rdbtnAddRelatedToRoot = rdbtnAddRelatedToRoot;
+	}
+
+	public TargetControlPanel(DomainPanel domainPanel) {
+		this.domainPanel = domainPanel;
+		
 		setBorder(new LineBorder(new Color(0, 0, 0)));
 
 		JButton addButton = new JButton("Add");
 		addButton.setToolTipText("add Top-Level domain");
 		addButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if (DomainPanel.getDomainResult() == null) {
-					DomainPanel.createOrOpenDB();
+				if (domainPanel.getDomainResult() == null || domainPanel.getGuiMain().getCurrentDBFile() == null) {
+					domainPanel.createOrOpenDB();
 				} else {
 					String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
 					TargetEntry entry = new TargetEntry(enteredRootDomain);
-					DomainPanel.fetchTargetModel().addRowIfValid(entry);
-					DomainPanel.saveDomainDataToDB();
+					if(domainPanel.fetchTargetModel().addRowIfValid(entry)){
+						btnFresh.doClick();
+					}
 				}
 			}
 		});
@@ -49,13 +60,14 @@ public class TargetControlPanel extends JPanel {
 		addButton1.setToolTipText("add Multiple-Level domain");
 		addButton1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if (DomainPanel.getDomainResult() == null) {
-					DomainPanel.createOrOpenDB();
+				if (domainPanel.getDomainResult() == null) {
+					domainPanel.createOrOpenDB();
 				} else {
 					String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
 					TargetEntry entry = new TargetEntry(enteredRootDomain,false);
-					DomainPanel.fetchTargetModel().addRowIfValid(entry);
-					DomainPanel.saveDomainDataToDB();
+					if(domainPanel.fetchTargetModel().addRowIfValid(entry)){
+						btnFresh.doClick();
+					}
 				}
 			}
 		});
@@ -65,13 +77,13 @@ public class TargetControlPanel extends JPanel {
 		removeButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 
-				int[] rowindexs = DomainPanel.getTargetTable().getSelectedRows();
+				int[] rowindexs = domainPanel.getTargetTable().getSelectedRows();
 				for (int i = 0; i < rowindexs.length; i++) {
-					rowindexs[i] = DomainPanel.getTargetTable().convertRowIndexToModel(rowindexs[i]);//转换为Model的索引，否则排序后索引不对应。
+					rowindexs[i] = domainPanel.getTargetTable().convertRowIndexToModel(rowindexs[i]);//转换为Model的索引，否则排序后索引不对应。
 				}
 				Arrays.sort(rowindexs);
 
-				TargetTableModel domainTableModel = DomainPanel.fetchTargetModel();
+				TargetTableModel domainTableModel = domainPanel.fetchTargetModel();
 				for (int i = rowindexs.length - 1; i >= 0; i--) {
 					domainTableModel.removeRow(rowindexs[i]);
 				}
@@ -88,67 +100,42 @@ public class TargetControlPanel extends JPanel {
 		});
 
 		
-		JButton btnFresh = new JButton("Fresh");
+		btnFresh = new JButton("Refresh");
 		btnFresh.addActionListener(new ActionListener() {
-
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-
 					@Override
 					protected Map doInBackground() throws Exception {
 						btnFresh.setEnabled(false);
-						try {
-							//to clear sub and similar domains
-							DomainPanel.getDomainResult().freshBaseRule();
-							GUIMain.getDomainPanel().showDataToDomainGUI();
-							DomainPanel.saveDomainDataToDB();
-						} catch (Exception exception) {
-							exception.printStackTrace();
-						}
-						btnFresh.setEnabled(true);
+						domainPanel.refreshShowSave();
 						return null;
+					}
+
+					@Override
+					protected void done(){
+						btnFresh.setEnabled(true);
 					}
 				};
 				worker.execute();
 			}
 		});
 
-		/*
-		JButton btnCopy = new JButton("Copy");
-		btnCopy.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-				StringSelection selection = new StringSelection(domainResult.fetchRootDomains());
-				clipboard.setContents(selection, null);
-			}
-		});
-		btnCopy.setToolTipText("Copy Root Domains To ClipBoard");
-		add(btnCopy);*/
-		
 		rdbtnAddRelatedToRoot = new JRadioButton("Auto Add Related Domain To Root Domain");
 		rdbtnAddRelatedToRoot.setVerticalAlignment(SwingConstants.TOP);
 		rdbtnAddRelatedToRoot.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-					@Override
-					protected Map doInBackground() throws Exception {
-						DomainPanel.getDomainResult().autoAddRelatedToRoot = rdbtnAddRelatedToRoot.isSelected();
-						rdbtnAddRelatedToRoot.setEnabled(false);
-						try {
-							if (DomainPanel.getDomainResult().autoAddRelatedToRoot) {
-								DomainPanel.getDomainResult().relatedToRoot();
-								GUIMain.getDomainPanel().showDataToDomainGUI();
-								DomainPanel.saveDomainDataToDB();
-							}
-						} catch (Exception exception) {
-							exception.printStackTrace(BurpExtender.getStderr());
-						}
-						rdbtnAddRelatedToRoot.setEnabled(true);
-						return null;
+				rdbtnAddRelatedToRoot.setEnabled(false);
+				try {
+					domainPanel.getDomainResult().autoAddRelatedToRoot = rdbtnAddRelatedToRoot.isSelected();
+					if (domainPanel.getDomainResult().autoAddRelatedToRoot) {
+						domainPanel.getDomainResult().relatedToRoot();
+						btnFresh.doClick();
 					}
-				};
-				worker.execute();
+				} catch (Exception exception) {
+					exception.printStackTrace(BurpExtender.getStderr());
+				}
+				rdbtnAddRelatedToRoot.setEnabled(true);
 			}
 		});
 		rdbtnAddRelatedToRoot.setSelected(false);
@@ -167,16 +154,16 @@ public class TargetControlPanel extends JPanel {
 		this.add(rdbtnAddRelatedToRoot,tmp);
 	}
 
-	public static void selectedToBalck(){
+	public void selectedToBalck(){
 		int option = JOptionPane.showConfirmDialog(null, "Are you sure set target to black?", "WARNING",JOptionPane.YES_NO_OPTION);
 		if (option == JOptionPane.YES_OPTION) {
-			int[] rowindexs = DomainPanel.getTargetTable().getSelectedRows();
+			int[] rowindexs = domainPanel.getTargetTable().getSelectedRows();
 			for (int i = 0; i < rowindexs.length; i++) {
-				rowindexs[i] = DomainPanel.getTargetTable().convertRowIndexToModel(rowindexs[i]);//转换为Model的索引，否则排序后索引不对应。
+				rowindexs[i] = domainPanel.getTargetTable().convertRowIndexToModel(rowindexs[i]);//转换为Model的索引，否则排序后索引不对应。
 			}
 			Arrays.sort(rowindexs);
 
-			TargetTableModel domainTableModel = DomainPanel.fetchTargetModel();
+			TargetTableModel domainTableModel = domainPanel.fetchTargetModel();
 			for (int i = rowindexs.length - 1; i >= 0; i--) {
 				TargetEntry entry = domainTableModel.getValueAt(rowindexs[i]);
 				entry.setBlack(true);

@@ -7,13 +7,16 @@ import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
-import title.TitlePanel;
-
 public class SearchMenu extends JPopupMenu {
 
 	PrintWriter stdout;
 	PrintWriter stderr;
-	public SearchMenu(){
+	
+	private SearchTextField searchField;
+
+	public SearchMenu(SearchTextField searchField){
+		this.searchField = searchField;
+
 		//
 		//        try{
 		//            stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
@@ -40,8 +43,8 @@ public class SearchMenu extends JPopupMenu {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				String webpack_PATTERN = "pc\\.([0-9a-z])*\\.js";//后文有小写转换
-				TitlePanel.getTextFieldSearch().setText(SearchDork.REGEX.toString()+":"+webpack_PATTERN);
-				//TitlePanel.getTitleTable().search(TitlePanel.getTextFieldSearch().getText());
+				searchField.setText(SearchDork.REGEX.toString()+":"+webpack_PATTERN);
+				//TitlePanel.getTitleTable().search(searchField.getText());
 			}
 		});
 		this.add(webpackItemPc);
@@ -51,11 +54,11 @@ public class SearchMenu extends JPopupMenu {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				String webpack_PATTERN = "app\\.([0-9a-z])*\\.js";//后文有小写转换
-				//TitlePanel.getTextFieldSearch().setText("regex:app\\.([0-9a-z])*\\.js");
+				//searchField.setText("regex:app\\.([0-9a-z])*\\.js");
 				//stdout.println("regex:app\\.([0-9a-z])*\\.js");
 				//stdout.println(SearchDork.REGEX.toString()+":"+webpack_PATTERN);
-				TitlePanel.getTextFieldSearch().setText(SearchDork.REGEX.toString()+":"+webpack_PATTERN);
-				//TitlePanel.getTitleTable().search(TitlePanel.getTextFieldSearch().getText());
+				searchField.setText(SearchDork.REGEX.toString()+":"+webpack_PATTERN);
+				//TitlePanel.getTitleTable().search(searchField.getText());
 			}
 		});
 		this.add(webpackItemApp);
@@ -64,8 +67,8 @@ public class SearchMenu extends JPopupMenu {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				String webpack_PATTERN = "index\\.([0-9a-z])*\\.js";//后文有小写转换
-				TitlePanel.getTextFieldSearch().setText(SearchDork.REGEX.toString()+":"+webpack_PATTERN);
-				//TitlePanel.getTitleTable().search(TitlePanel.getTextFieldSearch().getText());
+				searchField.setText(SearchDork.REGEX.toString()+":"+webpack_PATTERN);
+				//TitlePanel.getTitleTable().search(searchField.getText());
 			}
 		});
 		this.add(webpackItemIndex);
@@ -75,8 +78,8 @@ public class SearchMenu extends JPopupMenu {
 			public void actionPerformed(ActionEvent actionEvent) {
 				//</noscript> doesn't work properly without JavaScript </noscript>
 				String webpack_PATTERN = "<noscript>(.*?)</noscript>";//后文有小写转换
-				TitlePanel.getTextFieldSearch().setText(SearchDork.REGEX.toString()+":"+webpack_PATTERN);
-				//TitlePanel.getTitleTable().search(TitlePanel.getTextFieldSearch().getText());
+				searchField.setText(SearchDork.REGEX.toString()+":"+webpack_PATTERN);
+				//TitlePanel.getTitleTable().search(searchField.getText());
 			}
 		});
 		this.add(webpackItemNoScript);
@@ -86,8 +89,8 @@ public class SearchMenu extends JPopupMenu {
 			public void actionPerformed(ActionEvent actionEvent) {
 				//<title(.*?)</title>
 				String webpack_PATTERN = "<table(.*?)</table>";
-				TitlePanel.getTextFieldSearch().setText(SearchDork.REGEX.toString()+":"+webpack_PATTERN);
-				//TitlePanel.getTitleTable().search(TitlePanel.getTextFieldSearch().getText());
+				searchField.setText(SearchDork.REGEX.toString()+":"+webpack_PATTERN);
+				//TitlePanel.getTitleTable().search(searchField.getText());
 			}
 		});
 		this.add(findAdminByTableTag);
@@ -99,8 +102,8 @@ public class SearchMenu extends JPopupMenu {
 			public void actionPerformed(ActionEvent actionEvent) {
 				//根据webpack知识，文件名是可以变的，但是通常会在文件名中加入hash字段（文件名.hash.js），所以用这个正则 
 				String webpack_PATTERN = "([a-z])*\\.([0-9a-z])*\\.js";//后文有小写转换
-				TitlePanel.getTextFieldSearch().setText(SearchDork.REGEX.toString()+":"+webpack_PATTERN);
-				//TitlePanel.getTitleTable().search(TitlePanel.getTextFieldSearch().getText());
+				searchField.setText(SearchDork.REGEX.toString()+":"+webpack_PATTERN);
+				//TitlePanel.getTitleTable().search(searchField.getText());
 			}
 		});
 		this.add(webpackItemAll);
@@ -110,8 +113,8 @@ public class SearchMenu extends JPopupMenu {
 			public void actionPerformed(ActionEvent actionEvent) {
 				//根据webpack知识，文件名是可以变的，但是通常会在文件名中加入hash字段（文件名.hash.js），所以用这个正则 
 				String webpack_PATTERN = "([0-9a-z])*\\.js";//后文有小写转换
-				TitlePanel.getTextFieldSearch().setText(SearchDork.REGEX.toString()+":"+webpack_PATTERN);
-				//TitlePanel.getTitleTable().search(TitlePanel.getTextFieldSearch().getText());
+				searchField.setText(SearchDork.REGEX.toString()+":"+webpack_PATTERN);
+				//TitlePanel.getTitleTable().search(searchField.getText());
 			}
 		});
 		this.add(AllJS);
@@ -122,13 +125,13 @@ public class SearchMenu extends JPopupMenu {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				if (actionEvent.getActionCommand().equals("Disable Case Sensitive")) {
-					((SearchTextField)TitlePanel.getTextFieldSearch()).setCaseSensitive(false);
+					((SearchTextField)searchField).setCaseSensitive(false);
 				}else {
-					((SearchTextField)TitlePanel.getTextFieldSearch()).setCaseSensitive(true);
+					((SearchTextField)searchField).setCaseSensitive(true);
 				}
 			}
 		});
-		SearchTextField searchTextField = ((SearchTextField)TitlePanel.getTextFieldSearch());
+		SearchTextField searchTextField = ((SearchTextField)searchField);
 		if (searchTextField.isCaseSensitive()) {
 			caseSensitive.setText("Disable Case Sensitive");
 		}else {

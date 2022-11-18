@@ -9,8 +9,10 @@ import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 import javax.swing.border.Border;
 
+import domain.DomainPanel;
 import domain.TextAreaListener;
 import domain.TextAreaMouseListener;
+import domain.TextAreaType;
 
 public class JScrollPanelWithHeader extends JScrollPane{
 	
@@ -18,16 +20,18 @@ public class JScrollPanelWithHeader extends JScrollPane{
 	private JLabel headLabel;
 	private String tipText;
 	private String headLabelText;
-	
-	public JScrollPanelWithHeader(String headerViewText,String tipText) {
+	private TextAreaType textAreaType;
+	private DomainPanel domainPanel;
+
+	public JScrollPanelWithHeader(DomainPanel domainPanel, TextAreaType type, String headerViewText, String tipText) {
+		this.domainPanel = domainPanel;
+		this.textAreaType = type;
 		this.textArea = new JTextArea();
 		this.tipText = tipText;
 		this.headLabelText = headerViewText;
 		
 		textArea.setColumns(10);
 		textArea.setToolTipText(this.tipText);
-		textArea.getDocument().addDocumentListener(new TextAreaListener());
-		textArea.addMouseListener(new TextAreaMouseListener(textArea));
 		this.setViewportView(textArea);
 		
 		Border blackline = BorderFactory.createLineBorder(Color.black);
@@ -35,7 +39,21 @@ public class JScrollPanelWithHeader extends JScrollPane{
 		headLabel.setBorder(blackline);
 		headLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		this.setColumnHeaderView(headLabel);
+
+		textArea.getDocument().addDocumentListener(new TextAreaListener(domainPanel,this));
+		textArea.addMouseListener(new TextAreaMouseListener(domainPanel,textArea));
 	}
+
+	
+	public TextAreaType getTextAreaType() {
+		return textAreaType;
+	}
+
+
+	public void setTextAreaType(TextAreaType textAreaType) {
+		this.textAreaType = textAreaType;
+	}
+
 
 	public JTextArea getTextArea() {
 		return textArea;

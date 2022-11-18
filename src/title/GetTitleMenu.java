@@ -1,19 +1,21 @@
 package title;
 
-import ASN.ASNQuery;
-import GUI.GUIMain;
-import GUI.RunnerGUI;
-import burp.BurpExtender;
-import com.google.common.collect.Iterables;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.io.PrintWriter;
-import java.util.*;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.swing.AbstractAction;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
+import javax.swing.SwingWorker;
+
+import GUI.GUIMain;
+import burp.BurpExtender;
 
 public class GetTitleMenu extends JPopupMenu {
 
@@ -27,8 +29,11 @@ public class GetTitleMenu extends JPopupMenu {
 	JMenuItem CopySubnetItem;
 	JMenuItem StopItem;
 	JMenuItem FreshASNInfo;
+	private GUIMain guiMain;
 
-	GetTitleMenu(){
+
+	public GetTitleMenu(GUIMain guiMain){
+		this.guiMain = guiMain;
 
 		getTitleItem = new JMenuItem(new AbstractAction("Get Title") {
 			@Override
@@ -50,7 +55,7 @@ public class GetTitleMenu extends JPopupMenu {
 					@Override
 					protected Map doInBackground() throws Exception {
 						getTitleItem.setEnabled(false);
-						GUIMain.getTitlePanel().getAllTitle();
+						guiMain.getTitlePanel().getAllTitle();
 						//btnGettitle.setEnabled(true);
 						return new HashMap<String, String>();
 						//no use ,the return.
@@ -77,7 +82,7 @@ public class GetTitleMenu extends JPopupMenu {
 					@Override
 					protected Map doInBackground() throws Exception {
 						GetExtendtitleItem.setEnabled(false);
-						GUIMain.getTitlePanel().getExtendTitle();
+						guiMain.getTitlePanel().getExtendTitle();
 						//btnGetExtendtitle.setEnabled(true);
 						return new HashMap<String, String>();
 						//no use ,the return.
@@ -103,7 +108,7 @@ public class GetTitleMenu extends JPopupMenu {
 					@Override
 					protected Map doInBackground() throws Exception {
 						GettitleOfJustNewFoundItem.setEnabled(false);
-						GUIMain.getTitlePanel().getTitleOfNewDomain();
+						guiMain.getTitlePanel().getTitleOfNewDomain();
 						return new HashMap<String, String>();
 						//no use ,the return.
 					}
@@ -134,7 +139,7 @@ public class GetTitleMenu extends JPopupMenu {
 
 						int publicSubnets = JOptionPane.showConfirmDialog(null,"Just get [Pulic] IP Subnets ?");
 
-						String subnetsString = GUIMain.getTitlePanel().getSubnet(result == JOptionPane.YES_OPTION?true:false,publicSubnets == JOptionPane.YES_OPTION?true:false);
+						String subnetsString = guiMain.getTitlePanel().getSubnet(result == JOptionPane.YES_OPTION?true:false,publicSubnets == JOptionPane.YES_OPTION?true:false);
 
 						Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 						StringSelection selection = new StringSelection(subnetsString);
@@ -161,35 +166,16 @@ public class GetTitleMenu extends JPopupMenu {
 		StopItem = new JMenuItem(new AbstractAction("Force Stop Get Title Threads") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				if (TitlePanel.threadGetTitle != null && TitlePanel.threadGetTitle.isAlive() ){
+				if (guiMain.getTitlePanel().getThreadGetTitle() != null && 
+						guiMain.getTitlePanel().getThreadGetTitle().isAlive() ){
 					int result = JOptionPane.showConfirmDialog(null,"Are You Sure To [Force Stop] All Get Title Threads ?");
 					if (result == JOptionPane.YES_OPTION){
-						TitlePanel.threadGetTitle.forceStopThreads();
+						guiMain.getTitlePanel().getThreadGetTitle().forceStopThreads();
 					}
 				}
 			}
 		});
 
-		JMenuItem doGateWayByPassCheck = new JMenuItem(new AbstractAction("Do GateWay ByPass Check For All") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-					//using SwingWorker to prevent blocking burp main UI.
-					@Override
-					protected Map doInBackground() throws Exception {
-
-						RunnerGUI runnergui = new RunnerGUI();
-						runnergui.begainGatewayBypassCheck();
-						runnergui.setVisible(true);
-						return null;
-					}
-					@Override
-					protected void done() {
-					}
-				};
-				worker.execute();
-			}
-		});
 
 		FreshASNInfo = new JMenuItem(new AbstractAction("Fresh ASN Info") {
 			@Override
@@ -211,7 +197,7 @@ public class GetTitleMenu extends JPopupMenu {
 								ASNQuery.batchQueryFromApi(partition);//接口有限制，请求过快，过频繁会被封。查网段是不错的选择
 							}
 							 */
-							TitlePanel.getTitleTableModel().freshAllASNInfo();
+							guiMain.getTitlePanel().getTitleTable().getLineTableModel().freshAllASNInfo();
 						} catch (Exception e) {
 							e.printStackTrace();
 						}

@@ -1,41 +1,34 @@
 package GUI;
 
-import burp.BurpExtender;
-import burp.DBHelper;
-import domain.DomainManager;
-import domain.DomainPanel;
-import domain.target.TargetEntry;
-import domain.target.TargetTable;
-import title.IndexedLinkedHashMap;
-import title.LineEntry;
-import title.TitlePanel;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.AbstractAction;
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JTabbedPane;
+import javax.swing.SwingWorker;
+
+import burp.BurpExtender;
+import dao.DomainDao;
+import dao.TitleDao;
+import domain.DomainManager;
+import title.LineEntry;
+
+/**
+ * 构造项目菜单
+ *
+ */
 public class ProjectMenu extends JMenu{
 	GUIMain gui;
 	JMenuItem lockMenu;
-
-	public static void createNewDb(GUIMain gui) {
-		File file = GUIMain.dbfc.dialog(false,".db");//通过保存对话指定文件，这会是一个空文件。
-		if (null != file) {
-			DomainPanel.setDomainResult(new DomainManager(file.getName()));
-			gui.saveData(file.toString(),true);
-			GUIMain.LoadData(file.toString());//然后加载，就是一个新的空项目了。
-		}
-	}
-
-	public static void openDb() {
-		File file = GUIMain.dbfc.dialog(true,".db");
-		if (null != file) {
-			GUIMain.LoadData(file.toString());
-		}
-	}
 
 	public ProjectMenu(GUIMain gui){
 		this.gui = gui;
@@ -60,6 +53,17 @@ public class ProjectMenu extends JMenu{
 		openMenu.setToolTipText("Open Domain Hunter Project File(DB File)");
 		this.add(openMenu);
 
+
+		JMenuItem renameMenu = new JMenuItem(new AbstractAction("Rename")
+		{
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {//实质就是save一个空的项目
+				createNewDb(gui);//save as
+			}
+		});
+		renameMenu.setToolTipText("Rename current DB File");
+		//this.add(renameMenu);TODO
+
 		/**
 		 * 导入db文件，将数据和当前DB文件进行合并。
 		 * domain Panel中的内容是集合的合并,无需考虑覆盖问题;
@@ -68,34 +72,32 @@ public class ProjectMenu extends JMenu{
 		JMenuItem ImportMenu = new JMenuItem(new AbstractAction("Import DB") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				DomainPanel.backupDB();//导入前的备份。
+				gui.getDomainPanel().backupDB("before import");//导入前的备份。
 
 				File file = gui.dbfc.dialog(true,".db");
 				if (null ==file) {
 					return;
 				}
-
-				DBHelper dbhelper = new DBHelper(file.getAbsolutePath());
-				DomainManager NewManager = dbhelper.getDomainObj();
-
-				IndexedLinkedHashMap<String, TargetEntry> entries = TargetTable.rootDomainToTarget(NewManager);
-				for (TargetEntry entry:entries.values()){
-					DomainPanel.fetchTargetModel().addRowIfValid(entry);
+				if (file.toString().equals(gui.getCurrentDBFile().toString())) {
+					return;
 				}
 
-				//DomainPanel.getDomainResult().getRootDomainMap().putAll(NewManager.getRootDomainMap());//合并rootDomain
-				DomainPanel.getDomainResult().getRelatedDomainSet().addAll(NewManager.getRelatedDomainSet());
-				DomainPanel.getDomainResult().getSubDomainSet().addAll(NewManager.getSubDomainSet());
-				DomainPanel.getDomainResult().getSimilarDomainSet().addAll(NewManager.getSimilarDomainSet());
-				DomainPanel.getDomainResult().getEmailSet().addAll(NewManager.getEmailSet());
-				DomainPanel.getDomainResult().getPackageNameSet().addAll(NewManager.getPackageNameSet());
+				DomainDao dao = new DomainDao(file.getAbsolutePath());
+				DomainManager NewManager = dao.getDomainManager();
 
-				GUIMain.getDomainPanel().showDataToDomainGUI();
-				DomainPanel.saveDomainDataToDB();
+				gui.getDomainPanel().getDomainResult().getRelatedDomainSet().addAll(NewManager.getRelatedDomainSet());
+				gui.getDomainPanel().getDomainResult().getSubDomainSet().addAll(NewManager.getSubDomainSet());
+				gui.getDomainPanel().getDomainResult().getSimilarDomainSet().addAll(NewManager.getSimilarDomainSet());
+				gui.getDomainPanel().getDomainResult().getEmailSet().addAll(NewManager.getEmailSet());
+				gui.getDomainPanel().getDomainResult().getPackageNameSet().addAll(NewManager.getPackageNameSet());
 
-				IndexedLinkedHashMap<String, LineEntry> titles = dbhelper.getTitles();
-				for (LineEntry entry:titles.values()) {
-					TitlePanel.getTitleTableModel().addNewLineEntry(entry);
+				gui.getDomainPanel().showDataToDomainGUI();
+				gui.getDomainPanel().saveDomainDataToDB();
+
+				TitleDao titledao = new TitleDao(file.getAbsolutePath());
+				List<LineEntry> titles = titledao.selectAllTitle();
+				for (LineEntry entry:titles) {
+					gui.getTitlePanel().getTitleTable().getLineTableModel().addNewLineEntry(entry);
 				}
 				System.out.println("Import finished");
 				BurpExtender.getStdout().println("Import finished");
@@ -116,7 +118,7 @@ public class ProjectMenu extends JMenu{
 				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
 					@Override
 					protected Map doInBackground() throws Exception {
-						DomainPanel.backupDB();//导入前的备份。
+						gui.getDomainPanel().backupDB("before import");//导入前的备份。
 
 						File file = gui.dbfc.dialog(true,".txt");
 						if (null ==file) {
@@ -131,13 +133,13 @@ public class ProjectMenu extends JMenu{
 								break;
 							}else {
 								for (String item:tmp) {
-									DomainPanel.getDomainResult().addIfValid(item);
+									gui.getDomainPanel().getDomainResult().addIfValid(item);
 								}
 							}
 						}
 
-						GUIMain.getDomainPanel().showDataToDomainGUI();
-						GUIMain.getDomainPanel().saveDomainDataToDB();
+						gui.getDomainPanel().showDataToDomainGUI();
+						gui.getDomainPanel().saveDomainDataToDB();
 						return null;
 					}
 					@Override
@@ -160,20 +162,34 @@ public class ProjectMenu extends JMenu{
 		});
 		//this.add(detachMenu);
 
-		lockMenu = new JMenuItem(new AbstractAction()
+		lockMenu = new JMenuItem(new AbstractAction("Lock")
 		{
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				BurpExtender.getGui().lockUnlock();
+				gui.lockUnlock();
 			}
 		});
-		lockMenu.setText("Lock");
 		this.add(lockMenu);
 
 		//为了菜单能够区分
-		File dbFile = GUIMain.getCurrentDBFile();
+		File dbFile = gui.getCurrentDBFile();
 		if (dbFile != null){
 			AddDBNameMenuItem(dbFile.getName());
+		}
+	}
+
+	public void createNewDb(GUIMain gui) {
+		File file = gui.dbfc.dialog(false,".db");//通过保存对话指定文件，这会是一个空文件。
+		if (null != file) {
+			gui.getDomainPanel().setDomainResult(new DomainManager(gui));
+			gui.loadDataBase(file.toString());//然后加载，就是一个新的空项目了。
+		}
+	}
+
+	public void openDb() {
+		File file = gui.dbfc.dialog(true,".db");
+		if (null != file) {
+			gui.loadDataBase(file.toString());
 		}
 	}
 

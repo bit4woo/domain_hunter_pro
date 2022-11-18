@@ -7,14 +7,18 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.io.File;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,15 +27,6 @@ import javax.swing.JTextArea;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.net.util.SubnetUtils;
-import org.apache.commons.net.util.SubnetUtils.SubnetInfo;
-import org.xbill.DNS.ARecord;
-import org.xbill.DNS.Lookup;
-import org.xbill.DNS.NSRecord;
-import org.xbill.DNS.Name;
-import org.xbill.DNS.Record;
-import org.xbill.DNS.Resolver;
-import org.xbill.DNS.SimpleResolver;
-import org.xbill.DNS.ZoneTransferIn;
 
 import com.ibm.icu.text.CharsetDetector;
 import com.ibm.icu.text.CharsetMatch;
@@ -321,10 +316,17 @@ public class Commons {
 		}
 		return urlString;
 	}
+	
+	public static Set<String> getSetFromTextArea(JTextArea textarea) {
+		Set<String> domainList = new HashSet<>(textToLines(textarea.getText()));
+		domainList.remove("");
+		return domainList;
+	}
 
 	public static List<String> getLinesFromTextArea(JTextArea textarea){
 		return textToLines(textarea.getText());
 	}
+	
 
 	/**
 	 * 换行符的可能性有三种，都必须考虑到

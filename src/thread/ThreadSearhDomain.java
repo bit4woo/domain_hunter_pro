@@ -10,6 +10,8 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+import GUI.GUIMain;
+
 //////////////////ThreadGetTitle block/////////////
 //no need to pass BurpExtender object to these class, IBurpExtenderCallbacks object is enough 
 public class ThreadSearhDomain extends Thread{
@@ -20,8 +22,10 @@ public class ThreadSearhDomain extends Thread{
 	public PrintWriter stdout;
 	public PrintWriter stderr;
 	public IExtensionHelpers helpers = callbacks.getHelpers();
+	GUIMain guiMain;
 
-	public ThreadSearhDomain(List<IHttpRequestResponse> messages) {
+	public ThreadSearhDomain(GUIMain guiMain,List<IHttpRequestResponse> messages) {
+		this.guiMain = guiMain;
 		this.messages = messages;
 		stdout = BurpExtender.getStdout();
 		stderr = BurpExtender.getStderr();
@@ -32,12 +36,12 @@ public class ThreadSearhDomain extends Thread{
 	public void run(){
 		stdout.println("~~~~~~~~~~~~~Start Search Domain~~~~~~~~~~~~~");
 
-		BurpExtender.inputQueue.addAll(messages);
+		guiMain.getInputQueue().addAll(messages);
 
 		plist = new ArrayList<DomainProducer>();
 
 		for (int i=0;i<=20;i++) {
-			DomainProducer p = new DomainProducer(BurpExtender.inputQueue,i);
+			DomainProducer p = new DomainProducer(guiMain,guiMain.getInputQueue(),i);
 			p.setDaemon(true);
 			p.start();
 			plist.add(p);

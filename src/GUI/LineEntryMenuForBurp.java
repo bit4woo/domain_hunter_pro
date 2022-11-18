@@ -25,7 +25,6 @@ import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
 import config.ConfigPanel;
 import domain.DomainManager;
-import domain.DomainPanel;
 import title.LineEntry;
 import title.LineTable;
 import title.TitlePanel;
@@ -35,9 +34,16 @@ public class LineEntryMenuForBurp{
 	public PrintWriter stderr = BurpExtender.getStderr();
 	public static IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
 	public PrintWriter stdout = BurpExtender.getStdout();
+	TitlePanel titlepanel;
+	List<JMenuItem> JMenuItemList = new ArrayList<JMenuItem>();
+	private GUIMain guiMain;
+	
+	public LineEntryMenuForBurp(GUIMain guiMain) {
+		this.guiMain = guiMain;
+	}
 
 	public List<JMenuItem> createMenuItemsForBurp(IContextMenuInvocation invocation) {
-		List<JMenuItem> JMenuItemList = new ArrayList<JMenuItem>();
+		titlepanel= guiMain.getTitlePanel();
 		/*
 		这里的逻辑有3重：
 		1、仅将域名添加到子域名和target中，
@@ -45,11 +51,11 @@ public class LineEntryMenuForBurp{
 		3、对某一个请求添加comment，如果请求不存在，放弃；添加请求包含步骤1和2的行为。
 		 */
 
-		JMenuItem runWithSamePathItem = new JMenuItem("^_^ Run Targets with this path");
-		runWithSamePathItem.addActionListener(new runWithSamePath(invocation));
+		//JMenuItem runWithSamePathItem = new JMenuItem("^_^ Run Targets with this path");
+		//runWithSamePathItem.addActionListener(new runWithSamePath(invocation));
 
-		JMenuItem doDirBruteItem = new JMenuItem("^_^ Do Dir Brute");
-		doDirBruteItem.addActionListener(new doDirBrute(invocation));
+		//JMenuItem doDirBruteItem = new JMenuItem("^_^ Do Dir Brute");
+		//doDirBruteItem.addActionListener(new doDirBrute(invocation));
 
 		JMenuItem addDomainToDomainHunter = new JMenuItem("^_^ Add Domain");
 		addDomainToDomainHunter.addActionListener(new addHostToRootDomain(invocation));
@@ -91,7 +97,7 @@ public class LineEntryMenuForBurp{
 
 		JMenuItemList.add(addDomainToDomainHunter);
 		//JMenuItemList.add(doDirBruteItem);
-		JMenuItemList.add(runWithSamePathItem);
+		//JMenuItemList.add(runWithSamePathItem);
 		JMenuItemList.add(sendToToolPanel);
 
 		if (ConfigPanel.showItemsInOne.isSelected()) {
@@ -99,7 +105,7 @@ public class LineEntryMenuForBurp{
 
 			JMenu domainHunterPro = new JMenu("^_^ Domain Hunter Pro");
 			if (!ProjectMenu.isAlone()) {
-				String fileName = GUIMain.getCurrentDBFile().getName();
+				String fileName = guiMain.getCurrentDBFile().getName();
 				domainHunterPro.setText(String.format("^_^ Domain Hunter Pro [%s]",fileName));
 			}
 			result.add(domainHunterPro);
@@ -133,7 +139,7 @@ public class LineEntryMenuForBurp{
 	 * @param topMenu
 	 * @param messages
 	 */
-	public static void createSubMenu(JMenu topMenu, IHttpRequestResponse[] messages){
+	public void createSubMenu(JMenu topMenu, IHttpRequestResponse[] messages){
 		String[] MainMenu = LineEntry.AssetTypeArray;
 		for(int i = 0; i < MainMenu.length; i++){
 			JMenuItem item = new JMenuItem(MainMenu[i]);
@@ -145,7 +151,7 @@ public class LineEntryMenuForBurp{
 						if (messages== null || messages.length == 0 ||messages[0] ==null) {
 							return;
 						}
-						LineEntry entry = TitlePanel.getTitleTableModel().findLineEntryByMessage(messages[0]);
+						LineEntry entry = titlepanel.getTitleTable().getLineTableModel().findLineEntryByMessage(messages[0]);
 						
 						if (entry != null) {
 							entry.setAssetType(e.getActionCommand());
@@ -203,35 +209,6 @@ public class LineEntryMenuForBurp{
 		}
 	}
 
-
-	public class runWithSamePath implements ActionListener{
-		private IContextMenuInvocation invocation;
-		runWithSamePath(IContextMenuInvocation invocation) {
-			this.invocation  = invocation;
-		}
-		@Override
-		public void actionPerformed(ActionEvent e)
-		{
-			SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-				//using SwingWorker to prevent blocking burp main UI.
-
-				@Override
-				protected Map doInBackground() throws Exception {
-
-					IHttpRequestResponse[] messages = invocation.getSelectedMessages();
-					IHttpRequestResponse messageInfo =messages[0];
-
-					RunnerGUI runnergui = new RunnerGUI(messageInfo);
-					runnergui.begainRun();
-					return null;
-				}
-				@Override
-				protected void done() {
-				}
-			};
-			worker.execute();
-		}
-	}
 
 	public class sendToToolPanel implements ActionListener{
 		private IContextMenuInvocation invocation;
@@ -304,34 +281,6 @@ public class LineEntryMenuForBurp{
 		}
 	}
 
-	public class doDirBrute implements ActionListener{
-		private IContextMenuInvocation invocation;
-		doDirBrute(IContextMenuInvocation invocation) {
-			this.invocation  = invocation;
-		}
-		@Override
-		public void actionPerformed(ActionEvent e)
-		{
-			SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-				//using SwingWorker to prevent blocking burp main UI.
-
-				@Override
-				protected Map doInBackground() throws Exception {
-
-					IHttpRequestResponse[] messages = invocation.getSelectedMessages();
-					IHttpRequestResponse messageInfo =messages[0];
-
-					RunnerGUI runnergui = new RunnerGUI(messageInfo);
-					runnergui.begainDirBrute();
-					return null;
-				}
-				@Override
-				protected void done() {
-				}
-			};
-			worker.execute();
-		}
-	}
 
 	/*
 	 * 如果能找到与全URL匹配的记录，就更新这个全URL对应的记录，即精确匹配。
@@ -356,7 +305,7 @@ public class LineEntryMenuForBurp{
 					String host = message.getHttpService().getHost();
 					int port = message.getHttpService().getPort();
 
-					List<LineEntry> entries = TitlePanel.getTitleTableModel().findLineEntriesByHostAndPort(host, port);
+					List<LineEntry> entries = titlepanel.getTitleTable().getLineTableModel().findLineEntriesByHostAndPort(host, port);
 
 					if (entries.size() == 0) {
 						//Do Nothing
@@ -403,7 +352,7 @@ public class LineEntryMenuForBurp{
 			//还是要简化逻辑，如果找不到就不执行！
 			try{
 				IHttpRequestResponse[] messages = invocation.getSelectedMessages();
-				List<LineEntry> entries = TitlePanel.getTitleTableModel().findLineEntriesByHostAndPort(messages[0].getHttpService().getHost()
+				List<LineEntry> entries = titlepanel.getTitleTable().getLineTableModel().findLineEntriesByHostAndPort(messages[0].getHttpService().getHost()
 						,messages[0].getHttpService().getPort());
 
 				if (entries.size() > 0) {
@@ -433,15 +382,15 @@ public class LineEntryMenuForBurp{
 				Getter getter = new Getter(helpers);
 				String host = getter.getHost(messages[0]);
 				int port = messages[0].getHttpService().getPort();
-				List<LineEntry> entries = TitlePanel.getTitleTableModel().findLineEntriesByHostAndPort(host,port);
+				List<LineEntry> entries = titlepanel.getTitleTable().getLineTableModel().findLineEntriesByHostAndPort(host,port);
 
 				if (entries.size() > 0) {
 					for (LineEntry entry:entries) {
 						entry.setCheckStatus(LineEntry.CheckStatus_Checked);
 						entry.setTime(Commons.getNowTimeString());
-						int index = TitlePanel.getTitleTableModel().getLineEntries().IndexOfKey(entry.getUrl());
+						int index = titlepanel.getTitleTable().getLineTableModel().getLineEntries().IndexOfKey(entry.getUrl());
 						stdout.println("$$$ "+entry.getUrl()+"status has been set to "+LineEntry.CheckStatus_Checked);
-						TitlePanel.getTitleTableModel().fireTableRowsUpdated(index,index);//主动通知更新，否则不会写入数据库!!!
+						titlepanel.getTitleTable().getLineTableModel().fireTableRowsUpdated(index,index);//主动通知更新，否则不会写入数据库!!!
 						//这里不用一次fire多个行，否则还得去查找index,会花费更多时间。
 					}
 				}
@@ -479,18 +428,18 @@ public class LineEntryMenuForBurp{
 					IHttpRequestResponse[] messages = invocation.getSelectedMessages();
 					Getter getter = new Getter(helpers);
 					URL fullurl = getter.getFullURL(messages[0]);
-					LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(fullurl.toString());
+					LineEntry entry = titlepanel.getTitleTable().getLineTableModel().findLineEntry(fullurl.toString());
 					if (entry == null) {
 						URL shortUrl = getter.getShortURL(messages[0]);
 						if(!fullurl.equals(shortUrl)) {
-							entry = TitlePanel.getTitleTableModel().findLineEntry(shortUrl.toString());
+							entry = titlepanel.getTitleTable().getLineTableModel().findLineEntry(shortUrl.toString());
 						}
 					}
 
 					if (entry != null) {
-						int index = TitlePanel.getTitleTable().getLineTableModel().getLineEntries().IndexOfKey(entry.getUrl());
+						int index = titlepanel.getTitleTable().getLineTableModel().getLineEntries().IndexOfKey(entry.getUrl());
 
-						addLevelABC(topMenu,TitlePanel.getTitleTable(),new int[] {index});
+						addLevelABC(topMenu,titlepanel.getTitleTable(),new int[] {index});
 						System.out.println("111");
 					}
 				}
@@ -528,11 +477,11 @@ public class LineEntryMenuForBurp{
 	 *
 	 * @param entry
 	 */
-	public static void addCommentForLine(LineEntry entry,String comment) {
-		int index = TitlePanel.getTitleTableModel().getLineEntries().IndexOfKey(entry.getUrl());
+	public void addCommentForLine(LineEntry entry,String comment) {
+		int index = titlepanel.getTitleTable().getLineTableModel().getLineEntries().IndexOfKey(entry.getUrl());
 		if (comment != null) {
 			entry.addComment(comment);
-			TitlePanel.getTitleTableModel().fireTableRowsUpdated(index,index);//主动通知更新，否则不会写入数据库!!!
+			titlepanel.getTitleTable().getLineTableModel().fireTableRowsUpdated(index,index);//主动通知更新，否则不会写入数据库!!!
 		}
 	}
 
@@ -540,12 +489,12 @@ public class LineEntryMenuForBurp{
 	 * 对多个记录添加备注
 	 * @param entries
 	 */
-	public static void addCommentForLines(List<LineEntry> entries,String comment) {
+	public void addCommentForLines(List<LineEntry> entries,String comment) {
 		for (LineEntry entry:entries){
-			int index = TitlePanel.getTitleTableModel().getLineEntries().IndexOfKey(entry.getUrl());
+			int index = titlepanel.getTitleTable().getLineTableModel().getLineEntries().IndexOfKey(entry.getUrl());
 			if (comment != null) {
 				entry.addComment(comment);
-				TitlePanel.getTitleTableModel().fireTableRowsUpdated(index,index);//主动通知更新，否则不会写入数据库!!!
+				titlepanel.getTitleTable().getLineTableModel().fireTableRowsUpdated(index,index);//主动通知更新，否则不会写入数据库!!!
 			}
 		}
 	}
@@ -553,7 +502,7 @@ public class LineEntryMenuForBurp{
 	/**
 	 * 弹窗，获取需要备注的信息
 	 */
-	public static String getCommentInfo() {
+	public String getCommentInfo() {
 		String commentAdd = JOptionPane.showInputDialog("Comments", null);
 		if (commentAdd == null) return "";
 		while(commentAdd.trim().equals("")){
@@ -562,17 +511,17 @@ public class LineEntryMenuForBurp{
 		return commentAdd;
 	}
 
-	public static void addToDomain(IHttpRequestResponse[] messages) {
+	public void addToDomain(IHttpRequestResponse[] messages) {
 
-		DomainManager domainResult = DomainPanel.getDomainResult();
+		DomainManager domainResult = guiMain.getDomainPanel().getDomainResult();
 		for(IHttpRequestResponse message:messages) {
 			String host = message.getHttpService().getHost();
 			domainResult.addToTargetAndSubDomain(host,true);
 		}
-		DomainPanel.saveDomainDataToDB();
+		guiMain.getDomainPanel().saveDomainDataToDB();
 	}
 
-	public static void addToRequest(IHttpRequestResponse[] messages) {
+	public void addToRequest(IHttpRequestResponse[] messages) {
 		if (messages.length <=0){
 			return;
 		}else if(messages.length==1){
@@ -581,40 +530,45 @@ public class LineEntryMenuForBurp{
 			addRequests(messages);
 		}
 	}
-	public static void addSingleRequest(IHttpRequestResponse message ) {
+	public void addSingleRequest(IHttpRequestResponse message ) {
 
 			//当时为啥要用这个key来存储新增的Request？URL地址一样而数据包不一样的情况？
 			//String hashKey = HashCode.fromBytes(message.getRequest()).toString();
-
+			if (titlepanel.getTitleTable().getLineTableModel() ==null) {
+				stderr.println("Title Table Model is Null, Maybe no database file loaded yet.");
+				return;
+			}
 			Getter getter = new Getter(helpers);
 			URL fullurl = getter.getFullURL(message);
-			LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(fullurl.toString());
+			LineEntry entry = titlepanel.getTitleTable().getLineTableModel().findLineEntry(fullurl.toString());
 
 			LineEntry newEntry = new LineEntry(message);
-			newEntry.setComment("Manual-Saved");
-			newEntry.setEntryType(LineEntry.EntryType_Manual_Saved);
+			newEntry.setEntrySource(LineEntry.Source_Manual_Saved);
 			newEntry.setCheckStatus(LineEntry.CheckStatus_UnChecked);
-			newEntry.setManualSaved(true);
 
 			if (entry != null) {//存在相同URL的记录
 				int user_input = JOptionPane.showConfirmDialog(null, "Do you want to overwrite?","Item already exist",JOptionPane.YES_NO_CANCEL_OPTION);
 				if (JOptionPane.YES_OPTION == user_input) {
-					TitlePanel.getTitleTableModel().addNewLineEntry(newEntry); //add request，覆盖
+					titlepanel.getTitleTable().getLineTableModel().addNewLineEntry(newEntry); //add request，覆盖
 				}else if(JOptionPane.NO_OPTION == user_input){//不覆盖,修改后新增
 					newEntry.setUrl(entry.getUrl()+"#"+System.currentTimeMillis());
-					TitlePanel.getTitleTableModel().addNewLineEntry(newEntry); //add request，修改URL(加#时间戳)后新增
+					titlepanel.getTitleTable().getLineTableModel().addNewLineEntry(newEntry); //add request，修改URL(加#时间戳)后新增
 				}//cancel,do nothing
 			}else {//不存在相同记录，直接新增
-				TitlePanel.getTitleTableModel().addNewLineEntry(newEntry); //add request，新增
+				titlepanel.getTitleTable().getLineTableModel().addNewLineEntry(newEntry); //add request，新增
 			}
 
 			String host = message.getHttpService().getHost();
-			DomainPanel.getDomainResult().addIfValid(host); //add domain
+			guiMain.getDomainPanel().getDomainResult().addIfValid(host); //add domain
 	}
 
-	public static void addRequests(IHttpRequestResponse[] messages) {
+	public void addRequests(IHttpRequestResponse[] messages) {
 		int user_input = JOptionPane.showConfirmDialog(null, "Do you want to overwrite if item already exist?","Chose Your Action",JOptionPane.YES_NO_CANCEL_OPTION);
 		if (user_input != JOptionPane.YES_OPTION && user_input != JOptionPane.NO_OPTION){
+			return;
+		}
+		if (titlepanel.getTitleTable().getLineTableModel() ==null) {
+			stderr.println("Title Table Model is Null, Maybe no database file loaded yet.");
 			return;
 		}
 		for(IHttpRequestResponse message:messages) {
@@ -623,27 +577,25 @@ public class LineEntryMenuForBurp{
 
 			Getter getter = new Getter(helpers);
 			URL fullurl = getter.getFullURL(message);
-			LineEntry entry = TitlePanel.getTitleTableModel().findLineEntry(fullurl.toString());
+			LineEntry entry = titlepanel.getTitleTable().getLineTableModel().findLineEntry(fullurl.toString());
 
 			LineEntry newEntry = new LineEntry(message);
-			newEntry.setComment("Manual-Saved");
-			newEntry.setEntryType(LineEntry.EntryType_Manual_Saved);
+			newEntry.setEntrySource(LineEntry.Source_Manual_Saved);
 			newEntry.setCheckStatus(LineEntry.CheckStatus_UnChecked);
-			newEntry.setManualSaved(true);
 
 			if (entry != null) {//存在相同URL的记录
 				if (JOptionPane.YES_OPTION == user_input) {
-					TitlePanel.getTitleTableModel().addNewLineEntry(newEntry); //add request，覆盖
+					titlepanel.getTitleTable().getLineTableModel().addNewLineEntry(newEntry); //add request，覆盖
 				}else {//不覆盖,修改后新增
 					newEntry.setUrl(entry.getUrl()+"#"+System.currentTimeMillis());
-					TitlePanel.getTitleTableModel().addNewLineEntry(newEntry); //add request，修改URL(加#时间戳)后新增
+					titlepanel.getTitleTable().getLineTableModel().addNewLineEntry(newEntry); //add request，修改URL(加#时间戳)后新增
 				}//cancel,do nothing
 			}else {//不存在相同记录，直接新增
-				TitlePanel.getTitleTableModel().addNewLineEntry(newEntry); //add request，新增
+				titlepanel.getTitleTable().getLineTableModel().addNewLineEntry(newEntry); //add request，新增
 			}
 
 			String host = message.getHttpService().getHost();
-			DomainPanel.getDomainResult().addIfValid(host); //add domain
+			guiMain.getDomainPanel().getDomainResult().addIfValid(host); //add domain
 		}
 	}
 }

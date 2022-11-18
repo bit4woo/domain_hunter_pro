@@ -3,7 +3,6 @@ package title;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 
 import com.github.kevinsawicki.http.HttpRequest;
 import com.google.common.hash.Hashing;

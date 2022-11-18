@@ -1,20 +1,20 @@
 package config;
 
-import GUI.GUIMain;
-import Tools.ToolPanel;
-import burp.BurpExtender;
-import burp.Commons;
-import burp.HelperPlus;
-import com.google.gson.Gson;
-import org.apache.commons.io.FileUtils;
-import title.LineEntry;
-import title.search.History;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.Set;
+
+import org.apache.commons.io.FileUtils;
+
+import com.alibaba.fastjson.JSON;
+
+import GUI.GUIMain;
+import burp.BurpExtender;
+import burp.Commons;
+import title.LineEntry;
+import title.search.History;
 
 public class LineConfig {
 	private static int MaximumEntries = 1000;//控制显示的条目数，减少内存占用
@@ -25,10 +25,10 @@ public class LineConfig {
 
 	//跑title时根据各字段过滤某些条目
 	//private static Set<String> blacklistHostSet = new HashSet<String>(); //其实不需要
-	private static Set<String> blacklistStatusCodeSet = new HashSet<String>(); 
-	private static Set<String> blacklistIPSet = new HashSet<String>(); 
-	private static Set<String> blacklistCDNSet = new HashSet<String>(); 
-	private static Set<String> blacklistWebContainerSet = new HashSet<String>(); 
+	private Set<String> blacklistStatusCodeSet = new HashSet<String>(); 
+	private Set<String> blacklistIPSet = new HashSet<String>(); 
+	private Set<String> blacklistCDNSet = new HashSet<String>(); 
+	private Set<String> blacklistWebContainerSet = new HashSet<String>(); 
 	//对于内外网域名或IP的处理分为2种情况：
 	//1、外网模式，即在自己公司挖掘别人公司的漏洞。这个是时候收集到的域名如果是解析到私有IP的，仅仅显示就可以了；如果是私有IP地址则直接忽略。
 	//2、内网模式，即在自己公司挖掘自己公司的漏洞。这个时候所有域名一视同仁，全部和外网域名一样进行请求并获取title，因为内网的IP也是可以访问的。
@@ -36,7 +36,7 @@ public class LineConfig {
 			"C:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe",
 			"C:\\Program Files\\Mozilla Firefox\\firefox.exe",
 			"D:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe",
-			"D:\\Program Files\\Mozilla Firefox\\firefox.exe"};
+	"D:\\Program Files\\Mozilla Firefox\\firefox.exe"};
 	public static final String defaultNmap = "nmap -Pn -sT -sV --min-rtt-timeout 1ms "
 			+ "--max-rtt-timeout 1000ms --max-retries 0 --max-scan-delay 0 --min-rate 3000 {host}";
 	public static final String defaultDirSearch = "python3 dirsearch.py -t 8 --proxy=127.0.0.1:8080 "
@@ -51,12 +51,23 @@ public class LineConfig {
 	private String elasticApiUrl = "http://10.12.72.55:9200/";
 	private String elasticUsernameAndPassword = "elastic:changeme";
 	private String uploadApiToken = "";
+	private String uploadUrl = "";
 	private boolean showItemsInOne = false;
 	private boolean enableElastic = false;
 	private String dbfilepath ="";
 	private History searchHistory;
+	private GUIMain gui;
 
-	LineConfig(){
+	/**
+	 * 当从文件恢复出当前对象后，需要通过setter来设置gui
+	 * @param gui
+	 */
+	public void setGui(GUIMain gui) {
+		this.gui = gui;
+	}
+
+	LineConfig(GUIMain gui){
+		this.gui = gui;
 		if (Commons.isMac()) {
 			browserPath = macDefaultBrowserPath;
 		}else {
@@ -68,6 +79,16 @@ public class LineConfig {
 		}
 	}
 
+	public static void main(String[] args) {
+		System.out.println(new LineConfig().ToJson());
+	}
+
+	/**
+	 * 用于JSON的序列化反序列化
+	 */
+	LineConfig(){
+
+	}
 
 	public static int getMaximumEntries() {
 		return MaximumEntries;
@@ -77,49 +98,50 @@ public class LineConfig {
 		MaximumEntries = maximumEntries;
 	}
 
-	//	public static Set<String> getBlacklistHostSet() {
-	//		return blacklistHostSet;
-	//	}
-	//
-	//	public static void setBlacklistHostSet(Set<String> blacklistHostSet) {
-	//		LineConfig.blacklistHostSet = blacklistHostSet;
-	//	}
-
-	public static Set<String> getBlacklistStatusCodeSet() {
-		return blacklistStatusCodeSet;
-	}
-
-	public static void setBlacklistStatusCodeSet(Set<String> blacklistStatusCodeSet) {
-		LineConfig.blacklistStatusCodeSet = blacklistStatusCodeSet;
-	}
-
-	public static Set<String> getBlacklistIPSet() {
-		return blacklistIPSet;
-	}
-
-	public static void setBlacklistIPSet(Set<String> blacklistIPSet) {
-		LineConfig.blacklistIPSet = blacklistIPSet;
-	}
-
-	public static Set<String> getBlacklistCDNSet() {
-		return blacklistCDNSet;
-	}
-
-	public static void setBlacklistCDNSet(Set<String> blacklistCDNSet) {
-		LineConfig.blacklistCDNSet = blacklistCDNSet;
-	}
-
-	public static Set<String> getBlacklistWebContainerSet() {
-		return blacklistWebContainerSet;
-	}
-
-	public static void setBlacklistWebContainerSet(Set<String> blacklistWebContainerSet) {
-		LineConfig.blacklistWebContainerSet = blacklistWebContainerSet;
-	}
 
 	public static boolean isIgnoreHttpsOrHttpIfOneOK() {
 		return ConfigPanel.ignoreHTTPS.isSelected();
 	}
+
+	public Set<String> getBlacklistStatusCodeSet() {
+		return blacklistStatusCodeSet;
+	}
+
+
+	public void setBlacklistStatusCodeSet(Set<String> blacklistStatusCodeSet) {
+		this.blacklistStatusCodeSet = blacklistStatusCodeSet;
+	}
+
+
+	public Set<String> getBlacklistIPSet() {
+		return blacklistIPSet;
+	}
+
+
+	public void setBlacklistIPSet(Set<String> blacklistIPSet) {
+		this.blacklistIPSet = blacklistIPSet;
+	}
+
+
+	public Set<String> getBlacklistCDNSet() {
+		return blacklistCDNSet;
+	}
+
+
+	public void setBlacklistCDNSet(Set<String> blacklistCDNSet) {
+		this.blacklistCDNSet = blacklistCDNSet;
+	}
+
+
+	public Set<String> getBlacklistWebContainerSet() {
+		return blacklistWebContainerSet;
+	}
+
+
+	public void setBlacklistWebContainerSet(Set<String> blacklistWebContainerSet) {
+		this.blacklistWebContainerSet = blacklistWebContainerSet;
+	}
+
 
 	public static void setIgnoreHttpsIfHttpOK(boolean ignoreHttpsIfHttpOK) {
 		ConfigPanel.ignoreHTTPS.setSelected(ignoreHttpsIfHttpOK);
@@ -201,6 +223,16 @@ public class LineConfig {
 
 
 
+	public String getUploadUrl() {
+		return uploadUrl;
+	}
+
+
+	public void setUploadUrl(String uploadUrl) {
+		this.uploadUrl = uploadUrl;
+	}
+
+
 	public boolean isShowItemsInOne() {
 		return showItemsInOne;
 	}
@@ -240,18 +272,18 @@ public class LineConfig {
 
 	public String saveToDisk() {
 		try {
-			ConfigPanel.saveToConfigFromGUI();
+			gui.getConfigPanel().saveToConfigFromGUI();
 			this.setSearchHistory(History.getInstance());
-			this.setDbfilepath(GUIMain.getCurrentDBFile().getAbsolutePath());
+			//this.setDbfilepath(gui.getCurrentDBFile().getAbsolutePath());//加载数据库时有设置，无需再次获取。
 		} catch (Exception e1) {
 			e1.printStackTrace();
 			e1.printStackTrace(BurpExtender.getStderr());
 		}
-		
+
 		try {
-			File localFile = new File(localdir+File.separator+GUIMain.getCurrentDBFile().getName()+".config");
+			File localFile = new File(localdir+File.separator+gui.getCurrentDBFile().getName()+".config");
 			FileUtils.write(localFile, this.ToJson());
-			BurpExtender.getStdout().println("Saving Tool Panel Config To Disk");
+			BurpExtender.getStdout().println("Tool Panel Config Saved To Disk!");
 			return localFile.toString();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -260,9 +292,14 @@ public class LineConfig {
 		}
 	}
 
+	/**
+	 * 注意：这里获取到的lineConfig对象，其中的gui属性是null
+	 * @param projectFile
+	 * @return
+	 */
 	public static LineConfig loadFromDisk(String projectFile) {
-		if (projectFile == null) {
-			return new LineConfig();
+		if (projectFile == null){
+			return  null;
 		}
 		try {
 			File localFile = new File(projectFile);
@@ -275,20 +312,20 @@ public class LineConfig {
 			e.printStackTrace();
 			e.printStackTrace(BurpExtender.getStderr());
 		}
-		return new LineConfig();
+		return null;
 	}
 
 
 	public String ToJson() {
-		//return JSON.toJSONString(this);
+		return JSON.toJSONString(this);
 		//https://blog.csdn.net/qq_27093465/article/details/73277291
-		return new Gson().toJson(this);
+		//return new Gson().toJson(this);
 	}
 
 
 	public  static LineConfig FromJson(String instanceString) {// throws Exception {
-		//return JSON.parseObject(instanceString,LineConfig.class);
-		return new Gson().fromJson(instanceString, LineConfig.class);
+		return JSON.parseObject(instanceString,LineConfig.class);
+		//return new Gson().fromJson(instanceString, LineConfig.class);
 	}
 
 	/*
