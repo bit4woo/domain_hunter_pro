@@ -64,7 +64,7 @@ public class TextAreaMenu extends JPopupMenu {
 		}
 
 
-		JMenuItem goToItem = new JMenuItem(new AbstractAction("Go To Tilte Panel") {
+		JMenuItem SearchInTitlePanelItem = new JMenuItem(new AbstractAction("Search This In Tilte Panel") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 
@@ -206,7 +206,7 @@ public class TextAreaMenu extends JPopupMenu {
 
 
 		/////不需要选中内容的菜单
-		JMenuItem Sort = new JMenuItem(new AbstractAction("Sort") {
+		JMenuItem Sort = new JMenuItem(new AbstractAction("Sort(ascending order)") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				Collections.sort(AllItems);
@@ -233,7 +233,7 @@ public class TextAreaMenu extends JPopupMenu {
 		});
 
 
-		JMenuItem SortFresh = new JMenuItem(new AbstractAction("Refresh") {
+		JMenuItem ReFresh = new JMenuItem(new AbstractAction("Refresh") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				domainPanel.getGuiMain().getDomainPanel().showDataToDomainGUI();
@@ -310,23 +310,23 @@ public class TextAreaMenu extends JPopupMenu {
 
 		SortDomain.setToolTipText("search something");
 
+		this.add(addTosubdomain);
+		this.addSeparator();
 		//对选中内容起作用的菜单
 		this.add(whoisItem);
 		this.add(ASNInfoItem);
 		this.add(googleSearchItem);
 		this.add(SearchOnGithubItem);
 		this.add(openWithBrowserItem);
-		this.add(addTosubdomain);
+		this.add(SearchInTitlePanelItem);
 		this.addSeparator();
 
 		//无需选中的全局菜单
-		this.add(SortFresh);
+		this.add(ReFresh);
 		this.add(SearchDomain);
 		this.add(Sort);
 		this.add(SortDomain);
 		this.add(SortByLength);
-		this.add(goToItem);
-
 		this.add(removeMd5DomainItem);
 	}
 }

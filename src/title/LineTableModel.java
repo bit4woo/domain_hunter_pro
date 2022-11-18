@@ -393,6 +393,18 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		}
 		return hosts;
 	}
+	
+	public List<String> getHostsAndIPAddresses(int[] rows) {
+		Arrays.sort(rows); //升序
+		List<String> hosts = new ArrayList<>();
+
+		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
+			LineEntry line = lineEntries.get(rows[i]);
+			String hostAndPort = line.getHost()+"\t"+String.join(",", line.getIPSet());
+			hosts.add(hostAndPort);
+		}
+		return hosts;
+	}
 
 	public Set<String> getIPs(int[] rows) {
 		Arrays.sort(rows); //升序

@@ -122,13 +122,39 @@ public class TargetEntryMenu extends JPopupMenu {
 				guiMain.getDomainPanel().getControlPanel().selectedToBalck();
 			}
 		});
+		
+		/**
+		 * 查找邮箱的搜索引擎
+		 */
+		JMenuItem SearchOnHunterIOItem = new JMenuItem(new AbstractAction("Seach On hunter.io") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+
+				if (modelRows.length >=50) {
+					return;
+				}
+				for (int row:modelRows) {
+					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,0);
+					String url= "https://hunter.io/try/search/%s";
+					//https://hunter.io/try/search/shopee.com?locale=en
+					url= String.format(url, rootDomain);
+					try {
+						Commons.browserOpen(url, null);
+					} catch (Exception e) {
+						e.printStackTrace(stderr);
+					}
+				}
+			}
+		});
 
 		this.add(getSubDomainsOf);
-		this.add(whoisItem);
-		this.add(ASNInfoItem);
-		this.add(OpenWithBrowserItem);
 		this.add(batchAddCommentsItem);
 		this.add(addToBlackItem);
+		this.addSeparator();
+		this.add(OpenWithBrowserItem);
+		this.add(whoisItem);
+		this.add(ASNInfoItem);
+		this.add(SearchOnHunterIOItem);
 	}
 
 }
