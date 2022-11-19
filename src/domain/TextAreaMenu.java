@@ -85,9 +85,12 @@ public class TextAreaMenu extends JPopupMenu {
 					return;
 				}
 				for (String item:selectedItems) {
-					String url= "https://"+item;
+					if (!item.toLowerCase().startsWith("https://") && !item.toLowerCase().startsWith("http://")) {
+						item= "https://"+item;
+					}
+					
 					try {
-						Commons.browserOpen(url, domainPanel.getGuiMain().getConfigPanel().getLineConfig().getBrowserPath());
+						Commons.browserOpen(item, domainPanel.getGuiMain().getConfigPanel().getLineConfig().getBrowserPath());
 					} catch (Exception e) {
 						e.printStackTrace(stderr);
 					}
