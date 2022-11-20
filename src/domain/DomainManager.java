@@ -3,7 +3,6 @@ package domain;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -530,24 +529,22 @@ public class DomainManager {
 	}
 
 
-
+	/**
+	 * CopyOnWriteArraySet 用iterator的remove反而会出错
+	 */
 	public void removeMd5Domain() {
-		Iterator<String> it = subDomainSet.iterator();
-		while (it.hasNext()) {
-			String item = it.next();
+		for (String item:subDomainSet) {
 			String md5 = isMd5Domain(item);//md5的值加上一个点
 			if (md5.length() == 33) {
-				it.remove();
+				subDomainSet.remove(item);
 				subDomainSet.add(item.replace(md5, ""));
 			}
 		}
 
-		Iterator<String> it1 = similarDomainSet.iterator();
-		while (it1.hasNext()) {
-			String item = it1.next();
+		for (String item:similarDomainSet) {
 			String md5 = isMd5Domain(item);//md5的值加上一个点
 			if (md5.length() == 33) {
-				it1.remove();
+				similarDomainSet.remove(item);
 				similarDomainSet.add(item.replace(md5, ""));
 			}
 		}
@@ -567,9 +564,26 @@ public class DomainManager {
 		enteredRootDomain = InternetDomainName.from(enteredRootDomain).topPrivateDomain().toString();
 		System.out.println(enteredRootDomain);
 	}
+	
+	/**
+	 *  CopyOnWriteArraySet 用iterator的remove反而会出错
+	 */
+	public static void test2() {
+		CopyOnWriteArraySet<String> subDomainSet = new CopyOnWriteArraySet<String>();
+		subDomainSet.add("e53cf27d3dad22ae36aff189d90f0fbf.aaa.com");
+		
+		for (String item:subDomainSet) {
+			String md5 = isMd5Domain(item);//md5的值加上一个点
+			if (md5.length() == 33) {
+				subDomainSet.remove(item);
+				subDomainSet.add(item.replace(md5, ""));
+			}
+		}
+		System.out.println(String.join(",", subDomainSet));
+	}
 
 	public static void main(String args[]) {
-		test1("order-admin.test.shopee.in");
+		//test1("order-admin.test.shopee.in");
 	}
 
 }
