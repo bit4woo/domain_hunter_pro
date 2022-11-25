@@ -1,4 +1,4 @@
-package thread;
+package bruter;
 
 import java.io.PrintWriter;
 import java.net.URL;

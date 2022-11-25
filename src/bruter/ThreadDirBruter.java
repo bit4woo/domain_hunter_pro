@@ -1,4 +1,4 @@
-package thread;
+package bruter;
 
 import java.io.File;
 import java.io.PrintWriter;

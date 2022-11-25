@@ -50,6 +50,22 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		}
 		//TableModelListener的主要作用是用来通知view即GUI数据发生了改变，不应该用于进行数据库的操作。
 	}
+	
+	/**
+	 * 这个构造函数供runner使用
+	 * @param dbfilename
+	 */
+	public LineTableModel(String dbfilename){
+		titleDao = new TitleDao(dbfilename);
+		try{
+			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
+			stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
+		}catch (Exception e){
+			stdout = new PrintWriter(System.out, true);
+			stderr = new PrintWriter(System.out, true);
+		}
+		//TableModelListener的主要作用是用来通知view即GUI数据发生了改变，不应该用于进行数据库的操作。
+	}
 
 	public LineTableModel(GUIMain guiMain,IndexedHashMap<String,LineEntry> lineEntries){
 		this(guiMain);
