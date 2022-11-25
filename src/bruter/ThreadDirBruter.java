@@ -8,16 +8,13 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import GUI.DictReader;
-import GUI.RunnerGUI;
 import burp.BurpExtender;
 import burp.IBurpExtenderCallbacks;
 import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
 import config.ConfigPanel;
 
-//no need to pass BurpExtender object to these class, IBurpExtenderCallbacks object is enough 
 /**
- * 执行路径爆破的主线程
  * @author bit4woo
  *
  */
@@ -63,7 +60,7 @@ public class ThreadDirBruter extends Thread{
 		plist = new ArrayList<DirBruterProducer>();
 
 		for (int i=0;i<=50;i++) {
-			DirBruterProducer p = new DirBruterProducer(runnerGUI.getRunnerTableModel(),pathDict,messageInfo, i);
+			DirBruterProducer p = new DirBruterProducer(runnerGUI.getModel(),pathDict,messageInfo, i);
 			p.setDaemon(true);
 			p.start();
 			plist.add(p);
@@ -82,16 +79,6 @@ public class ThreadDirBruter extends Thread{
 		
 		stdout.println("~~~~~~~~~~~~~Get Title Done~~~~~~~~~~~~~");
 		runnerGUI.lblStatus.setText("finished");
-	}
-
-	@Deprecated
-	public void stopThreads() {
-		if (plist != null) {
-			for (DirBruterProducer p:plist) {
-				p.stopThread();
-			}
-			stdout.println("~~~~~~~~~~~~~All stop message sent! wait them to exit~~~~~~~~~~~~~");
-		}
 	}
 	
 	public void forceStopThreads() {

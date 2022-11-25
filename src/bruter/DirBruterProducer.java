@@ -35,7 +35,6 @@ public class DirBruterProducer extends Thread {//Producer do
 
 	public DirBruterProducer(LineTableModel runnerTableModel,BlockingQueue<String> pathDict,IHttpRequestResponse messageInfo, int threadNo) {
 		this.runnerTableModel = runnerTableModel;
-		this.runnerTableModel.setListenerIsOn(false);//否则数据会写入title的数据库
 		this.threadNo = threadNo;
 		this.pathDict = pathDict;
 		stopflag= false;

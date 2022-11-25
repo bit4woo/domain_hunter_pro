@@ -37,22 +37,14 @@ public class RunnerGUI extends JFrame {
 	private JScrollPane runnerScrollPaneRequests;
 	private JTabbedPane RequestPanel;
 	private JTabbedPane ResponsePanel;
-	private JPanel RunnerPanel;
+	private TitlePanel RunnerPanel;
 
 	private IHttpRequestResponse messageInfo;
 	public JLabel lblStatus;
 	
 	private ThreadDirBruter bruter;
-	private DefaultTableModel runnerTableModel;
-	private JTable runnerTable;
-
-	public JPanel getRunnerPanel() {
-		return RunnerPanel;
-	}
-
-	public void setRunnerPanel(JPanel runnerPanel) {
-		RunnerPanel = runnerPanel;
-	}
+	private LineTableModel runnerTableModel;
+	private LineTable runnerTable;
 
 	public JScrollPane getRunnerScrollPaneRequests() {
 		return runnerScrollPaneRequests;
@@ -114,7 +106,7 @@ public class RunnerGUI extends JFrame {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		setBounds(100, 100, 1000, 500);
-		RunnerPanel = new JPanel();
+		RunnerPanel = new TitlePanel();
 		RunnerPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		RunnerPanel.setLayout(new BorderLayout(0, 0));
 		setContentPane(RunnerPanel);//for test
@@ -131,84 +123,14 @@ public class RunnerGUI extends JFrame {
 	 * @param messageInfo
 	 */
 	public RunnerGUI() {
-		runnerTableModel = new DefaultTableModel();
-		runnerTable = new JTable(runnerTableModel) {
-			@Override
-			public void changeSelection(int row, int col, boolean toggle, boolean extend)
-			{
-				// show the log entry for the selected row
-				//LineEntry Entry = this.lineTableModel.getLineEntries().get(super.convertRowIndexToModel(row));
-				LineEntry Entry = this.getRowAt(row);
-				guiMain.getTitlePanel().getRequestViewer().setMessage(Entry.getRequest(), true);
-				guiMain.getTitlePanel().getResponseViewer().setMessage(Entry.getResponse(), false);
-
-				super.changeSelection(row, col, toggle, extend);
-			}
-			
-			/**
-			 * 搜索功能，自动获取caseSensitive的值
-			 * @param keyword
-			 */
-			public void search(String keyword) {
-				SearchTextField searchTextField = (SearchTextField)guiMain.getTitlePanel().getTextFieldSearch();
-				boolean caseSensitive = searchTextField.isCaseSensitive();
-				search(keyword,caseSensitive);
-			}
-
-			/**
-			 * 搜索功能
-			 * @param caseSensitive
-			 */
-			public void search(String Input,boolean caseSensitive) {
-				//rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + keyword));
-				History.getInstance().addRecord(Input);//记录搜索历史,单例模式
-
-				final RowFilter filter = new RowFilter() {
-					@Override
-					public boolean include(Entry entry) {
-						//entry --- a non-null object that wraps the underlying object from the model
-						int row = (int) entry.getIdentifier();
-						LineEntry line = getModel().getLineEntries().get(row);
-
-						//第一层判断，根据按钮状态进行判断，如果为true，进行后面的逻辑判断，false直接返回。
-						if (!new LineSearch(guiMain.getTitlePanel()).entryNeedToShow(line)) {
-							return false;
-						}
-						//目前只处理&&（and）逻辑的表达式
-						if (Input.contains("&&")) {
-							String[] searchConditions = Input.split("&&");
-							for (String condition:searchConditions) {
-								if (oneCondition(condition,line)) {
-									continue;
-								}else {
-									return false;
-								}
-							}
-							return true;
-						}else {
-							return oneCondition(Input,line);
-						}
-					}
-					public boolean oneCondition(String Input,LineEntry line) {
-						Input = Input.trim();//应该去除空格，符合java代码编写习惯
-						if (SearchDork.isDork(Input)) {
-							//stdout.println("do dork search,dork:"+dork+"   keyword:"+keyword);
-							return LineSearch.dorkFilter(line,Input,caseSensitive);
-						}else {
-							return LineSearch.textFilter(line,Input,caseSensitive);
-						}
-					}
-				};
-				((TableRowSorter)LineTable.this.getRowSorter()).setRowFilter(filter);
-			}
-		};
+		
 		
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		//if use "EXIT_ON_CLOSE",burp will exit!!
 		setVisible(true);
 		setTitle("Runner");
 
-		RunnerPanel = new JPanel();
+		RunnerPanel = new TitlePanel();
 		RunnerPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		RunnerPanel.setLayout(new BorderLayout(0, 0));
 		setContentPane(RunnerPanel);//for test
@@ -234,18 +156,8 @@ public class RunnerGUI extends JFrame {
 		lblStatus = new JLabel("Status");
 		buttonPanel.add(lblStatus);
 
-		JSplitPane splitPane = new JSplitPane();//table area + detail area
-		splitPane.setResizeWeight(0.5);
-		splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
 		this.add(splitPane,BorderLayout.CENTER);
 
-		JScrollPane scrollPaneRequests = new JScrollPane(runnerTable,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);//table area
-		//显示请求和响应
-		JSplitPane detailPanel = DetailPanel();
-				
-		splitPane.setLeftComponent(scrollPaneRequests);
-		splitPane.setRightComponent(detailPanel);
 		
 		//frame.getRootPane().add(runnerTable.getSplitPane(), BorderLayout.CENTER);
 		addWindowListener(new WindowListener() {
@@ -305,23 +217,6 @@ public class RunnerGUI extends JFrame {
 		//准备工作
 	}
 	
-	/**
-	 * 显示请求响应
-	 * @return
-	 */
-	public JSplitPane DetailPanel(){
-
-		JSplitPane RequestDetailPanel = new JSplitPane();//request and response
-		RequestDetailPanel.setResizeWeight(0.5);
-
-		RequestPanel = new JTabbedPane();
-		RequestDetailPanel.setLeftComponent(RequestPanel);
-
-		ResponsePanel = new JTabbedPane();
-		RequestDetailPanel.setRightComponent(ResponsePanel);
-
-		return RequestDetailPanel;
-	}
 	
 	public void begainDirBrute() {
 		bruter = new ThreadDirBruter(this,messageInfo);
