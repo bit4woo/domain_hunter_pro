@@ -5,8 +5,12 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;
@@ -16,6 +20,8 @@ import javax.swing.SwingWorker;
 
 import GUI.GUIMain;
 import burp.BurpExtender;
+import burp.DomainNameUtils;
+import burp.IPAddressUtils;
 
 public class GetTitleMenu extends JPopupMenu {
 
@@ -208,11 +214,66 @@ public class GetTitleMenu extends JPopupMenu {
 				worker.execute();
 			}
 		});
+		
+		
+		/**
+		 * 获取用于Host碰撞的域名
+		 */
+		JMenuItem copyHostCollisionDomainsItem = new JMenuItem(new AbstractAction("Copy Domains For Host Collision") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				try{
+					HashSet<String> domains = getDomainsForBypassCheck();
+					String textUrls = String.join(System.lineSeparator(), domains);
+
+					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+					StringSelection selection = new StringSelection(textUrls);
+					clipboard.setContents(selection, null);
+				}
+				catch (Exception e1)
+				{
+					e1.printStackTrace(stderr);
+				}
+			}
+			
+			/**
+			 * 获取用于Host碰撞的域名列表
+			 *
+			 * 1、没有解析记录的域名
+			 * 2、解析记录是内网地址的域名
+			 *
+			 * 3、解析是外网，但是外网无法访问的域名（比如403），但是绑定特定IP即可访问。大概率是走了不同的网关导致的.
+			 * 想要准确地获取到这个结果，那么hunter的数据应该是在外网环境中获取的。如果是hunter的数据是内网环境中获取的，就会遗漏一部分数据。
+			 * @return
+			 */
+			public HashSet<String> getDomainsForBypassCheck(){
+
+				HashSet<String> allDomainSet = new HashSet<String>();//所有子域名列表
+				allDomainSet.addAll(guiMain.getDomainPanel().getDomainResult().getSubDomainSet());
+
+				HashSet<String> tmp = new HashSet<String>();
+
+				for (String item:allDomainSet) {//移除IP
+					if (item.contains(":")) {//有可能domain:port的情况
+						item = item.split(":")[0];
+					}
+					if (DomainNameUtils.isValidDomain(item)) {
+						tmp.add(item);
+					}
+				}
+				
+				Set<String> OkDomains = guiMain.getTitlePanel().getTitleTable().getLineTableModel().getAllPublicOkDomain();
+				tmp.removeAll(OkDomains);
+	
+				return tmp;
+			}
+		});
 
 		this.add(getTitleItem);
 		this.add(GetExtendtitleItem);
 		this.add(GettitleOfJustNewFoundItem);
 		this.add(CopySubnetItem);
+		this.add(copyHostCollisionDomainsItem);
 		this.add(StopItem);
 		this.add(FreshASNInfo);
 		//this.add(doGateWayByPassCheck);

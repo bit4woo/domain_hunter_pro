@@ -1,63 +1,67 @@
 package title;
 
 import java.awt.BorderLayout;
-import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.TableRowSorter;
 
-import GUI.GUIMain;
 import burp.BurpExtender;
-import burp.IMessageEditor;
-import burp.IPAddressUtils;
-import dao.TitleDao;
-import thread.ThreadGetSubnet;
-import thread.ThreadGetTitleWithForceStop;
 import title.search.SearchTextField;
 
 
+/**
+ * 
+ * 为了实现多实例，泛型？抽象出titlepanel的基础功能。 
+ *
+ */
 public class TitlePanelBase extends JPanel {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private JPanel buttonPanel;
-	private SearchTextField textFieldSearch;
-	private TableAndDetailPanel tableAndDetail;
+	private JPanel buttonPanel; //最上面的控制面板，搜索框、搜索按钮、状态显示等。
+	private SearchTextField textFieldSearch;//自行实现的搜索框
+	private JLabel lblSummaryOfTitle;//显示状态信息的label
+	private TableAndDetailPanel tableAndDetail;//数据显示表和数据包请求响应显示面板
 	
-	//add table and tablemodel to GUI
-	private LineTable titleTable;
-	private TitleDao titleDao;
 	PrintWriter stdout;
 	PrintWriter stderr;
-	private GUIMain guiMain;
-	
+	private LineTable titleTable;
 
 
-	public JTextField getTextFieldSearch() {
+	public SearchTextField getTextFieldSearch() {
 		return textFieldSearch;
 	}
 
-
-	public LineTable getTitleTable() {
-		return titleTable;
+	public TableAndDetailPanel getTableAndDetail() {
+		return tableAndDetail;
 	}
+
+
+	public void setTableAndDetail(TableAndDetailPanel tableAndDetail) {
+		this.tableAndDetail = tableAndDetail;
+	}
+
+	public void setTextFieldSearch(SearchTextField textFieldSearch) {
+		this.textFieldSearch = textFieldSearch;
+	}
+	
+	public JLabel getLblSummaryOfTitle() {
+		return lblSummaryOfTitle;
+	}
+
+	public void setLblSummaryOfTitle(JLabel lblSummaryOfTitle) {
+		this.lblSummaryOfTitle = lblSummaryOfTitle;
+	}
+
 
 	public TitlePanelBase() {//构造函数
 		try{
@@ -80,21 +84,30 @@ public class TitlePanelBase extends JPanel {
 
 	public JPanel createButtonPanel() {
 		JPanel buttonPanel = new JPanel();
-		buttonPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
-
+		
+		//搜索按钮
 		JButton buttonSearch = new JButton("Search");
-		textFieldSearch = new SearchTextField("",buttonSearch);
-		buttonPanel.add(textFieldSearch);
-
 		buttonSearch.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String keyword = textFieldSearch.getText();
-				search(keyword);
+				titleTable.search(keyword);
 				//searchHistory.addRecord(keyword);
 				digStatus();
 			}
 		});
+		
+		//搜索框
+		textFieldSearch = new SearchTextField("",buttonSearch);
+		
+		
+		//显示状态信息的label
+		lblSummaryOfTitle = new JLabel("^_^");
+		buttonPanel.setToolTipText("");
+		
+		
+		buttonPanel.add(textFieldSearch);
 		buttonPanel.add(buttonSearch);
+		buttonPanel.add(lblSummaryOfTitle);
 
 		return buttonPanel;
 	}
@@ -109,19 +122,7 @@ public class TitlePanelBase extends JPanel {
 		return true;
 	}
 
-
-	/**
-	 * 用于从DB文件中加载数据，没有去重检查。
-	 * 这种加载方式没有改变tableModel，所以tableModelListener也还在。
-	 */
-	public void loadData(String currentDBFile) {
-		titleDao = new TitleDao(currentDBFile);
-		List<LineEntry> lines = titleDao.selectAllTitle();
-		LineTableModel titleTableModel = new LineTableModel(guiMain, lines);
-		loadData(titleTableModel);
-	}
-
-	private void loadData(LineTableModel titleTableModel){
+	public void loadData(LineTableModel titleTableModel){
 
 		TableRowSorter<LineTableModel> tableRowSorter = new TableRowSorter<LineTableModel>(titleTableModel);
 		titleTable.setRowSorter(tableRowSorter);
@@ -139,18 +140,7 @@ public class TitlePanelBase extends JPanel {
 		stdout.println(row+" title entries loaded from database file");
 		search("");// hide checked items
 		titleTable.tableHeaderWidthinit();//设置header宽度
-
-		try {
-			tableAndDetail.setre() = BurpExtender.getCallbacks().createMessageEditor(titleTable.getLineTableModel(), false);
-			responseViewer = BurpExtender.getCallbacks().createMessageEditor(titleTable.getLineTableModel(), false);
-			tableAndDetail.getRequestPanel().removeAll();
-			tableAndDetail.getResponsePanel().removeAll();
-			tableAndDetail.getRequestPanel().addTab("Request", requestViewer.getComponent());
-			tableAndDetail.getResponsePanel().addTab("Response", responseViewer.getComponent());
-		} catch (Exception e) {
-			//捕获异常，以便程序以非burp插件运行时可以启动
-			//e.printStackTrace();
-		}
+		tableAndDetail.fillViewer();
 	}
 
 	/**
@@ -161,4 +151,30 @@ public class TitlePanelBase extends JPanel {
 		boolean	caseSensitive = textFieldSearch.isCaseSensitive();
 		titleTable.search(keyword,caseSensitive);
 	}
+	
+	/**
+	 * 子类可以实现自己的右键菜单，基础类不创建
+	 * 
+	 * @return
+	 */
+	public void showRightClickMenu(MouseEvent e) {
+		
+	}
+	
+	
+	/**
+	 * 子类可以实现自己的右键菜单，基础类不创建
+	 * 
+	 * @return
+	 */
+	public void leftDoubleClick(MouseEvent e) {
+
+	}
+	
+	
+	public void digStatus() {
+		String status = titleTable.getLineTableModel().getStatusSummary();
+		lblSummaryOfTitle.setText(status);
+	}
+	
 }

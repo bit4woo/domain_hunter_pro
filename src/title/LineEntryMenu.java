@@ -8,6 +8,7 @@ import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -481,27 +482,6 @@ public class LineEntryMenu extends JPopupMenu {
 			}
 		});
 
-		/**
-		 * 获取用于Host碰撞的域名
-		 */
-		JMenuItem copyHostCollisionDomainsItem = new JMenuItem(new AbstractAction("Copy Domains For Host Collision") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-				try{
-					HashSet<String> domains = titlepanel.getTitleTable().getLineTableModel().getDomainsForBypassCheck();
-					String textUrls = String.join(System.lineSeparator(), domains);
-
-					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-					StringSelection selection = new StringSelection(textUrls);
-					clipboard.setContents(selection, null);
-				}
-				catch (Exception e1)
-				{
-					e1.printStackTrace(stderr);
-				}
-			}
-		});
-
 		JMenuItem dirSearchItem = new JMenuItem();
 		dirSearchItem.setText("Do Dir Search");
 		dirSearchItem.addActionListener(new DirSearchAction(guiMain,lineTable, modleRows));
@@ -876,9 +856,11 @@ public class LineEntryMenu extends JPopupMenu {
 				int result = JOptionPane.showConfirmDialog(null,"Add these IP to black list?" +
 						"\n\rwill exclude them when calculate subnet");
 				if (result == JOptionPane.YES_OPTION) {
-					lineTable.getLineTableModel().addIPToTargetBlackList(modleRows);
+					addIPToTargetBlackList(modleRows);
 				}
 			}
+			
+			
 		});
 		addToblackListItem.setToolTipText("IP addresses will be added to Black List");
 
@@ -891,7 +873,7 @@ public class LineEntryMenu extends JPopupMenu {
 				int result = JOptionPane.showConfirmDialog(null,"Add these IP to black list and Delete entry?" +
 						"\n\rwill exclude them when calculate subnet");
 				if (result == JOptionPane.YES_OPTION) {
-					lineTable.getLineTableModel().addIPToTargetBlackList(modleRows);
+					addIPToTargetBlackList(modleRows);
 					lineTable.getLineTableModel().removeRows(modleRows);
 					titlepanel.digStatus();
 				}
@@ -958,7 +940,6 @@ public class LineEntryMenu extends JPopupMenu {
 		CopyMenu.add(copyIPItem);
 		CopyMenu.add(copyURLItem);
 		CopyMenu.add(copyCommonURLItem);
-		CopyMenu.add(copyHostCollisionDomainsItem);
 		CopyMenu.add(copyLocationURLItem);
 		CopyMenu.add(copyCDNAndCertInfoItem);
 		CopyMenu.add(copyIconhashItem);
@@ -996,6 +977,21 @@ public class LineEntryMenu extends JPopupMenu {
 		}else {
 			String host = firstEntry.getHost();
 			return host;
+		}
+	}
+	
+	/**
+	 * 	主要用于记录CDN或者云服务的IP地址，在做网段汇算时排除这些IP。
+	 */
+	public void addIPToTargetBlackList(int[] rows) {
+		//because thread let the delete action not in order, so we must loop in here.
+		//list length and index changed after every remove.the origin index not point to right item any more.
+		Arrays.sort(rows); //升序
+		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
+			LineEntry entry = lineTable.getLineTableModel().getLineEntries().get(rows[i]);
+			guiMain.getDomainPanel().getDomainResult().getNotTargetIPSet().addAll(entry.getIPSet());
+			entry.getEntryTags().add(LineEntry.Tag_NotTargetBaseOnBlackList);
+			stdout.println("### IP address "+ entry.getIPSet().toString() +" added to black list");
 		}
 	}
 }

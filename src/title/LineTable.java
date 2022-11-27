@@ -12,14 +12,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.RowFilter;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.table.TableRowSorter;
 
-import GUI.GUIMain;
 import burp.BurpExtender;
 import burp.Commons;
 import burp.SystemUtils;
@@ -40,7 +39,7 @@ public class LineTable extends JTable
 
 	PrintWriter stdout;
 	PrintWriter stderr;
-	JPanel parentPanel;
+	TitlePanelBase parentPanel;
 
 	@Override//参考javax.swing.JTable中的函数，每次都有主动进行转换
 	public Object getValueAt(int row, int column) {
@@ -64,7 +63,7 @@ public class LineTable extends JTable
 		return rows;
 	}
 
-	public LineTable(JPanel parentPanel)
+	public LineTable(TitlePanelBase parentPanel)
 	{
 		//super(lineTableModel);//这个方法创建的表没有header
 		try{
@@ -88,8 +87,8 @@ public class LineTable extends JTable
 		//LineEntry Entry = this.lineTableModel.getLineEntries().get(super.convertRowIndexToModel(row));
 		LineEntry Entry = this.getRowAt(row);
 		getLineTableModel().setCurrentlyDisplayedItem(Entry);
-		parentPanel.getRequestViewer().setMessage(Entry.getRequest(), true);
-		parentPanel.getResponseViewer().setMessage(Entry.getResponse(), false);
+		parentPanel.getTableAndDetail().getRequestViewer().setMessage(Entry.getRequest(), true);
+		parentPanel.getTableAndDetail().getResponseViewer().setMessage(Entry.getResponse(), false);
 
 		super.changeSelection(row, col, toggle, extend);
 	}
@@ -141,14 +140,8 @@ public class LineTable extends JTable
 	 * @param keyword
 	 */
 	public void search(String keyword) {
-		boolean caseSensitive =false;
-		try {
-			//为了兼容，当这个Table的实例处于Runner中时，没有这个配置
-			SearchTextField searchTextField = (SearchTextField)((TitlePanel)parentPanel).getTextFieldSearch();
-			caseSensitive = searchTextField.isCaseSensitive();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		SearchTextField searchTextField = parentPanel.getTextFieldSearch();
+		boolean caseSensitive = searchTextField.isCaseSensitive();
 		search(keyword,caseSensitive);
 	}
 
@@ -168,7 +161,7 @@ public class LineTable extends JTable
 				LineEntry line = getLineTableModel().getLineEntries().get(row);
 
 				//第一层判断，根据按钮状态进行判断，如果为true，进行后面的逻辑判断，false直接返回。
-				if (!new LineSearch(parentPanel).entryNeedToShow(line)) {
+				if (parentPanel.entryNeedToShow(line)) {
 					return false;
 				}
 				//目前只处理&&（and）逻辑的表达式
@@ -208,96 +201,13 @@ public class LineTable extends JTable
 		{
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				//双击进行google搜索、双击浏览器打开url、双击切换Check状态
-				if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2){//左键双击
-					int[] rows = SelectedRowsToModelRows(getSelectedRows());
-
-					//int row = ((LineTable) e.getSource()).rowAtPoint(e.getPoint()); // 获得行位置
-					int col = ((LineTable) e.getSource()).columnAtPoint(e.getPoint()); // 获得列位置
-					int modelCol = LineTable.this.convertColumnIndexToModel(col);
-
-					LineEntry selecteEntry = getLineTableModel().getLineEntries().get(rows[0]);
-					if ((modelCol == LineTableModel.getTitleList().indexOf("#") )) {//双击index在google中搜索host。
-						String host = selecteEntry.getHost();
-						String url= "https://www.google.com/search?q=site%3A"+host;
-						try {
-							URI uri = new URI(url);
-							Desktop desktop = Desktop.getDesktop();
-							if(Desktop.isDesktopSupported()&&desktop.isSupported(Desktop.Action.BROWSE)){
-								desktop.browse(uri);
-							}
-						} catch (Exception e2) {
-							e2.printStackTrace();
-						}
-					}else if(modelCol==LineTableModel.getTitleList().indexOf("URL")) {//双击url在浏览器中打开
-						try{
-							String url = selecteEntry.getUrl();
-							if (url != null && !url.toLowerCase().startsWith("http://") && !url.toLowerCase().startsWith("https://")) {
-								url = "http://"+url;//针对DNS记录中URL字段是host的情况
-							}
-							Commons.browserOpen(url,guiMain.getConfigPanel().getLineConfig().getBrowserPath());
-						}catch (Exception e1){
-							e1.printStackTrace(stderr);
-						}
-					}else if (modelCol == LineTableModel.getTitleList().indexOf("isChecked")) {
-						try{
-							//LineTable.this.lineTableModel.updateRowsStatus(rows,LineEntry.CheckStatus_Checked);//处理多行
-							String currentStatus= selecteEntry.getCheckStatus();
-							List<String> tmpList = Arrays.asList(LineEntry.CheckStatusArray);
-							int index = tmpList.indexOf(currentStatus);
-							String newStatus = tmpList.get((index+1)%LineEntry.CheckStatusArray.length);
-							selecteEntry.setCheckStatus(newStatus);
-							if (newStatus.equalsIgnoreCase(LineEntry.CheckStatus_Checked)) {
-								selecteEntry.setTime(Commons.getNowTimeString());
-							}
-							stdout.println("$$$ "+selecteEntry.getUrl()+" status has been set to "+newStatus);
-							getLineTableModel().fireTableRowsUpdated(rows[0], rows[0]);
-						}catch (Exception e1){
-							e1.printStackTrace(stderr);
-						}
-					}else if (modelCol == LineTableModel.getTitleList().indexOf("AssetType")) {
-						String currentLevel = selecteEntry.getAssetType();
-						List<String> tmpList = Arrays.asList(LineEntry.AssetTypeArray);
-						int index = tmpList.indexOf(currentLevel);
-						String newLevel = tmpList.get((index+1)%3);
-						selecteEntry.setAssetType(newLevel);
-						stdout.println(String.format("$$$ %s updated [AssetType-->%s]",selecteEntry.getUrl(),newLevel));
-						getLineTableModel().fireTableRowsUpdated(rows[0], rows[0]);
-					}else if (modelCol == LineTableModel.getTitleList().indexOf("ASNInfo")) {
-						if (selecteEntry.getASNInfo().equals("")){
-							selecteEntry.freshASNInfo();
-						}else {
-							SystemUtils.writeToClipboard(selecteEntry.getASNInfo());
-						}
-					} else{//LineTableModel.getTitleList().indexOf("CDN|CertInfo")
-						//String value = getValueAt(rows[0], col).toString();//rows[0]是转换过的，不能再转换
-						//调用的是原始Jtable中的getValueAt，它本质上也是调用model中的getValueAt，但是有一次转换的过程！！！
-						String value = getLineTableModel().getValueAt(rows[0],modelCol).toString();
-						//调用的是我们自己实现的TableModel类中的getValueAt,相比Jtable类中的同名方法，就少了一次转换的过程！！！
-						//String CDNAndCertInfo = selecteEntry.getCDN();
-						SystemUtils.writeToClipboard(value);
-					}
-				}
+				parentPanel.leftDoubleClick(e);
 			}
 
 			@Override//title表格中的鼠标右键菜单
 			public void mouseReleased( MouseEvent e ){//在windows中触发,因为isPopupTrigger在windows中是在鼠标释放是触发的，而在mac中，是鼠标点击时触发的。
 				//https://stackoverflow.com/questions/5736872/java-popup-trigger-in-linux
-				if ( SwingUtilities.isRightMouseButton( e )){
-					if (e.isPopupTrigger() && e.getComponent() instanceof JTable ) {
-						//getSelectionModel().setSelectionInterval(rows[0], rows[1]);
-						int[] rows = getSelectedRows();
-						int col = ((LineTable) e.getSource()).columnAtPoint(e.getPoint()); // 获得列位置
-						int modelCol = LineTable.this.convertColumnIndexToModel(col);
-						if (rows.length>0){
-							int[] modelRows = SelectedRowsToModelRows(rows);
-							new LineEntryMenu(guiMain, modelRows, modelCol).show(e.getComponent(), e.getX(), e.getY());
-						}else{//在table的空白处显示右键菜单
-							//https://stackoverflow.com/questions/8903040/right-click-mouselistener-on-whole-jtable-component
-							//new LineEntryMenu(_this).show(e.getComponent(), e.getX(), e.getY());
-						}
-					}
-				}
+				parentPanel.showRightClickMenu(e);
 			}
 
 			@Override

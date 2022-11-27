@@ -1,14 +1,29 @@
 package title;
 
-import GUI.GUIMain;
-import burp.*;
-import dao.TitleDao;
-
-import javax.swing.table.AbstractTableModel;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.swing.table.AbstractTableModel;
+
+import GUI.GUIMain;
+import burp.BurpExtender;
+import burp.Commons;
+import burp.DomainNameUtils;
+import burp.Getter;
+import burp.IExtensionHelpers;
+import burp.IHttpRequestResponse;
+import burp.IHttpService;
+import burp.IMessageEditorController;
+import burp.IPAddressUtils;
+import burp.IntArraySlice;
+import dao.TitleDao;
 
 
 public class LineTableModel extends AbstractTableModel implements IMessageEditorController,Serializable {
@@ -24,7 +39,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 
 	PrintWriter stdout;
 	PrintWriter stderr;
-	private GUIMain guiMain;
+	//private GUIMain guiMain;
 
 	private static final String[] standardTitles = new String[] {
 			"#", "URL", "Status", "Length", "Title","Comments","Server","isChecked",
@@ -38,19 +53,6 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	}
 
 
-	public LineTableModel(GUIMain guiMain){
-		this.guiMain = guiMain;
-		titleDao = new TitleDao(guiMain.getCurrentDBFile());
-		try{
-			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
-			stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
-		}catch (Exception e){
-			stdout = new PrintWriter(System.out, true);
-			stderr = new PrintWriter(System.out, true);
-		}
-		//TableModelListener的主要作用是用来通知view即GUI数据发生了改变，不应该用于进行数据库的操作。
-	}
-	
 	/**
 	 * 这个构造函数供runner使用
 	 * @param dbfilename
@@ -67,13 +69,13 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		//TableModelListener的主要作用是用来通知view即GUI数据发生了改变，不应该用于进行数据库的操作。
 	}
 
-	public LineTableModel(GUIMain guiMain,IndexedHashMap<String,LineEntry> lineEntries){
-		this(guiMain);
+	public LineTableModel(String dbfilename,IndexedHashMap<String,LineEntry> lineEntries){
+		this(dbfilename);
 		this.lineEntries = lineEntries;
 	}
 
-	public LineTableModel(GUIMain guiMain,List<LineEntry> entries){
-		this(guiMain);
+	public LineTableModel(String dbfilename,List<LineEntry> entries){
+		this(dbfilename);
 		for (LineEntry entry:entries) {
 			lineEntries.put(entry.getUrl(), entry);
 		}
@@ -259,11 +261,13 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	 *
 	 * @return 获取已成功获取title的Entry的IP地址集合
 	 */
-	Set<String> getIPSetFromTitle() {
+	Set<String> getCertIPSetFromTitle() {
 		Set<String> result = new HashSet<String>();
 
 		for(LineEntry line:lineEntries.values()) {
-			result.addAll(line.getIPSet());
+			if (line.getEntrySource().equals(LineEntry.Source_Certain)) {
+				result.addAll(line.getIPSet());
+			}
 		}
 
 		return result;
@@ -273,9 +277,9 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	 * 获取title记录中的所有公网IP
 	 * @return
 	 */
-	Set<String> getPublicIPSetFromTitle() {
+	Set<String> getAllPublicIPSetFromTitle() {
 		HashSet<String> result = new HashSet<>();
-		for (String ip:getIPSetFromTitle()){
+		for (String ip:getCertIPSetFromTitle()){
 			if (IPAddressUtils.isValidIP(ip)&& !IPAddressUtils.isPrivateIPv4(ip)){
 				result.add(ip);
 			}
@@ -283,51 +287,39 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		return result;
 	}
 
+	
 	/**
-	 * 获取title记录中的所有公网IP计算出的公网网段
+	 * 获取title记录中的所有私有IP
 	 * @return
 	 */
-	public Set<String> getPublicSubnets() {
-		Set<String> IPsOfDomain = getPublicIPSetFromTitle();
-		Set<String> subnets = IPAddressUtils.toSmallerSubNets(IPsOfDomain);
-		return subnets;
+	public Set<String> getPrivateIPSet() {
+		HashSet<String> result = new HashSet<>();
+		for (String ip:getCertIPSetFromTitle()){
+			if (IPAddressUtils.isValidIP(ip)&& IPAddressUtils.isPrivateIPv4(ip)){
+				result.add(ip);
+			}
+		}
+		return result;
 	}
-
+	
 	/**
-	 * 获取根据确定目标汇算出来的网段，减去已确定目标本身后，剩余的IP地址。
-	 * @return 扩展IP集合
+	 * 获取所有外网的，正常访问的Host域名。用于host碰撞域名的逻辑
+	 * @return
 	 */
-	public Set<String> GetExtendIPSet() {
-
-		Set<String> IPsOfDomain = getIPSetFromTitle();//title记录中的IP
-		Set<String> IPsOfcertainSubnets = guiMain.getDomainPanel().fetchTargetModel().fetchTargetIPSet();//用户配置的确定IP+网段
-		IPsOfDomain.addAll(IPsOfcertainSubnets);
-		IPsOfDomain.removeAll(guiMain.getDomainPanel().getDomainResult().getNotTargetIPSet());
-		//计算网段前，将CDN和云服务的IP排除在外，这就是这个集合的主要作用！
-
-		Set<String> subnets = IPAddressUtils.toSmallerSubNets(IPsOfDomain);//当前所有title结果+确定IP/网段计算出的IP网段
-
-		Set<String> CSubNetIPs = IPAddressUtils.toIPSet(subnets);// 当前所有title结果计算出的IP集合
-
-		CSubNetIPs.removeAll(IPsOfDomain);//删除域名对应的IP，之前已经请求过了
-		CSubNetIPs.removeAll(IPsOfcertainSubnets);//删除网段对应的IP，之前已经请求过了
-
-		return CSubNetIPs;
-	}
-
-	/**
-	 * 1、title记录中成功解析的IP地址集合
-	 * 2、用户指定的确信度很高的IP和网段的集合。
-	 * 将2者合并算成网段。
-	 * @return 根据确切目标算出的网段
-	 */
-	public Set<String> GetSubnets() {
-		Set<String> IPsOfDomain = getIPSetFromTitle();//title记录中的IP
-		Set<String> IPsOfcertainSubnets = guiMain.getDomainPanel().fetchTargetModel().fetchTargetIPSet();//用户配置的确定IP+网段
-		IPsOfDomain.addAll(IPsOfcertainSubnets);
-		//Set<String> CSubNetIPs = Commons.subNetsToIPSet(Commons.toSubNets(IPsOfDomain));
-		Set<String> subnets = IPAddressUtils.toSmallerSubNets(IPsOfDomain);
-		return subnets;
+	public Set<String> getAllPublicOkDomain() {
+		
+		HashSet<String> result = new HashSet<>();
+		for (LineEntry entry:lineEntries.values()) {
+			String ip = new ArrayList<String>(entry.getIPSet()).get(0);//这里可能不严谨，如果IP解析既有外网地址又有内网地址就会出错
+			if (!IPAddressUtils.isPrivateIPv4(ip)) {//移除公网解析记录；剩下无解析记录和内网解析记录
+				if (entry.getStatuscode() == 403 && DomainNameUtils.isValidDomain(entry.getHost())) {
+					//do Nothing
+				}else {
+					result.add(entry.getHost());
+				}
+			}
+		}
+		return result;
 	}
 
 	/**
@@ -592,60 +584,6 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		fireUpdated(rows);
 	}
 
-	/**
-	 * 	主要用于记录CDN或者云服务的IP地址，在做网段汇算时排除这些IP。
-	 */
-	public void addIPToTargetBlackList(int[] rows) {
-		//because thread let the delete action not in order, so we must loop in here.
-		//list length and index changed after every remove.the origin index not point to right item any more.
-		Arrays.sort(rows); //升序
-		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
-			LineEntry entry = lineEntries.get(rows[i]);
-			guiMain.getDomainPanel().getDomainResult().getNotTargetIPSet().addAll(entry.getIPSet());
-			entry.getEntryTags().add(LineEntry.Tag_NotTargetBaseOnBlackList);
-			stdout.println("### IP address "+ entry.getIPSet().toString() +" added to black list");
-		}
-	}
-
-	/**
-	 * 获取用于Host碰撞的域名列表
-	 *
-	 * 1、没有解析记录的域名
-	 * 2、解析记录是内网地址的域名
-	 *
-	 * 3、解析是外网，但是外网无法访问的域名（比如403），但是绑定特定IP即可访问。大概率是走了不同的网关导致的.
-	 * 想要准确地获取到这个结果，那么hunter的数据应该是在外网环境中获取的。如果是hunter的数据是内网环境中获取的，就会遗漏一部分数据。
-	 * @return
-	 */
-	public HashSet<String> getDomainsForBypassCheck(){
-
-		HashSet<String> allDomainSet = new HashSet<String>();//所有子域名列表
-		allDomainSet.addAll(guiMain.getDomainPanel().getDomainResult().getSubDomainSet());
-
-		HashSet<String> tmp = new HashSet<String>();
-
-		for (String item:allDomainSet) {//移除IP
-			if (item.contains(":")) {//有可能domain:port的情况
-				item = item.split(":")[0];
-			}
-			if (DomainNameUtils.isValidDomain(item)) {
-				tmp.add(item);
-			}
-		}
-
-		Collection<LineEntry> entries = getLineEntries().values();
-		for (LineEntry entry:entries) {
-			String ip = new ArrayList<String>(entry.getIPSet()).get(0);//这里可能不严谨，如果IP解析既有外网地址又有内网地址就会出错
-			if (!IPAddressUtils.isPrivateIPv4(ip)) {//移除公网解析记录；剩下无解析记录和内网解析记录
-				if (entry.getStatuscode() == 403 && DomainNameUtils.isValidDomain(entry.getHost())) {
-					//do Nothing
-				}else {
-					tmp.remove(entry.getHost());
-				}
-			}
-		}
-		return tmp;
-	}
 
 	//为了同时fire多个不连续的行，自行实现这个方法。
 	private void fireDeleted(int[] rows) {

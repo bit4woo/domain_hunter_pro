@@ -1,11 +1,15 @@
 package title;
 
 import java.awt.BorderLayout;
+import java.awt.Desktop;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.io.PrintWriter;
+import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -16,24 +20,27 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
-import javax.swing.JTextField;
+import javax.swing.JTable;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
-import javax.swing.table.TableRowSorter;
 
 import GUI.GUIMain;
 import burp.BurpExtender;
+import burp.Commons;
 import burp.IMessageEditor;
 import burp.IPAddressUtils;
+import burp.SystemUtils;
 import dao.TitleDao;
 import thread.ThreadGetSubnet;
 import thread.ThreadGetTitleWithForceStop;
 import title.search.SearchTextField;
 
-public class TitlePanel extends JPanel {
+public class TitlePanel extends TitlePanelBase {
 
 	/**
 	 * 
@@ -63,15 +70,6 @@ public class TitlePanel extends JPanel {
 	private JTabbedPane RequestPanel;
 	private JTabbedPane ResponsePanel;
 
-
-	public JTextField getTextFieldSearch() {
-		return textFieldSearch;
-	}
-
-	/*
-	public static void setTextFieldSearch(JTextField textFieldSearch) {
-		TitlePanel.textFieldSearch = textFieldSearch;
-	}*/
 
 	public LineTable getTitleTable() {
 		return titleTable;
@@ -160,8 +158,7 @@ public class TitlePanel extends JPanel {
 		this.add(createButtonPanel(), BorderLayout.NORTH);
 
 
-
-		titleTable = new LineTable(guiMain);
+		titleTable = new LineTable(this);
 		detailPanel = DetailPanel();
 
 		JSplitPane splitPane = new JSplitPane();//table area + detail area
@@ -342,7 +339,7 @@ public class TitlePanel extends JPanel {
 		//backup to history
 		BackupLineEntries = titleTable.getLineTableModel().getLineEntries();
 		//clear tableModel
-		LineTableModel titleTableModel = new LineTableModel(guiMain);//clear
+		LineTableModel titleTableModel = new LineTableModel(guiMain.currentDBFile.toString());//clear
 		loadData(titleTableModel);
 		//转移以前手动保存的记录
 		transferManualSavedItems();
@@ -360,13 +357,36 @@ public class TitlePanel extends JPanel {
 	public void getExtendTitle(){
 		guiMain.getDomainPanel().backupDB("before-getExtendTitle");
 
-		Set<String> extendIPSet = titleTable.getLineTableModel().GetExtendIPSet();
+		Set<String> extendIPSet = GetExtendIPSet();
 		Set<String> hostsInTitle = titleTable.getLineTableModel().GetHostsWithSpecialPort();
 		extendIPSet.removeAll(guiMain.getDomainPanel().getDomainResult().getNotTargetIPSet());
 		extendIPSet.removeAll(hostsInTitle);
 		HashMap<String,String> mapToRun = AddWithSoureType(extendIPSet,LineEntry.Source_Subnet_Extend);
 
 		getTitleBase(mapToRun);
+	}
+	
+	
+	/**
+	 * 获取根据确定目标汇算出来的网段，减去已确定目标本身后，剩余的IP地址。
+	 * @return 扩展IP集合
+	 */
+	public Set<String> GetExtendIPSet() {
+
+		Set<String> IPsOfDomain = titleTable.getLineTableModel().getCertIPSetFromTitle();//title记录中的IP
+		Set<String> IPsOfcertainSubnets = guiMain.getDomainPanel().fetchTargetModel().fetchTargetIPSet();//用户配置的确定IP+网段
+		IPsOfDomain.addAll(IPsOfcertainSubnets);
+		IPsOfDomain.removeAll(guiMain.getDomainPanel().getDomainResult().getNotTargetIPSet());
+		//计算网段前，将CDN和云服务的IP排除在外，这就是这个集合的主要作用！
+
+		Set<String> subnets = IPAddressUtils.toSmallerSubNets(IPsOfDomain);//当前所有title结果+确定IP/网段计算出的IP网段
+
+		Set<String> CSubNetIPs = IPAddressUtils.toIPSet(subnets);// 当前所有title结果计算出的IP集合
+
+		CSubNetIPs.removeAll(IPsOfDomain);//删除域名对应的IP，之前已经请求过了
+		CSubNetIPs.removeAll(IPsOfcertainSubnets);//删除网段对应的IP，之前已经请求过了
+
+		return CSubNetIPs;
 	}
 
 	/**
@@ -390,13 +410,28 @@ public class TitlePanel extends JPanel {
 
 		getTitleBase(mapToRun);
 	}
+	
+	/**
+	 * 1、title记录中成功解析的IP地址集合
+	 * 2、用户指定的确信度很高的IP和网段的集合。
+	 * 将2者合并算成网段。
+	 * @return 根据确切目标算出的网段
+	 */
+	public Set<String> calcSubnets() {
+		Set<String> IPsOfDomain = titleTable.getLineTableModel().getCertIPSetFromTitle();//title记录中的IP
+		Set<String> IPsOfcertainSubnets = guiMain.getDomainPanel().fetchTargetModel().fetchTargetIPSet();//用户配置的确定IP+网段
+		IPsOfDomain.addAll(IPsOfcertainSubnets);
+		//Set<String> CSubNetIPs = Commons.subNetsToIPSet(Commons.toSubNets(IPsOfDomain));
+		Set<String> subnets = IPAddressUtils.toSmallerSubNets(IPsOfDomain);
+		return subnets;
+	}
 
 
 	public String getSubnet(boolean isCurrent,boolean justPulic){
 		//stdout.println(" "+isCurrent+justPulic);
 		Set<String> subnets;
 		if (isCurrent) {//获取的是现有可成功连接的IP集合+用户指定的IP网段集合
-			subnets = titleTable.getLineTableModel().GetSubnets();
+			subnets = calcSubnets();
 		}else {//重新解析所有域名的IP
 			ThreadGetSubnet thread = new ThreadGetSubnet(guiMain.getDomainPanel().getDomainResult().getSubDomainSet());
 			thread.start();
@@ -435,43 +470,9 @@ public class TitlePanel extends JPanel {
 	public void loadData(String currentDBFile) {
 		titleDao = new TitleDao(currentDBFile);
 		List<LineEntry> lines = titleDao.selectAllTitle();
-		LineTableModel titleTableModel = new LineTableModel(guiMain, lines);
+		LineTableModel titleTableModel = new LineTableModel(guiMain.currentDBFile.toString(), lines);
 		loadData(titleTableModel);
 	}
-
-	private void loadData(LineTableModel titleTableModel){
-
-		TableRowSorter<LineTableModel> tableRowSorter = new TableRowSorter<LineTableModel>(titleTableModel);
-		titleTable.setRowSorter(tableRowSorter);
-		titleTable.setModel(titleTableModel);
-		//IndexOutOfBoundsException size为0，为什么会越界？
-		//!!!注意：这里必须先setRowSorter，然后再setModel。否则就会出现越界问题。因为当setModel时，会触发数据变更事件，这个时候会调用Sorter。
-		// 而这个时候的Sorter中还是旧数据，就会认为按照旧数据的容量去获取数据，从而导致越界。
-
-		//titleTable.setAutoCreateRowSorter(true);//这样应该也可以❎，
-		//这里设置后就进行了创建，创建过程会getModel这个时候新model还未设置呢，保险起见不使用这个方式
-		//titleTable.setModel(titleTableModel);
-
-		int row = titleTableModel.getLineEntries().size();
-		System.out.println(row+" title entries loaded from database file");
-		stdout.println(row+" title entries loaded from database file");
-		digStatus();
-		titleTable.search("");// hide checked items
-		titleTable.tableHeaderWidthinit();//设置header宽度
-
-		try {
-			requestViewer = BurpExtender.getCallbacks().createMessageEditor(titleTable.getLineTableModel(), false);
-			responseViewer = BurpExtender.getCallbacks().createMessageEditor(titleTable.getLineTableModel(), false);
-			RequestPanel.removeAll();
-			ResponsePanel.removeAll();
-			RequestPanel.addTab("Request", requestViewer.getComponent());
-			ResponsePanel.addTab("Response", responseViewer.getComponent());
-		} catch (Exception e) {
-			//捕获异常，以便程序以非burp插件运行时可以启动
-			//e.printStackTrace();
-		}
-	}
-
 
 	public void digStatus() {
 		String status = titleTable.getLineTableModel().getStatusSummary();
@@ -497,4 +498,119 @@ public class TitlePanel extends JPanel {
 		}
 		return true;
 	}
+	
+	/**
+	 * 右键点击事件--显示菜单
+	 */
+	@Override
+	public void showRightClickMenu(MouseEvent e) {
+		if ( SwingUtilities.isRightMouseButton( e )){//在windows中触发,因为isPopupTrigger在windows中是在鼠标释放是触发的，而在mac中，是鼠标点击时触发的。
+			//https://stackoverflow.com/questions/5736872/java-popup-trigger-in-linux
+			if (e.isPopupTrigger() && e.getComponent() instanceof JTable ) {
+				//getSelectionModel().setSelectionInterval(rows[0], rows[1]);
+				int[] rows = titleTable.getSelectedRows();
+				int[] modelRows = titleTable.SelectedRowsToModelRows(rows);
+				
+				int col = ((LineTable) e.getSource()).columnAtPoint(e.getPoint()); // 获得列位置
+				int modelCol = titleTable.convertColumnIndexToModel(col);
+				
+				
+				if (modelRows.length>0){
+					JPopupMenu menu = new LineEntryMenu(guiMain, modelRows, modelCol);
+					menu.show(e.getComponent(), e.getX(), e.getY());
+				}else{//在table的空白处显示右键菜单
+					//https://stackoverflow.com/questions/8903040/right-click-mouselistener-on-whole-jtable-component
+					//new LineEntryMenu(_this).show(e.getComponent(), e.getX(), e.getY());
+				}
+			}
+		}
+		
+	}
+	
+	
+	
+	/**
+	 * 左键双击事件功能实现
+	 * 
+	 * @return
+	 */
+	@Override
+	public void leftDoubleClick(MouseEvent e) {
+		
+		//双击进行google搜索、双击浏览器打开url、双击切换Check状态
+		if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2){//左键双击
+			
+			int[] modelRows = titleTable.SelectedRowsToModelRows(titleTable.getSelectedRows());
+			int modelRow = modelRows[0];
+			
+			//int row = ((LineTable) e.getSource()).rowAtPoint(e.getPoint()); // 获得行位置
+			int col = ((LineTable) e.getSource()).columnAtPoint(e.getPoint()); // 获得列位置
+			int modelCol = titleTable.convertColumnIndexToModel(col);
+
+			LineTableModel lineTableModel = titleTable.getLineTableModel();
+
+			LineEntry selecteEntry = lineTableModel.getLineEntries().get(modelRow);
+			if ((modelCol == LineTableModel.getTitleList().indexOf("#") )) {//双击index在google中搜索host。
+				String host = selecteEntry.getHost();
+				String url= "https://www.google.com/search?q=site%3A"+host;
+				try {
+					URI uri = new URI(url);
+					Desktop desktop = Desktop.getDesktop();
+					if(Desktop.isDesktopSupported()&&desktop.isSupported(Desktop.Action.BROWSE)){
+						desktop.browse(uri);
+					}
+				} catch (Exception e2) {
+					e2.printStackTrace();
+				}
+			}else if(modelCol==LineTableModel.getTitleList().indexOf("URL")) {//双击url在浏览器中打开
+				try{
+					String url = selecteEntry.getUrl();
+					if (url != null && !url.toLowerCase().startsWith("http://") && !url.toLowerCase().startsWith("https://")) {
+						url = "http://"+url;//针对DNS记录中URL字段是host的情况
+					}
+					Commons.browserOpen(url,guiMain.getConfigPanel().getLineConfig().getBrowserPath());
+				}catch (Exception e1){
+					e1.printStackTrace(stderr);
+				}
+			}else if (modelCol == LineTableModel.getTitleList().indexOf("isChecked")) {
+				try{
+					//LineTable.this.lineTableModel.updateRowsStatus(rows,LineEntry.CheckStatus_Checked);//处理多行
+					String currentStatus= selecteEntry.getCheckStatus();
+					List<String> tmpList = Arrays.asList(LineEntry.CheckStatusArray);
+					int index = tmpList.indexOf(currentStatus);
+					String newStatus = tmpList.get((index+1)%LineEntry.CheckStatusArray.length);
+					selecteEntry.setCheckStatus(newStatus);
+					if (newStatus.equalsIgnoreCase(LineEntry.CheckStatus_Checked)) {
+						selecteEntry.setTime(Commons.getNowTimeString());
+					}
+					stdout.println("$$$ "+selecteEntry.getUrl()+" status has been set to "+newStatus);
+					lineTableModel.fireTableRowsUpdated(modelRow, modelRow);
+				}catch (Exception e1){
+					e1.printStackTrace(stderr);
+				}
+			}else if (modelCol == LineTableModel.getTitleList().indexOf("AssetType")) {
+				String currentLevel = selecteEntry.getAssetType();
+				List<String> tmpList = Arrays.asList(LineEntry.AssetTypeArray);
+				int index = tmpList.indexOf(currentLevel);
+				String newLevel = tmpList.get((index+1)%3);
+				selecteEntry.setAssetType(newLevel);
+				stdout.println(String.format("$$$ %s updated [AssetType-->%s]",selecteEntry.getUrl(),newLevel));
+				lineTableModel.fireTableRowsUpdated(modelRow, modelRow);
+			}else if (modelCol == LineTableModel.getTitleList().indexOf("ASNInfo")) {
+				if (selecteEntry.getASNInfo().equals("")){
+					selecteEntry.freshASNInfo();
+				}else {
+					SystemUtils.writeToClipboard(selecteEntry.getASNInfo());
+				}
+			} else{//LineTableModel.getTitleList().indexOf("CDN|CertInfo")
+				//String value = getValueAt(rows[0], col).toString();//rows[0]是转换过的，不能再转换
+				//调用的是原始Jtable中的getValueAt，它本质上也是调用model中的getValueAt，但是有一次转换的过程！！！
+				String value = lineTableModel.getValueAt(modelRow,modelCol).toString();
+				//调用的是我们自己实现的TableModel类中的getValueAt,相比Jtable类中的同名方法，就少了一次转换的过程！！！
+				//String CDNAndCertInfo = selecteEntry.getCDN();
+				SystemUtils.writeToClipboard(value);
+			}
+		}
+	}
+
 }
