@@ -1,8 +1,6 @@
 package title;
 
-import java.awt.BorderLayout;
 import java.awt.Desktop;
-import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -17,28 +15,19 @@ import java.util.List;
 import java.util.Set;
 
 import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
-import javax.swing.border.EmptyBorder;
 
 import GUI.GUIMain;
-import burp.BurpExtender;
 import burp.Commons;
-import burp.IMessageEditor;
 import burp.IPAddressUtils;
 import burp.SystemUtils;
 import dao.TitleDao;
 import thread.ThreadGetSubnet;
 import thread.ThreadGetTitleWithForceStop;
-import title.search.SearchTextField;
 
 public class TitlePanel extends TitlePanelBase {
 
@@ -46,20 +35,12 @@ public class TitlePanel extends TitlePanelBase {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private JPanel buttonPanel;
-	private JLabel lblSummaryOfTitle;
 	private JRadioButton rdbtnUnCheckedItems;
 	private JRadioButton rdbtnCheckingItems;
 	private JRadioButton rdbtnCheckedItems;
 	private JRadioButton rdbtnMoreActionItems;
-	private SearchTextField textFieldSearch;
-
-	private IMessageEditor requestViewer;
-	private IMessageEditor responseViewer;
-	private JSplitPane detailPanel;
 
 	//add table and tablemodel to GUI
-	private LineTable titleTable;
 	private TitleDao titleDao;
 	PrintWriter stdout;
 	PrintWriter stderr;
@@ -67,13 +48,7 @@ public class TitlePanel extends TitlePanelBase {
 	private GetTitleTempConfig tempConfig; //每次获取title过程中的配置。
 	private IndexedHashMap<String,LineEntry> BackupLineEntries;
 	private GUIMain guiMain;
-	private JTabbedPane RequestPanel;
-	private JTabbedPane ResponsePanel;
 
-
-	public LineTable getTitleTable() {
-		return titleTable;
-	}
 
 	public IndexedHashMap<String,LineEntry> getBackupLineEntries() {
 		return BackupLineEntries;
@@ -85,14 +60,6 @@ public class TitlePanel extends TitlePanelBase {
 
 	public void setTempConfig(GetTitleTempConfig tempConfig) {
 		this.tempConfig = tempConfig;
-	}
-
-	public JLabel getLblSummaryOfTitle() {
-		return lblSummaryOfTitle;
-	}
-
-	public void setLblSummaryOfTitle(JLabel lblSummaryOfTitle) {
-		this.lblSummaryOfTitle = lblSummaryOfTitle;
 	}
 
 	public JRadioButton getRdbtnUnCheckedItems() {
@@ -127,14 +94,6 @@ public class TitlePanel extends TitlePanelBase {
 		this.rdbtnMoreActionItems = rdbtnMoreActionItems;
 	}
 
-	public IMessageEditor getRequestViewer() {
-		return requestViewer;
-	}
-
-	public IMessageEditor getResponseViewer() {
-		return responseViewer;
-	}
-
 	public ThreadGetTitleWithForceStop getThreadGetTitle() {
 		return threadGetTitle;
 	}
@@ -144,118 +103,21 @@ public class TitlePanel extends TitlePanelBase {
 	}
 
 	public TitlePanel(GUIMain guiMain) {//构造函数
+		super();
 		this.guiMain = guiMain;
-		try{
-			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
-			stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
-		}catch (Exception e){
-			stdout = new PrintWriter(System.out, true);
-			stderr = new PrintWriter(System.out, true);
-		}
-
-		this.setBorder(new EmptyBorder(5, 5, 5, 5));
-		this.setLayout(new BorderLayout(0, 0));
-		this.add(createButtonPanel(), BorderLayout.NORTH);
-
-
-		titleTable = new LineTable(this);
-		detailPanel = DetailPanel();
-
-		JSplitPane splitPane = new JSplitPane();//table area + detail area
-		splitPane.setResizeWeight(0.5);
-		splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
-
-		JScrollPane scrollPaneRequests = new JScrollPane(titleTable,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);//table area
-
-		splitPane.setLeftComponent(scrollPaneRequests);
-		splitPane.setRightComponent(detailPanel);
-		this.add(splitPane,BorderLayout.CENTER);
-
+		editButtonPanel();
 	}
 
-	public JPanel createButtonPanel() {
-		buttonPanel = new JPanel();
-		buttonPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
-
+	public void editButtonPanel() {
 		JButton btnAction = new JButton("Action");
 		btnAction.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				new GetTitleMenu(guiMain).show(btnAction, btnAction.getX(), btnAction.getY());
 			}
 		});
-		buttonPanel.add(btnAction);
-
-		JButton buttonSearch = new JButton("Search");
-		textFieldSearch = new SearchTextField("",buttonSearch);
-		buttonPanel.add(textFieldSearch);
-
-		buttonSearch.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				String keyword = textFieldSearch.getText();
-				titleTable.search(keyword);
-				//searchHistory.addRecord(keyword);
-				digStatus();
-			}
-		});
-		buttonPanel.add(buttonSearch);
-
-		rdbtnUnCheckedItems = new JRadioButton(LineEntry.CheckStatus_UnChecked);
-		rdbtnUnCheckedItems.setSelected(true);
-		rdbtnUnCheckedItems.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				buttonSearch.doClick();
-			}
-		});
-		buttonPanel.add(rdbtnUnCheckedItems);
-
-		rdbtnCheckingItems = new JRadioButton(LineEntry.CheckStatus_Checking);
-		rdbtnCheckingItems.setSelected(true);
-		rdbtnCheckingItems.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				buttonSearch.doClick();
-			}
-		});
-		buttonPanel.add(rdbtnCheckingItems);
-
-		rdbtnCheckedItems = new JRadioButton(LineEntry.CheckStatus_Checked);
-		rdbtnCheckedItems.setSelected(false);
-		rdbtnCheckedItems.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				buttonSearch.doClick();
-			}
-		});
-		buttonPanel.add(rdbtnCheckedItems);
-
-		rdbtnMoreActionItems = new JRadioButton(LineEntry.CheckStatus_MoreAction);
-		rdbtnMoreActionItems.setSelected(false);
-		rdbtnMoreActionItems.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				buttonSearch.doClick();
-			}
-		});
-		buttonPanel.add(rdbtnMoreActionItems);
-
-		lblSummaryOfTitle = new JLabel("^_^");
-		buttonPanel.add(lblSummaryOfTitle);
-		buttonPanel.setToolTipText("");
-
-		return buttonPanel;
+		super.getButtonPanel().add(btnAction,0);
 	}
 
-	public JSplitPane DetailPanel(){
-
-		JSplitPane RequestDetailPanel = new JSplitPane();//request and response
-		RequestDetailPanel.setResizeWeight(0.5);
-
-		RequestPanel = new JTabbedPane();
-		RequestDetailPanel.setLeftComponent(RequestPanel);
-
-		ResponsePanel = new JTabbedPane();
-		RequestDetailPanel.setRightComponent(ResponsePanel);
-
-		return RequestDetailPanel;
-	}
 	/**
 	 * 转移手动保存的记录
 	 */
@@ -365,8 +227,8 @@ public class TitlePanel extends TitlePanelBase {
 
 		getTitleBase(mapToRun);
 	}
-	
-	
+
+
 	/**
 	 * 获取根据确定目标汇算出来的网段，减去已确定目标本身后，剩余的IP地址。
 	 * @return 扩展IP集合
@@ -410,7 +272,7 @@ public class TitlePanel extends TitlePanelBase {
 
 		getTitleBase(mapToRun);
 	}
-	
+
 	/**
 	 * 1、title记录中成功解析的IP地址集合
 	 * 2、用户指定的确信度很高的IP和网段的集合。
@@ -474,10 +336,6 @@ public class TitlePanel extends TitlePanelBase {
 		loadData(titleTableModel);
 	}
 
-	public void digStatus() {
-		String status = titleTable.getLineTableModel().getStatusSummary();
-		lblSummaryOfTitle.setText(status);
-	}
 
 	/**
 	 * 返回是否发送了stop信号
@@ -498,7 +356,7 @@ public class TitlePanel extends TitlePanelBase {
 		}
 		return true;
 	}
-	
+
 	/**
 	 * 右键点击事件--显示菜单
 	 */
@@ -510,11 +368,11 @@ public class TitlePanel extends TitlePanelBase {
 				//getSelectionModel().setSelectionInterval(rows[0], rows[1]);
 				int[] rows = titleTable.getSelectedRows();
 				int[] modelRows = titleTable.SelectedRowsToModelRows(rows);
-				
+
 				int col = ((LineTable) e.getSource()).columnAtPoint(e.getPoint()); // 获得列位置
 				int modelCol = titleTable.convertColumnIndexToModel(col);
-				
-				
+
+
 				if (modelRows.length>0){
 					JPopupMenu menu = new LineEntryMenu(guiMain, modelRows, modelCol);
 					menu.show(e.getComponent(), e.getX(), e.getY());
@@ -524,11 +382,11 @@ public class TitlePanel extends TitlePanelBase {
 				}
 			}
 		}
-		
+
 	}
-	
-	
-	
+
+
+
 	/**
 	 * 左键双击事件功能实现
 	 * 
@@ -536,13 +394,13 @@ public class TitlePanel extends TitlePanelBase {
 	 */
 	@Override
 	public void leftDoubleClick(MouseEvent e) {
-		
+
 		//双击进行google搜索、双击浏览器打开url、双击切换Check状态
 		if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2){//左键双击
-			
+
 			int[] modelRows = titleTable.SelectedRowsToModelRows(titleTable.getSelectedRows());
 			int modelRow = modelRows[0];
-			
+
 			//int row = ((LineTable) e.getSource()).rowAtPoint(e.getPoint()); // 获得行位置
 			int col = ((LineTable) e.getSource()).columnAtPoint(e.getPoint()); // 获得列位置
 			int modelCol = titleTable.convertColumnIndexToModel(col);

@@ -31,10 +31,10 @@ public class TitlePanelBase extends JPanel {
 	private SearchTextField textFieldSearch;//自行实现的搜索框
 	private JLabel lblSummaryOfTitle;//显示状态信息的label
 	private TableAndDetailPanel tableAndDetail;//数据显示表和数据包请求响应显示面板
-	
+
 	PrintWriter stdout;
 	PrintWriter stderr;
-	private LineTable titleTable;
+	public LineTable titleTable;
 
 
 	public SearchTextField getTextFieldSearch() {
@@ -45,6 +45,13 @@ public class TitlePanelBase extends JPanel {
 		return tableAndDetail;
 	}
 
+	public JPanel getButtonPanel() {
+		return buttonPanel;
+	}
+
+	public void setButtonPanel(JPanel buttonPanel) {
+		this.buttonPanel = buttonPanel;
+	}
 
 	public void setTableAndDetail(TableAndDetailPanel tableAndDetail) {
 		this.tableAndDetail = tableAndDetail;
@@ -53,7 +60,7 @@ public class TitlePanelBase extends JPanel {
 	public void setTextFieldSearch(SearchTextField textFieldSearch) {
 		this.textFieldSearch = textFieldSearch;
 	}
-	
+
 	public JLabel getLblSummaryOfTitle() {
 		return lblSummaryOfTitle;
 	}
@@ -74,7 +81,7 @@ public class TitlePanelBase extends JPanel {
 
 		this.setBorder(new EmptyBorder(5, 5, 5, 5));
 		this.setLayout(new BorderLayout(0, 0));
-		
+
 		buttonPanel = createButtonPanel();
 		titleTable = new LineTable(this);
 		tableAndDetail = new TableAndDetailPanel(titleTable);
@@ -84,7 +91,7 @@ public class TitlePanelBase extends JPanel {
 
 	public JPanel createButtonPanel() {
 		JPanel buttonPanel = new JPanel();
-		
+
 		//搜索按钮
 		JButton buttonSearch = new JButton("Search");
 		buttonSearch.addActionListener(new ActionListener() {
@@ -95,24 +102,24 @@ public class TitlePanelBase extends JPanel {
 				digStatus();
 			}
 		});
-		
+
 		//搜索框
 		textFieldSearch = new SearchTextField("",buttonSearch);
-		
-		
+
+
 		//显示状态信息的label
 		lblSummaryOfTitle = new JLabel("^_^");
 		buttonPanel.setToolTipText("");
-		
-		
+
+
 		buttonPanel.add(textFieldSearch);
 		buttonPanel.add(buttonSearch);
 		buttonPanel.add(lblSummaryOfTitle);
 
 		return buttonPanel;
 	}
-	
-	
+
+
 	/**
 	 * 继承类可以再自行更加情况筛选
 	 * @param entry
@@ -151,17 +158,17 @@ public class TitlePanelBase extends JPanel {
 		boolean	caseSensitive = textFieldSearch.isCaseSensitive();
 		titleTable.search(keyword,caseSensitive);
 	}
-	
+
 	/**
 	 * 子类可以实现自己的右键菜单，基础类不创建
 	 * 
 	 * @return
 	 */
 	public void showRightClickMenu(MouseEvent e) {
-		
+
 	}
-	
-	
+
+
 	/**
 	 * 子类可以实现自己的右键菜单，基础类不创建
 	 * 
@@ -170,11 +177,14 @@ public class TitlePanelBase extends JPanel {
 	public void leftDoubleClick(MouseEvent e) {
 
 	}
-	
-	
+
+
 	public void digStatus() {
 		String status = titleTable.getLineTableModel().getStatusSummary();
 		lblSummaryOfTitle.setText(status);
 	}
-	
+
+	public LineTable getTitleTable() {
+		return titleTable;
+	}
 }
