@@ -86,5 +86,3 @@ public class ThreadDirBruter extends Thread{
 		stdout.println("~~~~~~~~~~~~~force stop main thread,all sub-threads will exit!~~~~~~~~~~~~~");
 	}
 }
-
-

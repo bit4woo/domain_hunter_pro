@@ -1,27 +1,20 @@
 package title;
 
-import java.awt.Desktop;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.PrintWriter;
-import java.net.URI;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.RowFilter;
-import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.table.TableRowSorter;
 
 import burp.BurpExtender;
-import burp.Commons;
-import burp.SystemUtils;
 import title.search.History;
 import title.search.LineSearch;
 import title.search.SearchDork;

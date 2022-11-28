@@ -2,49 +2,31 @@ package bruter;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
-import java.awt.FlowLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.io.File;
 
-import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.RowFilter;
-import javax.swing.RowFilter.Entry;
 import javax.swing.border.EmptyBorder;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableRowSorter;
 
 import burp.IHttpRequestResponse;
-import title.LineEntry;
 import title.LineTable;
 import title.LineTableModel;
-import title.search.History;
-import title.search.LineSearch;
-import title.search.SearchDork;
-import title.search.SearchTextField;
+import title.TitlePanelBase;
 
 public class RunnerGUI extends JFrame {
 
 	private JScrollPane runnerScrollPaneRequests;
 	private JTabbedPane RequestPanel;
 	private JTabbedPane ResponsePanel;
-	private TitlePanel RunnerPanel;
+	private TitlePanelBase RunnerPanel;
 
 	private IHttpRequestResponse messageInfo;
 	public JLabel lblStatus;
 	
 	private ThreadDirBruter bruter;
-	private LineTableModel runnerTableModel;
-	private LineTable runnerTable;
 
 	public JScrollPane getRunnerScrollPaneRequests() {
 		return runnerScrollPaneRequests;
@@ -106,7 +88,7 @@ public class RunnerGUI extends JFrame {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		setBounds(100, 100, 1000, 500);
-		RunnerPanel = new TitlePanel();
+		RunnerPanel = new TitlePanelBase();
 		RunnerPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		RunnerPanel.setLayout(new BorderLayout(0, 0));
 		setContentPane(RunnerPanel);//for test
@@ -130,33 +112,8 @@ public class RunnerGUI extends JFrame {
 		setVisible(true);
 		setTitle("Runner");
 
-		RunnerPanel = new TitlePanel();
-		RunnerPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
-		RunnerPanel.setLayout(new BorderLayout(0, 0));
-		setContentPane(RunnerPanel);//for test
-
-		JPanel buttonPanel = new JPanel();
-		buttonPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
-		RunnerPanel.add(buttonPanel,BorderLayout.NORTH);
-
-		//搜索框
-		JButton buttonSearch = new JButton("Search");
-		SearchTextField textFieldSearch = new SearchTextField("",buttonSearch);
-		buttonPanel.add(textFieldSearch);
-
-		//搜索按钮
-		buttonSearch.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				String keyword = textFieldSearch.getText();
-				runnerTable.search(keyword,false);
-			}
-		});
-		buttonPanel.add(buttonSearch);
-
-		lblStatus = new JLabel("Status");
-		buttonPanel.add(lblStatus);
-
-		this.add(splitPane,BorderLayout.CENTER);
+		RunnerPanel = new TitlePanelBase();
+		this.add(RunnerPanel,BorderLayout.CENTER);
 
 		
 		//frame.getRootPane().add(runnerTable.getSplitPane(), BorderLayout.CENTER);
@@ -172,7 +129,7 @@ public class RunnerGUI extends JFrame {
 			public void windowClosing(WindowEvent e) {
 				// TODO 关闭多线程
 				try{
-					runnerTableModel = null;
+					RunnerPanel = null;
 				}catch (Exception e1){
 					e1.printStackTrace();
 				}
