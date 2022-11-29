@@ -191,6 +191,35 @@ public class TitlePanel extends TitlePanelBase {
 		return buttonPanel;
 	}
 
+	//根据状态过滤
+	@Override
+	public boolean entryNeedToShow(LineEntry entry) {
+		if (!(getRdbtnUnCheckedItems().isSelected()||getRdbtnCheckingItems().isSelected()||
+				getRdbtnCheckedItems().isSelected()||getRdbtnMoreActionItems().isSelected())) {
+			//全部未选中时，全部返回。一来为了满足用户习惯全部未选择时全部返回，
+			//二来是为了解决之前乱改CheckStatus常理带来的bug，之前CheckStatus_Checked == "Checked",现在CheckStatus_Checked== "done"导致选中checked的时候，Checked的那部分就不会被显示出来。
+			return true;
+		}
+
+		if (getRdbtnCheckedItems().isSelected()&& entry.getCheckStatus().equals(LineEntry.CheckStatus_Checked)) {
+			return true;
+		}
+
+		if (getRdbtnCheckingItems().isSelected()&& entry.getCheckStatus().equals(LineEntry.CheckStatus_Checking)) {
+			return true;//小心 == 和 equals的区别，之前这里使用 ==就导致了checking状态的条目的消失。
+		}
+
+		if (getRdbtnUnCheckedItems().isSelected()&& entry.getCheckStatus().equals(LineEntry.CheckStatus_UnChecked)) {
+			return true;
+		}
+
+		if (getRdbtnMoreActionItems().isSelected()&& entry.getCheckStatus().equals(LineEntry.CheckStatus_MoreAction)) {
+			return true;
+		}
+
+		return false;
+	}
+
 	/**
 	 * 转移手动保存的记录
 	 */

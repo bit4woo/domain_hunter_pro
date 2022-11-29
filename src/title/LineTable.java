@@ -154,7 +154,7 @@ public class LineTable extends JTable
 				LineEntry line = getLineTableModel().getLineEntries().get(row);
 
 				//第一层判断，根据按钮状态进行判断，如果为true，进行后面的逻辑判断，false直接返回。
-				if (parentPanel.entryNeedToShow(line)) {
+				if (!parentPanel.entryNeedToShow(line)) {
 					return false;
 				}
 				//目前只处理&&（and）逻辑的表达式

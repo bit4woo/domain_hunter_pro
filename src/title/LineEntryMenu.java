@@ -46,7 +46,6 @@ public class LineEntryMenu extends JPopupMenu {
 
 	/**
 	 * 这处理传入的行index数据是经过转换的 model中的index，不是原始的JTable中的index。
-	 * @param lineTable
 	 * @param modleRows
 	 * @param columnIndex
 	 */

@@ -1,14 +1,32 @@
 package test;
 
 public class ExtendsTest {
-
+	public static void main(String[] args) {
+		Mouse mouse = new Mouse("mike",1,"xxx");
+		System.out.println(mouse.getName());
+		System.out.println(((Animal)mouse).getName());
+	}
 }
 
 class Animal { 
-    private String name;  
+    private String name="default";  
     private int id;
-    private String xxx;
-    public Animal(String myName, int myid) { 
+    
+    
+    public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	public int getId() {
+		return id;
+	}
+	public void setId(int id) {
+		this.id = id;
+	}
+	
+	public Animal(String myName, int myid) { 
         name = myName; 
         id = myid;
     } 
@@ -24,7 +42,31 @@ class Animal {
 }
 
 class Mouse extends Animal { 
-    public Mouse(String myName, int myid) { 
+    private String xxx;
+    private String name;
+    
+    
+	public String getXxx() {
+		return xxx;
+	}
+
+	public void setXxx(String xxx) {
+		this.xxx = xxx;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	
+
+	public Mouse(String myName, int myid,String xxx) { 
         super(myName, myid);
+        this.xxx=xxx;
+        this.name= myName;
     } 
 }

@@ -70,7 +70,7 @@ public class TitlePanelBase extends JPanel {
 	}
 
 
-	public TitlePanelBase() {//构造函数
+	public TitlePanelBase() {//无参数构造函数，会被子类隐式调用
 		try{
 			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
 			stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
@@ -157,6 +157,7 @@ public class TitlePanelBase extends JPanel {
 	public void search(String keyword) {
 		boolean	caseSensitive = textFieldSearch.isCaseSensitive();
 		titleTable.search(keyword,caseSensitive);
+		digStatus();
 	}
 
 	/**
