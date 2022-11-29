@@ -27,10 +27,10 @@ public class TitlePanelBase extends JPanel {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private JPanel buttonPanel; //最上面的控制面板，搜索框、搜索按钮、状态显示等。
-	private SearchTextField textFieldSearch;//自行实现的搜索框
-	private JLabel lblSummaryOfTitle;//显示状态信息的label
-	private TableAndDetailPanel tableAndDetail;//数据显示表和数据包请求响应显示面板
+	public JPanel buttonPanel; //最上面的控制面板，搜索框、搜索按钮、状态显示等。
+	public SearchTextField textFieldSearch;//自行实现的搜索框
+	public JLabel lblSummaryOfTitle;//显示状态信息的label
+	public TableAndDetailPanel tableAndDetail;//数据显示表和数据包请求响应显示面板
 
 	PrintWriter stdout;
 	PrintWriter stderr;

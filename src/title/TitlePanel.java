@@ -1,6 +1,6 @@
 package title;
 
-import java.awt.Desktop;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -14,20 +14,18 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.swing.JButton;
-import javax.swing.JOptionPane;
-import javax.swing.JPopupMenu;
-import javax.swing.JRadioButton;
-import javax.swing.JTable;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 
 import GUI.GUIMain;
+import burp.BurpExtender;
 import burp.Commons;
 import burp.IPAddressUtils;
 import burp.SystemUtils;
 import dao.TitleDao;
 import thread.ThreadGetSubnet;
 import thread.ThreadGetTitleWithForceStop;
+import title.search.SearchTextField;
 
 public class TitlePanel extends TitlePanelBase {
 
@@ -103,19 +101,94 @@ public class TitlePanel extends TitlePanelBase {
 	}
 
 	public TitlePanel(GUIMain guiMain) {//构造函数
-		super();
 		this.guiMain = guiMain;
-		editButtonPanel();
+
+		try{
+			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
+			stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
+		}catch (Exception e){
+			stdout = new PrintWriter(System.out, true);
+			stderr = new PrintWriter(System.out, true);
+		}
+
+		this.setBorder(new EmptyBorder(5, 5, 5, 5));
+		this.setLayout(new BorderLayout(0, 0));
+
+		buttonPanel = createButtonPanel();
+		titleTable = new LineTable(this);//这里的写法虽然和父类一样，但是传递的对象却不同！
+		tableAndDetail = new TableAndDetailPanel(titleTable);
+		this.add(buttonPanel, BorderLayout.NORTH);
+		this.add(tableAndDetail,BorderLayout.CENTER);
 	}
 
-	public void editButtonPanel() {
+	@Override
+	public JPanel createButtonPanel() {
+		JPanel buttonPanel = new JPanel();
+		buttonPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
+
 		JButton btnAction = new JButton("Action");
 		btnAction.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				new GetTitleMenu(guiMain).show(btnAction, btnAction.getX(), btnAction.getY());
 			}
 		});
-		super.getButtonPanel().add(btnAction,0);
+		buttonPanel.add(btnAction);
+
+		JButton buttonSearch = new JButton("Search");
+		textFieldSearch = new SearchTextField("",buttonSearch);
+		buttonPanel.add(textFieldSearch);
+
+		buttonSearch.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String keyword = textFieldSearch.getText();
+				titleTable.search(keyword);
+				//searchHistory.addRecord(keyword);
+				digStatus();
+			}
+		});
+		buttonPanel.add(buttonSearch);
+
+		rdbtnUnCheckedItems = new JRadioButton(LineEntry.CheckStatus_UnChecked);
+		rdbtnUnCheckedItems.setSelected(true);
+		rdbtnUnCheckedItems.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				buttonSearch.doClick();
+			}
+		});
+		buttonPanel.add(rdbtnUnCheckedItems);
+
+		rdbtnCheckingItems = new JRadioButton(LineEntry.CheckStatus_Checking);
+		rdbtnCheckingItems.setSelected(true);
+		rdbtnCheckingItems.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				buttonSearch.doClick();
+			}
+		});
+		buttonPanel.add(rdbtnCheckingItems);
+
+		rdbtnCheckedItems = new JRadioButton(LineEntry.CheckStatus_Checked);
+		rdbtnCheckedItems.setSelected(false);
+		rdbtnCheckedItems.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				buttonSearch.doClick();
+			}
+		});
+		buttonPanel.add(rdbtnCheckedItems);
+
+		rdbtnMoreActionItems = new JRadioButton(LineEntry.CheckStatus_MoreAction);
+		rdbtnMoreActionItems.setSelected(false);
+		rdbtnMoreActionItems.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				buttonSearch.doClick();
+			}
+		});
+		buttonPanel.add(rdbtnMoreActionItems);
+
+		lblSummaryOfTitle = new JLabel("^_^");
+		buttonPanel.add(lblSummaryOfTitle);
+		buttonPanel.setToolTipText("");
+
+		return buttonPanel;
 	}
 
 	/**

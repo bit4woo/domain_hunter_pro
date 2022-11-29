@@ -60,7 +60,7 @@ public class ThreadDirBruter extends Thread{
 		plist = new ArrayList<DirBruterProducer>();
 
 		for (int i=0;i<=50;i++) {
-			DirBruterProducer p = new DirBruterProducer(runnerGUI.getModel(),pathDict,messageInfo, i);
+			DirBruterProducer p = new DirBruterProducer(runnerGUI.getRunnerPanel().titleTable.getLineTableModel(),pathDict,messageInfo, i);
 			p.setDaemon(true);
 			p.start();
 			plist.add(p);
@@ -78,7 +78,7 @@ public class ThreadDirBruter extends Thread{
 		}
 		
 		stdout.println("~~~~~~~~~~~~~Get Title Done~~~~~~~~~~~~~");
-		runnerGUI.lblStatus.setText("finished");
+		runnerGUI.getLblStatus().setText("finished");
 	}
 	
 	public void forceStopThreads() {

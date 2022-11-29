@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.PrintWriter;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -11,46 +12,19 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.border.EmptyBorder;
 
+import burp.BurpExtender;
 import burp.IHttpRequestResponse;
 import title.LineTable;
 import title.LineTableModel;
+import title.TableAndDetailPanel;
 import title.TitlePanelBase;
 
 public class RunnerGUI extends JFrame {
 
-	private JScrollPane runnerScrollPaneRequests;
-	private JTabbedPane RequestPanel;
-	private JTabbedPane ResponsePanel;
-	private TitlePanelBase RunnerPanel;
-
 	private IHttpRequestResponse messageInfo;
-	public JLabel lblStatus;
-	
+	private TitlePanelBase RunnerPanel;
+	private JLabel lblStatus;
 	private ThreadDirBruter bruter;
-
-	public JScrollPane getRunnerScrollPaneRequests() {
-		return runnerScrollPaneRequests;
-	}
-
-	public void setRunnerScrollPaneRequests(JScrollPane runnerScrollPaneRequests) {
-		this.runnerScrollPaneRequests = runnerScrollPaneRequests;
-	}
-
-	public JTabbedPane getRequestPanel() {
-		return RequestPanel;
-	}
-
-	public void setRequestPanel(JTabbedPane requestPanel) {
-		RequestPanel = requestPanel;
-	}
-
-	public JTabbedPane getResponsePanel() {
-		return ResponsePanel;
-	}
-
-	public void setResponsePanel(JTabbedPane responsePanel) {
-		ResponsePanel = responsePanel;
-	}
 
 	public IHttpRequestResponse getMessageInfo() {
 		return messageInfo;
@@ -58,6 +32,30 @@ public class RunnerGUI extends JFrame {
 
 	public void setMessageInfo(IHttpRequestResponse messageInfo) {
 		this.messageInfo = messageInfo;
+	}
+
+	public TitlePanelBase getRunnerPanel() {
+		return RunnerPanel;
+	}
+
+	public void setRunnerPanel(TitlePanelBase runnerPanel) {
+		RunnerPanel = runnerPanel;
+	}
+
+	public JLabel getLblStatus() {
+		return lblStatus;
+	}
+
+	public void setLblStatus(JLabel lblStatus) {
+		this.lblStatus = lblStatus;
+	}
+
+	public ThreadDirBruter getBruter() {
+		return bruter;
+	}
+
+	public void setBruter(ThreadDirBruter bruter) {
+		this.bruter = bruter;
 	}
 
 	/**
@@ -95,18 +93,15 @@ public class RunnerGUI extends JFrame {
 
 		lblStatus = new JLabel("Status");
 		RunnerPanel.add(lblStatus, BorderLayout.NORTH);
-
-		//RunnerPanel.add(splitPane, BorderLayout.CENTER);
 	}
 
 	/**
 	 * 对一个请求数据包，进行各种变化然后请求，类似Intruder的功能。
 	 * 数据源都来自Domain Hunter
-	 * @param messageInfo
 	 */
-	public RunnerGUI() {
-		
-		
+	public RunnerGUI(IHttpRequestResponse messageInfo) {
+		this.messageInfo = messageInfo;
+
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		//if use "EXIT_ON_CLOSE",burp will exit!!
 		setVisible(true);
