@@ -21,7 +21,7 @@ import burp.BurpExtender;
 import domain.DomainPanel;
 
 public class TargetControlPanel extends JPanel {
-	
+
 	JRadioButton rdbtnAddRelatedToRoot;
 	DomainPanel domainPanel;
 	private JButton btnFresh;
@@ -36,7 +36,7 @@ public class TargetControlPanel extends JPanel {
 
 	public TargetControlPanel(DomainPanel domainPanel) {
 		this.domainPanel = domainPanel;
-		
+
 		setBorder(new LineBorder(new Color(0, 0, 0)));
 
 		JButton addButton = new JButton("Add");
@@ -91,7 +91,7 @@ public class TargetControlPanel extends JPanel {
 			}
 		});
 
-		
+
 		JButton blackButton = new JButton("Black");
 		blackButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -99,7 +99,7 @@ public class TargetControlPanel extends JPanel {
 			}
 		});
 
-		
+
 		btnFresh = new JButton("Refresh");
 		btnFresh.addActionListener(new ActionListener() {
 			@Override
@@ -125,30 +125,41 @@ public class TargetControlPanel extends JPanel {
 		rdbtnAddRelatedToRoot.setVerticalAlignment(SwingConstants.TOP);
 		rdbtnAddRelatedToRoot.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				rdbtnAddRelatedToRoot.setEnabled(false);
-				try {
-					domainPanel.getDomainResult().autoAddRelatedToRoot = rdbtnAddRelatedToRoot.isSelected();
-					if (domainPanel.getDomainResult().autoAddRelatedToRoot) {
-						domainPanel.getDomainResult().relatedToRoot();
-						btnFresh.doClick();
-					}
-				} catch (Exception exception) {
-					exception.printStackTrace(BurpExtender.getStderr());
+				domainPanel.getDomainResult().autoAddRelatedToRoot = rdbtnAddRelatedToRoot.isSelected();
+				if (domainPanel.getDomainResult().autoAddRelatedToRoot) {
+					SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+						@Override
+						protected Map doInBackground() throws Exception {
+							rdbtnAddRelatedToRoot.setEnabled(false);
+							try {
+								domainPanel.getDomainResult().relatedToRoot();
+								domainPanel.refreshShowSave();
+							} catch (Exception exception) {
+								exception.printStackTrace(BurpExtender.getStderr());
+							}
+							return null;
+						}
+
+						@Override
+						protected void done(){
+							rdbtnAddRelatedToRoot.setEnabled(true);
+						}
+					};
+					worker.execute();
 				}
-				rdbtnAddRelatedToRoot.setEnabled(true);
 			}
 		});
 		rdbtnAddRelatedToRoot.setSelected(false);
-		
+
 		GridBagLayout gbl = new GridBagLayout();
 		this.setLayout(gbl);
-		
+
 		this.add(addButton,new bagLayout(1,1));
 		this.add(addButton1,new bagLayout(1,2));
 		this.add(removeButton,new bagLayout(1,3));
 		this.add(blackButton,new bagLayout(1,4));
 		this.add(btnFresh,new bagLayout(1,5));
-		
+
 		bagLayout tmp = new bagLayout(2,1);
 		tmp.gridwidth = 5;//可以占用5个单元格
 		this.add(rdbtnAddRelatedToRoot,tmp);
@@ -171,7 +182,7 @@ public class TargetControlPanel extends JPanel {
 			}
 		}
 	}
-	
+
 	class bagLayout extends GridBagConstraints {
 		/**
 		 * 采用普通的行列计数，从1开始
