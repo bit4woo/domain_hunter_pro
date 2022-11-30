@@ -10,6 +10,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;
@@ -17,6 +18,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
+import javax.swing.SwingWorker;
 
 import Tools.DomainComparator;
 import Tools.LengthComparator;
@@ -218,8 +220,20 @@ public class TextAreaMenu extends JPopupMenu {
 		JMenuItem SortByLength = new JMenuItem(new AbstractAction("Sort By Length") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				Collections.sort(AllItems,new LengthComparator());
-				textArea.setText(String.join(System.lineSeparator(), AllItems));
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+					@Override
+					protected Map doInBackground() throws Exception {
+						Collections.sort(AllItems,new LengthComparator());
+						textArea.setText(String.join(System.lineSeparator(), AllItems));
+						return null;
+					}
+
+					@Override
+					protected void done(){
+						
+					}
+				};
+				worker.execute();
 			}
 		});
 
@@ -227,8 +241,20 @@ public class TextAreaMenu extends JPopupMenu {
 		JMenuItem SortDomain = new JMenuItem(new AbstractAction("Sort Domain") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				Collections.sort(AllItems,new DomainComparator());
-				textArea.setText(String.join(System.lineSeparator(), AllItems));
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+					@Override
+					protected Map doInBackground() throws Exception {
+						Collections.sort(AllItems,new DomainComparator());
+						textArea.setText(String.join(System.lineSeparator(), AllItems));
+						return null;
+					}
+
+					@Override
+					protected void done(){
+						
+					}
+				};
+				worker.execute();
 			}
 		});
 
@@ -236,7 +262,19 @@ public class TextAreaMenu extends JPopupMenu {
 		JMenuItem ReFresh = new JMenuItem(new AbstractAction("Refresh") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				domainPanel.getGuiMain().getDomainPanel().showDataToDomainGUI();
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+					@Override
+					protected Map doInBackground() throws Exception {
+						domainPanel.getGuiMain().getDomainPanel().showDataToDomainGUI();
+						return null;
+					}
+
+					@Override
+					protected void done(){
+						
+					}
+				};
+				worker.execute();
 			}
 		});
 		
