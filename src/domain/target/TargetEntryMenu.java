@@ -30,13 +30,29 @@ public class TargetEntryMenu extends JPopupMenu {
 		this.rootDomainTable = rootDomainTable;
 		this.guiMain = guiMain;
 
-		JMenuItem getSubDomainsOf = new JMenuItem(new AbstractAction("Get All Subdomin Of This") {
+		JMenuItem getSubDomainsOf = new JMenuItem(new AbstractAction("Copy All Subdomins Of This") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				String results = "";
 				for (int row:modelRows) {
 					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,0);
 					String line = guiMain.getDomainPanel().getDomainResult().fetchSubDomainsOf(rootDomain);
+					results = results+System.lineSeparator()+line;
+				}
+
+				Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+				StringSelection selection = new StringSelection(results);
+				clipboard.setContents(selection, null);
+			}
+		});
+		
+		JMenuItem getSubStrsOf = new JMenuItem(new AbstractAction("Copy All SubStrs Of This") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				String results = "";
+				for (int row:modelRows) {
+					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,0);
+					String line = guiMain.getDomainPanel().getDomainResult().fetchSubStringsOf(rootDomain);
 					results = results+System.lineSeparator()+line;
 				}
 
@@ -148,6 +164,7 @@ public class TargetEntryMenu extends JPopupMenu {
 		});
 
 		this.add(getSubDomainsOf);
+		this.add(getSubStrsOf);
 		this.add(batchAddCommentsItem);
 		this.add(addToBlackItem);
 		this.addSeparator();

@@ -294,6 +294,28 @@ public class DomainManager {
 		}
 		return "";
 	}
+	
+	/**
+	 * 获取子域名的前半部分，即不包含根域名，可用于字典收集
+	 * @param rootDomain
+	 * @return
+	 */
+	public String fetchSubStringsOf(String rootDomain) {
+		List<String> tmplist = new ArrayList<>();
+		if (fetchTargetModel().assetType(rootDomain) == DomainManager.SUB_DOMAIN) {//判断是否有效rootDomain
+			if (!rootDomain.startsWith(".")) {
+				rootDomain = "." + rootDomain;
+			}
+			for (String item : subDomainSet) {
+				if (item.endsWith(rootDomain)) {
+					tmplist.add(item.split(rootDomain)[0]);
+				}
+			}
+			Collections.sort(tmplist);
+			return String.join(System.lineSeparator(), tmplist);
+		}
+		return "";
+	}
 
 	public String fetchEmails() {
 		List<String> tmplist = new ArrayList<>(EmailSet);
