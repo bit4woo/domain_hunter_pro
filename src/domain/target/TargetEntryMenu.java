@@ -30,7 +30,7 @@ public class TargetEntryMenu extends JPopupMenu {
 		this.rootDomainTable = rootDomainTable;
 		this.guiMain = guiMain;
 
-		JMenuItem getSubDomainsOf = new JMenuItem(new AbstractAction("Copy All Subdomins Of This") {
+		JMenuItem copySubdomins = new JMenuItem(new AbstractAction("Copy All Subdomins Of This") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				String results = "";
@@ -45,14 +45,30 @@ public class TargetEntryMenu extends JPopupMenu {
 				clipboard.setContents(selection, null);
 			}
 		});
-		
-		JMenuItem getSubStrsOf = new JMenuItem(new AbstractAction("Copy All SubStrs Of This") {
+
+		JMenuItem copyPrefixes = new JMenuItem(new AbstractAction("Copy All Prefixes Of This") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				String results = "";
 				for (int row:modelRows) {
 					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,0);
-					String line = guiMain.getDomainPanel().getDomainResult().fetchSubStringsOf(rootDomain);
+					String line = guiMain.getDomainPanel().getDomainResult().fetchPrefixesOf(rootDomain);
+					results = results+System.lineSeparator()+line;
+				}
+
+				Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+				StringSelection selection = new StringSelection(results);
+				clipboard.setContents(selection, null);
+			}
+		});
+
+		JMenuItem copyPrefixWords = new JMenuItem(new AbstractAction("Copy All Prefix Words Of This") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				String results = "";
+				for (int row:modelRows) {
+					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,0);
+					String line = guiMain.getDomainPanel().getDomainResult().fetchPrefixWordsOf(rootDomain);
 					results = results+System.lineSeparator()+line;
 				}
 
@@ -138,7 +154,7 @@ public class TargetEntryMenu extends JPopupMenu {
 				guiMain.getDomainPanel().getControlPanel().selectedToBalck();
 			}
 		});
-		
+
 		/**
 		 * 查找邮箱的搜索引擎
 		 */
@@ -163,8 +179,9 @@ public class TargetEntryMenu extends JPopupMenu {
 			}
 		});
 
-		this.add(getSubDomainsOf);
-		this.add(getSubStrsOf);
+		this.add(copySubdomins);
+		this.add(copyPrefixes);
+		this.add(copyPrefixWords);
 		this.add(batchAddCommentsItem);
 		this.add(addToBlackItem);
 		this.addSeparator();

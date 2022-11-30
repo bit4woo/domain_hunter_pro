@@ -1,6 +1,7 @@
 package domain;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -294,13 +295,13 @@ public class DomainManager {
 		}
 		return "";
 	}
-	
+
 	/**
 	 * 获取子域名的前半部分，即不包含根域名，可用于字典收集
 	 * @param rootDomain
 	 * @return
 	 */
-	public String fetchSubStringsOf(String rootDomain) {
+	public String fetchPrefixesOf(String rootDomain) {
 		List<String> tmplist = new ArrayList<>();
 		if (fetchTargetModel().assetType(rootDomain) == DomainManager.SUB_DOMAIN) {//判断是否有效rootDomain
 			if (!rootDomain.startsWith(".")) {
@@ -308,7 +309,32 @@ public class DomainManager {
 			}
 			for (String item : subDomainSet) {
 				if (item.endsWith(rootDomain)) {
-					tmplist.add(item.split(rootDomain)[0]);
+					String prefix = item.split(rootDomain)[0];
+					tmplist.add(prefix);
+				}
+			}
+			Collections.sort(tmplist);
+			return String.join(System.lineSeparator(), tmplist);
+		}
+		return "";
+	}
+
+	/**
+	 * 获取子域名的前半部分，并以. - 分割，形成一个个的独立部分。
+	 * @param rootDomain
+	 * @return
+	 */
+	public String fetchPrefixWordsOf(String rootDomain) {
+		List<String> tmplist = new ArrayList<>();
+		if (fetchTargetModel().assetType(rootDomain) == DomainManager.SUB_DOMAIN) {//判断是否有效rootDomain
+			if (!rootDomain.startsWith(".")) {
+				rootDomain = "." + rootDomain;
+			}
+			for (String item : subDomainSet) {
+				if (item.endsWith(rootDomain)) {
+					String prefix = item.split(rootDomain)[0];
+					String[] words = prefix.split("\\.|-");
+					tmplist.addAll(Arrays.asList(words));
 				}
 			}
 			Collections.sort(tmplist);
