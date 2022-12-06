@@ -105,25 +105,44 @@ public class LineSearch {
 			if (keyword.length() == 0) {
 				return true;
 			}
-
+			//正则搜索
 			if (dork.equalsIgnoreCase(SearchDork.REGEX.toString())) {
 				return regexFilter(line,keyword);
 			}
-
+			
+			//dork搜索
+			boolean isNotCondition = false;
+			if (keyword.startsWith("!")){
+				isNotCondition = true;
+				keyword = keyword.replaceFirst("!", "");
+			}
+			
 			if (dork.equalsIgnoreCase(SearchDork.PORT.toString())) {
-				if (line.getPort() == Integer.parseInt(keyword)) {
-					return true;
-				}else {
-					return false;
+				boolean result = false;
+				try {
+					result = (line.getPort() == Integer.parseInt(keyword));
+				} catch (NumberFormatException e) {
+					//e.printStackTrace();
 				}
+				
+				if (isNotCondition) {
+					return !result;
+				}
+				return result;
 			}
 
 			if (dork.equalsIgnoreCase(SearchDork.STATUS.toString())) {
-				if (line.getStatuscode() == Integer.parseInt(keyword)) {
-					return true;
-				}else {
-					return false;
+				boolean result = false;
+				try {
+					result = (line.getStatuscode() == Integer.parseInt(keyword));
+				} catch (NumberFormatException e) {
+					//e.printStackTrace();
 				}
+				
+				if (isNotCondition) {
+					return !result;
+				}
+				return result;
 			}
 
 			String tempContent = "";
@@ -157,12 +176,20 @@ public class LineSearch {
 			}
 			
 			if (caseSensitive) {
+				if (isNotCondition) {
+					return !tempContent.contains(keyword); 
+				}
 				return tempContent.contains(keyword); 
 			}else {
 				keyword = keyword.toLowerCase();
-				return tempContent.toLowerCase().contains(keyword); 
+				boolean result = tempContent.toLowerCase().contains(keyword);
+				if (isNotCondition) {
+					return !result; 
+				}
+				return result; 
 			}
 		}
+		
 		return false;
 	}
 	/**
