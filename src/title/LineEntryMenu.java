@@ -212,7 +212,7 @@ public class LineEntryMenu extends JPopupMenu {
 				}
 			}
 		});
-		
+
 		//360quake,zoomeye,hunter,shodan
 		//https://quake.360.net/quake/#/searchResult?searchVal=baidu.com
 		JMenuItem SearchOn360QuakeItem = new JMenuItem(new AbstractAction("Seach On 360Quake") {
@@ -238,8 +238,8 @@ public class LineEntryMenu extends JPopupMenu {
 		});
 
 		//https://quake.360.net/quake/#/searchResult?searchVal=favicon%3A%20%22c5618c85980459ce4325eb324428d622%22
-		
-		
+
+
 		JMenuItem SearchOnZoomEyeItem = new JMenuItem(new AbstractAction("Seach On ZoomEye") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -274,7 +274,7 @@ public class LineEntryMenu extends JPopupMenu {
 					String searchContent = firstEntry.getIcon_hash();
 					searchContent= String.format("iconhash:\"%s\"", searchContent);
 					searchContent = URLEncoder.encode(searchContent);
-					
+
 					String url= "https://www.zoomeye.org/searchResult?q="+searchContent;
 					try {
 						Commons.browserOpen(url, null);
@@ -284,7 +284,7 @@ public class LineEntryMenu extends JPopupMenu {
 				}
 			}
 		});
-		
+
 
 		JMenuItem ASNInfoItem = new JMenuItem(new AbstractAction("ASN Info") {
 			@Override
@@ -407,7 +407,7 @@ public class LineEntryMenu extends JPopupMenu {
 				}
 			}
 		});
-		
+
 		JMenuItem copyHostAndIPAddressItem = new JMenuItem(new AbstractAction("Copy Host+IPAddress") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -679,6 +679,42 @@ public class LineEntryMenu extends JPopupMenu {
 			}
 		});
 
+		JMenuItem copyResponseItem = new JMenuItem(new AbstractAction("Copy Response") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				try{
+					List<String> resp = lineTable.getLineTableModel().getResponses(modleRows);
+					String textUrls = String.join(System.lineSeparator(), resp);
+
+					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+					StringSelection selection = new StringSelection(textUrls);
+					clipboard.setContents(selection, null);
+				}
+				catch (Exception e1)
+				{
+					e1.printStackTrace(stderr);
+				}
+			}
+		});
+
+		JMenuItem copyResponseBodyItem = new JMenuItem(new AbstractAction("Copy Response Body") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				try{
+					List<String> bodies = lineTable.getLineTableModel().getResponseBodies(modleRows);
+					String textUrls = String.join(System.lineSeparator(), bodies);
+
+					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+					StringSelection selection = new StringSelection(textUrls);
+					clipboard.setContents(selection, null);
+				}
+				catch (Exception e1)
+				{
+					e1.printStackTrace(stderr);
+				}
+			}
+		});
+
 		JMenuItem copyCDNAndCertInfoItem = new JMenuItem(new AbstractAction("Copy CDN|CertInfo") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -857,8 +893,8 @@ public class LineEntryMenu extends JPopupMenu {
 					addIPToTargetBlackList(modleRows);
 				}
 			}
-			
-			
+
+
 		});
 		addToblackListItem.setToolTipText("IP addresses will be added to Black List");
 
@@ -878,7 +914,7 @@ public class LineEntryMenu extends JPopupMenu {
 			}
 		});
 		addToblackListItem.setToolTipText("IP addresses will be added to Black List");
-		
+
 		this.add(itemNumber);
 		this.add(checkingItem);
 		this.add(moreActionItem);
@@ -910,22 +946,22 @@ public class LineEntryMenu extends JPopupMenu {
 		this.add(SearchMenu);
 		SearchMenu.add(SearchOnHunterItem);//在插件内搜索
 		SearchMenu.addSeparator();
-		
+
 		SearchMenu.add(googleSearchItem);
 		SearchMenu.add(SearchOnGithubItem);
 		SearchMenu.addSeparator();//通用搜索引擎和GitHub
-		
+
 		SearchMenu.add(SearchOnFoFaItem);
 		SearchMenu.add(SearchOnShodanItem);
 		SearchMenu.add(SearchOnZoomEyeItem);
 		SearchMenu.add(SearchOn360QuakeItem);
-		
+
 		SearchMenu.add(SearchOnFoFaWithIconhashItem);
 		SearchMenu.add(SearchOnShodanWithIconhashItem);
 		SearchMenu.add(SearchOnZoomEyeWithIconhashItem);
-		
+
 		SearchMenu.addSeparator();//网络搜索引擎
-		
+
 		SearchMenu.add(ASNInfoItem);
 		SearchMenu.add(IPInfoItem);
 
@@ -939,6 +975,8 @@ public class LineEntryMenu extends JPopupMenu {
 		CopyMenu.add(copyURLItem);
 		CopyMenu.add(copyCommonURLItem);
 		CopyMenu.add(copyLocationURLItem);
+		CopyMenu.add(copyResponseItem);
+		CopyMenu.add(copyResponseBodyItem);
 		CopyMenu.add(copyCDNAndCertInfoItem);
 		CopyMenu.add(copyIconhashItem);
 
@@ -949,7 +987,7 @@ public class LineEntryMenu extends JPopupMenu {
 		this.add(removeSubDomainItem);
 		this.add(addToblackListItem);
 	}
-	
+
 	/**
 	 * 只返回有搜索价值的字段，如果鼠标位置未对应有价值的字段，默认返回host字段。
 	 * @param firstEntry
@@ -977,7 +1015,7 @@ public class LineEntryMenu extends JPopupMenu {
 			return host;
 		}
 	}
-	
+
 	/**
 	 * 	主要用于记录CDN或者云服务的IP地址，在做网段汇算时排除这些IP。
 	 */

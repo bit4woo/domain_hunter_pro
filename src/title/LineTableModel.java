@@ -5,18 +5,17 @@ import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import javax.swing.table.AbstractTableModel;
 
-import GUI.GUIMain;
 import burp.BurpExtender;
 import burp.Commons;
 import burp.DomainNameUtils;
 import burp.Getter;
+import burp.HelperPlus;
 import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
 import burp.IHttpService;
@@ -89,7 +88,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	public void setLineEntries(IndexedHashMap<String, LineEntry> lineEntries) {
 		this.lineEntries = lineEntries;
 	}
-	
+
 	public LineEntry getCurrentlyDisplayedItem() {
 		return this.currentlyDisplayedItem;
 	}
@@ -256,7 +255,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	}
 	///////////////////// ^^^^implement IMessageEditorController^^^^ ////////////////////////////////
 
-	
+
 	/**
 	 *
 	 * @return 获取已成功获取title的Entry的IP地址集合
@@ -287,7 +286,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		return result;
 	}
 
-	
+
 	/**
 	 * 获取title记录中的所有私有IP
 	 * @return
@@ -301,13 +300,13 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		}
 		return result;
 	}
-	
+
 	/**
 	 * 获取所有外网的，正常访问的Host域名。用于host碰撞域名的逻辑
 	 * @return
 	 */
 	public Set<String> getAllPublicOkDomain() {
-		
+
 		HashSet<String> result = new HashSet<>();
 		for (LineEntry entry:lineEntries.values()) {
 			String ip = new ArrayList<String>(entry.getIPSet()).get(0);//这里可能不严谨，如果IP解析既有外网地址又有内网地址就会出错
@@ -401,7 +400,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		}
 		return hosts;
 	}
-	
+
 	public List<String> getHostsAndIPAddresses(int[] rows) {
 		Arrays.sort(rows); //升序
 		List<String> hosts = new ArrayList<>();
@@ -462,6 +461,69 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			String Locationurl = getter.getHeaderValueOf(false,entry.getResponse(),"Location");
 			if (url !=null){
 				urls.add(url+" "+Locationurl);
+			}
+		}
+		return urls;
+	}
+
+	public List<String> getResponses(int[] rows) {
+		Arrays.sort(rows); //升序
+		List<String> urls = new ArrayList<>();
+
+		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
+			LineEntry entry = lineEntries.get(rows[i]);
+			String url = entry.getUrl();
+			byte[] resp = entry.getResponse();
+			if (resp == null) continue;
+			if (url !=null){
+				urls.add(new String(entry.getResponse()));
+			}
+		}
+		return urls;
+	}
+
+
+	public List<String> getResponseBodies(int[] rows) {
+		return getMessageParts(rows,false,false);
+	}
+
+	public List<String> getResponseHeaders(int[] rows) {
+		return getMessageParts(rows,false,true);
+	}
+
+	/**
+	 * 获取request、response的header部分或body
+	 * @param rows
+	 * @param isReq
+	 * @param isHeader
+	 * @return
+	 */
+	public List<String> getMessageParts(int[] rows,boolean isReq,boolean isHeader) {
+		Arrays.sort(rows); //升序
+		List<String> urls = new ArrayList<>();
+		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
+		HelperPlus getter = new HelperPlus(helpers);
+		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
+			LineEntry entry = lineEntries.get(rows[i]);
+			String url = entry.getUrl();
+			if (url !=null){
+				byte[] temp;
+				if (isReq){
+					temp = entry.getRequest();
+				}else {
+					temp = entry.getResponse();
+				}
+
+				String result;
+				if (isHeader) {
+					result = getter.getHeadersAsStr(isReq, temp);
+				}else {
+					result = new String(HelperPlus.getBody(isReq, temp));
+				}
+
+				if (result != null) {
+					urls.add(result);
+				}
 			}
 		}
 		return urls;
