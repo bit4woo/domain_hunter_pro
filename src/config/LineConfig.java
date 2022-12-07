@@ -261,6 +261,7 @@ public class LineConfig {
 		this.dbfilepath = dbfilepath;
 	}
 
+	//fastjson和gson序列化这个对象都会失败！！！
 	public History getSearchHistory() {
 		return searchHistory;
 	}
