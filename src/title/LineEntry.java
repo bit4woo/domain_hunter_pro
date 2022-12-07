@@ -187,9 +187,12 @@ public class LineEntry {
 
 				byte[] byteBody = HelperPlus.getBody(false, response);
 				try{
-					contentLength = Integer.parseInt(getter.getHeaderValueOf(false, response, "Content-Length").trim());
+					String value = getter.getHeaderValueOf(false, response, "Content-Length");
+					if (value != null){
+						contentLength = Integer.parseInt(value.trim());
+					}
 				}catch (Exception e){
-					if (contentLength==-1 && byteBody!=null) {
+					if (contentLength == -1) {
 						contentLength = byteBody.length;
 					}
 				}

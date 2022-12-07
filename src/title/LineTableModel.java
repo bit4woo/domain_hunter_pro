@@ -309,6 +309,9 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 
 		HashSet<String> result = new HashSet<>();
 		for (LineEntry entry:lineEntries.values()) {
+			if (entry.getIPSet().size() <= 0) {
+				continue;
+			}
 			String ip = new ArrayList<String>(entry.getIPSet()).get(0);//这里可能不严谨，如果IP解析既有外网地址又有内网地址就会出错
 			if (!IPAddressUtils.isPrivateIPv4(ip)) {//移除公网解析记录；剩下无解析记录和内网解析记录
 				if (entry.getStatuscode() == 403 && DomainNameUtils.isValidDomain(entry.getHost())) {
