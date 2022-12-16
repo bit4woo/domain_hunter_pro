@@ -129,7 +129,7 @@ public class LineTable extends JTable
 
 
 	/**
-	 * 搜索功能，自动获取caseSensitive的值
+	 * 搜索功能，自动获取caseSensitive的值。本质是针对当前tablemodel的显示控制
 	 * @param keyword
 	 */
 	public void search(String keyword) {

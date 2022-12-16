@@ -25,6 +25,7 @@ import burp.SystemUtils;
 import dao.TitleDao;
 import thread.ThreadGetSubnet;
 import thread.ThreadGetTitleWithForceStop;
+import title.search.QueryBuilder;
 import title.search.SearchTextField;
 
 public class TitlePanel extends TitlePanelBase {
@@ -437,6 +438,21 @@ public class TitlePanel extends TitlePanelBase {
 		LineTableModel titleTableModel = new LineTableModel(guiMain.currentDBFile.toString(), lines);
 		loadData(titleTableModel);
 	}
+	
+	
+	/**
+	 * 从db中搜索，并显示
+	 */
+	public void SearchAndLoadFromDB(String currentDBFile) {
+		titleDao = new TitleDao(currentDBFile);
+		new QueryBuilder();
+		titleDao.selectByWhere();
+		List<LineEntry> lines = titleDao.selectAllTitle();
+		
+		LineTableModel titleTableModel = new LineTableModel(guiMain.currentDBFile.toString(), lines);
+		loadData(titleTableModel);
+	}
+	
 
 
 	/**

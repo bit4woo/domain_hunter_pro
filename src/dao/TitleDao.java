@@ -158,6 +158,11 @@ public class TitleDao {
 		String sql = "select * from TitleTable";
 		return jdbcTemplate.query(sql,new TitleMapper());
 	}
+	
+	public List<LineEntry> selectByWhere(String where){
+		String sql = "select * from TitleTable "+ where;
+		return jdbcTemplate.query(sql,new TitleMapper());
+	}
 
 	public boolean deleteTitle(LineEntry entry){
 		String sql="DELETE FROM TitleTable where url= ?";
