@@ -432,6 +432,7 @@ public class TitlePanel extends TitlePanelBase {
 	 * 用于从DB文件中加载数据，没有去重检查。
 	 * 这种加载方式没有改变tableModel，所以tableModelListener也还在。
 	 */
+	@Deprecated
 	public void loadData(String currentDBFile) {
 		titleDao = new TitleDao(currentDBFile);
 		List<LineEntry> lines = titleDao.selectAllTitle();
@@ -445,9 +446,9 @@ public class TitlePanel extends TitlePanelBase {
 	 */
 	public void SearchAndLoadFromDB(String currentDBFile) {
 		titleDao = new TitleDao(currentDBFile);
-		new QueryBuilder();
-		titleDao.selectByWhere();
-		List<LineEntry> lines = titleDao.selectAllTitle();
+		String where = new QueryBuilder(this).buildWhere();
+		
+		List<LineEntry> lines = titleDao.selectByWhere(where);
 		
 		LineTableModel titleTableModel = new LineTableModel(guiMain.currentDBFile.toString(), lines);
 		loadData(titleTableModel);

@@ -4,9 +4,16 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
+import javax.swing.RowFilter;
+import javax.swing.RowFilter.Entry;
+
 import title.LineEntry;
 import title.TitlePanel;
 
+/**
+ * 根据当前title panel中的条件构造出从数据库中查询内容的SQL语句。 
+ *
+ */
 public class QueryBuilder {
 	private TitlePanel titlePanel;
 
@@ -14,11 +21,35 @@ public class QueryBuilder {
 		this.titlePanel = panel;
 	}
 	
+	public String oneCondition(String Input,boolean caseSensitive) {
+		Input = Input.trim();//应该去除空格，符合java代码编写习惯
+		if (SearchDork.isDork(Input)) {
+			//stdout.println("do dork search,dork:"+dork+"   keyword:"+keyword);
+			return dorkFilter(Input,caseSensitive);
+		}else {
+			return textFilter(Input,caseSensitive);
+		}
+	}
+	
 	public String buildWhere() {
-		entryNeedToShow();
+		ArrayList<String> AllConditions = new ArrayList<String>();
+		String statusCondition = entryNeedToShow();
 		
+		AllConditions.add("("+statusCondition+")");
 		
-		return ;
+		SearchTextField searchTextField = titlePanel.getTextFieldSearch();
+		
+		boolean caseSensitive = searchTextField.isCaseSensitive();
+		String searchContent = searchTextField.getText();
+
+		//目前只处理&&（and）逻辑的表达式
+		String[] searchConditions = searchContent.split("&&");
+		for (String condition:searchConditions) {
+			String tmpcondition = oneCondition(condition,caseSensitive);
+			AllConditions.add("("+tmpcondition+")");
+		}
+		
+		return String.join(" and ", AllConditions);
 	}
 	
 	//根据状态过滤
@@ -51,7 +82,7 @@ public class QueryBuilder {
 	}
 	
 	/**
-	 * 关键词和搜索内容都进行了小写转换，尽量多得返回内容
+	 * 关键词和搜索内容都进行了小写转换，尽量多地返回内容
 	 * @param line
 	 * @param keyword
 	 * @return

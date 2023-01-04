@@ -132,7 +132,8 @@ public class LineTable extends JTable
 	 * 搜索功能，自动获取caseSensitive的值。本质是针对当前tablemodel的显示控制
 	 * @param keyword
 	 */
-	public void search(String keyword) {
+	@Deprecated
+	public void searchxxx(String keyword) {
 		SearchTextField searchTextField = parentPanel.getTextFieldSearch();
 		boolean caseSensitive = searchTextField.isCaseSensitive();
 		search(keyword,caseSensitive);
@@ -142,6 +143,7 @@ public class LineTable extends JTable
 	 * 搜索功能
 	 * @param caseSensitive
 	 */
+	@Deprecated
 	public void search(String Input,boolean caseSensitive) {
 		//rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + keyword));
 		History.getInstance().addRecord(Input);//记录搜索历史,单例模式

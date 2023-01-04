@@ -245,7 +245,7 @@ public class GUIMain extends JFrame {
 
 			domainPanel.LoadTargetsData(currentDBFile.toString());
 			domainPanel.LoadDomainData(currentDBFile.toString());
-			titlePanel.loadData(currentDBFile.toString());
+			titlePanel.SearchAndLoadFromDB(currentDBFile.toString());
 
 			configPanel.getLineConfig().setDbfilepath(currentDBFile.getAbsolutePath());
 			displayProjectName();

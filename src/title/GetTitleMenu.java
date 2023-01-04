@@ -5,8 +5,6 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -21,7 +19,6 @@ import javax.swing.SwingWorker;
 import GUI.GUIMain;
 import burp.BurpExtender;
 import burp.DomainNameUtils;
-import burp.IPAddressUtils;
 
 public class GetTitleMenu extends JPopupMenu {
 
@@ -183,7 +180,7 @@ public class GetTitleMenu extends JPopupMenu {
 		});
 
 
-		FreshASNInfo = new JMenuItem(new AbstractAction("Fresh ASN Info") {
+		FreshASNInfo = new JMenuItem(new AbstractAction("Refresh ASN Info") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
@@ -272,9 +269,14 @@ public class GetTitleMenu extends JPopupMenu {
 		this.add(getTitleItem);
 		this.add(GetExtendtitleItem);
 		this.add(GettitleOfJustNewFoundItem);
+		this.add(StopItem);
+		
+		this.addSeparator();
+		
 		this.add(CopySubnetItem);
 		this.add(copyHostCollisionDomainsItem);
-		this.add(StopItem);
+		
+		this.addSeparator();
 		this.add(FreshASNInfo);
 		//this.add(doGateWayByPassCheck);
 	}
