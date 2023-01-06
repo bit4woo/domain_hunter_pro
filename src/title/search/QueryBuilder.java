@@ -97,9 +97,9 @@ public class QueryBuilder {
 					+ "request,response,comments").split(",");
 			for (String column:columns) {
 				if (caseSensitive) {
-					conditions.add("request like %s"+keyword +"%s");
+					conditions.add("request like '%"+keyword +"%'");
 				}else {
-					conditions.add("lower(request) like %s"+keyword.toLowerCase()+"%s");
+					conditions.add("lower(request) like '%"+keyword.toLowerCase()+"%'");
 				}
 			}
 
@@ -151,19 +151,18 @@ public class QueryBuilder {
 				}
 			}
 			
-			//TODO 从response中取statuscode
-//			if (dork.equalsIgnoreCase(SearchDork.STATUS.toString())) {
-//				try {
-//					if (isNotCondition) {
-//						return "port != "+Integer.parseInt(keyword);
-//					}else {
-//						return "port = "+Integer.parseInt(keyword);
-//					}
-//				} catch (NumberFormatException e) {
-//					//e.printStackTrace();
-//					return "";
-//				}
-//			}
+			if (dork.equalsIgnoreCase(SearchDork.STATUS.toString())) {
+				try {
+					if (isNotCondition) {
+						return "statuscode != "+Integer.parseInt(keyword);
+					}else {
+						return "statuscode = "+Integer.parseInt(keyword);
+					}
+				} catch (NumberFormatException e) {
+					//e.printStackTrace();
+					return "";
+				}
+			}
 
 			String columnName = "";
 			
@@ -187,25 +186,26 @@ public class QueryBuilder {
 				columnName = "comments";
 			}
 			
-			//TODO
-//			if (dork.equalsIgnoreCase(SearchDork.TITLE.toString())) {
-//				columnName = "";
-//			}
+			if (dork.equalsIgnoreCase(SearchDork.TITLE.toString())) {
+				columnName = "title";
+			}
 
 			if (dork.equalsIgnoreCase(SearchDork.ASNINFO.toString())) {
 				columnName = "ASNInfo";
 			}
 			
-			if (caseSensitive) {
-				if (isNotCondition) {
-					return columnName+" not likes %"+keyword+"%"; 
+			if (columnName.length()>=3){
+				if (caseSensitive) {
+					if (isNotCondition) {
+						return columnName+" not like '%"+keyword+"%'"; 
+					}
+					return columnName+" like '%"+keyword+"%'"; 
+				}else {
+					if (isNotCondition) {
+						return "lower("+columnName+") not like '%"+keyword.toLowerCase()+"%'"; 
+					}
+					return "lower("+columnName+") like '%"+keyword.toLowerCase()+"%'"; 
 				}
-				return columnName+" likes %"+keyword+"%"; 
-			}else {
-				if (isNotCondition) {
-					return "lower("+columnName+") not likes %"+keyword.toLowerCase()+"%"; 
-				}
-				return "lower("+columnName+") likes %"+keyword.toLowerCase()+"%"; 
 			}
 		}
 		return "";
@@ -246,6 +246,7 @@ public class QueryBuilder {
 //			return false;
 //		}
 //	}
+	
 	public static void test(){
 		String title = "标题";
 		System.out.println(title.toLowerCase().contains("标题"));
