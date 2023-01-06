@@ -97,9 +97,9 @@ public class QueryBuilder {
 					+ "request,response,comments").split(",");
 			for (String column:columns) {
 				if (caseSensitive) {
-					conditions.add("request like '%"+keyword +"%'");
+					conditions.add(column+" like '%"+keyword +"%'");
 				}else {
-					conditions.add("lower(request) like '%"+keyword.toLowerCase()+"%'");
+					conditions.add("lower("+column+") like '%"+keyword.toLowerCase()+"%'");
 				}
 			}
 
