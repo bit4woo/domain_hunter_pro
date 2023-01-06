@@ -7,6 +7,7 @@ import java.awt.event.MouseEvent;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.JTable;
@@ -15,8 +16,10 @@ import javax.swing.ToolTipManager;
 import javax.swing.table.TableRowSorter;
 
 import burp.BurpExtender;
+import dao.TitleDao;
 import title.search.History;
 import title.search.LineSearch;
+import title.search.QueryBuilder;
 import title.search.SearchDork;
 import title.search.SearchTextField;
 
@@ -133,10 +136,10 @@ public class LineTable extends JTable
 	 * @param keyword
 	 */
 	@Deprecated
-	public void searchxxx(String keyword) {
+	public void searchWithRowFilter(String keyword) {
 		SearchTextField searchTextField = parentPanel.getTextFieldSearch();
 		boolean caseSensitive = searchTextField.isCaseSensitive();
-		search(keyword,caseSensitive);
+		searchWithRowFilter(keyword,caseSensitive);
 	}
 
 	/**
@@ -144,7 +147,7 @@ public class LineTable extends JTable
 	 * @param caseSensitive
 	 */
 	@Deprecated
-	public void search(String Input,boolean caseSensitive) {
+	public void searchWithRowFilter(String Input,boolean caseSensitive) {
 		//rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + keyword));
 		History.getInstance().addRecord(Input);//记录搜索历史,单例模式
 

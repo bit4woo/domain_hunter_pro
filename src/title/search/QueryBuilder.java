@@ -2,10 +2,6 @@ package title.search;
 
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.regex.Pattern;
-
-import javax.swing.RowFilter;
-import javax.swing.RowFilter.Entry;
 
 import title.LineEntry;
 import title.TitlePanel;
@@ -46,10 +42,13 @@ public class QueryBuilder {
 		String[] searchConditions = searchContent.split("&&");
 		for (String condition:searchConditions) {
 			String tmpcondition = oneCondition(condition,caseSensitive);
-			AllConditions.add("("+tmpcondition+")");
+			if (!tmpcondition.trim().equals("")) {
+				AllConditions.add("("+tmpcondition+")");
+			}
 		}
-		
-		return String.join(" and ", AllConditions);
+		String where = String.join(" and ", AllConditions);
+		where = " where " +where +" limit 100";
+		return where;
 	}
 	
 	//根据状态过滤
@@ -63,19 +62,19 @@ public class QueryBuilder {
 		ArrayList<String> conditions = new ArrayList<String>();
 
 		if (titlePanel.getRdbtnCheckedItems().isSelected()) {
-			conditions.add("CheckStatus = "+LineEntry.CheckStatus_Checked);
+			conditions.add(String.format("CheckStatus = '%s' ",LineEntry.CheckStatus_Checked));
 		}
 
 		if (titlePanel.getRdbtnCheckingItems().isSelected()) {
-			conditions.add("CheckStatus = "+LineEntry.CheckStatus_Checking);
+			conditions.add(String.format("CheckStatus = '%s' ",LineEntry.CheckStatus_Checking));
 		}
 
 		if (titlePanel.getRdbtnUnCheckedItems().isSelected()) {
-			conditions.add("CheckStatus = "+LineEntry.CheckStatus_UnChecked);
+			conditions.add(String.format("CheckStatus = '%s' ",LineEntry.CheckStatus_UnChecked));
 		}
 		
 		if (titlePanel.getRdbtnMoreActionItems().isSelected()) {
-			conditions.add("CheckStatus = "+LineEntry.CheckStatus_MoreAction);
+			conditions.add(String.format("CheckStatus = '%s' ",LineEntry.CheckStatus_MoreAction));
 		}
 		
 		return String.join(" or ", conditions);

@@ -141,9 +141,7 @@ public class TitlePanel extends TitlePanelBase {
 
 		buttonSearch.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				String keyword = textFieldSearch.getText();
-				titleTable.search(keyword);
-				//searchHistory.addRecord(keyword);
+				SearchAndLoadFromDB(guiMain.currentDBFile.toString());
 				digStatus();
 			}
 		});
@@ -444,13 +442,13 @@ public class TitlePanel extends TitlePanelBase {
 	/**
 	 * 从db中搜索，并显示
 	 */
-	public void SearchAndLoadFromDB(String currentDBFile) {
-		titleDao = new TitleDao(currentDBFile);
+	public void SearchAndLoadFromDB(String dbfile) {
+		titleDao = new TitleDao(dbfile);
 		String where = new QueryBuilder(this).buildWhere();
 		
 		List<LineEntry> lines = titleDao.selectByWhere(where);
 		
-		LineTableModel titleTableModel = new LineTableModel(guiMain.currentDBFile.toString(), lines);
+		LineTableModel titleTableModel = new LineTableModel(dbfile, lines);
 		loadData(titleTableModel);
 	}
 	

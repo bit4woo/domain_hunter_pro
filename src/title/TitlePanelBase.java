@@ -97,7 +97,7 @@ public class TitlePanelBase extends JPanel {
 		buttonSearch.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String keyword = textFieldSearch.getText();
-				titleTable.search(keyword);
+				titleTable.searchWithRowFilter(keyword);
 				//searchHistory.addRecord(keyword);
 				digStatus();
 			}
@@ -145,19 +145,8 @@ public class TitlePanelBase extends JPanel {
 		int row = titleTableModel.getLineEntries().size();
 		System.out.println(row+" title entries loaded from database file");
 		stdout.println(row+" title entries loaded from database file");
-		search("");// hide checked items
 		titleTable.tableHeaderWidthinit();//设置header宽度
 		tableAndDetail.fillViewer();
-	}
-
-	/**
-	 * 搜索功能，自动获取caseSensitive的值
-	 * @param keyword
-	 */
-	public void search(String keyword) {
-		boolean	caseSensitive = textFieldSearch.isCaseSensitive();
-		titleTable.search(keyword,caseSensitive);
-		digStatus();
 	}
 
 	/**

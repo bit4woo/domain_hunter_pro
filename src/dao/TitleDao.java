@@ -161,6 +161,7 @@ public class TitleDao {
 	
 	public List<LineEntry> selectByWhere(String where){
 		String sql = "select * from TitleTable "+ where;
+		System.out.println(sql);
 		return jdbcTemplate.query(sql,new TitleMapper());
 	}
 
