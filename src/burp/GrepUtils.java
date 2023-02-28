@@ -1,21 +1,16 @@
 package burp;
 
+import Tools.PatternsFromAndroid;
+import org.apache.commons.text.StringEscapeUtils;
+
 import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.text.StringEscapeUtils;
-
-import Tools.PatternsFromAndroid;
-
 public class GrepUtils {
 	public static final String REGEX_EMAIL = "[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z]{2,6}";
-	
+
 	/**
 	 * 从burp的Email addresses disclosed这个issue中提取，废弃这个
 	 * DomainPanel.collectEmails()，可以从issue中提取Email，但是不是实时的，只有search或者fresh的时候才会触发。
@@ -34,7 +29,7 @@ public class GrepUtils {
 		}
 		return Emails;
 	}
-	
+
 	/**
 	 * 先解Unicode，再解url，应该才是正确操作吧
 	 * @param line
@@ -241,6 +236,36 @@ public class GrepUtils {
 		return tmplist;
 	}
 
+
+	/**
+	 *  查找masscan结果中的port
+	 * @param httpResponse
+	 * @return
+	 */
+	public static List<String> grepPort(String httpResponse) {
+		Set<String> resultSet = new HashSet<>();
+		List<String> lines = Commons.textToLines(httpResponse);
+		String REGEX_masscan_port = "(\\d{1,6})/tcp";
+		Pattern pattern = Pattern.compile(REGEX_masscan_port);
+
+		Matcher matcher = pattern.matcher(httpResponse);
+		while (matcher.find()) {//多次查找
+			String item = matcher.group(1);
+			try {
+				int port = Integer.parseInt(item);
+				if (port >=0 && port <=65535) {
+					resultSet.add(item);
+				}
+			}catch(Exception e) {
+
+			}
+		}
+
+		List<String> tmplist= new ArrayList<>(resultSet);
+		Collections.sort(tmplist);
+		return tmplist;
+	}
+
 	/**
 	 * 提取网段信息 比如143.11.99.0/24
 	 * @param httpResponse
@@ -286,13 +311,28 @@ public class GrepUtils {
 			return false;
 		}
 	}
-	
+
 
 	public static void main(String[] args) {
-		test3();
+		test5();
 	}
-	
-	
+
+
+	public static void test5(){
+		System.out.println(grepPort("Discovered open port 9000/tcp on 45.32.120.214                                 \r\n" +
+				"Discovered open port 80/tcp on 45.32.120.214                                   \r\n" +
+				"Discovered open port 12342/tcp on 45.32.120.214                                \r\n" +
+				"Discovered open port 443/tcp on 45.32.120.214                                  \r\n" +
+				"Discovered open port 22/tcp on 45.32.120.214                                   \r\n" +
+				"Discovered open port 9001/tcp on 45.32.120.214                                 \r\n" +
+				"Discovered open port 10000/tcp on 45.32.120.214                                \r\n" +
+				"Discovered open port 5566/tcp on 45.32.120.214                                 \r\n" +
+				"Discovered open port 8000/tcp on 45.32.120.214                                 \r\n" +
+				"Discovered open port 2121/tcp on 45.32.120.214                                 \r\n" +
+				"Discovered open port 5003/tcp on 45.32.120.214                                 \r\n" +
+				"Discovered open port 12341/tcp on 45.32.120.214  "));
+	}
+
 	public static void test4(){
 		System.out.println(grepSubnet("202.181.90.0/24\tSHOPEE SINGAPORE PRIVATE LIMITEDSingapore\n" +
 				"202.181.91.0/24\tSHOPEE SINGAPORE PRIVATE LIMITEDSingapore"));

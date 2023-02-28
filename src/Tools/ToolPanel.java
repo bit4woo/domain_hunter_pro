@@ -244,6 +244,19 @@ public class ToolPanel extends JPanel {
             }
         });
 
+        JButton btnFindPort = new JButton("Find Port");
+
+        btnFindPort.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String content = inputTextArea.getText();
+                if (null != content) {
+                    List<String> portlist = GrepUtils.grepPort(content);
+                    outputTextArea.setText(String.join(",", portlist));
+                }
+            }
+        });
+
         JButton btnFindSubnet = new JButton("Find Subnet");
 
         btnFindSubnet.addActionListener(new ActionListener() {
@@ -928,9 +941,10 @@ public class ToolPanel extends JPanel {
         threeFourthPanel.add(btnFindDomains, new bagLayout(1, 1));
         threeFourthPanel.add(btnFindUrls, new bagLayout(1, 2));
         threeFourthPanel.add(btnFindIP, new bagLayout(1, 3));
-        threeFourthPanel.add(btnFindIPAndPort, new bagLayout(1, 4));
-        threeFourthPanel.add(btnFindSubnet, new bagLayout(1, 5));
-        threeFourthPanel.add(btnFindEmail, new bagLayout(2, 1));
+        threeFourthPanel.add(btnFindPort,new bagLayout(1,4));
+        threeFourthPanel.add(btnFindIPAndPort, new bagLayout(1, 5));
+        threeFourthPanel.add(btnFindSubnet, new bagLayout(2, 1));
+        threeFourthPanel.add(btnFindEmail, new bagLayout(2, 2));
 
 
         threeFourthPanel.add(btnGrep, new bagLayout(5, 1));
