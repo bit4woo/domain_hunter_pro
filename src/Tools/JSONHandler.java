@@ -3,6 +3,8 @@ package Tools;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -17,7 +19,7 @@ public class JSONHandler {
 		System.out.println();
 		test();
 	}
-	
+
 	//org.json
 	public static boolean isJSON(String test) {
 		if (isJSONObject(test) || isJSONArray(test)) {
@@ -26,7 +28,7 @@ public class JSONHandler {
 			return false;
 		}
 	}
-	
+
 	//org.json
 	public static boolean isJSONObject(String test) {
 		try {
@@ -36,8 +38,8 @@ public class JSONHandler {
 			return false;
 		}
 	}
-	
-	
+
+
 	public static boolean isJSONArray(String test) {
 		try {
 			new JSONArray(test);
@@ -46,10 +48,17 @@ public class JSONHandler {
 			return false;
 		}
 	}
-	
+
 	public static ArrayList<String> grepValueFromJson(String jsonString,String toFind) throws Exception {
 		ArrayList<String> result = new ArrayList<String>();
-		
+
+		if(jsonString.startsWith("HTTP/") && jsonString.contains("\r\n\r\n")) {//response
+			String[] parts = jsonString.split("\r\n\r\n", 1);
+			if (parts.length ==2) {
+				jsonString = parts[1];
+			}
+		}
+
 		if (isJSONObject(jsonString)) {
 			JSONObject obj = new JSONObject(jsonString);
 			Iterator<String> iterator = obj.keys();
@@ -57,11 +66,11 @@ public class JSONHandler {
 				// We need to know keys of Jsonobject
 				String key = (String) iterator.next();
 				String value = obj.get(key).toString();
-				
+
 				if (key.equals(toFind)) {
 					result.add(value);
 				}
-				
+
 				result.addAll(grepValueFromJson(value,toFind));
 			}
 		}else if(isJSONArray(jsonString)){
@@ -72,11 +81,18 @@ public class JSONHandler {
 				result.addAll(grepValueFromJson(item,toFind));
 			}
 		}else {
-			//boolean string number--do nothing
+			String reg = String.format("\"%s\":[\"]{0,1}(.*?)[\"]{0,1}[,}]+", toFind);
+
+			Pattern pDomainNameOnly = Pattern.compile(reg);
+			Matcher matcher = pDomainNameOnly.matcher(jsonString);
+			while (matcher.find()) {//多次查找
+				String item = matcher.group(1);
+				result.add(item);
+			}
 		}
 		return result;
 	}
-	
+
 	public static void test() {
 		String aaa = "[\r\n" + 
 				"  {\r\n" + 
@@ -106,7 +122,7 @@ public class JSONHandler {
 				"            \"inval\": 0,\r\n" + 
 				"            \"inbinary\": false\r\n" + 
 				"        },\r\n" + 
-				"        \"f2.png\": {\r\n" + 
+				"        \"f2.png\": 11{\r\n" + 
 				"            \"intext\": \"A\",\r\n" + 
 				"            \"inval\": 0,\r\n" + 
 				"            \"inbinary\": true\r\n" + 
