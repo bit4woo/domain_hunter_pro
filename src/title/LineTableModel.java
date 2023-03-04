@@ -196,6 +196,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		if (col == titleList.indexOf("Comments")){
 			String valueStr = ((String) value).trim();
 			entry.setComments(new HashSet<>(Arrays.asList(valueStr.split(","))));
+			titleDao.addOrUpdateTitle(entry);//写入数据库
 			fireTableCellUpdated(row, col);
 		}
 	}
