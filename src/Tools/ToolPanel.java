@@ -279,6 +279,7 @@ public class ToolPanel extends JPanel {
                 if (null != content) {
                     Set<String> emails = GrepUtils.grepEmail(content);
                     outputTextArea.setText(String.join(System.lineSeparator(), emails));
+                    guiMain.getDomainPanel().getDomainResult().addIfValidEmail(emails);
                 }
             }
         });

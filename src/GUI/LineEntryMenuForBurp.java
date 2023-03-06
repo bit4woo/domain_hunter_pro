@@ -7,6 +7,7 @@ import java.awt.event.MouseEvent;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -37,7 +38,7 @@ public class LineEntryMenuForBurp{
 	TitlePanel titlepanel;
 	List<JMenuItem> JMenuItemList = new ArrayList<JMenuItem>();
 	private GUIMain guiMain;
-	
+
 	public LineEntryMenuForBurp(GUIMain guiMain) {
 		this.guiMain = guiMain;
 	}
@@ -72,6 +73,10 @@ public class LineEntryMenuForBurp{
 		JMenuItem setAsChecked = new JMenuItem("^_^ Check Done");
 		setAsChecked.addActionListener(new setAsChecked(invocation));
 
+		//当目标使用了的第三方的服务，那么非目标域名中也含有有用信息，这时可以进行一次主动的搜索
+		JMenuItem doSearch = new JMenuItem("^_^ Do Search");
+		doSearch.addActionListener(new doSingleSearch(invocation));
+
 		//list.add(createLevelMenu(invocation));//这是导致右键菜单反应慢的根源，因为在每次在构造右键菜单时都要执行一遍tilte的查找。
 
 		//替换方案1：当鼠标进入菜单时再去查询。//弃用，这种方式响应速度较慢，效果不好
@@ -99,6 +104,7 @@ public class LineEntryMenuForBurp{
 		//JMenuItemList.add(doDirBruteItem);
 		//JMenuItemList.add(runWithSamePathItem);
 		JMenuItemList.add(sendToToolPanel);
+		JMenuItemList.add(doSearch);
 
 		if (ConfigPanel.showItemsInOne.isSelected()) {
 			ArrayList<JMenuItem> result = new ArrayList<JMenuItem>();
@@ -133,7 +139,7 @@ public class LineEntryMenuForBurp{
 		}
 	}
 
-	
+
 	/**
 	 * 将查找行为放在事件触发之后进行。
 	 * @param topMenu
@@ -152,7 +158,7 @@ public class LineEntryMenuForBurp{
 							return;
 						}
 						LineEntry entry = titlepanel.getTitleTable().getLineTableModel().findLineEntryByMessage(messages[0]);
-						
+
 						if (entry != null) {
 							entry.setAssetType(e.getActionCommand());
 						}else {
@@ -402,6 +408,34 @@ public class LineEntryMenuForBurp{
 		}
 	}
 
+
+	public class doSingleSearch implements ActionListener{
+		private IContextMenuInvocation invocation;
+		doSingleSearch(IContextMenuInvocation invocation) {
+			this.invocation  = invocation;
+		}
+		@Override
+		public void actionPerformed(ActionEvent e)
+		{
+			try{
+				IHttpRequestResponse[] messages = null;
+				if (invocation.getToolFlag() == IContextMenuInvocation.CONTEXT_MESSAGE_VIEWER_REQUEST) {
+					IHttpRequestResponse message = invocation.getSelectedMessages()[0];
+					String prefix = message.getHttpService().toString();
+					messages= BurpExtender.getCallbacks().getSiteMap(prefix);
+				}else {
+					messages = invocation.getSelectedMessages();
+				}
+				stdout.println(String.format("Search %s selected items",messages.length));
+				guiMain.getDomainPanel().searchBackground(Arrays.asList(messages));
+			}
+			catch (Exception e1)
+			{
+				e1.printStackTrace(stderr);
+			}
+		}
+	}
+
 	public class setLevelAsActionListener implements ActionListener{
 		setLevelAsActionListener(IContextMenuInvocation invocation,JMenu topMenu) {
 			createSubMenu(topMenu,invocation.getSelectedMessages());
@@ -532,34 +566,34 @@ public class LineEntryMenuForBurp{
 	}
 	public void addSingleRequest(IHttpRequestResponse message ) {
 
-			//当时为啥要用这个key来存储新增的Request？URL地址一样而数据包不一样的情况？
-			//String hashKey = HashCode.fromBytes(message.getRequest()).toString();
-			if (titlepanel.getTitleTable().getLineTableModel() ==null) {
-				stderr.println("Title Table Model is Null, Maybe no database file loaded yet.");
-				return;
-			}
-			Getter getter = new Getter(helpers);
-			URL fullurl = getter.getFullURL(message);
-			LineEntry entry = titlepanel.getTitleTable().getLineTableModel().findLineEntry(fullurl.toString());
+		//当时为啥要用这个key来存储新增的Request？URL地址一样而数据包不一样的情况？
+		//String hashKey = HashCode.fromBytes(message.getRequest()).toString();
+		if (titlepanel.getTitleTable().getLineTableModel() ==null) {
+			stderr.println("Title Table Model is Null, Maybe no database file loaded yet.");
+			return;
+		}
+		Getter getter = new Getter(helpers);
+		URL fullurl = getter.getFullURL(message);
+		LineEntry entry = titlepanel.getTitleTable().getLineTableModel().findLineEntry(fullurl.toString());
 
-			LineEntry newEntry = new LineEntry(message);
-			newEntry.setEntrySource(LineEntry.Source_Manual_Saved);
-			newEntry.setCheckStatus(LineEntry.CheckStatus_UnChecked);
+		LineEntry newEntry = new LineEntry(message);
+		newEntry.setEntrySource(LineEntry.Source_Manual_Saved);
+		newEntry.setCheckStatus(LineEntry.CheckStatus_UnChecked);
 
-			if (entry != null) {//存在相同URL的记录
-				int user_input = JOptionPane.showConfirmDialog(null, "Do you want to overwrite?","Item already exist",JOptionPane.YES_NO_CANCEL_OPTION);
-				if (JOptionPane.YES_OPTION == user_input) {
-					titlepanel.getTitleTable().getLineTableModel().addNewLineEntry(newEntry); //add request，覆盖
-				}else if(JOptionPane.NO_OPTION == user_input){//不覆盖,修改后新增
-					newEntry.setUrl(entry.getUrl()+"#"+System.currentTimeMillis());
-					titlepanel.getTitleTable().getLineTableModel().addNewLineEntry(newEntry); //add request，修改URL(加#时间戳)后新增
-				}//cancel,do nothing
-			}else {//不存在相同记录，直接新增
-				titlepanel.getTitleTable().getLineTableModel().addNewLineEntry(newEntry); //add request，新增
-			}
+		if (entry != null) {//存在相同URL的记录
+			int user_input = JOptionPane.showConfirmDialog(null, "Do you want to overwrite?","Item already exist",JOptionPane.YES_NO_CANCEL_OPTION);
+			if (JOptionPane.YES_OPTION == user_input) {
+				titlepanel.getTitleTable().getLineTableModel().addNewLineEntry(newEntry); //add request，覆盖
+			}else if(JOptionPane.NO_OPTION == user_input){//不覆盖,修改后新增
+				newEntry.setUrl(entry.getUrl()+"#"+System.currentTimeMillis());
+				titlepanel.getTitleTable().getLineTableModel().addNewLineEntry(newEntry); //add request，修改URL(加#时间戳)后新增
+			}//cancel,do nothing
+		}else {//不存在相同记录，直接新增
+			titlepanel.getTitleTable().getLineTableModel().addNewLineEntry(newEntry); //add request，新增
+		}
 
-			String host = message.getHttpService().getHost();
-			guiMain.getDomainPanel().getDomainResult().addIfValid(host); //add domain
+		String host = message.getHttpService().getHost();
+		guiMain.getDomainPanel().getDomainResult().addIfValid(host); //add domain
 	}
 
 	public void addRequests(IHttpRequestResponse[] messages) {

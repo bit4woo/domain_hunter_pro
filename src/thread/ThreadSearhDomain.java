@@ -23,13 +23,15 @@ public class ThreadSearhDomain extends Thread{
 	public PrintWriter stderr;
 	public IExtensionHelpers helpers = callbacks.getHelpers();
 	GUIMain guiMain;
+	private boolean searchThirdPart;
 
-	public ThreadSearhDomain(GUIMain guiMain,List<IHttpRequestResponse> messages) {
+	public ThreadSearhDomain(GUIMain guiMain,List<IHttpRequestResponse> messages,boolean searchThirdPart) {
 		this.guiMain = guiMain;
 		this.messages = messages;
 		stdout = BurpExtender.getStdout();
 		stderr = BurpExtender.getStderr();
 		this.setName(this.toString());
+		this.searchThirdPart = searchThirdPart;
 	}
 	
 	@Override
@@ -41,7 +43,7 @@ public class ThreadSearhDomain extends Thread{
 		plist = new ArrayList<DomainProducer>();
 
 		for (int i=0;i<=20;i++) {
-			DomainProducer p = new DomainProducer(guiMain,guiMain.getInputQueue(),i);
+			DomainProducer p = new DomainProducer(guiMain,guiMain.getInputQueue(),i,searchThirdPart);
 			p.setDaemon(true);
 			p.start();
 			plist.add(p);

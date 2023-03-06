@@ -29,14 +29,27 @@ public class DomainProducer extends Thread {//Producer do
 	public PrintWriter stderr = new PrintWriter(callbacks.getStderr(), true);
 	public IExtensionHelpers helpers = callbacks.getHelpers();
 	private GUIMain guiMain;
+	private boolean searchThirdPart = false;//是否搜索第三方流量，默认是否；当右键菜单进行主动搜索时，表示要搜索第三方。
 
 	public DomainProducer(GUIMain gui,BlockingQueue<IHttpRequestResponse> inputQueue,
-						  int threadNo) {
+			int threadNo,boolean searchThirdPart) {
 		this.guiMain = gui;
 		this.threadNo = threadNo;
 		this.inputQueue = inputQueue;
 		this.setName(this.getClass().getName()+threadNo);//方便调试
 		stopflag= false;
+		this.searchThirdPart  = searchThirdPart;
+	}
+
+	/**
+	 * 默认不搜索第三方流量的构造函数
+	 * @param gui
+	 * @param inputQueue
+	 * @param threadNo
+	 */
+	public DomainProducer(GUIMain gui,BlockingQueue<IHttpRequestResponse> inputQueue,
+			int threadNo) {
+		this(gui,inputQueue,threadNo,false);
 	}
 
 	public void stopThread() {
@@ -96,7 +109,7 @@ public class DomainProducer extends Thread {//Producer do
 				//当Host是一个IP地址时，它也有可能是我们的目标。如果它的证书域名又在目标中，那么它就是目标。
 				int type = DomainPanel.fetchTargetModel().assetType(Host);
 
-				if (type ==DomainManager.USELESS){
+				if (type ==DomainManager.USELESS && searchThirdPart == false){
 					continue;
 				}else if (type == DomainManager.NEED_CONFIRM_IP){
 					//当Host是一个IP，也有可能是目标，通过证书信息进一步判断。

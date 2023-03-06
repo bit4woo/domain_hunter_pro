@@ -311,7 +311,7 @@ public class DomainPanel extends JPanel {
 						//System.out.println("xxx"+keywords.toString());
 						btnSearch.setEnabled(false);
 						collectEmailFromIssue();
-						return search(rootDomains, keywords);
+						return search(null,rootDomains, keywords,false);
 					}
 
 					@Override
@@ -663,15 +663,20 @@ public class DomainPanel extends JPanel {
 	/*
     执行完成后，就已将数据保存到了domainResult
 	 */
-	public Map<String, Set<String>> search(Set<String> rootdomains, Set<String> keywords) {
-		IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
-		IHttpRequestResponse[] messages = callbacks.getSiteMap(null);
+	public Map<String, Set<String>> search(List<IHttpRequestResponse> AllMessages, Set<String> rootdomains, Set<String> keywords,boolean searchThirdPart) {
+		
+		if (AllMessages ==null) {
+			AllMessages = new ArrayList<IHttpRequestResponse>();
+			
+			IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
+			IHttpRequestResponse[] messages = callbacks.getSiteMap(null);
+			
+			AllMessages.addAll(Arrays.asList(messages));
+			AllMessages.addAll(collectPackageNameMessages());//包含错误回显的请求响应消息
+		}
 
-		List<IHttpRequestResponse> AllMessages = new ArrayList<IHttpRequestResponse>();
-		AllMessages.addAll(Arrays.asList(messages));
-		AllMessages.addAll(collectPackageNameMessages());//包含错误回显的请求响应消息
 
-		ThreadSearhDomain searchinstance = new ThreadSearhDomain(guiMain,AllMessages);
+		ThreadSearhDomain searchinstance = new ThreadSearhDomain(guiMain,AllMessages,searchThirdPart);
 		searchinstance.start();
 		try {
 			searchinstance.join();
@@ -682,6 +687,33 @@ public class DomainPanel extends JPanel {
 		return null;
 	}
 
+	/**
+	 * 通过SwingWorker在后台执行搜索,用于右键菜单主动执行搜索，目的就是从第三方流量中提取信息，比如第三方企业邮箱
+	 */
+	public void searchBackground(List<IHttpRequestResponse> AllMessages) {
+		SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+			//using SwingWorker to prevent blocking burp main UI.
+			@Override
+			protected Map doInBackground() throws Exception {
+				Set<String> rootDomains = fetchTargetModel().fetchTargetDomainSet();
+				Set<String> keywords = fetchTargetModel().fetchKeywordSet();
+				return search(AllMessages,rootDomains, keywords,true);//搜索第三方流量
+			}
+
+			@Override
+			protected void done() {
+				try {
+					get();
+					showDataToDomainGUI();
+					saveDomainDataToDB();
+				} catch (Exception e) {
+					e.printStackTrace(stderr);
+				}
+			}
+		};
+		worker.execute();
+	}
+	
 
 	/**
 	 * 从issue中提取Email
@@ -777,7 +809,7 @@ public class DomainPanel extends JPanel {
 			i++;
 		}
 
-		return search(rootdomains, keywords);
+		return search(null,rootdomains, keywords,false);
 	}
 
 
