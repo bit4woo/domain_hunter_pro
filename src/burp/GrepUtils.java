@@ -9,7 +9,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class GrepUtils {
-	public static final String REGEX_EMAIL = "[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z]{2,6}";
+	
+	//public static final String REGEX_EMAIL = "[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z]{2,6}";
+	public static final String REGEX_EMAIL = "[a-zA-Z0-9_.+-]+@[[a-zA-Z0-9-]+\\.]+[a-zA-Z]{2,6}";
 
 	/**
 	 * 从burp的Email addresses disclosed这个issue中提取，废弃这个
@@ -319,18 +321,7 @@ public class GrepUtils {
 
 
 	public static void test5(){
-		System.out.println(grepPort("Discovered open port 9000/tcp on 45.32.120.214                                 \r\n" +
-				"Discovered open port 80/tcp on 45.32.120.214                                   \r\n" +
-				"Discovered open port 12342/tcp on 45.32.120.214                                \r\n" +
-				"Discovered open port 443/tcp on 45.32.120.214                                  \r\n" +
-				"Discovered open port 22/tcp on 45.32.120.214                                   \r\n" +
-				"Discovered open port 9001/tcp on 45.32.120.214                                 \r\n" +
-				"Discovered open port 10000/tcp on 45.32.120.214                                \r\n" +
-				"Discovered open port 5566/tcp on 45.32.120.214                                 \r\n" +
-				"Discovered open port 8000/tcp on 45.32.120.214                                 \r\n" +
-				"Discovered open port 2121/tcp on 45.32.120.214                                 \r\n" +
-				"Discovered open port 5003/tcp on 45.32.120.214                                 \r\n" +
-				"Discovered open port 12341/tcp on 45.32.120.214  "));
+		System.out.println(grepEmail("111 cs@ph.aaa.com"));
 	}
 
 	public static void test4(){
