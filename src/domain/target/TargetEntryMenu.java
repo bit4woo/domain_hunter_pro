@@ -5,6 +5,8 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.io.PrintWriter;
+import java.net.URLEncoder;
+import java.util.Base64;
 
 import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;
@@ -122,11 +124,11 @@ public class TargetEntryMenu extends JPopupMenu {
 				guiMain.getDomainPanel().getControlPanel().selectedToBalck();
 			}
 		});
-		
+
 		/**
 		 * 查找邮箱的搜索引擎
 		 */
-		JMenuItem SearchOnHunterIOItem = new JMenuItem(new AbstractAction("Seach On hunter.io") {
+		JMenuItem SearchOnHunterIOItem = new JMenuItem(new AbstractAction("Seach Email On hunter.io") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 
@@ -147,14 +149,115 @@ public class TargetEntryMenu extends JPopupMenu {
 			}
 		});
 
+
+		JMenuItem SearchOnFoFaItem = new JMenuItem(new AbstractAction("Seach On FoFa") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+
+				if (modelRows.length >=50) {
+					return;
+				}
+				for (int row:modelRows) {
+					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,0);
+					rootDomain = new String(Base64.getEncoder().encode(rootDomain.getBytes()));
+					String url= "https://fofa.info/result?qbase64=%s";
+					url= String.format(url, rootDomain);
+					try {
+						Commons.browserOpen(url, null);
+					} catch (Exception e) {
+						e.printStackTrace(stderr);
+					}
+				}
+			}
+		});
+
+
+
+		JMenuItem SearchOnShodanItem = new JMenuItem(new AbstractAction("Seach On Shodan") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+
+				if (modelRows.length >=50) {
+					return;
+				}
+				for (int row:modelRows) {
+					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,0);
+					rootDomain = URLEncoder.encode(rootDomain);
+					String url= "https://www.shodan.io/search?query=%s";
+					//https://www.shodan.io/search?query=baidu.com
+					url= String.format(url, rootDomain);
+					try {
+						Commons.browserOpen(url, null);
+					} catch (Exception e) {
+						e.printStackTrace(stderr);
+					}
+				}
+			}
+		});
+
+		//360quake,zoomeye,hunter,shodan
+		//https://quake.360.net/quake/#/searchResult?searchVal=baidu.com
+		JMenuItem SearchOn360QuakeItem = new JMenuItem(new AbstractAction("Seach On 360Quake") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+
+				if (modelRows.length >=50) {
+					return;
+				}
+				for (int row:modelRows) {
+					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,0);
+					rootDomain = URLEncoder.encode(rootDomain);
+					String url= "https://quake.360.net/quake/#/searchResult?searchVal=%s";
+					url= String.format(url, rootDomain);
+					try {
+						Commons.browserOpen(url, null);
+					} catch (Exception e) {
+						e.printStackTrace(stderr);
+					}
+				}
+			}
+		});
+
+		//https://quake.360.net/quake/#/searchResult?searchVal=favicon%3A%20%22c5618c85980459ce4325eb324428d622%22
+
+
+		JMenuItem SearchOnZoomEyeItem = new JMenuItem(new AbstractAction("Seach On ZoomEye") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+
+				if (modelRows.length >=50) {
+					return;
+				}
+				for (int row:modelRows) {
+					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,0);
+					rootDomain = URLEncoder.encode(rootDomain);
+					String url= "https://www.zoomeye.org/searchResult?q=%s";
+					url= String.format(url, rootDomain);
+					try {
+						Commons.browserOpen(url, null);
+					} catch (Exception e) {
+						e.printStackTrace(stderr);
+					}
+				}
+			}
+		});
+
 		this.add(getSubDomainsOf);
 		this.add(batchAddCommentsItem);
 		this.add(addToBlackItem);
 		this.addSeparator();
+
+		this.add(SearchOnFoFaItem);
+		this.add(SearchOnShodanItem);
+		this.add(SearchOn360QuakeItem);
+		this.add(SearchOnZoomEyeItem);
+		this.addSeparator();
+
 		this.add(OpenWithBrowserItem);
 		this.add(whoisItem);
 		this.add(ASNInfoItem);
 		this.add(SearchOnHunterIOItem);
+		this.addSeparator();
 	}
 
 }

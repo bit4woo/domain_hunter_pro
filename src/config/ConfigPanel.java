@@ -255,7 +255,7 @@ public class ConfigPanel extends JPanel{
 		JLabel label_2 = new JLabel("");
 
 		ignoreHTTPS = new JRadioButton("Ignore HTTPS if HTTP is OK || Ignore HTTP if HTTPS is OK");
-		ignoreHTTPS.setSelected(true);
+		ignoreHTTPS.setSelected(false);
 
 		add(label_2, new MyGridBagLayout(11,1));
 		add(ignoreHTTPS, new MyGridBagLayout(11,2));
