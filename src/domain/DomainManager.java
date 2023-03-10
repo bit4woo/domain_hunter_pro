@@ -353,14 +353,16 @@ public class DomainManager {
 		};
 	}
 
-	public void addTLDToTargetAndSubDomain(String enteredRootDomain) {
-		if (enteredRootDomain == null) return;
+	public boolean addTLDToTargetAndSubDomain(String enteredRootDomain) {
+		if (enteredRootDomain == null) return false;
 		String tldDomainToAdd  = guiMain.getDomainPanel().fetchTargetModel().getTLDDomainToAdd(enteredRootDomain);
 		TargetEntry tmp = new TargetEntry(tldDomainToAdd, false);
 		guiMain.getDomainPanel().fetchTargetModel().addRowIfValid(tmp);
 		if (guiMain.getDomainPanel().fetchTargetModel().addRowIfValid(tmp)) {
 			subDomainSet.add(enteredRootDomain);
+			return true;
 		};
+		return false;
 	}
 
 	public void addIfValid(Set<String> domains) {
@@ -388,34 +390,48 @@ public class DomainManager {
 		int type = fetchTargetModel().assetType(domain);
 
 		if (type !=DomainManager.USELESS && type!= DomainManager.NEED_CONFIRM_IP){
-			BurpExtender.getStdout().println("Target Asset Found: "+domain);
+			//BurpExtender.getStdout().println("Target Asset Found: "+domain);
+			//use when debug
+		}else {
+			return false;
 		}
+		
 		if (type == DomainManager.TLD_DOMAIN) {
 			//应当先做TLD域名的添加，这样可以丰富Root域名，避免数据损失遗漏
 			//这里的rootDomain不一定是topPrivate。比如 shopeepay.shopee.sg 和shopeepay.shopee.io
 			//这个时候就不能自动取topPrivate。
-			addTLDToTargetAndSubDomain(domain);
-			return true;
+			if (addTLDToTargetAndSubDomain(domain)) {
+				BurpExtender.getStdout().println("Target Asset Found: "+domain);
+				return true;
+			};
 		} else if (type == DomainManager.SUB_DOMAIN) {//包含手动添加的IP
-			subDomainSet.add(domain);//子域名可能来自相关域名和相似域名。
+			if (subDomainSet.add(domain)) {
+				BurpExtender.getStdout().println("Target Asset Found: "+domain);
+				return true;
+			}//子域名可能来自相关域名和相似域名。
 			//gettitle的逻辑中默认会请求80、443，所以无需再添加不包含端口的记录
-			return true;
 		} else if (type == DomainManager.SIMILAR_DOMAIN) {
-			similarDomainSet.add(domain);
-			return true;
+			if (similarDomainSet.add(domain)) {
+				BurpExtender.getStdout().println("Target Asset Found: "+domain);
+				return true;
+			};
 		} else if (type == DomainManager.PACKAGE_NAME) {
-			PackageNameSet.add(domain);
-			return true;
+			if (PackageNameSet.add(domain)) {
+				BurpExtender.getStdout().println("Target Asset Found: "+domain);
+				return true;
+			};
 		} else if (type == DomainManager.IP_ADDRESS){
-			IPSetOfSubnet.add(domain);
-			return true;
+			if (IPSetOfSubnet.add(domain)) {
+				BurpExtender.getStdout().println("Target Asset Found: "+domain);
+				return true;
+			};
 			//不再直接添加收集到但是无法确认所属关系的IP，误报太高
 			//		} else if (type == DomainManager.NEED_CONFIRM_IP){
 			//			SpecialPortTargets.add(domain);
 			//			return true;
-		}else{
-			return false;
-		}//Email的没有处理
+		}
+		return false;
+		//Email的没有处理
 	}
 
 
