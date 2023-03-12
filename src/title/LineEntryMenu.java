@@ -867,6 +867,26 @@ public class LineEntryMenu extends JPopupMenu {
 		});
 		removeSubDomainItem.setToolTipText("Delete Host From Subdomain Set In Domain Panel");
 
+		
+		JMenuItem removeCustomAssetItem = new JMenuItem(new AbstractAction("Delete Host From Custom Assets") {//need to show dialog to confirm
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				int result = JOptionPane.showConfirmDialog(null,"Delete these hosts from Custom Assets?");
+				if (result == JOptionPane.YES_OPTION) {
+					//java.util.List<String> hosts = lineTable.getLineTableModel().getHosts(rows);//不包含端口，如果原始记录包含端口就删不掉
+					//如果有 domain domain:8888 两个记录，这种方式就会删错对象
+					java.util.List<String> hostAndPort = lineTable.getLineTableModel().getHostsAndPorts(modleRows);//包含端口，如果原始记录
+					for(String item:hostAndPort) {
+						if (!guiMain.getDomainPanel().getDomainResult().getSpecialPortTargets().remove(item)) {
+							guiMain.getDomainPanel().getDomainResult().getSpecialPortTargets().remove(item.split(":")[0]);
+						}
+					}
+				}
+			}
+		});
+		removeSubDomainItem.setToolTipText("Delete Host From Subdomain Set In Domain Panel");
+		
+		
 		/**
 		 * 黑名单主要用于记录CDN或者云服务IP，避免计算网段时包含这些IP。
 		 */
@@ -964,11 +984,13 @@ public class LineEntryMenu extends JPopupMenu {
 		CopyMenu.add(copyIconhashItem);
 
 		this.addSeparator();
-
-		this.add(addToblackListAndDeleteItem);
+		this.add(addToblackListItem);//加入黑名单
 		this.add(removeItem);//单纯删除记录
+		this.add(addToblackListAndDeleteItem);//加入黑名单并删除
+		
 		this.add(removeSubDomainItem);
-		this.add(addToblackListItem);
+		this.add(removeCustomAssetItem);
+		
 	}
 	
 	/**
