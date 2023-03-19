@@ -342,7 +342,6 @@ public class LineEntryMenuForBurp{
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			new addRequestToHunter(invocation).actionPerformed(e);
-			new addComment(invocation).actionPerformed(e);
 		}
 	}
 
@@ -559,12 +558,14 @@ public class LineEntryMenuForBurp{
 		if (messages.length <=0){
 			return;
 		}else if(messages.length==1){
-			addSingleRequest(messages[0]);
+			String comment = getCommentInfo();
+			addSingleRequest(messages[0],comment);
 		}else {
-			addRequests(messages);
+			String comment = getCommentInfo();
+			addRequests(messages,comment);
 		}
 	}
-	public void addSingleRequest(IHttpRequestResponse message ) {
+	public void addSingleRequest(IHttpRequestResponse message,String comment) {
 
 		//当时为啥要用这个key来存储新增的Request？URL地址一样而数据包不一样的情况？
 		//String hashKey = HashCode.fromBytes(message.getRequest()).toString();
@@ -579,6 +580,7 @@ public class LineEntryMenuForBurp{
 		LineEntry newEntry = new LineEntry(message);
 		newEntry.setEntrySource(LineEntry.Source_Manual_Saved);
 		newEntry.setCheckStatus(LineEntry.CheckStatus_UnChecked);
+		newEntry.addComment(comment);
 
 		if (entry != null) {//存在相同URL的记录
 			int user_input = JOptionPane.showConfirmDialog(null, "Do you want to overwrite?","Item already exist",JOptionPane.YES_NO_CANCEL_OPTION);
@@ -596,7 +598,7 @@ public class LineEntryMenuForBurp{
 		guiMain.getDomainPanel().getDomainResult().addIfValid(host); //add domain
 	}
 
-	public void addRequests(IHttpRequestResponse[] messages) {
+	public void addRequests(IHttpRequestResponse[] messages,String comment) {
 		int user_input = JOptionPane.showConfirmDialog(null, "Do you want to overwrite if item already exist?","Chose Your Action",JOptionPane.YES_NO_CANCEL_OPTION);
 		if (user_input != JOptionPane.YES_OPTION && user_input != JOptionPane.NO_OPTION){
 			return;
@@ -616,6 +618,7 @@ public class LineEntryMenuForBurp{
 			LineEntry newEntry = new LineEntry(message);
 			newEntry.setEntrySource(LineEntry.Source_Manual_Saved);
 			newEntry.setCheckStatus(LineEntry.CheckStatus_UnChecked);
+			newEntry.addComment(comment);
 
 			if (entry != null) {//存在相同URL的记录
 				if (JOptionPane.YES_OPTION == user_input) {
