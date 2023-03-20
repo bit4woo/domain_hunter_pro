@@ -67,7 +67,7 @@ public class LineEntryMenuForBurp{
 		JMenuItem addCommentToDomainHunter = new JMenuItem("^_^ Add Comment");
 		addCommentToDomainHunter.addActionListener(new addComment(invocation));
 
-		JMenuItem saveRequestAndAddComment = new JMenuItem("^_^ Add And Comment");
+		JMenuItem saveRequestAndAddComment = new JMenuItem("^_^ Add Request And Comment");
 		saveRequestAndAddComment.addActionListener(new saveAndComment(invocation));
 
 		JMenuItem setAsChecked = new JMenuItem("^_^ Check Done");
@@ -206,7 +206,7 @@ public class LineEntryMenuForBurp{
 		{
 			try{
 				IHttpRequestResponse[] messages = invocation.getSelectedMessages();
-				addToRequest(messages);
+				addRequests(messages,"");
 			}
 			catch (Exception e1)
 			{
@@ -341,7 +341,17 @@ public class LineEntryMenuForBurp{
 		}
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			new addRequestToHunter(invocation).actionPerformed(e);
+			try{
+				IHttpRequestResponse[] messages = invocation.getSelectedMessages();
+				if (messages.length>=1) {
+					String comment = getCommentInfo();
+					addRequests(messages,comment);
+				}
+			}
+			catch (Exception e1)
+			{
+				e1.printStackTrace(stderr);
+			}
 		}
 	}
 
@@ -554,59 +564,13 @@ public class LineEntryMenuForBurp{
 		guiMain.getDomainPanel().saveDomainDataToDB();
 	}
 
-	public void addToRequest(IHttpRequestResponse[] messages) {
-		if (messages.length <=0){
-			return;
-		}else if(messages.length==1){
-			String comment = getCommentInfo();
-			addSingleRequest(messages[0],comment);
-		}else {
-			String comment = getCommentInfo();
-			addRequests(messages,comment);
-		}
-	}
-	public void addSingleRequest(IHttpRequestResponse message,String comment) {
-
-		//当时为啥要用这个key来存储新增的Request？URL地址一样而数据包不一样的情况？
-		//String hashKey = HashCode.fromBytes(message.getRequest()).toString();
-		if (titlepanel.getTitleTable().getLineTableModel() ==null) {
-			stderr.println("Title Table Model is Null, Maybe no database file loaded yet.");
-			return;
-		}
-		Getter getter = new Getter(helpers);
-		URL fullurl = getter.getFullURL(message);
-		LineEntry entry = titlepanel.getTitleTable().getLineTableModel().findLineEntry(fullurl.toString());
-
-		LineEntry newEntry = new LineEntry(message);
-		newEntry.setEntrySource(LineEntry.Source_Manual_Saved);
-		newEntry.setCheckStatus(LineEntry.CheckStatus_UnChecked);
-		newEntry.addComment(comment);
-
-		if (entry != null) {//存在相同URL的记录
-			int user_input = JOptionPane.showConfirmDialog(null, "Do you want to overwrite?","Item already exist",JOptionPane.YES_NO_CANCEL_OPTION);
-			if (JOptionPane.YES_OPTION == user_input) {
-				titlepanel.getTitleTable().getLineTableModel().addNewLineEntry(newEntry); //add request，覆盖
-			}else if(JOptionPane.NO_OPTION == user_input){//不覆盖,修改后新增
-				newEntry.setUrl(entry.getUrl()+"#"+System.currentTimeMillis());
-				titlepanel.getTitleTable().getLineTableModel().addNewLineEntry(newEntry); //add request，修改URL(加#时间戳)后新增
-			}//cancel,do nothing
-		}else {//不存在相同记录，直接新增
-			titlepanel.getTitleTable().getLineTableModel().addNewLineEntry(newEntry); //add request，新增
-		}
-
-		String host = message.getHttpService().getHost();
-		guiMain.getDomainPanel().getDomainResult().addIfValid(host); //add domain
-	}
 
 	public void addRequests(IHttpRequestResponse[] messages,String comment) {
-		int user_input = JOptionPane.showConfirmDialog(null, "Do you want to overwrite if item already exist?","Chose Your Action",JOptionPane.YES_NO_CANCEL_OPTION);
-		if (user_input != JOptionPane.YES_OPTION && user_input != JOptionPane.NO_OPTION){
-			return;
-		}
 		if (titlepanel.getTitleTable().getLineTableModel() ==null) {
 			stderr.println("Title Table Model is Null, Maybe no database file loaded yet.");
 			return;
 		}
+
 		for(IHttpRequestResponse message:messages) {
 			//当时为啥要用这个key来存储新增的Request？URL地址一样而数据包不一样的情况？
 			//String hashKey = HashCode.fromBytes(message.getRequest()).toString();
@@ -621,12 +585,8 @@ public class LineEntryMenuForBurp{
 			newEntry.addComment(comment);
 
 			if (entry != null) {//存在相同URL的记录
-				if (JOptionPane.YES_OPTION == user_input) {
-					titlepanel.getTitleTable().getLineTableModel().addNewLineEntry(newEntry); //add request，覆盖
-				}else {//不覆盖,修改后新增
-					newEntry.setUrl(entry.getUrl()+"#"+System.currentTimeMillis());
-					titlepanel.getTitleTable().getLineTableModel().addNewLineEntry(newEntry); //add request，修改URL(加#时间戳)后新增
-				}//cancel,do nothing
+				newEntry.setUrl(entry.getUrl()+"#"+System.currentTimeMillis());
+				titlepanel.getTitleTable().getLineTableModel().addNewLineEntry(newEntry); //add request，修改URL(加#时间戳)后新增
 			}else {//不存在相同记录，直接新增
 				titlepanel.getTitleTable().getLineTableModel().addNewLineEntry(newEntry); //add request，新增
 			}
