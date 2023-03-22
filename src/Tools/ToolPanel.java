@@ -82,6 +82,8 @@ public class ToolPanel extends JPanel {
     public boolean inputTextAreaChanged = true;
 
     String history = "";
+    String inputTextAreaOldValue = "";
+    String inputTextAreaNewerValue = "";
 
     private GUIMain guiMain;
 
@@ -132,8 +134,10 @@ public class ToolPanel extends JPanel {
         JButton outputToInput = new JButton("Input<----Output");
         HeaderPanel.add(outputToInput);
         outputToInput.addActionListener(new ActionListener() {
+
             @Override
             public void actionPerformed(ActionEvent e) {
+                inputTextAreaOldValue = inputTextArea.getText();
                 String content = outputTextArea.getText();
                 if (null != content) {
                     inputTextArea.setText(content);
@@ -170,12 +174,40 @@ public class ToolPanel extends JPanel {
         inputTextArea.addMouseListener(new TextAreaMouseListener(inputTextArea));
         oneFourthPanel.setViewportView(inputTextArea);
 
+
         Border blackline = BorderFactory.createLineBorder(Color.black);
 
-        JLabel lblNewLabel_1 = new JLabel("Input");
+        JLabel lblNewLabel_1 = new JLabel("  Input  ");
         lblNewLabel_1.setHorizontalAlignment(SwingConstants.CENTER);
         lblNewLabel_1.setBorder(blackline);
-        oneFourthPanel.setColumnHeaderView(lblNewLabel_1);
+
+        JPanel headerViewPanel = new JPanel();
+        JButton leftButton = new JButton(" < ");
+        leftButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (inputTextAreaOldValue != null && !inputTextAreaOldValue.equals("")) {
+                    inputTextAreaNewerValue = inputTextArea.getText();
+                    inputTextArea.setText(inputTextAreaOldValue);
+                }
+            }
+        });
+
+        JButton rightButton = new JButton(" > ");
+        rightButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (inputTextAreaNewerValue != null && !inputTextAreaNewerValue.equals("")) {
+                    inputTextAreaOldValue = inputTextArea.getText();
+                    inputTextArea.setText(inputTextAreaNewerValue);
+                }
+            }
+        });
+
+        headerViewPanel.add(leftButton);
+        headerViewPanel.add(lblNewLabel_1);
+        headerViewPanel.add(rightButton);
+        oneFourthPanel.setColumnHeaderView(headerViewPanel);
 
         outputTextArea = new JTextArea();
         outputTextArea.setLineWrap(true);
@@ -942,7 +974,7 @@ public class ToolPanel extends JPanel {
         threeFourthPanel.add(btnFindDomains, new bagLayout(1, 1));
         threeFourthPanel.add(btnFindUrls, new bagLayout(1, 2));
         threeFourthPanel.add(btnFindIP, new bagLayout(1, 3));
-        threeFourthPanel.add(btnFindPort,new bagLayout(1,4));
+        threeFourthPanel.add(btnFindPort, new bagLayout(1, 4));
         threeFourthPanel.add(btnFindIPAndPort, new bagLayout(1, 5));
         threeFourthPanel.add(btnFindSubnet, new bagLayout(2, 1));
         threeFourthPanel.add(btnFindEmail, new bagLayout(2, 2));
