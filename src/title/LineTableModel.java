@@ -10,7 +10,12 @@ import java.io.Serializable;
 import java.net.URL;
 import java.util.*;
 
-
+/**
+ * 关于firexxx，目的是通知各个modelListener。默认的listener中，有一种的目的是：当数据发生变化时，更新GUI的显示。
+ * 看DefaultTableModel的源码可以知道，它的数据变动都调用了firexxx函数，如果直接使用DefaultTableModel就无需再主动调用firexxx函数。
+ * 而在自己实现的TableModel中，则需要注意主动调用，否则监听器时不会知道的。GUI不会更新，或者其他报错数据的监听器也不会执行。
+ *
+ */
 public class LineTableModel extends AbstractTableModel implements IMessageEditorController,Serializable {
 	//https://stackoverflow.com/questions/11553426/error-in-getrowcount-on-defaulttablemodel
 	//when use DefaultTableModel, getRowCount encounter NullPointerException. why?
