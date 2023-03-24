@@ -25,7 +25,7 @@ public class TargetEntry {
 	private Set<String> AuthoritativeNameServers = new HashSet<String>();
 	private boolean ZoneTransfer = false;//域名对应的权威服务器，是否域于传送漏洞
 	private boolean isBlack = false;//这个域名是否是黑名单根域名，需要排除的
-	private String comment = "";
+	private Set<String> comments = new HashSet<String>();
 	private boolean useTLD = true;//TLD= Top-Level Domain,比如 baidu.com为true，*.m.baidu.com为false
 
 	public static final String Target_Type_Domain = "Domain";
@@ -156,21 +156,17 @@ public class TargetEntry {
 	public void setBlack(boolean isBlack) {
 		this.isBlack = isBlack;
 	}
-	public String getComment() {
-		return comment;
+	public Set<String> getComments() {
+		return comments;
 	}
-	public void setComment(String comment) {
-		this.comment = comment;
+
+	public void setComments(Set<String> comments) {
+		this.comments = comments;
 	}
 
 	public void addComment(String commentToAdd) {
 		if (commentToAdd == null || commentToAdd.trim().equals("")) return;
-
-		String comments =getComment();
-		if (!comments.contains(commentToAdd)) {
-			comments += ","+commentToAdd;
-			this.setComment(comments);
-		}
+		comments.add(commentToAdd);
 	}
 
 	public boolean isUseTLD() {

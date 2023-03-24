@@ -115,7 +115,7 @@ public class TargetTableModel extends AbstractTableModel {
 			return entry.getKeyword();
 		}
 		if (columnIndex == titletList.indexOf("Comment")) {
-			return entry.getComment();
+			return String.join(",", entry.getComments());
 		}
 		if (columnIndex == titletList.indexOf("Black")) {
 			return entry.isBlack();
@@ -129,7 +129,7 @@ public class TargetTableModel extends AbstractTableModel {
 		TargetEntry entry = targetEntries.get(row);
 		if (col == titletList.indexOf("Comment")){
 			String valueStr = ((String) value).trim();
-			entry.setComment(valueStr);
+			entry.setComments(new HashSet<>(Arrays.asList(valueStr.split(","))));
 			fireTableCellUpdated(row, col);
 		}
 		if (col == titletList.indexOf("Keyword")){
@@ -214,7 +214,7 @@ public class TargetTableModel extends AbstractTableModel {
 		TargetEntry oldentry = targetEntries.get(key);
 		if (oldentry != null) {//如果有旧的记录，就需要用旧的内容做修改
 			entry.setBlack(oldentry.isBlack());
-			entry.setComment(oldentry.getComment());
+			entry.setComments(oldentry.getComments());
 			entry.setKeyword(oldentry.getKeyword());
 		}
 		

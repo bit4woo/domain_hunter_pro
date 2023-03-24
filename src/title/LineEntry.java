@@ -566,10 +566,7 @@ public class LineEntry {
 
 	public void addComment(String commentToAdd) {
 		if (commentToAdd ==null || commentToAdd.trim().equals("")) return;
-
-		if (!comments.contains(commentToAdd)) {
-			comments.add(commentToAdd);
-		}
+		comments.add(commentToAdd);
 	}
 
 	public void removeComment(String commentToRemove) {

@@ -9,6 +9,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 
+import burp.SetAndStr;
 import domain.target.TargetEntry;
 import title.IndexedHashMap;
 
@@ -59,7 +60,7 @@ public class TargetDao {
 					+ " values(?,?,?,?,?,?,?)";
 
 		int result = jdbcTemplate.update(sql, entry.getTarget(),entry.getType(),entry.getKeyword(),entry.isZoneTransfer(),
-				entry.isBlack(),entry.getComment(),entry.isUseTLD());
+				entry.isBlack(),SetAndStr.toStr(entry.getComments()),entry.isUseTLD());
 
 		return result > 0;
 	}

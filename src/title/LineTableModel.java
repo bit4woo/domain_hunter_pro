@@ -679,7 +679,12 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		//concurrentHashMap的put方法会在替换时返回原来的值，可用于判断是替换还是新增
 		int index = lineEntries.IndexOfKey(key);
 		if (ret == null) {
-			fireTableRowsInserted(index, index);
+			try {
+				fireTableRowsInserted(index, index);
+			} catch (Exception e) {
+				e.printStackTrace(BurpExtender.getStderr());
+				BurpExtender.getStderr().println("index: "+index);
+			}
 			//这里偶尔出现IndexOutOfBoundsException错误,
 			// 但是debug发现javax.swing.DefaultRowSorter.checkAgainstModel在条件为false时(即未越界)抛出了异常，奇怪！
 		}else {

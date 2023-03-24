@@ -2,9 +2,12 @@ package dao;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.HashSet;
 
 import org.springframework.jdbc.core.RowMapper;
 
+import burp.SetAndStr;
 import domain.target.TargetEntry;
 
 public class TargetMapper implements RowMapper<TargetEntry> {
@@ -23,7 +26,14 @@ public class TargetMapper implements RowMapper<TargetEntry> {
 		entry.setKeyword(rs.getString("keyword"));
 		entry.setZoneTransfer(rs.getBoolean("ZoneTransfer"));
 		entry.setBlack(rs.getBoolean("isBlack"));
-		entry.setComment(rs.getString("comment"));
+		if (rs.getString("comment").startsWith("[") && rs.getString("comment").endsWith("]")) {
+			//新的代码，setToStr的存储格式
+			entry.setComments(SetAndStr.toSet(rs.getString("comment")));
+		}else {
+			//兼容以前的string格式存储，即单纯逗号分割
+			entry.setComments(new HashSet<String>(Arrays.asList(rs.getString("comment").split(","))));
+		}
+		
 		entry.setUseTLD(rs.getBoolean("useTLD"));
 		return entry;
 	}
