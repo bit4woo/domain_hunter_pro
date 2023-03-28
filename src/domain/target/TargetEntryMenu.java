@@ -128,7 +128,7 @@ public class TargetEntryMenu extends JPopupMenu {
 		/**
 		 * 查找邮箱的搜索引擎
 		 */
-		JMenuItem SearchOnHunterIOItem = new JMenuItem(new AbstractAction("Seach Email On hunter.io") {
+		JMenuItem SearchEmailOnHunterIOItem = new JMenuItem(new AbstractAction("Seach Email On hunter.io") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 
@@ -150,7 +150,7 @@ public class TargetEntryMenu extends JPopupMenu {
 		});
 
 
-		JMenuItem SearchOnFoFaItem = new JMenuItem(new AbstractAction("Seach On FoFa") {
+		JMenuItem SearchOnFoFaItem = new JMenuItem(new AbstractAction("Seach On fofa.info") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 
@@ -173,7 +173,7 @@ public class TargetEntryMenu extends JPopupMenu {
 
 
 
-		JMenuItem SearchOnShodanItem = new JMenuItem(new AbstractAction("Seach On Shodan") {
+		JMenuItem SearchOnShodanItem = new JMenuItem(new AbstractAction("Seach On shodan.io") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 
@@ -197,7 +197,7 @@ public class TargetEntryMenu extends JPopupMenu {
 
 		//360quake,zoomeye,hunter,shodan
 		//https://quake.360.net/quake/#/searchResult?searchVal=baidu.com
-		JMenuItem SearchOn360QuakeItem = new JMenuItem(new AbstractAction("Seach On 360Quake") {
+		JMenuItem SearchOn360QuakeItem = new JMenuItem(new AbstractAction("Seach On quake.360.net") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 
@@ -218,10 +218,57 @@ public class TargetEntryMenu extends JPopupMenu {
 			}
 		});
 
+		//https://ti.qianxin.com/v2/search?type=domain&value=example.com
+		JMenuItem SearchOnTiQianxinItem = new JMenuItem(new AbstractAction("Seach On ti.qianxin.com") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+
+				if (modelRows.length >=50) {
+					return;
+				}
+				for (int row:modelRows) {
+					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,0);
+					rootDomain = URLEncoder.encode(rootDomain);
+					String url= "https://ti.qianxin.com/v2/search?type=domain&value=%s";
+					url= String.format(url, rootDomain);
+					try {
+						Commons.browserOpen(url, null);
+					} catch (Exception e) {
+						e.printStackTrace(stderr);
+					}
+				}
+			}
+		});
+
+
+		//https://hunter.qianxin.com/list?search=domain%3D%22example.com%22
+		JMenuItem SearchOnHunterQianxinItem = new JMenuItem(new AbstractAction("Seach On hunter.qianxin.com") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+
+				if (modelRows.length >=50) {
+					return;
+				}
+				for (int row:modelRows) {
+					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,0);
+					String domainPara = String.format("domain=\"%s\"",rootDomain);
+					domainPara = URLEncoder.encode(domainPara);
+					String url= "https://hunter.qianxin.com/list?search=%s";
+					url= String.format(url, domainPara);
+					try {
+						Commons.browserOpen(url, null);
+					} catch (Exception e) {
+						e.printStackTrace(stderr);
+					}
+				}
+			}
+		});
+
+
 		//https://quake.360.net/quake/#/searchResult?searchVal=favicon%3A%20%22c5618c85980459ce4325eb324428d622%22
 
 
-		JMenuItem SearchOnZoomEyeItem = new JMenuItem(new AbstractAction("Seach On ZoomEye") {
+		JMenuItem SearchOnZoomEyeItem = new JMenuItem(new AbstractAction("Seach On zoomeye.org") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 
@@ -248,15 +295,17 @@ public class TargetEntryMenu extends JPopupMenu {
 		this.addSeparator();
 
 		this.add(SearchOnFoFaItem);
-		this.add(SearchOnShodanItem);
 		this.add(SearchOn360QuakeItem);
+		this.add(SearchOnTiQianxinItem);
+		this.add(SearchOnHunterQianxinItem);
 		this.add(SearchOnZoomEyeItem);
+		this.add(SearchOnShodanItem);
 		this.addSeparator();
 
 		this.add(OpenWithBrowserItem);
 		this.add(whoisItem);
 		this.add(ASNInfoItem);
-		this.add(SearchOnHunterIOItem);
+		this.add(SearchEmailOnHunterIOItem);
 		this.addSeparator();
 	}
 
