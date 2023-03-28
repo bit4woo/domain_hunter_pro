@@ -65,6 +65,7 @@ public class LineSearch {
 			}
 			contentList.add(line.getIPSet().toString());
 			contentList.add(line.getCNAMESet().toString());
+			contentList.add(line.getCertDomainSet().toString());
 			contentList.add(line.getComments().toString());
 			contentList.add(line.getTitle());
 			contentList.add(line.getIcon_hash());

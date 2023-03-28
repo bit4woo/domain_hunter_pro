@@ -573,18 +573,23 @@ public class ToolPanel extends JPanel {
 
         });
 
-        JButton removeDuplicate = new JButton("Remove Duplicate");
+        JButton removeDuplicate = new JButton("Deduplicate");
 
         removeDuplicate.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
                     List<String> content = Commons.getLinesFromTextArea(inputTextArea);
-                    Set<String> contentSet = new HashSet<>(content);
-                    List<String> tmplist = new ArrayList<>(contentSet);
-
-                    Collections.sort(tmplist);
-                    String output = String.join(System.lineSeparator(), tmplist);
+                	List<String> result = new ArrayList<String>();
+                	
+                	for (String item:content) {
+                		if (result.contains(item)) {
+                			continue;
+                		}else {
+                			result.add(item);
+                		}
+                	}//不在使用set方法去重，以便保持去重后的顺序！
+                    String output = String.join(System.lineSeparator(), result);
                     outputTextArea.setText(output);
                 } catch (Exception e1) {
                     outputTextArea.setText(e1.getMessage());
