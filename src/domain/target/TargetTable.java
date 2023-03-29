@@ -8,8 +8,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.PrintWriter;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -20,6 +18,7 @@ import javax.swing.table.TableColumn;
 
 import GUI.GUIMain;
 import burp.BurpExtender;
+import burp.Commons;
 import title.LineTableModel;
 
 public class TargetTable extends JTable{
@@ -91,6 +90,18 @@ public class TargetTable extends JTable{
 						selecteEntry.setBlack(!selecteEntry.isBlack());
 						guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(selecteEntry);
 						getTargetModel().fireTableRowsUpdated(rows[0], rows[0]);
+					}else if(modelCol==TargetTableModel.getTitleList().indexOf("Domain/Subnet")) {//双击url在浏览器中打开
+						try{
+							if (!selecteEntry.getType().equals(TargetEntry.Target_Type_Subnet)) {
+								String domain = selecteEntry.getTarget();
+								if (domain != null && !domain.toLowerCase().startsWith("http://") && !domain.toLowerCase().startsWith("https://")) {
+									domain = "http://"+domain;//针对DNS记录中URL字段是host的情况
+								}
+								Commons.browserOpen(domain,guiMain.getConfigPanel().getLineConfig().getBrowserPath());
+							}
+						}catch (Exception e1){
+							e1.printStackTrace(stderr);
+						}
 					}
 				}
 			}
@@ -117,18 +128,18 @@ public class TargetTable extends JTable{
 		FontMetrics fm = this.getFontMetrics(f);
 		int width = fm.stringWidth("A");//一个字符的宽度
 		//"Domain/Subnet", "Keyword", "Comment","Black"
-		
+
 		for (int index=0;index<this.getColumnCount();index++) {
 			TableColumn column = this.getColumnModel().getColumn(index);
 			if (column.getIdentifier().equals("Black")) {
 				column.setMaxWidth(width*"Black++".length());
 				//需要预留排序时箭头符合的位置，2个字符宽度
 			}
-			
+
 			if (column.getIdentifier().equals("Domain/Subnet")) {
 				column.setPreferredWidth(width*"Domain/Subnet".length());
 			}
-			
+
 			if (column.getIdentifier().equals("Keyword")) {
 				column.setPreferredWidth(width*"Keyword".length());
 			}
