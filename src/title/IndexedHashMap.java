@@ -14,6 +14,7 @@ import domain.target.TargetEntry;
  *需要构造一个map，满足如下要求：
  * 1、线程安全ConcurrentHashMap是线程安全的，但是不是按序存储。
  * 2、尽可能快的查询速度。参考http://infotechgems.blogspot.com/2011/11/java-collections-performance-time.html
+ * 
  * 为了提高LineEntry的查找速度，改为使用LinkedHashMap,
  * LinkedHashMap是继承于HashMap，是基于HashMap和双向链表来实现的。
  * HashMap无序；LinkedHashMap有序，可分为插入顺序和访问顺序两种。默认是插入顺序。
@@ -46,41 +47,42 @@ public class IndexedHashMap<K,V> extends ConcurrentHashMap<K,V> {
      */
     @Override
     public V put(K key,V val) {
-        if (!super.containsKey(key)) Index.add(key);
         V returnValue = super.put(key,val);
+        if (returnValue == null) {
+        	Index.add(key);//相比super.containsKey(key)的判断，这样写可以减少一次查找，提高速度
+        }
         return returnValue;
     }
     
     @Override
     public V remove(Object key) {
-        if (super.containsKey(key)) Index.remove((K)key);
         V returnValue = super.remove(key);
+        if (returnValue != null) {
+        	Index.remove(key);
+        }
         return returnValue;
     }
 
     /**
-     * 为了符合平常的使用习惯，减少出错
-     * @param key
+     * 为了符合平常的使用习惯，减少出错.
+     * 根据index删除
+     * 
+     * @param index
      * @return
      */
-    public V remove(int key) {
-        return removeByIndex(key);
-    }
-
-    private V removeByIndex(int index) {
-        K key = (K) Index.get(index);
-        V returnValue = super.remove(key);
-        Index.remove(key);
-        return returnValue;
+    public V remove(int index) {
+    	K key = (K) Index.get(index);
+        return remove(key);
     }
 
     /**
      * 为了符合平常的使用习惯，减少出错
-     * @param i
+     * @param index
      * @return
      */
-    public V get(int i){
-        return getValueAtIndex(i);
+    public V get(int index){
+    	K key = (K) Index.get(index);
+        return get(key);
     }
 
     @Override
@@ -88,15 +90,25 @@ public class IndexedHashMap<K,V> extends ConcurrentHashMap<K,V> {
         return super.get(key);
     }
 
-    private V getValueAtIndex(int i){
-        if (i >= Index.size()) {
-            throw new ArrayIndexOutOfBoundsException(i + " >= " + Index.size());
+    /**
+     * synchronizedList的indexOf方法是线程安全的
+     *   public int indexOf(Object o) {
+            synchronized (mutex) {return list.indexOf(o);}
         }
-        return (V) super.get(Index.get(i));
-    }
-
+        
+     * @param key
+     * @return
+     */
     public int IndexOfKey(K key) {
         return Index.indexOf(key);
+    }
+    
+    @Override
+    public int size() {
+    	if (Index.size() != super.size()) {
+    		throw new ArrayIndexOutOfBoundsException("IndexedHashMap error: size not match!!! "+ Index.size() +" "+ super.size());
+    	}
+    	return super.size();
     }
 
     public static void test() {

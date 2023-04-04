@@ -76,7 +76,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	public void setLineEntries(IndexedHashMap<String, LineEntry> lineEntries) {
 		this.lineEntries = lineEntries;
 	}
-	
+
 	public LineEntry getCurrentlyDisplayedItem() {
 		return this.currentlyDisplayedItem;
 	}
@@ -198,6 +198,9 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	@Override
 	public void setValueAt(Object value, int row, int col) {
 		LineEntry entry = lineEntries.get(row);
+		if (entry == null) {
+			throw new ArrayIndexOutOfBoundsException("can't find item with index "+row);
+		}
 		if (col == titleList.indexOf("Comments")){
 			String valueStr = ((String) value).trim();
 			entry.setComments(new HashSet<>(Arrays.asList(valueStr.split(","))));
@@ -244,7 +247,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	}
 	///////////////////// ^^^^implement IMessageEditorController^^^^ ////////////////////////////////
 
-	
+
 	/**
 	 *
 	 * @return 获取已成功获取title的Entry的IP地址集合
@@ -399,7 +402,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		}
 		return hosts;
 	}
-	
+
 	public List<String> getHostsAndIPAddresses(int[] rows) {
 		Arrays.sort(rows); //升序
 		List<String> hosts = new ArrayList<>();
@@ -505,49 +508,67 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 
 	public void removeRows(int[] rows) {
 		Arrays.sort(rows); //升序
+
 		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
-			String url = lineEntries.get(rows[i]).getUrl();
-			lineEntries.remove(rows[i]);
-			titleDao.deleteTitleByUrl(url);//写入数据库
-			stdout.println("!!! "+url+" deleted");
+			try {
+				int index = rows[i];
+				LineEntry entry = lineEntries.get(index);
+				if (entry == null) {
+					throw new ArrayIndexOutOfBoundsException("can't find item with index "+index);
+				}
+				String url = entry.getUrl();
+				lineEntries.remove(index);
+				titleDao.deleteTitleByUrl(url);//写入数据库
+				stdout.println("!!! "+url+" deleted");
+				this.fireTableRowsDeleted(index,index);
+			} catch (Exception e) {
+				e.printStackTrace(stderr);
+			}
 		}
-		fireDeleted(rows);
 	}
 
 
 	public void updateRowsStatus(int[] rows,String status) {
 		Arrays.sort(rows); //升序
 		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
-			LineEntry checked = lineEntries.get(rows[i]);
-			checked.setCheckStatus(status);
-			if (status.equalsIgnoreCase(LineEntry.CheckStatus_Checked)) {
-				checked.setTime(Commons.getNowTimeString());
+			try {
+				int index = rows[i];
+				LineEntry entry = lineEntries.get(index);
+				if (entry == null) {
+					throw new ArrayIndexOutOfBoundsException("can't find item with index "+index);
+				}
+				entry.setCheckStatus(status);
+				if (status.equalsIgnoreCase(LineEntry.CheckStatus_Checked)) {
+					entry.setTime(Commons.getNowTimeString());
+				}
+				titleDao.addOrUpdateTitle(entry);//写入数据库
+				stdout.println("$$$ "+entry.getUrl()+" updated");
+				this.fireTableRowsUpdated(index, index);
+			} catch (Exception e) {
+				e.printStackTrace(stderr);
 			}
-			titleDao.addOrUpdateTitle(checked);//写入数据库
-			//				lineEntries.remove(rows[i]);
-			//				lineEntries.add(rows[i], checked);
-			//				//https://stackoverflow.com/questions/4352885/how-do-i-update-the-element-at-a-certain-position-in-an-arraylist
-			//lineEntries.set(rows[i], checked);
-			stdout.println("$$$ "+checked.getUrl()+" updated");
-			//this.fireTableRowsUpdated(rows[i], rows[i]);
 		}
-		fireUpdated(rows);
-		//this.fireTableRowsUpdated(rows[0], rows[rows.length-1]);
-		//最好还是一行一行地触发监听事件，因为自定义排序后的行号可能不是连续的，如果用批量触发，会做很多无用功，导致操作变慢。
 	}
 
 
 	public void updateAssetTypeOfRows(int[] rows,String assetType) {
 		Arrays.sort(rows); //升序
 		for (int i=rows.length-1;i>=0 ;i-- ) {
-			LineEntry checked = lineEntries.get(rows[i]);
-			if (assetType.equalsIgnoreCase(checked.getAssetType())) continue;
-			checked.setAssetType(assetType);
-			titleDao.addOrUpdateTitle(checked);//写入数据库
-			stdout.println(String.format("$$$ %s updated [AssetType-->%s]",checked.getUrl(),assetType));
-			//this.fireTableRowsUpdated(rows[i], rows[i]);
+			try {
+				int index = rows[i];
+				LineEntry entry = lineEntries.get(index);
+				if (entry == null) {
+					throw new ArrayIndexOutOfBoundsException("can't find item with index "+index);
+				}
+				if (assetType.equalsIgnoreCase(entry.getAssetType())) continue;
+				entry.setAssetType(assetType);
+				titleDao.addOrUpdateTitle(entry);//写入数据库
+				stdout.println(String.format("$$$ %s updated [AssetType-->%s]",entry.getUrl(),assetType));
+				this.fireTableRowsUpdated(index, index);
+			} catch (Exception e) {
+				e.printStackTrace(stderr);
+			}
 		}
-		fireUpdated(rows);
 	}
 
 
@@ -556,17 +577,20 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		//list length and index changed after every remove.the origin index not point to right item any more.
 		Arrays.sort(rows); //升序
 		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
-			LineEntry checked = lineEntries.get(rows[i]);
-			checked.addComment(commentAdd);
-			titleDao.addOrUpdateTitle(checked);//写入数据库
-			//				lineEntries.remove(rows[i]);
-			//				lineEntries.add(rows[i], checked);
-			//				//https://stackoverflow.com/questions/4352885/how-do-i-update-the-element-at-a-certain-position-in-an-arraylist
-			stdout.println("$$$ "+checked.getUrl()+" updated");
-			//this.fireTableRowsUpdated(rows[i], rows[i]);
+			try {
+				int index = rows[i];
+				LineEntry entry = lineEntries.get(index);
+				if (entry == null) {
+					throw new ArrayIndexOutOfBoundsException("can't find item with index "+index);
+				}
+				entry.addComment(commentAdd);
+				titleDao.addOrUpdateTitle(entry);//写入数据库
+				stdout.println("$$$ "+entry.getUrl()+" updated");
+				this.fireTableRowsUpdated(index, index);
+			} catch (Exception e) {
+				e.printStackTrace(stderr);
+			}
 		}
-		//this.fireTableRowsUpdated(rows[0], rows[rows.length-1]);
-		fireUpdated(rows);
 	}
 
 	public void freshASNInfo(int[] rows) {
@@ -574,26 +598,40 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		//list length and index changed after every remove.the origin index not point to right item any more.
 		Arrays.sort(rows); //升序
 		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
-			LineEntry checked = lineEntries.get(rows[i]);
-			checked.freshASNInfo();
-			titleDao.addOrUpdateTitle(checked);//写入数据库
-			stdout.println("$$$ "+checked.getUrl()+"ASN Info updated");
+			try {
+				int index = rows[i];
+				LineEntry entry = lineEntries.get(index);
+				if (entry == null) {
+					throw new ArrayIndexOutOfBoundsException("can't find item with index "+index);
+				}
+				entry.freshASNInfo();
+				titleDao.addOrUpdateTitle(entry);//写入数据库
+				stdout.println("$$$ "+entry.getUrl()+"ASN Info updated");
+				this.fireTableRowsUpdated(index, index);
+			} catch (Exception e) {
+				e.printStackTrace(stderr);
+			}
 		}
-		fireUpdated(rows);
 	}
 
 	/**
 	 * 	主要用于记录CDN或者云服务的IP地址，在做网段汇算时排除这些IP。
 	 */
 	public void addIPToTargetBlackList(int[] rows) {
-		//because thread let the delete action not in order, so we must loop in here.
-		//list length and index changed after every remove.the origin index not point to right item any more.
 		Arrays.sort(rows); //升序
 		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
-			LineEntry entry = lineEntries.get(rows[i]);
-			guiMain.getDomainPanel().getDomainResult().getNotTargetIPSet().addAll(entry.getIPSet());
-			entry.getEntryTags().add(LineEntry.Tag_NotTargetBaseOnBlackList);
-			stdout.println("### IP address "+ entry.getIPSet().toString() +" added to black list");
+			try {
+				int index = rows[i];
+				LineEntry entry = lineEntries.get(index);
+				if (entry == null) {
+					throw new ArrayIndexOutOfBoundsException("can't find item with index "+index);
+				}
+				guiMain.getDomainPanel().getDomainResult().getNotTargetIPSet().addAll(entry.getIPSet());
+				entry.getEntryTags().add(LineEntry.Tag_NotTargetBaseOnBlackList);
+				stdout.println("### IP address "+ entry.getIPSet().toString() +" added to black list");
+			} catch (Exception e) {
+				e.printStackTrace(stderr);
+			}
 		}
 	}
 
@@ -638,6 +676,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	}
 
 	//为了同时fire多个不连续的行，自行实现这个方法。
+	@Deprecated
 	private void fireDeleted(int[] rows) {
 		List<int[]> slice = IntArraySlice.slice(rows);
 		//必须逆序，从高位index开始删除，否则删除的对象和预期不一致！！！
@@ -648,6 +687,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		}
 	}
 
+	@Deprecated
 	private void fireUpdated(int[] rows) {
 		List<int[]> slice = IntArraySlice.slice(rows);
 		for(int[] sli:slice) {
@@ -670,7 +710,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		String key = lineEntry.getUrl()+System.currentTimeMillis();
 		lineEntries.put(key,lineEntry);
 		int index = lineEntries.IndexOfKey(key);
-		fireTableRowsInserted(index, index);
+		fireTableRowsInserted(index, index);//有毫秒级时间戳，只会是新增
 		titleDao.addOrUpdateTitle(lineEntry);//写入数据库
 	}
 
