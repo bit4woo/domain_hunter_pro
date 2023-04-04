@@ -596,6 +596,25 @@ public class ToolPanel extends JPanel {
                 }
             }
         });
+        
+        JButton sort = new JButton("Sort");
+
+        sort.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    List<String> content = Commons.getLinesFromTextArea(inputTextArea);
+                    Set<String> contentSet = new HashSet<>(content);
+                    List<String> tmplist = new ArrayList<>(contentSet);
+
+                    Collections.sort(tmplist);
+                    String output = String.join(System.lineSeparator(), tmplist);
+                    outputTextArea.setText(output);
+                } catch (Exception e1) {
+                    outputTextArea.setText(e1.getMessage());
+                }
+            }
+        });
 
         JButton sortByLength = new JButton("Sort by Length");
 
@@ -976,52 +995,64 @@ public class ToolPanel extends JPanel {
         threeFourthPanel.setLayout(gbl_threeFourthPanel);
 
         //查找提取类
-        threeFourthPanel.add(btnFindDomains, new bagLayout(1, 1));
-        threeFourthPanel.add(btnFindUrls, new bagLayout(1, 2));
-        threeFourthPanel.add(btnFindIP, new bagLayout(1, 3));
-        threeFourthPanel.add(btnFindPort, new bagLayout(1, 4));
-        threeFourthPanel.add(btnFindIPAndPort, new bagLayout(1, 5));
-        threeFourthPanel.add(btnFindSubnet, new bagLayout(2, 1));
-        threeFourthPanel.add(btnFindEmail, new bagLayout(2, 2));
+        int rowIndex = 0;
+        int cloumnIndex = 0;
+        threeFourthPanel.add(btnFindDomains, new bagLayout(++rowIndex, ++cloumnIndex));
+        threeFourthPanel.add(btnFindUrls, new bagLayout(rowIndex, ++cloumnIndex));
+        threeFourthPanel.add(btnFindIP, new bagLayout(rowIndex, ++cloumnIndex));
+        threeFourthPanel.add(btnFindPort, new bagLayout(rowIndex, ++cloumnIndex));
+        threeFourthPanel.add(btnFindIPAndPort, new bagLayout(rowIndex, ++cloumnIndex));
+        
+        cloumnIndex = 0;
+        threeFourthPanel.add(btnFindSubnet, new bagLayout(++rowIndex, ++cloumnIndex));
+        threeFourthPanel.add(btnFindEmail, new bagLayout(rowIndex, ++cloumnIndex));
 
-
-        threeFourthPanel.add(btnGrep, new bagLayout(5, 1));
-        threeFourthPanel.add(btnLine, new bagLayout(5, 2));
-        threeFourthPanel.add(btnRegexGrep, new bagLayout(5, 3));
+        cloumnIndex = 0;
+        threeFourthPanel.add(btnGrep, new bagLayout(++rowIndex, ++cloumnIndex));
+        threeFourthPanel.add(btnLine, new bagLayout(rowIndex, ++cloumnIndex));
+        threeFourthPanel.add(btnRegexGrep, new bagLayout(rowIndex, ++cloumnIndex));
 
 
         //网络请求类
-        threeFourthPanel.add(btnOpenurls, new bagLayout(15, 1));
-        threeFourthPanel.add(btnCertDomains, new bagLayout(16, 1));
-        threeFourthPanel.add(btnCertTime, new bagLayout(16, 2));
-        threeFourthPanel.add(btnCertIssuer, new bagLayout(16, 3));
-        threeFourthPanel.add(iconHashButton, new bagLayout(16, 4));
-        threeFourthPanel.add(getIPAddressButton, new bagLayout(16, 5));
+        cloumnIndex = 0;
+        threeFourthPanel.add(btnOpenurls, new bagLayout(++rowIndex, ++cloumnIndex));
+        
+        cloumnIndex = 0;
+        threeFourthPanel.add(btnCertDomains, new bagLayout(++rowIndex, ++cloumnIndex));
+        threeFourthPanel.add(btnCertTime, new bagLayout(rowIndex, ++cloumnIndex));
+        threeFourthPanel.add(btnCertIssuer, new bagLayout(rowIndex, ++cloumnIndex));
+        threeFourthPanel.add(iconHashButton, new bagLayout(rowIndex, ++cloumnIndex));
+        threeFourthPanel.add(getIPAddressButton, new bagLayout(rowIndex, ++cloumnIndex));
 
 
         //数据转换类
-        threeFourthPanel.add(rows2List, new bagLayout(20, 1));
-        threeFourthPanel.add(rows2Array, new bagLayout(20, 2));
-        threeFourthPanel.add(btnIPsToCIDR, new bagLayout(20, 3));
-        threeFourthPanel.add(btnCIDRToIPs, new bagLayout(20, 4));
+        cloumnIndex = 0;
+        threeFourthPanel.add(rows2List, new bagLayout(++rowIndex, ++cloumnIndex));
+        threeFourthPanel.add(rows2Array, new bagLayout(rowIndex, ++cloumnIndex));
+        threeFourthPanel.add(btnIPsToCIDR, new bagLayout(rowIndex, ++cloumnIndex));
+        threeFourthPanel.add(btnCIDRToIPs, new bagLayout(rowIndex, ++cloumnIndex));
 
 
-        threeFourthPanel.add(removeDuplicate, new bagLayout(25, 1));
-        threeFourthPanel.add(sortByLength, new bagLayout(25, 2));
-        threeFourthPanel.add(btnAddPrefix, new bagLayout(25, 3));
-        threeFourthPanel.add(btnRemovePrefix, new bagLayout(25, 4));
-        threeFourthPanel.add(btnReplace, new bagLayout(25, 5));
+        cloumnIndex = 0;
+        threeFourthPanel.add(removeDuplicate, new bagLayout(++rowIndex, ++cloumnIndex));
+        threeFourthPanel.add(sort,new bagLayout(rowIndex, ++cloumnIndex));
+        threeFourthPanel.add(sortByLength, new bagLayout(rowIndex, ++cloumnIndex));
+        threeFourthPanel.add(btnAddPrefix, new bagLayout(rowIndex, ++cloumnIndex));
+        threeFourthPanel.add(btnRemovePrefix, new bagLayout(rowIndex, ++cloumnIndex));
+        threeFourthPanel.add(btnReplace, new bagLayout(rowIndex, ++cloumnIndex));
 
 
-        threeFourthPanel.add(unescapeJava, new bagLayout(30, 1));
-        threeFourthPanel.add(unescapeHTML, new bagLayout(30, 2));
+        cloumnIndex = 0;
+        threeFourthPanel.add(unescapeJava, new bagLayout(++rowIndex, ++cloumnIndex));
+        threeFourthPanel.add(unescapeHTML, new bagLayout(rowIndex, ++cloumnIndex));
 
 
-        threeFourthPanel.add(toLowerCaseButton, new bagLayout(35, 1));
-        threeFourthPanel.add(splitButton, new bagLayout(35, 2));
-        threeFourthPanel.add(combineButton, new bagLayout(35, 3));
-        threeFourthPanel.add(Base64ToFile, new bagLayout(35, 4));
-        threeFourthPanel.add(testButton, new bagLayout(35, 5));
+        cloumnIndex = 0;
+        threeFourthPanel.add(toLowerCaseButton, new bagLayout(++rowIndex, ++cloumnIndex));
+        threeFourthPanel.add(splitButton, new bagLayout(rowIndex, ++cloumnIndex));
+        threeFourthPanel.add(combineButton, new bagLayout(rowIndex, ++cloumnIndex));
+        threeFourthPanel.add(Base64ToFile, new bagLayout(rowIndex, ++cloumnIndex));
+        threeFourthPanel.add(testButton, new bagLayout(rowIndex, ++cloumnIndex));
 
 
         ///////////////////////////FooterPanel//////////////////
