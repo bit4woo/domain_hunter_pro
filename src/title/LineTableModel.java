@@ -728,7 +728,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 				fireTableRowsInserted(index, index);
 			} catch (Exception e) {
 				e.printStackTrace(BurpExtender.getStderr());
-				BurpExtender.getStderr().println("index: "+index);
+				BurpExtender.getStderr().println("index: "+index+" url: "+key);
 			}
 			//这里偶尔出现IndexOutOfBoundsException错误,
 			// 但是debug发现javax.swing.DefaultRowSorter.checkAgainstModel在条件为false时(即未越界)抛出了异常，奇怪！
