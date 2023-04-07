@@ -52,6 +52,10 @@ public class LineConfig {
 	private String elasticUsernameAndPassword = "elastic:changeme";
 	private String uploadApiToken = "";
 	private String uploadUrl = "";
+	
+	private String fofaEmail = "";
+	private String fofaKey = "";
+	
 	private boolean showItemsInOne = false;
 	private boolean enableElastic = false;
 	private String dbfilepath ="";
@@ -232,6 +236,23 @@ public class LineConfig {
 		this.uploadUrl = uploadUrl;
 	}
 
+
+	
+	public String getFofaEmail() {
+		return fofaEmail;
+	}
+
+	public void setFofaEmail(String fofaEmail) {
+		this.fofaEmail = fofaEmail;
+	}
+
+	public String getFofaKey() {
+		return fofaKey;
+	}
+
+	public void setFofaKey(String fofaKey) {
+		this.fofaKey = fofaKey;
+	}
 
 	public boolean isShowItemsInOne() {
 		return showItemsInOne;

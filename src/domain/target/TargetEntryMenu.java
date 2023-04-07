@@ -7,20 +7,28 @@ import java.awt.event.ActionEvent;
 import java.io.PrintWriter;
 import java.net.URLEncoder;
 import java.util.Base64;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
+import javax.swing.SwingWorker;
 
 import GUI.GUIMain;
+import assetSearch.Fofa;
 import burp.BurpExtender;
 import burp.Commons;
 import burp.DomainNameUtils;
+import burp.GrepUtils;
 import burp.IPAddressUtils;
+import config.ConfigPanel;
+import domain.DomainManager;
+import domain.DomainPanel;
 
 public class TargetEntryMenu extends JPopupMenu {
-
 
 	private static final long serialVersionUID = 1L;
 	PrintWriter stdout = BurpExtender.getStdout();
@@ -288,6 +296,42 @@ public class TargetEntryMenu extends JPopupMenu {
 				}
 			}
 		});
+		
+		
+		JMenuItem SearchOnFoFaAutoItem = new JMenuItem(new AbstractAction("Auto Search On fofa.info") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+					@Override
+					protected Map doInBackground() throws Exception {
+						String email = ConfigPanel.textFieldFofaEmail.getText();
+						String key = ConfigPanel.textFieldFofaKey.getText();
+						if (email.equals("") ||key.equals("")) {
+							return null;
+						}
+						for (int row:modelRows) {
+							String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,0);
+							rootDomain = new String(Base64.getEncoder().encode(rootDomain.getBytes()));
+							String responseBody = Fofa.doSearch(email,key,rootDomain);
+							
+					        Set<String> domains = GrepUtils.grepDomain(responseBody);
+					        List<String> iplist = GrepUtils.grepIP(responseBody);
+					        stdout.println(String.format("rootDomain: %s sub-domain names; %s ip addresses found by fofa",domains.size(),iplist.size()));
+					        guiMain.getDomainPanel().getDomainResult().addIfValid(domains);
+					        guiMain.getDomainPanel().getDomainResult().getSpecialPortTargets().addAll(iplist);
+						}
+						return null;
+					}
+
+					@Override
+					protected void done(){
+					}
+				};
+				worker.execute();
+			}
+		});
+		
+
 
 		this.add(getSubDomainsOf);
 		this.add(batchAddCommentsItem);
@@ -301,7 +345,10 @@ public class TargetEntryMenu extends JPopupMenu {
 		this.add(SearchOnZoomEyeItem);
 		this.add(SearchOnShodanItem);
 		this.addSeparator();
-
+		
+		this.add(SearchOnFoFaAutoItem);
+		this.addSeparator();
+		
 		this.add(OpenWithBrowserItem);
 		this.add(whoisItem);
 		this.add(ASNInfoItem);

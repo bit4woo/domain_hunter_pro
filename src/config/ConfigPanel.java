@@ -45,6 +45,9 @@ public class ConfigPanel extends JPanel{
 	public static JTextField textFieldElasticURL;
 	public static JTextField textFieldElasticUserPass;
 	public static JTextField textFieldUploadApiToken;
+	
+	public static JTextField textFieldFofaEmail;
+	public static JTextField textFieldFofaKey;
 
 	public LineConfig getLineConfig() {
 		return lineConfig;
@@ -100,6 +103,8 @@ public class ConfigPanel extends JPanel{
 		textFieldElasticURL.setText(lineConfig.getElasticApiUrl());
 		textFieldElasticUserPass.setText(lineConfig.getElasticUsernameAndPassword());
 		textFieldUploadApiToken.setText(lineConfig.getUploadApiToken());
+		textFieldFofaEmail.setText(lineConfig.getFofaEmail());
+		textFieldFofaKey.setText(lineConfig.getFofaKey());
 
 		showItemsInOne.setSelected(lineConfig.isShowItemsInOne());
 		rdbtnSaveTrafficTo.setSelected(lineConfig.isEnableElastic());
@@ -115,6 +120,8 @@ public class ConfigPanel extends JPanel{
 		lineConfig.setElasticApiUrl(textFieldElasticURL.getText().trim());
 		lineConfig.setElasticUsernameAndPassword(textFieldElasticUserPass.getText());
 		lineConfig.setUploadApiToken(textFieldUploadApiToken.getText());
+		lineConfig.setFofaEmail(textFieldFofaEmail.getText());
+		lineConfig.setFofaKey(textFieldFofaKey.getText());
 
 		lineConfig.setToolPanelText(ToolPanel.inputTextArea.getText());
 		lineConfig.setShowItemsInOne(showItemsInOne.isSelected());
@@ -151,10 +158,11 @@ public class ConfigPanel extends JPanel{
 		textFieldPortScanner.setColumns(50);
 		textFieldPortScanner.getDocument().addDocumentListener(new textFieldListener());
 
-		add(lblNewLabel, new MyGridBagLayout(1,1));
-		add(BrowserPath, new MyGridBagLayout(1,2));
-		add(lblPortScanner, new MyGridBagLayout(2,1));
-		add(textFieldPortScanner, new MyGridBagLayout(2,2));
+		int rowIndex = 0;
+		add(lblNewLabel, new MyGridBagLayout(++rowIndex,1));
+		add(BrowserPath, new MyGridBagLayout(rowIndex,2));
+		add(lblPortScanner, new MyGridBagLayout(++rowIndex,1));
+		add(textFieldPortScanner, new MyGridBagLayout(rowIndex,2));
 
 
 		JLabel lblDirSearch = new JLabel("DirSearch Command:");
@@ -171,8 +179,8 @@ public class ConfigPanel extends JPanel{
 		textFieldDirSearch.setColumns(50);
 		textFieldDirSearch.getDocument().addDocumentListener(new textFieldListener());
 
-		add(lblDirSearch, new MyGridBagLayout(3,1));
-		add(textFieldDirSearch, new MyGridBagLayout(3,2));
+		add(lblDirSearch, new MyGridBagLayout(++rowIndex,1));
+		add(textFieldDirSearch, new MyGridBagLayout(rowIndex,2));
 
 
 		JLabel lblDirBruteDict = new JLabel("Dir Brute Dict:");
@@ -182,8 +190,8 @@ public class ConfigPanel extends JPanel{
 		textFieldDirBruteDict.setColumns(50);
 		textFieldDirBruteDict.getDocument().addDocumentListener(new textFieldListener());
 
-		add(lblDirBruteDict, new MyGridBagLayout(4,1));
-		add(textFieldDirBruteDict, new MyGridBagLayout(4,2));
+		add(lblDirBruteDict, new MyGridBagLayout(++rowIndex,1));
+		add(textFieldDirBruteDict, new MyGridBagLayout(rowIndex,2));
 
 
 		JLabel lblElasticURL = new JLabel("Elastic URL:");
@@ -196,8 +204,8 @@ public class ConfigPanel extends JPanel{
 		//这个HintListener的操作，会触发DocumentListener的insertUpdate操作！
 		textFieldElasticURL.setColumns(50);
 
-		add(lblElasticURL, new MyGridBagLayout(5,1));
-		add(textFieldElasticURL, new MyGridBagLayout(5,2));
+		add(lblElasticURL, new MyGridBagLayout(++rowIndex,1));
+		add(textFieldElasticURL, new MyGridBagLayout(rowIndex,2));
 
 
 		JLabel lblDirElasticUserPass = new JLabel("Elastic Username Password:");
@@ -209,8 +217,8 @@ public class ConfigPanel extends JPanel{
 		//textFieldElasticUserPass.addFocusListener(new JTextFieldHintListener(textFieldElasticUserPass,"elastic:changeme"));
 		textFieldElasticUserPass.setColumns(50);
 
-		add(lblDirElasticUserPass, new MyGridBagLayout(6,1));
-		add(textFieldElasticUserPass, new MyGridBagLayout(6,2));
+		add(lblDirElasticUserPass, new MyGridBagLayout(++rowIndex,1));
+		add(textFieldElasticUserPass, new MyGridBagLayout(rowIndex,2));
 
 		JLabel lblUploadAPIToken = new JLabel("Upload API Token:");
 
@@ -219,8 +227,8 @@ public class ConfigPanel extends JPanel{
 		textFieldUploadApiToken.getDocument().addDocumentListener(new textFieldListener());
 		textFieldUploadApiToken.setColumns(50);
 
-		add(lblUploadAPIToken, new MyGridBagLayout(7,1));
-		add(textFieldUploadApiToken, new MyGridBagLayout(7,2));
+		add(lblUploadAPIToken, new MyGridBagLayout(++rowIndex,1));
+		add(textFieldUploadApiToken, new MyGridBagLayout(rowIndex,2));
 
 		JLabel lblUploadUrl = new JLabel("Upload URL:");
 
@@ -229,17 +237,37 @@ public class ConfigPanel extends JPanel{
 		textFieldUploadURL.setToolTipText("input upload url here");
 		textFieldUploadURL.getDocument().addDocumentListener(new textFieldListener());
 
-		add(lblUploadUrl, new MyGridBagLayout(8,1));
-		add(textFieldUploadURL,new MyGridBagLayout(8,2));
+		add(lblUploadUrl, new MyGridBagLayout(++rowIndex,1));
+		add(textFieldUploadURL,new MyGridBagLayout(rowIndex,2));
 
+		
+		JLabel lblFofaEmail = new JLabel("Fofa Email:");
+
+		textFieldFofaEmail = new JTextField();
+		textFieldFofaEmail.setColumns(30);
+		textFieldFofaEmail.getDocument().addDocumentListener(new textFieldListener());
+
+		add(lblFofaEmail, new MyGridBagLayout(++rowIndex,1));
+		add(textFieldFofaEmail,new MyGridBagLayout(rowIndex,2));
+		
+		
+		JLabel lblFofaKey = new JLabel("Fofa Key:");
+
+		textFieldFofaKey = new JTextField();
+		textFieldFofaKey.setColumns(30);
+		textFieldFofaKey.getDocument().addDocumentListener(new textFieldListener());
+
+		add(lblFofaKey, new MyGridBagLayout(++rowIndex,1));
+		add(textFieldFofaKey,new MyGridBagLayout(rowIndex,2));
+		
 
 		///////下方是JRadioButton/////
 
 		DisplayContextMenuOfBurp = new JRadioButton("Display Context Menu Of Burp");
 		DisplayContextMenuOfBurp.setSelected(true);
 
-		add(new JLabel(""), new MyGridBagLayout(9,1));
-		add(DisplayContextMenuOfBurp, new MyGridBagLayout(9,2));
+		add(new JLabel(""), new MyGridBagLayout(++rowIndex,1));
+		add(DisplayContextMenuOfBurp, new MyGridBagLayout(rowIndex,2));
 
 
 
@@ -249,16 +277,16 @@ public class ConfigPanel extends JPanel{
 				lineConfig.setShowItemsInOne(showItemsInOne.isSelected());
 			}
 		});
-		add(new JLabel(""),new MyGridBagLayout(10,1));
-		add(showItemsInOne, new MyGridBagLayout(10,2));
+		add(new JLabel(""),new MyGridBagLayout(++rowIndex,1));
+		add(showItemsInOne, new MyGridBagLayout(rowIndex,2));
 
 		JLabel label_2 = new JLabel("");
 
 		ignoreHTTPS = new JRadioButton("Ignore HTTPS if HTTP is OK || Ignore HTTP if HTTPS is OK");
 		ignoreHTTPS.setSelected(false);
 
-		add(label_2, new MyGridBagLayout(11,1));
-		add(ignoreHTTPS, new MyGridBagLayout(11,2));
+		add(label_2, new MyGridBagLayout(++rowIndex,1));
+		add(ignoreHTTPS, new MyGridBagLayout(rowIndex,2));
 
 
 		JLabel label_3 = new JLabel("");
@@ -266,8 +294,8 @@ public class ConfigPanel extends JPanel{
 		ignoreHTTPStaus500 = new JRadioButton("Ignore items which Status >= 500");
 		ignoreHTTPStaus500.setSelected(true);
 
-		add(label_3, new MyGridBagLayout(12,1));
-		add(ignoreHTTPStaus500, new MyGridBagLayout(12,2));
+		add(label_3, new MyGridBagLayout(++rowIndex,1));
+		add(ignoreHTTPStaus500, new MyGridBagLayout(rowIndex,2));
 
 
 		JLabel label_4 = new JLabel("");
@@ -275,16 +303,16 @@ public class ConfigPanel extends JPanel{
 		ignoreHTTPStaus400 = new JRadioButton("Ignore http Status 400(The plain HTTP request was sent to HTTPS port)");
 		ignoreHTTPStaus400.setSelected(true);
 
-		add(label_4, new MyGridBagLayout(13,1));
-		add(ignoreHTTPStaus400, new MyGridBagLayout(13,2));
+		add(label_4, new MyGridBagLayout(++rowIndex,1));
+		add(ignoreHTTPStaus400, new MyGridBagLayout(rowIndex,2));
 
 		JLabel label_5 = new JLabel("");
 
 		ignoreWrongCAHost = new JRadioButton("Ignore Host that IP Address and Certificate Authority not match");
 		ignoreWrongCAHost.setSelected(false);
 
-		add(label_5, new MyGridBagLayout(14,1));
-		add(ignoreWrongCAHost, new MyGridBagLayout(14,2));
+		add(label_5, new MyGridBagLayout(++rowIndex,1));
+		add(ignoreWrongCAHost, new MyGridBagLayout(rowIndex,2));
 
 
 		rdbtnSaveTrafficTo = new JRadioButton("Save traffic to Elastic");
@@ -292,8 +320,8 @@ public class ConfigPanel extends JPanel{
 
 		JLabel label_6 = new JLabel("");
 
-		add(label_6, new MyGridBagLayout(15,1));
-		add(rdbtnSaveTrafficTo, new MyGridBagLayout(15,2));
+		add(label_6, new MyGridBagLayout(++rowIndex,1));
+		add(rdbtnSaveTrafficTo, new MyGridBagLayout(rowIndex,2));
 
 
 	}
