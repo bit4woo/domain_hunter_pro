@@ -17,11 +17,11 @@ public class Search {
 		}
 	}
 	
-//	TODO
-	public static String searchHunter(String key,String domainBase64){
+	//https://hunter.qianxin.com/openApi/search?api-key={}&search={}&page={}&page_size=100&is_web=1&status_code=200".format(apikey, keywords.decode(), page)
+	public static String searchHunter(String key,String domain){
 		try {
-			String url= String.format("https://hunter.qianxin.com/openApi/search?&api-key=%s&search=%s&page=1&page_size=1000&is_web=1&start_time=\"2000-01-01 00:00:00\"&end_time=\"2030-03-01 00:00:00\"",
-					key,domainBase64);
+			String url= String.format("https://hunter.qianxin.com/openApi/search?&api-key=%s&search=%s&page=1&page_size=1000&is_web=2",
+					key,domain);
 			String body = HttpClientOfBurp.doRequest(new URL(url));
 			
 			return body;

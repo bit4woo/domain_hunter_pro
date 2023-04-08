@@ -50,9 +50,7 @@ public class ConfigPanel extends JPanel{
 	public static JTextField textFieldFofaKey;
 	
 	public static JTextField textFieldQuakeAPIKey;
-	
-	public static JTextField textFieldHunterEmail;
-	public static JTextField textFieldHunterKey;
+	public static JTextField textFieldHunterAPIKey;
 
 	public LineConfig getLineConfig() {
 		return lineConfig;
@@ -111,6 +109,7 @@ public class ConfigPanel extends JPanel{
 		textFieldFofaEmail.setText(lineConfig.getFofaEmail());
 		textFieldFofaKey.setText(lineConfig.getFofaKey());
 		textFieldQuakeAPIKey.setText(lineConfig.getQuakeAPIKey());
+		textFieldHunterAPIKey.setText(lineConfig.getHunterAPIKey());
 
 		showItemsInOne.setSelected(lineConfig.isShowItemsInOne());
 		rdbtnSaveTrafficTo.setSelected(lineConfig.isEnableElastic());
@@ -129,7 +128,8 @@ public class ConfigPanel extends JPanel{
 		lineConfig.setFofaEmail(textFieldFofaEmail.getText());
 		lineConfig.setFofaKey(textFieldFofaKey.getText());
 		lineConfig.setQuakeAPIKey(textFieldQuakeAPIKey.getText());
-
+		lineConfig.setHunterAPIKey(textFieldHunterAPIKey.getText());
+		
 		lineConfig.setToolPanelText(ToolPanel.inputTextArea.getText());
 		lineConfig.setShowItemsInOne(showItemsInOne.isSelected());
 		lineConfig.setEnableElastic(rdbtnSaveTrafficTo.isSelected());
@@ -268,7 +268,7 @@ public class ConfigPanel extends JPanel{
 		add(textFieldFofaKey,new MyGridBagLayout(rowIndex,2));
 		
 		
-		JLabel lblQuakeAPIKey = new JLabel("Quake API Key:");
+		JLabel lblQuakeAPIKey = new JLabel("quake.360.net API Key:");
 
 		textFieldQuakeAPIKey = new JTextField();
 		textFieldQuakeAPIKey.setColumns(30);
@@ -276,6 +276,17 @@ public class ConfigPanel extends JPanel{
 
 		add(lblQuakeAPIKey, new MyGridBagLayout(++rowIndex,1));
 		add(textFieldQuakeAPIKey,new MyGridBagLayout(rowIndex,2));
+		
+		
+		JLabel lblHunterAPIKey = new JLabel("hunter.qianxin.com API Key:");
+
+		textFieldHunterAPIKey = new JTextField();
+		textFieldHunterAPIKey.setColumns(30);
+		textFieldHunterAPIKey.getDocument().addDocumentListener(new textFieldListener());
+
+		add(lblHunterAPIKey, new MyGridBagLayout(++rowIndex,1));
+		add(textFieldHunterAPIKey,new MyGridBagLayout(rowIndex,2));
+		
 
 		///////下方是JRadioButton/////
 

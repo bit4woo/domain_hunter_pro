@@ -49,7 +49,11 @@ public class HttpClientOfBurp {
 		IHttpService service =getHttpService(url);
 		IHttpRequestResponse message = callbacks.makeHttpRequest(service, byteRequest);
 		HelperPlus getter = new HelperPlus(helpers);
-
+		int code = getter.getStatusCode(message);
+		if (code != 200) {
+			BurpExtender.getStderr().print(new String(message.getResponse()));
+			return "";
+		}
 		byte[] byteBody = getter.getBody(false, message);
 		return new String(byteBody);
 	}

@@ -57,6 +57,7 @@ public class LineConfig {
 	private String fofaKey = "";
 	
 	private String quakeAPIKey = "";
+	private String hunterAPIKey = "";
 	
 	private boolean showItemsInOne = false;
 	private boolean enableElastic = false;
@@ -237,8 +238,6 @@ public class LineConfig {
 	public void setUploadUrl(String uploadUrl) {
 		this.uploadUrl = uploadUrl;
 	}
-
-
 	
 	public String getFofaEmail() {
 		return fofaEmail;
@@ -256,14 +255,20 @@ public class LineConfig {
 		this.fofaKey = fofaKey;
 	}
 
-	
-	
 	public String getQuakeAPIKey() {
 		return quakeAPIKey;
 	}
 
 	public void setQuakeAPIKey(String quakeAPIKey) {
 		this.quakeAPIKey = quakeAPIKey;
+	}
+
+	public String getHunterAPIKey() {
+		return hunterAPIKey;
+	}
+
+	public void setHunterAPIKey(String hunterAPIKey) {
+		this.hunterAPIKey = hunterAPIKey;
 	}
 
 	public boolean isShowItemsInOne() {

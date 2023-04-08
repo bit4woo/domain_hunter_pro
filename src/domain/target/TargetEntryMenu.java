@@ -307,7 +307,7 @@ public class TargetEntryMenu extends JPopupMenu {
 						String email = ConfigPanel.textFieldFofaEmail.getText();
 						String key = ConfigPanel.textFieldFofaKey.getText();
 						if (email.equals("") ||key.equals("")) {
-							stdout.println("emaill or key not configurated!");
+							stdout.println("fofa.info emaill or key not configurated!");
 							return null;
 						}
 						for (int row:modelRows) {
@@ -317,7 +317,7 @@ public class TargetEntryMenu extends JPopupMenu {
 
 							Set<String> domains = GrepUtils.grepDomain(responseBody);
 							List<String> iplist = GrepUtils.grepIP(responseBody);
-							stdout.println(String.format("%s: %s sub-domain names; %s ip addresses found by fofa",rootDomain,domains.size(),iplist.size()));
+							stdout.println(String.format("%s: %s sub-domain names; %s ip addresses found by fofa.info",rootDomain,domains.size(),iplist.size()));
 							guiMain.getDomainPanel().getDomainResult().addIfValid(domains);
 							guiMain.getDomainPanel().getDomainResult().getSpecialPortTargets().addAll(iplist);
 						}
@@ -341,7 +341,7 @@ public class TargetEntryMenu extends JPopupMenu {
 					protected Map doInBackground() throws Exception {
 						String key = ConfigPanel.textFieldQuakeAPIKey.getText();
 						if (key.equals("")) {
-							stdout.println("Quake API key not configurated!");
+							stdout.println("quake.360.net API key not configurated!");
 							return null;
 						}
 						for (int row:modelRows) {
@@ -350,7 +350,7 @@ public class TargetEntryMenu extends JPopupMenu {
 
 							Set<String> domains = GrepUtils.grepDomain(responseBody);
 							List<String> iplist = GrepUtils.grepIP(responseBody);
-							stdout.println(String.format("%s: %s sub-domain names; %s ip addresses found by fofa",rootDomain,domains.size(),iplist.size()));
+							stdout.println(String.format("%s: %s sub-domain names; %s ip addresses found by quake.360.net",rootDomain,domains.size(),iplist.size()));
 							guiMain.getDomainPanel().getDomainResult().addIfValid(domains);
 							guiMain.getDomainPanel().getDomainResult().getSpecialPortTargets().addAll(iplist);
 						}
@@ -365,6 +365,38 @@ public class TargetEntryMenu extends JPopupMenu {
 			}
 		});
 
+		
+		JMenuItem SearchOnHunterAutoItem = new JMenuItem(new AbstractAction("Auto Search On hunter.qianxin.com") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+					@Override
+					protected Map doInBackground() throws Exception {
+						String key = ConfigPanel.textFieldHunterAPIKey.getText();
+						if (key.equals("")) {
+							stdout.println("hunter.qianxin.com API key not configurated!");
+							return null;
+						}
+						for (int row:modelRows) {
+							String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,0);
+							String responseBody = Search.searchHunter(key,rootDomain);
+
+							Set<String> domains = GrepUtils.grepDomain(responseBody);
+							List<String> iplist = GrepUtils.grepIP(responseBody);
+							stdout.println(String.format("%s: %s sub-domain names; %s ip addresses found by hunter.qianxin.com",rootDomain,domains.size(),iplist.size()));
+							guiMain.getDomainPanel().getDomainResult().addIfValid(domains);
+							guiMain.getDomainPanel().getDomainResult().getSpecialPortTargets().addAll(iplist);
+						}
+						return null;
+					}
+
+					@Override
+					protected void done(){
+					}
+				};
+				worker.execute();
+			}
+		});
 
 
 		this.add(getSubDomainsOf);
@@ -382,6 +414,7 @@ public class TargetEntryMenu extends JPopupMenu {
 
 		this.add(SearchOnFoFaAutoItem);
 		this.add(SearchOnQuakeAutoItem);
+		this.add(SearchOnHunterAutoItem);
 		this.addSeparator();
 
 		this.add(OpenWithBrowserItem);
