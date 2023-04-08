@@ -56,6 +56,8 @@ public class LineConfig {
 	private String fofaEmail = "";
 	private String fofaKey = "";
 	
+	private String quakeAPIKey = "";
+	
 	private boolean showItemsInOne = false;
 	private boolean enableElastic = false;
 	private String dbfilepath ="";
@@ -252,6 +254,16 @@ public class LineConfig {
 
 	public void setFofaKey(String fofaKey) {
 		this.fofaKey = fofaKey;
+	}
+
+	
+	
+	public String getQuakeAPIKey() {
+		return quakeAPIKey;
+	}
+
+	public void setQuakeAPIKey(String quakeAPIKey) {
+		this.quakeAPIKey = quakeAPIKey;
 	}
 
 	public boolean isShowItemsInOne() {

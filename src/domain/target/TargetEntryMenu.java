@@ -18,7 +18,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingWorker;
 
 import GUI.GUIMain;
-import assetSearch.Fofa;
+import assetSearch.Search;
 import burp.BurpExtender;
 import burp.Commons;
 import burp.DomainNameUtils;
@@ -296,8 +296,8 @@ public class TargetEntryMenu extends JPopupMenu {
 				}
 			}
 		});
-		
-		
+
+
 		JMenuItem SearchOnFoFaAutoItem = new JMenuItem(new AbstractAction("Auto Search On fofa.info") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -307,18 +307,19 @@ public class TargetEntryMenu extends JPopupMenu {
 						String email = ConfigPanel.textFieldFofaEmail.getText();
 						String key = ConfigPanel.textFieldFofaKey.getText();
 						if (email.equals("") ||key.equals("")) {
+							stdout.println("emaill or key not configurated!");
 							return null;
 						}
 						for (int row:modelRows) {
 							String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,0);
 							rootDomain = new String(Base64.getEncoder().encode(rootDomain.getBytes()));
-							String responseBody = Fofa.doSearch(email,key,rootDomain);
-							
-					        Set<String> domains = GrepUtils.grepDomain(responseBody);
-					        List<String> iplist = GrepUtils.grepIP(responseBody);
-					        stdout.println(String.format("rootDomain: %s sub-domain names; %s ip addresses found by fofa",domains.size(),iplist.size()));
-					        guiMain.getDomainPanel().getDomainResult().addIfValid(domains);
-					        guiMain.getDomainPanel().getDomainResult().getSpecialPortTargets().addAll(iplist);
+							String responseBody = Search.searchFofa(email,key,rootDomain);
+
+							Set<String> domains = GrepUtils.grepDomain(responseBody);
+							List<String> iplist = GrepUtils.grepIP(responseBody);
+							stdout.println(String.format("%s: %s sub-domain names; %s ip addresses found by fofa",rootDomain,domains.size(),iplist.size()));
+							guiMain.getDomainPanel().getDomainResult().addIfValid(domains);
+							guiMain.getDomainPanel().getDomainResult().getSpecialPortTargets().addAll(iplist);
 						}
 						return null;
 					}
@@ -331,6 +332,39 @@ public class TargetEntryMenu extends JPopupMenu {
 			}
 		});
 		
+		
+		JMenuItem SearchOnQuakeAutoItem = new JMenuItem(new AbstractAction("Auto Search On quake.360.net") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+					@Override
+					protected Map doInBackground() throws Exception {
+						String key = ConfigPanel.textFieldQuakeAPIKey.getText();
+						if (key.equals("")) {
+							stdout.println("Quake API key not configurated!");
+							return null;
+						}
+						for (int row:modelRows) {
+							String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,0);
+							String responseBody = Search.searchQuake(key,rootDomain);
+
+							Set<String> domains = GrepUtils.grepDomain(responseBody);
+							List<String> iplist = GrepUtils.grepIP(responseBody);
+							stdout.println(String.format("%s: %s sub-domain names; %s ip addresses found by fofa",rootDomain,domains.size(),iplist.size()));
+							guiMain.getDomainPanel().getDomainResult().addIfValid(domains);
+							guiMain.getDomainPanel().getDomainResult().getSpecialPortTargets().addAll(iplist);
+						}
+						return null;
+					}
+
+					@Override
+					protected void done(){
+					}
+				};
+				worker.execute();
+			}
+		});
+
 
 
 		this.add(getSubDomainsOf);
@@ -345,10 +379,11 @@ public class TargetEntryMenu extends JPopupMenu {
 		this.add(SearchOnZoomEyeItem);
 		this.add(SearchOnShodanItem);
 		this.addSeparator();
-		
+
 		this.add(SearchOnFoFaAutoItem);
+		this.add(SearchOnQuakeAutoItem);
 		this.addSeparator();
-		
+
 		this.add(OpenWithBrowserItem);
 		this.add(whoisItem);
 		this.add(ASNInfoItem);

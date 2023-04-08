@@ -48,6 +48,11 @@ public class ConfigPanel extends JPanel{
 	
 	public static JTextField textFieldFofaEmail;
 	public static JTextField textFieldFofaKey;
+	
+	public static JTextField textFieldQuakeAPIKey;
+	
+	public static JTextField textFieldHunterEmail;
+	public static JTextField textFieldHunterKey;
 
 	public LineConfig getLineConfig() {
 		return lineConfig;
@@ -105,6 +110,7 @@ public class ConfigPanel extends JPanel{
 		textFieldUploadApiToken.setText(lineConfig.getUploadApiToken());
 		textFieldFofaEmail.setText(lineConfig.getFofaEmail());
 		textFieldFofaKey.setText(lineConfig.getFofaKey());
+		textFieldQuakeAPIKey.setText(lineConfig.getQuakeAPIKey());
 
 		showItemsInOne.setSelected(lineConfig.isShowItemsInOne());
 		rdbtnSaveTrafficTo.setSelected(lineConfig.isEnableElastic());
@@ -122,6 +128,7 @@ public class ConfigPanel extends JPanel{
 		lineConfig.setUploadApiToken(textFieldUploadApiToken.getText());
 		lineConfig.setFofaEmail(textFieldFofaEmail.getText());
 		lineConfig.setFofaKey(textFieldFofaKey.getText());
+		lineConfig.setQuakeAPIKey(textFieldQuakeAPIKey.getText());
 
 		lineConfig.setToolPanelText(ToolPanel.inputTextArea.getText());
 		lineConfig.setShowItemsInOne(showItemsInOne.isSelected());
@@ -260,6 +267,15 @@ public class ConfigPanel extends JPanel{
 		add(lblFofaKey, new MyGridBagLayout(++rowIndex,1));
 		add(textFieldFofaKey,new MyGridBagLayout(rowIndex,2));
 		
+		
+		JLabel lblQuakeAPIKey = new JLabel("Quake API Key:");
+
+		textFieldQuakeAPIKey = new JTextField();
+		textFieldQuakeAPIKey.setColumns(30);
+		textFieldQuakeAPIKey.getDocument().addDocumentListener(new textFieldListener());
+
+		add(lblQuakeAPIKey, new MyGridBagLayout(++rowIndex,1));
+		add(textFieldQuakeAPIKey,new MyGridBagLayout(rowIndex,2));
 
 		///////下方是JRadioButton/////
 

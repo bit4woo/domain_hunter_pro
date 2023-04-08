@@ -9,18 +9,8 @@ import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
 import burp.IHttpService;
 
+
 public class HttpClientOfBurp {
-
-	public static IHttpRequestResponse doRequest(URL url) {
-		IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
-		IExtensionHelpers helpers = callbacks.getHelpers();
-
-		byte[] byteRequest = helpers.buildHttpRequest(url);//GET
-
-		IHttpService service =getHttpService(url);
-		IHttpRequestResponse message = callbacks.makeHttpRequest(service, byteRequest);
-		return message;
-	}
 
 	public static IHttpService getHttpService(URL url) {
 		IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
@@ -39,19 +29,28 @@ public class HttpClientOfBurp {
 		return service;
 	}
 
-
-	public static String doRequestGetBody(URL url) {
+	public static String doRequest(URL url) {
+		return doRequest(url,null);
+	}
+	
+	/**
+	 * 
+	 * @param url
+	 * @param byteRequest
+	 * @return response body
+	 */
+	public static String doRequest(URL url,byte[] byteRequest) {
 		IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
 		IExtensionHelpers helpers = callbacks.getHelpers();
-
-		byte[] byteRequest = helpers.buildHttpRequest(url);//GET
+		if (byteRequest == null) {
+			byteRequest = helpers.buildHttpRequest(url);//GET
+		}
 
 		IHttpService service =getHttpService(url);
 		IHttpRequestResponse message = callbacks.makeHttpRequest(service, byteRequest);
 		HelperPlus getter = new HelperPlus(helpers);
 
 		byte[] byteBody = getter.getBody(false, message);
-		
 		return new String(byteBody);
 	}
 }
