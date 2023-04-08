@@ -312,8 +312,8 @@ public class TargetEntryMenu extends JPopupMenu {
 						}
 						for (int row:modelRows) {
 							String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,0);
-							rootDomain = new String(Base64.getEncoder().encode(rootDomain.getBytes()));
-							String responseBody = Search.searchFofa(email,key,rootDomain);
+							String rootDomainPara = new String(Base64.getEncoder().encode(rootDomain.getBytes()));
+							String responseBody = Search.searchFofa(email,key,rootDomainPara);
 
 							Set<String> domains = GrepUtils.grepDomain(responseBody);
 							List<String> iplist = GrepUtils.grepIP(responseBody);
