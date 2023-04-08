@@ -395,7 +395,7 @@ public class DomainManager {
 		}else {
 			return false;
 		}
-		
+
 		if (type == DomainManager.TLD_DOMAIN) {
 			//应当先做TLD域名的添加，这样可以丰富Root域名，避免数据损失遗漏
 			//这里的rootDomain不一定是topPrivate。比如 shopeepay.shopee.sg 和shopeepay.shopee.io
@@ -478,8 +478,8 @@ public class DomainManager {
 	 * 新增的刷新逻辑还可以简化，子域名等无需再次分析。
 	 */
 	public void freshBaseRule() {
-		guiMain.getDomainPanel().backupDB("before refresh");
-		BurpExtender.getStdout().println("before refresh--> "+getSummary());
+		//		guiMain.getDomainPanel().backupDB("before refresh");
+		//		BurpExtender.getStdout().println("before refresh--> "+getSummary());
 
 		Set<String> tmpDomains = new HashSet<>();
 		//tmpDomains.addAll(relatedDomainSet);
@@ -580,14 +580,14 @@ public class DomainManager {
 		enteredRootDomain = InternetDomainName.from(enteredRootDomain).topPrivateDomain().toString();
 		System.out.println(enteredRootDomain);
 	}
-	
+
 	/**
 	 *  CopyOnWriteArraySet 用iterator的remove反而会出错
 	 */
 	public static void test2() {
 		CopyOnWriteArraySet<String> subDomainSet = new CopyOnWriteArraySet<String>();
 		subDomainSet.add("e53cf27d3dad22ae36aff189d90f0fbf.aaa.com");
-		
+
 		for (String item:subDomainSet) {
 			String md5 = isMd5Domain(item);//md5的值加上一个点
 			if (md5.length() == 33) {
