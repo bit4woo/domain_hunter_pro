@@ -449,7 +449,7 @@ public class LineEntryMenu extends JPopupMenu {
 		 * 逗号分隔的IP地址，可以用于masscan扫描
 		 * 空格分隔的IP地址，可以用于nmap扫描
 		 */
-		JMenuItem copyIPWithCommaItem = new JMenuItem(new AbstractAction("Copy IP Set(comma separated)") {
+		JMenuItem copyIPWithCommaItem = new JMenuItem(new AbstractAction("Copy IP Set (comma separated)") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				try{
@@ -468,7 +468,7 @@ public class LineEntryMenu extends JPopupMenu {
 		});
 		
 		
-		JMenuItem copyIPWithSpaceItem = new JMenuItem(new AbstractAction("Copy IP Set(space separated)") {
+		JMenuItem copyIPWithSpaceItem = new JMenuItem(new AbstractAction("Copy IP Set (space separated)") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				try{
@@ -961,13 +961,21 @@ public class LineEntryMenu extends JPopupMenu {
 		addToblackListItem.setToolTipText("IP addresses will be added to Black List");
 		
 		this.add(itemNumber);
+		
+		this.addSeparator();
+		
 		this.add(checkingItem);
 		this.add(moreActionItem);
 		this.add(checkedItem);
+		
+		this.addSeparator();
+		
+		//常用多选操作
 		this.add(assetTypeMenu);
+		this.add(doActiveScan);
+		this.add(copyIPWithCommaItem);
 		this.add(batchAddCommentsItem);
-		this.add(batchFreshASNInfoItem);
-		this.add(setASNAliasItem);
+		
 
 		this.addSeparator();
 
@@ -977,7 +985,7 @@ public class LineEntryMenu extends JPopupMenu {
 		DoMenu.add(addHostsToScope);
 		DoMenu.add(SendToRepeater);
 		DoMenu.add(SendToRepeaterWithCookieItem);
-		DoMenu.add(doActiveScan);
+		//DoMenu.add(doActiveScan);常用
 
 		DoMenu.addSeparator();
 		//外部程序相关行为
@@ -986,6 +994,9 @@ public class LineEntryMenu extends JPopupMenu {
 		DoMenu.add(dirSearchItem);
 		//DoMenu.add(doGateWayByPassCheck);
 		//this.add(iconHashItem);
+		DoMenu.addSeparator();
+		DoMenu.add(batchFreshASNInfoItem);
+		DoMenu.add(setASNAliasItem);
 
 		JMenu SearchMenu = new JMenu("Search");
 		this.add(SearchMenu);
@@ -1017,7 +1028,7 @@ public class LineEntryMenu extends JPopupMenu {
 		CopyMenu.add(copyHostAndPortItem);
 		CopyMenu.add(copyHostAndIPAddressItem);
 		CopyMenu.add(copyIPItem);
-		CopyMenu.add(copyIPWithCommaItem);
+		//CopyMenu.add(copyIPWithCommaItem);//常用
 		CopyMenu.add(copyIPWithSpaceItem);
 		CopyMenu.add(copyURLItem);
 		CopyMenu.add(copyCommonURLItem);
