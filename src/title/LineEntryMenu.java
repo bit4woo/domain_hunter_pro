@@ -32,6 +32,7 @@ import burp.DomainNameUtils;
 import burp.Getter;
 import burp.IBurpExtenderCallbacks;
 import burp.IPAddressUtils;
+import burp.SystemUtils;
 import title.search.SearchDork;
 
 public class LineEntryMenu extends JPopupMenu {
@@ -213,7 +214,7 @@ public class LineEntryMenu extends JPopupMenu {
 				}
 			}
 		});
-		
+
 		//360quake,zoomeye,hunter,shodan
 		//https://quake.360.net/quake/#/searchResult?searchVal=baidu.com
 		JMenuItem SearchOn360QuakeItem = new JMenuItem(new AbstractAction("Seach On 360Quake") {
@@ -239,8 +240,8 @@ public class LineEntryMenu extends JPopupMenu {
 		});
 
 		//https://quake.360.net/quake/#/searchResult?searchVal=favicon%3A%20%22c5618c85980459ce4325eb324428d622%22
-		
-		
+
+
 		JMenuItem SearchOnZoomEyeItem = new JMenuItem(new AbstractAction("Seach On ZoomEye") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -275,7 +276,7 @@ public class LineEntryMenu extends JPopupMenu {
 					String searchContent = firstEntry.getIcon_hash();
 					searchContent= String.format("iconhash:\"%s\"", searchContent);
 					searchContent = URLEncoder.encode(searchContent);
-					
+
 					String url= "https://www.zoomeye.org/searchResult?q="+searchContent;
 					try {
 						Commons.browserOpen(url, null);
@@ -285,7 +286,7 @@ public class LineEntryMenu extends JPopupMenu {
 				}
 			}
 		});
-		
+
 
 		JMenuItem ASNInfoItem = new JMenuItem(new AbstractAction("ASN Info") {
 			@Override
@@ -408,7 +409,7 @@ public class LineEntryMenu extends JPopupMenu {
 				}
 			}
 		});
-		
+
 		JMenuItem copyHostAndIPAddressItem = new JMenuItem(new AbstractAction("Copy Host+IPAddress") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -444,7 +445,7 @@ public class LineEntryMenu extends JPopupMenu {
 				}
 			}
 		});
-		
+
 		/**
 		 * 逗号分隔的IP地址，可以用于masscan扫描
 		 * 空格分隔的IP地址，可以用于nmap扫描
@@ -466,8 +467,8 @@ public class LineEntryMenu extends JPopupMenu {
 				}
 			}
 		});
-		
-		
+
+
 		JMenuItem copyIPWithSpaceItem = new JMenuItem(new AbstractAction("Copy IP Set (space separated)") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -565,9 +566,71 @@ public class LineEntryMenu extends JPopupMenu {
 			}
 		});
 
-		JMenuItem doPortScan = new JMenuItem();
-		doPortScan.setText("Do Port Scan");
-		doPortScan.addActionListener(new NmapScanAction(guiMain,lineTable, modleRows));
+		JMenuItem doPortScan = new JMenuItem(new AbstractAction("Do Port Scan") {
+
+			/**
+			 * 逗号分隔的IP地址，可以用于masscan扫描
+			 * 空格分隔的IP地址，可以用于nmap扫描
+			 */
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try{
+					Set<String> IPs = lineTable.getLineTableModel().getIPs(modleRows);
+					String text = String.join(System.lineSeparator(), IPs);
+
+					String nmapPath = guiMain.getConfigPanel().getLineConfig().getNmapPath();
+					if (nmapPath.contains("nmap")) {
+						text = String.join(" ", IPs);
+					}else if (nmapPath.contains("masscan")) {
+						text = String.join(",", IPs);
+					}else {
+						return;
+					}
+					String command = nmapPath.replace("{host}", text.trim());
+					stdout.println(command);
+
+					String filepath = SystemUtils.genBatchFile(command, "Nmap-latest-command.bat");
+					SystemUtils.runBatchFile(filepath);
+				}
+				catch (Exception e1)
+				{
+					e1.printStackTrace(stderr);
+				}
+			}
+		});
+
+
+		JMenuItem genPortScanCmd = new JMenuItem(new AbstractAction("Generate Port Scan Cmd") {
+
+			/**
+			 * 逗号分隔的IP地址，可以用于masscan扫描
+			 * 空格分隔的IP地址，可以用于nmap扫描
+			 */
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try{
+					Set<String> IPs = lineTable.getLineTableModel().getIPs(modleRows);
+					String text = String.join(System.lineSeparator(), IPs);
+
+					String nmapPath = guiMain.getConfigPanel().getLineConfig().getNmapPath();
+					if (nmapPath.contains("nmap")) {
+						text = String.join(" ", IPs);
+					}else if (nmapPath.contains("masscan")) {
+						text = String.join(",", IPs);
+					}else {
+						return;
+					}
+					String command = nmapPath.replace("{host}", text.trim());
+					stdout.println(command);
+
+					SystemUtils.writeToClipboard(command);
+				}
+				catch (Exception e1)
+				{
+					e1.printStackTrace(stderr);
+				}
+			}
+		});
 
 		JMenuItem openURLwithBrowserItem = new JMenuItem(new AbstractAction("Open With Browser(double click url)") {
 			@Override
@@ -908,7 +971,7 @@ public class LineEntryMenu extends JPopupMenu {
 		});
 		removeSubDomainItem.setToolTipText("Delete Host From Subdomain Set In Domain Panel");
 
-		
+
 		JMenuItem removeCustomAssetItem = new JMenuItem(new AbstractAction("Delete Host From Custom Assets") {//need to show dialog to confirm
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -926,8 +989,8 @@ public class LineEntryMenu extends JPopupMenu {
 			}
 		});
 		removeSubDomainItem.setToolTipText("Delete Host From Subdomain Set In Domain Panel");
-		
-		
+
+
 		/**
 		 * 黑名单主要用于记录CDN或者云服务IP，避免计算网段时包含这些IP。
 		 */
@@ -959,23 +1022,23 @@ public class LineEntryMenu extends JPopupMenu {
 			}
 		});
 		addToblackListItem.setToolTipText("IP addresses will be added to Black List");
-		
+
 		this.add(itemNumber);
-		
+
 		this.addSeparator();
-		
+
 		this.add(checkingItem);
 		this.add(moreActionItem);
 		this.add(checkedItem);
-		
+
 		this.addSeparator();
-		
+
 		//常用多选操作
 		this.add(assetTypeMenu);
 		this.add(doActiveScan);
-		this.add(copyIPWithCommaItem);
+		this.add(genPortScanCmd);
 		this.add(batchAddCommentsItem);
-		
+
 
 		this.addSeparator();
 
@@ -1002,22 +1065,22 @@ public class LineEntryMenu extends JPopupMenu {
 		this.add(SearchMenu);
 		SearchMenu.add(SearchOnHunterItem);//在插件内搜索
 		SearchMenu.addSeparator();
-		
+
 		SearchMenu.add(googleSearchItem);
 		SearchMenu.add(SearchOnGithubItem);
 		SearchMenu.addSeparator();//通用搜索引擎和GitHub
-		
+
 		SearchMenu.add(SearchOnFoFaItem);
 		SearchMenu.add(SearchOnShodanItem);
 		SearchMenu.add(SearchOnZoomEyeItem);
 		SearchMenu.add(SearchOn360QuakeItem);
-		
+
 		SearchMenu.add(SearchOnFoFaWithIconhashItem);
 		SearchMenu.add(SearchOnShodanWithIconhashItem);
 		SearchMenu.add(SearchOnZoomEyeWithIconhashItem);
-		
+
 		SearchMenu.addSeparator();//网络搜索引擎
-		
+
 		SearchMenu.add(ASNInfoItem);
 		SearchMenu.add(IPInfoItem);
 
@@ -1028,7 +1091,7 @@ public class LineEntryMenu extends JPopupMenu {
 		CopyMenu.add(copyHostAndPortItem);
 		CopyMenu.add(copyHostAndIPAddressItem);
 		CopyMenu.add(copyIPItem);
-		//CopyMenu.add(copyIPWithCommaItem);//常用
+		CopyMenu.add(copyIPWithCommaItem);//常用
 		CopyMenu.add(copyIPWithSpaceItem);
 		CopyMenu.add(copyURLItem);
 		CopyMenu.add(copyCommonURLItem);
@@ -1041,12 +1104,12 @@ public class LineEntryMenu extends JPopupMenu {
 		this.add(addToblackListItem);//加入黑名单
 		this.add(removeItem);//单纯删除记录
 		this.add(addToblackListAndDeleteItem);//加入黑名单并删除
-		
+
 		this.add(removeSubDomainItem);
 		this.add(removeCustomAssetItem);
-		
+
 	}
-	
+
 	/**
 	 * 只返回有搜索价值的字段，如果鼠标位置未对应有价值的字段，默认返回host字段。
 	 * @param firstEntry
