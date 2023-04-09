@@ -444,6 +444,47 @@ public class LineEntryMenu extends JPopupMenu {
 				}
 			}
 		});
+		
+		/**
+		 * 逗号分隔的IP地址，可以用于masscan扫描
+		 * 空格分隔的IP地址，可以用于nmap扫描
+		 */
+		JMenuItem copyIPWithCommaItem = new JMenuItem(new AbstractAction("Copy IP Set(comma separated)") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				try{
+					Set<String> IPs = lineTable.getLineTableModel().getIPs(modleRows);
+					String text = String.join(",", IPs);
+
+					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+					StringSelection selection = new StringSelection(text);
+					clipboard.setContents(selection, null);
+				}
+				catch (Exception e1)
+				{
+					e1.printStackTrace(stderr);
+				}
+			}
+		});
+		
+		
+		JMenuItem copyIPWithSpaceItem = new JMenuItem(new AbstractAction("Copy IP Set(space separated)") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				try{
+					Set<String> IPs = lineTable.getLineTableModel().getIPs(modleRows);
+					String text = String.join(" ", IPs);
+
+					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+					StringSelection selection = new StringSelection(text);
+					clipboard.setContents(selection, null);
+				}
+				catch (Exception e1)
+				{
+					e1.printStackTrace(stderr);
+				}
+			}
+		});
 
 		JMenuItem copyURLItem = new JMenuItem(new AbstractAction("Copy URL") {
 			@Override
@@ -976,6 +1017,8 @@ public class LineEntryMenu extends JPopupMenu {
 		CopyMenu.add(copyHostAndPortItem);
 		CopyMenu.add(copyHostAndIPAddressItem);
 		CopyMenu.add(copyIPItem);
+		CopyMenu.add(copyIPWithCommaItem);
+		CopyMenu.add(copyIPWithSpaceItem);
 		CopyMenu.add(copyURLItem);
 		CopyMenu.add(copyCommonURLItem);
 		CopyMenu.add(copyHostCollisionDomainsItem);
