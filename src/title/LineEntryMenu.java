@@ -545,7 +545,7 @@ public class LineEntryMenu extends JPopupMenu {
 		});
 
 		JMenuItem dirSearchItem = new JMenuItem();
-		dirSearchItem.setText("Do Dir Search");
+		dirSearchItem.setText("Do Run Dir Search");
 		dirSearchItem.addActionListener(new DirSearchAction(guiMain,lineTable, modleRows));
 
 		JMenuItem iconHashItem = new JMenuItem();
@@ -566,7 +566,7 @@ public class LineEntryMenu extends JPopupMenu {
 			}
 		});
 
-		JMenuItem doPortScan = new JMenuItem(new AbstractAction("Do Port Scan") {
+		JMenuItem doPortScan = new JMenuItem(new AbstractAction("Do Run Port Scan") {
 
 			/**
 			 * 逗号分隔的IP地址，可以用于masscan扫描
@@ -579,12 +579,13 @@ public class LineEntryMenu extends JPopupMenu {
 					String text = String.join(System.lineSeparator(), IPs);
 
 					String nmapPath = guiMain.getConfigPanel().getLineConfig().getNmapPath();
-					if (nmapPath.contains("nmap")) {
-						text = String.join(" ", IPs);
-					}else if (nmapPath.contains("masscan")) {
+					//线判断masscan,因为可能存在masscan 和nmap联合使用的情况，比如用xargs？
+					if (nmapPath.contains("masscan")) {
 						text = String.join(",", IPs);
+					}else if (nmapPath.contains("nmap")) {
+						text = String.join(" ", IPs);
 					}else {
-						return;
+						text = String.join(" ", IPs); //比如调用了masscan和nmap的python脚本
 					}
 					String command = nmapPath.replace("{host}", text.trim());
 					stdout.println(command);
@@ -613,13 +614,13 @@ public class LineEntryMenu extends JPopupMenu {
 					String text = String.join(System.lineSeparator(), IPs);
 
 					String nmapPath = guiMain.getConfigPanel().getLineConfig().getNmapPath();
-					//线判断masscan,因为可能存在masscan 和nmap联合使用的情况
+					//线判断masscan,因为可能存在masscan 和nmap联合使用的情况，比如用xargs？
 					if (nmapPath.contains("masscan")) {
 						text = String.join(",", IPs);
 					}else if (nmapPath.contains("nmap")) {
 						text = String.join(" ", IPs);
 					}else {
-						return;
+						text = String.join(" ", IPs); //比如调用了masscan和nmap的python脚本
 					}
 					String command = nmapPath.replace("{host}", text.trim());
 					stdout.println(command);
