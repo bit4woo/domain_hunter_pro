@@ -155,23 +155,23 @@ public class TargetDao {
 	 */
 	@Deprecated
 	public boolean deleteByID(int id) {
-		String sql = "delete from Target where ID=?";
+		String sql = "delete from TargetTable where ID=?";
 		return jdbcTemplate.update(sql, id) > 0;
 	}
 	
 	public boolean deleteByTarget(String targetDomain) {
-		String sql = "delete from Target where target=?";
+		String sql = "delete from TargetTable where target=?";
 		return jdbcTemplate.update(sql, targetDomain) > 0;
 	}
 	
 	public boolean deleteTarget(TargetEntry entry) {
-		String sql = "delete from Target where target=?";
+		String sql = "delete from TargetTable where target=?";
 		return jdbcTemplate.update(sql, entry.getTarget()) > 0;
 	}
 
 
 	public int getRowCount(){
-		String sql = "select count(*) from Target";
+		String sql = "select count(*) from TargetTable";
 		return jdbcTemplate.queryForObject(
 				sql, Integer.class);
 	}

@@ -325,6 +325,33 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		});
+		
+		JButton btnMasscanResultToHttp = new JButton("Masscan->Http");
+
+		btnMasscanResultToHttp.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String content = inputTextArea.getText();
+				if (null != content && !content.equals("")) {
+
+					List<String> lines = Commons.textToLines(content);
+					List<String> result = new ArrayList<String>();
+					for (String line:lines) {
+						if (line.contains("Discovered open port")) {
+							try {
+								String port = line.split(" ")[3].split("/")[0];
+								String host = line.split(" ")[5];
+								result.add("http://"+host+":"+port);
+								result.add("https://"+host+":"+port);
+							} catch (Exception e1) {
+								e1.printStackTrace();
+							}
+						}
+					}
+					outputTextArea.setText(String.join(System.lineSeparator(), result));
+				}
+			}
+		});
 
 		JButton btnFindSubnet = new JButton("Find Subnet");
 
@@ -1039,6 +1066,7 @@ public class ToolPanel extends JPanel {
 		threeFourthPanel.add(btnFindIP, new bagLayout(rowIndex, ++cloumnIndex));
 		//threeFourthPanel.add(btnFindPort, new bagLayout(rowIndex, ++cloumnIndex));
 		threeFourthPanel.add(btnMasscanResultToNmap,new bagLayout(rowIndex, ++cloumnIndex));
+		threeFourthPanel.add(btnMasscanResultToHttp,new bagLayout(rowIndex, ++cloumnIndex));
 		threeFourthPanel.add(btnFindIPAndPort, new bagLayout(rowIndex, ++cloumnIndex));
 
 		cloumnIndex = 0;

@@ -23,6 +23,7 @@ import burp.IPAddressUtils;
 import burp.IntArraySlice;
 import domain.DomainManager;
 import title.IndexedHashMap;
+import title.LineEntry;
 
 public class TargetTableModel extends AbstractTableModel {
 
@@ -32,7 +33,7 @@ public class TargetTableModel extends AbstractTableModel {
 	private GUIMain guiMain;
 
 	private static final transient String[] standardTitles = new String[] {
-			"Domain/Subnet", "Keyword", "Comment","Black"};
+			"#","Domain/Subnet", "Keyword", "Comment","Black"};
 	private static transient List<String> titletList = new ArrayList<>(Arrays.asList(standardTitles));
 
 	private static final transient Logger log = LogManager.getLogger(TargetTableModel.class);
@@ -108,6 +109,11 @@ public class TargetTableModel extends AbstractTableModel {
 		}
 		TargetEntry entry = targetEntries.get(rowIndex);
 		if (entry == null) return "";
+		
+		if (columnIndex == titletList.indexOf("#")) {
+			return rowIndex;
+		}
+		
 		if (columnIndex == titletList.indexOf("Domain/Subnet")) {
 			return entry.getTarget();
 		}
@@ -159,6 +165,8 @@ public class TargetTableModel extends AbstractTableModel {
 	{
 		if (columnIndex == titletList.indexOf("Black")){
 			return boolean.class;
+		}else if (columnIndex == titletList.indexOf("#")){
+			return Integer.class;//如果返回int.class排序会有问题，why？
 		}else {
 			return String.class;
 		}
@@ -641,21 +649,18 @@ public class TargetTableModel extends AbstractTableModel {
 	public void removeRows(int[] rows) {
 		Arrays.sort(rows); //升序
 		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
-			TargetEntry checked = targetEntries.get(rows[i]);
-			targetEntries.remove(i);
-			guiMain.getDomainPanel().getTargetDao().deleteTarget(checked);
-		}
-		fireDeleted(rows);
-	}
-
-	//为了同时fire多个不连续的行，自行实现这个方法。
-	private void fireDeleted(int[] rows) {
-		List<int[]> slice = IntArraySlice.slice(rows);
-		//必须逆序，从高位index开始删除，否则删除的对象和预期不一致！！！
-		//上面得到的顺序就是从高位开始的
-		for(int[] sli:slice) {
-			System.out.println(Arrays.toString(sli));
-			this.fireTableRowsDeleted(sli[sli.length-1],sli[0]);//这里传入的值必须是低位数在前面，高位数在后面
+			try {
+				int index = rows[i];
+				TargetEntry checked = targetEntries.get(index);
+				if (checked == null) {
+					throw new ArrayIndexOutOfBoundsException("can't find item with index "+index);
+				}
+				targetEntries.remove(index);
+				guiMain.getDomainPanel().getTargetDao().deleteTarget(checked);
+				fireTableRowsDeleted(index,index);
+			} catch (Exception e) {
+				e.printStackTrace(stderr);
+			}
 		}
 	}
 
