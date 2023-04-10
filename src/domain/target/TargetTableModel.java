@@ -317,7 +317,7 @@ public class TargetTableModel extends AbstractTableModel {
 					result.add(entry.getTarget());
 				}
 			}catch (Exception e){
-				e.printStackTrace();
+				e.printStackTrace(stderr);
 			}
 		}
 		return result;
@@ -338,7 +338,7 @@ public class TargetTableModel extends AbstractTableModel {
 					result.add(entry.getTarget());
 				}
 			}catch (Exception e){
-				e.printStackTrace();
+				e.printStackTrace(stderr);
 			}
 		}
 		return result;
@@ -497,7 +497,7 @@ public class TargetTableModel extends AbstractTableModel {
 				System.out.println(line);
 				BurpExtender.getStdout().println(line);
 			} catch (Exception e) {
-				e.printStackTrace();
+				e.printStackTrace(stderr);
 			}
 		}
 	}
