@@ -133,6 +133,11 @@ public class GrepUtils {
 
 	//https://stackoverflow.com/questions/163360/regular-expression-to-match-urls-in-java
 	//https://github.com/aosp-mirror/platform_frameworks_base/blob/master/core/java/android/util/Patterns.java
+	/**
+	 * 还需处理不是/开头的urlpath //TODO
+	 * @param httpResponse
+	 * @return
+	 */
 	public static List<String> grepURL(String httpResponse) {
 		httpResponse = httpResponse.toLowerCase();
 		Set<String> URLs = new HashSet<>();
