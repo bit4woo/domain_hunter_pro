@@ -39,6 +39,7 @@ public class LineConfig {
 	"D:\\Program Files\\Mozilla Firefox\\firefox.exe"};
 	public static final String defaultNmap = "nmap -Pn -sT -sV --min-rtt-timeout 1ms "
 			+ "--max-rtt-timeout 1000ms --max-retries 0 --max-scan-delay 0 --min-rate 3000 {host}";
+	public static final String defaultMasscan = "masscan -p0-65535 --rate=5000 {host}";
 	public static final String defaultDirSearch = "python3 dirsearch.py -t 8 --proxy=127.0.0.1:8080 "
 			+ "--random-agent -e * -f -x 400,404,500,502,503,514,550,564 -u {url}";
 	public static final String macDefaultBrowserPath = "/Applications/Firefox.app/Contents/MacOS/firefox";

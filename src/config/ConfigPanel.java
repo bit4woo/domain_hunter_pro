@@ -156,7 +156,14 @@ public class ConfigPanel extends JPanel{
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2){//左键双击
-					textFieldPortScanner.setText(LineConfig.defaultNmap);
+					String current = textFieldPortScanner.getText();
+					if (current.equals(LineConfig.defaultNmap)) {
+						textFieldPortScanner.setText(LineConfig.defaultMasscan);
+					}else if(current.equals(LineConfig.defaultMasscan)) {
+						textFieldPortScanner.setText(LineConfig.defaultNmap);
+					}else {
+						textFieldPortScanner.setText(LineConfig.defaultMasscan);
+					}
 				}
 			}
 		});

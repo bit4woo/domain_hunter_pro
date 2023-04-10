@@ -600,7 +600,7 @@ public class LineEntryMenu extends JPopupMenu {
 		});
 
 
-		JMenuItem genPortScanCmd = new JMenuItem(new AbstractAction("Generate Port Scan Cmd") {
+		JMenuItem genPortScanCmd = new JMenuItem(new AbstractAction("Copy Port Scan Cmd") {
 
 			/**
 			 * 逗号分隔的IP地址，可以用于masscan扫描
@@ -613,10 +613,11 @@ public class LineEntryMenu extends JPopupMenu {
 					String text = String.join(System.lineSeparator(), IPs);
 
 					String nmapPath = guiMain.getConfigPanel().getLineConfig().getNmapPath();
-					if (nmapPath.contains("nmap")) {
-						text = String.join(" ", IPs);
-					}else if (nmapPath.contains("masscan")) {
+					//线判断masscan,因为可能存在masscan 和nmap联合使用的情况
+					if (nmapPath.contains("masscan")) {
 						text = String.join(",", IPs);
+					}else if (nmapPath.contains("nmap")) {
+						text = String.join(" ", IPs);
 					}else {
 						return;
 					}
