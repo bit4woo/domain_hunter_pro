@@ -137,14 +137,7 @@ public class ConfigPanel extends JPanel{
 
 	public ConfigPanel(GUIMain gui) {
 		this.gui = gui;
-		GridBagLayout gbl_fourFourthPanel = new GridBagLayout();
-		gbl_fourFourthPanel.columnWidths = new int[]{215, 215, 0};
-		gbl_fourFourthPanel.rowHeights = new int[]{27, 0, 0, 0, 27, 0, 0, 0, 0, 0, 27, 27, 27, 27, 0, 0, 0, 0};
-		gbl_fourFourthPanel.columnWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
-		gbl_fourFourthPanel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
-		setLayout(gbl_fourFourthPanel);
-		setLayout(gbl_fourFourthPanel);
-		//setLayout(new GridLayout(20, 2));
+		setLayout(new GridBagLayout());
 		JLabel lblNewLabel = new JLabel("Browser Path:");
 
 		BrowserPath = new JTextField();
