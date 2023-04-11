@@ -77,6 +77,7 @@ public class ToolPanel extends JPanel {
 	public boolean inputTextAreaChanged = true;
 
 	String history = "";
+	JLabel statusLabel = new JLabel("");
 
 
 	private GUIMain guiMain;
@@ -147,6 +148,7 @@ public class ToolPanel extends JPanel {
 
 		JScrollPanelWithHeaderForTool OutPanel = new JScrollPanelWithHeaderForTool("OutPut","",false);
 		outputTextArea = OutPanel.getTextArea();
+		outputTextArea.addMouseListener(new TextAreaMouseListener(outputTextArea));
 		
 		JPanel buttonPanel = createButtons();
 		
@@ -203,12 +205,15 @@ public class ToolPanel extends JPanel {
 		outputToInput.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				statusLabel.setText("doing");
 				String content = outputTextArea.getText();
 				if (null != content) {
 					inputTextArea.setText(content);
 				}
+				statusLabel.setText("Done!!!");
 			}
 		});
+		
 		
 		/*
 		JButton SearchToInput = new JButton("SearchResult---->Input");
@@ -1094,6 +1099,7 @@ public class ToolPanel extends JPanel {
 		int cloumnIndex = 0;
 		
 		buttonPanel.add(outputToInput, new bagLayout(++rowIndex, ++cloumnIndex));
+		buttonPanel.add(statusLabel, new bagLayout(rowIndex, ++cloumnIndex));
 		//buttonPanel.add(SearchToInput, new bagLayout(rowIndex, ++cloumnIndex));
 		
 		cloumnIndex = 0;
