@@ -3,7 +3,6 @@ package Tools;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Desktop;
-import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -33,19 +32,14 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
-import javax.swing.SwingConstants;
 import javax.swing.SwingWorker;
-import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.event.DocumentEvent;
@@ -121,15 +115,16 @@ public class ToolPanel extends JPanel {
 
 		///////////////////////HeaderPanel//////////////
 
+		/*
+		JPanel HeaderPanel = new JPanel();
+		HeaderPanel.setBorder(new LineBorder(new Color(0, 0, 0)));
+		FlowLayout fl_HeaderPanel = (FlowLayout) HeaderPanel.getLayout();
+		fl_HeaderPanel.setAlignment(FlowLayout.LEFT);
+		this.add(HeaderPanel, BorderLayout.NORTH);
 
-//		JPanel HeaderPanel = new JPanel();
-//		HeaderPanel.setBorder(new LineBorder(new Color(0, 0, 0)));
-//		FlowLayout fl_HeaderPanel = (FlowLayout) HeaderPanel.getLayout();
-//		fl_HeaderPanel.setAlignment(FlowLayout.LEFT);
-//		this.add(HeaderPanel, BorderLayout.NORTH);
-//
-//		JLabel lblNewLabelNull = new JLabel("  ");
-//		HeaderPanel.add(lblNewLabelNull);
+		JLabel lblNewLabelNull = new JLabel("  ");
+		HeaderPanel.add(lblNewLabelNull);
+		*/
 
 
 
@@ -138,10 +133,10 @@ public class ToolPanel extends JPanel {
 		
 		JPanel BodyPane = new JPanel();//中间的大模块，一分为二
 		this.add(BodyPane, BorderLayout.CENTER);
-		BodyPane.setLayout(new GridLayout(1, 3, 0, 0));
+		BodyPane.setLayout(new GridLayout(1, 2, 0, 0));
 		
-		JScrollPanelWithHeaderForTool searhResultPanel = new JScrollPanelWithHeaderForTool("Search Result","",true);
-		searchResultTextArea = searhResultPanel.getTextArea();
+		//JScrollPanelWithHeaderForTool searhResultPanel = new JScrollPanelWithHeaderForTool("Search Result","",true);
+		//searchResultTextArea = searhResultPanel.getTextArea();
 		
 
 		JScrollPanelWithHeaderForTool InputPanel = new JScrollPanelWithHeaderForTool("Input","",true);
@@ -154,9 +149,7 @@ public class ToolPanel extends JPanel {
 		outputTextArea = OutPanel.getTextArea();
 		
 		JPanel buttonPanel = createButtons();
-
 		
-		BodyPane.add(searhResultPanel);
 		BodyPane.add(InputPanel);
 		BodyPane.add(OutPanel);
 		
@@ -217,6 +210,7 @@ public class ToolPanel extends JPanel {
 			}
 		});
 		
+		/*
 		JButton SearchToInput = new JButton("SearchResult---->Input");
 		SearchToInput.addActionListener(new ActionListener() {
 			@Override
@@ -227,6 +221,7 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		});
+		*/
 		
 		JButton btnFindDomains = new JButton("Find Domains");
 
@@ -1099,7 +1094,7 @@ public class ToolPanel extends JPanel {
 		int cloumnIndex = 0;
 		
 		buttonPanel.add(outputToInput, new bagLayout(++rowIndex, ++cloumnIndex));
-		buttonPanel.add(SearchToInput, new bagLayout(rowIndex, ++cloumnIndex));
+		//buttonPanel.add(SearchToInput, new bagLayout(rowIndex, ++cloumnIndex));
 		
 		cloumnIndex = 0;
 		buttonPanel.add(btnFindDomains, new bagLayout(++rowIndex, ++cloumnIndex));

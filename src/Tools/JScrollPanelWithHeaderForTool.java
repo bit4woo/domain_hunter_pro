@@ -79,8 +79,9 @@ public class JScrollPanelWithHeaderForTool extends JScrollPane{
 		JPanel headerViewPanel = new JPanel();
 
 		Border blackline = BorderFactory.createLineBorder(Color.black);
+		headerViewPanel.setBorder(blackline);
+		
 		headLabel = new JLabel(this.headLabelText);
-		headLabel.setBorder(blackline);
 		headLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
 		JButton leftButton = new JButton(" < ");
