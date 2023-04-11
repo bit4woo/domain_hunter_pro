@@ -759,6 +759,35 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		});
+		
+		/**
+		 * grep line的反面。如果某行数据包含了指定的关键词，就从结果中移除
+		 * 即 nagetive search
+		 */
+		JButton btnRemoveLine = new JButton("Remove Line");
+		btnRemoveLine.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					String toFind = JOptionPane.showInputDialog("remove lines which contain:", history);
+					ArrayList<String> result = new ArrayList<String>();
+					if (toFind == null) {
+						return;
+					} else {
+						history = toFind;
+						List<String> content = Commons.getLinesFromTextArea(inputTextArea);
+						for (String item : content) {
+							if (!item.toLowerCase().contains(toFind.toLowerCase().trim())) {
+								result.add(item);
+							}
+						}
+						outputTextArea.setText(String.join(System.lineSeparator(), result));
+					}
+				} catch (Exception e1) {
+					outputTextArea.setText(e1.getMessage());
+				}
+			}
+		});
 
 		JButton btnRegexGrep = new JButton("Regex Grep");
 
@@ -1077,6 +1106,8 @@ public class ToolPanel extends JPanel {
 		threeFourthPanel.add(btnGrep, new bagLayout(++rowIndex, ++cloumnIndex));
 		threeFourthPanel.add(btnLine, new bagLayout(rowIndex, ++cloumnIndex));
 		threeFourthPanel.add(btnRegexGrep, new bagLayout(rowIndex, ++cloumnIndex));
+		threeFourthPanel.add(btnRemoveLine, new bagLayout(rowIndex, ++cloumnIndex));
+		
 
 
 		//网络请求类

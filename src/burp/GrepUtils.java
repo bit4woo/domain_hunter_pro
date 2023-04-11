@@ -134,7 +134,7 @@ public class GrepUtils {
 	//https://stackoverflow.com/questions/163360/regular-expression-to-match-urls-in-java
 	//https://github.com/aosp-mirror/platform_frameworks_base/blob/master/core/java/android/util/Patterns.java
 	/**
-	 * 还需处理不是/开头的urlpath //TODO
+	 * 
 	 * @param httpResponse
 	 * @return
 	 */
@@ -157,21 +157,28 @@ public class GrepUtils {
 				+ ")"
 				+ "(?:\"|')";
 
+		String regex_str1= "[a-zA-Z0-9_\\-/]{1,}/[a-zA-Z0-9_\\-.]{1,}";//处理不是/开头的urlpath
 		//regex_str = Pattern.quote(regex_str);
 		Pattern pt = Pattern.compile(regex_str);
+		Pattern pt1 = Pattern.compile(regex_str1);
+		
 		for (String line:lines) {//分行进行提取，似乎可以提高成功率？PATH_AND_QUERY
 			line = decodeAll(line);
+			
 			Matcher matcher = pt.matcher(line);
 			while (matcher.find()) {//多次查找
 				String url = matcher.group();
 				URLs.add(url);
 			}
-		}
-
-		//这部分提取的是含有协议头的完整URL地址
-		for (String line:lines) {
-			line = decodeAll(line);
-			Matcher matcher = PatternsFromAndroid.WEB_URL.matcher(line);
+			
+			matcher = pt1.matcher(line);
+			while (matcher.find()) {//多次查找
+				String url = matcher.group();
+				URLs.add(url);
+			}
+			
+			//这部分提取的是含有协议头的完整URL地址
+			matcher = PatternsFromAndroid.WEB_URL.matcher(line);
 			while (matcher.find()) {//多次查找
 				String url = matcher.group();
 				//即使是www.www也会被认为是URL（应该是被认作了主机名或文件名），所以必须过滤
@@ -187,6 +194,7 @@ public class GrepUtils {
 		List<String> tmplist= new ArrayList<>(URLs);
 		Collections.sort(tmplist);
 		tmplist = Commons.removePrefixAndSuffix(tmplist,"\"","\"");
+		tmplist = Commons.removePrefixAndSuffix(tmplist,"\'","\'");
 		return tmplist;
 	}
 
