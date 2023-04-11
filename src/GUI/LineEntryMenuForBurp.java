@@ -229,7 +229,7 @@ public class LineEntryMenuForBurp{
 
 				@Override
 				protected Map doInBackground() throws Exception {
-					ToolPanel.inputTextArea.setText(getSelectedStringByBurp());
+					ToolPanel.inputTextArea.setText(getSelectedStringFromBurp(invocation));
 					return null;
 				}
 				@Override
@@ -237,53 +237,6 @@ public class LineEntryMenuForBurp{
 				}
 			};
 			worker.execute();
-		}
-
-		public String getSelectedStringByBurp(){
-			String result = "";
-
-			IHttpRequestResponse[] messages = invocation.getSelectedMessages();
-
-			if (messages == null ) {
-				return result;
-			}
-
-			if (messages.length == 1) {
-				IHttpRequestResponse message = messages[0];
-				/////////////selected url/////////////////
-				byte[] source = null;
-
-
-				int context = invocation.getInvocationContext();
-				if (context==IContextMenuInvocation.CONTEXT_MESSAGE_EDITOR_REQUEST
-						|| context ==IContextMenuInvocation.CONTEXT_MESSAGE_VIEWER_REQUEST
-						|| context == IContextMenuInvocation.CONTEXT_PROXY_HISTORY
-						|| context == IContextMenuInvocation.CONTEXT_INTRUDER_ATTACK_RESULTS
-						|| context == IContextMenuInvocation.CONTEXT_SEARCH_RESULTS
-						|| context == IContextMenuInvocation.CONTEXT_TARGET_SITE_MAP_TABLE
-						|| context == IContextMenuInvocation.CONTEXT_TARGET_SITE_MAP_TREE) {
-					source = message.getRequest();
-				}else {
-					source = message.getResponse();
-				}
-
-				int[] selectedIndex = invocation.getSelectionBounds();//当数据包中有中文或其他宽字符的时候，这里的返回值不正确。已报bug。
-				//stdout.println(selectedIndex[0]+":"+selectedIndex[1]);
-				//这里的index应该是字符串的index，进行选中操作时对象应该是字符文本内容，无论是一个中文还是一个字母，都是一个文本字符。这就是我们通常的文本操作啊，之前是想多了。
-				//burp进行的byte和string之间的转换，没有考虑特定的编码，是一刀切的方式，所以将index用于byte序列上，就不能正确对应。
-
-				if(source!=null && selectedIndex !=null && selectedIndex[1]-selectedIndex[0]>=3) {
-					String originalCharSet = HttpMessageCharSet.getCharset(source);
-					String text;
-					try {
-						text = new String(source,originalCharSet);
-					}catch(Exception e) {
-						text = new String(source);
-					}
-					result = text.substring(selectedIndex[0], selectedIndex[1]);
-				}
-			}
-			return result;
 		}
 	}
 
@@ -594,5 +547,83 @@ public class LineEntryMenuForBurp{
 			String host = message.getHttpService().getHost();
 			guiMain.getDomainPanel().getDomainResult().addIfValid(host); //add domain
 		}
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	public String getSelectedStringFromBurp(IContextMenuInvocation invocation){
+		String result = "";
+
+		IHttpRequestResponse[] messages = null;
+		if (invocation.getToolFlag() == IContextMenuInvocation.CONTEXT_MESSAGE_VIEWER_REQUEST) {
+			IHttpRequestResponse message = invocation.getSelectedMessages()[0];
+			String prefix = message.getHttpService().toString();
+			messages= BurpExtender.getCallbacks().getSiteMap(prefix);
+		}else {
+			messages = invocation.getSelectedMessages();
+		}
+
+		if (messages == null ) {
+			return result;
+		}
+
+		stdout.println(String.format("%s selected items",messages.length));
+
+		int[] selectedIndex = invocation.getSelectionBounds();//当数据包中有中文或其他宽字符的时候，这里的返回值不正确。已报bug。
+		//stdout.println(selectedIndex[0]+":"+selectedIndex[1]);
+		//这里的index应该是字符串的index，进行选中操作时对象应该是字符文本内容，无论是一个中文还是一个字母，都是一个文本字符。这就是我们通常的文本操作啊，之前是想多了。
+		//burp进行的byte和string之间的转换，没有考虑特定的编码，是一刀切的方式，所以将index用于byte序列上，就不能正确对应。
+
+		//单独选中某段文字的情况
+		if (messages.length ==1 && selectedIndex != null && selectedIndex[1]-selectedIndex[0]>=3) {
+
+			IHttpRequestResponse message = messages[0];
+			byte[] source = null;
+
+			int context = invocation.getInvocationContext();
+			if (context==IContextMenuInvocation.CONTEXT_MESSAGE_EDITOR_REQUEST
+					|| context ==IContextMenuInvocation.CONTEXT_MESSAGE_VIEWER_REQUEST
+					|| context == IContextMenuInvocation.CONTEXT_PROXY_HISTORY
+					|| context == IContextMenuInvocation.CONTEXT_INTRUDER_ATTACK_RESULTS
+					|| context == IContextMenuInvocation.CONTEXT_SEARCH_RESULTS
+					|| context == IContextMenuInvocation.CONTEXT_TARGET_SITE_MAP_TABLE
+					|| context == IContextMenuInvocation.CONTEXT_TARGET_SITE_MAP_TREE) {
+				source = message.getRequest();
+			}else {
+				source = message.getResponse();
+			}
+
+			if(source!=null) {
+				String originalCharSet = HttpMessageCharSet.getCharset(source);
+				String text;
+				try {
+					text = new String(source,originalCharSet);
+				}catch(Exception e) {
+					text = new String(source);
+				}
+				result = text.substring(selectedIndex[0], selectedIndex[1]);
+			}
+
+			return result;
+		}
+
+		for (IHttpRequestResponse message:messages) {
+
+			String content = "";
+			byte[] request = message.getRequest();
+			byte[] response = message.getResponse();
+
+			if (request!= null) {
+				content = new String(request);
+			}
+
+			if (response!= null) {
+				content = content+System.lineSeparator()+new String(response);
+			}
+			result = result+System.lineSeparator()+content;
+		}
+		return result;
 	}
 }
