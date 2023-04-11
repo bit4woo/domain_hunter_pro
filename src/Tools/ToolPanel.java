@@ -72,18 +72,18 @@ import title.WebIcon;
 
 public class ToolPanel extends JPanel {
 
-	private JLabel lblNewLabel_2;
+	private JLabel projectLabel;
 
 	PrintWriter stdout;
 	PrintWriter stderr;
-	public static DraggableTextArea inputTextArea;
+	public static JTextArea searchResultTextArea;
+	public static JTextArea inputTextArea;
 	public static JTextArea outputTextArea;
 
 	public boolean inputTextAreaChanged = true;
 
 	String history = "";
-	String inputTextAreaOldValue = "";
-	String inputTextAreaNewerValue = "";
+
 
 	private GUIMain guiMain;
 
@@ -122,104 +122,112 @@ public class ToolPanel extends JPanel {
 		///////////////////////HeaderPanel//////////////
 
 
-		JPanel HeaderPanel = new JPanel();
-		HeaderPanel.setBorder(new LineBorder(new Color(0, 0, 0)));
-		FlowLayout fl_HeaderPanel = (FlowLayout) HeaderPanel.getLayout();
-		fl_HeaderPanel.setAlignment(FlowLayout.LEFT);
-		this.add(HeaderPanel, BorderLayout.NORTH);
+//		JPanel HeaderPanel = new JPanel();
+//		HeaderPanel.setBorder(new LineBorder(new Color(0, 0, 0)));
+//		FlowLayout fl_HeaderPanel = (FlowLayout) HeaderPanel.getLayout();
+//		fl_HeaderPanel.setAlignment(FlowLayout.LEFT);
+//		this.add(HeaderPanel, BorderLayout.NORTH);
+//
+//		JLabel lblNewLabelNull = new JLabel("  ");
+//		HeaderPanel.add(lblNewLabelNull);
 
-		JLabel lblNewLabelNull = new JLabel("  ");
-		HeaderPanel.add(lblNewLabelNull);
 
-		JButton outputToInput = new JButton("Input<----Output");
-		HeaderPanel.add(outputToInput);
-		outputToInput.addActionListener(new ActionListener() {
+
+		///////////////////////BodyPane//////////////
+		
+		
+		JPanel BodyPane = new JPanel();//中间的大模块，一分为二
+		this.add(BodyPane, BorderLayout.CENTER);
+		BodyPane.setLayout(new GridLayout(1, 3, 0, 0));
+		
+		JScrollPanelWithHeaderForTool searhResultPanel = new JScrollPanelWithHeaderForTool("Search Result","",true);
+		searchResultTextArea = searhResultPanel.getTextArea();
+		
+
+		JScrollPanelWithHeaderForTool InputPanel = new JScrollPanelWithHeaderForTool("Input","",true);
+		inputTextArea = InputPanel.getTextArea();
+		inputTextArea.getDocument().addDocumentListener(new textAreaListener(inputTextArea));
+		inputTextArea.addMouseListener(new TextAreaMouseListener(inputTextArea));
+
+
+		JScrollPanelWithHeaderForTool OutPanel = new JScrollPanelWithHeaderForTool("OutPut","",false);
+		outputTextArea = OutPanel.getTextArea();
+		
+		JPanel buttonPanel = createButtons();
+
+		
+		BodyPane.add(searhResultPanel);
+		BodyPane.add(InputPanel);
+		BodyPane.add(OutPanel);
+		
+		this.add(buttonPanel, BorderLayout.EAST);//这样避免小屏幕按钮显示不完整！
+		//BodyPane.add(buttonPanel);
+
+		
+		
+		///////////////////////////FooterPanel//////////////////
+
+		JPanel footerPanel = new JPanel();
+		footerPanel.setBorder(new LineBorder(new Color(0, 0, 0)));
+		FlowLayout fl_FooterPanel = (FlowLayout) footerPanel.getLayout();
+		fl_FooterPanel.setAlignment(FlowLayout.LEFT);
+		this.add(footerPanel, BorderLayout.SOUTH);
+
+		projectLabel = new JLabel(BurpExtender.getExtenderName() + "    " + BurpExtender.getGithub());
+		projectLabel.setFont(new Font("宋体", Font.BOLD, 12));
+		projectLabel.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				try {
+					URI uri = new URI(BurpExtender.getGithub());
+					Desktop desktop = Desktop.getDesktop();
+					if (Desktop.isDesktopSupported() && desktop.isSupported(Desktop.Action.BROWSE)) {
+						desktop.browse(uri);
+					}
+				} catch (Exception e2) {
+					e2.printStackTrace(stderr);
+				}
+
+			}
 
 			@Override
+			public void mouseEntered(MouseEvent e) {
+				projectLabel.setForeground(Color.BLUE);
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+				projectLabel.setForeground(Color.BLACK);
+			}
+		});
+		footerPanel.add(projectLabel);
+
+	}
+	
+	public JPanel createButtons() {
+		
+		JButton outputToInput = new JButton("Input<----Output");
+		outputToInput.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
-				inputTextAreaOldValue = inputTextArea.getText();
 				String content = outputTextArea.getText();
 				if (null != content) {
 					inputTextArea.setText(content);
 				}
 			}
 		});
-
-		//第一次分割，中间的大模块一分为二
-		JSplitPane CenterSplitPane = new JSplitPane();//中间的大模块，一分为二
-		CenterSplitPane.setResizeWeight(0.5);
-		this.add(CenterSplitPane, BorderLayout.CENTER);
-
-		//第二次分割：二分为四
-		JSplitPane LeftOfCenter = new JSplitPane();
-		LeftOfCenter.setResizeWeight(0.5);
-		CenterSplitPane.setLeftComponent(LeftOfCenter);
-
-		JSplitPane RightOfCenter = new JSplitPane();
-		RightOfCenter.setOrientation(JSplitPane.VERTICAL_SPLIT);
-		RightOfCenter.setResizeWeight(1);
-		CenterSplitPane.setRightComponent(RightOfCenter);
-
-		//  1/4
-		JScrollPane oneFourthPanel = new JScrollPane();
-		LeftOfCenter.setLeftComponent(oneFourthPanel);
-		//  2/4
-		JScrollPane twoFourthPanel = new JScrollPane();
-		LeftOfCenter.setRightComponent(twoFourthPanel);
-
-		inputTextArea = new DraggableTextArea();
-		inputTextArea.setColumns(20);
-		inputTextArea.setLineWrap(true);
-		inputTextArea.getDocument().addDocumentListener(new textAreaListener());
-		inputTextArea.addMouseListener(new TextAreaMouseListener(inputTextArea));
-		oneFourthPanel.setViewportView(inputTextArea);
-
-
-		Border blackline = BorderFactory.createLineBorder(Color.black);
-
-		JLabel lblNewLabel_1 = new JLabel("  Input  ");
-		lblNewLabel_1.setHorizontalAlignment(SwingConstants.CENTER);
-		lblNewLabel_1.setBorder(blackline);
-
-		JPanel headerViewPanel = new JPanel();
-		JButton leftButton = new JButton(" < ");
-		leftButton.addActionListener(new ActionListener() {
+		
+		JButton SearchToInput = new JButton("SearchResult---->Input");
+		SearchToInput.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (inputTextAreaOldValue != null && !inputTextAreaOldValue.equals("")) {
-					inputTextAreaNewerValue = inputTextArea.getText();
-					inputTextArea.setText(inputTextAreaOldValue);
+				String content = searchResultTextArea.getText();
+				if (null != content) {
+					inputTextArea.setText(content);
 				}
 			}
 		});
-
-		JButton rightButton = new JButton(" > ");
-		rightButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (inputTextAreaNewerValue != null && !inputTextAreaNewerValue.equals("")) {
-					inputTextAreaOldValue = inputTextArea.getText();
-					inputTextArea.setText(inputTextAreaNewerValue);
-				}
-			}
-		});
-
-		headerViewPanel.add(leftButton);
-		headerViewPanel.add(lblNewLabel_1);
-		headerViewPanel.add(rightButton);
-		oneFourthPanel.setColumnHeaderView(headerViewPanel);
-
-		outputTextArea = new JTextArea();
-		outputTextArea.setLineWrap(true);
-		outputTextArea.addMouseListener(new TextAreaMouseListener(outputTextArea));
-		twoFourthPanel.setViewportView(outputTextArea);
-
-		JLabel lblNewLabel_3 = new JLabel("Output");
-		lblNewLabel_3.setHorizontalAlignment(SwingConstants.CENTER);
-		lblNewLabel_3.setBorder(blackline);
-		twoFourthPanel.setColumnHeaderView(lblNewLabel_3);
-
-
+		
 		JButton btnFindDomains = new JButton("Find Domains");
 
 		btnFindDomains.addActionListener(new ActionListener() {
@@ -1077,119 +1085,87 @@ public class ToolPanel extends JPanel {
 		});
 
 
-		//四分之三部分放一个panel，里面放操作按钮
-		JPanel threeFourthPanel = new JPanel();
-		RightOfCenter.setLeftComponent(threeFourthPanel);
-		threeFourthPanel.setLayout(new GridLayout(10, 1));
+		//buttonPanel，里面放操作按钮
+		JPanel buttonPanel = new JPanel();
+		//buttonPanel.setLayout(new GridLayout(10, 1));
 		//https://stackoverflow.com/questions/5709690/how-do-i-make-this-flowlayout-wrap-within-its-jsplitpane
-		threeFourthPanel.setMinimumSize(new Dimension(0, 0));//为了让button自动换行
+		//buttonPanel.setMinimumSize(new Dimension(0, 0));//为了让button自动换行
 
-		GridBagLayout gbl_threeFourthPanel = new GridBagLayout();
-		threeFourthPanel.setLayout(gbl_threeFourthPanel);
+		GridBagLayout gbl_buttonPanel = new GridBagLayout();
+		buttonPanel.setLayout(gbl_buttonPanel);
 
 		//查找提取类
 		int rowIndex = 0;
 		int cloumnIndex = 0;
-		threeFourthPanel.add(btnFindDomains, new bagLayout(++rowIndex, ++cloumnIndex));
-		threeFourthPanel.add(btnFindUrls, new bagLayout(rowIndex, ++cloumnIndex));
-		threeFourthPanel.add(btnFindIP, new bagLayout(rowIndex, ++cloumnIndex));
-		//threeFourthPanel.add(btnFindPort, new bagLayout(rowIndex, ++cloumnIndex));
-		threeFourthPanel.add(btnMasscanResultToNmap,new bagLayout(rowIndex, ++cloumnIndex));
-		threeFourthPanel.add(btnMasscanResultToHttp,new bagLayout(rowIndex, ++cloumnIndex));
-		threeFourthPanel.add(btnFindIPAndPort, new bagLayout(rowIndex, ++cloumnIndex));
-
-		cloumnIndex = 0;
-		threeFourthPanel.add(btnFindSubnet, new bagLayout(++rowIndex, ++cloumnIndex));
-		threeFourthPanel.add(btnFindEmail, new bagLayout(rowIndex, ++cloumnIndex));
-
-		cloumnIndex = 0;
-		threeFourthPanel.add(btnGrep, new bagLayout(++rowIndex, ++cloumnIndex));
-		threeFourthPanel.add(btnLine, new bagLayout(rowIndex, ++cloumnIndex));
-		threeFourthPanel.add(btnRegexGrep, new bagLayout(rowIndex, ++cloumnIndex));
-		threeFourthPanel.add(btnRemoveLine, new bagLayout(rowIndex, ++cloumnIndex));
 		
+		buttonPanel.add(outputToInput, new bagLayout(++rowIndex, ++cloumnIndex));
+		buttonPanel.add(SearchToInput, new bagLayout(rowIndex, ++cloumnIndex));
+		
+		cloumnIndex = 0;
+		buttonPanel.add(btnFindDomains, new bagLayout(++rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnFindUrls, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnFindIP, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnFindIPAndPort, new bagLayout(rowIndex, ++cloumnIndex));
+		
+		cloumnIndex = 0;
+		//buttonPanel.add(btnFindPort, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnMasscanResultToNmap,new bagLayout(++rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnMasscanResultToHttp,new bagLayout(rowIndex, ++cloumnIndex));
 
+		cloumnIndex = 0;
+		buttonPanel.add(btnFindSubnet, new bagLayout(++rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnFindEmail, new bagLayout(rowIndex, ++cloumnIndex));
+
+		cloumnIndex = 0;
+		buttonPanel.add(btnGrep, new bagLayout(++rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnLine, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnRegexGrep, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnRemoveLine, new bagLayout(rowIndex, ++cloumnIndex));
 
 		//网络请求类
 		cloumnIndex = 0;
-		threeFourthPanel.add(btnOpenurls, new bagLayout(++rowIndex, ++cloumnIndex));
-
+		buttonPanel.add(btnOpenurls, new bagLayout(++rowIndex, ++cloumnIndex));
+		buttonPanel.add(getIPAddressButton, new bagLayout(rowIndex, ++cloumnIndex));
+		
 		cloumnIndex = 0;
-		threeFourthPanel.add(btnCertDomains, new bagLayout(++rowIndex, ++cloumnIndex));
-		threeFourthPanel.add(btnCertTime, new bagLayout(rowIndex, ++cloumnIndex));
-		threeFourthPanel.add(btnCertIssuer, new bagLayout(rowIndex, ++cloumnIndex));
-		threeFourthPanel.add(iconHashButton, new bagLayout(rowIndex, ++cloumnIndex));
-		threeFourthPanel.add(getIPAddressButton, new bagLayout(rowIndex, ++cloumnIndex));
-
+		buttonPanel.add(btnCertDomains, new bagLayout(++rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnCertTime, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnCertIssuer, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(iconHashButton, new bagLayout(rowIndex, ++cloumnIndex));
 
 		//数据转换类
 		cloumnIndex = 0;
-		threeFourthPanel.add(rows2List, new bagLayout(++rowIndex, ++cloumnIndex));
-		threeFourthPanel.add(rows2Array, new bagLayout(rowIndex, ++cloumnIndex));
-		threeFourthPanel.add(btnIPsToCIDR, new bagLayout(rowIndex, ++cloumnIndex));
-		threeFourthPanel.add(btnCIDRToIPs, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(rows2List, new bagLayout(++rowIndex, ++cloumnIndex));
+		buttonPanel.add(rows2Array, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnIPsToCIDR, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnCIDRToIPs, new bagLayout(rowIndex, ++cloumnIndex));
 
 
 		cloumnIndex = 0;
-		threeFourthPanel.add(removeDuplicate, new bagLayout(++rowIndex, ++cloumnIndex));
-		threeFourthPanel.add(sort,new bagLayout(rowIndex, ++cloumnIndex));
-		threeFourthPanel.add(sortByLength, new bagLayout(rowIndex, ++cloumnIndex));
-		threeFourthPanel.add(btnAddPrefix, new bagLayout(rowIndex, ++cloumnIndex));
-		threeFourthPanel.add(btnRemovePrefix, new bagLayout(rowIndex, ++cloumnIndex));
-		threeFourthPanel.add(btnReplace, new bagLayout(rowIndex, ++cloumnIndex));
-
+		buttonPanel.add(removeDuplicate, new bagLayout(++rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnReplace, new bagLayout(rowIndex, ++cloumnIndex));
+		
+		cloumnIndex = 0;
+		buttonPanel.add(sort,new bagLayout(++rowIndex, ++cloumnIndex));
+		buttonPanel.add(sortByLength, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnAddPrefix, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnRemovePrefix, new bagLayout(rowIndex, ++cloumnIndex));
+		
+		cloumnIndex = 0;
+		buttonPanel.add(unescapeJava, new bagLayout(++rowIndex, ++cloumnIndex));
+		buttonPanel.add(unescapeHTML, new bagLayout(rowIndex, ++cloumnIndex));
 
 		cloumnIndex = 0;
-		threeFourthPanel.add(unescapeJava, new bagLayout(++rowIndex, ++cloumnIndex));
-		threeFourthPanel.add(unescapeHTML, new bagLayout(rowIndex, ++cloumnIndex));
-
-
+		buttonPanel.add(toLowerCaseButton, new bagLayout(++rowIndex, ++cloumnIndex));
+		buttonPanel.add(splitButton, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(combineButton, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(Base64ToFile, new bagLayout(rowIndex, ++cloumnIndex));
+		
 		cloumnIndex = 0;
-		threeFourthPanel.add(toLowerCaseButton, new bagLayout(++rowIndex, ++cloumnIndex));
-		threeFourthPanel.add(splitButton, new bagLayout(rowIndex, ++cloumnIndex));
-		threeFourthPanel.add(combineButton, new bagLayout(rowIndex, ++cloumnIndex));
-		threeFourthPanel.add(Base64ToFile, new bagLayout(rowIndex, ++cloumnIndex));
-		threeFourthPanel.add(testButton, new bagLayout(rowIndex, ++cloumnIndex));
-
-
-		///////////////////////////FooterPanel//////////////////
-
-
-		JPanel footerPanel = new JPanel();
-		footerPanel.setBorder(new LineBorder(new Color(0, 0, 0)));
-		FlowLayout fl_FooterPanel = (FlowLayout) footerPanel.getLayout();
-		fl_FooterPanel.setAlignment(FlowLayout.LEFT);
-		this.add(footerPanel, BorderLayout.SOUTH);
-
-		lblNewLabel_2 = new JLabel(BurpExtender.getExtenderName() + "    " + BurpExtender.getGithub());
-		lblNewLabel_2.setFont(new Font("宋体", Font.BOLD, 12));
-		lblNewLabel_2.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				try {
-					URI uri = new URI(BurpExtender.getGithub());
-					Desktop desktop = Desktop.getDesktop();
-					if (Desktop.isDesktopSupported() && desktop.isSupported(Desktop.Action.BROWSE)) {
-						desktop.browse(uri);
-					}
-				} catch (Exception e2) {
-					e2.printStackTrace(stderr);
-				}
-
-			}
-
-			@Override
-			public void mouseEntered(MouseEvent e) {
-				lblNewLabel_2.setForeground(Color.BLUE);
-			}
-
-			@Override
-			public void mouseExited(MouseEvent e) {
-				lblNewLabel_2.setForeground(Color.BLACK);
-			}
-		});
-		footerPanel.add(lblNewLabel_2);
-
+		buttonPanel.add(testButton, new bagLayout(++rowIndex, ++cloumnIndex));
+		
+		
+		return buttonPanel;
 	}
 
 	public static Set<String> getSetFromTextArea(JTextArea textarea) {
@@ -1214,11 +1190,17 @@ public class ToolPanel extends JPanel {
 
 	//保存文本框的数据
 	class textAreaListener implements DocumentListener {
+		
+		private JTextArea textArea;
+
+		textAreaListener(JTextArea inputTextArea){
+			this.textArea = inputTextArea;
+		}
 
 		@Override
 		public void removeUpdate(DocumentEvent e) {
 			if (ConfigPanel.listenerIsOn) {
-				guiMain.getConfigPanel().getLineConfig().setToolPanelText(inputTextArea.getText());
+				guiMain.getConfigPanel().getLineConfig().setToolPanelText(textArea.getText());
 				inputTextAreaChanged = true;
 			}
 		}
@@ -1226,7 +1208,7 @@ public class ToolPanel extends JPanel {
 		@Override
 		public void insertUpdate(DocumentEvent e) {
 			if (ConfigPanel.listenerIsOn) {
-				guiMain.getConfigPanel().getLineConfig().setToolPanelText(inputTextArea.getText());
+				guiMain.getConfigPanel().getLineConfig().setToolPanelText(textArea.getText());
 				inputTextAreaChanged = true;
 			}
 		}
@@ -1234,7 +1216,7 @@ public class ToolPanel extends JPanel {
 		@Override
 		public void changedUpdate(DocumentEvent arg0) {
 			if (ConfigPanel.listenerIsOn) {
-				guiMain.getConfigPanel().getLineConfig().setToolPanelText(inputTextArea.getText());
+				guiMain.getConfigPanel().getLineConfig().setToolPanelText(textArea.getText());
 				inputTextAreaChanged = true;
 			}
 		}

@@ -174,7 +174,9 @@ public class GrepUtils {
 			matcher = pt1.matcher(line);
 			while (matcher.find()) {//多次查找
 				String url = matcher.group();
-				URLs.add(url);
+				if (url.length()>=5) {//简单过滤，减少误报
+					URLs.add(url);
+				}
 			}
 			
 			//这部分提取的是含有协议头的完整URL地址
