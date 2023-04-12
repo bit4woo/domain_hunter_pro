@@ -166,7 +166,7 @@ public class TargetEntry {
 
 	public void addComment(String commentToAdd) {
 		if (commentToAdd == null || commentToAdd.trim().equals("")) return;
-		comments.add(commentToAdd);
+		comments.addAll(Arrays.asList(commentToAdd.split(",")));
 	}
 
 	public boolean isUseTLD() {
@@ -194,6 +194,7 @@ public class TargetEntry {
 				} catch (IOException e1) {
 					e1.printStackTrace(BurpExtender.getStderr());
 				}
+				this.addComment("AXFR!");
 			}
 		}
 	}

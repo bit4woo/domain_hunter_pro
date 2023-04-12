@@ -56,6 +56,26 @@ public class TargetEntryMenu extends JPopupMenu {
 			}
 		});
 
+		JMenuItem zoneTransferCheck = new JMenuItem(new AbstractAction("Do Zone Transfer Check") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+					@Override
+					protected Map doInBackground() throws Exception {
+						for (int row:modelRows) {
+							TargetEntry entry = rootDomainTable.getTargetModel().getTargetEntries().get(row);
+							entry.zoneTransferCheck();
+						}
+						return null;
+					}
+					@Override
+					protected void done() {
+					}
+				};
+				worker.execute();
+			}
+		});
+
 		JMenuItem whoisItem = new JMenuItem(new AbstractAction("Whois") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -331,8 +351,8 @@ public class TargetEntryMenu extends JPopupMenu {
 				worker.execute();
 			}
 		});
-		
-		
+
+
 		JMenuItem SearchOnQuakeAutoItem = new JMenuItem(new AbstractAction("Auto Search On quake.360.net") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -365,7 +385,7 @@ public class TargetEntryMenu extends JPopupMenu {
 			}
 		});
 
-		
+
 		JMenuItem SearchOnHunterAutoItem = new JMenuItem(new AbstractAction("Auto Search On hunter.qianxin.com") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -421,6 +441,7 @@ public class TargetEntryMenu extends JPopupMenu {
 		this.add(whoisItem);
 		this.add(ASNInfoItem);
 		this.add(SearchEmailOnHunterIOItem);
+		this.add(zoneTransferCheck);
 		this.addSeparator();
 	}
 
