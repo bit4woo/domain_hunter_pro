@@ -166,13 +166,13 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			return entry.getTitle();
 		}
 		if (columnIndex == titleList.indexOf("IP")){
-			return String.join(",", entry.getIPSet());
+			return String.join(",", new TreeSet<String>(entry.getIPSet()));//用TreeSet进行排序
 		}
 		if (columnIndex == titleList.indexOf("CNAME|CertInfo")){
 			return entry.fetchCNAMEAndCertInfo();
 		}
 		if (columnIndex == titleList.indexOf("Comments")){
-			return String.join(",", entry.getComments());
+			return String.join(",", new TreeSet<String>(entry.getComments()));//用TreeSet进行排序
 		}
 		if (columnIndex == titleList.indexOf("CheckDoneTime")){
 			return entry.getTime();

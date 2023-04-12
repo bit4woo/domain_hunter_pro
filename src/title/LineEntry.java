@@ -566,7 +566,8 @@ public class LineEntry {
 
 	public void addComment(String commentToAdd) {
 		if (commentToAdd ==null || commentToAdd.trim().equals("")) return;
-		comments.add(commentToAdd);
+		//commentToAdd本身可能就是以逗号分隔的
+		comments.addAll(Arrays.asList(commentToAdd.split(",")));
 	}
 
 	public void removeComment(String commentToRemove) {
