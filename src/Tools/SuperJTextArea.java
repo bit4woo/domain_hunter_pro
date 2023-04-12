@@ -1,8 +1,11 @@
 package Tools;
 
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JTextArea;
 
 import org.apache.commons.io.FileUtils;
@@ -24,9 +27,12 @@ public class SuperJTextArea extends JTextArea{
 	public SuperJTextArea(boolean useTempFile,boolean supportFileSystem){
 		this.useTempFile = useTempFile;
 		this.supportFileSystem = supportFileSystem;
+
+		Action action = getActionMap().get("paste-from-clipboard");
+		getActionMap().put("paste-from-clipboard", new ProxyAction(action));
 	}
 
-	
+
 
 	public boolean isContentIsFileOrPath() {
 		return contentIsFileOrPath;
@@ -44,7 +50,7 @@ public class SuperJTextArea extends JTextArea{
 	public void setText(String Text) {
 		try {
 			preValue = super.getText();
-			
+
 			if (useTempFile) {
 				//避免大文件卡死整个burp
 				if (Text.length() >= 10000) {
@@ -139,6 +145,23 @@ public class SuperJTextArea extends JTextArea{
 			}
 		};
 		return result;
+	}
+
+	class ProxyAction extends AbstractAction {
+
+		private Action action;
+
+		public ProxyAction(Action action) {
+			this.action = action;
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			action.actionPerformed(e);//paste动作的实现javax.swing.text.DefaultEditorKit.PasteAction.actionPerformed(ActionEvent)
+			//BurpExtender.getStdout().println("Paste Occured...");
+			//如果想要在paste的时候避免卡死，就要在这里实现，有这个必要吗？
+		}
+
 	}
 
 
