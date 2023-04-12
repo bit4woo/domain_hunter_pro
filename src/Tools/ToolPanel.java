@@ -125,41 +125,41 @@ public class ToolPanel extends JPanel {
 
 		JLabel lblNewLabelNull = new JLabel("  ");
 		HeaderPanel.add(lblNewLabelNull);
-		*/
+		 */
 
 
 
 		///////////////////////BodyPane//////////////
-		
-		
+
+
 		JPanel BodyPane = new JPanel();//中间的大模块，一分为二
 		this.add(BodyPane, BorderLayout.CENTER);
 		BodyPane.setLayout(new GridLayout(1, 2, 0, 0));
-		
+
 		//JScrollPanelWithHeaderForTool searhResultPanel = new JScrollPanelWithHeaderForTool("Search Result","",true);
 		//searchResultTextArea = searhResultPanel.getTextArea();
-		
 
-		JScrollPanelWithHeaderForTool InputPanel = new JScrollPanelWithHeaderForTool("Input","",true);
+
+		JScrollPanelWithHeaderForTool InputPanel = new JScrollPanelWithHeaderForTool("Input","",true,true);
 		inputTextArea = InputPanel.getTextArea();
 		inputTextArea.getDocument().addDocumentListener(new textAreaListener(inputTextArea));
 		inputTextArea.addMouseListener(new TextAreaMouseListener(inputTextArea));
 
 
-		JScrollPanelWithHeaderForTool OutPanel = new JScrollPanelWithHeaderForTool("OutPut","",false);
+		JScrollPanelWithHeaderForTool OutPanel = new JScrollPanelWithHeaderForTool("OutPut","",false,false);
 		outputTextArea = OutPanel.getTextArea();
 		outputTextArea.addMouseListener(new TextAreaMouseListener(outputTextArea));
-		
+
 		JPanel buttonPanel = createButtons();
-		
+
 		BodyPane.add(InputPanel);
 		BodyPane.add(OutPanel);
-		
+
 		this.add(buttonPanel, BorderLayout.EAST);//这样避免小屏幕按钮显示不完整！
 		//BodyPane.add(buttonPanel);
 
-		
-		
+
+
 		///////////////////////////FooterPanel//////////////////
 
 		JPanel footerPanel = new JPanel();
@@ -198,9 +198,9 @@ public class ToolPanel extends JPanel {
 		footerPanel.add(projectLabel);
 
 	}
-	
+
 	public JPanel createButtons() {
-		
+
 		JButton outputToInput = new JButton("Input<----Output");
 		outputToInput.addActionListener(new ActionListener() {
 			@Override
@@ -213,8 +213,8 @@ public class ToolPanel extends JPanel {
 				statusLabel.setText("Done!!!");
 			}
 		});
-		
-		
+
+
 		/*
 		JButton SearchToInput = new JButton("SearchResult---->Input");
 		SearchToInput.addActionListener(new ActionListener() {
@@ -226,8 +226,8 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		});
-		*/
-		
+		 */
+
 		JButton btnFindDomains = new JButton("Find Domains");
 
 		btnFindDomains.addActionListener(new ActionListener() {
@@ -333,7 +333,7 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		});
-		
+
 		JButton btnMasscanResultToHttp = new JButton("Masscan->Http");
 
 		btnMasscanResultToHttp.addActionListener(new ActionListener() {
@@ -767,7 +767,7 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		});
-		
+
 		/**
 		 * grep line的反面。如果某行数据包含了指定的关键词，就从结果中移除
 		 * 即 nagetive search
@@ -1056,6 +1056,19 @@ public class ToolPanel extends JPanel {
 			}
 		});
 
+		JButton OpenFileButton = new JButton("Open File");
+
+		toLowerCaseButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String dir = ((SuperJTextArea) inputTextArea).getTextAsDisplay();
+				try {
+					Desktop.getDesktop().open(new File(dir));
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+			}
+		});
 
 		JButton testButton = new JButton("test");
 
@@ -1097,17 +1110,17 @@ public class ToolPanel extends JPanel {
 		//查找提取类
 		int rowIndex = 0;
 		int cloumnIndex = 0;
-		
+
 		buttonPanel.add(outputToInput, new bagLayout(++rowIndex, ++cloumnIndex));
 		buttonPanel.add(statusLabel, new bagLayout(rowIndex, ++cloumnIndex));
 		//buttonPanel.add(SearchToInput, new bagLayout(rowIndex, ++cloumnIndex));
-		
+
 		cloumnIndex = 0;
 		buttonPanel.add(btnFindDomains, new bagLayout(++rowIndex, ++cloumnIndex));
 		buttonPanel.add(btnFindUrls, new bagLayout(rowIndex, ++cloumnIndex));
 		buttonPanel.add(btnFindIP, new bagLayout(rowIndex, ++cloumnIndex));
 		buttonPanel.add(btnFindIPAndPort, new bagLayout(rowIndex, ++cloumnIndex));
-		
+
 		cloumnIndex = 0;
 		//buttonPanel.add(btnFindPort, new bagLayout(rowIndex, ++cloumnIndex));
 		buttonPanel.add(btnMasscanResultToNmap,new bagLayout(++rowIndex, ++cloumnIndex));
@@ -1127,7 +1140,7 @@ public class ToolPanel extends JPanel {
 		cloumnIndex = 0;
 		buttonPanel.add(btnOpenurls, new bagLayout(++rowIndex, ++cloumnIndex));
 		buttonPanel.add(getIPAddressButton, new bagLayout(rowIndex, ++cloumnIndex));
-		
+
 		cloumnIndex = 0;
 		buttonPanel.add(btnCertDomains, new bagLayout(++rowIndex, ++cloumnIndex));
 		buttonPanel.add(btnCertTime, new bagLayout(rowIndex, ++cloumnIndex));
@@ -1145,13 +1158,13 @@ public class ToolPanel extends JPanel {
 		cloumnIndex = 0;
 		buttonPanel.add(removeDuplicate, new bagLayout(++rowIndex, ++cloumnIndex));
 		buttonPanel.add(btnReplace, new bagLayout(rowIndex, ++cloumnIndex));
-		
+
 		cloumnIndex = 0;
 		buttonPanel.add(sort,new bagLayout(++rowIndex, ++cloumnIndex));
 		buttonPanel.add(sortByLength, new bagLayout(rowIndex, ++cloumnIndex));
 		buttonPanel.add(btnAddPrefix, new bagLayout(rowIndex, ++cloumnIndex));
 		buttonPanel.add(btnRemovePrefix, new bagLayout(rowIndex, ++cloumnIndex));
-		
+
 		cloumnIndex = 0;
 		buttonPanel.add(unescapeJava, new bagLayout(++rowIndex, ++cloumnIndex));
 		buttonPanel.add(unescapeHTML, new bagLayout(rowIndex, ++cloumnIndex));
@@ -1161,11 +1174,11 @@ public class ToolPanel extends JPanel {
 		buttonPanel.add(splitButton, new bagLayout(rowIndex, ++cloumnIndex));
 		buttonPanel.add(combineButton, new bagLayout(rowIndex, ++cloumnIndex));
 		buttonPanel.add(Base64ToFile, new bagLayout(rowIndex, ++cloumnIndex));
-		
+
 		cloumnIndex = 0;
 		buttonPanel.add(testButton, new bagLayout(++rowIndex, ++cloumnIndex));
-		
-		
+
+
 		return buttonPanel;
 	}
 
@@ -1191,7 +1204,7 @@ public class ToolPanel extends JPanel {
 
 	//保存文本框的数据
 	class textAreaListener implements DocumentListener {
-		
+
 		private JTextArea textArea;
 
 		textAreaListener(JTextArea inputTextArea){

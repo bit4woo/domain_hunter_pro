@@ -3,69 +3,25 @@ package Tools;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.IOException;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 import javax.swing.border.Border;
 
-import org.apache.commons.io.FileUtils;
-
 public class JScrollPanelWithHeaderForTool extends JScrollPane{
 
-	private JTextArea textArea;
+	private SuperJTextArea textArea;
 	private JLabel headLabel;
 	private String tipText;
 	private String headLabelText;
 
-	String inputTextAreaOldValue = "";
-	String inputTextAreaNewerValue = "";
+	public JScrollPanelWithHeaderForTool(String headerViewText, String tipText,boolean useTempFile,boolean supportFileSystem) {
 
-	public JScrollPanelWithHeaderForTool(String headerViewText, String tipText,boolean useTempFile) {
-
-		this.textArea = new JTextArea() {
-			@Override
-			public void setText(String Text) {
-				try {
-					inputTextAreaOldValue = super.getText();
-					if (useTempFile) {
-						//避免大文件卡死整个burp
-						if (Text.length() >= 10000) {
-							File tmpFile = new File(FileUtils.getTempDirectory()+File.separator+"ContentIsInTmpFile.txt");
-							FileUtils.writeByteArrayToFile(tmpFile, Text.getBytes());
-							Text = tmpFile.getAbsolutePath();
-						}
-					}
-					super.setText(Text);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-
-			@Override
-			public String getText() {
-				String content = super.getText();
-				if (useTempFile) {
-					try {
-						if (content.endsWith("ContentIsInTmpFile.txt")) {
-							File tempFile = new File(content);
-							if (tempFile.exists()){
-								content = FileUtils.readFileToString(tempFile);
-							}
-						}
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
-				return content;
-			}
-		};
+		this.textArea = new SuperJTextArea(useTempFile,supportFileSystem);
 
 
 		this.tipText = tipText;
@@ -80,7 +36,7 @@ public class JScrollPanelWithHeaderForTool extends JScrollPane{
 
 		Border blackline = BorderFactory.createLineBorder(Color.black);
 		headerViewPanel.setBorder(blackline);
-		
+
 		headLabel = new JLabel(this.headLabelText);
 		headLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
@@ -88,10 +44,7 @@ public class JScrollPanelWithHeaderForTool extends JScrollPane{
 		leftButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (inputTextAreaOldValue != null && !inputTextAreaOldValue.equals("")) {
-					inputTextAreaNewerValue = textArea.getText();
-					textArea.setText(inputTextAreaOldValue);
-				}
+				textArea.showPreValue();
 			}
 		});
 
@@ -99,10 +52,7 @@ public class JScrollPanelWithHeaderForTool extends JScrollPane{
 		rightButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (inputTextAreaNewerValue != null && !inputTextAreaNewerValue.equals("")) {
-					inputTextAreaOldValue = textArea.getText();
-					textArea.setText(inputTextAreaNewerValue);
-				}
+				textArea.showNextValue();
 			}
 		});
 
@@ -112,13 +62,16 @@ public class JScrollPanelWithHeaderForTool extends JScrollPane{
 		setColumnHeaderView(headerViewPanel);
 	}
 
-	public JTextArea getTextArea() {
+
+	public SuperJTextArea getTextArea() {
 		return textArea;
 	}
 
-	public void setTextArea(JTextArea textArea) {
+
+	public void setTextArea(SuperJTextArea textArea) {
 		this.textArea = textArea;
 	}
+
 
 	public JLabel getHeadLabel() {
 		return headLabel;
@@ -143,4 +96,5 @@ public class JScrollPanelWithHeaderForTool extends JScrollPane{
 	public void setHeadLabelText(String headLabelText) {
 		this.headLabelText = headLabelText;
 	}
+
 }
