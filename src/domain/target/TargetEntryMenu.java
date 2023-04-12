@@ -25,8 +25,6 @@ import burp.DomainNameUtils;
 import burp.GrepUtils;
 import burp.IPAddressUtils;
 import config.ConfigPanel;
-import domain.DomainManager;
-import domain.DomainPanel;
 
 public class TargetEntryMenu extends JPopupMenu {
 
@@ -35,17 +33,19 @@ public class TargetEntryMenu extends JPopupMenu {
 	PrintWriter stderr = BurpExtender.getStderr();
 	private TargetTable rootDomainTable;
 	private GUIMain guiMain;
+	private int rootDomainColumnIndex;
 
 	public TargetEntryMenu(GUIMain guiMain,final TargetTable rootDomainTable, final int[] modelRows, final int columnIndex){
 		this.rootDomainTable = rootDomainTable;
 		this.guiMain = guiMain;
+		this.rootDomainColumnIndex =1;//设定为rootDomain所在列
 
 		JMenuItem getSubDomainsOf = new JMenuItem(new AbstractAction("Get All Subdomin Of This") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				String results = "";
 				for (int row:modelRows) {
-					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,columnIndex);
+					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,rootDomainColumnIndex);
 					String line = guiMain.getDomainPanel().getDomainResult().fetchSubDomainsOf(rootDomain);
 					results = results+System.lineSeparator()+line;
 				}
@@ -60,7 +60,7 @@ public class TargetEntryMenu extends JPopupMenu {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				for (int row:modelRows) {
-					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,columnIndex);
+					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,rootDomainColumnIndex);
 					try {
 						Commons.browserOpen("https://whois.chinaz.com/"+rootDomain,null);
 						Commons.browserOpen("https://www.whois.com/whois/"+rootDomain,null);
@@ -75,7 +75,7 @@ public class TargetEntryMenu extends JPopupMenu {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				for (int row:modelRows) {
-					String target = (String) rootDomainTable.getTargetModel().getValueAt(row,columnIndex);
+					String target = (String) rootDomainTable.getTargetModel().getValueAt(row,rootDomainColumnIndex);
 
 					try {
 						//https://bgp.he.net/dns/shopee.com
@@ -105,7 +105,7 @@ public class TargetEntryMenu extends JPopupMenu {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				for (int row:modelRows) {
-					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,columnIndex);
+					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,rootDomainColumnIndex);
 					try {
 						Commons.browserOpen("https://"+rootDomain, guiMain.getConfigPanel().getLineConfig().getBrowserPath());
 					} catch (Exception e) {
@@ -144,7 +144,7 @@ public class TargetEntryMenu extends JPopupMenu {
 					return;
 				}
 				for (int row:modelRows) {
-					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,columnIndex);
+					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,rootDomainColumnIndex);
 					String url= "https://hunter.io/try/search/%s";
 					//https://hunter.io/try/search/shopee.com?locale=en
 					url= String.format(url, rootDomain);
@@ -166,7 +166,7 @@ public class TargetEntryMenu extends JPopupMenu {
 					return;
 				}
 				for (int row:modelRows) {
-					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,columnIndex);
+					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,rootDomainColumnIndex);
 					rootDomain = new String(Base64.getEncoder().encode(rootDomain.getBytes()));
 					String url= "https://fofa.info/result?qbase64=%s";
 					url= String.format(url, rootDomain);
@@ -189,7 +189,7 @@ public class TargetEntryMenu extends JPopupMenu {
 					return;
 				}
 				for (int row:modelRows) {
-					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,columnIndex);
+					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,rootDomainColumnIndex);
 					rootDomain = URLEncoder.encode(rootDomain);
 					String url= "https://www.shodan.io/search?query=%s";
 					//https://www.shodan.io/search?query=baidu.com
@@ -213,7 +213,7 @@ public class TargetEntryMenu extends JPopupMenu {
 					return;
 				}
 				for (int row:modelRows) {
-					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,columnIndex);
+					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,rootDomainColumnIndex);
 					rootDomain = URLEncoder.encode(rootDomain);
 					String url= "https://quake.360.net/quake/#/searchResult?searchVal=%s";
 					url= String.format(url, rootDomain);
@@ -235,7 +235,7 @@ public class TargetEntryMenu extends JPopupMenu {
 					return;
 				}
 				for (int row:modelRows) {
-					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,columnIndex);
+					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,rootDomainColumnIndex);
 					rootDomain = URLEncoder.encode(rootDomain);
 					String url= "https://ti.qianxin.com/v2/search?type=domain&value=%s";
 					url= String.format(url, rootDomain);
@@ -258,7 +258,7 @@ public class TargetEntryMenu extends JPopupMenu {
 					return;
 				}
 				for (int row:modelRows) {
-					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,columnIndex);
+					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,rootDomainColumnIndex);
 					String domainPara = String.format("domain=\"%s\"",rootDomain);
 					domainPara = URLEncoder.encode(domainPara);
 					String url= "https://hunter.qianxin.com/list?search=%s";
@@ -284,7 +284,7 @@ public class TargetEntryMenu extends JPopupMenu {
 					return;
 				}
 				for (int row:modelRows) {
-					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,columnIndex);
+					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,rootDomainColumnIndex);
 					rootDomain = URLEncoder.encode(rootDomain);
 					String url= "https://www.zoomeye.org/searchResult?q=%s";
 					url= String.format(url, rootDomain);
@@ -311,7 +311,7 @@ public class TargetEntryMenu extends JPopupMenu {
 							return null;
 						}
 						for (int row:modelRows) {
-							String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,columnIndex);
+							String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,rootDomainColumnIndex);
 							String rootDomainPara = new String(Base64.getEncoder().encode(rootDomain.getBytes()));
 							String responseBody = Search.searchFofa(email,key,rootDomainPara);
 
@@ -345,7 +345,7 @@ public class TargetEntryMenu extends JPopupMenu {
 							return null;
 						}
 						for (int row:modelRows) {
-							String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,columnIndex);
+							String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,rootDomainColumnIndex);
 							String responseBody = Search.searchQuake(key,rootDomain);
 
 							Set<String> domains = GrepUtils.grepDomain(responseBody);
@@ -378,7 +378,7 @@ public class TargetEntryMenu extends JPopupMenu {
 							return null;
 						}
 						for (int row:modelRows) {
-							String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,columnIndex);
+							String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,rootDomainColumnIndex);
 							String responseBody = Search.searchHunter(key,rootDomain);
 
 							Set<String> domains = GrepUtils.grepDomain(responseBody);
