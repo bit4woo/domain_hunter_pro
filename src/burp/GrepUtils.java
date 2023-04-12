@@ -171,14 +171,6 @@ public class GrepUtils {
 				URLs.add(url);
 			}
 			
-			matcher = pt1.matcher(line);
-			while (matcher.find()) {//多次查找
-				String url = matcher.group();
-				if (url.length()>=5) {//简单过滤，减少误报
-					URLs.add(url);
-				}
-			}
-			
 			//这部分提取的是含有协议头的完整URL地址
 			matcher = PatternsFromAndroid.WEB_URL.matcher(line);
 			while (matcher.find()) {//多次查找
@@ -188,6 +180,40 @@ public class GrepUtils {
 						||url.toLowerCase().startsWith("https://")
 						||url.toLowerCase().startsWith("rtsp://")
 						||url.toLowerCase().startsWith("ftp://")){
+					URLs.add(url);
+				}
+			}
+		}
+
+		List<String> tmplist= new ArrayList<>(URLs);
+		Collections.sort(tmplist);
+		tmplist = Commons.removePrefixAndSuffix(tmplist,"\"","\"");
+		tmplist = Commons.removePrefixAndSuffix(tmplist,"\'","\'");
+		return tmplist;
+	}
+	
+	
+	/**
+	 * 误报较多，却有时候有用
+	 * @param httpResponse
+	 * @return
+	 */
+	public static List<String> grepURL1(String httpResponse) {
+		httpResponse = httpResponse.toLowerCase();
+		Set<String> URLs = new HashSet<>();
+
+		String[] lines = httpResponse.split("\r\n");
+
+		String regex_str1= "[a-zA-Z0-9_\\-/]{1,}/[a-zA-Z0-9_\\-.]{1,}";//处理不是/开头的urlpath
+		Pattern pt1 = Pattern.compile(regex_str1);
+		
+		for (String line:lines) {//分行进行提取，似乎可以提高成功率？PATH_AND_QUERY
+			line = decodeAll(line);
+			
+			Matcher matcher = pt1.matcher(line);
+			while (matcher.find()) {//多次查找
+				String url = matcher.group();
+				if (url.length()>=5) {//简单过滤，减少误报
 					URLs.add(url);
 				}
 			}

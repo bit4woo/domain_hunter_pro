@@ -257,6 +257,18 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		});
+		
+		JButton btnFindUrls1 = new JButton("Find URLs 1");
+		btnFindUrls1.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String content = inputTextArea.getText();
+				if (null != content) {
+					List<String> urls = GrepUtils.grepURL1(content);
+					outputTextArea.setText(String.join(System.lineSeparator(), urls));
+				}
+			}
+		});
 
 		JButton btnFindIP = new JButton("Find IP");
 
@@ -1119,7 +1131,10 @@ public class ToolPanel extends JPanel {
 		cloumnIndex = 0;
 		buttonPanel.add(btnFindDomains, new bagLayout(++rowIndex, ++cloumnIndex));
 		buttonPanel.add(btnFindUrls, new bagLayout(rowIndex, ++cloumnIndex));
-		buttonPanel.add(btnFindIP, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnFindUrls1, new bagLayout(rowIndex, ++cloumnIndex));
+		
+		cloumnIndex = 0;
+		buttonPanel.add(btnFindIP, new bagLayout(++rowIndex, ++cloumnIndex));
 		buttonPanel.add(btnFindIPAndPort, new bagLayout(rowIndex, ++cloumnIndex));
 
 		cloumnIndex = 0;
