@@ -3,7 +3,6 @@ package Tools;
 import java.io.File;
 import java.io.IOException;
 
-import javax.swing.JOptionPane;
 import javax.swing.JTextArea;
 
 import org.apache.commons.io.FileUtils;
@@ -14,6 +13,7 @@ public class SuperJTextArea extends JTextArea{
 	String nextValue = "";
 	private boolean useTempFile;
 	private boolean supportFileSystem;
+	private boolean contentIsFileOrPath =false;
 	final String tempFilePath = FileUtils.getTempDirectory()+File.separator+"ContentIsInTmpFile.txt"; 
 
 	/**
@@ -26,11 +26,25 @@ public class SuperJTextArea extends JTextArea{
 		this.supportFileSystem = supportFileSystem;
 	}
 
+	
+
+	public boolean isContentIsFileOrPath() {
+		return contentIsFileOrPath;
+	}
+
+
+
+	public void setContentIsFileOrPath(boolean contentIsFileOrPath) {
+		this.contentIsFileOrPath = contentIsFileOrPath;
+	}
+
+
 
 	@Override
 	public void setText(String Text) {
 		try {
 			preValue = super.getText();
+			
 			if (useTempFile) {
 				//避免大文件卡死整个burp
 				if (Text.length() >= 10000) {
@@ -62,15 +76,8 @@ public class SuperJTextArea extends JTextArea{
 			}
 		}
 
-		if (supportFileSystem) {
-			if (new File(content).exists()) {//内容是个文件名，或这路径名
-				int result = JOptionPane.showConfirmDialog(null,"Input is a path, do you want to read file content and process ?");
-				if (result == JOptionPane.YES_OPTION) {
-					return readDirOrFileContent(content);
-				}else {
-					return content;
-				}
-			};
+		if (supportFileSystem && contentIsFileOrPath) {
+			return readDirOrFileContent(content);
 		}
 
 		return content;

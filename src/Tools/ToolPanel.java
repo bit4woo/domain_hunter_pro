@@ -1058,14 +1058,15 @@ public class ToolPanel extends JPanel {
 
 		JButton OpenFileButton = new JButton("Open File");
 
-		toLowerCaseButton.addActionListener(new ActionListener() {
+		OpenFileButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				String dir = ((SuperJTextArea) inputTextArea).getTextAsDisplay();
 				try {
 					Desktop.getDesktop().open(new File(dir));
 				} catch (IOException e1) {
-					e1.printStackTrace();
+					e1.printStackTrace(stderr);
+					statusLabel.setText("your input is not a valid path or file");
 				}
 			}
 		});
@@ -1176,7 +1177,8 @@ public class ToolPanel extends JPanel {
 		buttonPanel.add(Base64ToFile, new bagLayout(rowIndex, ++cloumnIndex));
 
 		cloumnIndex = 0;
-		buttonPanel.add(testButton, new bagLayout(++rowIndex, ++cloumnIndex));
+		buttonPanel.add(OpenFileButton, new bagLayout(++rowIndex, ++cloumnIndex));
+		buttonPanel.add(testButton, new bagLayout(rowIndex, ++cloumnIndex));
 
 
 		return buttonPanel;
@@ -1214,7 +1216,7 @@ public class ToolPanel extends JPanel {
 		@Override
 		public void removeUpdate(DocumentEvent e) {
 			if (ConfigPanel.listenerIsOn) {
-				guiMain.getConfigPanel().getLineConfig().setToolPanelText(textArea.getText());
+				guiMain.getConfigPanel().getLineConfig().setToolPanelText(((SuperJTextArea) textArea).getTextAsDisplay());
 				inputTextAreaChanged = true;
 			}
 		}
@@ -1222,7 +1224,7 @@ public class ToolPanel extends JPanel {
 		@Override
 		public void insertUpdate(DocumentEvent e) {
 			if (ConfigPanel.listenerIsOn) {
-				guiMain.getConfigPanel().getLineConfig().setToolPanelText(textArea.getText());
+				guiMain.getConfigPanel().getLineConfig().setToolPanelText(((SuperJTextArea) textArea).getTextAsDisplay());
 				inputTextAreaChanged = true;
 			}
 		}
@@ -1230,7 +1232,7 @@ public class ToolPanel extends JPanel {
 		@Override
 		public void changedUpdate(DocumentEvent arg0) {
 			if (ConfigPanel.listenerIsOn) {
-				guiMain.getConfigPanel().getLineConfig().setToolPanelText(textArea.getText());
+				guiMain.getConfigPanel().getLineConfig().setToolPanelText(((SuperJTextArea) textArea).getTextAsDisplay());
 				inputTextAreaChanged = true;
 			}
 		}

@@ -8,6 +8,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 import javax.swing.border.Border;
@@ -56,9 +57,20 @@ public class JScrollPanelWithHeaderForTool extends JScrollPane{
 			}
 		});
 
+		JRadioButton isPath= new JRadioButton("Content Is Path");
+		isPath.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				textArea.setContentIsFileOrPath(isPath.isSelected());
+			}
+		});
+
 		headerViewPanel.add(leftButton);
 		headerViewPanel.add(headLabel);
 		headerViewPanel.add(rightButton);
+		if (supportFileSystem) {
+			headerViewPanel.add(isPath);
+		}
 		setColumnHeaderView(headerViewPanel);
 	}
 
