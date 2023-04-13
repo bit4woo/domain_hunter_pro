@@ -30,6 +30,7 @@ public class SuperJTextArea extends JTextArea{
 
 		Action action = getActionMap().get("paste-from-clipboard");
 		getActionMap().put("paste-from-clipboard", new ProxyAction(action));
+		//https://stackoverflow.com/questions/25276020/listen-to-the-paste-events-jtextarea
 	}
 
 
@@ -148,7 +149,7 @@ public class SuperJTextArea extends JTextArea{
 	}
 
 	class ProxyAction extends AbstractAction {
-
+		//https://stackoverflow.com/questions/25276020/listen-to-the-paste-events-jtextarea
 		private Action action;
 
 		public ProxyAction(Action action) {
