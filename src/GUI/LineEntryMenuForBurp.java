@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -536,10 +537,10 @@ public class LineEntryMenuForBurp{
 			newEntry.setEntrySource(LineEntry.Source_Manual_Saved);
 			newEntry.setCheckStatus(LineEntry.CheckStatus_UnChecked);
 			newEntry.addComment(comment);
+			addIpAndCdnInfoUsingSameHostEntries(newEntry);
 
 			if (entry != null) {//存在相同URL的记录
-				newEntry.setUrl(entry.getUrl()+"#"+System.currentTimeMillis());
-				titlepanel.getTitleTable().getLineTableModel().addNewLineEntry(newEntry); //add request，修改URL(加#时间戳)后新增
+				titlepanel.getTitleTable().getLineTableModel().addNewLineEntryWithTime(newEntry); //add request，修改URL(加#时间戳)后新增
 			}else {//不存在相同记录，直接新增
 				titlepanel.getTitleTable().getLineTableModel().addNewLineEntry(newEntry); //add request，新增
 			}
@@ -547,6 +548,27 @@ public class LineEntryMenuForBurp{
 			String host = message.getHttpService().getHost();
 			guiMain.getDomainPanel().getDomainResult().addIfValid(host); //add domain
 		}
+	}
+
+	/**
+	 * 查找相同host的记录，并将其IP和CDN信息添加到新的entry上
+	 * @return
+	 */
+	public LineEntry addIpAndCdnInfoUsingSameHostEntries(LineEntry entry){
+		String host = entry.getHost();
+		List<LineEntry> historyEntries = titlepanel.getTitleTable().getLineTableModel().findSameHostEntries(host);
+		for (LineEntry hisentry:historyEntries){
+			if (!hisentry.getEntrySource().equals(LineEntry.Source_Manual_Saved)){
+				Set<String> IPset = hisentry.getIPSet();
+				if (IPset.size() >=1){
+					entry.setCertDomainSet(hisentry.getCertDomainSet());
+					entry.setCNAMESet(hisentry.getCNAMESet());
+					entry.setIPSet(hisentry.getIPSet());
+					return entry;
+				}
+			}
+		}
+		return entry;
 	}
 
 	/**

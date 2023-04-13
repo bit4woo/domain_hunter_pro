@@ -1,14 +1,30 @@
 package title;
 
-import GUI.GUIMain;
-import burp.*;
-import dao.TitleDao;
-
-import javax.swing.table.AbstractTableModel;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+
+import javax.swing.table.AbstractTableModel;
+
+import GUI.GUIMain;
+import burp.BurpExtender;
+import burp.Commons;
+import burp.DomainNameUtils;
+import burp.Getter;
+import burp.IExtensionHelpers;
+import burp.IHttpRequestResponse;
+import burp.IHttpService;
+import burp.IMessageEditorController;
+import burp.IPAddressUtils;
+import burp.IntArraySlice;
+import dao.TitleDao;
 
 /**
  * 关于firexxx，目的是通知各个modelListener。默认的listener中，有一种的目的是：当数据发生变化时，更新GUI的显示。
@@ -707,7 +723,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		if (lineEntry == null) {
 			return;
 		}
-		String key = lineEntry.getUrl()+System.currentTimeMillis();
+		String key = lineEntry.getUrl()+"#"+System.currentTimeMillis();
 		lineEntries.put(key,lineEntry);
 		int index = lineEntries.IndexOfKey(key);
 		fireTableRowsInserted(index, index);//有毫秒级时间戳，只会是新增
@@ -743,8 +759,10 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		//https://stackoverflow.com/questions/6165060/after-adding-a-tablerowsorter-adding-values-to-model-cause-java-lang-indexoutofb
 		//fireTableRowsInserted(newsize-1, newsize-1);
 	}
-	/*
-	这个方法更新了URL的比对方法，无论是否包含默认端口都可以成功匹配
+
+	/**
+	 * 
+	 * 这个方法更新了URL的比对方法，无论是否包含默认端口都可以成功匹配
 	 */
 	public LineEntry findLineEntry(String url) {//这里的URL需要包含默认端口!!!
 		if (lineEntries == null) return null;
@@ -776,12 +794,11 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		return entry;
 	}
 
-	/*
+	/**
 	 * find all lineEntries base host，当需要对整个主机的所有服务进行操作时用这个方法
-	 * 正确的范围是一个service，即Host+port，弃用这个函数
+	 * 当要获得host的IP、CDN信息时可以用这个函数
 	 */
-	@Deprecated
-	public List<LineEntry> findLineEntriesByHost(String host) {//
+	public List<LineEntry> findSameHostEntries(String host) {//
 		if (lineEntries == null) return null;
 		List<LineEntry> result = new ArrayList<LineEntry>();
 		for (String urlkey:lineEntries.keySet()) {
@@ -797,7 +814,9 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		return result;
 	}
 
-	/*
+
+	/**
+	 * 
 	 * find all lineEntries base host and port，通常根据IP+端口来确定一个服务。
 	 */
 	public List<LineEntry> findLineEntriesByHostAndPort(String host,int port) {//
