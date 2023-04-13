@@ -724,6 +724,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			return;
 		}
 		String key = lineEntry.getUrl()+"#"+System.currentTimeMillis();
+		lineEntry.setUrl(key);
 		lineEntries.put(key,lineEntry);
 		int index = lineEntries.IndexOfKey(key);
 		fireTableRowsInserted(index, index);//有毫秒级时间戳，只会是新增
