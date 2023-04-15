@@ -24,7 +24,7 @@ import burp.BurpExtender;
 import burp.Commons;
 import burp.DomainNameUtils;
 import burp.IPAddressUtils;
-import title.search.SearchDork;
+import title.search.SearchStringDork;
 
 public class TextAreaMenu extends JPopupMenu {
 
@@ -73,7 +73,7 @@ public class TextAreaMenu extends JPopupMenu {
 				//只会影响Domain Hunter中的选中，当选中的是proxy，使用这个方法并不能自动切换到domain hunter。
 				//stdout.println(guiMain.getRootPane().getName());//null
 				if (selectedItems.size() >0 ) {
-					domainPanel.getGuiMain().getTitlePanel().getTextFieldSearch().setText(SearchDork.HOST.toString() + ":" + selectedItems.get(0));
+					domainPanel.getGuiMain().getTitlePanel().getTextFieldSearch().setText(SearchStringDork.HOST.toString() + ":" + selectedItems.get(0));
 				}
 			}
 		});
@@ -88,7 +88,7 @@ public class TextAreaMenu extends JPopupMenu {
 					if (!item.toLowerCase().startsWith("https://") && !item.toLowerCase().startsWith("http://")) {
 						item= "https://"+item;
 					}
-					
+
 					try {
 						Commons.browserOpen(item, domainPanel.getGuiMain().getConfigPanel().getLineConfig().getBrowserPath());
 					} catch (Exception e) {
@@ -242,7 +242,7 @@ public class TextAreaMenu extends JPopupMenu {
 				domainPanel.getGuiMain().getDomainPanel().showDataToDomainGUI();
 			}
 		});
-		
+
 		//https://blog.csdn.net/opshres169/article/details/51913713
 		JMenuItem SearchDomain = new JMenuItem(new AbstractAction("Search") {
 			int searchBegin = 0;

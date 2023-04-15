@@ -23,8 +23,7 @@ import burp.BurpExtender;
 import burp.Commons;
 import burp.SystemUtils;
 import title.search.History;
-import title.search.LineSearch;
-import title.search.SearchDork;
+import title.search.SearchManager;
 import title.search.SearchTextField;
 
 
@@ -161,34 +160,9 @@ public class LineTable extends JTable
 				int row = (int) entry.getIdentifier();
 				LineEntry line = getLineTableModel().getLineEntries().get(row);
 
-				//第一层判断，根据按钮状态进行判断，如果为true，进行后面的逻辑判断，false直接返回。
-				if (!new LineSearch(guiMain.getTitlePanel()).entryNeedToShow(line)) {
-					return false;
-				}
-				//目前只处理&&（and）逻辑的表达式
-				if (Input.contains("&&")) {
-					String[] searchConditions = Input.split("&&");
-					for (String condition:searchConditions) {
-						if (oneCondition(condition,line)) {
-							continue;
-						}else {
-							return false;
-						}
-					}
-					return true;
-				}else {
-					return oneCondition(Input,line);
-				}
+				return new SearchManager(guiMain.getTitlePanel()).include(line,Input,caseSensitive);
 			}
-			public boolean oneCondition(String Input,LineEntry line) {
-				Input = Input.trim();//应该去除空格，符合java代码编写习惯
-				if (SearchDork.isDork(Input)) {
-					//stdout.println("do dork search,dork:"+dork+"   keyword:"+keyword);
-					return LineSearch.dorkFilter(line,Input,caseSensitive);
-				}else {
-					return LineSearch.textFilter(line,Input,caseSensitive);
-				}
-			}
+
 		};
 		((TableRowSorter)LineTable.this.getRowSorter()).setRowFilter(filter);
 	}

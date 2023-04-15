@@ -1,20 +1,60 @@
 package title.search;
 
+import java.net.URL;
+import java.util.ArrayList;
+
 import title.LineEntry;
 import title.TitlePanel;
 
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.regex.Pattern;
+public class SearchManager {
 
-public class LineSearch {
-	
 	private TitlePanel titlePanel;
 
-	public LineSearch(TitlePanel panel){
+	public SearchManager(TitlePanel panel){
 		this.titlePanel = panel;
 	}
-	
+
+
+	public boolean include(LineEntry line,String searchInput,boolean caseSensitive) {
+
+		//第一层判断，根据按钮状态进行判断，如果为true，进行后面的逻辑判断，false直接返回。
+		if (!entryNeedToShow(line)) {
+			return false;
+		}
+
+		//目前只处理&&（and）逻辑的表达式
+		if (searchInput.contains("&&")) {
+			String[] searchConditions = searchInput.split("&&");
+			for (String condition:searchConditions) {
+				if (oneCondition(condition,line,caseSensitive)) {
+					continue;
+				}else {
+					return false;
+				}
+			}
+			return true;
+		}else {
+			return oneCondition(searchInput,line,caseSensitive);
+		}
+	}
+
+
+	public boolean oneCondition(String Input,LineEntry line,boolean caseSensitive) {
+		Input = Input.trim();//应该去除空格，符合java代码编写习惯
+
+		if (SearchStringDork.isStringDork(Input)) {
+			//stdout.println("do dork search,dork:"+dork+"   keyword:"+keyword);
+			return SearchStringDork.doFilter(line,Input,caseSensitive);
+
+		}else if (SearchNumbericDork.isNumbericDork(Input)) {
+			return SearchNumbericDork.doFilter(line,Input);
+		}else if (SearchRegex.isRegexSearch(Input)) {
+			return SearchRegex.doFilter(line,Input);
+		}else {
+			return SearchManager.textFilter(line,Input,caseSensitive);
+		}
+	}
+
 	//根据状态过滤
 	public boolean entryNeedToShow(LineEntry entry) {
 		if (!(titlePanel.getRdbtnUnCheckedItems().isSelected()||titlePanel.getRdbtnCheckingItems().isSelected()||
@@ -35,14 +75,14 @@ public class LineSearch {
 		if (titlePanel.getRdbtnUnCheckedItems().isSelected()&& entry.getCheckStatus().equals(LineEntry.CheckStatus_UnChecked)) {
 			return true;
 		}
-		
+
 		if (titlePanel.getRdbtnMoreActionItems().isSelected()&& entry.getCheckStatus().equals(LineEntry.CheckStatus_MoreAction)) {
 			return true;
 		}
 
 		return false;
 	}
-	
+
 	/**
 	 * 关键词和搜索内容都进行了小写转换，尽量多得返回内容
 	 * @param line
@@ -90,132 +130,22 @@ public class LineSearch {
 		}
 	}
 
-	/**
-	 * 支持部分类似google dork的搜索语法。对搜索内容和条件都进行了小写转换，尽量多的返回内容。
-	 * Host url header body request response comment
-	 * host:www.baidu.com ----host是dork,www.baidu.com是keyword
-	 * @param line
-	 * @param input
-	 * @return
-	 */
-	public static boolean dorkFilter(LineEntry line,String input,boolean caseSensitive) {
-		if (SearchDork.isDork(input)){
-			String dork = SearchDork.grepDork(input);
-			String keyword = SearchDork.grepKeyword(input);
 
-			if (keyword.length() == 0) {
-				return true;
-			}
-
-			if (dork.equalsIgnoreCase(SearchDork.REGEX.toString())) {
-				return regexFilter(line,keyword);
-			}
-
-			if (dork.equalsIgnoreCase(SearchDork.PORT.toString())) {
-				if (line.getPort() == Integer.parseInt(keyword)) {
-					return true;
-				}else {
-					return false;
-				}
-			}
-
-			if (dork.equalsIgnoreCase(SearchDork.STATUS.toString())) {
-				if (line.getStatuscode() == Integer.parseInt(keyword)) {
-					return true;
-				}else {
-					return false;
-				}
-			}
-
-			String tempContent = "";
-			
-			if (dork.equalsIgnoreCase(SearchDork.HOST.toString())) {
-				tempContent = line.getHost();
-			}
-			
-			if (dork.equalsIgnoreCase(SearchDork.URL.toString())) {
-				tempContent = line.getUrl();
-			}
-
-			if (dork.equalsIgnoreCase(SearchDork.REQUEST.toString())) {
-				tempContent = new String(line.getRequest());
-			}
-
-			if (dork.equalsIgnoreCase(SearchDork.RESPONSE.toString())) {
-				tempContent = new String(line.getResponse());
-			}
-
-			if (dork.equalsIgnoreCase(SearchDork.COMMENT.toString())) {
-				tempContent = line.getComments().toString();
-			}
-			
-			if (dork.equalsIgnoreCase(SearchDork.TITLE.toString())) {
-				tempContent = line.getTitle();
-			}
-
-			if (dork.equalsIgnoreCase(SearchDork.ASNINFO.toString())) {
-				tempContent = line.getASNInfo();
-			}
-			
-			if (caseSensitive) {
-				return tempContent.contains(keyword); 
-			}else {
-				keyword = keyword.toLowerCase();
-				return tempContent.toLowerCase().contains(keyword); 
-			}
-		}
-		return false;
-	}
-	/**
-	 * 通过正则搜索，不应该进行大小写转换
-	 * 
-	 */
-	public static boolean regexFilter(LineEntry line,String regex) {
-		//BurpExtender.getStdout().println("regexFilte: "+regex);
-		Pattern pRegex = Pattern.compile(regex);
-
-		if (regex.trim().length() == 0) {
-			return true;
-		} else {
-			if (pRegex.matcher(new String(line.getRequest())).find()) {
-				return true;
-			}
-			if (pRegex.matcher(new String(line.getResponse())).find()) {
-				return true;
-			}
-			if (pRegex.matcher(line.getUrl()).find()) {
-				return true;
-			}
-			if (pRegex.matcher(line.getIPSet().toString()).find()) {
-				return true;
-			}
-			if (pRegex.matcher(line.getCNAMESet().toString()).find()) {
-				return true;
-			}
-			if (pRegex.matcher(line.getComments().toString()).find()) {
-				return true;
-			}
-			if (pRegex.matcher(line.getASNInfo()).find()) {
-				return true;
-			}
-			return false;
-		}
-	}
 	public static void test(){
 		String title = "标题";
 		System.out.println(title.toLowerCase().contains("标题"));
 
-//		String webpack_PATTERN = "app\\.([0-9a-z])*\\.js";//后文有小写转换
-//		System.out.println(webpack_PATTERN);
-//
-//		System.out.println("regex:app\\.([0-9a-z])*\\.js");
-//
-//		System.out.println(SearchDork.REGEX.toString()+":"+webpack_PATTERN);
+		//		String webpack_PATTERN = "app\\.([0-9a-z])*\\.js";//后文有小写转换
+		//		System.out.println(webpack_PATTERN);
+		//
+		//		System.out.println("regex:app\\.([0-9a-z])*\\.js");
+		//
+		//		System.out.println(SearchDork.REGEX.toString()+":"+webpack_PATTERN);
 	}
 	public static void test1() throws Exception {
 		System.out.println(new URL("https://partner.airpay.in.th/").equals(new URL("https://partner.airpay.in.th:443/")));
 	}
-	
+
 	public static void main(String[] args) throws Exception {
 		test1();
 	}

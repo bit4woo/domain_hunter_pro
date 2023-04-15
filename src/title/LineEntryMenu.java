@@ -34,7 +34,8 @@ import burp.Getter;
 import burp.IBurpExtenderCallbacks;
 import burp.IPAddressUtils;
 import burp.SystemUtils;
-import title.search.SearchDork;
+import title.search.SearchNumbericDork;
+import title.search.SearchStringDork;
 
 public class LineEntryMenu extends JPopupMenu {
 
@@ -349,16 +350,16 @@ public class LineEntryMenu extends JPopupMenu {
 
 				if (columnName.equalsIgnoreCase("Status")){
 					int status = firstEntry.getStatuscode();
-					titlepanel.getTextFieldSearch().setText(SearchDork.STATUS.toString()+":"+status);
+					titlepanel.getTextFieldSearch().setText(SearchNumbericDork.STATUS.toString()+":"+status);
 				}else if (columnName.equalsIgnoreCase("length")){
 					int length = firstEntry.getContentLength();
 					titlepanel.getTextFieldSearch().setText(length+"");
 				}else if (columnName.equalsIgnoreCase("title")){
 					String title = firstEntry.getTitle();
-					titlepanel.getTextFieldSearch().setText(SearchDork.TITLE.toString()+":"+title);
+					titlepanel.getTextFieldSearch().setText(SearchStringDork.TITLE.toString()+":"+title);
 				}else if (columnName.equalsIgnoreCase("comments")){
 					String comment = firstEntry.getComments().toString();
-					titlepanel.getTextFieldSearch().setText(SearchDork.COMMENT.toString()+":"+comment);
+					titlepanel.getTextFieldSearch().setText(SearchStringDork.COMMENT.toString()+":"+comment);
 				}else if (columnName.equalsIgnoreCase("IP")){
 					String ip = firstEntry.getIPSet().toString();
 					titlepanel.getTextFieldSearch().setText(ip);
@@ -370,7 +371,7 @@ public class LineEntryMenu extends JPopupMenu {
 					titlepanel.getTextFieldSearch().setText(hash);
 				}else {
 					String host = firstEntry.getHost();
-					titlepanel.getTextFieldSearch().setText(SearchDork.HOST.toString()+":"+host);
+					titlepanel.getTextFieldSearch().setText(SearchStringDork.HOST.toString()+":"+host);
 				}
 			}
 		});
