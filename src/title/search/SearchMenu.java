@@ -7,6 +7,8 @@ import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
+import title.LineEntry;
+
 public class SearchMenu extends JPopupMenu {
 
 	PrintWriter stdout;
@@ -109,7 +111,8 @@ public class SearchMenu extends JPopupMenu {
 		JMenuItem ManualSaved = new JMenuItem(new AbstractAction("Manual Saved Items:   source:saved") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				searchField.setText("source:saved");
+				String expresstion = SearchStringDork.SOURCE+":"+LineEntry.Source_Manual_Saved;
+				searchField.setText(expresstion);
 			}
 		});
 
