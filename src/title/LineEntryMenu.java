@@ -26,6 +26,7 @@ import ASN.ASNEntry;
 import ASN.ASNQuery;
 import GUI.GUIMain;
 import GUI.LineEntryMenuForBurp;
+import Tools.ToolPanel;
 import burp.BurpExtender;
 import burp.Commons;
 import burp.DomainNameUtils;
@@ -930,6 +931,46 @@ public class LineEntryMenu extends JPopupMenu {
 			}
 		});
 
+
+		JMenuItem SendToToolPanel = new JMenuItem(new AbstractAction("Send To Tool Panel") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+					//using SwingWorker to prevent blocking burp main UI.
+
+					@Override
+					protected Map doInBackground() throws Exception {
+						String result = "";
+						for (int row: modleRows){
+							LineEntry entry = lineTable.getLineTableModel().getLineEntries().get(row);
+
+							String content = "";
+							byte[] request = entry.getRequest();
+							byte[] response = entry.getResponse();
+
+							if (request!= null) {
+								content = new String(request);
+							}
+
+							if (response!= null) {
+								content = content+System.lineSeparator()+new String(response);
+							}
+							result = result+System.lineSeparator()+content;
+						}
+
+						ToolPanel.inputTextArea.setText(result);
+						return null;
+					}
+					@Override
+					protected void done() {
+					}
+				};
+				worker.execute();
+			}
+		});
+
+
+
 		/**
 		 * 单纯从title记录中删除,不做其他修改
 		 */
@@ -1050,6 +1091,7 @@ public class LineEntryMenu extends JPopupMenu {
 		DoMenu.add(addHostsToScope);
 		DoMenu.add(SendToRepeater);
 		DoMenu.add(SendToRepeaterWithCookieItem);
+		DoMenu.add(SendToToolPanel);
 		//DoMenu.add(doActiveScan);常用
 
 		DoMenu.addSeparator();
