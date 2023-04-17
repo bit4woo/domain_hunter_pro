@@ -1,19 +1,32 @@
 package title;
 
-import ASN.ASNEntry;
-import ASN.ASNQuery;
-import burp.*;
-import com.alibaba.fastjson.JSON;
-import com.google.common.hash.HashCode;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import com.alibaba.fastjson.JSON;
+import com.google.common.hash.HashCode;
+
+import ASN.ASNEntry;
+import ASN.ASNQuery;
+import burp.BurpExtender;
+import burp.Commons;
+import burp.Getter;
+import burp.HelperPlus;
+import burp.IExtensionHelpers;
+import burp.IHttpRequestResponse;
+import burp.IHttpService;
+import burp.IPAddressUtils;
+import burp.IResponseInfo;
 
 public class LineEntry {
 	private static final Logger log=LogManager.getLogger(LineEntry.class);
@@ -65,7 +78,7 @@ public class LineEntry {
 	private byte[] request = {};
 	private byte[] response = {};
 	// request+response+httpService == IHttpRequestResponse,burp的划分方式
-	
+
 	/**
 	 * 如下是显示界面使用到的字段，部分来自数据包本身，部分需要额外的请求
 	 *
@@ -76,7 +89,7 @@ public class LineEntry {
 	private String title = "";
 	private String webcontainer = "";
 	//如上几个字段都是来自数据包本身
-	
+
 	private Set<String> IPSet = new HashSet<String>();
 	private Set<String> CNAMESet = new HashSet<String>();
 	private Set<String> CertDomainSet = new HashSet<String>();
@@ -210,6 +223,16 @@ public class LineEntry {
 		if (EntryType == EntryType_Web) {
 			String tmpurl =getUrl();
 			this.setIcon_hash(WebIcon.getHash(tmpurl));
+		}
+	}
+
+	public void DoRequestAgain() {
+		if (EntryType == EntryType_Web) {
+			IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
+			IHttpService service = helpers.buildHttpService(host, port, protocol);
+			IHttpRequestResponse info = BurpExtender.getCallbacks().makeHttpRequest(service,request);
+			BurpExtender.getStdout().println(new String(info.getResponse()));
+			parse(info);
 		}
 	}
 

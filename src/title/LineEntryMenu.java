@@ -676,6 +676,26 @@ public class LineEntryMenu extends JPopupMenu {
 		});
 
 
+		JMenuItem requestAgain = new JMenuItem(new AbstractAction("Do Request Item Again") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+
+				IndexedHashMap<String,LineEntry> entries = lineTable.getLineTableModel().getLineEntries();
+				for (int i=modleRows.length-1;i>=0 ;i-- ) {
+					try{
+						LineEntry entry = entries.get(modleRows[i]);
+						entry.DoRequestAgain();
+						lineTable.getLineTableModel().addNewLineEntry(entry);
+					}
+					catch (Exception e1)
+					{
+						e1.printStackTrace(stderr);
+					}
+				}
+			}
+		});
+
+
 		JMenuItem doActiveScan = new JMenuItem(new AbstractAction("Do Active Scan") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -1093,6 +1113,7 @@ public class LineEntryMenu extends JPopupMenu {
 		DoMenu.add(SendToRepeater);
 		DoMenu.add(SendToRepeaterWithCookieItem);
 		DoMenu.add(SendToToolPanel);
+		DoMenu.add(requestAgain);
 		//DoMenu.add(doActiveScan);常用
 
 		DoMenu.addSeparator();

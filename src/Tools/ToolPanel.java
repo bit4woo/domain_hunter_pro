@@ -1109,6 +1109,38 @@ public class ToolPanel extends JPanel {
 				worker.execute();
 			}
 		});
+		
+		
+		JButton JsonSimplfy = new JButton("Open File");
+
+		OpenFileButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String dir = ((SuperJTextArea) inputTextArea).getTextAsDisplay();
+				try {
+					Desktop.getDesktop().open(new File(dir));
+				} catch (IOException e1) {
+					e1.printStackTrace(stderr);
+					statusLabel.setText("your input is not a valid path or file");
+				}
+			}
+		});
+		
+		
+		JButton JsonBeautify = new JButton("Open File");
+
+		OpenFileButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String dir = ((SuperJTextArea) inputTextArea).getTextAsDisplay();
+				try {
+					Desktop.getDesktop().open(new File(dir));
+				} catch (IOException e1) {
+					e1.printStackTrace(stderr);
+					statusLabel.setText("your input is not a valid path or file");
+				}
+			}
+		});
 
 
 		//buttonPanel，里面放操作按钮
