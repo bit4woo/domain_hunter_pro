@@ -1,5 +1,8 @@
 package Tools;
 
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
@@ -9,6 +12,8 @@ import javax.swing.Action;
 import javax.swing.JTextArea;
 
 import org.apache.commons.io.FileUtils;
+
+import burp.BurpExtender;
 
 public class SuperJTextArea extends JTextArea{
 
@@ -45,6 +50,19 @@ public class SuperJTextArea extends JTextArea{
 		this.contentIsFileOrPath = contentIsFileOrPath;
 	}
 
+	@Override
+	public void paste() {
+		//javax.swing.text.JTextComponent.paste()
+		//https://stackoverflow.com/questions/25276020/listen-to-the-paste-events-jtextarea
+		//通过这个连接的答案，找到了paste的实现方法。这里进行重写，避免内容大时，卡死GUI。
+		try {
+			Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+			String data = (String) clipboard.getData(DataFlavor.stringFlavor);
+			setText(data);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
 
 	@Override
@@ -92,6 +110,25 @@ public class SuperJTextArea extends JTextArea{
 
 	public String getTextAsDisplay() {
 		return super.getText();
+	}
+
+
+	public String getTipsToShow() {
+		try {
+			int line = getLineOfOffset( getCaretPosition() );
+			int start = getLineStartOffset( line );
+			int end = getLineEndOffset( line );
+			String lineText = getDocument().getText(start, end - start);
+			String content = readDirOrFileContent(lineText);
+			if (content.length()<=500) {
+				return content;
+			} else {
+				return content.substring(0,101);
+			}
+		} catch (Exception e) {
+			e.printStackTrace(BurpExtender.getStderr());
+			return null;
+		}
 	}
 
 	/**
@@ -161,6 +198,7 @@ public class SuperJTextArea extends JTextArea{
 			action.actionPerformed(e);//paste动作的实现javax.swing.text.DefaultEditorKit.PasteAction.actionPerformed(ActionEvent)
 			//BurpExtender.getStdout().println("Paste Occured...");
 			//如果想要在paste的时候避免卡死，就要在这里实现，有这个必要吗？
+			//
 		}
 
 	}
