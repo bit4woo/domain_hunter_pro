@@ -808,6 +808,10 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 				if (URL.getHost().equalsIgnoreCase(host)) {
 					result.add(lineEntries.get(urlkey));
 				}
+			}catch (java.net.MalformedURLException e) {
+				if (urlkey.equalsIgnoreCase(host)) {//DNS record
+					result.add(lineEntries.get(urlkey));
+				}
 			}catch (Exception e){
 				e.printStackTrace(BurpExtender.getStderr());
 			}
