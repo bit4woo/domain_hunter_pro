@@ -23,6 +23,10 @@ public class TextAreaMouseListener extends MouseAdapter{
 			JPopupMenu jp = new TextAreaMenu(selected);
 			jp.show(textArea, arg0.getX(), arg0.getY());
 		}
+		
+		if (arg0.getButton() == MouseEvent.BUTTON1) {
+			mouseEntered(arg0);
+		}
 	}
 
 	public void mouseEntered(MouseEvent arg0) {
