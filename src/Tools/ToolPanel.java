@@ -48,6 +48,9 @@ import javax.swing.event.DocumentListener;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.text.StringEscapeUtils;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import GUI.GUIMain;
 import burp.BurpExtender;
 import burp.Commons;
@@ -1110,38 +1113,42 @@ public class ToolPanel extends JPanel {
 			}
 		});
 		
-		
-		JButton JsonSimplfy = new JButton("Open File");
+		/*
+		JButton JsonSimplify = new JButton("Simplify Json");
 
-		OpenFileButton.addActionListener(new ActionListener() {
+		JsonSimplify.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String dir = ((SuperJTextArea) inputTextArea).getTextAsDisplay();
+				String text = ((SuperJTextArea) inputTextArea).getTextAsDisplay();
 				try {
-					Desktop.getDesktop().open(new File(dir));
-				} catch (IOException e1) {
+					Gson gson = new GsonBuilder().create();
+					String json = gson.toJson(text);
+					outputTextArea.setText(json);
+				} catch (Exception e1) {
 					e1.printStackTrace(stderr);
-					statusLabel.setText("your input is not a valid path or file");
+					statusLabel.setText("your input is not a valid json");
 				}
 			}
 		});
 		
 		
-		JButton JsonBeautify = new JButton("Open File");
+		JButton JsonBeautify = new JButton("Beautify Json");
 
-		OpenFileButton.addActionListener(new ActionListener() {
+		JsonBeautify.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String dir = ((SuperJTextArea) inputTextArea).getTextAsDisplay();
+				String text = ((SuperJTextArea) inputTextArea).getTextAsDisplay();
 				try {
-					Desktop.getDesktop().open(new File(dir));
-				} catch (IOException e1) {
+					Gson gson = new GsonBuilder().setPrettyPrinting().create();
+					String json = gson.toJson(text);
+					outputTextArea.setText(json);
+				} catch (Exception e1) {
 					e1.printStackTrace(stderr);
-					statusLabel.setText("your input is not a valid path or file");
+					statusLabel.setText("your input is not a valid json");
 				}
 			}
 		});
-
+		*/
 
 		//buttonPanel，里面放操作按钮
 		JPanel buttonPanel = new JPanel();
@@ -1216,6 +1223,8 @@ public class ToolPanel extends JPanel {
 		cloumnIndex = 0;
 		buttonPanel.add(unescapeJava, new bagLayout(++rowIndex, ++cloumnIndex));
 		buttonPanel.add(unescapeHTML, new bagLayout(rowIndex, ++cloumnIndex));
+		//buttonPanel.add(JsonSimplify, new bagLayout(rowIndex, ++cloumnIndex) );
+		//buttonPanel.add(JsonBeautify, new bagLayout(rowIndex, ++cloumnIndex) );
 
 		cloumnIndex = 0;
 		buttonPanel.add(toLowerCaseButton, new bagLayout(++rowIndex, ++cloumnIndex));

@@ -1,6 +1,7 @@
 package title;
 
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Arrays;
@@ -10,6 +11,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import GUI.GUIMain;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -220,20 +222,23 @@ public class LineEntry {
 	}
 
 	public void DoGetIconHash() {
-		if (EntryType == EntryType_Web) {
+		if (EntryType.equals(EntryType_Web)) {
 			String tmpurl =getUrl();
 			this.setIcon_hash(WebIcon.getHash(tmpurl));
 		}
 	}
 
-	public void DoRequestAgain() {
-		if (EntryType == EntryType_Web) {
-			IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
-			IHttpService service = helpers.buildHttpService(host, port, protocol);
-			IHttpRequestResponse info = BurpExtender.getCallbacks().makeHttpRequest(service,request);
-			BurpExtender.getStdout().println(new String(info.getResponse()));
-			parse(info);
+	public void DoRequestAgain() throws MalformedURLException {
+		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
+		IHttpService service = helpers.buildHttpService(host, port, protocol);
+
+		if (EntryType.equals(EntryType_DNS)) {
+			request = helpers.buildHttpRequest(new URL(service.toString()));
 		}
+
+		IHttpRequestResponse info = BurpExtender.getCallbacks().makeHttpRequest(service,request);
+		//BurpExtender.getStdout().println(new String(info.getResponse()));
+		parse(info);
 	}
 
 	/**

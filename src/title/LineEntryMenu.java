@@ -679,19 +679,25 @@ public class LineEntryMenu extends JPopupMenu {
 		JMenuItem requestAgain = new JMenuItem(new AbstractAction("Do Request Item Again") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-
-				IndexedHashMap<String,LineEntry> entries = lineTable.getLineTableModel().getLineEntries();
-				for (int i=modleRows.length-1;i>=0 ;i-- ) {
-					try{
-						LineEntry entry = entries.get(modleRows[i]);
-						entry.DoRequestAgain();
-						lineTable.getLineTableModel().addNewLineEntry(entry);
+				new SwingWorker(){
+					//to void "java.lang.RuntimeException: java.lang.RuntimeException: Extensions should not make HTTP requests in the Swing event dispatch thread"
+					@Override
+					protected Object doInBackground() throws Exception {
+						IndexedHashMap<String,LineEntry> entries = lineTable.getLineTableModel().getLineEntries();
+						for (int i=modleRows.length-1;i>=0 ;i-- ) {
+							try{
+								LineEntry entry = entries.get(modleRows[i]);
+								entry.DoRequestAgain();
+								lineTable.getLineTableModel().addNewLineEntry(entry);
+							}
+							catch (Exception e1)
+							{
+								e1.printStackTrace(stderr);
+							}
+						}
+						return null;
 					}
-					catch (Exception e1)
-					{
-						e1.printStackTrace(stderr);
-					}
-				}
+				}.execute();
 			}
 		});
 
