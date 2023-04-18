@@ -268,6 +268,27 @@ public class TargetEntryMenu extends JPopupMenu {
 			}
 		});
 
+		//https://ti.360.net/#/detailpage/searchresult?query=baidu.com
+		JMenuItem SearchOnTi360Item = new JMenuItem(new AbstractAction("Seach On ti.360.net") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+
+				if (modelRows.length >=50) {
+					return;
+				}
+				for (int row:modelRows) {
+					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,rootDomainColumnIndex);
+					rootDomain = URLEncoder.encode(rootDomain);
+					String url= "https://ti.360.net/#/detailpage/searchresult?query=%s";
+					url= String.format(url, rootDomain);
+					try {
+						Commons.browserOpen(url, null);
+					} catch (Exception e) {
+						e.printStackTrace(stderr);
+					}
+				}
+			}
+		});
 
 		//https://hunter.qianxin.com/list?search=domain%3D%22example.com%22
 		JMenuItem SearchOnHunterQianxinItem = new JMenuItem(new AbstractAction("Seach On hunter.qianxin.com") {
@@ -426,6 +447,7 @@ public class TargetEntryMenu extends JPopupMenu {
 
 		this.add(SearchOnFoFaItem);
 		this.add(SearchOn360QuakeItem);
+		this.add(SearchOnTi360Item);
 		this.add(SearchOnTiQianxinItem);
 		this.add(SearchOnHunterQianxinItem);
 		this.add(SearchOnZoomEyeItem);
