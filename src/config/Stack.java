@@ -1,4 +1,4 @@
-package burp;
+package config;
 
 import java.util.ArrayList;
 import java.util.List;

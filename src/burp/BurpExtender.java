@@ -15,6 +15,7 @@ import GUI.GUIMain;
 import GUI.LineEntryMenuForBurp;
 import bsh.This;
 import config.ConfigPanel;
+import config.DataLoadManager;
 
 public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListener, IContextMenuFactory, IHttpListener {
 	/**
@@ -32,8 +33,6 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	private static final Logger log = LogManager.getLogger(BurpExtender.class);
 
 	private GUIMain gui;
-
-
 
 
 	public static PrintWriter getStdout() {
@@ -127,7 +126,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 				callbacks.addSuiteTab(BurpExtender.this);
 				//这里的BurpExtender.this实质是指ITab对象，也就是getUiComponent()中的contentPane.这个参数由GUI()函数初始化。
 				//如果这里报java.lang.NullPointerException: Component cannot be null 错误，需要排查contentPane的初始化是否正确。
-				gui.LoadData();
+				gui.getDataLoadManager().loadDbAndConfig();
 				gui.startLiveCapture();
 			}
 		});
@@ -150,10 +149,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		}
 
 		try {
-			if (null == gui.getDomainPanel().getDomainResult()) return;//有数据才弹对话框指定文件位置。
-			gui.getDomainPanel().saveDomainDataToDB();//域名面板自动保存逻辑有点复杂，退出前再自动保存一次
-			String configFilePath = gui.getConfigPanel().getLineConfig().saveToDisk();//包含db文件位置
-			RecentModel.saveRecent(configFilePath);
+			gui.getDataLoadManager().saveDbAndConfig();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

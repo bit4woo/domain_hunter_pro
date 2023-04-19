@@ -19,9 +19,9 @@ import burp.BurpExtender;
 import burp.Commons;
 import burp.IBurpExtender;
 import burp.IHttpRequestResponse;
-import burp.RecentModel;
 import burp.dbFileChooser;
 import config.ConfigPanel;
+import config.DataLoadManager;
 import dao.DomainDao;
 import dao.TargetDao;
 import dao.TitleDao;
@@ -55,6 +55,7 @@ public class GUIMain extends JFrame {
 	//temp variable to identify checked https用于记录已经做过HTTPS证书信息获取的httpService
 
 	private DomainProducer liveAnalysisTread;
+	private DataLoadManager dataLoadManager;
 
 	public DomainPanel getDomainPanel() {
 		return domainPanel;
@@ -125,6 +126,12 @@ public class GUIMain extends JFrame {
 		this.liveAnalysisTread = liveAnalysisTread;
 	}
 
+	public DataLoadManager getDataLoadManager() {
+		return dataLoadManager;
+	}
+	public void setDataLoadManager(DataLoadManager dataLoadManager) {
+		this.dataLoadManager = dataLoadManager;
+	}
 	public void startLiveCapture() {
 		liveAnalysisTread = new DomainProducer(this, liveinputQueue, 9999);//必须是9999，才能保证流量进程不退出。
 		liveAnalysisTread.start();
@@ -163,6 +170,8 @@ public class GUIMain extends JFrame {
 
 		setProjectMenu(new ProjectMenu(this));
 		getProjectMenu().Add();
+		
+		dataLoadManager = DataLoadManager.loadFromDisk(this);
 	}
 
 	/**
@@ -189,41 +198,7 @@ public class GUIMain extends JFrame {
 	}
 
 
-	public void LoadData(){
-		SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-			@Override
-			protected Map doInBackground() throws Exception {
-				LoadDataPrivate();
-				return null;
-			}
-			@Override
-			protected void done() {
-			}
-		};
-		worker.execute();
-	}
 
-	/**
-	 * 加载数据：
-	 * 1、先尝试用本地获取最近的配置文件记录。
-	 * 2、如果有就加载配置文件到ConfigPanel；如果无就使用默认的Config，无需进行第三步
-	 * 3、配置文件中包含了数据库文件位置，开始加载数据库文件。
-	 */
-	private boolean LoadDataPrivate(){
-		try {//这其中的异常会导致burp退出
-			String projectConfigFile = RecentModel.fetchRecent();//返回值可能为null
-			configPanel.loadConfigToGUI(projectConfigFile);//包含db文件的加载
-
-			String dbFilePath = configPanel.getLineConfig().getDbfilepath();
-			loadDataBase(dbFilePath);
-			return true;
-		} catch (Exception e) {
-			BurpExtender.getStdout().println("Loading Failed!");
-			e.printStackTrace();//输出到debug console
-			e.printStackTrace(BurpExtender.getStderr());
-			return false;
-		}
-	}
 
 	/**
 	 * 加载数据库文件：
@@ -247,7 +222,6 @@ public class GUIMain extends JFrame {
 			domainPanel.LoadDomainData(currentDBFile.toString());
 			titlePanel.loadData(currentDBFile.toString());
 
-			configPanel.getLineConfig().setDbfilepath(currentDBFile.getAbsolutePath());
 			displayProjectName();
 			System.out.println("==End Loading Data From: "+ dbFilePath+" "+Commons.getNowTimeString() +"==");//输出到debug console
 			BurpExtender.getStdout().println("==End Loading Data From: "+ dbFilePath+" "+Commons.getNowTimeString() +"==");

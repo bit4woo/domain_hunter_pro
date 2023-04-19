@@ -62,8 +62,6 @@ public class LineConfig {
 	
 	private boolean showItemsInOne = false;
 	private boolean enableElastic = false;
-	private String dbfilepath ="";
-	private History searchHistory;
 	private GUIMain gui;
 
 	/**
@@ -284,52 +282,11 @@ public class LineConfig {
 		return enableElastic;
 	}
 
-
-
 	public void setEnableElastic(boolean enableElastic) {
 		this.enableElastic = enableElastic;
 	}
 
 
-
-	public String getDbfilepath() {
-		return dbfilepath;
-	}
-
-	public void setDbfilepath(String dbfilepath) {
-		this.dbfilepath = dbfilepath;
-	}
-
-	public History getSearchHistory() {
-		return searchHistory;
-	}
-
-	public void setSearchHistory(History searchHistory) {
-		this.searchHistory = searchHistory;
-	}
-
-
-	public String saveToDisk() {
-		try {
-			gui.getConfigPanel().saveToConfigFromGUI();
-			this.setSearchHistory(History.getInstance());
-			//this.setDbfilepath(gui.getCurrentDBFile().getAbsolutePath());//加载数据库时有设置，无需再次获取。
-		} catch (Exception e1) {
-			e1.printStackTrace();
-			e1.printStackTrace(BurpExtender.getStderr());
-		}
-
-		try {
-			File localFile = new File(localdir+File.separator+gui.getCurrentDBFile().getName()+".config");
-			FileUtils.write(localFile, this.ToJson());
-			BurpExtender.getStdout().println("Tool Panel Config Saved To Disk!");
-			return localFile.toString();
-		} catch (IOException e) {
-			e.printStackTrace();
-			e.printStackTrace(BurpExtender.getStderr());
-			return null;
-		}
-	}
 
 	/**
 	 * 注意：这里获取到的lineConfig对象，其中的gui属性是null

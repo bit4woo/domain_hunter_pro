@@ -93,7 +93,7 @@ public class ConfigPanel extends JPanel{
 			lineConfig.setGui(gui);
 		}
 
-		History.setInstance(lineConfig.getSearchHistory());
+		//History.setInstance(lineConfig.getSearchHistory());
 
 		//这里的修改也会触发textFieldListener监听器。
 		//由于我们是多个组件共用一个保存逻辑，当前对一个组件设置值的时候，触发保存，从而导致整体数据的修改！！！
@@ -123,7 +123,7 @@ public class ConfigPanel extends JPanel{
 	}
 
 
-	public void saveToConfigFromGUI() {
+	public LineConfig getConfigFromGUI() {
 		lineConfig.setBrowserPath(BrowserPath.getText());
 		lineConfig.setDirSearchPath(textFieldDirSearch.getText());
 		lineConfig.setBruteDict(textFieldDirBruteDict.getText());
@@ -139,6 +139,7 @@ public class ConfigPanel extends JPanel{
 		lineConfig.setToolPanelText(ToolPanel.inputTextArea.getText());
 		lineConfig.setShowItemsInOne(showItemsInOne.isSelected());
 		lineConfig.setEnableElastic(rdbtnSaveTrafficTo.isSelected());
+		return lineConfig;
 	}	
 
 	public ConfigPanel(GUIMain gui) {
@@ -369,7 +370,7 @@ public class ConfigPanel extends JPanel{
 				if(fc.showOpenDialog(null)==JFileChooser.APPROVE_OPTION){
 					try {
 						File file=fc.getSelectedFile();
-						loadConfigToGUI(file.getAbsolutePath());
+						gui.getDataLoadManager().loadConfigToHunter(file.getAbsolutePath());
 					} catch (Exception e1) {
 						e1.printStackTrace(stderr);
 					}
@@ -378,7 +379,7 @@ public class ConfigPanel extends JPanel{
 		});
 		add(loadConfig, new MyGridBagLayout(++rowIndex,2));
 
-		JButton saveConfig = new JButton("Save Config");
+		JButton saveConfig = new JButton("Save Config As");
 		saveConfig.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				//saveConfigToBurp();
@@ -394,8 +395,8 @@ public class ConfigPanel extends JPanel{
 					if(!(file.getName().toLowerCase().endsWith(".json"))){
 						file=new File(fc.getCurrentDirectory(),file.getName()+".json");
 					}
-					saveToConfigFromGUI();
-					lineConfig.saveToDisk();//burp 用户目录下
+					gui.getDataLoadManager().saveCurrentConfig(null);//burp 用户目录下
+					gui.getDataLoadManager().saveCurrentConfig(file.getAbsolutePath());
 					String content= lineConfig.ToJson();
 					try{
 						if(file.exists()){
@@ -426,24 +427,21 @@ public class ConfigPanel extends JPanel{
 		@Override
 		public void removeUpdate(DocumentEvent e) {
 			if (listenerIsOn) {
-				saveToConfigFromGUI();
-				lineConfig.saveToDisk();
+				gui.getDataLoadManager().saveCurrentConfig(null);
 			}
 		}
 
 		@Override
 		public void insertUpdate(DocumentEvent e) {
 			if (listenerIsOn) {
-				saveToConfigFromGUI();
-				lineConfig.saveToDisk();
+				gui.getDataLoadManager().saveCurrentConfig(null);
 			}
 		}
 
 		@Override
 		public void changedUpdate(DocumentEvent arg0) {
 			if (listenerIsOn) {
-				saveToConfigFromGUI();
-				lineConfig.saveToDisk();
+				gui.getDataLoadManager().saveCurrentConfig(null);
 			}
 		}
 	}
