@@ -369,32 +369,6 @@ public class DomainPanel extends JPanel {
 		btnCrawl.setToolTipText("Crawl all subdomains recursively,This may take a long time and large Memory Usage!!!");
 		HeaderPanel.add(btnCrawl);
 
-
-		JButton btnZoneTransferCheck = new JButton("AXFR");
-		btnZoneTransferCheck.setToolTipText("Zone Transfer Check");
-		btnZoneTransferCheck.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-
-				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-					@Override
-					protected Map doInBackground() throws Exception {
-						stdout.println("~~~~~~~~~~~~~Zone Transfer Checking~~~~~~~~~~~~~");
-						btnZoneTransferCheck.setEnabled(false);
-						fetchTargetModel().ZoneTransferCheckAll();
-						return null;
-					}
-
-					@Override
-					protected void done() {
-						btnZoneTransferCheck.setEnabled(true);
-						stdout.println("~~~~~~~~~~~~~Zone Transfer Check Done~~~~~~~~~~~~~");
-					}
-				};
-				worker.execute();
-			}
-		});
-		HeaderPanel.add(btnZoneTransferCheck);
-
 		JButton btnBuckupDB = new JButton("Backup DB");
 		btnBuckupDB.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {

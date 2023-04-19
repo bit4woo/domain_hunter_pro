@@ -76,6 +76,23 @@ public class TargetEntryMenu extends JPopupMenu {
 			}
 		});
 
+		JMenuItem zoneTransferCheckAll = new JMenuItem(new AbstractAction("Do Zone Transfer Check(All)") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+					@Override
+					protected Map doInBackground() throws Exception {
+						rootDomainTable.getTargetModel().ZoneTransferCheckAll();
+						return null;
+					}
+					@Override
+					protected void done() {
+					}
+				};
+				worker.execute();
+			}
+		});
+
 		JMenuItem whoisItem = new JMenuItem(new AbstractAction("Whois") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -464,6 +481,8 @@ public class TargetEntryMenu extends JPopupMenu {
 		this.add(ASNInfoItem);
 		this.add(SearchEmailOnHunterIOItem);
 		this.add(zoneTransferCheck);
+		this.add(zoneTransferCheckAll);
+		
 		this.addSeparator();
 	}
 
