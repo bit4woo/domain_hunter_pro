@@ -27,7 +27,6 @@ import GUI.GUIMain;
 import GUI.MyGridBagLayout;
 import Tools.ToolPanel;
 import burp.BurpExtender;
-import title.search.History;
 
 public class ConfigPanel extends JPanel{
 	public volatile static boolean listenerIsOn = true;
@@ -145,7 +144,7 @@ public class ConfigPanel extends JPanel{
 	public ConfigPanel(GUIMain gui) {
 		this.gui = gui;
 		setLayout(new GridBagLayout());
-		JLabel lblNewLabel = new JLabel("Browser Path:");
+		JLabel lblBrowser = new JLabel("Browser Path:");
 
 		BrowserPath = new JTextField();
 		BrowserPath.setColumns(50);
@@ -172,12 +171,6 @@ public class ConfigPanel extends JPanel{
 		textFieldPortScanner.setColumns(50);
 		textFieldPortScanner.getDocument().addDocumentListener(new textFieldListener());
 
-		int rowIndex = 0;
-		add(lblNewLabel, new MyGridBagLayout(++rowIndex,1));
-		add(BrowserPath, new MyGridBagLayout(rowIndex,2));
-		add(lblPortScanner, new MyGridBagLayout(++rowIndex,1));
-		add(textFieldPortScanner, new MyGridBagLayout(rowIndex,2));
-
 
 		JLabel lblDirSearch = new JLabel("DirSearch Command:");
 		lblDirSearch.addMouseListener(new MouseAdapter() {
@@ -193,20 +186,12 @@ public class ConfigPanel extends JPanel{
 		textFieldDirSearch.setColumns(50);
 		textFieldDirSearch.getDocument().addDocumentListener(new textFieldListener());
 
-		add(lblDirSearch, new MyGridBagLayout(++rowIndex,1));
-		add(textFieldDirSearch, new MyGridBagLayout(rowIndex,2));
-
-
 		JLabel lblDirBruteDict = new JLabel("Dir Brute Dict:");
 
 		textFieldDirBruteDict = new JTextField();
 		textFieldDirBruteDict.setToolTipText("path of dict");
 		textFieldDirBruteDict.setColumns(50);
 		textFieldDirBruteDict.getDocument().addDocumentListener(new textFieldListener());
-
-		add(lblDirBruteDict, new MyGridBagLayout(++rowIndex,1));
-		add(textFieldDirBruteDict, new MyGridBagLayout(rowIndex,2));
-
 
 		JLabel lblElasticURL = new JLabel("Elastic URL:");
 
@@ -218,10 +203,6 @@ public class ConfigPanel extends JPanel{
 		//这个HintListener的操作，会触发DocumentListener的insertUpdate操作！
 		textFieldElasticURL.setColumns(50);
 
-		add(lblElasticURL, new MyGridBagLayout(++rowIndex,1));
-		add(textFieldElasticURL, new MyGridBagLayout(rowIndex,2));
-
-
 		JLabel lblDirElasticUserPass = new JLabel("Elastic Username Password:");
 
 		textFieldElasticUserPass = new JTextField();
@@ -231,18 +212,12 @@ public class ConfigPanel extends JPanel{
 		//textFieldElasticUserPass.addFocusListener(new JTextFieldHintListener(textFieldElasticUserPass,"elastic:changeme"));
 		textFieldElasticUserPass.setColumns(50);
 
-		add(lblDirElasticUserPass, new MyGridBagLayout(++rowIndex,1));
-		add(textFieldElasticUserPass, new MyGridBagLayout(rowIndex,2));
-
 		JLabel lblUploadAPIToken = new JLabel("Upload API Token:");
 
 		textFieldUploadApiToken = new JTextField();
 		textFieldUploadApiToken.setToolTipText("token of upload api");
 		textFieldUploadApiToken.getDocument().addDocumentListener(new textFieldListener());
 		textFieldUploadApiToken.setColumns(50);
-
-		add(lblUploadAPIToken, new MyGridBagLayout(++rowIndex,1));
-		add(textFieldUploadApiToken, new MyGridBagLayout(rowIndex,2));
 
 		JLabel lblUploadUrl = new JLabel("Upload URL:");
 
@@ -251,18 +226,12 @@ public class ConfigPanel extends JPanel{
 		textFieldUploadURL.setToolTipText("input upload url here");
 		textFieldUploadURL.getDocument().addDocumentListener(new textFieldListener());
 
-		add(lblUploadUrl, new MyGridBagLayout(++rowIndex,1));
-		add(textFieldUploadURL,new MyGridBagLayout(rowIndex,2));
-
 
 		JLabel lblFofaEmail = new JLabel("Fofa Email:");
 
 		textFieldFofaEmail = new JTextField();
 		textFieldFofaEmail.setColumns(30);
 		textFieldFofaEmail.getDocument().addDocumentListener(new textFieldListener());
-
-		add(lblFofaEmail, new MyGridBagLayout(++rowIndex,1));
-		add(textFieldFofaEmail,new MyGridBagLayout(rowIndex,2));
 
 
 		JLabel lblFofaKey = new JLabel("Fofa Key:");
@@ -271,18 +240,12 @@ public class ConfigPanel extends JPanel{
 		textFieldFofaKey.setColumns(30);
 		textFieldFofaKey.getDocument().addDocumentListener(new textFieldListener());
 
-		add(lblFofaKey, new MyGridBagLayout(++rowIndex,1));
-		add(textFieldFofaKey,new MyGridBagLayout(rowIndex,2));
-
 
 		JLabel lblQuakeAPIKey = new JLabel("quake.360.net API Key:");
 
 		textFieldQuakeAPIKey = new JTextField();
 		textFieldQuakeAPIKey.setColumns(30);
 		textFieldQuakeAPIKey.getDocument().addDocumentListener(new textFieldListener());
-
-		add(lblQuakeAPIKey, new MyGridBagLayout(++rowIndex,1));
-		add(textFieldQuakeAPIKey,new MyGridBagLayout(rowIndex,2));
 
 
 		JLabel lblHunterAPIKey = new JLabel("hunter.qianxin.com API Key:");
@@ -291,17 +254,11 @@ public class ConfigPanel extends JPanel{
 		textFieldHunterAPIKey.setColumns(30);
 		textFieldHunterAPIKey.getDocument().addDocumentListener(new textFieldListener());
 
-		add(lblHunterAPIKey, new MyGridBagLayout(++rowIndex,1));
-		add(textFieldHunterAPIKey,new MyGridBagLayout(rowIndex,2));
-
 
 		///////下方是JRadioButton/////
 
 		DisplayContextMenuOfBurp = new JRadioButton("Display Context Menu Of Burp");
 		DisplayContextMenuOfBurp.setSelected(true);
-
-		add(new JLabel(""), new MyGridBagLayout(++rowIndex,1));
-		add(DisplayContextMenuOfBurp, new MyGridBagLayout(rowIndex,2));
 
 
 
@@ -311,52 +268,31 @@ public class ConfigPanel extends JPanel{
 				lineConfig.setShowItemsInOne(showItemsInOne.isSelected());
 			}
 		});
-		add(new JLabel(""),new MyGridBagLayout(++rowIndex,1));
-		add(showItemsInOne, new MyGridBagLayout(rowIndex,2));
 
-		JLabel label_2 = new JLabel("");
 
 		ignoreHTTPS = new JRadioButton("Ignore HTTPS if HTTP is OK || Ignore HTTP if HTTPS is OK");
 		ignoreHTTPS.setSelected(false);
 
-		add(label_2, new MyGridBagLayout(++rowIndex,1));
-		add(ignoreHTTPS, new MyGridBagLayout(rowIndex,2));
 
-
-		JLabel label_3 = new JLabel("");
 
 		ignoreHTTPStaus500 = new JRadioButton("Ignore items which Status >= 500");
 		ignoreHTTPStaus500.setSelected(true);
 
-		add(label_3, new MyGridBagLayout(++rowIndex,1));
-		add(ignoreHTTPStaus500, new MyGridBagLayout(rowIndex,2));
 
 
-		JLabel label_4 = new JLabel("");
 
 		ignoreHTTPStaus400 = new JRadioButton("Ignore http Status 400(The plain HTTP request was sent to HTTPS port)");
 		ignoreHTTPStaus400.setSelected(true);
 
-		add(label_4, new MyGridBagLayout(++rowIndex,1));
-		add(ignoreHTTPStaus400, new MyGridBagLayout(rowIndex,2));
 
-		JLabel label_5 = new JLabel("");
 
 		ignoreWrongCAHost = new JRadioButton("Ignore Host that IP Address and Certificate Authority not match");
 		ignoreWrongCAHost.setSelected(false);
 
-		add(label_5, new MyGridBagLayout(++rowIndex,1));
-		add(ignoreWrongCAHost, new MyGridBagLayout(rowIndex,2));
 
 
 		rdbtnSaveTrafficTo = new JRadioButton("Save traffic to Elastic");
 		rdbtnSaveTrafficTo.setSelected(false);
-
-		JLabel label_6 = new JLabel("");
-
-		add(label_6, new MyGridBagLayout(++rowIndex,1));
-		add(rdbtnSaveTrafficTo, new MyGridBagLayout(rowIndex,2));
-
 
 		JButton loadConfig = new JButton("Load Config");
 		loadConfig.addActionListener(new ActionListener() {
@@ -377,14 +313,13 @@ public class ConfigPanel extends JPanel{
 				}
 			}
 		});
-		add(loadConfig, new MyGridBagLayout(++rowIndex,2));
 
 		JButton saveConfig = new JButton("Save Config As");
 		saveConfig.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				//saveConfigToBurp();
 				JFileChooser fc=new JFileChooser();
-				MyFileFilter filter = new MyFileFilter("config"); //文件后缀过滤器  
+				MyFileFilter filter = new MyFileFilter("json"); //文件后缀过滤器  
 				fc.addChoosableFileFilter(filter);
 				fc.setFileFilter(filter);
 				fc.setDialogTitle("Save Config To A File:");
@@ -417,8 +352,52 @@ public class ConfigPanel extends JPanel{
 				}
 
 			}});
-
-		add(saveConfig, new MyGridBagLayout(++rowIndex,2));
+		
+		int rowIndex = 0;
+		add(loadConfig, new MyGridBagLayout(++rowIndex,1));
+		add(saveConfig, new MyGridBagLayout(++rowIndex,1));
+		
+		add(lblBrowser, new MyGridBagLayout(++rowIndex,1));
+		add(BrowserPath, new MyGridBagLayout(rowIndex,2));
+		
+		add(lblPortScanner, new MyGridBagLayout(++rowIndex,1));
+		add(textFieldPortScanner, new MyGridBagLayout(rowIndex,2));
+		
+		add(lblDirSearch, new MyGridBagLayout(++rowIndex,1));
+		add(textFieldDirSearch, new MyGridBagLayout(rowIndex,2));
+		
+		add(lblDirBruteDict, new MyGridBagLayout(++rowIndex,1));
+		add(textFieldDirBruteDict, new MyGridBagLayout(rowIndex,2));
+		
+		add(lblElasticURL, new MyGridBagLayout(++rowIndex,1));
+		add(textFieldElasticURL, new MyGridBagLayout(rowIndex,2));
+		
+		add(lblDirElasticUserPass, new MyGridBagLayout(++rowIndex,1));
+		add(textFieldElasticUserPass, new MyGridBagLayout(rowIndex,2));
+		
+		add(lblUploadAPIToken, new MyGridBagLayout(++rowIndex,1));
+		add(textFieldUploadApiToken, new MyGridBagLayout(rowIndex,2));
+		
+		add(lblUploadUrl, new MyGridBagLayout(++rowIndex,1));
+		add(textFieldUploadURL,new MyGridBagLayout(rowIndex,2));
+		
+		add(lblFofaEmail, new MyGridBagLayout(++rowIndex,1));
+		add(textFieldFofaEmail,new MyGridBagLayout(rowIndex,2));
+		add(lblFofaKey, new MyGridBagLayout(++rowIndex,1));
+		add(textFieldFofaKey,new MyGridBagLayout(rowIndex,2));
+		
+		add(lblQuakeAPIKey, new MyGridBagLayout(++rowIndex,1));
+		add(textFieldQuakeAPIKey,new MyGridBagLayout(rowIndex,2));
+		add(lblHunterAPIKey, new MyGridBagLayout(++rowIndex,1));
+		add(textFieldHunterAPIKey,new MyGridBagLayout(rowIndex,2));
+		
+		add(DisplayContextMenuOfBurp, new MyGridBagLayout(rowIndex,2));
+		add(showItemsInOne, new MyGridBagLayout(rowIndex,2));
+		add(ignoreHTTPS, new MyGridBagLayout(rowIndex,2));
+		add(ignoreHTTPStaus500, new MyGridBagLayout(rowIndex,2));
+		add(ignoreHTTPStaus400, new MyGridBagLayout(rowIndex,2));
+		add(ignoreWrongCAHost, new MyGridBagLayout(rowIndex,2));
+		add(rdbtnSaveTrafficTo, new MyGridBagLayout(rowIndex,2));
 
 	}
 	//保存各个路径设置参数，自动保存的listener

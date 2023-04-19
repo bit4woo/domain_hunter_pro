@@ -182,14 +182,14 @@ public class ProjectMenu extends JMenu{
 		File file = gui.dbfc.dialog(false,".db");//通过保存对话指定文件，这会是一个空文件。
 		if (null != file) {
 			gui.getDomainPanel().setDomainResult(new DomainManager(gui));
-			gui.loadDataBase(file.toString());//然后加载，就是一个新的空项目了。
+			gui.getDataLoadManager().loadDbfileToHunter(file.toString());//然后加载，就是一个新的空项目了。
 		}
 	}
 
 	public void openDb() {
 		File file = gui.dbfc.dialog(true,".db");
 		if (null != file) {
-			gui.loadDataBase(file.toString());
+			gui.getDataLoadManager().loadDbfileToHunter(file.toString());
 		}
 	}
 

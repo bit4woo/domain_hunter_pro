@@ -127,7 +127,8 @@ public class GUIMain extends JFrame {
 	}
 
 	public DataLoadManager getDataLoadManager() {
-		return dataLoadManager;
+		//每次都应该从新从磁盘加载，因为它可能被更改过了
+		return dataLoadManager =DataLoadManager.loadFromDisk(this);
 	}
 	public void setDataLoadManager(DataLoadManager dataLoadManager) {
 		this.dataLoadManager = dataLoadManager;
@@ -171,7 +172,7 @@ public class GUIMain extends JFrame {
 		setProjectMenu(new ProjectMenu(this));
 		getProjectMenu().Add();
 		
-		dataLoadManager = DataLoadManager.loadFromDisk(this);
+		dataLoadManager = getDataLoadManager();
 	}
 
 	/**

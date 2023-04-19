@@ -17,7 +17,6 @@ import burp.BurpExtender;
 
 public class DataLoadManager {
 	private Stack recentProjectDatabaseFiles = new Stack();
-	private String recentToolPanelConfigPath = "";
 	private static GUIMain gui;
 	public static final String localdir = 
 			System.getProperty("user.home")+File.separator+".domainhunter"+File.separator+"DomainHunterProRecent";
@@ -34,15 +33,6 @@ public class DataLoadManager {
 	//getter setter为了序列化
 	public Stack getRecentProjectDatabaseFiles() {
 		return recentProjectDatabaseFiles;
-	}
-
-
-	public String getRecentToolPanelConfigPath() {
-		return recentToolPanelConfigPath;
-	}
-
-	public void setRecentToolPanelConfigPath(String recentToolPanelConfigPath) {
-		this.recentToolPanelConfigPath = recentToolPanelConfigPath;
 	}
 
 	public void setRecentProjectDatabaseFiles(Stack recentProjectDatabaseFiles) {
@@ -95,7 +85,7 @@ public class DataLoadManager {
 	///////以上是DataLoadManager的自我加载、序列化反序列化函数////////
 
 
-	///////以下是做为管理者应该具备的能力////////
+	///////以下是栈操作////////
 
 	private String popRecentDatabaseFile() {
 		if (recentProjectDatabaseFiles.isEmpty()) {
@@ -110,8 +100,11 @@ public class DataLoadManager {
 		recentProjectDatabaseFiles.push(dbfilename);
 	}
 
+	///////以下是做为管理者应该具备的能力////////
 	/**
 	 * 加载数据库到domain hunter
+	 * 如果指定的db文件路径为空，则加载最近加载过的db。
+	 * 如果最近加载记录仍然为空，则不执行任何操作。
 	 * @param dbFilePath
 	 */
 	public void loadDbfileToHunter(String dbFilePath) {
@@ -127,43 +120,32 @@ public class DataLoadManager {
 	}
 
 	/**
-	 * 
-	 * @param dbFilePath
-	 */
-	public void saveCurrentDB(String dbFilePath) {
-		if (dbFilePath == null || dbFilePath.equals("")) {
-			dbFilePath = gui.getCurrentDBFile().getAbsolutePath();
-		}
-		if (null == gui.getDomainPanel().getDomainResult()) return;//有数据才弹对话框指定文件位置。
-		gui.getDomainPanel().saveDomainDataToDB();//域名面板自动保存逻辑有点复杂，退出前再自动保存一次
-		saveToDisk();
-	}
-
-	/**
 	 * 加载tool panel config 到 domain hunter
+	 * 
+	 * 所有指定文件的加载，都复制到默认路径文件。这样实现多个项目共享一个配置。设想的常见的是一个电脑用户下，一般都应该只有一份配置。
+	 * 
 	 * @param ConfigFilePath
 	 */
 	public void loadConfigToHunter(String ConfigFilePath) {
 		if (ConfigFilePath == null || ConfigFilePath.equals("")) {
-			ConfigFilePath = recentToolPanelConfigPath;
-		}
-		if (ConfigFilePath == null || ConfigFilePath.equals("")) {
 			ConfigFilePath = defaultConfigFilename;
 		}
-
 		gui.configPanel.loadConfigToGUI(ConfigFilePath);
-		recentToolPanelConfigPath = ConfigFilePath;//保存最近的加载
-		saveToDisk();
+		if (new File(ConfigFilePath).exists() && !ConfigFilePath.equals(defaultConfigFilename)) {
+			try {
+				FileUtils.copyFile(new File(ConfigFilePath), new File(defaultConfigFilename));//会自动覆盖
+			} catch (IOException e) {
+				e.printStackTrace(BurpExtender.getStderr());
+			}
+		}
 	}
 
 	/**
-	 * 
+	 * 1、指定文件名，相当于save as
+	 * 2、未指定文件名，保存到默认路径文件
 	 * @param ConfigFilePath
 	 */
 	public void saveCurrentConfig(String ConfigFilePath) {
-		if (ConfigFilePath == null || ConfigFilePath.equals("")) {
-			ConfigFilePath = recentToolPanelConfigPath;
-		}
 		if (ConfigFilePath == null || ConfigFilePath.equals("")) {
 			ConfigFilePath = defaultConfigFilename;
 		}
@@ -177,8 +159,8 @@ public class DataLoadManager {
 			e.printStackTrace();
 			e.printStackTrace(BurpExtender.getStderr());
 		}
-		saveToDisk();
 	}
+	
 
 	public void loadDbAndConfig() {
 		SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
@@ -194,10 +176,4 @@ public class DataLoadManager {
 		};
 		worker.execute();
 	}
-
-	public void saveDbAndConfig() {
-		saveCurrentDB(null);
-		saveCurrentConfig(null);
-	}
-
 }

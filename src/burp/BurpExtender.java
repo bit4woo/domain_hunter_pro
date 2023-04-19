@@ -149,7 +149,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		}
 
 		try {
-			gui.getDataLoadManager().saveDbAndConfig();
+			gui.getDataLoadManager().saveCurrentConfig(null);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
