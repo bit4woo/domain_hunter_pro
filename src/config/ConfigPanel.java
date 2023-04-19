@@ -6,16 +6,22 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.io.PrintWriter;
 
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+
+import com.google.common.io.Files;
 
 import GUI.GUIMain;
 import GUI.MyGridBagLayout;
@@ -45,10 +51,10 @@ public class ConfigPanel extends JPanel{
 	public static JTextField textFieldElasticURL;
 	public static JTextField textFieldElasticUserPass;
 	public static JTextField textFieldUploadApiToken;
-	
+
 	public static JTextField textFieldFofaEmail;
 	public static JTextField textFieldFofaKey;
-	
+
 	public static JTextField textFieldQuakeAPIKey;
 	public static JTextField textFieldHunterAPIKey;
 
@@ -129,7 +135,7 @@ public class ConfigPanel extends JPanel{
 		lineConfig.setFofaKey(textFieldFofaKey.getText());
 		lineConfig.setQuakeAPIKey(textFieldQuakeAPIKey.getText());
 		lineConfig.setHunterAPIKey(textFieldHunterAPIKey.getText());
-		
+
 		lineConfig.setToolPanelText(ToolPanel.inputTextArea.getText());
 		lineConfig.setShowItemsInOne(showItemsInOne.isSelected());
 		lineConfig.setEnableElastic(rdbtnSaveTrafficTo.isSelected());
@@ -247,7 +253,7 @@ public class ConfigPanel extends JPanel{
 		add(lblUploadUrl, new MyGridBagLayout(++rowIndex,1));
 		add(textFieldUploadURL,new MyGridBagLayout(rowIndex,2));
 
-		
+
 		JLabel lblFofaEmail = new JLabel("Fofa Email:");
 
 		textFieldFofaEmail = new JTextField();
@@ -256,8 +262,8 @@ public class ConfigPanel extends JPanel{
 
 		add(lblFofaEmail, new MyGridBagLayout(++rowIndex,1));
 		add(textFieldFofaEmail,new MyGridBagLayout(rowIndex,2));
-		
-		
+
+
 		JLabel lblFofaKey = new JLabel("Fofa Key:");
 
 		textFieldFofaKey = new JTextField();
@@ -266,8 +272,8 @@ public class ConfigPanel extends JPanel{
 
 		add(lblFofaKey, new MyGridBagLayout(++rowIndex,1));
 		add(textFieldFofaKey,new MyGridBagLayout(rowIndex,2));
-		
-		
+
+
 		JLabel lblQuakeAPIKey = new JLabel("quake.360.net API Key:");
 
 		textFieldQuakeAPIKey = new JTextField();
@@ -276,8 +282,8 @@ public class ConfigPanel extends JPanel{
 
 		add(lblQuakeAPIKey, new MyGridBagLayout(++rowIndex,1));
 		add(textFieldQuakeAPIKey,new MyGridBagLayout(rowIndex,2));
-		
-		
+
+
 		JLabel lblHunterAPIKey = new JLabel("hunter.qianxin.com API Key:");
 
 		textFieldHunterAPIKey = new JTextField();
@@ -286,7 +292,7 @@ public class ConfigPanel extends JPanel{
 
 		add(lblHunterAPIKey, new MyGridBagLayout(++rowIndex,1));
 		add(textFieldHunterAPIKey,new MyGridBagLayout(rowIndex,2));
-		
+
 
 		///////下方是JRadioButton/////
 
@@ -350,6 +356,68 @@ public class ConfigPanel extends JPanel{
 		add(label_6, new MyGridBagLayout(++rowIndex,1));
 		add(rdbtnSaveTrafficTo, new MyGridBagLayout(rowIndex,2));
 
+
+		JButton loadConfig = new JButton("Load Config");
+		loadConfig.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				JFileChooser fc=new JFileChooser(LineConfig.localdir);
+				MyFileFilter filter = new MyFileFilter("config"); //文件后缀过滤器  
+				fc.addChoosableFileFilter(filter);
+				fc.setFileFilter(filter);
+				fc.setDialogTitle("Chose Config File");
+				fc.setDialogType(JFileChooser.CUSTOM_DIALOG);
+				if(fc.showOpenDialog(null)==JFileChooser.APPROVE_OPTION){
+					try {
+						File file=fc.getSelectedFile();
+						loadConfigToGUI(file.getAbsolutePath());
+					} catch (Exception e1) {
+						e1.printStackTrace(stderr);
+					}
+				}
+			}
+		});
+		add(loadConfig, new MyGridBagLayout(++rowIndex,2));
+
+		JButton saveConfig = new JButton("Save Config");
+		saveConfig.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				//saveConfigToBurp();
+				JFileChooser fc=new JFileChooser();
+				MyFileFilter filter = new MyFileFilter("config"); //文件后缀过滤器  
+				fc.addChoosableFileFilter(filter);
+				fc.setFileFilter(filter);
+				fc.setDialogTitle("Save Config To A File:");
+				fc.setDialogType(JFileChooser.SAVE_DIALOG);
+				if(fc.showSaveDialog(null)==JFileChooser.APPROVE_OPTION){
+					File file=fc.getSelectedFile();
+
+					if(!(file.getName().toLowerCase().endsWith(".json"))){
+						file=new File(fc.getCurrentDirectory(),file.getName()+".json");
+					}
+					saveToConfigFromGUI();
+					lineConfig.saveToDisk();//burp 用户目录下
+					String content= lineConfig.ToJson();
+					try{
+						if(file.exists()){
+							int result = JOptionPane.showConfirmDialog(null,"Are you sure to overwrite this file ?");
+							if (result == JOptionPane.YES_OPTION) {
+								file.createNewFile();
+							}else {
+								return;
+							}
+						}else {
+							file.createNewFile();
+						}
+
+						Files.write(content.getBytes(), file);
+					}catch(Exception e1){
+						e1.printStackTrace(stderr);
+					}
+				}
+
+			}});
+
+		add(saveConfig, new MyGridBagLayout(++rowIndex,2));
 
 	}
 	//保存各个路径设置参数，自动保存的listener

@@ -20,7 +20,7 @@ public class LineConfig {
 	private static int MaximumEntries = 1000;//控制显示的条目数，减少内存占用
 
 	//用于本地保存的路径
-	private static final String localdir = 
+	public static final String localdir = 
 			System.getProperty("user.home")+File.separator+".domainhunter";
 
 	//跑title时根据各字段过滤某些条目
