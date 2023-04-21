@@ -170,7 +170,7 @@ public class Commons {
 	 */
 	public static String detectCharset(byte[] requestOrResponse){
 		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
-		Getter getter = new Getter(helpers);
+		HelperPlus getter = new HelperPlus(helpers);
 		boolean isRequest = true;
 		if (new String(requestOrResponse).startsWith("HTTP/")) {//response
 			isRequest = false;
