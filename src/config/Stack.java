@@ -24,6 +24,10 @@ public class Stack {
         return t;
     }
 
+    /**
+     * push时需要删除旧的记录
+     * @param t
+     */
     public void push(String t) {
         if (stack.contains(t)) {
             stack.remove(t);

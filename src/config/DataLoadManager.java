@@ -115,6 +115,22 @@ public class DataLoadManager {
 			return;
 		}
 		gui.loadDataBase(dbFilePath);
+		//pushRecentDatabaseFile(dbFilePath);//保存最近的加载
+		saveToDisk();
+	}
+	
+	
+	/**
+	 * 单纯用于记录最近情况
+	 * @param dbFilePath
+	 */
+	public void unloadDbfile(String dbFilePath) {
+		if (dbFilePath == null || dbFilePath.equals("")) {
+			dbFilePath =gui.getCurrentDBFile().getAbsolutePath();
+		}
+		if (dbFilePath == null || dbFilePath.equals("")) {
+			return;
+		}
 		pushRecentDatabaseFile(dbFilePath);//保存最近的加载
 		saveToDisk();
 	}

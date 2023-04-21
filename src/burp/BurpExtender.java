@@ -134,6 +134,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 
 	@Override
 	public void extensionUnloaded() {
+		gui.getDataLoadManager().unloadDbfile(null);
 		gui.stopLiveCapture();
 
 		try {//避免这里错误导致保存逻辑的失效

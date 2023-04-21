@@ -139,7 +139,7 @@ public class GrepUtils {
 	 * @return
 	 */
 	public static List<String> grepURL(String httpResponse) {
-		httpResponse = httpResponse.toLowerCase();
+		//httpResponse = httpResponse.toLowerCase();URL是大小写敏感的。这会对URL有影响，造成服务端不识别
 		Set<String> URLs = new HashSet<>();
 
 		String[] lines = httpResponse.split("\r\n");
@@ -199,7 +199,7 @@ public class GrepUtils {
 	 * @return
 	 */
 	public static List<String> grepURL1(String httpResponse) {
-		httpResponse = httpResponse.toLowerCase();
+		//httpResponse = httpResponse.toLowerCase();//URL是大小写敏感的。这会对URL有影响，造成服务端不识别
 		Set<String> URLs = new HashSet<>();
 
 		String[] lines = httpResponse.split("\r\n");
