@@ -415,7 +415,7 @@ public class ToolPanel extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (inputTextAreaChanged) {//default is true
-					urls = Arrays.asList(guiMain.getConfigPanel().getLineConfig().getToolPanelText().replaceAll(" ", "").replaceAll("\r\n", "\n").split("\n"));
+					urls = Commons.getLinesFromTextArea(inputTextArea);
 					totalNumber = urls.size();
 					left = urls.size();
 					it = urls.iterator();
@@ -462,7 +462,7 @@ public class ToolPanel extends JPanel {
 					@Override
 					protected Map doInBackground() throws Exception {
 						ArrayList<String> result = new ArrayList<String>();
-						List<String> urls = Arrays.asList(guiMain.getConfigPanel().getLineConfig().getToolPanelText().replaceAll(" ", "").replaceAll("\r\n", "\n").split("\n"));
+						List<String> urls = Commons.getLinesFromTextArea(inputTextArea);
 						Iterator<String> it = urls.iterator();
 						while (it.hasNext()) {
 							String url = it.next();
@@ -495,7 +495,7 @@ public class ToolPanel extends JPanel {
 					@Override
 					protected Map doInBackground() throws Exception {
 						ArrayList<String> result = new ArrayList<String>();
-						List<String> urls = Arrays.asList(guiMain.getConfigPanel().getLineConfig().getToolPanelText().replaceAll(" ", "").replaceAll("\r\n", "\n").split("\n"));
+						List<String> urls = Commons.getLinesFromTextArea(inputTextArea);
 						Iterator<String> it = urls.iterator();
 						while (it.hasNext()) {
 							String url = it.next();
@@ -528,7 +528,7 @@ public class ToolPanel extends JPanel {
 					@Override
 					protected Map doInBackground() throws Exception {
 						ArrayList<String> result = new ArrayList<String>();
-						List<String> urls = Arrays.asList(guiMain.getConfigPanel().getLineConfig().getToolPanelText().replaceAll(" ", "").replaceAll("\r\n", "\n").split("\n"));
+						List<String> urls = Commons.getLinesFromTextArea(inputTextArea);
 						Iterator<String> it = urls.iterator();
 						while (it.hasNext()) {
 							String url = it.next();
@@ -562,7 +562,7 @@ public class ToolPanel extends JPanel {
 					@Override
 					protected Map doInBackground() throws Exception {
 						try {
-							List<String> urls = Arrays.asList(guiMain.getConfigPanel().getLineConfig().getToolPanelText().replaceAll(" ", "").replaceAll("\r\n", "\n").split("\n"));
+							List<String> urls = Commons.getLinesFromTextArea(inputTextArea);
 							Iterator<String> it = urls.iterator();
 							while (it.hasNext()) {
 								String url = it.next();
@@ -598,7 +598,7 @@ public class ToolPanel extends JPanel {
 					@Override
 					protected Map doInBackground() throws Exception {
 						try {
-							List<String> domains = Arrays.asList(guiMain.getConfigPanel().getLineConfig().getToolPanelText().replaceAll(" ", "").replaceAll("\r\n", "\n").split("\n"));
+							List<String> domains = Commons.getLinesFromTextArea(inputTextArea);
 							Iterator<String> it = domains.iterator();
 							while (it.hasNext()) {
 								String domain = it.next();
