@@ -10,6 +10,9 @@ import java.io.IOException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JTextArea;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Caret;
+import javax.swing.text.Document;
 
 import org.apache.commons.io.FileUtils;
 
@@ -22,6 +25,9 @@ public class SuperJTextArea extends JTextArea{
 	private boolean useTempFile;
 	private boolean supportFileSystem;
 	private boolean contentIsFileOrPath =false;
+	private int location=-1;
+	public static int maxLength = 100000;
+	
 	final String tempFilePath = FileUtils.getTempDirectory()+File.separator+"ContentIsInTmpFile.txt"; 
 
 	/**
@@ -49,6 +55,35 @@ public class SuperJTextArea extends JTextArea{
 	public void setContentIsFileOrPath(boolean contentIsFileOrPath) {
 		this.contentIsFileOrPath = contentIsFileOrPath;
 	}
+	
+	
+	/**
+	 * paste时，当选中了其中部分数据，应该使用替换逻辑
+	 * @param pasteData
+	 * @return
+	 */
+    private String insertPaste(String pasteData) {
+        Caret caret = getCaret();
+        int p0 = Math.min(caret.getDot(), caret.getMark());
+        int p1 = Math.max(caret.getDot(), caret.getMark());
+        
+        try {
+            Document doc = getDocument();
+            String prefix = doc.getText(0, p0);
+            //BurpExtender.getStderr().println(prefix);
+            //String txt = doc.getText(p0, p1 - p0);
+            String suffix = doc.getText(p1,doc.getLength()-p1);
+            //BurpExtender.getStderr().println(suffix);
+            //BurpExtender.getStderr().println(prefix+pasteData+suffix);
+            location = p0+pasteData.length();
+            
+            return prefix+pasteData+suffix;
+            
+        } catch (BadLocationException e) {
+        	e.printStackTrace(BurpExtender.getStderr());
+        	return pasteData;
+        }
+    }
 
 	@Override
 	public void paste() {
@@ -58,9 +93,15 @@ public class SuperJTextArea extends JTextArea{
 		try {
 			Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 			String data = (String) clipboard.getData(DataFlavor.stringFlavor);
+			data = insertPaste(data);
 			setText(data);
+			if (location>-1){//设置光标位置
+	            setSelectionStart(location);
+	            setSelectionEnd(location);
+	            location =-1;
+			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			e.printStackTrace(BurpExtender.getStderr());
 		}
 	}
 
@@ -72,7 +113,7 @@ public class SuperJTextArea extends JTextArea{
 
 			if (useTempFile) {
 				//避免大文件卡死整个burp
-				if (Text.length() >= 10000) {
+				if (Text.length() >= maxLength) {
 					File tmpFile = new File(tempFilePath);
 					FileUtils.writeByteArrayToFile(tmpFile, Text.getBytes());
 					Text = tmpFile.getAbsolutePath();
@@ -123,7 +164,7 @@ public class SuperJTextArea extends JTextArea{
 			if (content.length()<=500) {
 				return content;
 			} else {
-				return content.substring(0,101);
+				return content.substring(0,501);
 			}
 		} catch (Exception e) {
 			e.printStackTrace(BurpExtender.getStderr());
