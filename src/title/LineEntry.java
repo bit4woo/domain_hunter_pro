@@ -27,8 +27,8 @@ import burp.HelperPlus;
 import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
 import burp.IHttpService;
-import burp.IPAddressUtils;
 import burp.IResponseInfo;
+import utils.IPAddressUtils;
 
 public class LineEntry {
 	private static final Logger log=LogManager.getLogger(LineEntry.class);

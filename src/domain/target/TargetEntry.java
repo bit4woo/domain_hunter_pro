@@ -15,8 +15,8 @@ import com.google.common.net.InternetDomainName;
 
 import burp.BurpExtender;
 import burp.Commons;
-import burp.DomainNameUtils;
-import burp.IPAddressUtils;
+import utils.DomainNameUtils;
+import utils.IPAddressUtils;
 
 public class TargetEntry {
 	private String target = "";//根域名、网段、或者IP

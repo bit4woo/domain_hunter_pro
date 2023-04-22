@@ -29,13 +29,14 @@ import GUI.LineEntryMenuForBurp;
 import Tools.ToolPanel;
 import burp.BurpExtender;
 import burp.Commons;
-import burp.DomainNameUtils;
 import burp.Getter;
 import burp.IBurpExtenderCallbacks;
-import burp.IPAddressUtils;
 import burp.SystemUtils;
 import title.search.SearchNumbericDork;
 import title.search.SearchStringDork;
+import utils.DomainNameUtils;
+import utils.IPAddressUtils;
+import utils.PortScanUtils;
 
 public class LineEntryMenu extends JPopupMenu {
 
@@ -578,20 +579,10 @@ public class LineEntryMenu extends JPopupMenu {
 			public void actionPerformed(ActionEvent e) {
 				try{
 					Set<String> IPs = lineTable.getLineTableModel().getIPs(modleRows);
-					String text = String.join(System.lineSeparator(), IPs);
-
 					String nmapPath = guiMain.getConfigPanel().getLineConfig().getNmapPath();
-					//线判断masscan,因为可能存在masscan 和nmap联合使用的情况，比如用xargs？
-					if (nmapPath.contains("masscan")) {
-						text = String.join(",", IPs);
-					}else if (nmapPath.contains("nmap")) {
-						text = String.join(" ", IPs);
-					}else {
-						text = String.join(" ", IPs); //比如调用了masscan和nmap的python脚本
-					}
-					String command = nmapPath.replace("{host}", text.trim());
-					stdout.println(command);
-
+					
+					String command = PortScanUtils.genCmd(nmapPath, IPs);
+					
 					String filepath = SystemUtils.genBatchFile(command, "Nmap-latest-command.bat");
 					SystemUtils.runBatchFile(filepath);
 				}
@@ -613,21 +604,9 @@ public class LineEntryMenu extends JPopupMenu {
 			public void actionPerformed(ActionEvent e) {
 				try{
 					Set<String> IPs = lineTable.getLineTableModel().getIPs(modleRows);
-					String text = String.join(System.lineSeparator(), IPs);
 
 					String nmapPath = guiMain.getConfigPanel().getLineConfig().getNmapPath();
-					//线判断masscan,因为可能存在masscan 和nmap联合使用的情况，比如用xargs？
-					if (nmapPath.contains("masscan")) {
-						text = String.join(",", IPs);
-					}else if (nmapPath.contains("nmap")) {
-						text = String.join(" ", IPs);
-					}else {
-						text = String.join(" ", IPs); //比如调用了masscan和nmap的python脚本
-					}
-					String command = nmapPath.replace("{host}", text.trim());
-					stdout.println(command);
-
-					SystemUtils.writeToClipboard(command);
+					PortScanUtils.genCmdAndCopy(nmapPath, IPs);
 				}
 				catch (Exception e1)
 				{

@@ -9,15 +9,15 @@ import java.util.Set;
 import GUI.GUIMain;
 import burp.BurpExtender;
 import burp.Commons;
-import burp.DomainNameUtils;
 import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
 import burp.IHttpService;
-import burp.IPAddressUtils;
 import config.ConfigPanel;
 import config.LineConfig;
 import domain.CertInfo;
 import domain.DomainManager;
+import utils.DomainNameUtils;
+import utils.IPAddressUtils;
 
 public class TempLineEntry {
 	public static final String NotTargetBaseOnCertDomains = "NotTargetBaseOnCertDomains";

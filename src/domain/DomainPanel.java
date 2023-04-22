@@ -51,7 +51,6 @@ import burp.IBurpExtenderCallbacks;
 import burp.IHttpRequestResponse;
 import burp.IHttpService;
 import burp.IScanIssue;
-import burp.GrepUtils;
 import config.ConfigPanel;
 import dao.DomainDao;
 import dao.TargetDao;
@@ -61,6 +60,7 @@ import domain.target.TargetTable;
 import domain.target.TargetTableModel;
 import thread.ThreadSearhDomain;
 import toElastic.VMP;
+import utils.GrepUtils;
 
 /*
  *注意，所有直接对DomainObject中数据的修改，都不会触发该tableChanged监听器。

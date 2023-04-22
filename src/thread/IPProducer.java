@@ -7,10 +7,10 @@ import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 
 import burp.BurpExtender;
-import burp.DomainNameUtils;
 import burp.IBurpExtenderCallbacks;
 import burp.IExtensionHelpers;
-import burp.IPAddressUtils;
+import utils.DomainNameUtils;
+import utils.IPAddressUtils;
 
 /**
  * 执行DNS解析的线程

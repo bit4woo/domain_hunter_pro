@@ -1,4 +1,4 @@
-package burp;
+package utils;
 
 import inet.ipaddr.AddressStringException;
 import inet.ipaddr.IPAddress;
@@ -6,6 +6,8 @@ import inet.ipaddr.IPAddressSeqRange;
 import inet.ipaddr.IPAddressString;
 import org.apache.commons.net.util.SubnetUtils;
 import org.apache.commons.net.util.SubnetUtils.SubnetInfo;
+
+import burp.BurpExtender;
 
 import java.util.*;
 

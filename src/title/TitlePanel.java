@@ -27,11 +27,11 @@ import javax.swing.table.TableRowSorter;
 import GUI.GUIMain;
 import burp.BurpExtender;
 import burp.IMessageEditor;
-import burp.IPAddressUtils;
 import dao.TitleDao;
 import thread.ThreadGetSubnet;
 import thread.ThreadGetTitleWithForceStop;
 import title.search.SearchTextField;
+import utils.IPAddressUtils;
 
 public class TitlePanel extends JPanel {
 

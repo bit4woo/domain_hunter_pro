@@ -6,8 +6,8 @@ import java.util.HashMap;
 import com.github.kevinsawicki.http.HttpRequest;
 
 import GUI.GUIMain;
-import burp.IPAddressUtils;
 import title.LineEntry;
+import utils.IPAddressUtils;
 
 public class VMP {
 

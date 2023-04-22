@@ -1,7 +1,8 @@
 package ASN;
 
 import burp.BurpExtender;
-import burp.IPAddressUtils;
+import utils.IPAddressUtils;
+
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import com.github.kevinsawicki.http.HttpRequest;

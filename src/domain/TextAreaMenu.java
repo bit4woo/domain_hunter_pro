@@ -10,6 +10,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;
@@ -22,9 +23,10 @@ import Tools.DomainComparator;
 import Tools.LengthComparator;
 import burp.BurpExtender;
 import burp.Commons;
-import burp.DomainNameUtils;
-import burp.IPAddressUtils;
 import title.search.SearchStringDork;
+import utils.DomainNameUtils;
+import utils.IPAddressUtils;
+import utils.PortScanUtils;
 
 public class TextAreaMenu extends JPopupMenu {
 
@@ -312,10 +314,27 @@ public class TextAreaMenu extends JPopupMenu {
 		});
 
 		SortDomain.setToolTipText("search something");
+		
+		
+		
+		JMenuItem genPortScanCmd = new JMenuItem(new AbstractAction("Copy Port Scan Cmd") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try{
+					String nmapPath = domainPanel.getGuiMain().getConfigPanel().getLineConfig().getNmapPath();
+					PortScanUtils.genCmdAndCopy(nmapPath, selectedItems);
+				}
+				catch (Exception e1)
+				{
+					e1.printStackTrace(stderr);
+				}
+			}
+		});
 
 		this.add(addTosubdomain);
 		this.addSeparator();
 		//对选中内容起作用的菜单
+		this.add(genPortScanCmd);
 		this.add(whoisItem);
 		this.add(ASNInfoItem);
 		this.add(googleSearchItem);

@@ -48,18 +48,15 @@ import javax.swing.event.DocumentListener;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.text.StringEscapeUtils;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
 import GUI.GUIMain;
 import burp.BurpExtender;
 import burp.Commons;
-import burp.DomainNameUtils;
-import burp.GrepUtils;
-import burp.IPAddressUtils;
 import config.ConfigPanel;
 import domain.CertInfo;
 import title.WebIcon;
+import utils.DomainNameUtils;
+import utils.GrepUtils;
+import utils.IPAddressUtils;
 
 /**
  * 所有配置的修改，界面的操作，都立即写入LineConfig对象，如有必要保存到磁盘，再调用一次SaveConfig函数，思路要清晰
@@ -84,6 +81,14 @@ public class ToolPanel extends JPanel {
 
 
 	private GUIMain guiMain;
+
+	public GUIMain getGuiMain() {
+		return guiMain;
+	}
+
+	public void setGuiMain(GUIMain guiMain) {
+		this.guiMain = guiMain;
+	}
 
 	/**
 	 * Launch the application.
@@ -146,12 +151,12 @@ public class ToolPanel extends JPanel {
 		JScrollPanelWithHeaderForTool InputPanel = new JScrollPanelWithHeaderForTool("Input","",true,true);
 		inputTextArea = InputPanel.getTextArea();
 		inputTextArea.getDocument().addDocumentListener(new textAreaListener(inputTextArea));
-		inputTextArea.addMouseListener(new TextAreaMouseListener(inputTextArea));
+		inputTextArea.addMouseListener(new TextAreaMouseListener(guiMain,inputTextArea));
 
 
 		JScrollPanelWithHeaderForTool OutPanel = new JScrollPanelWithHeaderForTool("OutPut","",false,false);
 		outputTextArea = OutPanel.getTextArea();
-		outputTextArea.addMouseListener(new TextAreaMouseListener(outputTextArea));
+		outputTextArea.addMouseListener(new TextAreaMouseListener(guiMain,outputTextArea));
 
 		JPanel buttonPanel = createButtons();
 

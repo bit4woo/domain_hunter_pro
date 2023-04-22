@@ -1,4 +1,4 @@
-package burp;
+package utils;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -21,6 +21,9 @@ import org.xbill.DNS.SimpleResolver;
 import org.xbill.DNS.ZoneTransferIn;
 
 import com.google.common.net.InternetDomainName;
+
+import burp.BurpExtender;
+import burp.Commons;
 
 public class DomainNameUtils {
 

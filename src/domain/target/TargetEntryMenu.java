@@ -21,10 +21,10 @@ import GUI.GUIMain;
 import assetSearch.Search;
 import burp.BurpExtender;
 import burp.Commons;
-import burp.DomainNameUtils;
-import burp.GrepUtils;
-import burp.IPAddressUtils;
 import config.ConfigPanel;
+import utils.DomainNameUtils;
+import utils.GrepUtils;
+import utils.IPAddressUtils;
 
 public class TargetEntryMenu extends JPopupMenu {
 

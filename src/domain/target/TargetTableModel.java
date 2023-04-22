@@ -18,12 +18,12 @@ import com.google.gson.Gson;
 import GUI.GUIMain;
 import burp.BurpExtender;
 import burp.Commons;
-import burp.DomainNameUtils;
-import burp.IPAddressUtils;
 import burp.IntArraySlice;
 import domain.DomainManager;
 import title.IndexedHashMap;
 import title.LineEntry;
+import utils.DomainNameUtils;
+import utils.IPAddressUtils;
 
 public class TargetTableModel extends AbstractTableModel {
 

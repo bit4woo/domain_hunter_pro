@@ -1,12 +1,10 @@
 package ASN;
 
-//[{"prefix":"8.8.8.0/24","geo":"US","ip":"8.8.8.8","asname_short":"AS15169","asn":"15169","asname_long":"GOOGLE LLC"}]
-
-import burp.IPAddressUtils;
 import inet.ipaddr.AddressStringException;
 import inet.ipaddr.IPAddress;
 import inet.ipaddr.IPAddressSeqRange;
 import inet.ipaddr.IPAddressString;
+import utils.IPAddressUtils;
 
 import java.util.List;
 

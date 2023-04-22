@@ -1,6 +1,8 @@
-package burp;
+package utils;
 
 import Tools.PatternsFromAndroid;
+import burp.Commons;
+
 import org.apache.commons.text.StringEscapeUtils;
 
 import java.net.URLDecoder;

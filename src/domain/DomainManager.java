@@ -15,9 +15,9 @@ import com.google.common.net.InternetDomainName;
 import GUI.GUIMain;
 import Tools.DomainComparator;
 import burp.BurpExtender;
-import burp.GrepUtils;
 import domain.target.TargetEntry;
 import domain.target.TargetTableModel;
+import utils.GrepUtils;
 
 /*
  *注意，所有直接对DomainObject中数据的修改，都不会触发该tableChanged监听器。

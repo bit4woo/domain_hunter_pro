@@ -16,15 +16,15 @@ import javax.swing.table.AbstractTableModel;
 import GUI.GUIMain;
 import burp.BurpExtender;
 import burp.Commons;
-import burp.DomainNameUtils;
 import burp.Getter;
 import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
 import burp.IHttpService;
 import burp.IMessageEditorController;
-import burp.IPAddressUtils;
 import burp.IntArraySlice;
 import dao.TitleDao;
+import utils.DomainNameUtils;
+import utils.IPAddressUtils;
 
 /**
  * 关于firexxx，目的是通知各个modelListener。默认的listener中，有一种的目的是：当数据发生变化时，更新GUI的显示。

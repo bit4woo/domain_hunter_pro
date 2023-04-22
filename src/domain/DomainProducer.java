@@ -7,7 +7,6 @@ import java.util.concurrent.BlockingQueue;
 import GUI.GUIMain;
 import burp.BurpExtender;
 import burp.Commons;
-import burp.GrepUtils;
 import burp.IBurpExtenderCallbacks;
 import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
@@ -15,6 +14,7 @@ import burp.IHttpService;
 import config.ConfigPanel;
 import title.LineEntry;
 import toElastic.ElasticClient;
+import utils.GrepUtils;
 
 public class DomainProducer extends Thread {//Producer do
 	private final BlockingQueue<IHttpRequestResponse> inputQueue;//use to store messageInfo
