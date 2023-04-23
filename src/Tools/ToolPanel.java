@@ -428,7 +428,7 @@ public class ToolPanel extends JPanel {
 					inputTextAreaChanged = false;
 				}
 				try {
-					int i = 10;
+					int i = 50;
 					while (i > 0 && it.hasNext()) {
 						String url = it.next();
 						if (!url.toLowerCase().startsWith("https://") &&
