@@ -242,6 +242,7 @@ public class ToolPanel extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				String content = inputTextArea.getText();
+				//stdout.println(content);
 				if (null != content) {
 					Set<String> domains = GrepUtils.grepDomain(content);
 					ArrayList<String> tmpList = new ArrayList<String>(domains);

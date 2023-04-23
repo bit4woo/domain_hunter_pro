@@ -142,7 +142,7 @@ public class SuperJTextArea extends JTextArea{
 			}
 		}
 
-		if (supportFileSystem && contentIsFileOrPath) {
+		if (contentIsFileOrPath) {
 			return readDirOrFileContent(content);
 		}
 
@@ -201,7 +201,7 @@ public class SuperJTextArea extends JTextArea{
 	 * @param content
 	 * @return
 	 */
-	public String readDirOrFileContent(String content) {
+	public static String readDirOrFileContent(String content) {
 		String result = "";
 
 		//FilenameFilter filter = new SuffixFileFilter(".txt",".csv",".json",".js");
@@ -209,13 +209,8 @@ public class SuperJTextArea extends JTextArea{
 			File fileOrPath = new File(content);
 			if (fileOrPath.isDirectory()) {
 				for (File item:fileOrPath.listFiles()) {
-					if (item.canRead()) {
-						try {
-							result = result + System.lineSeparator() + FileUtils.readFileToString(item);
-						} catch (Exception e) {
-						}
-					}
-				};
+					result = result+readDirOrFileContent(item.getAbsolutePath());
+				}
 			}else {
 				try {
 					result = result + System.lineSeparator() + FileUtils.readFileToString(fileOrPath);
@@ -244,5 +239,8 @@ public class SuperJTextArea extends JTextArea{
 
 	}
 
-
+	public static void main(String[] args) {
+		String aa= "";
+		System.out.println(readDirOrFileContent(aa));
+	}
 };

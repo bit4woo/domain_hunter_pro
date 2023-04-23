@@ -185,7 +185,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		if ((toolFlag == IBurpExtenderCallbacks.TOOL_PROXY ||
 				toolFlag == IBurpExtenderCallbacks.TOOL_INTRUDER ||
 				toolFlag == IBurpExtenderCallbacks.TOOL_REPEATER)
-				&& !messageIsRequest && messageInfo != null) {
+				&& !messageIsRequest && gui != null) {
 			gui.getLiveinputQueue().add(messageInfo);
 		}
 	}
