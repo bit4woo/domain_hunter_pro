@@ -23,6 +23,8 @@ import burp.IHttpService;
 import burp.IMessageEditorController;
 import burp.IntArraySlice;
 import dao.TitleDao;
+import domain.DomainManager;
+import domain.target.TargetTableModel;
 import utils.DomainNameUtils;
 import utils.IPAddressUtils;
 
@@ -537,6 +539,29 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 				titleDao.deleteTitleByUrl(url);//写入数据库
 				stdout.println("!!! "+url+" deleted");
 				this.fireTableRowsDeleted(index,index);
+			} catch (Exception e) {
+				e.printStackTrace(stderr);
+			}
+		}
+	}
+	
+	public void removeRowsNotInTargets() {
+		TargetTableModel model = guiMain.getDomainPanel().getTargetTable().getTargetModel();
+		
+		for (int i=lineEntries.size()-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
+			try {
+				LineEntry entry = lineEntries.get(i);
+				if (entry == null) {
+					throw new ArrayIndexOutOfBoundsException("can't find item with index "+i);
+				}
+				String url = entry.getUrl();
+				String host = entry.getHost();
+				if (model.assetType(host) == DomainManager.USELESS && entry.getEntrySource().equals(LineEntry.Source_Certain)) {
+					lineEntries.remove(i);
+					titleDao.deleteTitleByUrl(url);//写入数据库
+					stdout.println("!!! "+url+" deleted");
+					this.fireTableRowsDeleted(i,i);
+				}
 			} catch (Exception e) {
 				e.printStackTrace(stderr);
 			}

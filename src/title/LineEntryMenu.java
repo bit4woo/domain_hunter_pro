@@ -20,6 +20,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
 import ASN.ASNEntry;
@@ -580,9 +581,9 @@ public class LineEntryMenu extends JPopupMenu {
 				try{
 					Set<String> IPs = lineTable.getLineTableModel().getIPs(modleRows);
 					String nmapPath = guiMain.getConfigPanel().getLineConfig().getNmapPath();
-					
+
 					String command = PortScanUtils.genCmd(nmapPath, IPs);
-					
+
 					String filepath = SystemUtils.genBatchFile(command, "Nmap-latest-command.bat");
 					SystemUtils.runBatchFile(filepath);
 				}
@@ -994,6 +995,31 @@ public class LineEntryMenu extends JPopupMenu {
 		});
 		removeItem.setToolTipText("Just Delete Entry In Title Panel");
 
+
+		/**
+		 * 单纯从title记录中删除,不做其他修改
+		 */
+		JMenuItem removeItemsNotInTargets = new JMenuItem(new AbstractAction("Delete Entries Not in Targets") {//need to show dialog to confirm
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				SwingUtilities.invokeLater(new Runnable() {
+
+					@Override
+					public void run() {
+						int result = JOptionPane.showConfirmDialog(null,"Are you sure to DELETE these items ?");
+						if (result == JOptionPane.YES_OPTION) {
+							lineTable.getLineTableModel().removeRowsNotInTargets();
+							titlepanel.digStatus();
+						}else {
+							return;
+						}
+					}
+
+				});
+
+			}
+		});
+		
 		/**
 		 * 从子域名列表中删除对应资产，表明当前host（应该是一个IP）不是我们的目标资产。
 		 * 那么应该同时做以下三点：
@@ -1155,6 +1181,7 @@ public class LineEntryMenu extends JPopupMenu {
 		this.add(addToblackListItem);//加入黑名单
 		this.add(removeItem);//单纯删除记录
 		this.add(addToblackListAndDeleteItem);//加入黑名单并删除
+		this.add(removeItemsNotInTargets);
 
 		this.add(removeSubDomainItem);
 		this.add(removeCustomAssetItem);
