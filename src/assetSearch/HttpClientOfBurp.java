@@ -32,7 +32,7 @@ public class HttpClientOfBurp {
 	public static String doRequest(URL url) {
 		return doRequest(url,null);
 	}
-	
+
 	/**
 	 * 
 	 * @param url

@@ -2,17 +2,21 @@ package assetSearch;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Base64;
+
+import burp.BurpExtender;
 
 public class Search {
-	public static String searchFofa(String email,String key,String domainBase64){
+	public static String searchFofa(String email,String key,String rootDomain){
 		try {
+			String domainBase64 = new String(Base64.getEncoder().encode(rootDomain.getBytes()));
 			String url= String.format("https://fofa.info/api/v1/search/all?email=%s&key=%s&page=1&size=1000&fields=host,ip&qbase64=%s",
 					email,key,domainBase64);
 			String body = HttpClientOfBurp.doRequest(new URL(url));
 			
 			return body;
 		} catch (MalformedURLException e) {
-			e.printStackTrace();
+			e.printStackTrace(BurpExtender.getStderr());
 			return "";
 		}
 	}
@@ -20,13 +24,16 @@ public class Search {
 	//https://hunter.qianxin.com/openApi/search?api-key={}&search={}&page={}&page_size=100&is_web=1&status_code=200".format(apikey, keywords.decode(), page)
 	public static String searchHunter(String key,String domain){
 		try {
-			String url= String.format("https://hunter.qianxin.com/openApi/search?&api-key=%s&search=%s&page=1&page_size=1000&is_web=2",
-					key,domain);
+			String domainBase64 = new String(Base64.getEncoder().encode(domain.getBytes()));
+			String url= String.format("https://hunter.qianxin.com/openApi/search?&api-key=%s&search=%s&page=1&page_size=100&is_web=2",
+					key,domainBase64);
 			String body = HttpClientOfBurp.doRequest(new URL(url));
-			
+			if (!body.contains("\"code\":200,")) {
+				BurpExtender.getStderr().print(body);
+			}
 			return body;
 		} catch (MalformedURLException e) {
-			e.printStackTrace();
+			e.printStackTrace(BurpExtender.getStderr());
 			return "";
 		}
 	}
@@ -40,7 +47,7 @@ public class Search {
 			
 			return body;
 		} catch (MalformedURLException e) {
-			e.printStackTrace();
+			e.printStackTrace(BurpExtender.getStderr());
 			return "";
 		}
 	}
@@ -63,11 +70,17 @@ public class Search {
 					+ "{\"query\": \"domain:%s\", \"start\": 0, \"size\": 500}";
 			raw = String.format(raw, key, domain);
 			String respbody = HttpClientOfBurp.doRequest(new URL(url),raw.getBytes());
-			
+			if (!respbody.contains("\"code\": 0,")) {
+				BurpExtender.getStderr().print(respbody);
+			}
 			return respbody;
 		} catch (MalformedURLException e) {
-			e.printStackTrace();
+			e.printStackTrace(BurpExtender.getStderr());
 			return "";
 		}
+	}
+	
+	public static void main(String[] args) {
+		System.out.println(searchHunter("","searchHunter"));
 	}
 }

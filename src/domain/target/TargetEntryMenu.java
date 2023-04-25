@@ -370,14 +370,17 @@ public class TargetEntryMenu extends JPopupMenu {
 						}
 						for (int row:modelRows) {
 							String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,rootDomainColumnIndex);
-							String rootDomainPara = new String(Base64.getEncoder().encode(rootDomain.getBytes()));
-							String responseBody = Search.searchFofa(email,key,rootDomainPara);
+							String responseBody = Search.searchFofa(email,key,rootDomain);
 
 							Set<String> domains = GrepUtils.grepDomain(responseBody);
 							List<String> iplist = GrepUtils.grepIP(responseBody);
 							stdout.println(String.format("%s: %s sub-domain names; %s ip addresses found by fofa.info",rootDomain,domains.size(),iplist.size()));
 							guiMain.getDomainPanel().getDomainResult().addIfValid(domains);
 							guiMain.getDomainPanel().getDomainResult().getSpecialPortTargets().addAll(iplist);
+							if (domains.size()==0 && iplist.size()==0) {
+								stdout.println("fofa.info No assets found for ["+rootDomain+"], print reponse for debug");
+								stdout.println(responseBody);
+							}
 						}
 						return null;
 					}
@@ -411,6 +414,10 @@ public class TargetEntryMenu extends JPopupMenu {
 							stdout.println(String.format("%s: %s sub-domain names; %s ip addresses found by quake.360.net",rootDomain,domains.size(),iplist.size()));
 							guiMain.getDomainPanel().getDomainResult().addIfValid(domains);
 							guiMain.getDomainPanel().getDomainResult().getSpecialPortTargets().addAll(iplist);
+							if (domains.size()==0 && iplist.size()==0) {
+								stdout.println("quake.360.net No assets found for ["+rootDomain+"], print reponse for debug");
+								stdout.println(responseBody);
+							}
 						}
 						return null;
 					}
@@ -444,6 +451,10 @@ public class TargetEntryMenu extends JPopupMenu {
 							stdout.println(String.format("%s: %s sub-domain names; %s ip addresses found by hunter.qianxin.com",rootDomain,domains.size(),iplist.size()));
 							guiMain.getDomainPanel().getDomainResult().addIfValid(domains);
 							guiMain.getDomainPanel().getDomainResult().getSpecialPortTargets().addAll(iplist);
+							if (domains.size()==0 && iplist.size()==0) {
+								stdout.println("hunter.qianxin.com No assets found for ["+rootDomain+"], print reponse for debug");
+								stdout.println(responseBody);
+							}
 						}
 						return null;
 					}

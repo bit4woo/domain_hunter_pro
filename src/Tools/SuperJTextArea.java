@@ -161,10 +161,11 @@ public class SuperJTextArea extends JTextArea{
 			int end = getLineEndOffset( line );
 			String lineText = getDocument().getText(start, end - start);
 			String content = readDirOrFileContent(lineText);
+			String length = "Length: "+content.length()+System.lineSeparator();
 			if (content.length()<=500) {
-				return content;
+				return length+content;
 			} else {
-				return content.substring(0,501);
+				return length+content.substring(0,501);
 			}
 		} catch (Exception e) {
 			e.printStackTrace(BurpExtender.getStderr());
