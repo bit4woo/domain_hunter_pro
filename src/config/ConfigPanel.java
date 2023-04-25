@@ -391,13 +391,13 @@ public class ConfigPanel extends JPanel{
 		add(lblHunterAPIKey, new MyGridBagLayout(++rowIndex,1));
 		add(textFieldHunterAPIKey,new MyGridBagLayout(rowIndex,2));
 		
-		add(DisplayContextMenuOfBurp, new MyGridBagLayout(rowIndex,2));
-		add(showItemsInOne, new MyGridBagLayout(rowIndex,2));
-		add(ignoreHTTPS, new MyGridBagLayout(rowIndex,2));
-		add(ignoreHTTPStaus500, new MyGridBagLayout(rowIndex,2));
-		add(ignoreHTTPStaus400, new MyGridBagLayout(rowIndex,2));
-		add(ignoreWrongCAHost, new MyGridBagLayout(rowIndex,2));
-		add(rdbtnSaveTrafficTo, new MyGridBagLayout(rowIndex,2));
+		add(DisplayContextMenuOfBurp, new MyGridBagLayout(++rowIndex,2));
+		add(showItemsInOne, new MyGridBagLayout(++rowIndex,2));
+		add(ignoreHTTPS, new MyGridBagLayout(++rowIndex,2));
+		add(ignoreHTTPStaus500, new MyGridBagLayout(++rowIndex,2));
+		add(ignoreHTTPStaus400, new MyGridBagLayout(++rowIndex,2));
+		add(ignoreWrongCAHost, new MyGridBagLayout(++rowIndex,2));
+		add(rdbtnSaveTrafficTo, new MyGridBagLayout(++rowIndex,2));
 
 	}
 	//保存各个路径设置参数，自动保存的listener

@@ -523,7 +523,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	}
 
 	/////删改操作，需要操作数据库了//TODO/////
-
+	
 	public void removeRows(int[] rows) {
 		Arrays.sort(rows); //升序
 
@@ -545,6 +545,27 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		}
 	}
 	
+	public void removeRow(int row) {
+			try {
+				LineEntry entry = lineEntries.get(row);
+				if (entry == null) {
+					throw new ArrayIndexOutOfBoundsException("can't find item with index "+row);
+				}
+				String url = entry.getUrl();
+				lineEntries.remove(row);
+				titleDao.deleteTitleByUrl(url);//写入数据库
+				stdout.println("!!! "+url+" deleted");
+				this.fireTableRowsDeleted(row,row);
+			} catch (Exception e) {
+				e.printStackTrace(stderr);
+			}
+	}
+	
+	/**
+	 * 删除明显非目标的记录
+	 * 1、host的类型时useless，并且来源是certain。这类记录往往是由于删除了某些根域名造成的。
+	 * 2、来自custom(网络搜索引擎添加、手动添加),但是其证书域名明显不是目标的
+	 */
 	public void removeRowsNotInTargets() {
 		TargetTableModel model = guiMain.getDomainPanel().getTargetTable().getTargetModel();
 		
@@ -556,11 +577,36 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 				}
 				String url = entry.getUrl();
 				String host = entry.getHost();
+				//规则1
 				if (model.assetType(host) == DomainManager.USELESS && entry.getEntrySource().equals(LineEntry.Source_Certain)) {
 					lineEntries.remove(i);
 					titleDao.deleteTitleByUrl(url);//写入数据库
 					stdout.println("!!! "+url+" deleted");
 					this.fireTableRowsDeleted(i,i);
+				}
+				
+				//规则2
+				Set<String> certDomains = entry.getCertDomainSet();
+				if (certDomains.size()>0) {//无证书信息的记录不处理
+					
+					int uselessCount = 0;
+					for (String domain:certDomains) {
+						if (model.assetType(domain) == DomainManager.USELESS) {
+							uselessCount++;
+						}
+					}
+					
+					if (uselessCount == certDomains.size() && 
+							(entry.getEntrySource().equals(LineEntry.Source_Custom_Input) || 
+							entry.getEntrySource().equals(LineEntry.Source_Subnet_Extend))
+							) {
+						guiMain.getDomainPanel().getDomainResult().getSpecialPortTargets().remove(host);
+						guiMain.getDomainPanel().getDomainResult().getNotTargetIPSet().add(host);
+						lineEntries.remove(i);
+						titleDao.deleteTitleByUrl(url);//写入数据库
+						stdout.println("!!! "+url+" deleted");
+						this.fireTableRowsDeleted(i,i);
+					}
 				}
 			} catch (Exception e) {
 				e.printStackTrace(stderr);

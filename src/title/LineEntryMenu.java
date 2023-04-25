@@ -997,7 +997,7 @@ public class LineEntryMenu extends JPopupMenu {
 
 
 		/**
-		 * 单纯从title记录中删除,不做其他修改
+		 * 删除明显非目标的记录
 		 */
 		JMenuItem removeItemsNotInTargets = new JMenuItem(new AbstractAction("Delete Entries Not in Targets") {//need to show dialog to confirm
 			@Override
