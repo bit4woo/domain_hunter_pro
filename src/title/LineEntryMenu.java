@@ -8,6 +8,7 @@ import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -616,6 +617,26 @@ public class LineEntryMenu extends JPopupMenu {
 			}
 		});
 
+		JMenuItem genDirSearchCmd = new JMenuItem(new AbstractAction("Copy DirSearch Cmd") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try{
+					java.util.List<String> urls = lineTable.getLineTableModel().getURLs(modleRows);
+					java.util.List<String> cmds = new ArrayList<String>();
+					for(String url:urls) {
+						//python dirsearch.py -t 8 --proxy=localhost:7890 --random-agent -e * -f -x 400,404,500,502,503,514,550,564 -u url
+						String cmd = guiMain.getConfigPanel().getLineConfig().getDirSearchPath().replace("{url}", url);
+						cmds.add(cmd);
+					}
+					SystemUtils.writeToClipboard(String.join(System.lineSeparator(), cmds));
+				}
+				catch (Exception e1)
+				{
+					e1.printStackTrace(stderr);
+				}
+			}
+		});
+
 		JMenuItem openURLwithBrowserItem = new JMenuItem(new AbstractAction("Open With Browser(double click url)") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -1019,7 +1040,7 @@ public class LineEntryMenu extends JPopupMenu {
 
 			}
 		});
-		
+
 		/**
 		 * 从子域名列表中删除对应资产，表明当前host（应该是一个IP）不是我们的目标资产。
 		 * 那么应该同时做以下三点：
@@ -1112,6 +1133,7 @@ public class LineEntryMenu extends JPopupMenu {
 		this.add(assetTypeMenu);
 		this.add(doActiveScan);
 		this.add(genPortScanCmd);
+		this.add(genDirSearchCmd);
 		this.add(batchAddCommentsItem);
 
 
