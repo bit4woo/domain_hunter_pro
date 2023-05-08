@@ -585,7 +585,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 					this.fireTableRowsDeleted(i,i);
 				}
 				
-				//规则2
+				//规则2，注意，像ingress.local这种也会被删除
 				Set<String> certDomains = entry.getCertDomainSet();
 				if (certDomains.size()>0) {//无证书信息的记录不处理
 					

@@ -6,6 +6,7 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.io.PrintWriter;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
@@ -43,15 +44,15 @@ public class TargetEntryMenu extends JPopupMenu {
 		JMenuItem getSubDomainsOf = new JMenuItem(new AbstractAction("Copy All Subdomins Of This") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				String results = "";
+				List<String> results = new ArrayList<String>();
 				for (int row:modelRows) {
 					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,rootDomainColumnIndex);
 					String line = guiMain.getDomainPanel().getDomainResult().fetchSubDomainsOf(rootDomain);
-					results = results+System.lineSeparator()+line;
+					results.add(line);
 				}
 
 				Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-				StringSelection selection = new StringSelection(results);
+				StringSelection selection = new StringSelection(String.join(System.lineSeparator(), results));
 				clipboard.setContents(selection, null);
 			}
 		});
@@ -59,15 +60,15 @@ public class TargetEntryMenu extends JPopupMenu {
 		JMenuItem copyEmails = new JMenuItem(new AbstractAction("Copy All Emails Of This") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				String results = "";
+				List<String> results = new ArrayList<String>();
 				for (int row:modelRows) {
 					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,rootDomainColumnIndex);
 					String line = guiMain.getDomainPanel().getDomainResult().fetchEmailsOf(rootDomain);
-					results = results+System.lineSeparator()+line;
+					results.add(line);
 				}
 
 				Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-				StringSelection selection = new StringSelection(results);
+				StringSelection selection = new StringSelection(String.join(System.lineSeparator(), results));
 				clipboard.setContents(selection, null);
 			}
 		});
