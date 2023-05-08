@@ -266,7 +266,7 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		});
-		
+
 		JButton btnFindUrls1 = new JButton("Find URLs 1");
 		btnFindUrls1.addActionListener(new ActionListener() {
 			@Override
@@ -312,8 +312,13 @@ public class ToolPanel extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				String content = inputTextArea.getText();
 				if (null != content) {
-					List<String> portlist = GrepUtils.grepPort(content);
-					outputTextArea.setText(String.join(",", portlist));
+					List<String> result = new ArrayList<String>();
+					List<String> lines = Commons.textToLines(content);
+					for (String line:lines) {
+						List<String> portlist = GrepUtils.grepPort(line);
+						result.addAll(portlist);
+					}
+					outputTextArea.setText(String.join(System.lineSeparator(), result));
 				}
 			}
 		});
@@ -375,6 +380,65 @@ public class ToolPanel extends JPanel {
 							} catch (Exception e1) {
 								e1.printStackTrace();
 							}
+						}
+					}
+					outputTextArea.setText(String.join(System.lineSeparator(), result));
+				}
+			}
+		});
+
+		JButton btnNmapResultToHttp = new JButton("Nmap->Http");
+
+		btnNmapResultToHttp.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String content = inputTextArea.getText();
+				if (null != content && !content.equals("")) {
+					List<String> result = new ArrayList<String>();
+
+					List<String> iplist = GrepUtils.grepIP(content);
+					List<String> lines = Commons.textToLines(content);
+
+					for (String line:lines) {
+						if (line.toLowerCase().contains("ssl")) {
+							List<String> portlist = GrepUtils.grepPort(line);
+							for (String port:portlist) {
+								for (String host:iplist) {
+									result.add("https://"+host+":"+port);
+								}
+							}
+						}else if (line.toLowerCase().contains("http")) {
+							List<String> portlist = GrepUtils.grepPort(line);
+							for (String port:portlist) {
+								for (String host:iplist) {
+									result.add("http://"+host+":"+port);
+								}
+							}
+						}
+					}
+					outputTextArea.setText(String.join(System.lineSeparator(), result));
+				}
+			}
+		});
+
+
+		JButton btnNmapResultToHttp1 = new JButton("Nmap->Http 1");
+
+		btnNmapResultToHttp1.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String content = inputTextArea.getText();
+				if (null != content && !content.equals("")) {
+
+					List<String> result = new ArrayList<String>();
+
+					List<String> iplist = GrepUtils.grepIP(content);
+					List<String> portlist = GrepUtils.grepPort(content);
+
+					for (String host:iplist) {
+						for (String port:portlist) {
+							result.add("http://"+host+":"+port);
+							result.add("https://"+host+":"+port);
 						}
 					}
 					outputTextArea.setText(String.join(System.lineSeparator(), result));
@@ -1118,7 +1182,7 @@ public class ToolPanel extends JPanel {
 				worker.execute();
 			}
 		});
-		
+
 		/*
 		JButton JsonSimplify = new JButton("Simplify Json");
 
@@ -1136,8 +1200,8 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		});
-		
-		
+
+
 		JButton JsonBeautify = new JButton("Beautify Json");
 
 		JsonBeautify.addActionListener(new ActionListener() {
@@ -1154,7 +1218,7 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		});
-		*/
+		 */
 
 		//buttonPanel，里面放操作按钮
 		JPanel buttonPanel = new JPanel();
@@ -1177,15 +1241,17 @@ public class ToolPanel extends JPanel {
 		buttonPanel.add(btnFindDomains, new bagLayout(++rowIndex, ++cloumnIndex));
 		buttonPanel.add(btnFindUrls, new bagLayout(rowIndex, ++cloumnIndex));
 		buttonPanel.add(btnFindUrls1, new bagLayout(rowIndex, ++cloumnIndex));
-		
+
 		cloumnIndex = 0;
 		buttonPanel.add(btnFindIP, new bagLayout(++rowIndex, ++cloumnIndex));
 		buttonPanel.add(btnFindIPAndPort, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnFindPort, new bagLayout(rowIndex, ++cloumnIndex));
 
 		cloumnIndex = 0;
-		//buttonPanel.add(btnFindPort, new bagLayout(rowIndex, ++cloumnIndex));
 		buttonPanel.add(btnMasscanResultToNmap,new bagLayout(++rowIndex, ++cloumnIndex));
 		buttonPanel.add(btnMasscanResultToHttp,new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnNmapResultToHttp,new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnNmapResultToHttp1,new bagLayout(rowIndex, ++cloumnIndex));
 
 		cloumnIndex = 0;
 		buttonPanel.add(btnFindSubnet, new bagLayout(++rowIndex, ++cloumnIndex));

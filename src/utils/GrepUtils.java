@@ -188,7 +188,7 @@ public class GrepUtils {
 		}
 
 		List<String> tmplist= new ArrayList<>(URLs);
-		Collections.sort(tmplist);
+		//Collections.sort(tmplist);
 		tmplist = Commons.removePrefixAndSuffix(tmplist,"\"","\"");
 		tmplist = Commons.removePrefixAndSuffix(tmplist,"\'","\'");
 		return tmplist;
@@ -222,7 +222,7 @@ public class GrepUtils {
 		}
 
 		List<String> tmplist= new ArrayList<>(URLs);
-		Collections.sort(tmplist);
+		//Collections.sort(tmplist);
 		tmplist = Commons.removePrefixAndSuffix(tmplist,"\"","\"");
 		tmplist = Commons.removePrefixAndSuffix(tmplist,"\'","\'");
 		return tmplist;
@@ -250,7 +250,7 @@ public class GrepUtils {
 		}
 
 		List<String> tmplist= new ArrayList<>(IPSet);
-		Collections.sort(tmplist);
+		//Collections.sort(tmplist);
 		return tmplist;
 	}
 
@@ -277,7 +277,7 @@ public class GrepUtils {
 		}
 
 		List<String> tmplist= new ArrayList<>(IPSet);
-		Collections.sort(tmplist);
+		//Collections.sort(tmplist);
 		return tmplist;
 	}
 
@@ -307,7 +307,7 @@ public class GrepUtils {
 		}
 
 		List<String> tmplist= new ArrayList<>(resultSet);
-		Collections.sort(tmplist);
+		//Collections.sort(tmplist);
 		return tmplist;
 	}
 
@@ -331,7 +331,7 @@ public class GrepUtils {
 		}
 
 		List<String> tmplist= new ArrayList<>(IPSet);
-		Collections.sort(tmplist);
+		//Collections.sort(tmplist);
 		return tmplist;
 	}
 
