@@ -293,6 +293,21 @@ public class DomainManager {
 		}
 		return "";
 	}
+	
+	
+	public String fetchEmailsOf(String rootDomain) {
+		List<String> tmplist = new ArrayList<>();
+		if (fetchTargetModel().assetType(rootDomain) == DomainManager.SUB_DOMAIN) {//判断是否有效rootDomain
+			for (String item : EmailSet) {
+				if (item.endsWith("@"+rootDomain)) {
+					tmplist.add(item);
+				}
+			}
+			Collections.sort(tmplist);
+			return String.join(System.lineSeparator(), tmplist);
+		}
+		return "";
+	}
 
 	public String fetchEmails() {
 		List<String> tmplist = new ArrayList<>(EmailSet);

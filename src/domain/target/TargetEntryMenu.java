@@ -40,13 +40,29 @@ public class TargetEntryMenu extends JPopupMenu {
 		this.guiMain = guiMain;
 		this.rootDomainColumnIndex =1;//设定为rootDomain所在列
 
-		JMenuItem getSubDomainsOf = new JMenuItem(new AbstractAction("Get All Subdomin Of This") {
+		JMenuItem getSubDomainsOf = new JMenuItem(new AbstractAction("Copy All Subdomins Of This") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				String results = "";
 				for (int row:modelRows) {
 					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,rootDomainColumnIndex);
 					String line = guiMain.getDomainPanel().getDomainResult().fetchSubDomainsOf(rootDomain);
+					results = results+System.lineSeparator()+line;
+				}
+
+				Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+				StringSelection selection = new StringSelection(results);
+				clipboard.setContents(selection, null);
+			}
+		});
+		
+		JMenuItem copyEmails = new JMenuItem(new AbstractAction("Copy All Emails Of This") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				String results = "";
+				for (int row:modelRows) {
+					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,rootDomainColumnIndex);
+					String line = guiMain.getDomainPanel().getDomainResult().fetchEmailsOf(rootDomain);
 					results = results+System.lineSeparator()+line;
 				}
 
@@ -469,6 +485,7 @@ public class TargetEntryMenu extends JPopupMenu {
 
 
 		this.add(getSubDomainsOf);
+		this.add(copyEmails);
 		this.add(batchAddCommentsItem);
 		this.add(addToBlackItem);
 		this.addSeparator();
