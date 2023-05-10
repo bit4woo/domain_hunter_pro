@@ -311,6 +311,15 @@ public class LineEntry {
 		CNAMESet = cNAMESet;
 	}
 
+	public boolean isCDN() {
+		if (CNAMESet.size() >1) {
+			return true;
+		}
+		if (IPSet.size() >1) {
+			return true;
+		}
+		return false;
+	}
 	public Set<String> getCertDomainSet() {
 		return CertDomainSet;
 	}

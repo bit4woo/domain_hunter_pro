@@ -360,7 +360,7 @@ public class TitlePanel extends JPanel {
 	public void getExtendTitle(){
 		guiMain.getDomainPanel().backupDB("before-getExtendTitle");
 
-		Set<String> extendIPSet = titleTable.getLineTableModel().GetExtendIPSet();
+		Set<String> extendIPSet = titleTable.getLineTableModel().GetExtendIPSet(true,false);//排除CDN,私有IP会在后续流程中进行过滤
 		Set<String> hostsInTitle = titleTable.getLineTableModel().GetHostsWithSpecialPort();
 		extendIPSet.removeAll(guiMain.getDomainPanel().getDomainResult().getNotTargetIPSet());
 		extendIPSet.removeAll(hostsInTitle);
@@ -392,11 +392,11 @@ public class TitlePanel extends JPanel {
 	}
 
 
-	public String getSubnet(boolean isCurrent,boolean justPulic){
+	public String getSubnet(boolean isCurrent,boolean excludeCDN,boolean excludePrivate){
 		//stdout.println(" "+isCurrent+justPulic);
 		Set<String> subnets;
 		if (isCurrent) {//获取的是现有可成功连接的IP集合+用户指定的IP网段集合
-			subnets = titleTable.getLineTableModel().GetSubnets();
+			subnets = titleTable.getLineTableModel().GetSubnets(excludeCDN,excludePrivate);
 		}else {//重新解析所有域名的IP
 			ThreadGetSubnet thread = new ThreadGetSubnet(guiMain.getDomainPanel().getDomainResult().getSubDomainSet());
 			thread.start();
@@ -413,7 +413,7 @@ public class TitlePanel extends JPanel {
 		}
 
 		HashSet<String> result = new HashSet<>(subnets);
-		if (justPulic) {
+		if (excludePrivate) {
 			//stdout.println("删除私有IP");
 			for (String subnet :subnets) {
 				String tmp = subnet.split("/")[0];

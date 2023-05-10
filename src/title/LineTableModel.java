@@ -270,47 +270,32 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	 *
 	 * @return 获取已成功获取title的Entry的IP地址集合
 	 */
-	Set<String> getIPSetFromTitle() {
+	Set<String> getIPSetFromTitle(boolean excludeCDN,boolean excludePrivate) {
 		Set<String> result = new HashSet<String>();
 
 		for(LineEntry line:lineEntries.values()) {
-			result.addAll(line.getIPSet());
-		}
+			if (excludeCDN && line.isCDN()) {
+				continue;
+			}
 
-		return result;
-	}
-
-	/**
-	 * 获取title记录中的所有公网IP
-	 * @return
-	 */
-	Set<String> getPublicIPSetFromTitle() {
-		HashSet<String> result = new HashSet<>();
-		for (String ip:getIPSetFromTitle()){
-			if (IPAddressUtils.isValidIP(ip)&& !IPAddressUtils.isPrivateIPv4(ip)){
+			for (String ip:line.getIPSet()) {
+				if (excludePrivate && IPAddressUtils.isPrivateIPv4(ip)) {
+					continue;
+				}
 				result.add(ip);
 			}
+			continue;
 		}
 		return result;
-	}
-
-	/**
-	 * 获取title记录中的所有公网IP计算出的公网网段
-	 * @return
-	 */
-	public Set<String> getPublicSubnets() {
-		Set<String> IPsOfDomain = getPublicIPSetFromTitle();
-		Set<String> subnets = IPAddressUtils.toSmallerSubNets(IPsOfDomain);
-		return subnets;
 	}
 
 	/**
 	 * 获取根据确定目标汇算出来的网段，减去已确定目标本身后，剩余的IP地址。
 	 * @return 扩展IP集合
 	 */
-	public Set<String> GetExtendIPSet() {
+	public Set<String> GetExtendIPSet(boolean excludeCDN,boolean excludePrivate) {
 
-		Set<String> IPsOfDomain = getIPSetFromTitle();//title记录中的IP
+		Set<String> IPsOfDomain = getIPSetFromTitle(excludeCDN,excludePrivate);//title记录中的IP
 		Set<String> IPsOfcertainSubnets = guiMain.getDomainPanel().fetchTargetModel().fetchTargetIPSet();//用户配置的确定IP+网段
 		IPsOfDomain.addAll(IPsOfcertainSubnets);
 		IPsOfDomain.removeAll(guiMain.getDomainPanel().getDomainResult().getNotTargetIPSet());
@@ -332,8 +317,8 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	 * 将2者合并算成网段。
 	 * @return 根据确切目标算出的网段
 	 */
-	public Set<String> GetSubnets() {
-		Set<String> IPsOfDomain = getIPSetFromTitle();//title记录中的IP
+	public Set<String> GetSubnets(boolean excludeCDN,boolean excludePrivate) {
+		Set<String> IPsOfDomain = getIPSetFromTitle(excludeCDN,excludePrivate);//title记录中的IP
 		Set<String> IPsOfcertainSubnets = guiMain.getDomainPanel().fetchTargetModel().fetchTargetIPSet();//用户配置的确定IP+网段
 		IPsOfDomain.addAll(IPsOfcertainSubnets);
 		//Set<String> CSubNetIPs = Commons.subNetsToIPSet(Commons.toSubNets(IPsOfDomain));
@@ -523,7 +508,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	}
 
 	/////删改操作，需要操作数据库了//TODO/////
-	
+
 	public void removeRows(int[] rows) {
 		Arrays.sort(rows); //升序
 
@@ -544,23 +529,23 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			}
 		}
 	}
-	
+
 	public void removeRow(int row) {
-			try {
-				LineEntry entry = lineEntries.get(row);
-				if (entry == null) {
-					throw new ArrayIndexOutOfBoundsException("can't find item with index "+row);
-				}
-				String url = entry.getUrl();
-				lineEntries.remove(row);
-				titleDao.deleteTitleByUrl(url);//写入数据库
-				stdout.println("!!! "+url+" deleted");
-				this.fireTableRowsDeleted(row,row);
-			} catch (Exception e) {
-				e.printStackTrace(stderr);
+		try {
+			LineEntry entry = lineEntries.get(row);
+			if (entry == null) {
+				throw new ArrayIndexOutOfBoundsException("can't find item with index "+row);
 			}
+			String url = entry.getUrl();
+			lineEntries.remove(row);
+			titleDao.deleteTitleByUrl(url);//写入数据库
+			stdout.println("!!! "+url+" deleted");
+			this.fireTableRowsDeleted(row,row);
+		} catch (Exception e) {
+			e.printStackTrace(stderr);
+		}
 	}
-	
+
 	/**
 	 * 删除明显非目标的记录
 	 * 1、host的类型时useless，并且来源是certain。这类记录往往是由于删除了某些根域名造成的。
@@ -568,7 +553,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	 */
 	public void removeRowsNotInTargets() {
 		TargetTableModel model = guiMain.getDomainPanel().getTargetTable().getTargetModel();
-		
+
 		for (int i=lineEntries.size()-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
 			try {
 				LineEntry entry = lineEntries.get(i);
@@ -584,21 +569,21 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 					stdout.println("!!! "+url+" deleted");
 					this.fireTableRowsDeleted(i,i);
 				}
-				
+
 				//规则2，注意，像ingress.local这种也会被删除
 				Set<String> certDomains = entry.getCertDomainSet();
 				if (certDomains.size()>0) {//无证书信息的记录不处理
-					
+
 					int uselessCount = 0;
 					for (String domain:certDomains) {
 						if (model.assetType(domain) == DomainManager.USELESS) {
 							uselessCount++;
 						}
 					}
-					
+
 					if (uselessCount == certDomains.size() && 
 							(entry.getEntrySource().equals(LineEntry.Source_Custom_Input) || 
-							entry.getEntrySource().equals(LineEntry.Source_Subnet_Extend))
+									entry.getEntrySource().equals(LineEntry.Source_Subnet_Extend))
 							) {
 						guiMain.getDomainPanel().getDomainResult().getSpecialPortTargets().remove(host);
 						guiMain.getDomainPanel().getDomainResult().getNotTargetIPSet().add(host);
