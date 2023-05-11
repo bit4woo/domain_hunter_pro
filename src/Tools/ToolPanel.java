@@ -39,6 +39,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
@@ -241,15 +242,20 @@ public class ToolPanel extends JPanel {
 		btnFindDomains.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String content = inputTextArea.getText();
-				//stdout.println(content);
-				if (null != content) {
-					Set<String> domains = GrepUtils.grepDomain(content);
-					ArrayList<String> tmpList = new ArrayList<String>(domains);
-					Collections.sort(tmpList, new DomainComparator());
-					outputTextArea.setText(String.join(System.lineSeparator(), tmpList));
-					guiMain.getDomainPanel().getDomainResult().addIfValid(domains);
-				}
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						String content = inputTextArea.getText();
+						//stdout.println(content);
+						if (null != content) {
+							Set<String> domains = GrepUtils.grepDomain(content);
+							ArrayList<String> tmpList = new ArrayList<String>(domains);
+							Collections.sort(tmpList, new DomainComparator());
+							outputTextArea.setText(String.join(System.lineSeparator(), tmpList));
+							guiMain.getDomainPanel().getDomainResult().addIfValid(domains);
+						}
+					}
+				});
 			}
 		});
 
@@ -259,11 +265,16 @@ public class ToolPanel extends JPanel {
 		btnFindUrls.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String content = inputTextArea.getText();
-				if (null != content) {
-					List<String> urls = GrepUtils.grepURL(content);
-					outputTextArea.setText(String.join(System.lineSeparator(), urls));
-				}
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						String content = inputTextArea.getText();
+						if (null != content) {
+							List<String> urls = GrepUtils.grepURL(content);
+							outputTextArea.setText(String.join(System.lineSeparator(), urls));
+						}
+					}
+				});
 			}
 		});
 
@@ -271,11 +282,16 @@ public class ToolPanel extends JPanel {
 		btnFindUrls1.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String content = inputTextArea.getText();
-				if (null != content) {
-					List<String> urls = GrepUtils.grepURL1(content);
-					outputTextArea.setText(String.join(System.lineSeparator(), urls));
-				}
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						String content = inputTextArea.getText();
+						if (null != content) {
+							List<String> urls = GrepUtils.grepURL1(content);
+							outputTextArea.setText(String.join(System.lineSeparator(), urls));
+						}
+					}
+				});
 			}
 		});
 
@@ -284,11 +300,17 @@ public class ToolPanel extends JPanel {
 		btnFindIP.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String content = inputTextArea.getText();
-				if (null != content) {
-					List<String> iplist = GrepUtils.grepIP(content);
-					outputTextArea.setText(String.join(System.lineSeparator(), iplist));
-				}
+
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						String content = inputTextArea.getText();
+						if (null != content) {
+							List<String> iplist = GrepUtils.grepIP(content);
+							outputTextArea.setText(String.join(System.lineSeparator(), iplist));
+						}
+					}
+				});
 			}
 		});
 
@@ -297,11 +319,17 @@ public class ToolPanel extends JPanel {
 		btnFindIPAndPort.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String content = inputTextArea.getText();
-				if (null != content) {
-					List<String> iplist = GrepUtils.grepIPAndPort(content);
-					outputTextArea.setText(String.join(System.lineSeparator(), iplist));
-				}
+
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						String content = inputTextArea.getText();
+						if (null != content) {
+							List<String> iplist = GrepUtils.grepIPAndPort(content);
+							outputTextArea.setText(String.join(System.lineSeparator(), iplist));
+						}
+					}
+				});
 			}
 		});
 
@@ -310,16 +338,22 @@ public class ToolPanel extends JPanel {
 		btnFindPort.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String content = inputTextArea.getText();
-				if (null != content) {
-					List<String> result = new ArrayList<String>();
-					List<String> lines = Commons.textToLines(content);
-					for (String line:lines) {
-						List<String> portlist = GrepUtils.grepPort(line);
-						result.addAll(portlist);
+
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						String content = inputTextArea.getText();
+						if (null != content) {
+							List<String> result = new ArrayList<String>();
+							List<String> lines = Commons.textToLines(content);
+							for (String line:lines) {
+								List<String> portlist = GrepUtils.grepPort(line);
+								result.addAll(portlist);
+							}
+							outputTextArea.setText(String.join(System.lineSeparator(), result));
+						}
 					}
-					outputTextArea.setText(String.join(System.lineSeparator(), result));
-				}
+				});
 			}
 		});
 
@@ -451,11 +485,16 @@ public class ToolPanel extends JPanel {
 		btnFindSubnet.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String content = inputTextArea.getText();
-				if (null != content) {
-					List<String> subnets = GrepUtils.grepSubnet(content);
-					outputTextArea.setText(String.join(System.lineSeparator(), subnets));
-				}
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						String content = inputTextArea.getText();
+						if (null != content) {
+							List<String> subnets = GrepUtils.grepSubnet(content);
+							outputTextArea.setText(String.join(System.lineSeparator(), subnets));
+						}
+					}
+				});
 			}
 		});
 
@@ -464,12 +503,17 @@ public class ToolPanel extends JPanel {
 		btnFindEmail.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String content = inputTextArea.getText();
-				if (null != content) {
-					Set<String> emails = GrepUtils.grepEmail(content);
-					outputTextArea.setText(String.join(System.lineSeparator(), emails));
-					guiMain.getDomainPanel().getDomainResult().addIfValidEmail(emails);
-				}
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						String content = inputTextArea.getText();
+						if (null != content) {
+							Set<String> emails = GrepUtils.grepEmail(content);
+							outputTextArea.setText(String.join(System.lineSeparator(), emails));
+							guiMain.getDomainPanel().getDomainResult().addIfValidEmail(emails);
+						}
+					}
+				});
 			}
 		});
 
@@ -1248,14 +1292,14 @@ public class ToolPanel extends JPanel {
 		buttonPanel.add(btnFindPort, new bagLayout(rowIndex, ++cloumnIndex));
 
 		cloumnIndex = 0;
+		buttonPanel.add(btnFindSubnet, new bagLayout(++rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnFindEmail, new bagLayout(rowIndex, ++cloumnIndex));
+
+		cloumnIndex = 0;
 		buttonPanel.add(btnMasscanResultToNmap,new bagLayout(++rowIndex, ++cloumnIndex));
 		buttonPanel.add(btnMasscanResultToHttp,new bagLayout(rowIndex, ++cloumnIndex));
 		buttonPanel.add(btnNmapResultToHttp,new bagLayout(rowIndex, ++cloumnIndex));
 		buttonPanel.add(btnNmapResultToHttp1,new bagLayout(rowIndex, ++cloumnIndex));
-
-		cloumnIndex = 0;
-		buttonPanel.add(btnFindSubnet, new bagLayout(++rowIndex, ++cloumnIndex));
-		buttonPanel.add(btnFindEmail, new bagLayout(rowIndex, ++cloumnIndex));
 
 		cloumnIndex = 0;
 		buttonPanel.add(btnGrep, new bagLayout(++rowIndex, ++cloumnIndex));
