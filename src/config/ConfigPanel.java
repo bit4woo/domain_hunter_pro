@@ -25,6 +25,7 @@ import com.google.common.io.Files;
 
 import GUI.GUIMain;
 import GUI.MyGridBagLayout;
+import Tools.SuperJTextArea;
 import Tools.ToolPanel;
 import burp.BurpExtender;
 
@@ -135,7 +136,7 @@ public class ConfigPanel extends JPanel{
 		lineConfig.setQuakeAPIKey(textFieldQuakeAPIKey.getText());
 		lineConfig.setHunterAPIKey(textFieldHunterAPIKey.getText());
 
-		lineConfig.setToolPanelText(ToolPanel.inputTextArea.getText());
+		lineConfig.setToolPanelText(((SuperJTextArea)ToolPanel.inputTextArea).getTextAsDisplay());
 		lineConfig.setShowItemsInOne(showItemsInOne.isSelected());
 		lineConfig.setEnableElastic(rdbtnSaveTrafficTo.isSelected());
 		return lineConfig;
