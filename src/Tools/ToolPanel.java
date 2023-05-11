@@ -236,161 +236,85 @@ public class ToolPanel extends JPanel {
 		});
 		 */
 
-		JButton btnFindDomains = new JButton("Find Domains");
-
-		btnFindDomains.addActionListener(new ActionListener() {
+		JButton btnFindDomains = new BackGroundButton("Find Domains") {
 			@Override
-			public void actionPerformed(ActionEvent e) {
-				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-					@Override
-					protected Map doInBackground() throws Exception {
-						String content = inputTextArea.getText();
-						//stdout.println(content);
-						if (null != content) {
-							Set<String> domains = GrepUtils.grepDomain(content);
-							ArrayList<String> tmpList = new ArrayList<String>(domains);
-							Collections.sort(tmpList, new DomainComparator());
-							outputTextArea.setText(String.join(System.lineSeparator(), tmpList));
-							guiMain.getDomainPanel().getDomainResult().addIfValid(domains);
-						}
-						return null;
-					}
-
-					@Override
-					protected void done() {
-					}
-				};
-				worker.execute();
+			protected void action() {
+				String content = inputTextArea.getText();
+				//stdout.println(content);
+				if (null != content) {
+					Set<String> domains = GrepUtils.grepDomain(content);
+					ArrayList<String> tmpList = new ArrayList<String>(domains);
+					Collections.sort(tmpList, new DomainComparator());
+					outputTextArea.setText(String.join(System.lineSeparator(), tmpList));
+					guiMain.getDomainPanel().getDomainResult().addIfValid(domains);
+				}
 			}
-		});
+		};
 
-		JButton btnFindUrls = new JButton("Find URLs");
-		btnFindUrls.setToolTipText("only find entire URL");
 
-		btnFindUrls.addActionListener(new ActionListener() {
+		JButton btnFindUrls = new BackGroundButton("Find URL") {
 			@Override
-			public void actionPerformed(ActionEvent e) {
-				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-					@Override
-					protected Map doInBackground() throws Exception {
-						String content = inputTextArea.getText();
-						if (null != content) {
-							List<String> urls = GrepUtils.grepURL(content);
-							outputTextArea.setText(String.join(System.lineSeparator(), urls));
-						}
-						return null;
-					}
-
-					@Override
-					protected void done() {
-					}
-				};
-				worker.execute();
+			protected void action() {
+				String content = inputTextArea.getText();
+				if (null != content) {
+					List<String> urls = GrepUtils.grepURL(content);
+					outputTextArea.setText(String.join(System.lineSeparator(), urls));
+				}
 			}
-		});
+		};
+		
 
-		JButton btnFindUrls1 = new JButton("Find URLs 1");
-		btnFindUrls1.addActionListener(new ActionListener() {
+		JButton btnFindUrls1 = new BackGroundButton("Find URL 1") {
 			@Override
-			public void actionPerformed(ActionEvent e) {
-				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-					@Override
-					protected Map doInBackground() throws Exception {
-						String content = inputTextArea.getText();
-						if (null != content) {
-							List<String> urls = GrepUtils.grepURL1(content);
-							outputTextArea.setText(String.join(System.lineSeparator(), urls));
-						}
-						return null;
-					}
-
-					@Override
-					protected void done() {
-					}
-				};
-				worker.execute();
+			protected void action() {
+				String content = inputTextArea.getText();
+				if (null != content) {
+					List<String> urls = GrepUtils.grepURL1(content);
+					outputTextArea.setText(String.join(System.lineSeparator(), urls));
+				}
 			}
-		});
+		};
 
-		JButton btnFindIP = new JButton("Find IP");
-
-		btnFindIP.addActionListener(new ActionListener() {
+		
+		JButton btnFindIP = new BackGroundButton("Find IP") {
 			@Override
-			public void actionPerformed(ActionEvent e) {
-
-				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-					@Override
-					protected Map doInBackground() throws Exception {
-						String content = inputTextArea.getText();
-						if (null != content) {
-							List<String> iplist = GrepUtils.grepIP(content);
-							outputTextArea.setText(String.join(System.lineSeparator(), iplist));
-						}
-						return null;
-					}
-
-					@Override
-					protected void done() {
-					}
-				};
-				worker.execute();
+			protected void action() {
+				String content = inputTextArea.getText();
+				if (null != content) {
+					List<String> iplist = GrepUtils.grepIP(content);
+					outputTextArea.setText(String.join(System.lineSeparator(), iplist));
+				}
 			}
-		});
-
-		JButton btnFindIPAndPort = new JButton("Find IP:Port");
-
-		btnFindIPAndPort.addActionListener(new ActionListener() {
+		};
+		
+		
+		JButton btnFindIPAndPort = new BackGroundButton("Find IP:Port") {
 			@Override
-			public void actionPerformed(ActionEvent e) {
-
-				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-					@Override
-					protected Map doInBackground() throws Exception {
-						String content = inputTextArea.getText();
-						if (null != content) {
-							List<String> iplist = GrepUtils.grepIPAndPort(content);
-							outputTextArea.setText(String.join(System.lineSeparator(), iplist));
-						}
-						return null;
-					}
-
-					@Override
-					protected void done() {
-					}
-				};
-				worker.execute();
+			protected void action() {
+				String content = inputTextArea.getText();
+				if (null != content) {
+					List<String> iplist = GrepUtils.grepIPAndPort(content);
+					outputTextArea.setText(String.join(System.lineSeparator(), iplist));
+				}
 			}
-		});
-
-		JButton btnFindPort = new JButton("Find Port");
-
-		btnFindPort.addActionListener(new ActionListener() {
+		};
+		
+		JButton btnFindPort = new BackGroundButton("Find Port") {
 			@Override
-			public void actionPerformed(ActionEvent e) {
-
-				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-					@Override
-					protected Map doInBackground() throws Exception {
-						String content = inputTextArea.getText();
-						if (null != content) {
-							List<String> result = new ArrayList<String>();
-							List<String> lines = Commons.textToLines(content);
-							for (String line:lines) {
-								List<String> portlist = GrepUtils.grepPort(line);
-								result.addAll(portlist);
-							}
-							outputTextArea.setText(String.join(System.lineSeparator(), result));
-						}
-						return null;
+			protected void action() {
+				String content = inputTextArea.getText();
+				if (null != content) {
+					List<String> result = new ArrayList<String>();
+					List<String> lines = Commons.textToLines(content);
+					for (String line:lines) {
+						List<String> portlist = GrepUtils.grepPort(line);
+						result.addAll(portlist);
 					}
-
-					@Override
-					protected void done() {
-					}
-				};
-				worker.execute();
+					outputTextArea.setText(String.join(System.lineSeparator(), result));
+				}
 			}
-		});
+		};
+
 
 		JButton btnMasscanResultToNmap = new JButton("Masscan->Nmap");
 
@@ -515,75 +439,31 @@ public class ToolPanel extends JPanel {
 			}
 		});
 
-		JButton btnFindSubnet = new JButton("Find Subnet");
-
-		btnFindSubnet.addActionListener(new ActionListener() {
+		
+		
+		JButton btnFindSubnet = new BackGroundButton("Find Subnet") {
 			@Override
-			public void actionPerformed(ActionEvent e) {
-				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-					@Override
-					protected Map doInBackground() throws Exception {
-						String content = inputTextArea.getText();
-						if (null != content) {
-							List<String> subnets = GrepUtils.grepSubnet(content);
-							outputTextArea.setText(String.join(System.lineSeparator(), subnets));
-						}
-						return null;
-					}
-
-					@Override
-					protected void done() {
-					}
-				};
-				worker.execute();
+			protected void action() {
+				String content = inputTextArea.getText();
+				if (null != content) {
+					List<String> subnets = GrepUtils.grepSubnet(content);
+					outputTextArea.setText(String.join(System.lineSeparator(), subnets));
+				}
 			}
-		});
-
-		JButton btnFindEmail = new JButton("Find Email");
-
-		btnFindEmail.addActionListener(new ActionListener() {
+		};
+		
+		
+		JButton btnFindEmail = new BackGroundButton("Find Email") {
 			@Override
-			public void actionPerformed(ActionEvent e) {
-				/*
-				SwingUtilities.invokeLater(new Runnable() {
-					@Override
-					public void run() {
-						String content = inputTextArea.getText();
-						if (null != content) {
-							Set<String> emails = GrepUtils.grepEmail(content);
-							outputTextArea.setText(String.join(System.lineSeparator(), emails));
-							guiMain.getDomainPanel().getDomainResult().addIfValidEmail(emails);
-						}
-					}
-				});
-				 */
-				//还是会卡死图形界面
-
-
-				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-					//using SwingWorker to prevent blocking burp main UI.
-					@Override
-					protected Map doInBackground() throws Exception {
-						btnFindEmail.setEnabled(false);
-						String content = inputTextArea.getText();
-						if (null != content) {
-							Set<String> emails = GrepUtils.grepEmail(content);
-							outputTextArea.setText(String.join(System.lineSeparator(), emails));
-							guiMain.getDomainPanel().getDomainResult().addIfValidEmail(emails);
-						}
-						return null;
-					}
-
-					@Override
-					protected void done() {
-						btnFindEmail.setEnabled(true);
-						stdout.println("~~~~~~~~~~~~~Task Done~~~~~~~~~~~~~");
-					}
-				};
-				worker.execute();
-
+			protected void action() {
+				String content = inputTextArea.getText();
+				if (null != content) {
+					Set<String> emails = GrepUtils.grepEmail(content);
+					outputTextArea.setText(String.join(System.lineSeparator(), emails));
+					guiMain.getDomainPanel().getDomainResult().addIfValidEmail(emails);
+				}
 			}
-		});
+		};
 
 
 		JButton btnOpenurls = new JButton("OpenURLs");
@@ -632,181 +512,104 @@ public class ToolPanel extends JPanel {
 			}
 
 		});
-
-		JButton btnCertDomains = new JButton("GetCertDomains");
-		btnCertDomains.setToolTipText("get Alter Domains of Cert");
-
-		btnCertDomains.addActionListener(new ActionListener() {
+		
+		
+		
+		JButton btnCertDomains = new BackGroundButton("GetCertDomains") {
 			@Override
-			public void actionPerformed(ActionEvent e) {
-				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-					//using SwingWorker to prevent blocking burp main UI.
-					@Override
-					protected Map doInBackground() throws Exception {
-						ArrayList<String> result = new ArrayList<String>();
-						List<String> urls = Commons.getLinesFromTextArea(inputTextArea);
-						Iterator<String> it = urls.iterator();
-						while (it.hasNext()) {
-							String url = it.next();
-							Set<String> domains = CertInfo.getAlternativeDomains(url);
-							result.add(url + " " + domains.toString());
-							System.out.println(url + " " + domains.toString());
-						}
-						outputTextArea.setText(String.join(System.lineSeparator(), result));
-						return null;
-					}
-
-					@Override
-					protected void done() {
-						btnCertDomains.setEnabled(true);
-						stdout.println("~~~~~~~~~~~~~Search Done~~~~~~~~~~~~~");
-					}
-				};
-				worker.execute();
-			}
-		});
-
-		JButton btnCertTime = new JButton("GetCertTime");
-		btnCertTime.setToolTipText("get out-of-service time of Cert");
-
-		btnCertTime.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-					//using SwingWorker to prevent blocking burp main UI.
-					@Override
-					protected Map doInBackground() throws Exception {
-						ArrayList<String> result = new ArrayList<String>();
-						List<String> urls = Commons.getLinesFromTextArea(inputTextArea);
-						Iterator<String> it = urls.iterator();
-						while (it.hasNext()) {
-							String url = it.next();
-							String time = CertInfo.getCertTime(url);
-							result.add(url + " " + time);
-							System.out.println(url + " " + time);
-						}
-						outputTextArea.setText(String.join(System.lineSeparator(), result));
-						return null;
-					}
-
-					@Override
-					protected void done() {
-						btnCertTime.setEnabled(true);
-						stdout.println("~~~~~~~~~~~~~Search Done~~~~~~~~~~~~~");
-					}
-				};
-				worker.execute();
-			}
-		});
-
-		JButton btnCertIssuer = new JButton("GetCertIssuer");
-		btnCertIssuer.setToolTipText("get issuer of Cert");
-
-		btnCertIssuer.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-					//using SwingWorker to prevent blocking burp main UI.
-					@Override
-					protected Map doInBackground() throws Exception {
-						ArrayList<String> result = new ArrayList<String>();
-						List<String> urls = Commons.getLinesFromTextArea(inputTextArea);
-						Iterator<String> it = urls.iterator();
-						while (it.hasNext()) {
-							String url = it.next();
-							String time = CertInfo.getCertIssuer(url);
-							result.add(url + " " + time);
-							System.out.println(url + " " + time);
-						}
-						outputTextArea.setText(String.join(System.lineSeparator(), result));
-						return null;
-					}
-
-					@Override
-					protected void done() {
-						btnCertIssuer.setEnabled(true);
-						stdout.println("~~~~~~~~~~~~~Search Done~~~~~~~~~~~~~");
-					}
-				};
-				worker.execute();
-			}
-		});
-
-		JButton iconHashButton = new JButton("GetIconHash");
-
-		iconHashButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
+			protected void action() {
 				ArrayList<String> result = new ArrayList<String>();
-
-				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-					//using SwingWorker to prevent blocking burp main UI.
-					@Override
-					protected Map doInBackground() throws Exception {
-						try {
-							List<String> urls = Commons.getLinesFromTextArea(inputTextArea);
-							Iterator<String> it = urls.iterator();
-							while (it.hasNext()) {
-								String url = it.next();
-								String hash = WebIcon.getHash(url);
-								result.add(hash);
-								System.out.println(url + " " + hash);
-							}
-							outputTextArea.setText(String.join(System.lineSeparator(), result));
-						} catch (Exception e1) {
-							outputTextArea.setText(e1.getMessage());
-							e1.printStackTrace(stderr);
-						}
-						return null;
-					}
-
-					@Override
-					protected void done() {
-					}
-				};
-				worker.execute();
+				List<String> urls = Commons.getLinesFromTextArea(inputTextArea);
+				Iterator<String> it = urls.iterator();
+				while (it.hasNext()) {
+					String url = it.next();
+					Set<String> domains = CertInfo.getAlternativeDomains(url);
+					result.add(url + " " + domains.toString());
+					System.out.println(url + " " + domains.toString());
+				}
+				outputTextArea.setText(String.join(System.lineSeparator(), result));
 			}
-		});
+		};
 
-		JButton getIPAddressButton = new JButton("GetIPAddress");
-
-		getIPAddressButton.addActionListener(new ActionListener() {
+		
+		JButton btnCertTime = new BackGroundButton("GetCertTime") {
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			protected void action() {
 				ArrayList<String> result = new ArrayList<String>();
-
-				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-					//using SwingWorker to prevent blocking burp main UI.
-					@Override
-					protected Map doInBackground() throws Exception {
-						try {
-							List<String> domains = Commons.getLinesFromTextArea(inputTextArea);
-							Iterator<String> it = domains.iterator();
-							while (it.hasNext()) {
-								String domain = it.next();
-								if (IPAddressUtils.isValidIP(domain)) {//目标是一个IP
-									result.add(domain);
-								} else if (DomainNameUtils.isValidDomain(domain)) {//目标是域名
-									HashMap<String, Set<String>> temp = DomainNameUtils.dnsquery(domain);
-									Set<String> IPSet = temp.get("IP");
-									result.addAll(IPSet);
-								}
-							}
-							outputTextArea.setText(String.join(System.lineSeparator(), result));
-						} catch (Exception e1) {
-							outputTextArea.setText(e1.getMessage());
-							e1.printStackTrace(stderr);
-						}
-						return null;
-					}
-
-					@Override
-					protected void done() {
-					}
-				};
-				worker.execute();
+				List<String> urls = Commons.getLinesFromTextArea(inputTextArea);
+				Iterator<String> it = urls.iterator();
+				while (it.hasNext()) {
+					String url = it.next();
+					String time = CertInfo.getCertTime(url);
+					result.add(url + " " + time);
+					System.out.println(url + " " + time);
+				}
+				outputTextArea.setText(String.join(System.lineSeparator(), result));
 			}
-		});
+		};
+		
+		JButton btnCertIssuer = new BackGroundButton("GetCertIssuer") {
+			@Override
+			protected void action() {
+				ArrayList<String> result = new ArrayList<String>();
+				List<String> urls = Commons.getLinesFromTextArea(inputTextArea);
+				Iterator<String> it = urls.iterator();
+				while (it.hasNext()) {
+					String url = it.next();
+					String time = CertInfo.getCertIssuer(url);
+					result.add(url + " " + time);
+					System.out.println(url + " " + time);
+				}
+				outputTextArea.setText(String.join(System.lineSeparator(), result));
+			}
+		};
+		
+		JButton iconHashButton = new BackGroundButton("GetIconHash") {
+			@Override
+			protected void action() {
+				try {
+					ArrayList<String> result = new ArrayList<String>();
+					List<String> urls = Commons.getLinesFromTextArea(inputTextArea);
+					Iterator<String> it = urls.iterator();
+					while (it.hasNext()) {
+						String url = it.next();
+						String hash = WebIcon.getHash(url);
+						result.add(hash);
+						System.out.println(url + " " + hash);
+					}
+					outputTextArea.setText(String.join(System.lineSeparator(), result));
+				} catch (Exception e1) {
+					outputTextArea.setText(e1.getMessage());
+					e1.printStackTrace(stderr);
+				}
+			}
+		};
+
+		
+		JButton getIPAddressButton = new BackGroundButton("GetIPAddress") {
+			@Override
+			protected void action() {
+				try {
+					ArrayList<String> result = new ArrayList<String>();
+					List<String> domains = Commons.getLinesFromTextArea(inputTextArea);
+					Iterator<String> it = domains.iterator();
+					while (it.hasNext()) {
+						String domain = it.next();
+						if (IPAddressUtils.isValidIP(domain)) {//目标是一个IP
+							result.add(domain);
+						} else if (DomainNameUtils.isValidDomain(domain)) {//目标是域名
+							HashMap<String, Set<String>> temp = DomainNameUtils.dnsquery(domain);
+							Set<String> IPSet = temp.get("IP");
+							result.addAll(IPSet);
+						}
+					}
+					outputTextArea.setText(String.join(System.lineSeparator(), result));
+				} catch (Exception e1) {
+					outputTextArea.setText(e1.getMessage());
+					e1.printStackTrace(stderr);
+				}
+			}
+		};
 
 		JButton rows2List = new JButton("Rows To List");
 
@@ -905,79 +708,53 @@ public class ToolPanel extends JPanel {
 		});
 
 
-		JButton btnGrep = new JButton("Grep Json");
-
-		btnGrep.addActionListener(new ActionListener() {
+		JButton btnGrepJson = new BackGroundButton("Grep Json") {
 			@Override
-			public void actionPerformed(ActionEvent e) {
-				new SwingWorker<Map,Map>(){
-
-					@Override
-					protected Map doInBackground() throws Exception {
-						try {
-							String content = inputTextArea.getText();
-							String toFind = JOptionPane.showInputDialog("to find which value", history);
-							if (toFind == null) {
-								return null;
-							} else {
-								history = toFind;
-								//stdout.println(content);
-								ArrayList<String> result = JSONHandler.grepValueFromJson(content, toFind);
-								//								stdout.println("##################Result of Grep JSON##################");
-								//								stdout.println(result.toString());
-								//								stdout.println("##################Result of Grep JSON##################");
-								//								stdout.println();
-
-								outputTextArea.setText(String.join(System.lineSeparator(), result));
-							}
-
-						} catch (Exception e1) {
-							outputTextArea.setText(e1.getMessage());
-							//e1.printStackTrace(stderr);
-						}
-						return null;
+			protected void action() {
+				try {
+					String content = inputTextArea.getText();
+					String toFind = JOptionPane.showInputDialog("to find which value", history);
+					if (toFind == null) {
+						return;
+					} else {
+						history = toFind;
+						ArrayList<String> result = JSONHandler.grepValueFromJson(content, toFind);
+						outputTextArea.setText(String.join(System.lineSeparator(), result));
 					}
 
-				}.execute();
-
+				} catch (Exception e1) {
+					outputTextArea.setText(e1.getMessage());
+				}
 			}
-
-		});
-
-		JButton btnLine = new JButton("Grep Line");
-
-		btnLine.addActionListener(new ActionListener() {
+		};
+		
+		JButton btnGrepLine = new BackGroundButton("Grep Line") {
 			@Override
-			public void actionPerformed(ActionEvent e) {
-				new SwingWorker<Map,Map>(){
-					@Override
-					protected Map doInBackground() throws Exception {
-						try {
-							String toFind = JOptionPane.showInputDialog("to find which value", history);
-							ArrayList<String> result = new ArrayList<String>();
-							if (toFind == null) {
-								return null;
-							} else {
-								history = toFind;
-								List<String> content = Commons.getLinesFromTextArea(inputTextArea);
-								for (String item : content) {
-									if (item.toLowerCase().contains(toFind.toLowerCase().trim())) {
-										result.add(item);
-									}
-								}
-								//outputTextArea.setText(result.toString());
-								outputTextArea.setText(String.join(System.lineSeparator(), result));
+			protected void action() {
+				try {
+					String toFind = JOptionPane.showInputDialog("to find which value", history);
+					ArrayList<String> result = new ArrayList<String>();
+					if (toFind == null) {
+						return;
+					} else {
+						history = toFind;
+						List<String> content = Commons.getLinesFromTextArea(inputTextArea);
+						for (String item : content) {
+							if (item.toLowerCase().contains(toFind.toLowerCase().trim())) {
+								result.add(item);
 							}
-
-						} catch (Exception e1) {
-							outputTextArea.setText(e1.getMessage());
-							//e1.printStackTrace(stderr);
 						}
-						return null;
+						//outputTextArea.setText(result.toString());
+						outputTextArea.setText(String.join(System.lineSeparator(), result));
 					}
-				}.execute();
+
+				} catch (Exception e1) {
+					outputTextArea.setText(e1.getMessage());
+					//e1.printStackTrace(stderr);
+				}
 			}
-		});
+		};
+		
 
 		/**
 		 * grep line的反面。如果某行数据包含了指定的关键词，就从结果中移除
@@ -1008,41 +785,34 @@ public class ToolPanel extends JPanel {
 			}
 		});
 
-		JButton btnRegexGrep = new JButton("Regex Grep");
-
-		btnRegexGrep.addActionListener(new ActionListener() {
+		
+		JButton btnRegexGrep = new BackGroundButton("Grep Grep") {
 			@Override
-			public void actionPerformed(ActionEvent e) {
-				new SwingWorker<Map,Map>() {
+			protected void action() {
+				try {
+					String toFind = JOptionPane.showInputDialog("Input Regex", history);
 
-					@Override
-					protected Map doInBackground() throws Exception {
-						try {
-							String toFind = JOptionPane.showInputDialog("Input Regex", history);
-
-							if (toFind == null) {
-								return null;
-							} else {
-								history = toFind;
-								ArrayList<String> result = new ArrayList<String>();
-								String PATTERN = toFind;
-								Pattern pRegex = Pattern.compile(PATTERN);
-								String content = inputTextArea.getText();
-								Matcher matcher = pRegex.matcher(content);
-								while (matcher.find()) {//多次查找
-									result.add(matcher.group());
-								}
-								outputTextArea.setText(String.join(System.lineSeparator(), result));
-							}
-						} catch (Exception e1) {
-							outputTextArea.setText(e1.getMessage());
-							e1.printStackTrace(stderr);
+					if (toFind == null) {
+						return;
+					} else {
+						history = toFind;
+						ArrayList<String> result = new ArrayList<String>();
+						String PATTERN = toFind;
+						Pattern pRegex = Pattern.compile(PATTERN);
+						String content = inputTextArea.getText();
+						Matcher matcher = pRegex.matcher(content);
+						while (matcher.find()) {//多次查找
+							result.add(matcher.group());
 						}
-						return null;
-					}}.execute();
-
+						outputTextArea.setText(String.join(System.lineSeparator(), result));
+					}
+				} catch (Exception e1) {
+					outputTextArea.setText(e1.getMessage());
+					e1.printStackTrace(stderr);
+				}
 			}
-		});
+		};
+		
 
 		JButton btnAddPrefix = new JButton("Add Prefix/Suffix");
 
@@ -1391,8 +1161,8 @@ public class ToolPanel extends JPanel {
 		buttonPanel.add(btnNmapResultToHttp1,new bagLayout(rowIndex, ++cloumnIndex));
 
 		cloumnIndex = 0;
-		buttonPanel.add(btnGrep, new bagLayout(++rowIndex, ++cloumnIndex));
-		buttonPanel.add(btnLine, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnGrepJson, new bagLayout(++rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnGrepLine, new bagLayout(rowIndex, ++cloumnIndex));
 		buttonPanel.add(btnRegexGrep, new bagLayout(rowIndex, ++cloumnIndex));
 		buttonPanel.add(btnRemoveLine, new bagLayout(rowIndex, ++cloumnIndex));
 
