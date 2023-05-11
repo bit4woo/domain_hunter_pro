@@ -135,6 +135,7 @@ public class SuperJTextArea extends JTextArea{
 					File tempFile = new File(content);
 					if (tempFile.exists()){
 						content = FileUtils.readFileToString(tempFile);
+						return content;
 					}
 				}
 			} catch (IOException e) {
@@ -143,6 +144,7 @@ public class SuperJTextArea extends JTextArea{
 		}
 
 		if (contentIsFileOrPath) {
+			content = super.getText();
 			return readDirOrFileContent(content);
 		}
 

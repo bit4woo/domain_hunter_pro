@@ -910,27 +910,36 @@ public class ToolPanel extends JPanel {
 		btnGrep.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				try {
-					String content = inputTextArea.getText();
-					String toFind = JOptionPane.showInputDialog("to find which value", history);
-					if (toFind == null) {
-						return;
-					} else {
-						history = toFind;
-						//stdout.println(content);
-						ArrayList<String> result = JSONHandler.grepValueFromJson(content, toFind);
-						//								stdout.println("##################Result of Grep JSON##################");
-						//								stdout.println(result.toString());
-						//								stdout.println("##################Result of Grep JSON##################");
-						//								stdout.println();
+				new SwingWorker<Map,Map>(){
 
-						outputTextArea.setText(String.join(System.lineSeparator(), result));
+					@Override
+					protected Map doInBackground() throws Exception {
+						try {
+							String content = inputTextArea.getText();
+							String toFind = JOptionPane.showInputDialog("to find which value", history);
+							if (toFind == null) {
+								return null;
+							} else {
+								history = toFind;
+								//stdout.println(content);
+								ArrayList<String> result = JSONHandler.grepValueFromJson(content, toFind);
+								//								stdout.println("##################Result of Grep JSON##################");
+								//								stdout.println(result.toString());
+								//								stdout.println("##################Result of Grep JSON##################");
+								//								stdout.println();
+
+								outputTextArea.setText(String.join(System.lineSeparator(), result));
+							}
+
+						} catch (Exception e1) {
+							outputTextArea.setText(e1.getMessage());
+							//e1.printStackTrace(stderr);
+						}
+						return null;
 					}
 
-				} catch (Exception e1) {
-					outputTextArea.setText(e1.getMessage());
-					//e1.printStackTrace(stderr);
-				}
+				}.execute();
+
 			}
 
 		});
@@ -940,28 +949,33 @@ public class ToolPanel extends JPanel {
 		btnLine.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				try {
-
-					String toFind = JOptionPane.showInputDialog("to find which value", history);
-					ArrayList<String> result = new ArrayList<String>();
-					if (toFind == null) {
-						return;
-					} else {
-						history = toFind;
-						List<String> content = Commons.getLinesFromTextArea(inputTextArea);
-						for (String item : content) {
-							if (item.toLowerCase().contains(toFind.toLowerCase().trim())) {
-								result.add(item);
+				new SwingWorker<Map,Map>(){
+					@Override
+					protected Map doInBackground() throws Exception {
+						try {
+							String toFind = JOptionPane.showInputDialog("to find which value", history);
+							ArrayList<String> result = new ArrayList<String>();
+							if (toFind == null) {
+								return null;
+							} else {
+								history = toFind;
+								List<String> content = Commons.getLinesFromTextArea(inputTextArea);
+								for (String item : content) {
+									if (item.toLowerCase().contains(toFind.toLowerCase().trim())) {
+										result.add(item);
+									}
+								}
+								//outputTextArea.setText(result.toString());
+								outputTextArea.setText(String.join(System.lineSeparator(), result));
 							}
-						}
-						//outputTextArea.setText(result.toString());
-						outputTextArea.setText(String.join(System.lineSeparator(), result));
-					}
 
-				} catch (Exception e1) {
-					outputTextArea.setText(e1.getMessage());
-					//e1.printStackTrace(stderr);
-				}
+						} catch (Exception e1) {
+							outputTextArea.setText(e1.getMessage());
+							//e1.printStackTrace(stderr);
+						}
+						return null;
+					}
+				}.execute();
 			}
 		});
 
@@ -999,27 +1013,34 @@ public class ToolPanel extends JPanel {
 		btnRegexGrep.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				try {
-					String toFind = JOptionPane.showInputDialog("Input Regex", history);
+				new SwingWorker<Map,Map>() {
 
-					if (toFind == null) {
-						return;
-					} else {
-						history = toFind;
-						ArrayList<String> result = new ArrayList<String>();
-						String PATTERN = toFind;
-						Pattern pRegex = Pattern.compile(PATTERN);
-						String content = inputTextArea.getText();
-						Matcher matcher = pRegex.matcher(content);
-						while (matcher.find()) {//多次查找
-							result.add(matcher.group());
+					@Override
+					protected Map doInBackground() throws Exception {
+						try {
+							String toFind = JOptionPane.showInputDialog("Input Regex", history);
+
+							if (toFind == null) {
+								return null;
+							} else {
+								history = toFind;
+								ArrayList<String> result = new ArrayList<String>();
+								String PATTERN = toFind;
+								Pattern pRegex = Pattern.compile(PATTERN);
+								String content = inputTextArea.getText();
+								Matcher matcher = pRegex.matcher(content);
+								while (matcher.find()) {//多次查找
+									result.add(matcher.group());
+								}
+								outputTextArea.setText(String.join(System.lineSeparator(), result));
+							}
+						} catch (Exception e1) {
+							outputTextArea.setText(e1.getMessage());
+							e1.printStackTrace(stderr);
 						}
-						outputTextArea.setText(String.join(System.lineSeparator(), result));
-					}
-				} catch (Exception e1) {
-					outputTextArea.setText(e1.getMessage());
-					e1.printStackTrace(stderr);
-				}
+						return null;
+					}}.execute();
+
 			}
 		});
 
