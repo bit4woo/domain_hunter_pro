@@ -262,7 +262,7 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		};
-		
+
 
 		JButton btnFindUrls1 = new BackGroundButton("Find URL 1") {
 			@Override
@@ -275,7 +275,7 @@ public class ToolPanel extends JPanel {
 			}
 		};
 
-		
+
 		JButton btnFindIP = new BackGroundButton("Find IP") {
 			@Override
 			protected void action() {
@@ -286,8 +286,8 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		};
-		
-		
+
+
 		JButton btnFindIPAndPort = new BackGroundButton("Find IP:Port") {
 			@Override
 			protected void action() {
@@ -298,7 +298,7 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		};
-		
+
 		JButton btnFindPort = new BackGroundButton("Find Port") {
 			@Override
 			protected void action() {
@@ -439,8 +439,8 @@ public class ToolPanel extends JPanel {
 			}
 		});
 
-		
-		
+
+
 		JButton btnFindSubnet = new BackGroundButton("Find Subnet") {
 			@Override
 			protected void action() {
@@ -451,8 +451,8 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		};
-		
-		
+
+
 		JButton btnFindEmail = new BackGroundButton("Find Email") {
 			@Override
 			protected void action() {
@@ -512,9 +512,9 @@ public class ToolPanel extends JPanel {
 			}
 
 		});
-		
-		
-		
+
+
+
 		JButton btnCertDomains = new BackGroundButton("GetCertDomains") {
 			@Override
 			protected void action() {
@@ -531,7 +531,7 @@ public class ToolPanel extends JPanel {
 			}
 		};
 
-		
+
 		JButton btnCertTime = new BackGroundButton("GetCertTime") {
 			@Override
 			protected void action() {
@@ -547,7 +547,7 @@ public class ToolPanel extends JPanel {
 				outputTextArea.setText(String.join(System.lineSeparator(), result));
 			}
 		};
-		
+
 		JButton btnCertIssuer = new BackGroundButton("GetCertIssuer") {
 			@Override
 			protected void action() {
@@ -563,7 +563,7 @@ public class ToolPanel extends JPanel {
 				outputTextArea.setText(String.join(System.lineSeparator(), result));
 			}
 		};
-		
+
 		JButton iconHashButton = new BackGroundButton("GetIconHash") {
 			@Override
 			protected void action() {
@@ -585,7 +585,7 @@ public class ToolPanel extends JPanel {
 			}
 		};
 
-		
+
 		JButton getIPAddressButton = new BackGroundButton("GetIPAddress") {
 			@Override
 			protected void action() {
@@ -727,7 +727,7 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		};
-		
+
 		JButton btnGrepLine = new BackGroundButton("Grep Line") {
 			@Override
 			protected void action() {
@@ -754,7 +754,7 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		};
-		
+
 
 		/**
 		 * grep line的反面。如果某行数据包含了指定的关键词，就从结果中移除
@@ -785,7 +785,7 @@ public class ToolPanel extends JPanel {
 			}
 		});
 
-		
+
 		JButton btnRegexGrep = new BackGroundButton("Grep Grep") {
 			@Override
 			protected void action() {
@@ -812,7 +812,7 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		};
-		
+
 
 		JButton btnAddPrefix = new JButton("Add Prefix/Suffix");
 

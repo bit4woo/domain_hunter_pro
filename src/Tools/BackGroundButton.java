@@ -8,12 +8,11 @@ import javax.swing.JButton;
 import javax.swing.SwingWorker;
 
 public abstract class BackGroundButton extends JButton {
-	
+
 	public BackGroundButton(String string) {
 		super(string);
 		addActionListener();
 	}
-
 
 	public final void addActionListener() {
 		addActionListener(new ActionListener() {
@@ -44,7 +43,6 @@ public abstract class BackGroundButton extends JButton {
 
 	public static void main() {
 		new BackGroundButton("aaa") {
-
 			@Override
 			protected void action() {
 
