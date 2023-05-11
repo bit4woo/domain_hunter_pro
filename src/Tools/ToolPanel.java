@@ -39,7 +39,6 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
-import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
@@ -242,9 +241,9 @@ public class ToolPanel extends JPanel {
 		btnFindDomains.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				SwingUtilities.invokeLater(new Runnable() {
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
 					@Override
-					public void run() {
+					protected Map doInBackground() throws Exception {
 						String content = inputTextArea.getText();
 						//stdout.println(content);
 						if (null != content) {
@@ -254,8 +253,14 @@ public class ToolPanel extends JPanel {
 							outputTextArea.setText(String.join(System.lineSeparator(), tmpList));
 							guiMain.getDomainPanel().getDomainResult().addIfValid(domains);
 						}
+						return null;
 					}
-				});
+
+					@Override
+					protected void done() {
+					}
+				};
+				worker.execute();
 			}
 		});
 
@@ -265,16 +270,22 @@ public class ToolPanel extends JPanel {
 		btnFindUrls.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				SwingUtilities.invokeLater(new Runnable() {
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
 					@Override
-					public void run() {
+					protected Map doInBackground() throws Exception {
 						String content = inputTextArea.getText();
 						if (null != content) {
 							List<String> urls = GrepUtils.grepURL(content);
 							outputTextArea.setText(String.join(System.lineSeparator(), urls));
 						}
+						return null;
 					}
-				});
+
+					@Override
+					protected void done() {
+					}
+				};
+				worker.execute();
 			}
 		});
 
@@ -282,16 +293,22 @@ public class ToolPanel extends JPanel {
 		btnFindUrls1.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				SwingUtilities.invokeLater(new Runnable() {
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
 					@Override
-					public void run() {
+					protected Map doInBackground() throws Exception {
 						String content = inputTextArea.getText();
 						if (null != content) {
 							List<String> urls = GrepUtils.grepURL1(content);
 							outputTextArea.setText(String.join(System.lineSeparator(), urls));
 						}
+						return null;
 					}
-				});
+
+					@Override
+					protected void done() {
+					}
+				};
+				worker.execute();
 			}
 		});
 
@@ -301,16 +318,22 @@ public class ToolPanel extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 
-				SwingUtilities.invokeLater(new Runnable() {
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
 					@Override
-					public void run() {
+					protected Map doInBackground() throws Exception {
 						String content = inputTextArea.getText();
 						if (null != content) {
 							List<String> iplist = GrepUtils.grepIP(content);
 							outputTextArea.setText(String.join(System.lineSeparator(), iplist));
 						}
+						return null;
 					}
-				});
+
+					@Override
+					protected void done() {
+					}
+				};
+				worker.execute();
 			}
 		});
 
@@ -320,16 +343,22 @@ public class ToolPanel extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 
-				SwingUtilities.invokeLater(new Runnable() {
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
 					@Override
-					public void run() {
+					protected Map doInBackground() throws Exception {
 						String content = inputTextArea.getText();
 						if (null != content) {
 							List<String> iplist = GrepUtils.grepIPAndPort(content);
 							outputTextArea.setText(String.join(System.lineSeparator(), iplist));
 						}
+						return null;
 					}
-				});
+
+					@Override
+					protected void done() {
+					}
+				};
+				worker.execute();
 			}
 		});
 
@@ -339,9 +368,9 @@ public class ToolPanel extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 
-				SwingUtilities.invokeLater(new Runnable() {
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
 					@Override
-					public void run() {
+					protected Map doInBackground() throws Exception {
 						String content = inputTextArea.getText();
 						if (null != content) {
 							List<String> result = new ArrayList<String>();
@@ -352,8 +381,14 @@ public class ToolPanel extends JPanel {
 							}
 							outputTextArea.setText(String.join(System.lineSeparator(), result));
 						}
+						return null;
 					}
-				});
+
+					@Override
+					protected void done() {
+					}
+				};
+				worker.execute();
 			}
 		});
 
@@ -485,16 +520,22 @@ public class ToolPanel extends JPanel {
 		btnFindSubnet.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				SwingUtilities.invokeLater(new Runnable() {
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
 					@Override
-					public void run() {
+					protected Map doInBackground() throws Exception {
 						String content = inputTextArea.getText();
 						if (null != content) {
 							List<String> subnets = GrepUtils.grepSubnet(content);
 							outputTextArea.setText(String.join(System.lineSeparator(), subnets));
 						}
+						return null;
 					}
-				});
+
+					@Override
+					protected void done() {
+					}
+				};
+				worker.execute();
 			}
 		});
 
@@ -503,6 +544,7 @@ public class ToolPanel extends JPanel {
 		btnFindEmail.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				/*
 				SwingUtilities.invokeLater(new Runnable() {
 					@Override
 					public void run() {
@@ -514,6 +556,32 @@ public class ToolPanel extends JPanel {
 						}
 					}
 				});
+				 */
+				//还是会卡死图形界面
+
+
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+					//using SwingWorker to prevent blocking burp main UI.
+					@Override
+					protected Map doInBackground() throws Exception {
+						btnFindEmail.setEnabled(false);
+						String content = inputTextArea.getText();
+						if (null != content) {
+							Set<String> emails = GrepUtils.grepEmail(content);
+							outputTextArea.setText(String.join(System.lineSeparator(), emails));
+							guiMain.getDomainPanel().getDomainResult().addIfValidEmail(emails);
+						}
+						return null;
+					}
+
+					@Override
+					protected void done() {
+						btnFindEmail.setEnabled(true);
+						stdout.println("~~~~~~~~~~~~~Task Done~~~~~~~~~~~~~");
+					}
+				};
+				worker.execute();
+
 			}
 		});
 
