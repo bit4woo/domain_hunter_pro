@@ -1023,21 +1023,20 @@ public class LineEntryMenu extends JPopupMenu {
 		JMenuItem removeItemsNotInTargets = new JMenuItem(new AbstractAction("Delete Entries Not in Targets") {//need to show dialog to confirm
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				SwingUtilities.invokeLater(new Runnable() {
+				new SwingWorker<Map,Map>(){
 
 					@Override
-					public void run() {
+					protected Map doInBackground() throws Exception {
 						int result = JOptionPane.showConfirmDialog(null,"Are you sure to DELETE these items ?");
 						if (result == JOptionPane.YES_OPTION) {
 							lineTable.getLineTableModel().removeRowsNotInTargets();
 							titlepanel.digStatus();
 						}else {
-							return;
+							return null;
 						}
+						return null;
 					}
-
-				});
-
+				}.execute();
 			}
 		});
 
