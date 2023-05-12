@@ -10,8 +10,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -27,7 +25,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -39,7 +36,6 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
-import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.event.DocumentEvent;
@@ -209,10 +205,10 @@ public class ToolPanel extends JPanel {
 
 	public JPanel createButtons() {
 
-		JButton outputToInput = new JButton("Input<----Output");
-		outputToInput.addActionListener(new ActionListener() {
+		JButton outputToInput = new BackGroundButton("Input<----Output") {
+
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			protected void action() {
 				statusLabel.setText("doing");
 				String content = outputTextArea.getText();
 				if (null != content) {
@@ -220,21 +216,8 @@ public class ToolPanel extends JPanel {
 				}
 				statusLabel.setText("Done!!!");
 			}
-		});
 
-
-		/*
-		JButton SearchToInput = new JButton("SearchResult---->Input");
-		SearchToInput.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				String content = searchResultTextArea.getText();
-				if (null != content) {
-					inputTextArea.setText(content);
-				}
-			}
-		});
-		 */
+		};
 
 		JButton btnFindDomains = new BackGroundButton("Find Domains") {
 			@Override
@@ -316,11 +299,10 @@ public class ToolPanel extends JPanel {
 		};
 
 
-		JButton btnMasscanResultToNmap = new JButton("Masscan->Nmap");
+		JButton btnMasscanResultToNmap = new BackGroundButton("Masscan->Nmap"){
 
-		btnMasscanResultToNmap.addActionListener(new ActionListener() {
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			protected void action() {
 				String content = inputTextArea.getText();
 				if (null != content && !content.equals("")) {
 
@@ -351,13 +333,13 @@ public class ToolPanel extends JPanel {
 					outputTextArea.setText(String.join(System.lineSeparator(), nmapCmds));
 				}
 			}
-		});
 
-		JButton btnMasscanResultToHttp = new JButton("Masscan->Http");
+		};
 
-		btnMasscanResultToHttp.addActionListener(new ActionListener() {
+		JButton btnMasscanResultToHttp = new BackGroundButton("Masscan->Http"){
+
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			protected void action() {
 				String content = inputTextArea.getText();
 				if (null != content && !content.equals("")) {
 
@@ -378,13 +360,14 @@ public class ToolPanel extends JPanel {
 					outputTextArea.setText(String.join(System.lineSeparator(), result));
 				}
 			}
-		});
 
-		JButton btnNmapResultToHttp = new JButton("Nmap->Http");
+		};
 
-		btnNmapResultToHttp.addActionListener(new ActionListener() {
+
+		JButton btnNmapResultToHttp = new BackGroundButton("Nmap->Http"){
+
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			protected void action() {
 				String content = inputTextArea.getText();
 				if (null != content && !content.equals("")) {
 					List<String> result = new ArrayList<String>();
@@ -412,14 +395,14 @@ public class ToolPanel extends JPanel {
 					outputTextArea.setText(String.join(System.lineSeparator(), result));
 				}
 			}
-		});
+
+		};
 
 
-		JButton btnNmapResultToHttp1 = new JButton("Nmap->Http 1");
+		JButton btnNmapResultToHttp1 = new BackGroundButton("Nmap->Http 1"){
 
-		btnNmapResultToHttp1.addActionListener(new ActionListener() {
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			protected void action() {
 				String content = inputTextArea.getText();
 				if (null != content && !content.equals("")) {
 
@@ -437,7 +420,7 @@ public class ToolPanel extends JPanel {
 					outputTextArea.setText(String.join(System.lineSeparator(), result));
 				}
 			}
-		});
+		};
 
 
 
@@ -466,16 +449,14 @@ public class ToolPanel extends JPanel {
 		};
 
 
-		JButton btnOpenurls = new JButton("OpenURLs");
-
-		btnOpenurls.addActionListener(new ActionListener() {
+		JButton btnOpenurls = new BackGroundButton("OpenURLs"){
 			List<String> urls = new ArrayList<>();
 			Iterator<String> it = urls.iterator();
 			private int totalNumber;
 			private int left;
 
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			protected void action() {
 				if (inputTextAreaChanged) {//default is true
 					urls = Commons.getLinesFromTextArea(inputTextArea);
 					totalNumber = urls.size();
@@ -505,13 +486,12 @@ public class ToolPanel extends JPanel {
 						i--;
 						left--;
 					}
-					btnOpenurls.setText("OpenURLs" + "(" + left + "/" + totalNumber + ")");
+					setText("OpenURLs" + "(" + left + "/" + totalNumber + ")");
 				} catch (Exception e1) {
 					e1.printStackTrace(stderr);
 				}
 			}
-
-		});
+		};
 
 
 
@@ -611,11 +591,10 @@ public class ToolPanel extends JPanel {
 			}
 		};
 
-		JButton rows2List = new JButton("Rows To List");
+		JButton rows2List = new BackGroundButton("Rows To List"){
 
-		rows2List.addActionListener(new ActionListener() {
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			protected void action() {
 				try {
 					List<String> content = Commons.getLinesFromTextArea(inputTextArea);
 					outputTextArea.setText(content.toString());
@@ -624,13 +603,13 @@ public class ToolPanel extends JPanel {
 				}
 			}
 
-		});
+		};
 
-		JButton rows2Array = new JButton("Rows To Array");
 
-		rows2Array.addActionListener(new ActionListener() {
+		JButton rows2Array = new BackGroundButton("Rows To Array"){
+
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			protected void action() {
 				try {
 					List<String> content = Commons.getLinesFromTextArea(inputTextArea);
 					for (int i = 0; i < content.size(); i++) {
@@ -643,13 +622,13 @@ public class ToolPanel extends JPanel {
 				}
 			}
 
-		});
+		};
 
-		JButton removeDuplicate = new JButton("Deduplicate");
 
-		removeDuplicate.addActionListener(new ActionListener() {
+		JButton removeDuplicate = new BackGroundButton("Deduplicate"){
+
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			protected void action() {
 				try {
 					List<String> content = Commons.getLinesFromTextArea(inputTextArea);
 					List<String> result = new ArrayList<String>();
@@ -667,13 +646,14 @@ public class ToolPanel extends JPanel {
 					outputTextArea.setText(e1.getMessage());
 				}
 			}
-		});
 
-		JButton sort = new JButton("Sort");
+		};
 
-		sort.addActionListener(new ActionListener() {
+
+		JButton sort = new BackGroundButton("Sort"){
+
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			protected void action() {
 				try {
 					List<String> content = Commons.getLinesFromTextArea(inputTextArea);
 					Set<String> contentSet = new HashSet<>(content);
@@ -686,13 +666,14 @@ public class ToolPanel extends JPanel {
 					outputTextArea.setText(e1.getMessage());
 				}
 			}
-		});
 
-		JButton sortByLength = new JButton("Sort by Length");
+		};
 
-		sortByLength.addActionListener(new ActionListener() {
+
+		JButton sortByLength = new BackGroundButton("Sort by Length"){
+
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			protected void action() {
 				try {
 					List<String> content = Commons.getLinesFromTextArea(inputTextArea);
 					Set<String> contentSet = new HashSet<>(content);
@@ -705,7 +686,8 @@ public class ToolPanel extends JPanel {
 					outputTextArea.setText(e1.getMessage());
 				}
 			}
-		});
+
+		};
 
 
 		JButton btnGrepJson = new BackGroundButton("Grep Json") {
@@ -760,10 +742,9 @@ public class ToolPanel extends JPanel {
 		 * grep line的反面。如果某行数据包含了指定的关键词，就从结果中移除
 		 * 即 nagetive search
 		 */
-		JButton btnRemoveLine = new JButton("Remove Line");
-		btnRemoveLine.addActionListener(new ActionListener() {
+		JButton btnRemoveLine = new BackGroundButton("Remove Line") {
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			protected void action() {
 				try {
 					String toFind = JOptionPane.showInputDialog("remove lines which contain:", history);
 					ArrayList<String> result = new ArrayList<String>();
@@ -783,7 +764,7 @@ public class ToolPanel extends JPanel {
 					outputTextArea.setText(e1.getMessage());
 				}
 			}
-		});
+		};
 
 
 		JButton btnRegexGrep = new BackGroundButton("Grep Grep") {
@@ -814,11 +795,9 @@ public class ToolPanel extends JPanel {
 		};
 
 
-		JButton btnAddPrefix = new JButton("Add Prefix/Suffix");
-
-		btnAddPrefix.addActionListener(new ActionListener() {
+		JButton btnAddPrefix = new BackGroundButton("Add Prefix/Suffix") {
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			protected void action() {
 				try {
 					String toAddPrefix = JOptionPane.showInputDialog("prefix to add", null);
 					String toAddSuffix = JOptionPane.showInputDialog("suffix to add", null);
@@ -845,13 +824,12 @@ public class ToolPanel extends JPanel {
 					outputTextArea.setText(e1.getMessage());
 				}
 			}
-		});
+		};
 
-		JButton btnRemovePrefix = new JButton("Remove Prefix/Suffix");
 
-		btnRemovePrefix.addActionListener(new ActionListener() {
+		JButton btnRemovePrefix = new BackGroundButton("Remove Prefix/Suffix") {
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			protected void action() {
 				try {
 					String Prefix = JOptionPane.showInputDialog("prefix to remove", null);
 					String Suffix = JOptionPane.showInputDialog("suffix to remove", null);
@@ -863,14 +841,14 @@ public class ToolPanel extends JPanel {
 					e1.printStackTrace(stderr);
 				}
 			}
-		});
+
+		};
 
 
-		JButton btnReplace = new JButton("ReplaceFirstStr");
+		JButton btnReplace = new BackGroundButton("ReplaceFirstStr"){
 
-		btnReplace.addActionListener(new ActionListener() {
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			protected void action() {
 				try {
 					String replace = JOptionPane.showInputDialog("string (from)", null);
 					String to = JOptionPane.showInputDialog("replacement (to)", null);
@@ -899,14 +877,14 @@ public class ToolPanel extends JPanel {
 					e1.printStackTrace(stderr);
 				}
 			}
-		});
+
+		};
 
 
-		JButton btnIPsToCIDR = new JButton("IPs To CIDR");
+		JButton btnIPsToCIDR = new BackGroundButton("IPs To CIDR"){
 
-		btnIPsToCIDR.addActionListener(new ActionListener() {
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			protected void action() {
 				try {
 					List<String> IPs = Commons.getLinesFromTextArea(inputTextArea);
 					Set<String> subnets = IPAddressUtils.toSmallerSubNets(new HashSet<String>(IPs));
@@ -920,13 +898,13 @@ public class ToolPanel extends JPanel {
 					e1.printStackTrace(stderr);
 				}
 			}
-		});
 
-		JButton btnCIDRToIPs = new JButton("CIDR To IPs");
+		};
 
-		btnCIDRToIPs.addActionListener(new ActionListener() {
+		JButton btnCIDRToIPs = new BackGroundButton("CIDR To IPs"){
+
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			protected void action() {
 				try {
 					List<String> subnets = Commons.getLinesFromTextArea(inputTextArea);
 					List<String> IPs = IPAddressUtils.toIPList(subnets);// 当前所有title结果计算出的IP集合
@@ -936,13 +914,14 @@ public class ToolPanel extends JPanel {
 					e1.printStackTrace(stderr);
 				}
 			}
-		});
 
-		JButton unescapeJava = new JButton("UnescapeJava");
+		};
 
-		unescapeJava.addActionListener(new ActionListener() {
+
+		JButton unescapeJava = new BackGroundButton("UnescapeJava"){
+
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			protected void action() {
 				try {
 					outputTextArea.setText(StringEscapeUtils.unescapeJava(inputTextArea.getText()));
 				} catch (Exception e1) {
@@ -950,13 +929,14 @@ public class ToolPanel extends JPanel {
 					e1.printStackTrace(stderr);
 				}
 			}
-		});
 
-		JButton unescapeHTML = new JButton("UnescapeHTML");
+		};
 
-		unescapeHTML.addActionListener(new ActionListener() {
+
+		JButton unescapeHTML = new BackGroundButton("UnescapeHTML"){
+
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			protected void action() {
 				try {
 					outputTextArea.setText(StringEscapeUtils.unescapeHtml4(inputTextArea.getText()));
 				} catch (Exception e1) {
@@ -964,13 +944,14 @@ public class ToolPanel extends JPanel {
 					e1.printStackTrace(stderr);
 				}
 			}
-		});
 
-		JButton Base64ToFile = new JButton("Base64ToFile");
+		};
 
-		Base64ToFile.addActionListener(new ActionListener() {
+
+		JButton Base64ToFile = new BackGroundButton("Base64ToFile"){
+
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			protected void action() {
 				try {
 					byte[] payloadBytes = Base64.getDecoder().decode(inputTextArea.getText());
 					File downloadFile = saveDialog();
@@ -1006,13 +987,14 @@ public class ToolPanel extends JPanel {
 					return null;
 				}
 			}
-		});
 
-		JButton splitButton = new JButton("Split");
+		};
 
-		splitButton.addActionListener(new ActionListener() {
+
+		JButton splitButton = new BackGroundButton("Split"){
+
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			protected void action() {
 				String separator = JOptionPane.showInputDialog("input separator", null);
 				if (separator != null) {//&& !separator.trim().equals("")有可能本来就是空格分割，所以不能有这个条件
 					String text = inputTextArea.getText();
@@ -1020,35 +1002,38 @@ public class ToolPanel extends JPanel {
 					outputTextArea.setText(String.join(System.lineSeparator(), items));
 				}
 			}
-		});
 
-		JButton combineButton = new JButton("Combine");
+		};
 
-		combineButton.addActionListener(new ActionListener() {
+
+		JButton combineButton = new BackGroundButton("Combine"){
+
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			protected void action() {
 				String separator = JOptionPane.showInputDialog("input connect char", null);
 				if (separator != null) {// && !separator.trim().equals("")
 					List<String> items = Commons.getLinesFromTextArea(inputTextArea);
 					outputTextArea.setText(String.join(separator, items));
 				}
 			}
-		});
 
-		JButton toLowerCaseButton = new JButton("toLowerCase");
+		};
 
-		toLowerCaseButton.addActionListener(new ActionListener() {
+
+		JButton toLowerCaseButton = new BackGroundButton("toLowerCase"){
+
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			protected void action() {
 				outputTextArea.setText(inputTextArea.getText().toLowerCase());
 			}
-		});
 
-		JButton OpenFileButton = new JButton("Open File");
+		};
 
-		OpenFileButton.addActionListener(new ActionListener() {
+
+		JButton OpenFileButton = new BackGroundButton("Open File"){
+
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			protected void action() {
 				String dir = ((SuperJTextArea) inputTextArea).getTextAsDisplay();
 				try {
 					Desktop.getDesktop().open(new File(dir));
@@ -1057,37 +1042,27 @@ public class ToolPanel extends JPanel {
 					statusLabel.setText("your input is not a valid path or file");
 				}
 			}
-		});
 
-		JButton testButton = new JButton("test");
+		};
 
-		testButton.addActionListener(new ActionListener() {
+
+		JButton testButton = new BackGroundButton("test"){
+
 			@Override
-			public void actionPerformed(ActionEvent e) {
-
-				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-					//using SwingWorker to prevent blocking burp main UI.
-					@Override
-					protected Map doInBackground() throws Exception {
-						try {
-							outputTextArea.setText(WebIcon.getHash(inputTextArea.getText()));
-						} catch (Exception e1) {
-							outputTextArea.setText(e1.getMessage());
-							e1.printStackTrace(stderr);
-						}
-						return null;
-					}
-
-					@Override
-					protected void done() {
-					}
-				};
-				worker.execute();
+			protected void action() {
+				try {
+					outputTextArea.setText(WebIcon.getHash(inputTextArea.getText()));
+				} catch (Exception e1) {
+					outputTextArea.setText(e1.getMessage());
+					e1.printStackTrace(stderr);
+				}
 			}
-		});
+
+		};
+
 
 		/*
-		JButton JsonSimplify = new JButton("Simplify Json");
+		JButton JsonSimplify = new BackGroundButton("Simplify Json");
 
 		JsonSimplify.addActionListener(new ActionListener() {
 			@Override
@@ -1105,7 +1080,7 @@ public class ToolPanel extends JPanel {
 		});
 
 
-		JButton JsonBeautify = new JButton("Beautify Json");
+		JButton JsonBeautify = new BackGroundButton("Beautify Json");
 
 		JsonBeautify.addActionListener(new ActionListener() {
 			@Override
