@@ -239,7 +239,7 @@ public class DomainPanel extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				guiMain.stopLiveCapture();
 			}});
-		HeaderPanel.add(test);
+		//HeaderPanel.add(test);
 
 
 
