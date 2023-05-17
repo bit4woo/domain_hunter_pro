@@ -233,6 +233,21 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		};
+		
+		JButton btnFindDomainsNoPort = new BackGroundButton("Find Domains(No Port)") {
+			@Override
+			protected void action() {
+				String content = inputTextArea.getText();
+				//stdout.println(content);
+				if (null != content) {
+					Set<String> domains = GrepUtils.grepDomainNoPort(content);
+					ArrayList<String> tmpList = new ArrayList<String>(domains);
+					Collections.sort(tmpList, new DomainComparator());
+					outputTextArea.setText(String.join(System.lineSeparator(), tmpList));
+					guiMain.getDomainPanel().getDomainResult().addIfValid(domains);
+				}
+			}
+		};
 
 
 		JButton btnFindUrls = new BackGroundButton("Find URL") {
@@ -1117,6 +1132,7 @@ public class ToolPanel extends JPanel {
 
 		cloumnIndex = 0;
 		buttonPanel.add(btnFindDomains, new bagLayout(++rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnFindDomainsNoPort, new bagLayout(rowIndex, ++cloumnIndex));
 		buttonPanel.add(btnFindUrls, new bagLayout(rowIndex, ++cloumnIndex));
 		buttonPanel.add(btnFindUrls1, new bagLayout(rowIndex, ++cloumnIndex));
 

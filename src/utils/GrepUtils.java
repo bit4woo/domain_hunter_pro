@@ -132,6 +132,41 @@ public class GrepUtils {
 		}
 		return domains;
 	}
+	
+	/**
+	 * 不带端口
+	 * @param httpResponse
+	 * @return
+	 */
+	public static Set<String> grepDomainNoPort(String httpResponse) {
+		httpResponse = httpResponse.toLowerCase();
+		//httpResponse = cleanResponse(httpResponse);
+		Set<String> domains = new HashSet<>();
+		//"^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$"
+		final String DOMAIN_NAME_PATTERN = "((?!-)[A-Za-z0-9-]{1,63}(?<!-)\\.)+[A-Za-z]{2,6}";
+
+		List<String> lines = Commons.textToLines(httpResponse);
+
+		for (String line:lines) {//分行进行提取，似乎可以提高成功率？
+			line = decodeAll(line);
+			Pattern pDomainNameOnly = Pattern.compile(DOMAIN_NAME_PATTERN);
+			Matcher matcher = pDomainNameOnly.matcher(line);
+			while (matcher.find()) {//多次查找
+				String tmpDomain = matcher.group();
+				if (tmpDomain.startsWith("*.")) {
+					tmpDomain = tmpDomain.replaceFirst("\\*\\.","");//第一个参数是正则
+				}
+				if (tmpDomain.toLowerCase().startsWith("252f")) {//url中的//的URL编码，上面的解码逻辑可能出错
+					tmpDomain = tmpDomain.replaceFirst("252f","");
+				}
+				if (tmpDomain.toLowerCase().startsWith("2f")) {
+					tmpDomain = tmpDomain.replaceFirst("2f","");
+				}
+				domains.add(tmpDomain);
+			}
+		}
+		return domains;
+	}
 
 	//https://stackoverflow.com/questions/163360/regular-expression-to-match-urls-in-java
 	//https://github.com/aosp-mirror/platform_frameworks_base/blob/master/core/java/android/util/Patterns.java
