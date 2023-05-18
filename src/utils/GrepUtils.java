@@ -1,17 +1,20 @@
 package utils;
 
-import Tools.PatternsFromAndroid;
-import burp.Commons;
-
-import org.apache.commons.text.StringEscapeUtils;
-
 import java.net.URLDecoder;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.text.StringEscapeUtils;
+
+import Tools.PatternsFromAndroid;
+import burp.Commons;
+
 public class GrepUtils {
-	
+
 	//public static final String REGEX_EMAIL = "[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z]{2,6}";
 	public static final String REGEX_EMAIL = "[a-zA-Z0-9_.+-]+@[[a-zA-Z0-9-]+\\.]+[a-zA-Z]{2,6}";
 
@@ -132,7 +135,7 @@ public class GrepUtils {
 		}
 		return domains;
 	}
-	
+
 	/**
 	 * 不带端口
 	 * @param httpResponse
@@ -198,16 +201,16 @@ public class GrepUtils {
 		//regex_str = Pattern.quote(regex_str);
 		Pattern pt = Pattern.compile(regex_str);
 		Pattern pt1 = Pattern.compile(regex_str1);
-		
+
 		for (String line:lines) {//分行进行提取，似乎可以提高成功率？PATH_AND_QUERY
 			line = decodeAll(line);
-			
+
 			Matcher matcher = pt.matcher(line);
 			while (matcher.find()) {//多次查找
 				String url = matcher.group();
 				URLs.add(url);
 			}
-			
+
 			//这部分提取的是含有协议头的完整URL地址
 			matcher = PatternsFromAndroid.WEB_URL.matcher(line);
 			while (matcher.find()) {//多次查找
@@ -228,8 +231,8 @@ public class GrepUtils {
 		tmplist = Commons.removePrefixAndSuffix(tmplist,"\'","\'");
 		return tmplist;
 	}
-	
-	
+
+
 	/**
 	 * 误报较多，却有时候有用
 	 * @param httpResponse
@@ -243,10 +246,10 @@ public class GrepUtils {
 
 		String regex_str1= "[a-zA-Z0-9_\\-/]{1,}/[a-zA-Z0-9_\\-.]{1,}";//处理不是/开头的urlpath
 		Pattern pt1 = Pattern.compile(regex_str1);
-		
+
 		for (String line:lines) {//分行进行提取，似乎可以提高成功率？PATH_AND_QUERY
 			line = decodeAll(line);
-			
+
 			Matcher matcher = pt1.matcher(line);
 			while (matcher.find()) {//多次查找
 				String url = matcher.group();
@@ -279,6 +282,45 @@ public class GrepUtils {
 			while (matcher.find()) {//多次查找
 				String tmpIP = matcher.group();
 				if (IPAddressUtils.isValidIP(tmpIP)) {
+					IPSet.add(tmpIP);
+				}
+			}
+		}
+
+		List<String> tmplist= new ArrayList<>(IPSet);
+		//Collections.sort(tmplist);
+		return tmplist;
+	}
+
+	public static List<String> grepPrivateIP(String httpResponse) {
+		Set<String> IPSet = new HashSet<>();
+		List<String> lines = Commons.textToLines(httpResponse);
+
+		for (String line:lines) {
+			Matcher matcher = PatternsFromAndroid.IP_ADDRESS.matcher(line);
+			while (matcher.find()) {//多次查找
+				String tmpIP = matcher.group();
+				if (IPAddressUtils.isValidIP(tmpIP) && IPAddressUtils.isPrivateIPv4(tmpIP)) {
+					IPSet.add(tmpIP);
+				}
+			}
+		}
+
+		List<String> tmplist= new ArrayList<>(IPSet);
+		//Collections.sort(tmplist);
+		return tmplist;
+	}
+
+
+	public static List<String> grepPublicIP(String httpResponse) {
+		Set<String> IPSet = new HashSet<>();
+		List<String> lines = Commons.textToLines(httpResponse);
+
+		for (String line:lines) {
+			Matcher matcher = PatternsFromAndroid.IP_ADDRESS.matcher(line);
+			while (matcher.find()) {//多次查找
+				String tmpIP = matcher.group();
+				if (IPAddressUtils.isValidIP(tmpIP) && !IPAddressUtils.isPrivateIPv4(tmpIP)) {
 					IPSet.add(tmpIP);
 				}
 			}
@@ -422,7 +464,7 @@ public class GrepUtils {
 	}
 
 	public static void test1() {
-//		String line = "\"%.@.\\\"xsrf\\\",";
+		//		String line = "\"%.@.\\\"xsrf\\\",";
 		String line = "%2f%2fbaidu.com";
 		System.out.println(needURLConvert(line));
 		if (needURLConvert(line)) {

@@ -233,7 +233,7 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		};
-		
+
 		JButton btnFindDomainsNoPort = new BackGroundButton("Find Domains(No Port)") {
 			@Override
 			protected void action() {
@@ -280,6 +280,29 @@ public class ToolPanel extends JPanel {
 				String content = inputTextArea.getText();
 				if (null != content) {
 					List<String> iplist = GrepUtils.grepIP(content);
+					outputTextArea.setText(String.join(System.lineSeparator(), iplist));
+				}
+			}
+		};
+
+		JButton btnFindPublicIP = new BackGroundButton("Find Public IP") {
+			@Override
+			protected void action() {
+				String content = inputTextArea.getText();
+				if (null != content) {
+					List<String> iplist = GrepUtils.grepPublicIP(content);
+					outputTextArea.setText(String.join(System.lineSeparator(), iplist));
+				}
+			}
+		};
+
+
+		JButton btnFindPrivateIP = new BackGroundButton("Find Private IP") {
+			@Override
+			protected void action() {
+				String content = inputTextArea.getText();
+				if (null != content) {
+					List<String> iplist = GrepUtils.grepPrivateIP(content);
 					outputTextArea.setText(String.join(System.lineSeparator(), iplist));
 				}
 			}
@@ -782,7 +805,7 @@ public class ToolPanel extends JPanel {
 		};
 
 
-		JButton btnRegexGrep = new BackGroundButton("Grep Grep") {
+		JButton btnRegexGrep = new BackGroundButton("Grep Regex") {
 			@Override
 			protected void action() {
 				try {
@@ -1138,11 +1161,13 @@ public class ToolPanel extends JPanel {
 
 		cloumnIndex = 0;
 		buttonPanel.add(btnFindIP, new bagLayout(++rowIndex, ++cloumnIndex));
-		buttonPanel.add(btnFindIPAndPort, new bagLayout(rowIndex, ++cloumnIndex));
-		buttonPanel.add(btnFindPort, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnFindPublicIP, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnFindPrivateIP, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnFindSubnet, new bagLayout(rowIndex, ++cloumnIndex));
 
 		cloumnIndex = 0;
-		buttonPanel.add(btnFindSubnet, new bagLayout(++rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnFindIPAndPort, new bagLayout(++rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnFindPort, new bagLayout(rowIndex, ++cloumnIndex));
 		buttonPanel.add(btnFindEmail, new bagLayout(rowIndex, ++cloumnIndex));
 
 		cloumnIndex = 0;
