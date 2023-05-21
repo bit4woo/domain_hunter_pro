@@ -312,6 +312,9 @@ public class LineEntry {
 	}
 
 	public boolean isCDN() {
+		if (webcontainer.contains("cloudflare")) {
+			return true;
+		}
 		if (CNAMESet.size() >1) {
 			return true;
 		}

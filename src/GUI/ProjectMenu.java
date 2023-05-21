@@ -54,15 +54,15 @@ public class ProjectMenu extends JMenu{
 		this.add(openMenu);
 
 
-		JMenuItem renameMenu = new JMenuItem(new AbstractAction("Rename")
+		JMenuItem renameMenu = new JMenuItem(new AbstractAction("Rename(Save As)")
 		{
 			@Override
-			public void actionPerformed(ActionEvent actionEvent) {//实质就是save一个空的项目
-				createNewDb(gui);//save as
+			public void actionPerformed(ActionEvent actionEvent) {
+				gui.getDomainPanel().renameDB();
 			}
 		});
 		renameMenu.setToolTipText("Rename current DB File");
-		//this.add(renameMenu);TODO
+		this.add(renameMenu);
 
 		/**
 		 * 导入db文件，将数据和当前DB文件进行合并。

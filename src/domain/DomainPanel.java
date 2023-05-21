@@ -51,6 +51,7 @@ import burp.IBurpExtenderCallbacks;
 import burp.IHttpRequestResponse;
 import burp.IHttpService;
 import burp.IScanIssue;
+import burp.dbFileChooser;
 import config.ConfigPanel;
 import dao.DomainDao;
 import dao.TargetDao;
@@ -233,13 +234,13 @@ public class DomainPanel extends JPanel {
 		HeaderPanel.add(btnSaveDomainOnly);
 
 
-		JButton test = new JButton("test");
-		test.setToolTipText("Only save data in Domain Panel");
-		test.addActionListener(new ActionListener() {
+		JButton rename = new JButton("Rename");
+		rename.setToolTipText("Rename DB File");
+		rename.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				guiMain.stopLiveCapture();
+				renameDB();
 			}});
-		//HeaderPanel.add(test);
+		HeaderPanel.add(rename);
 
 
 
@@ -638,13 +639,13 @@ public class DomainPanel extends JPanel {
     执行完成后，就已将数据保存到了domainResult
 	 */
 	public Map<String, Set<String>> search(List<IHttpRequestResponse> AllMessages, Set<String> rootdomains, Set<String> keywords,boolean searchThirdPart) {
-		
+
 		if (AllMessages ==null) {
 			AllMessages = new ArrayList<IHttpRequestResponse>();
-			
+
 			IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
 			IHttpRequestResponse[] messages = callbacks.getSiteMap(null);
-			
+
 			AllMessages.addAll(Arrays.asList(messages));
 			AllMessages.addAll(collectPackageNameMessages());//包含错误回显的请求响应消息
 		}
@@ -687,7 +688,7 @@ public class DomainPanel extends JPanel {
 		};
 		worker.execute();
 	}
-	
+
 
 	/**
 	 * 从issue中提取Email
@@ -839,6 +840,24 @@ public class DomainPanel extends JPanel {
 			BurpExtender.getStdout().println("DB File Backed Up:" + bakfile.getAbsolutePath());
 		} catch (IOException e1) {
 			e1.printStackTrace(BurpExtender.getStderr());
+		}
+	}
+
+	public void renameDB() {
+		File file = guiMain.getCurrentDBFile();
+		if (file == null) return;
+
+		File newFile = new dbFileChooser().dialog(false,".db");//通过保存对话指定文件，这会是一个空文件。
+
+		if (null != newFile) {
+			try {
+				FileUtils.moveFile(file, newFile);
+			} catch (IOException e) {
+				e.printStackTrace(stderr);
+			}
+			if (newFile.exists()) {
+				guiMain.getDataLoadManager().loadDbfileToHunter(newFile.toString());
+			}
 		}
 	}
 

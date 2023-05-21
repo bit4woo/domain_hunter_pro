@@ -11,7 +11,8 @@ public enum SearchStringDork {
 	COMMENT,
 	TITLE,
 	ASNINFO,
-	SOURCE;
+	SOURCE,
+	SERVER;
 
 	//REGEX;//这个用于正则搜索
 
@@ -120,6 +121,10 @@ public enum SearchStringDork {
 			}
 
 			if (dork.equalsIgnoreCase(SOURCE.toString())) {
+				tempContent = line.getEntrySource();
+			}
+			
+			if (dork.equalsIgnoreCase(SERVER.toString())) {
 				tempContent = line.getEntrySource();
 			}
 
