@@ -56,7 +56,7 @@ public class TargetEntryMenu extends JPopupMenu {
 				clipboard.setContents(selection, null);
 			}
 		});
-		
+
 		JMenuItem copyEmails = new JMenuItem(new AbstractAction("Copy All Emails Of This") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -484,6 +484,29 @@ public class TargetEntryMenu extends JPopupMenu {
 			}
 		});
 
+		JMenuItem SearchAllItem = new JMenuItem(new AbstractAction("Search On All Engines") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				SearchOnFoFaItem.doClick();
+				SearchOn360QuakeItem.doClick();
+				SearchOnTi360Item.doClick();
+				SearchOnTiQianxinItem.doClick();
+				SearchOnHunterQianxinItem.doClick();
+				SearchOnZoomEyeItem.doClick();
+				SearchOnShodanItem.doClick();
+			}
+		});
+
+
+		JMenuItem SearchAllAutoItem = new JMenuItem(new AbstractAction("Auto Search On All Engines") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				SearchOnFoFaAutoItem.doClick();
+				SearchOnQuakeAutoItem.doClick();
+				SearchOnHunterAutoItem.doClick();
+			}
+		});
+
 
 		this.add(getSubDomainsOf);
 		this.add(copyEmails);
@@ -491,6 +514,7 @@ public class TargetEntryMenu extends JPopupMenu {
 		this.add(addToBlackItem);
 		this.addSeparator();
 
+		this.add(SearchAllItem);
 		this.add(SearchOnFoFaItem);
 		this.add(SearchOn360QuakeItem);
 		this.add(SearchOnTi360Item);
@@ -500,6 +524,7 @@ public class TargetEntryMenu extends JPopupMenu {
 		this.add(SearchOnShodanItem);
 		this.addSeparator();
 
+		this.add(SearchAllAutoItem);
 		this.add(SearchOnFoFaAutoItem);
 		this.add(SearchOnQuakeAutoItem);
 		this.add(SearchOnHunterAutoItem);
@@ -511,7 +536,7 @@ public class TargetEntryMenu extends JPopupMenu {
 		this.add(SearchEmailOnHunterIOItem);
 		this.add(zoneTransferCheck);
 		this.add(zoneTransferCheckAll);
-		
+
 		this.addSeparator();
 	}
 
