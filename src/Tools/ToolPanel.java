@@ -273,6 +273,27 @@ public class ToolPanel extends JPanel {
 			}
 		};
 
+		JButton btnCleanUrl = new BackGroundButton("Clean URL") {
+			@Override
+			protected void action() {
+				String content = inputTextArea.getText();
+				if (null != content) {
+					List<String> lines = Commons.getLinesFromTextArea(inputTextArea);
+					List<String> result = new ArrayList<String>();
+
+					for (String item:lines) {
+						if (GrepUtils.uselessExtension(item)) {
+							continue;
+						}else {
+							result.add(item);
+						}
+					}//不在使用set方法去重，以便保持去重后的顺序！
+					String output = String.join(System.lineSeparator(), result);
+					outputTextArea.setText(output);
+				}
+			}
+		};
+
 
 		JButton btnFindIP = new BackGroundButton("Find IP") {
 			@Override
@@ -1156,8 +1177,11 @@ public class ToolPanel extends JPanel {
 		cloumnIndex = 0;
 		buttonPanel.add(btnFindDomains, new bagLayout(++rowIndex, ++cloumnIndex));
 		buttonPanel.add(btnFindDomainsNoPort, new bagLayout(rowIndex, ++cloumnIndex));
-		buttonPanel.add(btnFindUrls, new bagLayout(rowIndex, ++cloumnIndex));
+
+		cloumnIndex = 0;
+		buttonPanel.add(btnFindUrls, new bagLayout(++rowIndex, ++cloumnIndex));
 		buttonPanel.add(btnFindUrls1, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnCleanUrl, new bagLayout(rowIndex, ++cloumnIndex));
 
 		cloumnIndex = 0;
 		buttonPanel.add(btnFindIP, new bagLayout(++rowIndex, ++cloumnIndex));
