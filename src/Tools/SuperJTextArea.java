@@ -10,6 +10,8 @@ import java.io.IOException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JTextArea;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
@@ -27,7 +29,7 @@ public class SuperJTextArea extends JTextArea{
 	private boolean contentIsFileOrPath =false;
 	private int location=-1;
 	public static int maxLength = 100000;
-	
+
 	final String tempFilePath = FileUtils.getTempDirectory()+File.separator+"ContentIsInTmpFile.txt"; 
 
 	/**
@@ -42,6 +44,25 @@ public class SuperJTextArea extends JTextArea{
 		Action action = getActionMap().get("paste-from-clipboard");
 		getActionMap().put("paste-from-clipboard", new ProxyAction(action));
 		//https://stackoverflow.com/questions/25276020/listen-to-the-paste-events-jtextarea
+
+
+
+		this.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
+			public void changedUpdate(DocumentEvent arg0) {
+				SuperJTextArea.this.autoAdjustIsFile();
+			}
+
+			@Override
+			public void insertUpdate(DocumentEvent arg0) {
+				SuperJTextArea.this.autoAdjustIsFile();
+			}
+
+			@Override
+			public void removeUpdate(DocumentEvent arg0) {
+				SuperJTextArea.this.autoAdjustIsFile();
+			}
+		});
 	}
 
 
@@ -55,35 +76,69 @@ public class SuperJTextArea extends JTextArea{
 	public void setContentIsFileOrPath(boolean contentIsFileOrPath) {
 		this.contentIsFileOrPath = contentIsFileOrPath;
 	}
-	
-	
+
+	/**
+	 * 换行符的可能性有三种，都必须考虑到
+	 * @param input
+	 * @return
+	 */
+	public static boolean isSingleLine(String input){
+		String[] lines = input.split("(\r\n|\r|\n)", 2);
+		return (lines.length)==1;
+	}
+
+	public void changeView(boolean isSelected) {
+		try {
+			((JScrollPanelWithHeaderForTool)this.getParent().getParent()).isPath.setSelected(isSelected);
+		} catch (Exception e) {
+			e.printStackTrace(BurpExtender.getStderr());
+		}
+	}
+
+	public void autoAdjustIsFile() {
+		String data = getTextAsDisplay();
+		if (isSingleLine(data)) {
+			if (new File(data).exists()) {
+				contentIsFileOrPath = true;
+				changeView(contentIsFileOrPath);
+			}else{
+				contentIsFileOrPath = false;
+				changeView(contentIsFileOrPath);
+			}
+		}else {
+			contentIsFileOrPath = false;
+			changeView(contentIsFileOrPath);
+		}
+	}
+
+
 	/**
 	 * paste时，当选中了其中部分数据，应该使用替换逻辑
 	 * @param pasteData
 	 * @return
 	 */
-    private String insertPaste(String pasteData) {
-        Caret caret = getCaret();
-        int p0 = Math.min(caret.getDot(), caret.getMark());
-        int p1 = Math.max(caret.getDot(), caret.getMark());
-        
-        try {
-            Document doc = getDocument();
-            String prefix = doc.getText(0, p0);
-            //BurpExtender.getStderr().println(prefix);
-            //String txt = doc.getText(p0, p1 - p0);
-            String suffix = doc.getText(p1,doc.getLength()-p1);
-            //BurpExtender.getStderr().println(suffix);
-            //BurpExtender.getStderr().println(prefix+pasteData+suffix);
-            location = p0+pasteData.length();
-            
-            return prefix+pasteData+suffix;
-            
-        } catch (BadLocationException e) {
-        	e.printStackTrace(BurpExtender.getStderr());
-        	return pasteData;
-        }
-    }
+	private String insertPaste(String pasteData) {
+		Caret caret = getCaret();
+		int p0 = Math.min(caret.getDot(), caret.getMark());
+		int p1 = Math.max(caret.getDot(), caret.getMark());
+
+		try {
+			Document doc = getDocument();
+			String prefix = doc.getText(0, p0);
+			//BurpExtender.getStderr().println(prefix);
+			//String txt = doc.getText(p0, p1 - p0);
+			String suffix = doc.getText(p1,doc.getLength()-p1);
+			//BurpExtender.getStderr().println(suffix);
+			//BurpExtender.getStderr().println(prefix+pasteData+suffix);
+			location = p0+pasteData.length();
+
+			return prefix+pasteData+suffix;
+
+		} catch (BadLocationException e) {
+			e.printStackTrace(BurpExtender.getStderr());
+			return pasteData;
+		}
+	}
 
 	@Override
 	public void paste() {
@@ -96,10 +151,11 @@ public class SuperJTextArea extends JTextArea{
 			data = insertPaste(data);
 			setText(data);
 			if (location>-1){//设置光标位置
-	            setSelectionStart(location);
-	            setSelectionEnd(location);
-	            location =-1;
+				setSelectionStart(location);
+				setSelectionEnd(location);
+				location =-1;
 			}
+			//autoAdjustIsFile();
 		} catch (Exception e) {
 			e.printStackTrace(BurpExtender.getStderr());
 		}
@@ -120,6 +176,7 @@ public class SuperJTextArea extends JTextArea{
 				}
 			}
 			super.setText(Text);
+			//autoAdjustIsFile();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

@@ -19,6 +19,7 @@ public class JScrollPanelWithHeaderForTool extends JScrollPane{
 	private JLabel headLabel;
 	private String tipText;
 	private String headLabelText;
+	public JRadioButton isPath;
 
 	public JScrollPanelWithHeaderForTool(String headerViewText, String tipText,boolean useTempFile,boolean supportFileSystem) {
 
@@ -57,7 +58,7 @@ public class JScrollPanelWithHeaderForTool extends JScrollPane{
 			}
 		});
 
-		JRadioButton isPath= new JRadioButton("Content Is Path");
+		isPath= new JRadioButton("Content Is Path");
 		isPath.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
