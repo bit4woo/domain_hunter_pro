@@ -19,7 +19,7 @@ public class JScrollPanelWithHeaderForTool extends JScrollPane{
 	private JLabel headLabel;
 	private String tipText;
 	private String headLabelText;
-	public JRadioButton isPath;
+	public JRadioButton handleContentInFileOrPath;
 
 	public JScrollPanelWithHeaderForTool(String headerViewText, String tipText,boolean useTempFile,boolean supportFileSystem) {
 
@@ -58,11 +58,11 @@ public class JScrollPanelWithHeaderForTool extends JScrollPane{
 			}
 		});
 
-		isPath= new JRadioButton("Content Is Path");
-		isPath.addActionListener(new ActionListener() {
+		handleContentInFileOrPath= new JRadioButton("Handle Content In File/Path");
+		handleContentInFileOrPath.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				textArea.setContentIsFileOrPath(isPath.isSelected());
+				textArea.setContentIsFileOrPath(handleContentInFileOrPath.isSelected());
 			}
 		});
 
@@ -70,7 +70,7 @@ public class JScrollPanelWithHeaderForTool extends JScrollPane{
 		headerViewPanel.add(headLabel);
 		headerViewPanel.add(rightButton);
 		if (supportFileSystem) {
-			headerViewPanel.add(isPath);
+			headerViewPanel.add(handleContentInFileOrPath);
 		}
 		setColumnHeaderView(headerViewPanel);
 	}

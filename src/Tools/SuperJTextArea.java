@@ -89,7 +89,7 @@ public class SuperJTextArea extends JTextArea{
 
 	public void changeView(boolean isSelected) {
 		try {
-			((JScrollPanelWithHeaderForTool)this.getParent().getParent()).isPath.setSelected(isSelected);
+			((JScrollPanelWithHeaderForTool)this.getParent().getParent()).handleContentInFileOrPath.setSelected(isSelected);
 		} catch (Exception e) {
 			e.printStackTrace(BurpExtender.getStderr());
 		}
