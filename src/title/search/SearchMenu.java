@@ -115,6 +115,15 @@ public class SearchMenu extends JPopupMenu {
 				searchField.setText(expresstion);
 			}
 		});
+		
+		
+		JMenuItem DNSRecord = new JMenuItem(new AbstractAction("DNS Records Items:   SOURCE:certain && status <=0") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				String expresstion = SearchStringDork.SOURCE+":"+LineEntry.Source_Certain +"&& status <=0";
+				searchField.setText(expresstion);
+			}
+		});
 
 		JMenuItem caseSensitive = new JMenuItem(new AbstractAction("Case Sensitive") {
 			@Override
@@ -147,6 +156,7 @@ public class SearchMenu extends JPopupMenu {
 		this.add(ItemsWithResponse);
 		this.add(UrlRedirection);
 		this.add(ManualSaved);
+		this.add(DNSRecord);
 		this.addSeparator();//分割线
 		this.add(caseSensitive);
 	}
