@@ -729,6 +729,26 @@ public class ToolPanel extends JPanel {
 		};
 
 
+		JButton sortReverse = new BackGroundButton("Sort(Reverse Str)"){
+
+			@Override
+			protected void action() {
+				try {
+					List<String> content = Commons.getLinesFromTextArea(inputTextArea);
+					Set<String> contentSet = new HashSet<>(content);
+					List<String> tmplist = new ArrayList<>(contentSet);
+
+					Collections.sort(tmplist,new ReverseStrComparator());
+					String output = String.join(System.lineSeparator(), tmplist);
+					outputTextArea.setText(output);
+				} catch (Exception e1) {
+					outputTextArea.setText(e1.getMessage());
+				}
+			}
+
+		};
+
+
 		JButton sortByLength = new BackGroundButton("Sort by Length"){
 
 			@Override
@@ -1231,8 +1251,11 @@ public class ToolPanel extends JPanel {
 
 		cloumnIndex = 0;
 		buttonPanel.add(sort,new bagLayout(++rowIndex, ++cloumnIndex));
+		buttonPanel.add(sortReverse,new bagLayout(rowIndex, ++cloumnIndex));
 		buttonPanel.add(sortByLength, new bagLayout(rowIndex, ++cloumnIndex));
-		buttonPanel.add(btnAddPrefix, new bagLayout(rowIndex, ++cloumnIndex));
+
+		cloumnIndex = 0;
+		buttonPanel.add(btnAddPrefix, new bagLayout(++rowIndex, ++cloumnIndex));
 		buttonPanel.add(btnRemovePrefix, new bagLayout(rowIndex, ++cloumnIndex));
 
 		cloumnIndex = 0;
