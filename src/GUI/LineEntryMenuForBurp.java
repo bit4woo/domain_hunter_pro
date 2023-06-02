@@ -154,9 +154,11 @@ public class LineEntryMenuForBurp{
 				tmp.addAll(Arrays.asList(BurpExtender.getCallbacks().getSiteMap(prefix)));
 			}
 		}
-			
-		messages = tmp.toArray(new IHttpRequestResponse[tmp.size()]);
-		return messages;
+		
+		//这时候，上面的messages是null，所以需要一个新的数组变量
+		IHttpRequestResponse[] messages1 = new IHttpRequestResponse[tmp.size()];
+		tmp.toArray(messages1);
+		return messages1;
 	}
 	
 	
