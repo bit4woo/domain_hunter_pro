@@ -25,6 +25,7 @@ import burp.HttpMessageCharSet;
 import burp.IContextMenuInvocation;
 import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
+import burp.IScanIssue;
 import config.ConfigPanel;
 import domain.DomainManager;
 import title.LineEntry;
@@ -124,6 +125,41 @@ public class LineEntryMenuForBurp{
 		return JMenuItemList;
 	}
 
+	
+	/**
+	 * 选中的请求数据包
+	 * @param invocation
+	 * @return
+	 */
+	private IHttpRequestResponse[] getSelectedMessages(IContextMenuInvocation invocation) {
+		
+		IHttpRequestResponse[] messages = invocation.getSelectedMessages();
+		stdout.println("ToolFlag "+invocation.getToolFlag());
+		//stdout.println("messages.length "+messages.length);
+		if (messages!=null){
+			return messages;
+		}
+		
+		List<IHttpRequestResponse> tmp = new ArrayList<>();
+		
+		if (invocation.getToolFlag() == 16){//issue中的请求数据包
+			IScanIssue[] issues = invocation.getSelectedIssues();
+			for (IScanIssue issue:issues) {
+				tmp.addAll(Arrays.asList(issue.getHttpMessages()));
+			}
+		}else if (invocation.getToolFlag() == IContextMenuInvocation.CONTEXT_MESSAGE_VIEWER_REQUEST) {//sitemap中的数据包
+			IHttpRequestResponse[] siteMapMessage = invocation.getSelectedMessages();
+			for (IHttpRequestResponse message:siteMapMessage) {
+				String prefix = message.getHttpService().toString();
+				tmp.addAll(Arrays.asList(BurpExtender.getCallbacks().getSiteMap(prefix)));
+			}
+		}
+			
+		messages = tmp.toArray(new IHttpRequestResponse[tmp.size()]);
+		return messages;
+	}
+	
+	
 	public static void addLevelABC(JMenu topMenu,final LineTable lineTable, final int[] rows){
 		String[] MainMenu = LineEntry.AssetTypeArray;
 		for(int i = 0; i < MainMenu.length; i++){
@@ -187,7 +223,7 @@ public class LineEntryMenuForBurp{
 		public void actionPerformed(ActionEvent e)
 		{
 			try{
-				IHttpRequestResponse[] messages = invocation.getSelectedMessages();
+				IHttpRequestResponse[] messages = getSelectedMessages(invocation);
 				addToDomain(messages);
 			}
 			catch (Exception e1)
@@ -206,7 +242,7 @@ public class LineEntryMenuForBurp{
 		public void actionPerformed(ActionEvent e)
 		{
 			try{
-				IHttpRequestResponse[] messages = invocation.getSelectedMessages();
+				IHttpRequestResponse[] messages = getSelectedMessages(invocation);
 				addRequests(messages,"");
 			}
 			catch (Exception e1)
@@ -241,6 +277,7 @@ public class LineEntryMenuForBurp{
 		}
 	}
 
+	
 
 	/*
 	 * 如果能找到与全URL匹配的记录，就更新这个全URL对应的记录，即精确匹配。
@@ -258,7 +295,7 @@ public class LineEntryMenuForBurp{
 		{
 			//还是要简化逻辑，如果找不到就不执行！
 			try{
-				IHttpRequestResponse[] messages = invocation.getSelectedMessages();
+				IHttpRequestResponse[] messages = getSelectedMessages(invocation);
 				Getter getter = new Getter(helpers);
 				String comment = getCommentInfo();
 				for (IHttpRequestResponse message:messages){
@@ -296,7 +333,7 @@ public class LineEntryMenuForBurp{
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			try{
-				IHttpRequestResponse[] messages = invocation.getSelectedMessages();
+				IHttpRequestResponse[] messages = getSelectedMessages(invocation);
 				if (messages.length>=1) {
 					String comment = getCommentInfo();
 					addRequests(messages,comment);
@@ -320,7 +357,7 @@ public class LineEntryMenuForBurp{
 		{
 			//还是要简化逻辑，如果找不到就不执行！
 			try{
-				IHttpRequestResponse[] messages = invocation.getSelectedMessages();
+				IHttpRequestResponse[] messages = getSelectedMessages(invocation);
 				List<LineEntry> entries = titlepanel.getTitleTable().getLineTableModel().findLineEntriesByHostAndPort(messages[0].getHttpService().getHost()
 						,messages[0].getHttpService().getPort());
 
@@ -347,7 +384,7 @@ public class LineEntryMenuForBurp{
 		public void actionPerformed(ActionEvent e)
 		{
 			try{
-				IHttpRequestResponse[] messages = invocation.getSelectedMessages();
+				IHttpRequestResponse[] messages = getSelectedMessages(invocation);
 				Getter getter = new Getter(helpers);
 				String host = getter.getHost(messages[0]);
 				int port = messages[0].getHttpService().getPort();
@@ -381,14 +418,7 @@ public class LineEntryMenuForBurp{
 		public void actionPerformed(ActionEvent e)
 		{
 			try{
-				IHttpRequestResponse[] messages = null;
-				if (invocation.getToolFlag() == IContextMenuInvocation.CONTEXT_MESSAGE_VIEWER_REQUEST) {
-					IHttpRequestResponse message = invocation.getSelectedMessages()[0];
-					String prefix = message.getHttpService().toString();
-					messages= BurpExtender.getCallbacks().getSiteMap(prefix);
-				}else {
-					messages = invocation.getSelectedMessages();
-				}
+				IHttpRequestResponse[] messages = getSelectedMessages(invocation);
 				stdout.println(String.format("Search %s selected items",messages.length));
 				guiMain.getDomainPanel().searchBackground(Arrays.asList(messages));
 			}
@@ -422,7 +452,7 @@ public class LineEntryMenuForBurp{
 		public void mouseEntered(MouseEvent e) {
 			if (topMenu.getItemCount() == 0) {
 				try{
-					IHttpRequestResponse[] messages = invocation.getSelectedMessages();
+					IHttpRequestResponse[] messages = getSelectedMessages(invocation);
 					Getter getter = new Getter(helpers);
 					URL fullurl = getter.getFullURL(messages[0]);
 					LineEntry entry = titlepanel.getTitleTable().getLineTableModel().findLineEntry(fullurl.toString());
@@ -524,6 +554,11 @@ public class LineEntryMenuForBurp{
 			stderr.println("Title Table Model is Null, Maybe no database file loaded yet.");
 			return;
 		}
+		
+		if (messages== null) {
+			stderr.println("messages is Null.");
+			return;
+		}
 
 		for(IHttpRequestResponse message:messages) {
 			//当时为啥要用这个key来存储新增的Request？URL地址一样而数据包不一样的情况？
@@ -578,14 +613,7 @@ public class LineEntryMenuForBurp{
 	public String getSelectedStringFromBurp(IContextMenuInvocation invocation){
 		String result = "";
 
-		IHttpRequestResponse[] messages = null;
-		if (invocation.getToolFlag() == IContextMenuInvocation.CONTEXT_MESSAGE_VIEWER_REQUEST) {
-			IHttpRequestResponse message = invocation.getSelectedMessages()[0];
-			String prefix = message.getHttpService().toString();
-			messages= BurpExtender.getCallbacks().getSiteMap(prefix);
-		}else {
-			messages = invocation.getSelectedMessages();
-		}
+		IHttpRequestResponse[] messages = getSelectedMessages(invocation);
 
 		if (messages == null ) {
 			return result;
