@@ -1,5 +1,6 @@
 package burp;
 
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -20,13 +21,9 @@ import javax.swing.SwingWorker;
 import GUI.GUIMain;
 import GUI.ProjectMenu;
 import Tools.ToolPanel;
+import base.BackGroundActionListener;
 import base.Commons;
 import base.HttpMessageCharSet;
-import burp.Getter;
-import burp.IContextMenuInvocation;
-import burp.IExtensionHelpers;
-import burp.IHttpRequestResponse;
-import burp.IScanIssue;
 import config.ConfigPanel;
 import domain.DomainManager;
 import title.LineEntry;
@@ -96,6 +93,9 @@ public class LineEntryMenuForBurp{
 		JMenuItem sendToToolPanel = new JMenuItem("^_^ Send To Tool Panel");
 		sendToToolPanel.addActionListener(new sendToToolPanel(invocation));
 
+
+
+
 		JMenuItemList.add(setAsChecked);
 		JMenuItemList.add(setLevelAs2);
 
@@ -108,6 +108,7 @@ public class LineEntryMenuForBurp{
 		//JMenuItemList.add(runWithSamePathItem);
 		JMenuItemList.add(sendToToolPanel);
 		JMenuItemList.add(doSearch);
+
 
 		if (ConfigPanel.showItemsInOne.isSelected()) {
 			ArrayList<JMenuItem> result = new ArrayList<JMenuItem>();
@@ -126,23 +127,23 @@ public class LineEntryMenuForBurp{
 		return JMenuItemList;
 	}
 
-	
+
 	/**
 	 * 选中的请求数据包
 	 * @param invocation
 	 * @return
 	 */
 	private IHttpRequestResponse[] getSelectedMessages(IContextMenuInvocation invocation) {
-		
+
 		IHttpRequestResponse[] messages = invocation.getSelectedMessages();
 		stdout.println("ToolFlag "+invocation.getToolFlag());
 		//stdout.println("messages.length "+messages.length);
 		if (messages!=null){
 			return messages;
 		}
-		
+
 		List<IHttpRequestResponse> tmp = new ArrayList<>();
-		
+
 		if (invocation.getToolFlag() == 16){//issue中的请求数据包
 			IScanIssue[] issues = invocation.getSelectedIssues();
 			for (IScanIssue issue:issues) {
@@ -155,14 +156,14 @@ public class LineEntryMenuForBurp{
 				tmp.addAll(Arrays.asList(BurpExtender.getCallbacks().getSiteMap(prefix)));
 			}
 		}
-		
+
 		//这时候，上面的messages是null，所以需要一个新的数组变量
 		IHttpRequestResponse[] messages1 = new IHttpRequestResponse[tmp.size()];
 		tmp.toArray(messages1);
 		return messages1;
 	}
-	
-	
+
+
 	public static void addLevelABC(JMenu topMenu,final LineTable lineTable, final int[] rows){
 		String[] MainMenu = LineEntry.AssetTypeArray;
 		for(int i = 0; i < MainMenu.length; i++){
@@ -280,7 +281,7 @@ public class LineEntryMenuForBurp{
 		}
 	}
 
-	
+
 
 	/*
 	 * 如果能找到与全URL匹配的记录，就更新这个全URL对应的记录，即精确匹配。
@@ -288,14 +289,13 @@ public class LineEntryMenuForBurp{
 	 * 
 	 *  实现时，先通过service查找记录，避免2次全查。减少等待时间。
 	 */
-	public class addComment implements ActionListener{
+	public class addComment extends BackGroundActionListener{
 		private IContextMenuInvocation invocation;
 		addComment(IContextMenuInvocation invocation) {
 			this.invocation  = invocation;
 		}
 		@Override
-		public void actionPerformed(ActionEvent e)
-		{
+		protected void action() {
 			//还是要简化逻辑，如果找不到就不执行！
 			try{
 				IHttpRequestResponse[] messages = getSelectedMessages(invocation);
@@ -325,6 +325,7 @@ public class LineEntryMenuForBurp{
 			{
 				e1.printStackTrace(stderr);
 			}
+
 		}
 	}
 
@@ -378,13 +379,13 @@ public class LineEntryMenuForBurp{
 	}
 
 
-	public class setAsChecked implements ActionListener{
+	public class setAsChecked extends BackGroundActionListener{
 		private IContextMenuInvocation invocation;
 		setAsChecked(IContextMenuInvocation invocation) {
 			this.invocation  = invocation;
 		}
 		@Override
-		public void actionPerformed(ActionEvent e)
+		protected void action()
 		{
 			try{
 				IHttpRequestResponse[] messages = getSelectedMessages(invocation);
@@ -412,13 +413,13 @@ public class LineEntryMenuForBurp{
 	}
 
 
-	public class doSingleSearch implements ActionListener{
+	public class doSingleSearch extends BackGroundActionListener{
 		private IContextMenuInvocation invocation;
 		doSingleSearch(IContextMenuInvocation invocation) {
 			this.invocation  = invocation;
 		}
 		@Override
-		public void actionPerformed(ActionEvent e)
+		protected void action()
 		{
 			try{
 				IHttpRequestResponse[] messages = getSelectedMessages(invocation);
@@ -432,12 +433,12 @@ public class LineEntryMenuForBurp{
 		}
 	}
 
-	public class setLevelAsActionListener implements ActionListener{
+	public class setLevelAsActionListener extends BackGroundActionListener{
 		setLevelAsActionListener(IContextMenuInvocation invocation,JMenu topMenu) {
 			createSubMenu(topMenu,invocation.getSelectedMessages());
 		}
 		@Override
-		public void actionPerformed(ActionEvent e)
+		protected void action()
 		{
 			//do nothing
 		}
@@ -557,7 +558,7 @@ public class LineEntryMenuForBurp{
 			stderr.println("Title Table Model is Null, Maybe no database file loaded yet.");
 			return;
 		}
-		
+
 		if (messages== null) {
 			stderr.println("messages is Null.");
 			return;
