@@ -301,6 +301,9 @@ public class LineEntryMenuForBurp{
 				IHttpRequestResponse[] messages = getSelectedMessages(invocation);
 				Getter getter = new Getter(helpers);
 				String comment = getCommentInfo();
+				if (comment == null || comment.equals("")) {
+					return;
+				}
 				for (IHttpRequestResponse message:messages){
 					String host = message.getHttpService().getHost();
 					int port = message.getHttpService().getPort();

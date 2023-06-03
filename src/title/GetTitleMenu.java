@@ -75,7 +75,7 @@ public class GetTitleMenu extends JPopupMenu {
 		getTitleItem.setToolTipText("A fresh start for all domain name");
 
 
-		GetExtendtitleItem = new JMenuItem(new AbstractAction("Get Extend Title") {
+		GetExtendtitleItem = new JMenuItem(new AbstractAction("Get Title For Nearby Assets") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
@@ -101,7 +101,7 @@ public class GetTitleMenu extends JPopupMenu {
 		});
 		GetExtendtitleItem.setToolTipText("Get title of the host that in same subnet,you should do this after get domain title done!");
 
-		GettitleOfJustNewFoundItem = new JMenuItem(new AbstractAction("Get Title For New Found Domain") {
+		GettitleOfJustNewFoundItem = new JMenuItem(new AbstractAction("Get Title For New Found Assets") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {

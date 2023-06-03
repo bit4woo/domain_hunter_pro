@@ -600,6 +600,26 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		}
 	}
 
+	/**
+	 * 暂时只是标记重复项目，然后用户可以手动标记，不直接执行删除操作
+	 */
+	public void findAndMarkDuplicateItems() {
+		for (int i=lineEntries.size()-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
+			try {
+				LineEntry entry = lineEntries.get(i);
+				if (entry == null) {
+					throw new ArrayIndexOutOfBoundsException("can't find item with index "+i);
+				}
+
+				markFullSameEntries(entry);
+
+			} catch (Exception e) {
+				e.printStackTrace(stderr);
+			}
+		}
+		stdout.println("mark duplicate items done!");
+	}
+
 
 	public void updateRowsStatus(int[] rows,String status) {
 		Arrays.sort(rows); //升序
@@ -902,5 +922,47 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			entry.freshASNInfo();
 		}
 		fireTableRowsUpdated(0,lineEntries.size()-1);
+	}
+
+
+	/**
+	 * 查找完全一模一样的数据包（带时间戳锚点的URL可以不同）
+	 */
+	public void markFullSameEntries(LineEntry entry) {//
+		if (lineEntries == null) return;
+
+		for (int i=lineEntries.size()-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
+			LineEntry value = lineEntries.get(i);
+
+			if (value.equals(entry)){
+				continue;//首先得排除自己，否则删除时就全删除了
+			}
+
+			if (!value.getUrl().equals(entry.getUrl())){
+				continue;
+			}
+			if (!value.getRequest().equals(entry.getRequest())){
+				continue;
+			}
+			if (!value.getResponse().equals(entry.getResponse())){
+				continue;
+			}
+			if (!value.getComments().equals(entry.getComments())){
+				continue;
+			}
+
+			if (!value.getIPSet().equals(entry.getIPSet()) && !value.getIPSet().isEmpty() && !entry.getIPSet().isEmpty()){
+				//只有当IP不为空才有比较的必要
+				continue;
+			}
+
+			if (!value.getCNAMESet().equals(entry.getCNAMESet()) && !value.getCNAMESet().isEmpty() && !entry.getCNAMESet().isEmpty() ){
+				//只有当CNAME不为空才有比较的必要
+				continue;
+			}
+
+			value.addComment("duplicateItem");
+			fireTableRowsUpdated(i,i);//主动通知更新，否则不会写入数据库!!!
+		}
 	}
 }

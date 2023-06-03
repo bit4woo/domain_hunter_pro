@@ -21,7 +21,6 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
-import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
 import ASN.ASNEntry;
@@ -1032,14 +1031,32 @@ public class LineEntryMenu extends JPopupMenu {
 						if (result == JOptionPane.YES_OPTION) {
 							lineTable.getLineTableModel().removeRowsNotInTargets();
 							titlepanel.digStatus();
-						}else {
-							return null;
 						}
 						return null;
 					}
 				}.execute();
 			}
 		});
+
+
+		JMenuItem markDuplicateItems = new JMenuItem(new AbstractAction("Mark Duplicate Items") {//need to show dialog to confirm
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				new SwingWorker<Map,Map>(){
+
+					@Override
+					protected Map doInBackground() throws Exception {
+						int result = JOptionPane.showConfirmDialog(null,"Are you sure to Mark duplicate items ?");
+						if (result == JOptionPane.YES_OPTION) {
+							lineTable.getLineTableModel().findAndMarkDuplicateItems();
+						}
+						return null;
+					}
+				}.execute();
+			}
+		});
+
+
 
 		/**
 		 * 从子域名列表中删除对应资产，表明当前host（应该是一个IP）不是我们的目标资产。
@@ -1204,6 +1221,7 @@ public class LineEntryMenu extends JPopupMenu {
 		this.add(removeItem);//单纯删除记录
 		this.add(addToblackListAndDeleteItem);//加入黑名单并删除
 		this.add(removeItemsNotInTargets);
+		this.add(markDuplicateItems);
 
 		this.add(removeSubDomainItem);
 		this.add(removeCustomAssetItem);
