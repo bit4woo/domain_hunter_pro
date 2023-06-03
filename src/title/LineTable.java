@@ -19,8 +19,8 @@ import javax.swing.ToolTipManager;
 import javax.swing.table.TableRowSorter;
 
 import GUI.GUIMain;
+import base.Commons;
 import burp.BurpExtender;
-import burp.Commons;
 import burp.SystemUtils;
 import title.search.History;
 import title.search.SearchManager;

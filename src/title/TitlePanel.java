@@ -25,6 +25,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.TableRowSorter;
 
 import GUI.GUIMain;
+import base.IndexedHashMap;
 import burp.BurpExtender;
 import burp.IMessageEditor;
 import dao.TitleDao;

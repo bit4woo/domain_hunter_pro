@@ -8,7 +8,7 @@ import javax.swing.event.DocumentListener;
 
 import GUI.GUIMain;
 import GUI.JScrollPanelWithHeader;
-import burp.Commons;
+import base.Commons;
 import dao.DomainDao;
 
 /**

@@ -27,6 +27,7 @@ import GUI.GUIMain;
 import GUI.MyGridBagLayout;
 import Tools.SuperJTextArea;
 import Tools.ToolPanel;
+import base.MyFileFilter;
 import burp.BurpExtender;
 
 public class ConfigPanel extends JPanel{

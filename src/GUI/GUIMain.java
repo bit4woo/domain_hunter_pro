@@ -15,11 +15,11 @@ import javax.swing.JTabbedPane;
 import javax.swing.SwingWorker;
 
 import Tools.ToolPanel;
+import base.Commons;
+import base.dbFileChooser;
 import burp.BurpExtender;
-import burp.Commons;
 import burp.IBurpExtender;
 import burp.IHttpRequestResponse;
-import burp.dbFileChooser;
 import config.ConfigPanel;
 import config.DataLoadManager;
 import dao.DomainDao;

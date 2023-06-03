@@ -16,11 +16,11 @@ import com.google.common.net.InternetDomainName;
 import com.google.gson.Gson;
 
 import GUI.GUIMain;
+import base.Commons;
+import base.IndexedHashMap;
+import base.IntArraySlice;
 import burp.BurpExtender;
-import burp.Commons;
-import burp.IntArraySlice;
 import domain.DomainManager;
-import title.IndexedHashMap;
 import title.LineEntry;
 import utils.DomainNameUtils;
 import utils.IPAddressUtils;

@@ -1,4 +1,4 @@
-package burp;
+package base;
 
 import java.awt.Component;
 import java.awt.Desktop;
@@ -30,6 +30,11 @@ import org.apache.commons.net.util.SubnetUtils;
 
 import com.ibm.icu.text.CharsetDetector;
 import com.ibm.icu.text.CharsetMatch;
+
+import burp.BurpExtender;
+import burp.HelperPlus;
+import burp.IExtensionHelpers;
+import burp.IHttpRequestResponse;
 
 public class Commons {
 

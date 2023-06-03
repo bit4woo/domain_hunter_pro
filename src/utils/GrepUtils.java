@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.text.StringEscapeUtils;
 
 import Tools.PatternsFromAndroid;
-import burp.Commons;
+import base.Commons;
 
 public class GrepUtils {
 

@@ -1,4 +1,4 @@
-package burp;
+package base;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
@@ -7,6 +7,10 @@ import java.util.List;
 
 import com.ibm.icu.text.CharsetDetector;
 import com.ibm.icu.text.CharsetMatch;
+
+import burp.BurpExtender;
+import burp.Getter;
+import burp.IExtensionHelpers;
 
 public class HttpMessageCharSet {
 	private static String getSystemCharSet() {

@@ -1,6 +1,8 @@
-package burp;
+package base;
 
 import org.apache.commons.io.FileUtils;
+
+import burp.BurpExtender;
 
 import java.io.*;
 import java.net.URL;

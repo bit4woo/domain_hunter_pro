@@ -12,7 +12,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import GUI.GUIMain;
-import GUI.LineEntryMenuForBurp;
 import bsh.This;
 import config.ConfigPanel;
 import config.DataLoadManager;

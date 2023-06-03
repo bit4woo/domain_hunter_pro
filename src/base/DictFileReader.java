@@ -1,4 +1,4 @@
-package GUI;
+package base;
 
 import java.io.File;
 import java.io.FileReader;

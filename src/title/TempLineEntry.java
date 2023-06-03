@@ -7,8 +7,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import GUI.GUIMain;
+import base.Commons;
 import burp.BurpExtender;
-import burp.Commons;
 import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
 import burp.IHttpService;

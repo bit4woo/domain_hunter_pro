@@ -7,7 +7,7 @@ import java.util.HashSet;
 
 import org.springframework.jdbc.core.RowMapper;
 
-import burp.SetAndStr;
+import base.SetAndStr;
 import domain.target.TargetEntry;
 
 public class TargetMapper implements RowMapper<TargetEntry> {

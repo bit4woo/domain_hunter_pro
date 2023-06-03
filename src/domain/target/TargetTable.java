@@ -17,8 +17,8 @@ import javax.swing.border.LineBorder;
 import javax.swing.table.TableColumn;
 
 import GUI.GUIMain;
+import base.Commons;
 import burp.BurpExtender;
-import burp.Commons;
 import title.LineTableModel;
 
 public class TargetTable extends JTable{

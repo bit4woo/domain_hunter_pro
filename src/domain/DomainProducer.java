@@ -5,8 +5,8 @@ import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 
 import GUI.GUIMain;
+import base.Commons;
 import burp.BurpExtender;
-import burp.Commons;
 import burp.IBurpExtenderCallbacks;
 import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;

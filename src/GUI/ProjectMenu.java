@@ -16,6 +16,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingWorker;
 
+import base.DictFileReader;
 import burp.BurpExtender;
 import dao.DomainDao;
 import dao.TitleDao;

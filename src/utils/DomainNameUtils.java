@@ -22,8 +22,8 @@ import org.xbill.DNS.ZoneTransferIn;
 
 import com.google.common.net.InternetDomainName;
 
+import base.Commons;
 import burp.BurpExtender;
-import burp.Commons;
 
 public class DomainNameUtils {
 

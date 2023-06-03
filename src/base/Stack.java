@@ -1,4 +1,4 @@
-package config;
+package base;
 
 import java.util.ArrayList;
 import java.util.List;

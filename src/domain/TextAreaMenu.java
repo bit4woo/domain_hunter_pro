@@ -21,8 +21,8 @@ import javax.swing.JTextArea;
 
 import Tools.DomainComparator;
 import Tools.LengthComparator;
+import base.Commons;
 import burp.BurpExtender;
-import burp.Commons;
 import title.search.SearchStringDork;
 import utils.DomainNameUtils;
 import utils.IPAddressUtils;

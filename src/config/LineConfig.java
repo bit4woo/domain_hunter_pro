@@ -11,8 +11,8 @@ import org.apache.commons.io.FileUtils;
 import com.alibaba.fastjson.JSON;
 
 import GUI.GUIMain;
+import base.Commons;
 import burp.BurpExtender;
-import burp.Commons;
 import title.LineEntry;
 import title.search.History;
 

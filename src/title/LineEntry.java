@@ -12,6 +12,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import GUI.GUIMain;
+import base.Commons;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -21,7 +23,6 @@ import com.google.common.hash.HashCode;
 import ASN.ASNEntry;
 import ASN.ASNQuery;
 import burp.BurpExtender;
-import burp.Commons;
 import burp.Getter;
 import burp.HelperPlus;
 import burp.IExtensionHelpers;

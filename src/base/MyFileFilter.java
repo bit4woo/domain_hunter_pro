@@ -1,4 +1,4 @@
-package config;
+package base;
 
 import java.io.File;
 
@@ -8,7 +8,7 @@ public class MyFileFilter extends FileFilter {
 
 	private String extension;
 
-	MyFileFilter(String extension){
+	public MyFileFilter(String extension){
 		if (!extension.startsWith(".")) {
 			extension = "."+extension;
 		}

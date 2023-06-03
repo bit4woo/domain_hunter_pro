@@ -14,14 +14,15 @@ import java.util.TreeSet;
 import javax.swing.table.AbstractTableModel;
 
 import GUI.GUIMain;
+import base.Commons;
+import base.IndexedHashMap;
+import base.IntArraySlice;
 import burp.BurpExtender;
-import burp.Commons;
 import burp.Getter;
 import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
 import burp.IHttpService;
 import burp.IMessageEditorController;
-import burp.IntArraySlice;
 import dao.TitleDao;
 import domain.DomainManager;
 import domain.target.TargetTableModel;

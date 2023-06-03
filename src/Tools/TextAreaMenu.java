@@ -1,13 +1,13 @@
 package Tools;
 
 import burp.BurpExtender;
-import burp.Commons;
 import domain.DomainPanel;
 import utils.PortScanUtils;
 
 import javax.swing.*;
 
 import GUI.GUIMain;
+import base.Commons;
 
 import java.awt.event.ActionEvent;
 import java.io.PrintWriter;

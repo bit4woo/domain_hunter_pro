@@ -9,8 +9,8 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 
+import base.Commons;
 import burp.BurpExtender;
-import burp.Commons;
 
 /**
  * 实现Masscan+Nmap的端口扫描

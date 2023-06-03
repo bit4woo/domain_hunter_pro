@@ -20,8 +20,8 @@ import javax.swing.SwingWorker;
 
 import GUI.GUIMain;
 import assetSearch.Search;
+import base.Commons;
 import burp.BurpExtender;
-import burp.Commons;
 import config.ConfigPanel;
 import utils.DomainNameUtils;
 import utils.GrepUtils;

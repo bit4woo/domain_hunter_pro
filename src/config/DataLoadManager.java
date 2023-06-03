@@ -11,6 +11,7 @@ import org.apache.commons.io.FileUtils;
 import com.google.gson.Gson;
 
 import GUI.GUIMain;
+import base.Stack;
 import burp.BurpExtender;
 
 //专门用于存储数据的对象，即被用户序列化和反序列进行存储的对象。

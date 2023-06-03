@@ -13,8 +13,8 @@ import org.apache.commons.io.FileUtils;
 import com.alibaba.fastjson.JSON;
 import com.google.common.net.InternetDomainName;
 
+import base.Commons;
 import burp.BurpExtender;
-import burp.Commons;
 import utils.DomainNameUtils;
 import utils.IPAddressUtils;
 

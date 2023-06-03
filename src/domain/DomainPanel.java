@@ -45,13 +45,13 @@ import com.google.common.net.InternetDomainName;
 
 import GUI.GUIMain;
 import GUI.JScrollPanelWithHeader;
+import base.Commons;
+import base.dbFileChooser;
 import burp.BurpExtender;
-import burp.Commons;
 import burp.IBurpExtenderCallbacks;
 import burp.IHttpRequestResponse;
 import burp.IHttpService;
 import burp.IScanIssue;
-import burp.dbFileChooser;
 import config.ConfigPanel;
 import dao.DomainDao;
 import dao.TargetDao;

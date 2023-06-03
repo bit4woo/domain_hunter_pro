@@ -9,9 +9,9 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 
-import burp.SetAndStr;
+import base.IndexedHashMap;
+import base.SetAndStr;
 import domain.target.TargetEntry;
-import title.IndexedHashMap;
 
 public class TargetDao {
 

@@ -10,8 +10,8 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 
-import burp.SetAndStr;
-import title.IndexedHashMap;
+import base.IndexedHashMap;
+import base.SetAndStr;
 import title.LineEntry;
 
 /**

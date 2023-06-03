@@ -8,10 +8,10 @@ import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 
 import GUI.GUIMain;
+import base.IndexedHashMap;
 import burp.BurpExtender;
 import burp.IBurpExtenderCallbacks;
 import burp.IExtensionHelpers;
-import title.IndexedHashMap;
 import title.LineEntry;
 import title.TempLineEntry;
 

@@ -7,7 +7,7 @@ import java.sql.SQLException;
 
 import org.springframework.jdbc.core.RowMapper;
 
-import burp.SetAndStr;
+import base.SetAndStr;
 import title.LineEntry;
 
 public class TitleMapper implements RowMapper<LineEntry> {
