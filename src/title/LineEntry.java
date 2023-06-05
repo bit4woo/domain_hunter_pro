@@ -5,14 +5,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import GUI.GUIMain;
-import base.Commons;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -22,6 +20,7 @@ import com.google.common.hash.HashCode;
 
 import ASN.ASNEntry;
 import ASN.ASNQuery;
+import base.Commons;
 import burp.BurpExtender;
 import burp.Getter;
 import burp.HelperPlus;
@@ -29,6 +28,8 @@ import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
 import burp.IHttpService;
 import burp.IResponseInfo;
+import domain.CertInfo;
+import utils.DomainNameUtils;
 import utils.IPAddressUtils;
 
 public class LineEntry {
@@ -228,6 +229,7 @@ public class LineEntry {
 			this.setIcon_hash(WebIcon.getHash(tmpurl));
 		}
 	}
+	
 
 	public void DoRequestAgain() throws MalformedURLException {
 		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
@@ -240,6 +242,23 @@ public class LineEntry {
 		IHttpRequestResponse info = BurpExtender.getCallbacks().makeHttpRequest(service,request);
 		//BurpExtender.getStdout().println(new String(info.getResponse()));
 		parse(info);
+	}
+
+	
+	public void DoRequestCertInfoAgain() throws MalformedURLException {
+		try{
+			String url = this.getUrl();
+			if (url.toLowerCase().startsWith("https")) {
+				CertDomainSet = CertInfo.getAllSANs(url);
+			}
+			
+			if (!IPAddressUtils.isValidIP(host)) {//目标是域名
+				HashMap<String,Set<String>> result = DomainNameUtils.dnsquery(host);
+				CNAMESet = result.get("CDN");
+			}
+		}catch (Exception e) {
+			e.printStackTrace(BurpExtender.getStderr());
+		}
 	}
 
 	/**

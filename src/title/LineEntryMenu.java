@@ -701,6 +701,32 @@ public class LineEntryMenu extends JPopupMenu {
 				}.execute();
 			}
 		});
+		
+		
+		JMenuItem requestCertInfoAgain = new JMenuItem(new AbstractAction("Do Request Cert Info Again") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				new SwingWorker(){
+					//to void "java.lang.RuntimeException: java.lang.RuntimeException: Extensions should not make HTTP requests in the Swing event dispatch thread"
+					@Override
+					protected Object doInBackground() throws Exception {
+						IndexedHashMap<String,LineEntry> entries = lineTable.getLineTableModel().getLineEntries();
+						for (int i=modleRows.length-1;i>=0 ;i-- ) {
+							try{
+								LineEntry entry = entries.get(modleRows[i]);
+								entry.DoRequestCertInfoAgain();
+								lineTable.getLineTableModel().addNewLineEntry(entry);
+							}
+							catch (Exception e1)
+							{
+								e1.printStackTrace(stderr);
+							}
+						}
+						return null;
+					}
+				}.execute();
+			}
+		});
 
 
 		JMenuItem doActiveScan = new JMenuItem(new AbstractAction("Do Active Scan") {
@@ -1164,6 +1190,8 @@ public class LineEntryMenu extends JPopupMenu {
 		DoMenu.add(SendToRepeaterWithCookieItem);
 		DoMenu.add(SendToToolPanel);
 		DoMenu.add(requestAgain);
+		DoMenu.add(requestCertInfoAgain);
+		
 		//DoMenu.add(doActiveScan);常用
 
 		DoMenu.addSeparator();

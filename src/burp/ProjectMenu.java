@@ -1,4 +1,4 @@
-package GUI;
+package burp;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -16,8 +16,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingWorker;
 
+import GUI.GUIMain;
 import base.DictFileReader;
-import burp.BurpExtender;
 import dao.DomainDao;
 import dao.TitleDao;
 import domain.DomainManager;
@@ -29,7 +29,7 @@ import title.LineEntry;
  */
 public class ProjectMenu extends JMenu{
 	GUIMain gui;
-	JMenuItem lockMenu;
+	public JMenuItem lockMenu;
 
 	public ProjectMenu(GUIMain gui){
 		this.gui = gui;

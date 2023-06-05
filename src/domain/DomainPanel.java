@@ -846,17 +846,22 @@ public class DomainPanel extends JPanel {
 	public void renameDB() {
 		File file = guiMain.getCurrentDBFile();
 		if (file == null) return;
+		
+		String currentName = file.getName();
+		String currentPath = file.getParent();
 
-		File newFile = new dbFileChooser().dialog(false,".db");//通过保存对话指定文件，这会是一个空文件。
+		//File newFile = new dbFileChooser().dialog(false,".db");//通过保存对话指定文件，这会是一个空文件。
+		String newFilename = JOptionPane.showInputDialog("Enter New DB File Name", currentName);
 
-		if (null != newFile) {
+		if (null != newFilename) {
 			try {
+				File newFile = new File(currentPath+File.separator+newFilename);
 				FileUtils.moveFile(file, newFile);
+				if (newFile.exists()) {
+					guiMain.getDataLoadManager().loadDbfileToHunter(newFile.toString());
+				}
 			} catch (IOException e) {
 				e.printStackTrace(stderr);
-			}
-			if (newFile.exists()) {
-				guiMain.getDataLoadManager().loadDbfileToHunter(newFile.toString());
 			}
 		}
 	}

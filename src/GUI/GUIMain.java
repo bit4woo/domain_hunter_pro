@@ -20,6 +20,7 @@ import base.dbFileChooser;
 import burp.BurpExtender;
 import burp.IBurpExtender;
 import burp.IHttpRequestResponse;
+import burp.ProjectMenu;
 import config.ConfigPanel;
 import config.DataLoadManager;
 import dao.DomainDao;
