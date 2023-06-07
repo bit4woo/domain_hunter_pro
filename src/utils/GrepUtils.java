@@ -367,7 +367,7 @@ public class GrepUtils {
 	public static List<String> grepPort(String httpResponse) {
 		Set<String> resultSet = new HashSet<>();
 		List<String> lines = Commons.textToLines(httpResponse);
-		String REGEX_masscan_port = "(\\d{1,6})/tcp";
+		String REGEX_masscan_port = "(\\d{1,6})";
 		Pattern pattern = Pattern.compile(REGEX_masscan_port);
 
 		Matcher matcher = pattern.matcher(httpResponse);
