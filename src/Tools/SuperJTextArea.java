@@ -6,6 +6,8 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -20,31 +22,29 @@ import org.apache.commons.io.FileUtils;
 
 import burp.BurpExtender;
 
-public class SuperJTextArea extends JTextArea{
+public class SuperJTextArea extends JTextArea {
 
 	String preValue = "";
 	String nextValue = "";
 	private boolean useTempFile;
 	private boolean supportFileSystem;
-	private boolean contentIsFileOrPath =false;
-	private int location=-1;
+	private boolean contentIsFileOrPath = false;
+	private int location = -1;
 	public static int maxLength = 100000;
 
-	final String tempFilePath = FileUtils.getTempDirectory()+File.separator+"ContentIsInTmpFile.txt"; 
+	final String tempFilePath = FileUtils.getTempDirectory() + File.separator + "ContentIsInTmpFile.txt";
 
 	/**
-	 * 
-	 * @param useTempFile 当文件内容过大时，将文件内容存入零时文件，避免程序卡死
+	 * @param useTempFile       当文件内容过大时，将文件内容存入零时文件，避免程序卡死
 	 * @param supportFileSystem 支持输入一个路径，读取内容时从路径中的文件读取文件的内容。
 	 */
-	public SuperJTextArea(boolean useTempFile,boolean supportFileSystem){
+	public SuperJTextArea(boolean useTempFile, boolean supportFileSystem) {
 		this.useTempFile = useTempFile;
 		this.supportFileSystem = supportFileSystem;
 
 		Action action = getActionMap().get("paste-from-clipboard");
 		getActionMap().put("paste-from-clipboard", new ProxyAction(action));
 		//https://stackoverflow.com/questions/25276020/listen-to-the-paste-events-jtextarea
-
 
 
 		this.getDocument().addDocumentListener(new DocumentListener() {
@@ -66,11 +66,9 @@ public class SuperJTextArea extends JTextArea{
 	}
 
 
-
 	public boolean isContentIsFileOrPath() {
 		return contentIsFileOrPath;
 	}
-
 
 
 	public void setContentIsFileOrPath(boolean contentIsFileOrPath) {
@@ -79,33 +77,62 @@ public class SuperJTextArea extends JTextArea{
 
 	/**
 	 * 换行符的可能性有三种，都必须考虑到
+	 *
 	 * @param input
 	 * @return
 	 */
-	public static boolean isSingleLine(String input){
+	public static boolean isSingleLine(String input) {
 		String[] lines = input.split("(\r\n|\r|\n)", 2);
-		return (lines.length)==1;
+		return (lines.length) == 1;
+	}
+
+	/**
+	 * 换行符的可能性有三种，都必须考虑到
+	 *
+	 * @param input
+	 * @return
+	 */
+	public static List<String> textToLines(String input) {
+		String[] lines = input.split("(\r\n|\r|\n)", -1);
+		List<String> result = new ArrayList<String>();
+		for (String line : lines) {
+			line = line.trim();
+			if (line.startsWith("\"") && line.endsWith("\"")) {
+				line = line.replaceAll("^\"|\"$", "");
+			}
+			if (!line.equalsIgnoreCase("")) {
+				result.add(line.trim());
+			}
+		}
+		return result;
 	}
 
 	public void changeView(boolean isSelected) {
 		try {
-			((JScrollPanelWithHeaderForTool)this.getParent().getParent()).handleContentInFileOrPath.setSelected(isSelected);
+			((JScrollPanelWithHeaderForTool) this.getParent().getParent()).handleContentInFileOrPath.setSelected(isSelected);
 		} catch (Exception e) {
 			e.printStackTrace(BurpExtender.getStderr());
 		}
 	}
 
 	public void autoAdjustIsFile() {
+		if (!supportFileSystem) {
+			return;
+		}
 		String data = getTextAsDisplay();
-		if (isSingleLine(data)) {
-			if (new File(data).exists()) {
-				contentIsFileOrPath = true;
-				changeView(contentIsFileOrPath);
-			}else{
-				contentIsFileOrPath = false;
-				changeView(contentIsFileOrPath);
+		List<String> lines = textToLines(data);
+
+		int i = 0;
+		for (String line : lines) {
+			if (new File(line).exists()) {
+				i++;
 			}
-		}else {
+		}
+
+		if (i == lines.size()) {
+			contentIsFileOrPath = true;
+			changeView(contentIsFileOrPath);
+		} else {
 			contentIsFileOrPath = false;
 			changeView(contentIsFileOrPath);
 		}
@@ -114,6 +141,7 @@ public class SuperJTextArea extends JTextArea{
 
 	/**
 	 * paste时，当选中了其中部分数据，应该使用替换逻辑
+	 *
 	 * @param pasteData
 	 * @return
 	 */
@@ -127,12 +155,12 @@ public class SuperJTextArea extends JTextArea{
 			String prefix = doc.getText(0, p0);
 			//BurpExtender.getStderr().println(prefix);
 			//String txt = doc.getText(p0, p1 - p0);
-			String suffix = doc.getText(p1,doc.getLength()-p1);
+			String suffix = doc.getText(p1, doc.getLength() - p1);
 			//BurpExtender.getStderr().println(suffix);
 			//BurpExtender.getStderr().println(prefix+pasteData+suffix);
-			location = p0+pasteData.length();
+			location = p0 + pasteData.length();
 
-			return prefix+pasteData+suffix;
+			return prefix + pasteData + suffix;
 
 		} catch (BadLocationException e) {
 			e.printStackTrace(BurpExtender.getStderr());
@@ -150,10 +178,10 @@ public class SuperJTextArea extends JTextArea{
 			String data = (String) clipboard.getData(DataFlavor.stringFlavor);
 			data = insertPaste(data);
 			setText(data);
-			if (location>-1){//设置光标位置
+			if (location > -1) {//设置光标位置
 				setSelectionStart(location);
 				setSelectionEnd(location);
-				location =-1;
+				location = -1;
 			}
 			//autoAdjustIsFile();
 		} catch (Exception e) {
@@ -190,7 +218,7 @@ public class SuperJTextArea extends JTextArea{
 			try {
 				if (content.equals(tempFilePath)) {
 					File tempFile = new File(content);
-					if (tempFile.exists()){
+					if (tempFile.exists()) {
 						content = FileUtils.readFileToString(tempFile);
 						return content;
 					}
@@ -215,16 +243,16 @@ public class SuperJTextArea extends JTextArea{
 
 	public String getTipsToShow() {
 		try {
-			int line = getLineOfOffset( getCaretPosition() );
-			int start = getLineStartOffset( line );
-			int end = getLineEndOffset( line );
+			int line = getLineOfOffset(getCaretPosition());
+			int start = getLineStartOffset(line);
+			int end = getLineEndOffset(line);
 			String lineText = getDocument().getText(start, end - start);
 			String content = readDirOrFileContent(lineText);
-			String length = "Length: "+content.length()+System.lineSeparator();
-			if (content.length()<=500) {
-				return length+content;
+			String length = "Length: " + content.length() + System.lineSeparator();
+			if (content.length() <= 500) {
+				return length + content;
 			} else {
-				return length+content.substring(0,501);
+				return length + content.substring(0, 501);
 			}
 		} catch (Exception e) {
 			e.printStackTrace(BurpExtender.getStderr());
@@ -234,6 +262,7 @@ public class SuperJTextArea extends JTextArea{
 
 	/**
 	 * 显示上一个值
+	 *
 	 * @return
 	 */
 	public String showPreValue() {
@@ -246,6 +275,7 @@ public class SuperJTextArea extends JTextArea{
 
 	/**
 	 * 显示下一个值
+	 *
 	 * @return
 	 */
 	public String showNextValue() {
@@ -257,7 +287,6 @@ public class SuperJTextArea extends JTextArea{
 	}
 
 	/**
-	 * 
 	 * @param content
 	 * @return
 	 */
@@ -265,19 +294,24 @@ public class SuperJTextArea extends JTextArea{
 		String result = "";
 
 		//FilenameFilter filter = new SuffixFileFilter(".txt",".csv",".json",".js");
-		if (new File(content).exists()) {//内容是个文件名，或这路径名
-			File fileOrPath = new File(content);
-			if (fileOrPath.isDirectory()) {
-				for (File item:fileOrPath.listFiles()) {
-					result = result+readDirOrFileContent(item.getAbsolutePath());
-				}
-			}else {
-				try {
-					result = result + System.lineSeparator() + FileUtils.readFileToString(fileOrPath);
-				} catch (Exception e) {
+		List<String> lines = textToLines(content);
+
+		for (String line : lines) {
+			File fileOrPath = new File(line);
+			if (fileOrPath.exists()) {//内容是个文件名，或者路径名
+				if (fileOrPath.isDirectory()) {
+					for (File item : fileOrPath.listFiles()) {
+						result = result + readDirOrFileContent(item.getAbsolutePath());
+					}
+				} else {
+					try {
+						String tmp = FileUtils.readFileToString(fileOrPath);
+						result = result + System.lineSeparator() + tmp;
+					} catch (Exception e) {
+					}
 				}
 			}
-		};
+		}
 		return result;
 	}
 
@@ -296,11 +330,10 @@ public class SuperJTextArea extends JTextArea{
 			//如果想要在paste的时候避免卡死，就要在这里实现，有这个必要吗？
 			//
 		}
-
 	}
 
 	public static void main(String[] args) {
-		String aa= "";
+		String aa = "";
 		System.out.println(readDirOrFileContent(aa));
 	}
 };
