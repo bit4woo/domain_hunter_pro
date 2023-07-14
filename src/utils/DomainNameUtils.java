@@ -124,7 +124,7 @@ public class DomainNameUtils {
 		//replaceFirst的参数也是正则，能代替正则匹配？
 		return "".equals(StrDomain.replaceFirst(domainRegex,""));
 	}
-	
+
 	/**
 	 *
 	 * @param wildCardDomain 比如seller.*.example.*
@@ -268,9 +268,25 @@ public class DomainNameUtils {
 			String rootDomain = InternetDomainName.from(inputDomain).topPrivateDomain().toString();
 			return rootDomain;
 		} catch (Exception e) {
-			return inputDomain;
 			//InternetDomainName.from("www.jd.local").topPrivateDomain()//Not under a public suffix: www.jd.local
+			Set<String> customPublicSuffixes = new HashSet<>();
+			customPublicSuffixes.add("inner");
+			customPublicSuffixes.add("local");
+
+			int lastIndex = inputDomain.lastIndexOf(".");
+			if (lastIndex != -1 && lastIndex+1<=inputDomain.length()) {
+				String suffix = inputDomain.substring(lastIndex+1);
+				System.out.println(suffix);
+				if (customPublicSuffixes.contains(suffix)) {
+					int secondLastIndex = inputDomain.lastIndexOf(".", lastIndex - 1);
+					if (secondLastIndex != -1 && secondLastIndex+1<=inputDomain.length()) {
+						String rootDomain = inputDomain.substring(secondLastIndex+1);
+						return rootDomain;
+					}
+				}
+			}
 		}
+		return inputDomain;
 	}
 
 	/**
@@ -411,7 +427,7 @@ public class DomainNameUtils {
 		System.out.println(isMatchWildCardDomain("*.*","aaa"));
 		System.out.println(isMatchWildCardDomain("*.*","aa.aa"));
 	}
-	
+
 	public static void testWild(){
 		System.out.println(isValidWildCardDomain("*.baidu.com"));
 		System.out.println(isValidWildCardDomain("*.seller.*.example.com"));
@@ -426,6 +442,6 @@ public class DomainNameUtils {
 		//testWild();
 
 		//System.out.println(isValidWildCardDomain("aaaaaaaaa-aaaaaaaaaaaaaaa-aaaaaaaaaaaaaa.www1.baidu.com"));
-		System.out.println(isValidDomain("96c1e4d00aa03b2356d5c0782a1b4f7d.www.creditbean.in"));
+		System.out.println(getRootDomain("api.root.inner"));
 	}
 }
