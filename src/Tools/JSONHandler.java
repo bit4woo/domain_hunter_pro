@@ -81,12 +81,13 @@ public class JSONHandler {
 				result.addAll(grepValueFromJson(item,toFind));
 			}
 		}else {
-			String reg = String.format("\"%s\":[\"]{0,1}(.*?)[\"]{0,1}[,}]+", toFind);
+			String reg = String.format("\"%s\":[\\s]*[\"]{0,1}(.*?)[\"]{0,1}[,}]+", toFind);
 
 			Pattern pDomainNameOnly = Pattern.compile(reg);
 			Matcher matcher = pDomainNameOnly.matcher(jsonString);
 			while (matcher.find()) {//多次查找
 				String item = matcher.group(1);
+				//System.out.println("111"+item+"111");
 				result.add(item);
 			}
 		}
@@ -130,7 +131,7 @@ public class JSONHandler {
 				"    }\r\n" + 
 				"}";
 		try {
-			System.out.println(grepValueFromJson(ccc,"intext"));
+			System.out.println(grepValueFromJson(aaa,"month"));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
