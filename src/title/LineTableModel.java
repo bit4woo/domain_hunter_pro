@@ -563,6 +563,10 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 				}
 				String url = entry.getUrl();
 				String host = entry.getHost();
+				if (entry.getCertDomainSet().contains("ingress.local")){
+					continue;
+				}
+
 				//规则1
 				if (model.assetType(host) == DomainManager.USELESS && entry.getEntrySource().equals(LineEntry.Source_Certain)) {
 					lineEntries.remove(i);
