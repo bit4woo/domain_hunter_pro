@@ -1246,13 +1246,12 @@ public class LineEntryMenu extends JPopupMenu {
 
 		this.addSeparator();
 		this.add(addToblackListItem);//加入黑名单
-		this.add(removeItem);//单纯删除记录
 		this.add(addToblackListAndDeleteItem);//加入黑名单并删除
+		this.add(removeItem);//单纯删除记录
 		this.add(removeItemsNotInTargets);
-		this.add(markDuplicateItems);
-
 		this.add(removeSubDomainItem);
 		this.add(removeCustomAssetItem);
+		this.add(markDuplicateItems);
 
 	}
 
