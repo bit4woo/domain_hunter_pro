@@ -79,7 +79,7 @@ public class CertInfo {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return null; 
+		return new HashSet<String>(); 
 	}
 
 	public static Set<String> getAlternativeDomains(Certificate[] certs) throws Exception {
