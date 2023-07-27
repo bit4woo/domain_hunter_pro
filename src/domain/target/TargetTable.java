@@ -1,25 +1,30 @@
 package domain.target;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.FontMetrics;
+import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.PrintWriter;
 import java.util.Arrays;
 
 import javax.swing.JTable;
+import javax.swing.JToolTip;
 import javax.swing.ListSelectionModel;
+import javax.swing.Popup;
+import javax.swing.PopupFactory;
 import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.border.LineBorder;
 import javax.swing.table.TableColumn;
 
 import GUI.GUIMain;
 import base.Commons;
 import burp.BurpExtender;
-import title.LineTableModel;
 
 public class TargetTable extends JTable{
 
@@ -104,11 +109,27 @@ public class TargetTable extends JTable{
 						}
 					}
 				}
+
+				if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 1) {
+
+					int row = ((TargetTable) e.getSource()).rowAtPoint(e.getPoint()); // 获得列位置
+					int col = ((TargetTable) e.getSource()).columnAtPoint(e.getPoint()); // 获得列位置
+					String value = (String)TargetTable.this.getValueAt(row, col);
+
+					int modelCol = TargetTable.this.convertColumnIndexToModel(col);
+					int headerLength = TargetTableModel.getTitleList().get(modelCol).length();
+					if (value.length() > headerLength) {
+						showToolTip(TargetTable.this, e.getPoint(), value);
+					}
+				}
 			}
 
 			@Override
 			public void mousePressed(MouseEvent e) { //在mac中触发
 				mouseReleased(e);
+			}
+			@Override
+			public void mouseEntered(MouseEvent e) {
 			}
 		});
 
@@ -119,6 +140,23 @@ public class TargetTable extends JTable{
 		setFillsViewportHeight(true);
 		setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
 	}
+
+	private static void showToolTip(Component component, Point location, String text) {
+		JToolTip toolTip = new JToolTip();
+		toolTip.setTipText(text);
+
+		PopupFactory popupFactory = PopupFactory.getSharedInstance();
+		Popup popup = popupFactory.getPopup(component, toolTip, location.x, location.y);
+		popup.show();
+
+		int delay = 1000; // 1秒后自动消失
+		Timer timer = new Timer(delay, e -> {
+			popup.hide();
+		});
+		timer.setRepeats(false); // 只触发一次
+		timer.start();
+	}
+
 
 	/**
 	 * 需要在数据加载后，即setModel后才有效果!
@@ -131,11 +169,11 @@ public class TargetTable extends JTable{
 
 		for (int index=0;index<this.getColumnCount();index++) {
 			TableColumn column = this.getColumnModel().getColumn(index);
-			
+
 			if (column.getIdentifier().equals("#")) {
 				column.setMaxWidth(width*"100".length());
 			}
-			
+
 			if (column.getIdentifier().equals("Black")) {
 				column.setMaxWidth(width*"Black++".length());
 				//需要预留排序时箭头符合的位置，2个字符宽度
