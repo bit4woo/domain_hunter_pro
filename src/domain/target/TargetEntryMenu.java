@@ -41,6 +41,13 @@ public class TargetEntryMenu extends JPopupMenu {
 		this.guiMain = guiMain;
 		this.rootDomainColumnIndex =1;//设定为rootDomain所在列
 
+
+		JMenuItem itemNumber = new JMenuItem(new AbstractAction(modelRows.length+" Items Selected") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+			}
+		});
+		
 		JMenuItem getSubDomainsOf = new JMenuItem(new AbstractAction("Copy All Subdomins Of This") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -507,7 +514,7 @@ public class TargetEntryMenu extends JPopupMenu {
 			}
 		});
 
-
+		this.add(itemNumber);
 		this.add(getSubDomainsOf);
 		this.add(copyEmails);
 		this.add(batchAddCommentsItem);
