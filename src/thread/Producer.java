@@ -2,7 +2,6 @@ package thread;
 
 import java.io.PrintWriter;
 import java.net.URL;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
@@ -12,8 +11,9 @@ import base.IndexedHashMap;
 import burp.BurpExtender;
 import burp.IBurpExtenderCallbacks;
 import burp.IExtensionHelpers;
+import config.LineConfig;
 import title.LineEntry;
-import title.TempLineEntry;
+import utils.DomainToURLs;
 
 /** 
  * @author bit4woo
@@ -69,16 +69,19 @@ public class Producer extends Thread {//Producer do
 				Map.Entry<String,String> entry = domainQueue.take();
 				String host = entry.getKey();
 				String type = entry.getValue();
-				
-				TempLineEntry tmpLine = new TempLineEntry(guiMain,host);
-				Set<LineEntry> resultSet  = tmpLine.getFinalLineEntry();
-				//根据请求有效性分类处理
-				Iterator<LineEntry> it = resultSet.iterator();
-				while (it.hasNext()) {
-					LineEntry item = it.next();
+				Set<URL> urls = new DomainToURLs(host).getUrls();
+				for (URL Url:urls) {
+					LineEntry item = new LineEntry(Url).firstRequest(guiMain.getTitlePanel().getTempConfig());
+					
+					LineEntry need = LineConfig.doFilter(item);
+					if (need == null) {
+						continue;
+					}
+					
+					//TODO 同一个Host，只请求http或https的逻辑。
 					String url = item.getUrl();
 					if (item.getEntryType().equals(LineEntry.EntryType_Web)){
-						LineEntry linefound = findHistory(url);
+						LineEntry linefound = findHistory(url.toString());
 						if (null != linefound) {
 							linefound.getEntryTags().remove(LineEntry.Tag_NotTargetBaseOnCertInfo);
 							linefound.getEntryTags().remove(LineEntry.Tag_NotTargetBaseOnBlackList);

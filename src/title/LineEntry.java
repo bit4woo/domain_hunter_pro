@@ -4,6 +4,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,6 +32,7 @@ import burp.IResponseInfo;
 import domain.CertInfo;
 import utils.DomainNameUtils;
 import utils.IPAddressUtils;
+import utils.NetworkUtils;
 
 public class LineEntry {
 	private static final Logger log=LogManager.getLogger(LineEntry.class);
@@ -126,6 +128,15 @@ public class LineEntry {
 	}
 
 	/**
+	 * 这个构造函数用于发送请求前，LineEntry的构建。
+	 * 传递一个URL,请求URL，解析数据包。
+	 * @param url
+	 */
+	public LineEntry(URL url) {
+		parseURL(url);
+	}
+
+	/**
 	 * 用于构造DNS记录
 	 * @param host
 	 * @param IPset
@@ -182,10 +193,7 @@ public class LineEntry {
 	 */
 	private void parse(URL url,byte[] request,byte[] response) {
 		try {
-			this.url = url.toString();
-			port = url.getPort()== -1 ? url.getDefaultPort():url.getPort();
-			host = url.getHost();
-			protocol = url.getProtocol();
+			parseURL(url);
 
 			if (request != null) this.request = request;
 
@@ -218,6 +226,13 @@ public class LineEntry {
 			log.error(e);
 		}
 	}
+	
+	private void parseURL(URL url) {
+		port = url.getPort()== -1 ? url.getDefaultPort():url.getPort();
+		host = url.getHost();
+		protocol = url.getProtocol();
+		this.url = getUrl();//统一格式，包含默认端口
+	}
 
 	public void DoDirBrute() {
 
@@ -229,7 +244,58 @@ public class LineEntry {
 			this.setIcon_hash(WebIcon.getHash(tmpurl));
 		}
 	}
-	
+
+	/**
+	 * 第一次根据一个URL去获取它的详细信息
+	 */
+	public LineEntry firstRequest(GetTitleTempConfig config){
+		//第一步：DNS解析
+		HashMap<String, Set<String>> dnsResult = DomainNameUtils.dnsquery(host,null);
+		this.IPSet = dnsResult.get("IP");
+		this.CNAMESet = dnsResult.get("CDN");
+		if (IPSet.size() <= 0) {
+			//TODO 是否应该移除无效域名？理清楚：无效域名，黑名单域名，无响应域名等情况。
+			//依然添加一条记录，以便人工判断，人工可以根据此记录来清理收集到的域名列表。
+			setTitle("No DNS Record");
+			return this;
+		}else {//默认过滤私有IP
+			boolean isInPrivateNetwork = config.isHandlePriavte();
+			String ip = new ArrayList<>(IPSet).get(0);
+			if (IPAddressUtils.isPrivateIPv4(ip) && !isInPrivateNetwork) {//外网模式，内网域名，仅仅显示域名和IP。
+				setTitle("Private IP");
+				return this;
+			}
+			freshASNInfo();
+		}
+
+		//第二步：http请求
+		String cookie = config.getCookie();
+		IHttpRequestResponse info = NetworkUtils.doRequest(url,cookie);
+		parse(info);
+		//https://superuser.com/questions/1054724/how-to-make-firefox-ignore-all-ssl-certification-errors
+		//仍然改为先请求http，http不可用再请求https.避免浏览器中证书问题重复点击很麻烦
+		//即使是单纯跳转HTTPS的http请求，也有其独特之处，比如之前的Nginx Vhost traffic monitor，默认只能在http中成功，https下就不行。
+
+		//第三步：计算icon hash
+		if (getStatuscode() >=0) {
+			//没有响应包的，不做这个
+			String hash = WebIcon.getHash(url);
+			setIcon_hash(hash);
+
+			//第四步：获取证书域名
+			if (this.url.toLowerCase().startsWith("https://")) {
+				this.CertDomainSet = CertInfo.getAlternativeDomains(url);
+			}
+		}else {
+			//当域名可以解析，但是所有URL请求都失败的情况下。添加一条DNS解析记录
+			//TODO 但是IP可以ping通但是无成功的web请求的情况还没有处理
+			if (DomainNameUtils.isValidDomain(host)&& !IPSet.isEmpty()) {
+				setTitle("DNS Record");
+			}
+		}
+		return this;
+	}
+
 
 	public void DoRequestAgain() throws MalformedURLException {
 		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
@@ -244,16 +310,16 @@ public class LineEntry {
 		parse(info);
 	}
 
-	
+
 	public void DoRequestCertInfoAgain() throws MalformedURLException {
 		try{
 			String url = this.getUrl();
 			if (url.toLowerCase().startsWith("https")) {
-				CertDomainSet = CertInfo.getAllSANs(url);
+				CertDomainSet = CertInfo.getAlternativeDomains(url);
 			}
-			
+
 			if (!IPAddressUtils.isValidIP(host)) {//目标是域名
-				HashMap<String,Set<String>> result = DomainNameUtils.dnsquery(host);
+				HashMap<String,Set<String>> result = DomainNameUtils.dnsquery(host,null);
 				CNAMESet = result.get("CDN");
 			}
 		}catch (Exception e) {

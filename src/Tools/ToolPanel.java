@@ -638,7 +638,7 @@ public class ToolPanel extends JPanel {
 						if (IPAddressUtils.isValidIP(domain)) {//目标是一个IP
 							result.add(domain);
 						} else if (DomainNameUtils.isValidDomain(domain)) {//目标是域名
-							HashMap<String, Set<String>> temp = DomainNameUtils.dnsquery(domain);
+							HashMap<String, Set<String>> temp = DomainNameUtils.dnsquery(domain,null);
 							Set<String> IPSet = temp.get("IP");
 							result.addAll(IPSet);
 						}

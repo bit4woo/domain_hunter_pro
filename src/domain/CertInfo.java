@@ -69,9 +69,15 @@ public class CertInfo {
 			}
 		}
 	}
+	
+	/**
+	 * 	get all SANs ---证书中所有的域名信息
+	 * @param url
+	 * @return
+	 */
 	public static Set<String> getAlternativeDomains(String url){
 		try {
-			if (url.startsWith("https://")){
+			if (url.toLowerCase().startsWith("https://")){
 				Certificate[] certs = getCerts(url);
 				Set<String> domains = getAlternativeDomains(certs);
 				return domains;
@@ -201,13 +207,6 @@ public class CertInfo {
 			e.printStackTrace();
 		}
 		return new HashSet<String>();
-	}
-
-
-	//get all SANs ---证书中所有的域名信息
-	public static Set<String> getAllSANs(String aURL) throws Exception{
-		Certificate[] certs = getCerts(aURL);
-		return getAlternativeDomains(certs);
 	}
 
 	public static void test1() {

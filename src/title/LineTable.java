@@ -87,9 +87,6 @@ public class LineTable extends JTable
 		//LineEntry Entry = this.lineTableModel.getLineEntries().get(super.convertRowIndexToModel(row));
 		LineEntry Entry = this.getRowAt(row);
 		getLineTableModel().setCurrentlyDisplayedItem(Entry);
-		if (Entry.getRequest().length <=10) {
-			return;
-		}
 		guiMain.getTitlePanel().getRequestViewer().setMessage(Entry.getRequest(), true);
 		guiMain.getTitlePanel().getResponseViewer().setMessage(Entry.getResponse(), false);
 

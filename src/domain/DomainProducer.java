@@ -192,7 +192,7 @@ public class DomainProducer extends Thread {//Producer do
 	 * @return
 	 */
 	public boolean isTargetByCertInfoForTarget(String shortURL) throws Exception {
-		Set<String> certDomains = CertInfo.getAllSANs(shortURL);
+		Set<String> certDomains = CertInfo.getAlternativeDomains(shortURL);
 		for (String domain : certDomains) {
 			int type = guiMain.getDomainPanel().fetchTargetModel().assetType(domain);
 			if (type == DomainManager.SUB_DOMAIN || type == DomainManager.TLD_DOMAIN) {

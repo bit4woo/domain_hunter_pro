@@ -59,7 +59,7 @@ public class IPProducer extends Thread {//Producer do
 					CDNSet = new HashSet<>();
 					CDNSet.add("");
 				}else {
-					HashMap<String,Set<String>> result = DomainNameUtils.dnsquery(host);
+					HashMap<String,Set<String>> result = DomainNameUtils.dnsquery(host,null);
 					IPSet = result.get("IP");
 
 					CDNSet = result.get("CDN");

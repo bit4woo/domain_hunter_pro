@@ -12,6 +12,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.xbill.DNS.ARecord;
+import org.xbill.DNS.CNAMERecord;
 import org.xbill.DNS.Lookup;
 import org.xbill.DNS.NSRecord;
 import org.xbill.DNS.Name;
@@ -144,51 +145,27 @@ public class DomainNameUtils {
 
 
 	//http://www.xbill.org/dnsjava/dnsjava-current/examples.html
-	public static HashMap<String,Set<String>> dnsquery(String domain) {
-		HashMap<String,Set<String>> result = new HashMap<String,Set<String>>();
-		try{
-			Lookup lookup = new Lookup(domain, org.xbill.DNS.Type.A);
-			lookup.run();
-
-			Set<String> IPset = new HashSet<String>();
-			Set<String> CDNSet = new HashSet<String>();
-			if(lookup.getResult() == Lookup.SUCCESSFUL){
-				Record[] records=lookup.getAnswers();
-				for (int i = 0; i < records.length; i++) {
-					ARecord a = (ARecord) records[i];
-					String ip = a.getAddress().getHostAddress();
-					String CName = a.getAddress().getHostName();
-					if (ip!=null) {
-						IPset.add(ip);
-					}
-					if (CName!=null) {
-						CDNSet.add(CName);
-					}
-					//					System.out.println("getAddress "+ a.getAddress().getHostAddress());
-					//					System.out.println("getAddress "+ a.getAddress().getHostName());
-					//					System.out.println("getName "+ a.getName());
-					//					System.out.println(a);
-				}
-				//				result.put("IP", IPset);
-				//				result.put("CDN", CDNSet);
-				//System.out.println(records);
-			}
-			result.put("IP", IPset);
-			result.put("CDN", CDNSet);
-			return result;
-
-		}catch(Exception e){
-			e.printStackTrace();
-			return result;
-		}
-	}
-
+	/**
+	 * 返回数据格式如下
+     * {IP=[69.171.234.48], CDN=[www.google.com.]}
+	 * @param domain
+	 * @param server
+	 * @return
+	 */
 	public static HashMap<String,Set<String>> dnsquery(String domain,String server) {
 		HashMap<String,Set<String>> result = new HashMap<String,Set<String>>();
+		
+        if (domain == null || IPAddressUtils.isValidIP(domain)) {//目标是一个IP
+        	return result;
+        }
+		
 		try{
+			Resolver resolver =null;
 			Lookup lookup = new Lookup(domain, org.xbill.DNS.Type.A);
-			Resolver resolver = new SimpleResolver(server);
-			lookup.setResolver(resolver);
+			if (server !=null && IPAddressUtils.isValidIP(server)) {
+				resolver = new SimpleResolver(server);
+				lookup.setResolver(resolver);
+			}
 			lookup.run();
 
 			Set<String> IPset = new HashSet<String>();
@@ -206,6 +183,9 @@ public class DomainNameUtils {
 						CDNSet.add(CName);
 					}
 				}
+			}else if(lookup.getResult() == Lookup.TRY_AGAIN && resolver ==null){
+				System.out.println("DNS Query Failed, try with 8.8.8.8");
+				return dnsquery(domain,"8.8.8.8");
 			}
 			result.put("IP", IPset);
 			result.put("CDN", CDNSet);
@@ -216,20 +196,35 @@ public class DomainNameUtils {
 			return result;
 		}
 	}
-
-	public static Set<String> GetAuthoritativeNameServer(String domain) {
+	
+	/**
+	 * 
+	 * @param domain
+	 * @param server 可以为null
+	 * @return
+	 */
+	public static Set<String> GetAuthoritativeNameServer(String domain,String server) {
 		Set<String> NameServerSet = new HashSet<String>();
+        if (domain == null || IPAddressUtils.isValidIP(domain)) {//目标是一个IP
+        	return NameServerSet;
+        }
 		try{
+			
+			Resolver resolver =null;
 			Lookup lookup = new Lookup(domain, org.xbill.DNS.Type.NS);
+			if (server !=null && IPAddressUtils.isValidIP(server)) {
+				resolver = new SimpleResolver(server);
+				lookup.setResolver(resolver);
+			}
 			lookup.run();
 
 			if(lookup.getResult() == Lookup.SUCCESSFUL){
 				Record[] records=lookup.getAnswers();
 				for (int i = 0; i < records.length; i++) {
 					NSRecord a = (NSRecord) records[i];
-					String server = a.getTarget().toString();
-					if (server!=null) {
-						NameServerSet.add(server);
+					String Nserver = a.getTarget().toString();
+					if (Nserver!=null) {
+						NameServerSet.add(Nserver);
 					}
 				}
 			}
@@ -442,6 +437,6 @@ public class DomainNameUtils {
 		//testWild();
 
 		//System.out.println(isValidWildCardDomain("aaaaaaaaa-aaaaaaaaaaaaaaa-aaaaaaaaaaaaaa.www1.baidu.com"));
-		System.out.println(getRootDomain("api.root.inner"));
+		System.out.println(dnsquery("www.google.com","8.8.8.8"));
 	}
 }

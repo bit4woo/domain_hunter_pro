@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
@@ -324,6 +325,21 @@ public class LineConfig {
 		//return new Gson().fromJson(instanceString, LineConfig.class);
 	}
 
+	/**
+	 * 
+	 * 同一个主机的多个请求，可以根据某些条件丢弃一些。比如
+	 * http跳转https的丢弃http
+	 * 
+	 * @param entries
+	 * @return
+	 */
+	public static List<LineEntry> doSameHostFilter(List<LineEntry> entries) {
+		//TODO 待实现
+		for (LineEntry item:entries) {
+			
+		}
+		return entries;
+	}
 	/*
 	 * 返回结果值影响是否添加到table中，其实这里面可以对entry进行一些操作
 	 * 能通过过滤器返回true，否则返回false。判断是否是有用的记录。

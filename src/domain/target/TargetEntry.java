@@ -179,7 +179,7 @@ public class TargetEntry {
 
 	public void zoneTransferCheck() {
 		String rootDomain = InternetDomainName.from(target).topPrivateDomain().toString();
-		AuthoritativeNameServers = DomainNameUtils.GetAuthoritativeNameServer(rootDomain);
+		AuthoritativeNameServers = DomainNameUtils.GetAuthoritativeNameServer(rootDomain,null);
 		
 		for (String Server : AuthoritativeNameServers) {
 			//stdout.println("checking [Server: "+Server+" Domain: "+rootDomain+"]");
