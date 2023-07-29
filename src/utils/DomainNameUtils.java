@@ -12,7 +12,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.xbill.DNS.ARecord;
-import org.xbill.DNS.CNAMERecord;
 import org.xbill.DNS.Lookup;
 import org.xbill.DNS.NSRecord;
 import org.xbill.DNS.Name;
@@ -147,18 +146,18 @@ public class DomainNameUtils {
 	//http://www.xbill.org/dnsjava/dnsjava-current/examples.html
 	/**
 	 * 返回数据格式如下
-     * {IP=[69.171.234.48], CDN=[www.google.com.]}
+	 * {IP=[69.171.234.48], CDN=[www.google.com.]}
 	 * @param domain
 	 * @param server
 	 * @return
 	 */
 	public static HashMap<String,Set<String>> dnsquery(String domain,String server) {
 		HashMap<String,Set<String>> result = new HashMap<String,Set<String>>();
-		
-        if (domain == null || IPAddressUtils.isValidIP(domain)) {//目标是一个IP
-        	return result;
-        }
-		
+
+		if (domain == null || IPAddressUtils.isValidIP(domain)) {//目标是一个IP
+			return result;
+		}
+
 		try{
 			Resolver resolver =null;
 			Lookup lookup = new Lookup(domain, org.xbill.DNS.Type.A);
@@ -183,9 +182,15 @@ public class DomainNameUtils {
 						CDNSet.add(CName);
 					}
 				}
-			}else if(lookup.getResult() == Lookup.TRY_AGAIN && resolver ==null){
-				System.out.println("DNS Query Failed, try with 8.8.8.8");
-				return dnsquery(domain,"8.8.8.8");
+			}else if(lookup.getResult() == Lookup.TRY_AGAIN){
+				if (resolver ==null) {
+					System.out.println("DNS Query Failed with default server, try with 8.8.8.8");
+					return dnsquery(domain,"8.8.8.8");
+				}
+				if (server=="8.8.8.8"){
+					System.out.println("DNS Query Failed with 8.8.8.8, try with 223.6.6.6");
+					return dnsquery(domain,"223.6.6.6");
+				}
 			}
 			result.put("IP", IPset);
 			result.put("CDN", CDNSet);
@@ -196,7 +201,7 @@ public class DomainNameUtils {
 			return result;
 		}
 	}
-	
+
 	/**
 	 * 
 	 * @param domain
@@ -205,11 +210,11 @@ public class DomainNameUtils {
 	 */
 	public static Set<String> GetAuthoritativeNameServer(String domain,String server) {
 		Set<String> NameServerSet = new HashSet<String>();
-        if (domain == null || IPAddressUtils.isValidIP(domain)) {//目标是一个IP
-        	return NameServerSet;
-        }
+		if (domain == null || IPAddressUtils.isValidIP(domain)) {//目标是一个IP
+			return NameServerSet;
+		}
 		try{
-			
+
 			Resolver resolver =null;
 			Lookup lookup = new Lookup(domain, org.xbill.DNS.Type.NS);
 			if (server !=null && IPAddressUtils.isValidIP(server)) {
@@ -437,6 +442,6 @@ public class DomainNameUtils {
 		//testWild();
 
 		//System.out.println(isValidWildCardDomain("aaaaaaaaa-aaaaaaaaaaaaaaa-aaaaaaaaaaaaaa.www1.baidu.com"));
-		System.out.println(dnsquery("www.google.com","8.8.8.8"));
+		System.out.println(dnsquery("www.google1.com",null));
 	}
 }
