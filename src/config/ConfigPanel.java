@@ -41,6 +41,7 @@ public class ConfigPanel extends JPanel{
 	public static JTextField BrowserPath;
 	public static JRadioButton showItemsInOne;
 	public static JRadioButton ignoreHTTPS;
+	public static JRadioButton ignoreHTTP;
 	public static JRadioButton ignoreHTTPStaus500;
 	public static JRadioButton ignoreHTTPStaus400;
 	public static JRadioButton ignoreWrongCAHost;
@@ -272,15 +273,28 @@ public class ConfigPanel extends JPanel{
 		});
 
 
-		ignoreHTTPS = new JRadioButton("Ignore HTTPS if HTTP is OK || Ignore HTTP if HTTPS is OK");
+		ignoreHTTPS = new JRadioButton("Ignore HTTPS if HTTP is OK");
 		ignoreHTTPS.setSelected(false);
+		ignoreHTTPS.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (ignoreHTTPS.isSelected()) {
+					ignoreHTTP.setSelected(false);
+				}
+			}
+		});
 
-
+		ignoreHTTP = new JRadioButton("Ignore HTTP if HTTPS is OK");
+		ignoreHTTP.setSelected(true);
+		ignoreHTTP.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (ignoreHTTP.isSelected()) {
+					ignoreHTTPS.setSelected(false);
+				}
+			}
+		});
 
 		ignoreHTTPStaus500 = new JRadioButton("Ignore items which Status >= 500");
 		ignoreHTTPStaus500.setSelected(true);
-
-
 
 
 		ignoreHTTPStaus400 = new JRadioButton("Ignore http Status 400(The plain HTTP request was sent to HTTPS port)");
@@ -396,6 +410,7 @@ public class ConfigPanel extends JPanel{
 		add(DisplayContextMenuOfBurp, new MyGridBagLayout(++rowIndex,2));
 		add(showItemsInOne, new MyGridBagLayout(++rowIndex,2));
 		add(ignoreHTTPS, new MyGridBagLayout(++rowIndex,2));
+		add(ignoreHTTP, new MyGridBagLayout(++rowIndex,2));
 		add(ignoreHTTPStaus500, new MyGridBagLayout(++rowIndex,2));
 		add(ignoreHTTPStaus400, new MyGridBagLayout(++rowIndex,2));
 		add(ignoreWrongCAHost, new MyGridBagLayout(++rowIndex,2));

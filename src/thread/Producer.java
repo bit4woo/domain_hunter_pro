@@ -2,6 +2,8 @@ package thread;
 
 import java.io.PrintWriter;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
@@ -70,15 +72,14 @@ public class Producer extends Thread {//Producer do
 				String host = entry.getKey();
 				String type = entry.getValue();
 				Set<URL> urls = new DomainToURLs(host).getUrls();
+
+				List<LineEntry> tempEntries = new ArrayList<LineEntry>();
 				for (URL Url:urls) {
 					LineEntry item = new LineEntry(Url).firstRequest(guiMain.getTitlePanel().getTempConfig());
-					
-					LineEntry need = LineConfig.doFilter(item);
-					if (need == null) {
-						continue;
-					}
-					
-					//TODO 同一个Host，只请求http或https的逻辑。
+
+					LineConfig.doFilter(item);
+					item.setEntrySource(type);
+
 					String url = item.getUrl();
 					if (item.getEntryType().equals(LineEntry.EntryType_Web)){
 						LineEntry linefound = findHistory(url.toString());
@@ -98,14 +99,18 @@ public class Producer extends Thread {//Producer do
 							}
 						}
 					}
-					
-					item.setEntrySource(type);
-					guiMain.getTitlePanel().getTitleTable().getLineTableModel().addNewLineEntry(item);
+					tempEntries.add(item);
+				}
 
+				tempEntries = LineConfig.doSameHostFilter(tempEntries);
+
+				for (LineEntry item:tempEntries) {
+					guiMain.getTitlePanel().getTitleTable().getLineTableModel().addNewLineEntry(item);
 					//stdout.println(new LineEntry(messageinfo,true).ToJson());
 					int leftTaskNum = domainQueue.size();
-					stdout.println(String.format("+++ [%s] +++ get title done %s tasks left",url,leftTaskNum));
+					stdout.println(String.format("+++ [%s] +++ get title done %s tasks left",item.getUrl(),leftTaskNum));
 				}
+
 			} catch (Exception error) {
 				error.printStackTrace(stderr);
 				continue;//unnecessary

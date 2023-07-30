@@ -15,7 +15,6 @@ import GUI.GUIMain;
 import base.Commons;
 import burp.BurpExtender;
 import title.LineEntry;
-import title.search.History;
 
 public class LineConfig {
 	private static int MaximumEntries = 1000;//控制显示的条目数，减少内存占用
@@ -54,15 +53,16 @@ public class LineConfig {
 	private String elasticUsernameAndPassword = "elastic:changeme";
 	private String uploadApiToken = "";
 	private String uploadUrl = "";
-	
+
 	private String fofaEmail = "";
 	private String fofaKey = "";
-	
+
 	private String quakeAPIKey = "";
 	private String hunterAPIKey = "";
-	
+
 	private boolean showItemsInOne = false;
 	private boolean enableElastic = false;
+
 	private GUIMain gui;
 
 	/**
@@ -238,7 +238,7 @@ public class LineConfig {
 	public void setUploadUrl(String uploadUrl) {
 		this.uploadUrl = uploadUrl;
 	}
-	
+
 	public String getFofaEmail() {
 		return fofaEmail;
 	}
@@ -334,9 +334,29 @@ public class LineConfig {
 	 * @return
 	 */
 	public static List<LineEntry> doSameHostFilter(List<LineEntry> entries) {
-		//TODO 待实现
+
+		if (!ConfigPanel.ignoreHTTP.isSelected() && !ConfigPanel.ignoreHTTPS.isSelected()) {
+			return entries;
+		}
+
+		LineEntry httpsOk =null;
+		LineEntry httpOk =null;
 		for (LineEntry item:entries) {
-			
+			if (item.getProtocol().equalsIgnoreCase("https") && item.getPort()==443 && item.getStatuscode()>0) {
+				httpsOk = item;
+			}
+
+			if (item.getProtocol().equalsIgnoreCase("http") && item.getPort()==80 && item.getStatuscode()>0) {
+				httpOk = item;
+			}
+		}
+
+		if (httpsOk !=null && httpOk !=null ) {
+			if (ConfigPanel.ignoreHTTP.isSelected()) {
+				entries.remove(httpOk);
+			}else if (ConfigPanel.ignoreHTTPS.isSelected()) {
+				entries.remove(httpsOk);
+			}
 		}
 		return entries;
 	}

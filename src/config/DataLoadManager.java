@@ -127,7 +127,9 @@ public class DataLoadManager {
 	 */
 	public void unloadDbfile(String dbFilePath) {
 		if (dbFilePath == null || dbFilePath.equals("")) {
-			dbFilePath =gui.getCurrentDBFile().getAbsolutePath();
+			if (gui.getCurrentDBFile() != null) {
+				dbFilePath =gui.getCurrentDBFile().getAbsolutePath();
+			}
 		}
 		if (dbFilePath == null || dbFilePath.equals("")) {
 			return;
