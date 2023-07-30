@@ -253,7 +253,7 @@ public class LineEntry {
 		HashMap<String, Set<String>> dnsResult = DomainNameUtils.dnsquery(host,null);
 		this.IPSet = dnsResult.get("IP");
 		this.CNAMESet = dnsResult.get("CDN");
-		if (IPSet.size() <= 0) {
+		if (IPSet==null ||IPSet.size() <= 0) {
 			//TODO 是否应该移除无效域名？理清楚：无效域名，黑名单域名，无响应域名等情况。
 			//依然添加一条记录，以便人工判断，人工可以根据此记录来清理收集到的域名列表。
 			setTitle("No DNS Record");

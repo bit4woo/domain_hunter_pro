@@ -153,6 +153,10 @@ public class DomainNameUtils {
 	 */
 	public static HashMap<String,Set<String>> dnsquery(String domain,String server) {
 		HashMap<String,Set<String>> result = new HashMap<String,Set<String>>();
+		Set<String> IPset = new HashSet<String>();
+		Set<String> CDNSet = new HashSet<String>();
+		result.put("IP", IPset);
+		result.put("CDN", CDNSet);
 
 		if (domain == null || IPAddressUtils.isValidIP(domain)) {//目标是一个IP
 			return result;
@@ -167,8 +171,6 @@ public class DomainNameUtils {
 			}
 			lookup.run();
 
-			Set<String> IPset = new HashSet<String>();
-			Set<String> CDNSet = new HashSet<String>();
 			if(lookup.getResult() == Lookup.SUCCESSFUL){
 				Record[] records=lookup.getAnswers();
 				for (int i = 0; i < records.length; i++) {
