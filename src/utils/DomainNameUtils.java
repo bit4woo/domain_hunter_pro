@@ -159,6 +159,8 @@ public class DomainNameUtils {
 		result.put("CDN", CDNSet);
 
 		if (domain == null || IPAddressUtils.isValidIP(domain)) {//目标是一个IP
+			IPset.add(domain);
+			result.put("IP", IPset);
 			return result;
 		}
 
