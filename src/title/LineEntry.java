@@ -33,6 +33,7 @@ import domain.CertInfo;
 import utils.DomainNameUtils;
 import utils.IPAddressUtils;
 import utils.NetworkUtils;
+import utils.URLUtils;
 
 public class LineEntry {
 	private static final Logger log=LogManager.getLogger(LineEntry.class);
@@ -226,12 +227,12 @@ public class LineEntry {
 			log.error(e);
 		}
 	}
-	
+
 	private void parseURL(URL url) {
+		this.url = URLUtils.getUrlWithDefaultPort(url.toString());//统一格式，包含默认端口
 		port = url.getPort()== -1 ? url.getDefaultPort():url.getPort();
 		host = url.getHost();
 		protocol = url.getProtocol();
-		this.url = getUrl();//统一格式，包含默认端口
 	}
 
 	public void DoDirBrute() {
@@ -335,7 +336,7 @@ public class LineEntry {
 		if (url == null || url.equals("")) {
 			return protocol+"://"+host+":"+port+"/";
 		}
-		return url;
+		return URLUtils.getUrlWithDefaultPort(url);
 	}
 
 	/**
