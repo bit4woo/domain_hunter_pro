@@ -527,6 +527,24 @@ public class LineEntryMenu extends JPopupMenu {
 				}
 			}
 		});
+		
+		JMenuItem copyURLOfIconItem = new JMenuItem(new AbstractAction("Copy URL Of favicon.ico") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				try{
+					java.util.List<String> urls = lineTable.getLineTableModel().getURLsOfFavicon(modleRows);
+					String textUrls = String.join(System.lineSeparator(), urls);
+
+					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+					StringSelection selection = new StringSelection(textUrls);
+					clipboard.setContents(selection, null);
+				}
+				catch (Exception e1)
+				{
+					e1.printStackTrace(stderr);
+				}
+			}
+		});
 
 		/**
 		 * 获取用于Host碰撞的域名
@@ -1238,6 +1256,7 @@ public class LineEntryMenu extends JPopupMenu {
 		CopyMenu.add(copyIPWithCommaItem);//常用
 		CopyMenu.add(copyIPWithSpaceItem);
 		CopyMenu.add(copyURLItem);
+		CopyMenu.add(copyURLOfIconItem);
 		CopyMenu.add(copyCommonURLItem);
 		CopyMenu.add(copyHostCollisionDomainsItem);
 		CopyMenu.add(copyLocationURLItem);

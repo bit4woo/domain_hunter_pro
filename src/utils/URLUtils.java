@@ -49,5 +49,28 @@ public class URLUtils {
 			return url;
 		}
 	}
+	
+	/**
+	 * baseUrl格式：https://www.runoob.com
+	 * @param urlString
+	 * @return
+	 */
+	public static String getBaseUrl(String urlString) {
+		try {
+			//urlString = "https://www.runoob.com";
+			URL url = new URL(urlString);
+			String procotol = url.getProtocol();
+			String host = url.getHost();
+			int port = url.getPort();
+
+			if (port == -1) {
+				port = url.getDefaultPort();
+			}
+			return procotol+"://"+host+":"+port;
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+			return urlString;
+		}
+	}
 
 }

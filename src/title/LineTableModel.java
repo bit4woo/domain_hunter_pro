@@ -28,6 +28,7 @@ import domain.DomainManager;
 import domain.target.TargetTableModel;
 import utils.DomainNameUtils;
 import utils.IPAddressUtils;
+import utils.URLUtils;
 
 /**
  * 关于firexxx，目的是通知各个modelListener。默认的listener中，有一种的目的是：当数据发生变化时，更新GUI的显示。
@@ -437,6 +438,20 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
 			String url = lineEntries.get(rows[i]).getUrl();
 			urls.add(url);
+		}
+		return urls;
+	}
+	
+	public List<String> getURLsOfFavicon(int[] rows) {
+		Arrays.sort(rows); //升序
+		List<String> urls = new ArrayList<>();
+
+		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
+			String url = lineEntries.get(rows[i]).getUrl();
+			if (url != null) {
+				url = URLUtils.getBaseUrl(url)+"/favicon.ico";
+				urls.add(url);
+			}
 		}
 		return urls;
 	}
