@@ -21,16 +21,16 @@ import javax.swing.text.Document;
 import org.apache.commons.io.FileUtils;
 
 import burp.BurpExtender;
+import title.search.History;
 
 public class SuperJTextArea extends JTextArea {
 
-	String preValue = "";
-	String nextValue = "";
 	private boolean useTempFile;
 	private boolean supportFileSystem;
 	private boolean contentIsFileOrPath = false;
 	private int location = -1;
 	public static int maxLength = 100000;
+	public static History history = History.getInstance(5,false);
 
 	final String tempFilePath = FileUtils.getTempDirectory() + File.separator + "ContentIsInTmpFile.txt";
 
@@ -193,7 +193,9 @@ public class SuperJTextArea extends JTextArea {
 	@Override
 	public void setText(String Text) {
 		try {
-			preValue = super.getText();
+			if (!history.contains(Text) && !Text.equals("")){
+				history.addRecord(Text);
+			}
 
 			if (useTempFile) {
 				//避免大文件卡死整个burp
@@ -265,12 +267,10 @@ public class SuperJTextArea extends JTextArea {
 	 *
 	 * @return
 	 */
-	public String showPreValue() {
-		if (preValue != null && !preValue.equals("")) {
-			nextValue = super.getText(); //获取原始值，也就是显示的值
-			super.setText(preValue);
-		}
-		return super.getText();
+	public void showPreValue() {
+		String preValue = history.moveUP();
+		BurpExtender.getStdout().print("preValue"+preValue);
+		setText(preValue);
 	}
 
 	/**
@@ -278,12 +278,10 @@ public class SuperJTextArea extends JTextArea {
 	 *
 	 * @return
 	 */
-	public String showNextValue() {
-		if (nextValue != null && !nextValue.equals("")) {
-			preValue = super.getText(); //获取原始值，也就是显示的值
-			super.setText(nextValue);
-		}
-		return super.getText();
+	public void showNextValue() {
+		String nextValue = history.moveDown();
+		BurpExtender.getStdout().print("nextValue"+nextValue);
+		setText(nextValue);
 	}
 
 	/**
