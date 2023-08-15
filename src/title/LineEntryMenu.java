@@ -527,7 +527,7 @@ public class LineEntryMenu extends JPopupMenu {
 				}
 			}
 		});
-		
+
 		JMenuItem copyURLOfIconItem = new JMenuItem(new AbstractAction("Copy URL Of favicon.ico") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -623,10 +623,10 @@ public class LineEntryMenu extends JPopupMenu {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try{
-					Set<String> IPs = lineTable.getLineTableModel().getIPs(modleRows);
+					List<String> IPs = lineTable.getLineTableModel().getHosts(modleRows);
 
 					String nmapPath = guiMain.getConfigPanel().getLineConfig().getNmapPath();
-					PortScanUtils.genCmdAndCopy(nmapPath, IPs);
+					PortScanUtils.genCmdAndCopy(nmapPath, new HashSet<>(IPs));
 				}
 				catch (Exception e1)
 				{
@@ -719,8 +719,8 @@ public class LineEntryMenu extends JPopupMenu {
 				}.execute();
 			}
 		});
-		
-		
+
+
 		JMenuItem requestCertInfoAgain = new JMenuItem(new AbstractAction("Do Request Cert Info Again") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -1209,7 +1209,7 @@ public class LineEntryMenu extends JPopupMenu {
 		DoMenu.add(SendToToolPanel);
 		DoMenu.add(requestAgain);
 		DoMenu.add(requestCertInfoAgain);
-		
+
 		//DoMenu.add(doActiveScan);常用
 
 		DoMenu.addSeparator();
