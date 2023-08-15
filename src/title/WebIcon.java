@@ -29,10 +29,18 @@ public class WebIcon {
 			int port = url.getPort()==-1?url.getDefaultPort():url.getPort();
 			IHttpService service = helpers.buildHttpService(url.getHost(), port, url.getProtocol());
 			IHttpRequestResponse info = BurpExtender.getCallbacks().makeHttpRequest(service,requsetbyte);
-			byte[] body = new HelperPlus(helpers).getBody(false, info);//这里不能使用静态方法。
-			if (body ==null) return "";
-			int hash = calcHash(body);
-			return hash+"";
+			HelperPlus getter = new HelperPlus(helpers);
+			int status = getter.getStatusCode(info);
+			String ContentType = getter.getHeaderValueOf(false, info, "Content-Type");
+			if (status ==200 && ContentType!= null && ContentType.toLowerCase().startsWith("image/")) {
+				//Content-Type: image/x-icon
+				byte[] body = getter.getBody(false, info);//这里不能使用静态方法。
+				if (body ==null) return "";
+				int hash = calcHash(body);
+				return hash+"";
+			}else {
+				return "";
+			}
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 			return "";

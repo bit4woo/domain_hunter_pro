@@ -841,10 +841,25 @@ public class LineEntryMenu extends JPopupMenu {
 			}
 		});
 
-		JMenuItem batchFreshASNInfoItem = new JMenuItem(new AbstractAction("Fresh ASN Info") {
+		JMenuItem batchRefreshASNInfoItem = new JMenuItem(new AbstractAction("Refresh ASN Info") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				titlepanel.getTitleTable().getLineTableModel().freshASNInfo(modleRows);
+			}
+		});
+
+
+		JMenuItem batchRefreshIconHashItem = new JMenuItem(new AbstractAction("Refresh Icon Hash") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				new SwingWorker(){
+					//to void "java.lang.RuntimeException: java.lang.RuntimeException: Extensions should not make HTTP requests in the Swing event dispatch thread"
+					@Override
+					protected Object doInBackground() throws Exception {
+						titlepanel.getTitleTable().getLineTableModel().updateIconHashes(modleRows);
+						return null;
+					}
+				}.execute();
 			}
 		});
 
@@ -1220,7 +1235,9 @@ public class LineEntryMenu extends JPopupMenu {
 		//DoMenu.add(doGateWayByPassCheck);
 		//this.add(iconHashItem);
 		DoMenu.addSeparator();
-		DoMenu.add(batchFreshASNInfoItem);
+		DoMenu.add(batchRefreshASNInfoItem);
+		DoMenu.add(batchRefreshIconHashItem);
+
 		DoMenu.add(setASNAliasItem);
 
 		JMenu SearchMenu = new JMenu("Search");

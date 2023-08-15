@@ -441,7 +441,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		}
 		return urls;
 	}
-	
+
 	public List<String> getURLsOfFavicon(int[] rows) {
 		Arrays.sort(rows); //升序
 		List<String> urls = new ArrayList<>();
@@ -509,6 +509,15 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			results.add(hash);
 		}
 		return results;
+	}
+
+
+	public void updateIconHashes(int[] rows) {
+		Arrays.sort(rows); //升序
+		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
+			LineEntry entry = lineEntries.get(rows[i]);
+			entry.DoGetIconHash();
+		}
 	}
 
 	public int[] getIndexes(List<LineEntry> entries) {
