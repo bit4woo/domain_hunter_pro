@@ -884,9 +884,43 @@ public class LineEntryMenu extends JPopupMenu {
 					List<String> urls = lineTable.getLineTableModel().getLocationUrls(modleRows);
 					String textUrls = String.join(System.lineSeparator(), urls);
 
-					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-					StringSelection selection = new StringSelection(textUrls);
-					clipboard.setContents(selection, null);
+					SystemUtils.writeToClipboard(textUrls);
+				}
+				catch (Exception e1)
+				{
+					e1.printStackTrace(stderr);
+				}
+			}
+		});
+
+
+		JMenuItem copyContentSecurityPolicyItem = new JMenuItem(new AbstractAction("Copy Content-Security-Policy") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				try{
+					List<String> urls = lineTable.getLineTableModel().getContentSecurityPolicy(modleRows);
+					String textUrls = String.join(System.lineSeparator(), urls);
+
+					SystemUtils.writeToClipboard(textUrls);
+				}
+				catch (Exception e1)
+				{
+					e1.printStackTrace(stderr);
+				}
+			}
+		});
+
+
+		JMenuItem copyHeaderValueItem = new JMenuItem(new AbstractAction("Copy Response Header Value") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				try{
+					String value = JOptionPane.showInputDialog("input header name");
+					if (value != null && value.length()>0) {
+						List<String> results = lineTable.getLineTableModel().getHeaderValues(modleRows,false,value);
+						String textUrls = String.join(System.lineSeparator(), results);
+						SystemUtils.writeToClipboard(textUrls);
+					}
 				}
 				catch (Exception e1)
 				{
@@ -901,10 +935,7 @@ public class LineEntryMenu extends JPopupMenu {
 				try{
 					List<String> urls = lineTable.getLineTableModel().getCDNAndCertInfos(modleRows);
 					String textUrls = String.join(System.lineSeparator(), urls);
-
-					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-					StringSelection selection = new StringSelection(textUrls);
-					clipboard.setContents(selection, null);
+					SystemUtils.writeToClipboard(textUrls);
 				}
 				catch (Exception e1)
 				{
@@ -919,10 +950,7 @@ public class LineEntryMenu extends JPopupMenu {
 				try{
 					List<String> urls = lineTable.getLineTableModel().getIconHashes(modleRows);
 					String textUrls = String.join(System.lineSeparator(), urls);
-
-					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-					StringSelection selection = new StringSelection(textUrls);
-					clipboard.setContents(selection, null);
+					SystemUtils.writeToClipboard(textUrls);
 				}
 				catch (Exception e1)
 				{
@@ -1277,6 +1305,8 @@ public class LineEntryMenu extends JPopupMenu {
 		CopyMenu.add(copyCommonURLItem);
 		CopyMenu.add(copyHostCollisionDomainsItem);
 		CopyMenu.add(copyLocationURLItem);
+		CopyMenu.add(copyContentSecurityPolicyItem);
+		CopyMenu.add(copyHeaderValueItem);
 		CopyMenu.add(copyCDNAndCertInfoItem);
 		CopyMenu.add(copyIconhashItem);
 

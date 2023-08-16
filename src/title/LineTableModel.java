@@ -19,6 +19,7 @@ import base.IndexedHashMap;
 import base.IntArraySlice;
 import burp.BurpExtender;
 import burp.Getter;
+import burp.HelperPlus;
 import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
 import burp.IHttpService;
@@ -468,23 +469,49 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	}
 
 	public List<String> getLocationUrls(int[] rows) {
+		return getHeaderValues(rows,false,"Location");
+	}
+
+	/**
+	 * Content-Security-Policy 通常包含很多域名信息
+	 * @param rows
+	 * @return
+	 */
+	public List<String> getContentSecurityPolicy(int[] rows) {
+		return getHeaderValues(rows,false,"Content-Security-Policy");
+	}
+
+	public List<String> getHeaderValues(int[] rows,boolean isRequest,String headerName) {
+		List<String> result = new ArrayList<>();
+		if (headerName ==null ||headerName.trim().equals("")) {
+			return result;
+		}
+
+		headerName = headerName.trim();
+		if (headerName.endsWith(":")) {
+			headerName = headerName.substring(0,headerName.length()-1);
+		}
+
 		Arrays.sort(rows); //升序
-		List<String> urls = new ArrayList<>();
 
 		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
-		Getter getter = new Getter(helpers);
+		HelperPlus getter = new HelperPlus(helpers);
 
 		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
 			LineEntry entry = lineEntries.get(rows[i]);
-			String url = entry.getUrl();
-			byte[] resp = entry.getResponse();
-			if (resp == null) continue;
-			String Locationurl = getter.getHeaderValueOf(false,entry.getResponse(),"Location");
-			if (url !=null){
-				urls.add(url+" "+Locationurl);
+
+			byte[] pack;
+			if (isRequest) {
+				pack = entry.getRequest();
+			}else {
+				pack = entry.getResponse();
 			}
+
+			if (pack == null) continue;
+			String value = getter.getHeaderValueOf(isRequest,pack,headerName);
+			result.add(value);
 		}
-		return urls;
+		return result;
 	}
 
 	public List<String> getCDNAndCertInfos(int[] rows) {
