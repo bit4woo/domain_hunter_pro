@@ -30,7 +30,7 @@ public class SuperJTextArea extends JTextArea {
 	private boolean contentIsFileOrPath = false;
 	private int location = -1;
 	public static int maxLength = 100000;
-	public static History history = History.getInstance(5,false);
+	public static History history = new History(5,false);
 
 	final String tempFilePath = FileUtils.getTempDirectory() + File.separator + "ContentIsInTmpFile.txt";
 

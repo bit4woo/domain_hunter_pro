@@ -30,7 +30,7 @@ public class History {
 
 	}
 
-	private History(int size,boolean allowLoop){
+	public History(int size,boolean allowLoop){
 		History.size = size;
 		History.allowLoop = allowLoop;
 		historyVector = new Vector<String>(History.size);
