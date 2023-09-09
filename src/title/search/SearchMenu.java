@@ -116,6 +116,12 @@ public class SearchMenu extends JPopupMenu {
 			}
 		});
 		
+		JMenuItem CDNItems = new JMenuItem(new AbstractAction("CDN:  REGEX:via:|x-cache") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				searchField.setText("REGEX:via:|x-cache");
+			}
+		});
 		
 		JMenuItem DNSRecord = new JMenuItem(new AbstractAction("DNS Records Items:   SOURCE:certain && status <=0") {
 			@Override
@@ -157,6 +163,7 @@ public class SearchMenu extends JPopupMenu {
 		this.add(UrlRedirection);
 		this.add(ManualSaved);
 		this.add(DNSRecord);
+		this.add(CDNItems);
 		this.addSeparator();//分割线
 		this.add(caseSensitive);
 	}
