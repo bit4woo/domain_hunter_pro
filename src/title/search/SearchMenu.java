@@ -116,10 +116,10 @@ public class SearchMenu extends JPopupMenu {
 			}
 		});
 		
-		JMenuItem CDNItems = new JMenuItem(new AbstractAction("CDN:  REGEX:via:|x-cache") {
+		JMenuItem CDNItems = new JMenuItem(new AbstractAction("CDN:  REGEX:Via:|X-Cache") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				searchField.setText("REGEX:via:|x-cache");
+				searchField.setText("REGEX:Via:|X-Cache");
 			}
 		});
 		

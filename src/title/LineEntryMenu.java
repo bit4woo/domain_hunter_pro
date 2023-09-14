@@ -765,7 +765,10 @@ public class LineEntryMenu extends JPopupMenu {
 							useHttps = false;
 						}
 						byte[] request = entry.getRequest();
-
+						
+						if (request ==null) {
+							continue;
+						}
 						callbacks.includeInScope(new URL(entry.getUrl()));
 						callbacks.doActiveScan(host, port, useHttps, request);
 					}
