@@ -269,8 +269,12 @@ public class SuperJTextArea extends JTextArea {
 	 */
 	public void showPreValue() {
 		String preValue = history.moveUP();
-		BurpExtender.getStdout().print("preValue"+preValue);
-		setText(preValue);
+		if (preValue.equals(getText())) {
+			showPreValue();
+		}else {
+			BurpExtender.getStdout().print("preValue"+preValue);
+			setText(preValue);
+		}
 	}
 
 	/**
