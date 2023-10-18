@@ -553,6 +553,8 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
 			LineEntry entry = lineEntries.get(rows[i]);
 			entry.DoGetIconHash();
+			this.fireTableRowsUpdated(rows[i], rows[i]);
+			titleDao.addOrUpdateTitle(entry);//写入数据库
 		}
 	}
 
