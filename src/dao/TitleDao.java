@@ -28,6 +28,7 @@ public class TitleDao {
 		if (!testSelect()){
 			createTable();
 		}
+		addColumnIfNotExists();
 	}
 
 	public TitleDao(File dbFile){
@@ -59,21 +60,23 @@ public class TitleDao {
 				" contentLength           INT    NOT NULL," +
 				" title           TEXT    NOT NULL," +
 				" webcontainer           TEXT    NOT NULL," +
-				
+
 				" IPSet           TEXT    NOT NULL," +
 				" CNAMESet           TEXT    NOT NULL," +
 				" CertDomainSet           TEXT    NOT NULL," +
-				
+
+				" icon_url           TEXT    NOT NULL," +
+				" icon_bytes           BLOB    NOT NULL," +
 				" icon_hash           TEXT    NOT NULL," +
 				" ASNInfo           TEXT    NOT NULL," +
 				" time           TEXT    NOT NULL," +
-				
+
 				" request           BLOB    NOT NULL," +
 				" response           BLOB    NOT NULL," +
 				" protocol           TEXT    NOT NULL," +
 				" host           TEXT    NOT NULL," +
 				" port        INT    NOT NULL,"+
-				
+
 				" CheckStatus        INT    NOT NULL,"+
 				" AssetType        INT    NOT NULL,"+
 				" EntryType        INT    NOT NULL,"+
@@ -91,6 +94,24 @@ public class TitleDao {
 		return true;
 	}
 
+	public void addColumnIfNotExists() {
+		boolean columnExists = jdbcTemplate.queryForObject(
+				"SELECT COUNT(*) FROM pragma_table_info(?) WHERE name = ?",
+				new Object[]{"TitleTable", "icon_url"},
+				Integer.class
+				) > 0;
+
+				if (!columnExists) {
+					// Column doesn't exist, so add it
+					String addColumnSQL = "ALTER TABLE TitleTable "
+							+ "ADD COLUMN icon_url TEXT;";
+					String addColumnSQL1 = "ALTER TABLE TitleTable "
+							+ "ADD COLUMN icon_bytes BLOB;";
+					jdbcTemplate.execute(addColumnSQL);
+					jdbcTemplate.execute(addColumnSQL1);
+				}
+	}
+
 	/**
 	 * 写入记录，如果URL存在相同的URL，则覆盖
 	 * @param entry
@@ -98,18 +119,18 @@ public class TitleDao {
 	 */
 	public boolean addOrUpdateTitle(LineEntry entry){
 		String sql = "insert or replace into TitleTable (url,statuscode,contentLength,title,webcontainer,"
-				+ "IPSet,CNAMESet,CertDomainSet,icon_hash,ASNInfo,time,"
+				+ "IPSet,CNAMESet,CertDomainSet,icon_url,icon_bytes,icon_hash,ASNInfo,time,"
 				+ "protocol,host,port,request,response,"
 				+ "CheckStatus,AssetType,EntryType,EntrySource,comments,EntryTags)"
 				+ "values(?,?,?,?,?,"
-				+ "?,?,?,?,?,?,"
+				+ "?,?,?,?,?,?,?,?,"
 				+ "?,?,?,?,?,"
 				+ "?,?,?,?,?,?)";
 
 		int result = jdbcTemplate.update(sql, 
 				entry.getUrl(),entry.getStatuscode(),entry.getContentLength(),entry.getTitle(),entry.getWebcontainer(),
 				SetAndStr.toStr(entry.getIPSet()),SetAndStr.toStr(entry.getCNAMESet()),
-				SetAndStr.toStr(entry.getCertDomainSet()),entry.getIcon_hash(),entry.getASNInfo(),entry.getTime(),
+				SetAndStr.toStr(entry.getCertDomainSet()),entry.getIcon_url(),entry.getIcon_bytes(),entry.getIcon_hash(),entry.getASNInfo(),entry.getTime(),
 				entry.getProtocol(),entry.getHost(),entry.getPort(),entry.getRequest(),entry.getResponse(),
 				entry.getCheckStatus(),entry.getAssetType(),entry.getEntryType(),entry.getEntrySource(),
 				SetAndStr.toStr(entry.getComments()),SetAndStr.toStr(entry.getEntryTags()));
@@ -126,7 +147,7 @@ public class TitleDao {
 		}
 		return num == lineEntries.size();
 	}
-	
+
 	public boolean addOrUpdateTitles(IndexedHashMap<String, LineEntry> lineEntries){
 		int num = 0;
 		for (LineEntry entry:lineEntries.values()) {
