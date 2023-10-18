@@ -100,7 +100,7 @@ public class LineEntry {
 	private Set<String> CNAMESet = new HashSet<String>();
 	private Set<String> CertDomainSet = new HashSet<String>();
 	private String icon_url = "";
-	private byte[] icon_bytes = null;
+	private byte[] icon_bytes = new byte[0];
 	private String icon_hash = "";
 	private String ASNInfo = "";
 	private String time = "";

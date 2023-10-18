@@ -53,19 +53,13 @@ public class WebIcon {
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		}
-
-		return null;
+		return new byte[0];
 	}
 
 	public static String getFaviconUrl(String urlStr, String html) {
 		String baseUrl = getBaseUrl(urlStr);
-		try {
-			URL url = new URL(baseUrl + FaviconExtractor(html));
-			return url.toString();
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-		}
-		return null;
+		String url = baseUrl + FaviconExtractor(html);
+		return url;
 	}
 
 	public static String getHash(byte[] imageData) {
@@ -156,7 +150,7 @@ public class WebIcon {
 
 	public static byte[] convertIcoToPng(byte[] icoBytes) {
 		if (icoBytes == null) {
-			return null;
+			return new byte[0];
 		}
 		try {
 			List<BufferedImage> images = ICODecoder.read(new ByteArrayInputStream(icoBytes));
@@ -170,7 +164,7 @@ public class WebIcon {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return null;
+		return new byte[0];
 	}
 
 	public static void main(String[] args) {
