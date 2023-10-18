@@ -2,11 +2,15 @@ import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.List;
 
+import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -14,22 +18,10 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
-import org.apache.commons.imaging.ImageFormats;
-import org.apache.commons.imaging.ImageReadException;
-import org.apache.commons.imaging.ImageWriteException;
-import org.apache.commons.imaging.Imaging;
-
+import net.sf.image4j.codec.ico.ICODecoder;
 import title.FaviconTableCellRenderer;
 
-import com.aspose.imaging.Image;
-import com.aspose.imaging.ImageOptionsBase;
-import com.aspose.imaging.fileformats.jpeg2000.Jpeg2000Codec;
-import com.aspose.imaging.fileformats.png.PngColorType;
-import com.aspose.imaging.fileformats.tiff.enums.TiffExpectedFormat;
-import com.aspose.imaging.imageoptions.*;
-
-
-public class DisplayIcon {
+public class displayIcon {
     public static void main(String[] args)throws IOException {
         EventQueue.invokeLater(new Runnable() {
             public void run() {
@@ -49,7 +41,7 @@ public class DisplayIcon {
                     
                     byte[] imageData = imageToByteArray("G:/111.ico");
                     
-                    imageData = convertIcoToPng(imageData);
+                    imageData = convertIcoToPng1(imageData);
 //                    Image[] images = readAllIconsFromICO(imageData);
                     ImageIcon icon = new ImageIcon(imageData); // 修正文件路径
                     model.setValueAt(icon, 0, 1);
@@ -64,7 +56,7 @@ public class DisplayIcon {
                         public void actionPerformed(ActionEvent e) {
                             // 修改数据示例
                             try {
-								model.setValueAt(new ImageIcon(imageToByteArray("G:/111.png")), 0, 1);
+								model.setValueAt(new ImageIcon(imageToByteArray("G:/222.png")), 0, 1);
 							} catch (IOException e1) {
 								// TODO Auto-generated catch block
 								e1.printStackTrace();
@@ -95,18 +87,17 @@ public class DisplayIcon {
         return imageData;
     }
 
-   
 
-    		
-    private static byte[] convertIcoToPng(byte[] icoBytes) throws IOException, ImageReadException, ImageWriteException {
-        // Use Imaging library to read and write the image
-        ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
-        Imaging.writeImage(Imaging.getBufferedImage(icoBytes), pngOutputStream, ImageFormats.PNG);
+    public static byte[] convertIcoToPng1(byte[] icoBytes) throws Exception {
+        List<BufferedImage> images = ICODecoder.read(new ByteArrayInputStream(icoBytes));
 
-        return pngOutputStream.toByteArray();
+        if (images.size() > 0) {
+            BufferedImage bi = images.get(0);
+            ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
+            ImageIO.write(bi, "PNG", pngOutputStream);
+            return pngOutputStream.toByteArray();
+        }
+        return null;
     }
-    private static byte[] convertIcoToPng1(byte[] icoBytes) throws IOException, ImageReadException, ImageWriteException {
-    	List<BufferedImage> image = ICODecoder.read(new File("input.ico"));
-    }
-    
+
 }

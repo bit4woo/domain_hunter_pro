@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.swing.ImageIcon;
 import javax.swing.table.AbstractTableModel;
 
 import GUI.GUIMain;
@@ -130,6 +131,9 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		if (columnIndex == titleList.indexOf("isChecked")) {
 			return String.class;//id
 		}
+		if (columnIndex == titleList.indexOf("IconHash")) {
+			return ImageIcon.class;//id
+		}
 		return String.class;
 	}
 
@@ -205,7 +209,13 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			return entry.getAssetType();
 		}
 		if (columnIndex == titleList.indexOf("IconHash")){
-			return entry.getIcon_hash();
+			//return entry.getIcon_hash();
+			byte[] data = entry.getIcon_bytes();
+			data = WebIcon.convertIcoToPng(data);
+			if (data != null) {
+				return new ImageIcon(data);
+			}
+			return null;
 		}
 		if (columnIndex == titleList.indexOf("ASNInfo")){
 			return entry.getASNInfo();

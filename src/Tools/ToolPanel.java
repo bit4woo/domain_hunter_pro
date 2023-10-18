@@ -613,7 +613,7 @@ public class ToolPanel extends JPanel {
 					Iterator<String> it = urls.iterator();
 					while (it.hasNext()) {
 						String url = it.next();
-						String hash = WebIcon.getHash(url);
+						String hash = WebIcon.getHash(url,null);
 						result.add(hash);
 						System.out.println(url + " " + hash);
 					}
@@ -1131,7 +1131,7 @@ public class ToolPanel extends JPanel {
 			@Override
 			protected void action() {
 				try {
-					outputTextArea.setText(WebIcon.getHash(inputTextArea.getText()));
+					outputTextArea.setText(WebIcon.getHash(inputTextArea.getText(),null));
 				} catch (Exception e1) {
 					outputTextArea.setText(e1.getMessage());
 					e1.printStackTrace(stderr);
