@@ -385,23 +385,29 @@ public class DomainManager {
 			addIfValid(domain);
 		}
 	}
+
+	public boolean addIfValid(String domain_or_url) {
+		Set<String> domains = GrepUtils.grepDomain(domain_or_url);//这样以支持domain:port形式的资产
+		List<String> ips = GrepUtils.grepIPAndPort(domain_or_url);
+		domains.addAll(ips);
+
+		boolean result =false;
+		for (String item : domains) {
+			if (addIfValidWithRealDomain(item)){
+				result = true;
+			}
+		}
+		return result;
+	}
+
+
 	/**
 	 * 根据已有配置进行添加，不是强行直接添加
 	 *
 	 * @param domain
 	 * @return boolean 执行了添加返回true，没有执行添加返回false。
 	 */
-	public boolean addIfValid(String domain) {
-		Set<String> domains = GrepUtils.grepDomain(domain);//这样以支持domain:port形式的资产
-		List<String> ips = GrepUtils.grepIPAndPort(domain);
-		if (domains.size() !=0 ){
-			domain = new ArrayList<String>(domains).get(0);
-		} else if(ips.size() !=0){
-			domain = ips.get(0);
-		}else{
-			return false;
-		}
-
+	private boolean addIfValidWithRealDomain(String domain) {
 		int type = fetchTargetModel().assetType(domain);
 
 		if (type !=DomainManager.USELESS && type!= DomainManager.NEED_CONFIRM_IP){

@@ -49,6 +49,7 @@ public class TargetControlPanel extends JPanel {
 					String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
 					TargetEntry entry = new TargetEntry(enteredRootDomain);
 					if(domainPanel.fetchTargetModel().addRowIfValid(entry)){
+						domainPanel.getDomainResult().addIfValid(enteredRootDomain);
 						btnFresh.doClick();
 					}
 				}
@@ -66,6 +67,7 @@ public class TargetControlPanel extends JPanel {
 					String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
 					TargetEntry entry = new TargetEntry(enteredRootDomain,false);
 					if(domainPanel.fetchTargetModel().addRowIfValid(entry)){
+						domainPanel.getDomainResult().addIfValid(enteredRootDomain);
 						btnFresh.doClick();
 					}
 				}
