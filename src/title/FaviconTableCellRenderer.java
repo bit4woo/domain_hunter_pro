@@ -9,11 +9,10 @@ import javax.swing.table.DefaultTableCellRenderer;
 
 public class FaviconTableCellRenderer extends DefaultTableCellRenderer {
 
-    private int desiredWidth = 32;
-    private int desiredHeight =32 ;
+	private int desiredWidth = 32;
+    private int desiredHeight = 32;
 
-    @Override
-    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+    public Component getTableCellRendererComponentxxx(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         if (value instanceof ImageIcon) {
             // 获取原始图标
             ImageIcon originalIcon = (ImageIcon) value;
@@ -28,7 +27,19 @@ public class FaviconTableCellRenderer extends DefaultTableCellRenderer {
             
             // 显示调整后的图标
             setIcon(resizedIcon);
-            System.out.print("设置完成");
+            setText(null); // 清空文本
+        } else {
+            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+        }
+        return this;
+    }
+    
+    @Override
+    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+        if (value instanceof ImageIcon) {
+            // 获取原始图标
+            ImageIcon originalIcon = (ImageIcon) value;
+            setIcon(originalIcon);
             setText(null); // 清空文本
         } else {
             super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);

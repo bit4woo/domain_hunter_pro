@@ -211,7 +211,6 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		if (columnIndex == titleList.indexOf("IconHash")){
 			//return entry.getIcon_hash();
 			byte[] data = entry.getIcon_bytes();
-			data = WebIcon.convertIcoToPng(data);
 			if (data != null) {
 				return new ImageIcon(data);
 			}

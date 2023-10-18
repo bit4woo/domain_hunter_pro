@@ -549,6 +549,8 @@ public class LineEntry {
 		}
 		icon_bytes = WebIcon.getFavicon(icon_url);
 		icon_hash = WebIcon.getHash(icon_bytes);
+		
+		icon_bytes = WebIcon.convertIcoToPng(icon_bytes);//存储的是PNG格式的数据，不是原始格式了
 	}
 
 	public String getHeaderValueOf(boolean isRequest, String headerName) {
