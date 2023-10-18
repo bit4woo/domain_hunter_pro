@@ -132,6 +132,9 @@ public class LineTable extends JTable
 			}
 		}
 		this.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);//配合横向滚动条
+
+		int index = LineTableModel.getTitleList().indexOf("IconHash");
+		getColumnModel().getColumn(index).setCellRenderer(new FaviconTableCellRenderer()); // 第二列显示图片,必须在setModel之后
 	}
 
 
@@ -237,7 +240,10 @@ public class LineTable extends JTable
 						}else {
 							SystemUtils.writeToClipboard(selecteEntry.getASNInfo());
 						}
-					} else{//LineTableModel.getTitleList().indexOf("CDN|CertInfo")
+					}else if (modelCol == LineTableModel.getTitleList().indexOf("Favicon")) {
+						SystemUtils.writeToClipboard(selecteEntry.getIcon_url());
+					} else{
+						//LineTableModel.getTitleList().indexOf("CDN|CertInfo")
 						//String value = guiMain.getTitlePanel().getTitleTable().getValueAt(rows[0], col).toString();//rows[0]是转换过的，不能再转换
 						//调用的是原始Jtable中的getValueAt，它本质上也是调用model中的getValueAt，但是有一次转换的过程！！！
 						String value = getLineTableModel().getValueAt(rows[0],modelCol).toString();

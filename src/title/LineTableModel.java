@@ -55,7 +55,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 
 	private static final String[] standardTitles = new String[] {
 			"#", "URL", "Status", "Length", "Title","Comments","Server","isChecked",
-			"AssetType","Source","CheckDoneTime","IP", "CNAME|CertInfo","ASNInfo","IconHash"};
+			"AssetType","Source","CheckDoneTime","IP", "CNAME|CertInfo","ASNInfo","Favicon","IconHash"};
 	private static List<String> titleList = new ArrayList<>(Arrays.asList(standardTitles));
 	//为了实现动态表结构
 	public static List<String> getTitleList() {
@@ -123,16 +123,16 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			return Integer.class;//id
 		}
 		if (columnIndex == titleList.indexOf("Status")) {
-			return Integer.class;//id
+			return Integer.class;
 		}
 		if (columnIndex == titleList.indexOf("Length")) {
-			return Integer.class;//id
+			return Integer.class;
 		}
 		if (columnIndex == titleList.indexOf("isChecked")) {
-			return String.class;//id
+			return String.class;
 		}
-		if (columnIndex == titleList.indexOf("IconHash")) {
-			return ImageIcon.class;//id
+		if (columnIndex == titleList.indexOf("Favicon")) {
+			return ImageIcon.class;
 		}
 		return String.class;
 	}
@@ -175,40 +175,40 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		if (columnIndex == titleList.indexOf("#")) {
 			return rowIndex;
 		}
-		if (columnIndex == titleList.indexOf("URL")){
+		else if (columnIndex == titleList.indexOf("URL")){
 			return entry.getUrl();
 		}
-		if (columnIndex == titleList.indexOf("Status")){
+		else if (columnIndex == titleList.indexOf("Status")){
 			return entry.getStatuscode();
 		}
-		if (columnIndex == titleList.indexOf("Length")){
+		else if (columnIndex == titleList.indexOf("Length")){
 			return entry.getContentLength();
 		}
-		if (columnIndex == titleList.indexOf("Server")){
+		else if (columnIndex == titleList.indexOf("Server")){
 			return entry.getWebcontainer();
 		}
-		if (columnIndex == titleList.indexOf("Title")){
+		else if (columnIndex == titleList.indexOf("Title")){
 			return entry.getTitle();
 		}
-		if (columnIndex == titleList.indexOf("IP")){
+		else if (columnIndex == titleList.indexOf("IP")){
 			return String.join(",", new TreeSet<String>(entry.getIPSet()));//用TreeSet进行排序
 		}
-		if (columnIndex == titleList.indexOf("CNAME|CertInfo")){
+		else if (columnIndex == titleList.indexOf("CNAME|CertInfo")){
 			return entry.fetchCNAMEAndCertInfo();
 		}
-		if (columnIndex == titleList.indexOf("Comments")){
+		else if (columnIndex == titleList.indexOf("Comments")){
 			return String.join(",", new TreeSet<String>(entry.getComments()));//用TreeSet进行排序
 		}
-		if (columnIndex == titleList.indexOf("CheckDoneTime")){
+		else if (columnIndex == titleList.indexOf("CheckDoneTime")){
 			return entry.getTime();
 		}
-		if (columnIndex == titleList.indexOf("isChecked")){
+		else if (columnIndex == titleList.indexOf("isChecked")){
 			return entry.getCheckStatus();
 		}
-		if (columnIndex == titleList.indexOf("AssetType")){
+		else if (columnIndex == titleList.indexOf("AssetType")){
 			return entry.getAssetType();
 		}
-		if (columnIndex == titleList.indexOf("IconHash")){
+		else if (columnIndex == titleList.indexOf("Favicon")){
 			//return entry.getIcon_hash();
 			byte[] data = entry.getIcon_bytes();
 			if (data != null) {
@@ -216,10 +216,13 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			}
 			return null;
 		}
-		if (columnIndex == titleList.indexOf("ASNInfo")){
+		else if (columnIndex == titleList.indexOf("IconHash")){
+			return entry.getIcon_hash();
+		}
+		else if (columnIndex == titleList.indexOf("ASNInfo")){
 			return entry.getASNInfo();
 		}
-		if (columnIndex == titleList.indexOf("Source")) {
+		else if (columnIndex == titleList.indexOf("Source")) {
 			return entry.getEntrySource();
 		}
 		return "";
