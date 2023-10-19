@@ -241,7 +241,11 @@ public class LineTable extends JTable
 							SystemUtils.writeToClipboard(selecteEntry.getASNInfo());
 						}
 					}else if (modelCol == LineTableModel.getTitleList().indexOf("Favicon")) {
-						SystemUtils.writeToClipboard(selecteEntry.getIcon_url());
+						try {
+							Commons.browserOpen(selecteEntry.getIcon_url(),guiMain.getConfigPanel().getLineConfig().getBrowserPath());
+						} catch (Exception e1) {
+							e1.printStackTrace();
+						}
 					} else{
 						//LineTableModel.getTitleList().indexOf("CDN|CertInfo")
 						//String value = guiMain.getTitlePanel().getTitleTable().getValueAt(rows[0], col).toString();//rows[0]是转换过的，不能再转换
