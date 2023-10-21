@@ -57,17 +57,30 @@ public class WebIcon {
 	}
 
 	public static String getFaviconUrl(String urlStr, String html) {
-		String baseUrl = getBaseUrl(urlStr);
-		String url = baseUrl + FaviconExtractor(html);
-		return url;
+		String iconUrl = FaviconExtractor(html);
+		if (iconUrl.startsWith("/")) {
+			String baseUrl = getBaseUrl(urlStr);
+			String url = baseUrl + FaviconExtractor(html);
+			return url;
+		}else {
+			String parentUrl = urlStr.substring(0, urlStr.lastIndexOf('/') + 1);
+			String url = parentUrl + FaviconExtractor(html);
+			return url;
+		}
 	}
 
 	public static String getHash(byte[] imageData) {
 		if (imageData == null) {
 			return "";
-		} else {
-			return calcHash(imageData) + "";
 		}
+		if (imageData.length ==0) {
+			return "";
+		}
+		if (new String(imageData).toLowerCase().contains("<html>")) {
+			return "";
+		}
+		return calcHash(imageData) + "";
+
 	}
 
 	public static String getHash(String urlStr, String html) {

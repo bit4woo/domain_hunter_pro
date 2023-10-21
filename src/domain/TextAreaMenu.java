@@ -10,7 +10,6 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;
@@ -146,7 +145,7 @@ public class TextAreaMenu extends JPopupMenu {
 				if (selectedItems.size() >=50) {
 					return;
 				}
-				DomainManager domainResult = domainPanel.getGuiMain().getDomainPanel().getDomainResult();
+				DomainManager domainResult = domainPanel.getDomainResult();
 				for (String item:selectedItems) {
 					try {
 						domainResult.addToTargetAndSubDomain(item,true);
@@ -154,7 +153,7 @@ public class TextAreaMenu extends JPopupMenu {
 						e2.printStackTrace(stderr);
 					}
 				}
-				domainPanel.getGuiMain().getDomainPanel().saveDomainDataToDB();
+				domainPanel.saveDomainDataToDB();
 			}
 		});
 
@@ -204,7 +203,7 @@ public class TextAreaMenu extends JPopupMenu {
 		JMenuItem removeMd5DomainItem = new JMenuItem(new AbstractAction("Remove MD5 Domain") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				domainPanel.getGuiMain().getDomainPanel().getDomainResult().removeMd5Domain();
+				domainPanel.getDomainResult().removeMd5Domain();
 			}
 		});
 
@@ -241,7 +240,7 @@ public class TextAreaMenu extends JPopupMenu {
 		JMenuItem ReFresh = new JMenuItem(new AbstractAction("Refresh") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				domainPanel.getGuiMain().getDomainPanel().showDataToDomainGUI();
+				domainPanel.showDataToDomainGUI();
 			}
 		});
 
@@ -314,9 +313,9 @@ public class TextAreaMenu extends JPopupMenu {
 		});
 
 		SortDomain.setToolTipText("search something");
-		
-		
-		
+
+
+
 		JMenuItem genPortScanCmd = new JMenuItem(new AbstractAction("Copy Port Scan Cmd") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
