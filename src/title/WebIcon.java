@@ -165,6 +165,9 @@ public class WebIcon {
 		if (icoBytes == null) {
 			return new byte[0];
 		}
+		if (isPNG(icoBytes)) {
+			return icoBytes;
+		}
 		try {
 			List<BufferedImage> images = ICODecoder.read(new ByteArrayInputStream(icoBytes));
 
@@ -176,8 +179,26 @@ public class WebIcon {
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
+			return icoBytes;
 		}
 		return new byte[0];
+	}
+
+	public static boolean isPNG(byte[] data) {
+		// PNG 文件的前八个字节的标识符
+		byte[] pngSignature = { (byte) 137, 80, 78, 71, 13, 10, 26, 10 };
+
+		if (data.length < 8) {
+			return false;  // 数据长度不足八个字节，无法检测
+		}
+
+		for (int i = 0; i < pngSignature.length; i++) {
+			if (data[i] != pngSignature[i]) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	public static void main(String[] args) {

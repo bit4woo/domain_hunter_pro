@@ -37,9 +37,7 @@ public class displayIcon {
                     table.getColumnModel().getColumn(1).setCellRenderer(new FaviconTableCellRenderer());
 
                     // 设置第二列的单元格值为ImageIcon
-                    //ImageIcon icon = new ImageIcon("C:/Users/dell/Downloads/favicon_v3.ico"); // 修正文件路径
-                    
-                    byte[] imageData = imageToByteArray("G:/111.ico");
+                    byte[] imageData = imageToByteArray("C:\\Users\\xxx\\Downloads\\tab_logo.png");
                     
                     imageData = convertIcoToPng1(imageData);
 //                    Image[] images = readAllIconsFromICO(imageData);
@@ -89,15 +87,18 @@ public class displayIcon {
 
 
     public static byte[] convertIcoToPng1(byte[] icoBytes) throws Exception {
-        List<BufferedImage> images = ICODecoder.read(new ByteArrayInputStream(icoBytes));
+        try {
+			List<BufferedImage> images = ICODecoder.read(new ByteArrayInputStream(icoBytes));
 
-        if (images.size() > 0) {
-            BufferedImage bi = images.get(0);
-            ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
-            ImageIO.write(bi, "PNG", pngOutputStream);
-            return pngOutputStream.toByteArray();
-        }
-        return null;
+			if (images.size() > 0) {
+			    BufferedImage bi = images.get(0);
+			    ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
+			    ImageIO.write(bi, "PNG", pngOutputStream);
+			    return pngOutputStream.toByteArray();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+        return icoBytes;
     }
-
 }
