@@ -633,7 +633,9 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 				}
 
 				//规则1
-				if (model.assetType(host) == DomainManager.USELESS && entry.getEntrySource().equals(LineEntry.Source_Certain)) {
+				int type = model.assetType(host);
+				if ((type == DomainManager.USELESS || type==DomainManager.SIMILAR_DOMAIN)
+						&& entry.getEntrySource().equals(LineEntry.Source_Certain)) {
 					lineEntries.remove(i);
 					titleDao.deleteTitleByUrl(url);//写入数据库
 					stdout.println("!!! "+url+" deleted");
@@ -646,7 +648,8 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 
 					int uselessCount = 0;
 					for (String domain:certDomains) {
-						if (model.assetType(domain) == DomainManager.USELESS) {
+						type = model.assetType(domain);
+						if (type == DomainManager.USELESS || type==DomainManager.SIMILAR_DOMAIN) {
 							uselessCount++;
 						}
 					}
