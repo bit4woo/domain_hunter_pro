@@ -33,5 +33,5 @@ jobs:
     - name: Archive Jar file
       uses: actions/upload-artifact@v2
       with:
-        name: Jar file
+        name: jar-with-dependencies
         path: ./target/domain_hunter_pro-*-jar-with-dependencies.jar  # 指定二进制文件的路径
