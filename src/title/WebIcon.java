@@ -58,12 +58,18 @@ public class WebIcon {
 
 	public static String getFaviconUrl(String urlStr, String html) {
 		String iconUrl = FaviconExtractor(html);
-		if (iconUrl.startsWith("/")) {
-			String baseUrl = getBaseUrl(urlStr);
+
+		String baseUrl = getBaseUrl(urlStr);
+		String parentUrl = urlStr.substring(0, urlStr.lastIndexOf('/') + 1);
+		String protocol = urlStr.substring(0, urlStr.indexOf("//"));
+
+		if (iconUrl.startsWith("//")) {
+			String url = protocol + FaviconExtractor(html);
+			return url;
+		}else if (iconUrl.startsWith("/")) {
 			String url = baseUrl + FaviconExtractor(html);
 			return url;
 		}else {
-			String parentUrl = urlStr.substring(0, urlStr.lastIndexOf('/') + 1);
 			String url = parentUrl + FaviconExtractor(html);
 			return url;
 		}
@@ -95,8 +101,11 @@ public class WebIcon {
 		if (html == null || html.equals("")) {
 			return faviconPath;
 		}
-
-		String regex = "<link\\s+rel=(?:\"shortcut\\s+)?icon\"\\s+href=\"([^\"]+)\"";
+		//<link rel="icon" href="./logo.png">
+		//<link rel="icon" href="logo.png">
+		//<link rel="shortcut icon" href="//p3-x.xx.com/obj/xxx/favicon.ico">
+		String regex = "<link\\s+rel=\"[shortcut\\s+]*icon\"\\s+href=\"(.*?)\"";
+		//String regex = "icon\"\\s+href=\"(.*?)\">";
 		Pattern pattern = Pattern.compile(regex);
 		Matcher matcher = pattern.matcher(html);
 
@@ -203,6 +212,5 @@ public class WebIcon {
 
 	public static void main(String[] args) {
 		// System.out.println(getHash("https://www.baidu.com"));
-		System.out.println(getHash("https://www.baidu.com", ""));
 	}
 }
