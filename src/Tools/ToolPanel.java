@@ -1028,6 +1028,26 @@ public class ToolPanel extends JPanel {
 		};
 
 
+		JButton ToUnicode = new BackGroundButton("To Unicode"){
+
+			@Override
+			protected void action() {
+				try {
+					outputTextArea.setText(convertToUnicode(inputTextArea.getText()));
+				} catch (Exception e1) {
+					outputTextArea.setText(e1.getMessage());
+					e1.printStackTrace(stderr);
+				}
+			}
+			public String convertToUnicode(String text) {
+				StringBuilder unicodeStringBuilder = new StringBuilder();
+				for (char c : text.toCharArray()) {
+					unicodeStringBuilder.append(String.format("\\u%04X", (int) c)); // 转换字符为Unicode编码
+				}
+				return unicodeStringBuilder.toString();
+			}
+		};
+
 		JButton Base64ToFile = new BackGroundButton("Base64ToFile"){
 
 			@Override
@@ -1295,6 +1315,7 @@ public class ToolPanel extends JPanel {
 		cloumnIndex = 0;
 		buttonPanel.add(unescapeJava, new bagLayout(++rowIndex, ++cloumnIndex));
 		buttonPanel.add(unescapeHTML, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(ToUnicode, new bagLayout(rowIndex, ++cloumnIndex));
 		//buttonPanel.add(JsonSimplify, new bagLayout(rowIndex, ++cloumnIndex) );
 		//buttonPanel.add(JsonBeautify, new bagLayout(rowIndex, ++cloumnIndex) );
 
