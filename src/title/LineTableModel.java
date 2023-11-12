@@ -211,8 +211,11 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		else if (columnIndex == titleList.indexOf("Favicon")){
 			//return entry.getIcon_hash();
 			byte[] data = entry.getIcon_bytes();
+			String hash = entry.getIcon_hash();
+			//排序比较是获取对象的toString()结果进行的。当ImageIcon有描述description时，toString()的值就是description。
+			//所以传递hash作为描述，可以实现图标的点击排序，还和hash的排序一致
 			if (data != null) {
-				return new ImageIcon(data);
+				return new ImageIcon(data,hash);
 			}
 			return null;
 		}
