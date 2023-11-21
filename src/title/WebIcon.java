@@ -104,7 +104,8 @@ public class WebIcon {
 		//<link rel="icon" href="./logo.png">
 		//<link rel="icon" href="logo.png">
 		//<link rel="shortcut icon" href="//p3-x.xx.com/obj/xxx/favicon.ico">
-		String regex = "<link\\s+rel=\"[shortcut\\s+]*icon\"\\s+href=\"(.*?)\"";
+		//"<link rel='icon' href='/favicon.ico' type='image/x-ico'/>"
+		String regex = "<link\\s+rel=[\"|\'][shortcut\\s+]*icon[\"|\']\\s+href=[\"|\'](.*?)[\"|\']";
 		//String regex = "icon\"\\s+href=\"(.*?)\">";
 		Pattern pattern = Pattern.compile(regex);
 		Matcher matcher = pattern.matcher(html);
@@ -212,5 +213,6 @@ public class WebIcon {
 
 	public static void main(String[] args) {
 		// System.out.println(getHash("https://www.baidu.com"));
+		System.out.print(FaviconExtractor("<link rel='icon' href='/xxx-favicon.ico' type='image/x-ico'/>"));
 	}
 }
