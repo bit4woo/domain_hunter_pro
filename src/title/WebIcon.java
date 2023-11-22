@@ -1,13 +1,11 @@
 package title;
 
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -16,6 +14,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Entities;
+import org.jsoup.parser.Parser;
 
 import com.github.kevinsawicki.http.HttpRequest;
 import com.google.common.hash.Hashing;
@@ -137,27 +140,48 @@ public class WebIcon {
 			return faviconPath;
 		}
 
-		try (BufferedReader reader = new BufferedReader(new StringReader(html))) {
-			String line;
-			while ((line = reader.readLine()) != null) {
-				String line_lower = line.toLowerCase();
-				if (line_lower.contains("<link") && line_lower.contains("rel=") && line_lower.contains("icon")) {
-					String regex = "href=[\"|\'](.*?)[\"|\']";
-					Pattern pattern = Pattern.compile(regex);
-					Matcher matcher = pattern.matcher(line);
-					while (matcher.find()) {
-						faviconPath = matcher.group(1);
-					}
-					return faviconPath;
-				}
-				if (line_lower.contains("</head>")) {
+		html = formatHtmlAndGetHead(html);
+		for (String line:html.split("\n|>")){
+			String line_lower = line.toLowerCase();
+			System.out.println(line);
+			if (line_lower.contains("<link") && line_lower.contains("rel=") && line_lower.contains("icon")) {
+				String regex = "href=[\"|\'](.*?)[\"|\']";
+				Pattern pattern = Pattern.compile(regex);
+				Matcher matcher = pattern.matcher(line);
+				while (matcher.find()) {
+					faviconPath = matcher.group(1);
 					return faviconPath;
 				}
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
+			if (line_lower.contains("</head>")) {
+				return faviconPath;
+			}
 		}
 		return faviconPath;
+	}
+
+
+	public static String formatHtmlAndGetHead(String unformattedHtml) {
+		try {
+			// 使用JSoup解析HTML
+			Document document = Jsoup.parse(unformattedHtml, "", Parser.xmlParser());
+
+			// 设置输出格式，即进行美化
+			document.outputSettings().prettyPrint(true);
+
+			// 设置转义实体，避免特殊字符被转义
+			document.outputSettings().escapeMode(Entities.EscapeMode.xhtml);
+
+			// 获取HTML的<head>元素
+			org.jsoup.nodes.Element headElement = document.head();
+
+			// 返回<head>元素的内容
+			return headElement.html();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return unformattedHtml.split("(?i)</head>")[0];
+		}
 	}
 
 	/**
@@ -257,6 +281,6 @@ public class WebIcon {
 
 	public static void main(String[] args) {
 		// System.out.println(getHash("https://www.baidu.com"));
-		System.out.print(FaviconExtractor("<link rel='icon' href='/xxx-favicon.ico' type='image/x-ico'/>"));
+		//System.out.print(FaviconExtractor("<link rel='icon' href='/xxx-favicon.ico' type='image/x-ico'/>"));
 	}
 }

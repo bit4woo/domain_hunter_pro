@@ -232,5 +232,10 @@
 			<artifactId>image4j</artifactId>
 			<version>0.7.2</version>
 		</dependency>
+		<dependency>
+			<groupId>org.jsoup</groupId>
+			<artifactId>jsoup</artifactId>
+			<version>1.14.3</version> <!-- 使用最新版本 -->
+		</dependency>
 	</dependencies>
 </project>
