@@ -1,11 +1,13 @@
 package title;
 
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -95,16 +97,18 @@ public class WebIcon {
 		return getHash(imageData);
 	}
 
-	public static String FaviconExtractor(String html) {
+	//	<link rel="icon" href="./logo.png">
+	//	<link rel="icon" href="logo.png">
+	//	<link rel="shortcut icon" href="//p3-x.xx.com/obj/xxx/favicon.ico">
+	//	<link rel='icon' href='/favicon.ico' type='image/x-ico'/>
+	//	<link href="/resources/admin-favicon.ico" rel="shortcut icon" type="image/x-ico"/>
+	//	<link href="/resources/admin-favicon.ico" rel="icon" type="image/x-ico"/>
+	public static String FaviconExtractor_old(String html) {
 		String faviconPath = "/favicon.ico"; // 默认值
 
 		if (html == null || html.equals("")) {
 			return faviconPath;
 		}
-		//<link rel="icon" href="./logo.png">
-		//<link rel="icon" href="logo.png">
-		//<link rel="shortcut icon" href="//p3-x.xx.com/obj/xxx/favicon.ico">
-		//"<link rel='icon' href='/favicon.ico' type='image/x-ico'/>"
 		String regex = "<link\\s+rel=[\"|\'][shortcut\\s+]*icon[\"|\']\\s+href=[\"|\'](.*?)[\"|\']";
 		//String regex = "icon\"\\s+href=\"(.*?)\">";
 		Pattern pattern = Pattern.compile(regex);
@@ -112,6 +116,46 @@ public class WebIcon {
 
 		while (matcher.find()) {
 			faviconPath = matcher.group(1);
+		}
+		return faviconPath;
+	}
+
+	/**
+		<link rel="icon" href="./logo.png">
+		<link rel="icon" href="logo.png">
+		<link rel="shortcut icon" href="//p3-x.xx.com/obj/xxx/favicon.ico">
+		<link rel='icon' href='/favicon.ico' type='image/x-ico'/>
+		<link href="/resources/admin-favicon.ico" rel="shortcut icon" type="image/x-ico"/>
+		<link href="/resources/admin-favicon.ico" rel="icon" type="image/x-ico"/>
+	 * @param html
+	 * @return
+	 */
+	public static String FaviconExtractor(String html) {
+		String faviconPath = "/favicon.ico"; // 默认值
+
+		if (html == null || html.equals("")) {
+			return faviconPath;
+		}
+
+		try (BufferedReader reader = new BufferedReader(new StringReader(html))) {
+			String line;
+			while ((line = reader.readLine()) != null) {
+				String line_lower = line.toLowerCase();
+				if (line_lower.contains("<link") && line_lower.contains("rel=") && line_lower.contains("icon")) {
+					String regex = "href=[\"|\'](.*?)[\"|\']";
+					Pattern pattern = Pattern.compile(regex);
+					Matcher matcher = pattern.matcher(line);
+					while (matcher.find()) {
+						faviconPath = matcher.group(1);
+					}
+					return faviconPath;
+				}
+				if (line_lower.contains("</head>")) {
+					return faviconPath;
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 		return faviconPath;
 	}
