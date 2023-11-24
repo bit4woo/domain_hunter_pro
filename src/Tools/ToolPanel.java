@@ -651,6 +651,22 @@ public class ToolPanel extends JPanel {
 			}
 		};
 
+
+		JButton grepChineseButton = new BackGroundButton("Grep Chinese") {
+			@Override
+			protected void action() {
+				try {
+					String content = inputTextArea.getText();
+					List<String> result = GrepUtils.grepChinese(content);
+					outputTextArea.setText(String.join(System.lineSeparator(), result));
+				} catch (Exception e1) {
+					outputTextArea.setText(e1.getMessage());
+					e1.printStackTrace(stderr);
+				}
+			}
+		};
+
+
 		JButton rows2List = new BackGroundButton("Rows To List"){
 
 			@Override
@@ -1282,6 +1298,7 @@ public class ToolPanel extends JPanel {
 		cloumnIndex = 0;
 		buttonPanel.add(btnOpenurls, new bagLayout(++rowIndex, ++cloumnIndex));
 		buttonPanel.add(getIPAddressButton, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(grepChineseButton,new bagLayout(rowIndex, ++cloumnIndex));
 
 		cloumnIndex = 0;
 		buttonPanel.add(btnCertDomains, new bagLayout(++rowIndex, ++cloumnIndex));

@@ -453,6 +453,19 @@ public class GrepUtils {
 		return false;
 	}
 
+	public static List<String> grepChinese(String inputText) {
+		// 使用正则表达式匹配中文字符
+		Pattern pattern = Pattern.compile("[\\u4e00-\\u9fa5]+");
+		Matcher matcher = pattern.matcher(inputText);
+
+		// 提取匹配到的中文字符
+		List<String> chineseCharacters = new ArrayList<String>();
+		while (matcher.find()) {
+			chineseCharacters.add(matcher.group());
+		}
+		return chineseCharacters;
+	}
+
 
 	public static void main(String[] args) {
 		test5();
