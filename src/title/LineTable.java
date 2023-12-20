@@ -40,14 +40,8 @@ public class LineTable extends JTable
 	PrintWriter stderr;
 	private GUIMain guiMain;
 
-	@Override//参考javax.swing.JTable中的函数，每次都有主动进行转换
-	public Object getValueAt(int row, int column) {
-		return getLineTableModel().getValueAt(convertRowIndexToModel(row),
-				convertColumnIndexToModel(column));
-	}
-
 	public LineEntry getRowAt(int row) {
-		return getLineTableModel().getLineEntries().get(convertRowIndexToModel(row));
+		return ((LineTable) getModel()).getRowAt(convertRowIndexToModel(row));
 	}
 
 	//将选中的行（图形界面的行）转换为Model中的行数（数据队列中的index）.因为图形界面排序等操作会导致图像和数据队列的index不是线性对应的。
@@ -86,16 +80,18 @@ public class LineTable extends JTable
 		// show the log entry for the selected row
 		//LineEntry Entry = this.lineTableModel.getLineEntries().get(super.convertRowIndexToModel(row));
 		LineEntry Entry = this.getRowAt(row);
-		getLineTableModel().setCurrentlyDisplayedItem(Entry);
+		((LineTableModel) getModel()).setCurrentlyDisplayedItem(Entry);
 		guiMain.getTitlePanel().getRequestViewer().setMessage(Entry.getRequest(), true);
 		guiMain.getTitlePanel().getResponseViewer().setMessage(Entry.getResponse(), false);
 
 		super.changeSelection(row, col, toggle, extend);
 	}
 
+
 	public LineTableModel getLineTableModel(){
 		return (LineTableModel)getModel();
 	}
+
 
 	/**
 	 * 必须在model设置过后调用才有效
@@ -161,7 +157,7 @@ public class LineTable extends JTable
 			public boolean include(Entry entry) {
 				//entry --- a non-null object that wraps the underlying object from the model
 				int row = (int) entry.getIdentifier();
-				LineEntry line = getLineTableModel().getLineEntries().get(row);
+				LineEntry line = LineTable.this.getRowAt(row);
 
 				return new SearchManager(guiMain.getTitlePanel()).include(line,Input,caseSensitive);
 			}
@@ -187,7 +183,7 @@ public class LineTable extends JTable
 					int col = ((LineTable) e.getSource()).columnAtPoint(e.getPoint()); // 获得列位置
 					int modelCol = LineTable.this.convertColumnIndexToModel(col);
 
-					LineEntry selecteEntry = getLineTableModel().getLineEntries().get(rows[0]);
+					LineEntry selecteEntry = LineTable.this.getRowAt(rows[0]);
 					if ((modelCol == LineTableModel.getTitleList().indexOf("#") )) {//双击index在google中搜索host。
 						String host = selecteEntry.getHost();
 						String url= "https://www.google.com/search?q=site%3A"+host;

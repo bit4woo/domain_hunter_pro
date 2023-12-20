@@ -108,6 +108,10 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	}
 	//////// ^^^^getter setter^^^^//////////
 
+	public LineEntry getRowAt(int rowIndex) {
+		return getLineEntries().get(rowIndex);
+	}
+
 	////////////////////// extend AbstractTableModel////////////////////////////////
 
 	@Override
