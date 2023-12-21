@@ -157,7 +157,7 @@ public class LineTable extends JTable
 			public boolean include(Entry entry) {
 				//entry --- a non-null object that wraps the underlying object from the model
 				int row = (int) entry.getIdentifier();
-				LineEntry line = LineTable.this.getLineTableModel().getRowAt(row);
+				LineEntry line = getLineTableModel().getRowAt(row);
 
 				return new SearchManager(guiMain.getTitlePanel()).include(line,Input,caseSensitive);
 			}
@@ -184,7 +184,7 @@ public class LineTable extends JTable
 					int col = ((LineTable) e.getSource()).columnAtPoint(e.getPoint()); // 获得列位置
 					int modelCol = LineTable.this.convertColumnIndexToModel(col);
 
-					LineEntry selecteEntry = LineTable.this.getRowAt(rows[0]);
+					LineEntry selecteEntry = getLineTableModel().getRowAt(rows[0]);
 					if ((modelCol == LineTableModel.getTitleList().indexOf("#") )) {//双击index在google中搜索host。
 						String host = selecteEntry.getHost();
 						String url= "https://www.google.com/search?q=site%3A"+host;
