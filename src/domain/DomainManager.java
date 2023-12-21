@@ -205,6 +205,10 @@ public class DomainManager {
 		return tmpsummary;
 	}
 
+	public void showCount() {
+		//TODO
+	}
+
 	public boolean isEmpty() {
 		int sum = 0;
 		try {
@@ -293,8 +297,8 @@ public class DomainManager {
 		}
 		return "";
 	}
-	
-	
+
+
 	public String fetchEmailsOf(String rootDomain) {
 		List<String> tmplist = new ArrayList<>();
 		if (fetchTargetModel().assetType(rootDomain) == DomainManager.SUB_DOMAIN) {//判断是否有效rootDomain

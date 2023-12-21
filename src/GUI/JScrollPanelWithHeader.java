@@ -3,10 +3,12 @@ package GUI;
 import java.awt.Color;
 
 import javax.swing.BorderFactory;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 
 import domain.DomainPanel;
@@ -21,10 +23,8 @@ public class JScrollPanelWithHeader extends JScrollPane{
 	private String tipText;
 	private String headLabelText;
 	private TextAreaType textAreaType;
-	private DomainPanel domainPanel;
-
+	
 	public JScrollPanelWithHeader(DomainPanel domainPanel, TextAreaType type, String headerViewText, String tipText) {
-		this.domainPanel = domainPanel;
 		this.textAreaType = type;
 		this.textArea = new JTextArea();
 		this.tipText = tipText;
@@ -85,5 +85,23 @@ public class JScrollPanelWithHeader extends JScrollPane{
 
 	public void setHeadLabelText(String headLabelText) {
 		this.headLabelText = headLabelText;
+	}
+	
+	public void setCount(int count) {
+		if (count>=0){
+			headLabel.setText(headLabelText+" ("+count+")");
+		}
+	}
+	
+	public static void main(String args[]) {
+        SwingUtilities.invokeLater(() -> {
+            JFrame frame = new JFrame("Table Sync Example");
+            JScrollPanelWithHeader aaa = new JScrollPanelWithHeader(null,TextAreaType.SubDomain,"Sub Domains","Sub Domains");
+            aaa.setCount(100);
+            frame.getContentPane().add(new JScrollPane(aaa));
+            frame.setSize(400, 300);
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setVisible(true);
+        });
 	}
 }

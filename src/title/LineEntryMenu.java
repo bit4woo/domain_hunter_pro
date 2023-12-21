@@ -1095,13 +1095,17 @@ public class LineEntryMenu extends JPopupMenu {
 		JMenuItem removeItem = new JMenuItem(new AbstractAction("Delete This Entry") {//need to show dialog to confirm
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				int result = JOptionPane.showConfirmDialog(null,"Are you sure to DELETE these items ?");
-				if (result == JOptionPane.YES_OPTION) {
-					lineTable.getLineTableModel().removeRows(modleRows);
-					titlepanel.digStatus();
-				}else {
-					return;
-				}
+				new SwingWorker<Map,Map>(){
+					@Override
+					protected Map doInBackground() throws Exception {
+						int result = JOptionPane.showConfirmDialog(null,"Are you sure to DELETE these items ?");
+						if (result == JOptionPane.YES_OPTION) {
+							lineTable.getLineTableModel().removeRows(modleRows);
+							titlepanel.digStatus();
+						}
+						return null;
+					}
+				}.execute();
 			}
 		});
 		removeItem.setToolTipText("Just Delete Entry In Title Panel");
