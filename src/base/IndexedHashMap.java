@@ -106,7 +106,7 @@ public class IndexedHashMap<K,V> extends ConcurrentHashMap<K,V> {
     @Override
     public int size() {
     	if (Index.size() != super.size()) {
-    		throw new ArrayIndexOutOfBoundsException("IndexedHashMap error: size not match!!! "+ Index.size() +" "+ super.size());
+    		throw new IllegalArgumentException ("IndexedHashMap error: size not match!!! "+ Index.size() +" "+ super.size());
     	}
     	return super.size();
     }

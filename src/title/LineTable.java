@@ -41,7 +41,7 @@ public class LineTable extends JTable
 	private GUIMain guiMain;
 
 	public LineEntry getRowAt(int row) {
-		return ((LineTable) getModel()).getRowAt(convertRowIndexToModel(row));
+		return ((LineTableModel) getModel()).getRowAt(convertRowIndexToModel(row));
 	}
 
 	//将选中的行（图形界面的行）转换为Model中的行数（数据队列中的index）.因为图形界面排序等操作会导致图像和数据队列的index不是线性对应的。
@@ -157,13 +157,14 @@ public class LineTable extends JTable
 			public boolean include(Entry entry) {
 				//entry --- a non-null object that wraps the underlying object from the model
 				int row = (int) entry.getIdentifier();
-				LineEntry line = LineTable.this.getRowAt(row);
+				LineEntry line = LineTable.this.getLineTableModel().getRowAt(row);
 
 				return new SearchManager(guiMain.getTitlePanel()).include(line,Input,caseSensitive);
 			}
 
 		};
 		((TableRowSorter)LineTable.this.getRowSorter()).setRowFilter(filter);
+		(LineTable.this.getRowSorter()).modelStructureChanged();
 	}
 
 	/**
