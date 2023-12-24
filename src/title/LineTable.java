@@ -164,7 +164,7 @@ public class LineTable extends JTable
 
 		};
 		((TableRowSorter)LineTable.this.getRowSorter()).setRowFilter(filter);
-		(LineTable.this.getRowSorter()).modelStructureChanged();
+		//(LineTable.this.getRowSorter()).modelStructureChanged();这会导致排序结果被重置，恢复排序前的状态
 	}
 
 	/**
