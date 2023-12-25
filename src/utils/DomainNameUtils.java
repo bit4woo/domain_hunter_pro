@@ -27,6 +27,31 @@ import burp.BurpExtender;
 
 public class DomainNameUtils {
 
+
+	//可能有xxx.services，xxx.international这样的域名,适当提高长度
+	public static final String VAILD_DOMAIN_NAME_PATTERN = "^((?!-)[A-Za-z0-9-]{1,63}(?<!-)\\.)+[A-Za-z]{2,11}(?::\\d{1,5})?$";
+	//final String DOMAIN_NAME_PATTERN = "([A-Za-z0-9-]{1,63}(?<!-)\\.)+[A-Za-z]{2,6}";//-this.state.scroll 这种也会被认为是合法的。
+
+	public static final String GREP_DOMAIN_NAME_PATTERN = "((?!-)[A-Za-z0-9-]{1,63}(?<!-)\\.)+[A-Za-z]{2,11}";
+
+	public static final String GREP_DOMAIN_NAME_AND_PORT_PATTERN = "((?!-)[A-Za-z0-9-*]{1,63}(?<!-)\\.)+[A-Za-z]{2,11}(?::\\d{1,5})?";
+	//加上(?::\\d{1,5})?部分，支持端口模式
+	//加*号是为了匹配 类似 *.baidu.com的这种域名记录。
+
+	/**
+	 * 和VAILD_DOMAIN_NAME_PATTERN的正则进行比较：
+	 * 前面的部分可以是((?!-)[A-Za-z0-9-]{1,63}(?<!-)\.)即不以-开头的字符串，长度1到63；也可以是(\*\.)，即*.
+	 * 后缀部分即可以是[A-Za-z]{2,6}，也可以是*
+	 * 
+	 * a86ba224e43010880724df4a4be78c11
+	 * administratoradministrator
+	 * 虽然按照RFC的规定，域名的单个字符的模块长度可以是63。但是实际使用情况中，基本不可能有这样的域名。
+	 */
+	public static final String VAILD_WILDCARD_DOMAIN_NAME_PATTERN = "^((?!-)[A-Za-z0-9\\*-]{1,32}(?<!-)\\.)+([A-Za-z*]{1,11})$";
+	//final String DOMAIN_NAME_PATTERN = "([A-Za-z0-9-]{1,63}(?<!-)\\.)+[A-Za-z]{2,6}";//-this.state.scroll 这种也会被认为是合法的。
+
+
+
 	//域名校验和域名提取还是要区分对待
 	//domain.DomainProducer.grepDomain(String)是提取域名的，正则中包含了*号
 	public static boolean isValidDomain(String domain) {
@@ -34,9 +59,7 @@ public class DomainNameUtils {
 			return false;
 		}
 
-		final String DOMAIN_NAME_PATTERN = "^((?!-)[A-Za-z0-9-]{1,63}(?<!-)\\.)+[A-Za-z]{2,6}(?::\\d{1,5})?$";
-		//final String DOMAIN_NAME_PATTERN = "([A-Za-z0-9-]{1,63}(?<!-)\\.)+[A-Za-z]{2,6}";//-this.state.scroll 这种也会被认为是合法的。
-		Pattern pDomainNameOnly = Pattern.compile(DOMAIN_NAME_PATTERN);
+		Pattern pDomainNameOnly = Pattern.compile(VAILD_DOMAIN_NAME_PATTERN);
 		Matcher matcher = pDomainNameOnly.matcher(domain);
 		boolean formateOk = matcher.matches();
 		if (formateOk){
@@ -78,18 +101,7 @@ public class DomainNameUtils {
 			return false;
 		}
 
-		/**
-		 * 和isValidDomain()中的正则进行比较：
-		 * 前面的部分可以是((?!-)[A-Za-z0-9-]{1,63}(?<!-)\.)即不以-开头的字符串，长度1到63；也可以是(\*\.)，即*.
-		 * 后缀部分即可以是[A-Za-z]{2,6}，也可以是*
-		 * 
-		 * a86ba224e43010880724df4a4be78c11
-		 * administratoradministrator
-		 * 虽然按照RFC的规定，域名的单个字符的模块长度可以是63。但是实际使用情况中，基本不可能有这样的域名。
-		 */
-		final String DOMAIN_NAME_PATTERN = "^((?!-)[A-Za-z0-9\\*-]{1,32}(?<!-)\\.)+([A-Za-z*]{1,6})$";
-		//final String DOMAIN_NAME_PATTERN = "([A-Za-z0-9-]{1,63}(?<!-)\\.)+[A-Za-z]{2,6}";//-this.state.scroll 这种也会被认为是合法的。
-		Pattern pDomainNameOnly = Pattern.compile(DOMAIN_NAME_PATTERN);
+		Pattern pDomainNameOnly = Pattern.compile(VAILD_WILDCARD_DOMAIN_NAME_PATTERN);
 		Matcher matcher = pDomainNameOnly.matcher(domain);
 		boolean formateOk = matcher.matches();
 		return formateOk && domain.contains("*");
@@ -102,6 +114,7 @@ public class DomainNameUtils {
 	 * @return 判断StrDomain是否符合wildCardDomain的规则
 	 * 注意："seller.xx.example.com"不能匹配"*.seller.*.example.*"和日常的思路想法有点不同
 	 */
+	@Deprecated
 	public static boolean isMatchWildCardDomainOld(String wildCardDomain,String StrDomain){
 		String domainRegex = wildCardDomain;
 		//"seller.xx.example.com"应当匹配"*.seller.*.example.*"
@@ -442,10 +455,10 @@ public class DomainNameUtils {
 
 	public static void main(String[] args) {
 		//System.out.println(isWhiteListTDL("test.example.co.th","example.com"));
-		//System.out.println(isValidDomain("www1.baidu.com"));
+		System.out.println(isValidDomain("test-api.xxx.services"));
 		//testWild();
 
 		//System.out.println(isValidWildCardDomain("aaaaaaaaa-aaaaaaaaaaaaaaa-aaaaaaaaaaaaaa.www1.baidu.com"));
-		System.out.println(dnsquery("www.google1.com",null));
+		//System.out.println(dnsquery("www.google1.com",null));
 	}
 }

@@ -88,9 +88,6 @@ public class TextAreaMenu extends JPopupMenu {
 		JMenuItem addToCustomAsset = new JMenuItem(new AbstractAction("Add To Custom Asset") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				if (selectedItems.size() >=50) {
-					return;
-				}
 				DomainManager domainResult = guiMain.getDomainPanel().getDomainResult();
 				for (String item:selectedItems) {
 					try {
