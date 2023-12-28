@@ -2,57 +2,87 @@ package assetSearch;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Base64;
 
+import Tools.JSONHandler;
 import burp.BurpExtender;
 
 public class Search {
 	public static String searchFofa(String email,String key,String rootDomain){
 		try {
 			String domainBase64 = new String(Base64.getEncoder().encode(rootDomain.getBytes()));
-			String url= String.format("https://fofa.info/api/v1/search/all?email=%s&key=%s&page=1&size=1000&fields=host,ip&qbase64=%s",
+			String url= String.format("https://fofa.info/api/v1/search/all?email=%s&key=%s&page=1&size=2000&fields=host,ip&qbase64=%s",
 					email,key,domainBase64);
 			String body = HttpClientOfBurp.doRequest(new URL(url));
-			
+
 			return body;
 		} catch (MalformedURLException e) {
 			e.printStackTrace(BurpExtender.getStderr());
 			return "";
 		}
 	}
-	
+
 	//https://hunter.qianxin.com/openApi/search?api-key={}&search={}&page={}&page_size=100&is_web=1&status_code=200".format(apikey, keywords.decode(), page)
-	public static String searchHunter(String key,String domain){
+	public static String searchHunter_single(String key,String domain,int page){
 		try {
+			domain = "domain=\""+domain+"\"";
 			String domainBase64 = new String(Base64.getEncoder().encode(domain.getBytes()));
-			String url= String.format("https://hunter.qianxin.com/openApi/search?&api-key=%s&search=%s&page=1&page_size=100&is_web=2",
-					key,domainBase64);
+			String url= String.format("https://hunter.qianxin.com/openApi/search?&api-key=%s&search=%s&page=%s&page_size=100",
+					key,domainBase64,page);
 			String body = HttpClientOfBurp.doRequest(new URL(url));
-			if (!body.contains("\"code\":200,")) {
-				BurpExtender.getStderr().print(body);
-			}
 			return body;
 		} catch (MalformedURLException e) {
 			e.printStackTrace(BurpExtender.getStderr());
 			return "";
 		}
 	}
-	
-//	TODO
+
+
+	public static String searchHunter(String key,String domain) {
+		String queryResult = "";
+		int page =1;
+		while(true){
+			String body = searchHunter_single(key,domain,page);
+			try {
+				if (!body.contains("\"code\":200,")) {
+					BurpExtender.getStderr().print(body);
+					break;
+				}else {
+					queryResult = queryResult+"  "+body;
+					ArrayList<String> result = JSONHandler.grepValueFromJson(body, "total");
+					if (result.size() >=1) {
+						int total = Integer.parseInt(result.get(0));
+						if (total> page*100) {
+							page++;
+							continue;
+						}else {
+							break;
+						}
+					}
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return queryResult;
+	}
+
+	//	TODO
 	public static String searchTi(String key,String domainBase64){
 		try {
 			String url= String.format("https://hunter.qianxin.com/openApi/search?&api-key=%s&search=%s&page=1&page_size=1000&is_web=2&start_time=\"2000-01-01 00:00:00\"&end_time=\"2030-03-01 00:00:00\"",
 					key,domainBase64);
 			String body = HttpClientOfBurp.doRequest(new URL(url));
-			
+
 			return body;
 		} catch (MalformedURLException e) {
 			e.printStackTrace(BurpExtender.getStderr());
 			return "";
 		}
 	}
-	
-	
+
+
 	//curl -X POST -H "X-QuakeToken: XXXXXX" -H "Content-Type: application/json" https://quake.360.net/api/v3/search/quake_service -d '{"query": "domain: baidu.com", "start": 0, "size": 500}' --proxy http://127.0.0.1:8080
 
 	public static String searchQuake(String key,String domain){
@@ -79,7 +109,7 @@ public class Search {
 			return "";
 		}
 	}
-	
+
 	public static void main(String[] args) {
 		System.out.println(searchHunter("","searchHunter"));
 	}
