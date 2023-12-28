@@ -43,7 +43,7 @@ public class IndexedHashMap<K,V> extends ConcurrentHashMap<K,V> {
      * LinkedHashMap的方法
      * @param key
      * @param val
-     * @return
+     * @return 如果已经存在相同的key，这返回之前的值，否则返回空。the previous value associated with key, or null if there was no mapping for key
      */
     @Override
     public V put(K key,V val) {
