@@ -29,6 +29,7 @@ import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
 import burp.IHttpService;
 import net.sf.image4j.codec.ico.ICODecoder;
+import utils.GrepUtils;
 
 public class WebIcon {
 
@@ -50,8 +51,10 @@ public class WebIcon {
 			HelperPlus getter = new HelperPlus(helpers);
 			int status = getter.getStatusCode(info);
 			String ContentType = getter.getHeaderValueOf(false, info, "Content-Type");
-			if (status == 200 && ContentType != null && ContentType.toLowerCase().startsWith("image/")) {
+			if (status == 200 && ContentType != null &&
+					(ContentType.toLowerCase().startsWith("image/") || ContentType.toLowerCase().contains("octet-stream"))) {
 				// Content-Type: image/x-icon
+				// Content-Type: binary/octet-stream 有的图片存储在OSS上的
 				byte[] body = getter.getBody(false, info);// 这里不能使用静态方法。
 				return body;
 			}
@@ -68,15 +71,19 @@ public class WebIcon {
 		String parentUrl = urlStr.substring(0, urlStr.lastIndexOf('/') + 1);
 		String protocol = urlStr.substring(0, urlStr.indexOf("//"));
 
+		try {
+			new URL(iconUrl); //本来就是一个单独的URL
+			return iconUrl;
+		} catch (MalformedURLException e) {
+
+		}
+
 		if (iconUrl.startsWith("//")) {
-			String url = protocol + FaviconExtractor(html);
-			return url;
+			return protocol + iconUrl;
 		}else if (iconUrl.startsWith("/")) {
-			String url = baseUrl + FaviconExtractor(html);
-			return url;
+			return baseUrl + iconUrl;
 		}else {
-			String url = parentUrl + FaviconExtractor(html);
-			return url;
+			return parentUrl + iconUrl;
 		}
 	}
 
@@ -162,6 +169,7 @@ public class WebIcon {
 
 
 	public static String formatHtmlAndGetHead(String unformattedHtml) {
+		String head = "";
 		try {
 			// 使用JSoup解析HTML
 			Document document = Jsoup.parse(unformattedHtml, "", Parser.xmlParser());
@@ -176,12 +184,21 @@ public class WebIcon {
 			org.jsoup.nodes.Element headElement = document.head();
 
 			// 返回<head>元素的内容
-			return headElement.html();
+			head = headElement.html();
+			if (head.contains("icon")){
+				return head;
+			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			return unformattedHtml.split("(?i)</head>")[0];
 		}
+
+		try {
+			head = GrepUtils.grepBetween("<head","</head",unformattedHtml).get(0);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return head;
 	}
 
 	/**

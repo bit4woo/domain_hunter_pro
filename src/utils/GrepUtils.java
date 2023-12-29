@@ -461,8 +461,32 @@ public class GrepUtils {
 	}
 
 
+	/**
+	 * 提取两个字符串之间的内容
+	 *
+	 * @param input   输入字符串
+	 * @param start   开始标记
+	 * @param end     结束标记
+	 * @return 提取的字符串内容
+	 */
+	public static List<String> grepBetween(String start,String end,String inputText) {
+		// 使用正则表达式匹配中文字符
+		String regex = Pattern.quote(start) + "(.*?)" + Pattern.quote(end);
+		Pattern pattern = Pattern.compile(regex, Pattern.DOTALL);
+		// Pattern.DOTALL 支持在多行中匹配内容
+		Matcher matcher = pattern.matcher(inputText);
+
+		// 提取匹配到的中文字符
+		List<String> result = new ArrayList<String>();
+		while (matcher.find()) {
+			result.add(matcher.group(0));
+		}
+		return result;
+	}
+
+
 	public static void main(String[] args) {
-		test5();
+		test();
 	}
 
 
@@ -539,14 +563,16 @@ public class GrepUtils {
 				"try{window.fingerprint={},function t(){fingerprint.config={fpb_send_data:'body={\"appname\": \"jdwebm_hf\",\"jdkey\": \"\",\"whwswswws\": \"\",\"businness\": \"\",\"body\":";
 		//System.out.println(grepEmail(aaa));
 
-		String bbb="https%3A%2F%2F3pl.jd.com%2F";
-		System.out.println(needURLConvert(bbb));
+		//		String bbb="https%3A%2F%2F3pl.jd.com%2F";
+		//		System.out.println(needURLConvert(bbb));
+		//
+		//		String ccc = "5E44a6a6a1f3731fbaa00ca03e68a8d20c%5E%5E%E5%9C%A8%E7%BA%BF%E6%94%AF%E4%BB%98%5E%5Ehttps%3A%2F%2Fpay.bilibili.com%2Fpayplatform-h5%2Fcashierdesk.html";
+		//		System.out.println(URLDecoder.decode(ccc));
+		//		System.out.println(ccc.length());
+		//		System.out.println(URLDecoder.decode(ccc).length());
+		//		System.out.println("在线支付".length());
+		System.out.println(grepBetween("brandad_authority_failapply","warntip_text",aaa));
 
-		String ccc = "5E44a6a6a1f3731fbaa00ca03e68a8d20c%5E%5E%E5%9C%A8%E7%BA%BF%E6%94%AF%E4%BB%98%5E%5Ehttps%3A%2F%2Fpay.bilibili.com%2Fpayplatform-h5%2Fcashierdesk.html";
-		System.out.println(URLDecoder.decode(ccc));
-		System.out.println(ccc.length());
-		System.out.println(URLDecoder.decode(ccc).length());
-		System.out.println("在线支付".length());
 	}
 
 }
