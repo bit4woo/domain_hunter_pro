@@ -635,6 +635,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 				}
 				String url = entry.getUrl();
 				String host = entry.getHost();
+				int port = entry.getPort();
 				if (entry.getCertDomainSet().contains("ingress.local")){
 					continue;
 				}
@@ -647,11 +648,12 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 					titleDao.deleteTitleByUrl(url);//写入数据库
 					stdout.println("!!! "+url+" deleted");
 					this.fireTableRowsDeleted(i,i);
+					continue;
 				}
 
-				//规则2，注意，像ingress.local这种也会被删除
+				//规则2，根据证书域名进行判断，注意，像ingress.local这种也会被删除
 				Set<String> certDomains = entry.getCertDomainSet();
-				if (certDomains.size()>0) {//无证书信息的记录不处理
+				if (certDomains.size()>0) {
 
 					int uselessCount = 0;
 					for (String domain:certDomains) {
@@ -671,6 +673,18 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 						titleDao.deleteTitleByUrl(url);//写入数据库
 						stdout.println("!!! "+url+" deleted");
 						this.fireTableRowsDeleted(i,i);
+						continue;
+					}
+				}else {
+					//无证书信息,并且自定义资产中不包含的，删除
+					Set<String> customIP = guiMain.getDomainPanel().getDomainResult().getSpecialPortTargets();
+
+					if (!customIP.contains(host) && !customIP.contains(host+":"+port)) {
+						lineEntries.remove(i);
+						titleDao.deleteTitleByUrl(url);//写入数据库
+						stdout.println("!!! "+url+" deleted");
+						this.fireTableRowsDeleted(i,i);
+						continue;
 					}
 				}
 			} catch (Exception e) {

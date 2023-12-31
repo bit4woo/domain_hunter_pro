@@ -115,19 +115,26 @@ public class SearchMenu extends JPopupMenu {
 				searchField.setText(expresstion);
 			}
 		});
-		
+
 		JMenuItem CDNItems = new JMenuItem(new AbstractAction("CDN:  REGEX:Via:|X-Cache") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				searchField.setText("REGEX:Via:|X-Cache");
 			}
 		});
-		
+
 		JMenuItem DNSRecord = new JMenuItem(new AbstractAction("DNS Records Items:   SOURCE:certain && status <=0") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				String expresstion = SearchStringDork.SOURCE+":"+LineEntry.Source_Certain +"&& status <=0";
 				searchField.setText(expresstion);
+			}
+		});
+
+		JMenuItem NotDefaultPort = new JMenuItem(new AbstractAction("Not Default Port Items:   PORT!=80 && PORT!=443") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				searchField.setText("PORT!=80 && PORT!=443");
 			}
 		});
 
@@ -164,6 +171,7 @@ public class SearchMenu extends JPopupMenu {
 		this.add(ManualSaved);
 		this.add(DNSRecord);
 		this.add(CDNItems);
+		this.add(NotDefaultPort);
 		this.addSeparator();//分割线
 		this.add(caseSensitive);
 	}
