@@ -21,7 +21,6 @@ import base.IndexedHashMap;
 import base.IntArraySlice;
 import burp.BurpExtender;
 import domain.DomainManager;
-import title.LineEntry;
 import utils.DomainNameUtils;
 import utils.IPAddressUtils;
 
@@ -42,8 +41,8 @@ public class TargetTableModel extends AbstractTableModel {
 	public static List<String> getTitleList() {
 		return titletList;
 	}
-	
-	
+
+
 	private TargetTableModel(GUIMain guiMain){
 		this.guiMain = guiMain;
 		try{
@@ -54,7 +53,7 @@ public class TargetTableModel extends AbstractTableModel {
 			stderr = new PrintWriter(System.out, true);
 		}
 	}
-	
+
 	public TargetTableModel(GUIMain guiMain,List<TargetEntry> entries){
 		this(guiMain);
 		for (TargetEntry entry:entries) {
@@ -109,11 +108,11 @@ public class TargetTableModel extends AbstractTableModel {
 		}
 		TargetEntry entry = targetEntries.get(rowIndex);
 		if (entry == null) return "";
-		
+
 		if (columnIndex == titletList.indexOf("#")) {
 			return rowIndex;
 		}
-		
+
 		if (columnIndex == titletList.indexOf("Domain/Subnet")) {
 			return entry.getTarget();
 		}
@@ -225,7 +224,7 @@ public class TargetTableModel extends AbstractTableModel {
 			entry.setComments(oldentry.getComments());
 			entry.setKeyword(oldentry.getKeyword());
 		}
-		
+
 		int oldsize = targetEntries.size();
 		targetEntries.put(key,entry);
 		int rowIndex = targetEntries.IndexOfKey(key);
@@ -633,6 +632,16 @@ public class TargetTableModel extends AbstractTableModel {
 		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
 			TargetEntry checked = targetEntries.get(rows[i]);
 			checked.addComment(commentAdd);
+			guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(checked);
+		}
+		fireUpdated(rows);
+	}
+
+	public void clearComments(int[] rows) {
+		Arrays.sort(rows); //升序
+		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
+			TargetEntry checked = targetEntries.get(rows[i]);
+			checked.getComments().clear();
 			guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(checked);
 		}
 		fireUpdated(rows);

@@ -779,6 +779,28 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		}
 	}
 
+
+	public void clearComments(int[] rows) {
+		//because thread let the delete action not in order, so we must loop in here.
+		//list length and index changed after every remove.the origin index not point to right item any more.
+		Arrays.sort(rows); //升序
+		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
+			try {
+				int index = rows[i];
+				LineEntry entry = lineEntries.get(index);
+				if (entry == null) {
+					throw new ArrayIndexOutOfBoundsException("can't find item with index "+index);
+				}
+				entry.getComments().clear();
+				titleDao.addOrUpdateTitle(entry);//写入数据库
+				stdout.println("$$$ "+entry.getUrl()+" updated");
+				this.fireTableRowsUpdated(index, index);
+			} catch (Exception e) {
+				e.printStackTrace(stderr);
+			}
+		}
+	}
+
 	public void freshASNInfo(int[] rows) {
 		//because thread let the delete action not in order, so we must loop in here.
 		//list length and index changed after every remove.the origin index not point to right item any more.

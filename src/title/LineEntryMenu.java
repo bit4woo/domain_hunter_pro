@@ -765,7 +765,7 @@ public class LineEntryMenu extends JPopupMenu {
 							useHttps = false;
 						}
 						byte[] request = entry.getRequest();
-						
+
 						if (request ==null) {
 							continue;
 						}
@@ -841,6 +841,13 @@ public class LineEntryMenu extends JPopupMenu {
 					Comments = JOptionPane.showInputDialog("Comments", null).trim();
 				}
 				titlepanel.getTitleTable().getLineTableModel().updateComments(modelRows,Comments);
+			}
+		});
+
+		JMenuItem batchClearCommentsItem = new JMenuItem(new AbstractAction("Clear Comments") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				titlepanel.getTitleTable().getLineTableModel().clearComments(modelRows);
 			}
 		});
 
@@ -1272,6 +1279,7 @@ public class LineEntryMenu extends JPopupMenu {
 		DoMenu.addSeparator();
 		DoMenu.add(batchRefreshASNInfoItem);
 		DoMenu.add(batchRefreshIconHashItem);
+		DoMenu.add(batchClearCommentsItem);
 
 		DoMenu.add(setASNAliasItem);
 

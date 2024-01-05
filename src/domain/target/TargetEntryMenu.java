@@ -47,7 +47,7 @@ public class TargetEntryMenu extends JPopupMenu {
 			public void actionPerformed(ActionEvent actionEvent) {
 			}
 		});
-		
+
 		JMenuItem getSubDomainsOf = new JMenuItem(new AbstractAction("Copy All Subdomins Of This") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -184,6 +184,13 @@ public class TargetEntryMenu extends JPopupMenu {
 					Comments = JOptionPane.showInputDialog("Comments", null).trim();
 				}
 				rootDomainTable.getTargetModel().updateComments(modelRows,Comments);
+			}
+		});
+
+		JMenuItem batchClearCommentsItem = new JMenuItem(new AbstractAction("Clear Comments") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				rootDomainTable.getTargetModel().clearComments(modelRows);
 			}
 		});
 
@@ -518,6 +525,7 @@ public class TargetEntryMenu extends JPopupMenu {
 		this.add(getSubDomainsOf);
 		this.add(copyEmails);
 		this.add(batchAddCommentsItem);
+		this.add(batchClearCommentsItem);
 		this.add(addToBlackItem);
 		this.addSeparator();
 
