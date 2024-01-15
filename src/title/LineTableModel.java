@@ -640,51 +640,53 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 					continue;
 				}
 
-				//规则1
 				int type = model.assetType(host);
-				if ((type == DomainManager.USELESS || type==DomainManager.SIMILAR_DOMAIN)
-						&& entry.getEntrySource().equals(LineEntry.Source_Certain)) {
-					lineEntries.remove(i);
-					titleDao.deleteTitleByUrl(url);//写入数据库
-					stdout.println("!!! "+url+" deleted");
-					this.fireTableRowsDeleted(i,i);
-					continue;
-				}
-
-				//规则2，根据证书域名进行判断，注意，像ingress.local这种也会被删除
-				Set<String> certDomains = entry.getCertDomainSet();
-				if (certDomains.size()>0) {
-
-					int uselessCount = 0;
-					for (String domain:certDomains) {
-						type = model.assetType(domain);
-						if (type == DomainManager.USELESS || type==DomainManager.SIMILAR_DOMAIN) {
-							uselessCount++;
-						}
-					}
-
-					if (uselessCount == certDomains.size() && 
-							(entry.getEntrySource().equals(LineEntry.Source_Custom_Input) || 
-									entry.getEntrySource().equals(LineEntry.Source_Subnet_Extend))
-							) {
-						guiMain.getDomainPanel().getDomainResult().getSpecialPortTargets().remove(host);
-						guiMain.getDomainPanel().getDomainResult().getNotTargetIPSet().add(host);
+				//规则1
+				if (utils.DomainNameUtils.isValidDomain(host)) {
+					if ((type == DomainManager.USELESS || type==DomainManager.SIMILAR_DOMAIN)
+							&& entry.getEntrySource().equals(LineEntry.Source_Certain)) {
 						lineEntries.remove(i);
 						titleDao.deleteTitleByUrl(url);//写入数据库
-						stdout.println("!!! "+url+" deleted");
+						stdout.println("!!! "+url+" deleted, due to host is not target");
 						this.fireTableRowsDeleted(i,i);
 						continue;
 					}
 				}else {
-					//无证书信息,并且自定义资产中不包含的，删除
-					Set<String> customIP = guiMain.getDomainPanel().getDomainResult().getSpecialPortTargets();
+					//规则2，根据证书域名进行判断，注意，像ingress.local这种也会被删除
+					Set<String> certDomains = entry.getCertDomainSet();
+					if (certDomains.size()>0) {
 
-					if (!customIP.contains(host) && !customIP.contains(host+":"+port)) {
-						lineEntries.remove(i);
-						titleDao.deleteTitleByUrl(url);//写入数据库
-						stdout.println("!!! "+url+" deleted");
-						this.fireTableRowsDeleted(i,i);
-						continue;
+						int uselessCount = 0;
+						for (String domain:certDomains) {
+							type = model.assetType(domain);
+							if (type == DomainManager.USELESS || type==DomainManager.SIMILAR_DOMAIN) {
+								uselessCount++;
+							}
+						}
+
+						if (uselessCount == certDomains.size() && 
+								(entry.getEntrySource().equals(LineEntry.Source_Custom_Input) || 
+										entry.getEntrySource().equals(LineEntry.Source_Subnet_Extend))
+								) {
+							guiMain.getDomainPanel().getDomainResult().getSpecialPortTargets().remove(host);
+							guiMain.getDomainPanel().getDomainResult().getNotTargetIPSet().add(host);
+							lineEntries.remove(i);
+							titleDao.deleteTitleByUrl(url);//写入数据库
+							stdout.println("!!! "+url+" deleted, due to cert domain is not target");
+							this.fireTableRowsDeleted(i,i);
+							continue;
+						}
+					}else {
+						//无证书信息,并且自定义资产中不包含的，删除
+						Set<String> customIP = guiMain.getDomainPanel().getDomainResult().getSpecialPortTargets();
+
+						if (!customIP.contains(host) && !customIP.contains(host+":"+port)) {
+							lineEntries.remove(i);
+							titleDao.deleteTitleByUrl(url);//写入数据库
+							stdout.println("!!! "+url+" deleted, duo to host IP not in custom assets");
+							this.fireTableRowsDeleted(i,i);
+							continue;
+						}
 					}
 				}
 			} catch (Exception e) {
