@@ -1,24 +1,28 @@
 package domain.target;
 
-import burp.BurpExtender;
-import domain.DomainManager;
-import domain.DomainPanel;
-import title.IndexedLinkedHashMap;
-import title.LineTableModel;
-
-import javax.swing.*;
-import javax.swing.border.LineBorder;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.SortOrder;
+import javax.swing.SwingUtilities;
+import javax.swing.border.LineBorder;
+import javax.swing.table.TableModel;
+
+import burp.BurpExtender;
+import domain.DomainManager;
+import domain.DomainPanel;
+import title.IndexedLinkedHashMap;
+import title.LineTableModel;
 
 public class TargetTable extends JTable{
 
@@ -39,7 +43,7 @@ public class TargetTable extends JTable{
 		setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		setBorder(new LineBorder(new Color(0, 0, 0)));
 		//tableHeaderLengthInit();
-		
+
 		getTableHeader().addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -89,7 +93,7 @@ public class TargetTable extends JTable{
 		setFillsViewportHeight(true);
 		setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
 	}
-	
+
 	public void tableHeaderLengthInit(){
 		Font f = this.getFont();
 		FontMetrics fm = this.getFontMetrics(f);
@@ -123,10 +127,6 @@ public class TargetTable extends JTable{
 	 * DefaultTableModel extends AbstractTableModel。而我们自己实现的model虽然也是继承于AbstractTableModel，
 	 * 但是其中有一些自己实现的方法，想要方便地进行其中方法的调用，就不能使用原本的setModel和getModel方法。
 	 */
-	//@Override
-	public TargetTableModel getModel() {
-		return this.targetModel;
-	}
 
 	/**
 	 * JTable已经实现的方法，会被已有逻辑调用。
@@ -150,7 +150,7 @@ public class TargetTable extends JTable{
 	}
 
 	public TargetTableModel getTargetModel() {
-		return getModel();
+		return (TargetTableModel) getModel();
 	}
 
 	/**
