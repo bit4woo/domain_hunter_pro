@@ -26,7 +26,6 @@ import title.LineTableModel;
 
 public class TargetTable extends JTable{
 
-	private TargetTableModel targetModel = new TargetTableModel();
 	private PrintWriter stderr;
 	private PrintWriter stdout;
 
@@ -138,17 +137,6 @@ public class TargetTable extends JTable{
 		super.setModel(model);
 	}
 
-	/**
-	 * 自己实现的targetModel的getter和setter，用于自己调用其中函数时，避免对象转换的问题。
-	 * 通过getModel、setModel方法进行对象转换，会失败！
-	 * @param targetModel
-	 */
-	public void setTargetModel(TargetTableModel targetModel) {
-		this.targetModel = targetModel;
-		setModel(this.targetModel);//没有这个行代码，就数据就不会显示！
-		this.targetModel.addListener();//setModel之后，原来的listener会失效！！！导致不能及时写入DB，这里重新添加！！！
-	}
-
 	public TargetTableModel getTargetModel() {
 		return (TargetTableModel) getModel();
 	}
@@ -165,7 +153,7 @@ public class TargetTable extends JTable{
 			IndexedLinkedHashMap<String, TargetEntry> entries = rootDomianToTarget(DomainPanel.getDomainResult());
 			targetTableModel.setData(entries);
 		}
-		setTargetModel(targetTableModel);//这句很关键，否则无法显示整个表的头和内容
+		setModel(targetTableModel);//这句很关键，否则无法显示整个表的头和内容
 	}
 
 	public static IndexedLinkedHashMap<String, TargetEntry> rootDomianToTarget(DomainManager domainManager){
