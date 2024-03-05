@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -702,10 +703,6 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		for (int i=lineEntries.size()-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
 			try {
 				LineEntry entry = lineEntries.get(i);
-				if (entry == null) {
-					throw new ArrayIndexOutOfBoundsException("can't find item with index "+i);
-				}
-
 				markFullSameEntries(entry);
 
 			} catch (Exception e) {
@@ -1044,6 +1041,8 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 
 	/**
 	 * 查找完全一模一样的数据包（带时间戳锚点的URL可以不同）
+	 * 
+	 * 相同IP和端口,URL path下，即使域名不同，返回包不同（页面包含随机js、css链接），只要status和length相同，就是重复的web服务了
 	 */
 	public void markFullSameEntries(LineEntry entry) {//
 		if (lineEntries == null) return;
@@ -1051,34 +1050,40 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		for (int i=lineEntries.size()-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
 			LineEntry value = lineEntries.get(i);
 
+			if (entry.getComments().contains("duplicateItem")) {
+				//已经被标注过，不用再找它的相同项了
+				continue;
+			}
+
 			if (value.equals(entry)){
 				continue;//首先得排除自己，否则删除时就全删除了
 			}
 
-			if (!value.getUrl().equals(entry.getUrl())){
-				continue;
-			}
-			if (!value.getRequest().equals(entry.getRequest())){
-				continue;
-			}
-			if (!value.getResponse().equals(entry.getResponse())){
-				continue;
-			}
-			if (!value.getComments().equals(entry.getComments())){
+			if (value.getStatuscode()!=entry.getStatuscode()){
 				continue;
 			}
 
-			if (!value.getIPSet().equals(entry.getIPSet()) && !value.getIPSet().isEmpty() && !entry.getIPSet().isEmpty()){
+			if (value.getContentLength()!=entry.getContentLength()){
+				continue;
+			}
+
+			if (value.getPort()!=entry.getPort()){
+				continue;
+			}
+
+			if (!value.getIPSet().equals(entry.getIPSet())|| value.getIPSet().isEmpty()){
 				//只有当IP不为空才有比较的必要
 				continue;
 			}
 
-			if (!value.getCNAMESet().equals(entry.getCNAMESet()) && !value.getCNAMESet().isEmpty() && !entry.getCNAMESet().isEmpty() ){
-				//只有当CNAME不为空才有比较的必要
+			String url1 = value.getUrl().replaceFirst(value.getHost(),"");
+			String url2 = entry.getUrl().replaceFirst(entry.getHost(),"");
+			if (!Objects.equals(url1, url2)){
 				continue;
 			}
 
 			value.addComment("duplicateItem");
+			value.setCheckStatus(LineEntry.CheckStatus_Checked);
 			fireTableRowsUpdated(i,i);//主动通知更新，否则不会写入数据库!!!
 		}
 	}

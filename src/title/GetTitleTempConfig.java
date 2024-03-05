@@ -33,18 +33,11 @@ public class GetTitleTempConfig {
 		this.threadNumber = threadNumber;
 	}
 	
-	@Deprecated
-	GetTitleTempConfig(){
-		handlePriavte = WetherHandlePrivate();
-		cookie = inputCookie();
-		threadNumber = inputThreadNumber(50);
-	}
-	
 	GetTitleTempConfig(int domainNum){
 		handlePriavte = WetherHandlePrivate();
 		cookie = inputCookie();
-		int num = threadNumberShouldUse(domainNum);
-		threadNumber = inputThreadNumber(num);
+		threadNumber = threadNumberShouldUse(domainNum);
+		//threadNumber = inputThreadNumber(num);
 	}
 
 	private static boolean WetherHandlePrivate() {
@@ -63,6 +56,7 @@ public class GetTitleTempConfig {
 		return cookie;
 	}
 
+	@Deprecated
 	public static int inputThreadNumber(int defaultThreadNum) {
 		int times = 3;
 		while (times > 0) {

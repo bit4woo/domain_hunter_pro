@@ -45,6 +45,9 @@ public class ConfigPanel extends JPanel{
 	public static JRadioButton ignoreHTTPStaus500;
 	public static JRadioButton ignoreHTTPStaus400;
 	public static JRadioButton ignoreWrongCAHost;
+	
+	public static JRadioButton removeItemIfIgnored;
+	
 	public static JRadioButton DisplayContextMenuOfBurp;
 	public static JRadioButton rdbtnSaveTrafficTo;
 	public static JTextField textFieldPortScanner;
@@ -297,15 +300,18 @@ public class ConfigPanel extends JPanel{
 		ignoreHTTPStaus500.setSelected(true);
 
 
-		ignoreHTTPStaus400 = new JRadioButton("Ignore http Status 400(The plain HTTP request was sent to HTTPS port)");
+		ignoreHTTPStaus400 = new JRadioButton("Ignore items that http Status is 400(The plain HTTP request was sent to HTTPS port)");
 		ignoreHTTPStaus400.setSelected(true);
 
 
 
-		ignoreWrongCAHost = new JRadioButton("Ignore Host that IP Address and Certificate Authority not match");
+		ignoreWrongCAHost = new JRadioButton("Ignore items that IP Address and Certificate Authority do not match");
 		ignoreWrongCAHost.setSelected(false);
 
 
+		removeItemIfIgnored = new JRadioButton("Remove item if ignored(Marked as check done by default)");
+		removeItemIfIgnored.setSelected(true);
+		
 
 		rdbtnSaveTrafficTo = new JRadioButton("Save traffic to Elastic");
 		rdbtnSaveTrafficTo.setSelected(false);
@@ -414,6 +420,7 @@ public class ConfigPanel extends JPanel{
 		add(ignoreHTTPStaus500, new MyGridBagLayout(++rowIndex,2));
 		add(ignoreHTTPStaus400, new MyGridBagLayout(++rowIndex,2));
 		add(ignoreWrongCAHost, new MyGridBagLayout(++rowIndex,2));
+		add(removeItemIfIgnored,new MyGridBagLayout(++rowIndex,2));
 		add(rdbtnSaveTrafficTo, new MyGridBagLayout(++rowIndex,2));
 
 	}

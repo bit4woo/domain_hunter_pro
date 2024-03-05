@@ -13,6 +13,7 @@ import base.IndexedHashMap;
 import burp.BurpExtender;
 import burp.IBurpExtenderCallbacks;
 import burp.IExtensionHelpers;
+import config.ConfigPanel;
 import config.LineConfig;
 import title.LineEntry;
 import utils.DomainToURLs;
@@ -78,6 +79,9 @@ public class Producer extends Thread {//Producer do
 					LineEntry item = new LineEntry(Url).firstRequest(guiMain.getTitlePanel().getTempConfig());
 
 					LineConfig.doFilter(item);
+					if (ConfigPanel.removeItemIfIgnored.isSelected() && item.getCheckStatus().equals(LineEntry.CheckStatus_Checked)) {
+						continue;
+					}
 					item.setEntrySource(type);
 
 					String url = item.getUrl();
@@ -105,6 +109,9 @@ public class Producer extends Thread {//Producer do
 				tempEntries = LineConfig.doSameHostFilter(tempEntries);
 
 				for (LineEntry item:tempEntries) {
+					if (ConfigPanel.removeItemIfIgnored.isSelected() && item.getCheckStatus().equals(LineEntry.CheckStatus_Checked)) {
+						continue;
+					}
 					guiMain.getTitlePanel().getTitleTable().getLineTableModel().addNewLineEntry(item);
 					//stdout.println(new LineEntry(messageinfo,true).ToJson());
 					int leftTaskNum = domainQueue.size();

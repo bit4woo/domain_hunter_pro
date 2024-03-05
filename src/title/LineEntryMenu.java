@@ -847,7 +847,13 @@ public class LineEntryMenu extends JPopupMenu {
 		JMenuItem batchClearCommentsItem = new JMenuItem(new AbstractAction("Clear Comments") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				titlepanel.getTitleTable().getLineTableModel().clearComments(modelRows);
+				new SwingWorker(){
+					@Override
+					protected Object doInBackground() throws Exception {
+						titlepanel.getTitleTable().getLineTableModel().clearComments(modelRows);
+						return null;
+					}
+				}.execute();
 			}
 		});
 

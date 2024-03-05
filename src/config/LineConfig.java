@@ -326,6 +326,22 @@ public class LineConfig {
 	}
 
 	/**
+	 *是否是从http跳转到相同URL的https 
+	 **/
+	public static boolean isRedirectToHttps(LineEntry item) {
+		if (item.getProtocol().equalsIgnoreCase("http")) {
+			if (400>item.getStatuscode() && item.getStatuscode() >=300) {
+				String locationUrl = item.getHeaderValueOf(false,"Location");
+				locationUrl = locationUrl.toLowerCase().replace("https://", "http://");
+				if (locationUrl.equalsIgnoreCase(item.getUrl())) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
 	 * 
 	 * 同一个主机的多个请求，可以根据某些条件丢弃一些。比如
 	 * http跳转https的丢弃http
@@ -341,23 +357,52 @@ public class LineConfig {
 
 		LineEntry httpsOk =null;
 		LineEntry httpOk =null;
-		for (LineEntry item:entries) {
-			if (item.getProtocol().equalsIgnoreCase("https") && item.getPort()==443 && item.getStatuscode()>0) {
-				httpsOk = item;
-			}
 
-			if (item.getProtocol().equalsIgnoreCase("http") && item.getPort()==80 && item.getStatuscode()>0) {
-				httpOk = item;
+		LineEntry otherPorthttpsOk =null;
+		LineEntry otherPorthttpOk =null;
+
+		for (LineEntry item:entries) {
+			if (item.getPort()==443 ||item.getPort()==80) {
+				if (item.getProtocol().equalsIgnoreCase("https")  && item.getStatuscode()>0) {
+					httpsOk = item;
+				}
+
+				if (item.getProtocol().equalsIgnoreCase("http") && item.getStatuscode()>0) {
+					httpOk = item;
+					if (isRedirectToHttps(item)) {
+						httpOk = null;
+					}
+				}
+			}else {
+				if (item.getProtocol().equalsIgnoreCase("https") && item.getStatuscode()>0) {
+					otherPorthttpsOk = item;
+				}
+
+				if (item.getProtocol().equalsIgnoreCase("http") && item.getStatuscode()>0) {
+					otherPorthttpOk = item;
+					if (isRedirectToHttps(item)) {
+						otherPorthttpOk = null;
+					}
+				}
 			}
 		}
 
 		if (httpsOk !=null && httpOk !=null ) {
 			if (ConfigPanel.ignoreHTTP.isSelected()) {
-				entries.remove(httpOk);
+				httpOk.setCheckStatus(LineEntry.CheckStatus_Checked);
 			}else if (ConfigPanel.ignoreHTTPS.isSelected()) {
-				entries.remove(httpsOk);
+				httpsOk.setCheckStatus(LineEntry.CheckStatus_Checked);
 			}
 		}
+
+		if (otherPorthttpsOk !=null && otherPorthttpOk !=null ) {
+			if (ConfigPanel.ignoreHTTP.isSelected()) {
+				otherPorthttpOk.setCheckStatus(LineEntry.CheckStatus_Checked);
+			}else if (ConfigPanel.ignoreHTTPS.isSelected()) {
+				otherPorthttpsOk.setCheckStatus(LineEntry.CheckStatus_Checked);
+			}
+		}
+
 		return entries;
 	}
 	/*
@@ -389,6 +434,12 @@ public class LineConfig {
 			return entry;
 		}
 
+		if (entry.getStatuscode() == 403 && entry.getTitle().equals("Direct IP access not allowed | Cloudflare")) {
+			stdout.println(String.format("--- [%s] --- Direct Cloudflare IP access",entry.getUrl()));
+			entry.setCheckStatus(LineEntry.CheckStatus_Checked);
+			return entry;
+		}
+
 		//<head><title>403 Forbidden</title></head>
 		/*
 		if (entry.getStatuscode() == 403 && entry.getTitle().equals("403 Forbidden")){
@@ -401,11 +452,12 @@ public class LineConfig {
 		}*/
 
 		//<title>Welcome to nginx!</title>
+		/*
 		if (entry.getStatuscode() == 200 && entry.getTitle().equals("Welcome to nginx!")
 				&& entry.getContentLength()<=612 ){
 			entry.setCheckStatus(LineEntry.CheckStatus_Checked);
 			return entry;
-		}
+		}*/
 
 		/*
 		if (null != blacklistStatusCodeSet && blacklistStatusCodeSet.size()>0) {
