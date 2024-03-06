@@ -884,7 +884,7 @@ public class LineEntryMenu extends JPopupMenu {
 			public void actionPerformed(ActionEvent actionEvent) {
 				LineEntry firstEntry = lineTable.getLineTableModel().getLineEntries().get(modelRows[0]);
 				String ip = firstEntry.getFirstIP();
-				ASNEntry asnEntry = ASNQuery.query(ip);
+				ASNEntry asnEntry = ASNQuery.getInstance().query(ip);
 				String alias = JOptionPane.showInputDialog("Input Alias",asnEntry.getAsname_long());
 				asnEntry.setAlias(alias);
 				ASNQuery.saveRecentToFile();

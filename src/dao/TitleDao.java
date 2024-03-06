@@ -204,6 +204,12 @@ public class TitleDao {
 
 		return jdbcTemplate.update(sql, urls) == urls.size();
 	}
+	public boolean clearData(){
+		//DELETE 命令会删除表中的所有行，但表的结构仍然会保留。如果你想连表结构也一并清空，可以使用 TRUNCATE 命令
+		String sql="DELETE FROM TitleTable";
+		return jdbcTemplate.update(sql) >= 1;
+	}
+
 
 	public int getRowCount(){
 		String sql = "select count(*) from TitleTable";

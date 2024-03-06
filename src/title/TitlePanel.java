@@ -344,6 +344,8 @@ public class TitlePanel extends JPanel {
 		BackupLineEntries = titleTable.getLineTableModel().getLineEntries();
 		//clear tableModel
 		LineTableModel titleTableModel = new LineTableModel(guiMain);//clear
+		//这里虽然构建了一个新的model，但是它对应的数据库文件没有变化，这导致原始数据还在数据库文件中，必须主动清除
+		titleTableModel.clearDataInDBFile();
 		loadData(titleTableModel);
 		//转移以前手动保存的记录
 		transferManualSavedItems();

@@ -150,7 +150,7 @@ public class WebIcon {
 		html = formatHtmlAndGetHead(html);
 		for (String line:html.split("\n|>")){
 			String line_lower = line.toLowerCase();
-			System.out.println(line);
+			//System.out.println(line);
 			if (line_lower.contains("<link") && line_lower.contains("rel=") && line_lower.contains("icon")) {
 				String regex = "href=[\"|\'](.*?)[\"|\']";
 				Pattern pattern = Pattern.compile(regex);
@@ -194,7 +194,10 @@ public class WebIcon {
 		}
 
 		try {
-			head = GrepUtils.grepBetween("<head","</head",unformattedHtml).get(0);
+			List<String> heads = GrepUtils.grepBetween("<head", "</head", unformattedHtml);
+			if (heads.size()>0){
+				head = heads.get(0);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -257,7 +260,7 @@ public class WebIcon {
 	}
 
 	public static byte[] convertIcoToPng(byte[] icoBytes) {
-		if (icoBytes == null) {
+		if (icoBytes == null || icoBytes.length==0) {
 			return new byte[0];
 		}
 		if (isPNG(icoBytes)) {

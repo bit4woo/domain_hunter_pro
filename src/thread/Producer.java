@@ -3,6 +3,7 @@ package thread;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -146,7 +147,7 @@ public class Producer extends Thread {//Producer do
 			try{//根据host查找
 				String host = new URL(url).getHost();//可能是域名、也可能是IP
 
-				Set<String> lineHost = line.getIPSet();//解析得到的IP集合
+				Set<String> lineHost = new HashSet<>(line.getIPSet());//解析得到的IP集合
 				lineHost.add(line.getHost());
 				if (lineHost.contains(host)) {
 					//HistoryLines.remove(line.getUrl());//如果有相同URL的记录，就删除这个记录。//ConcurrentModificationException

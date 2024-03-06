@@ -92,6 +92,14 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	}
 	////////getter setter//////////
 
+	/**
+	 * 当执行get title时，逻辑是重新
+	 * @return
+	 */
+	public boolean clearDataInDBFile(){
+		return titleDao.clearData();
+	}
+
 	public IndexedHashMap<String, LineEntry> getLineEntries() {
 		return lineEntries;
 	}

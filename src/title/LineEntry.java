@@ -541,16 +541,18 @@ public class LineEntry {
 	 * 
 	 */
 	public void handleFavicon() {
-		if (response == null) {
+		if (response == null || statuscode != 200) {
 			icon_url = WebIcon.getFaviconUrl(url, null);
 		} else {
 			String bodyText = covertCharSet(response);
 			icon_url = WebIcon.getFaviconUrl(url, bodyText);
 		}
-		icon_bytes = WebIcon.getFavicon(icon_url);
-		icon_hash = WebIcon.getHash(icon_bytes);
-		
-		icon_bytes = WebIcon.convertIcoToPng(icon_bytes);//存储的是PNG格式的数据，不是原始格式了
+		if (statuscode>0 && statuscode <500){
+			//只有 web有正常的响应时才考虑请求favicon
+			icon_bytes = WebIcon.getFavicon(icon_url);
+			icon_hash = WebIcon.getHash(icon_bytes);
+			icon_bytes = WebIcon.convertIcoToPng(icon_bytes);//存储的是PNG格式的数据，不是原始格式了
+		}
 	}
 
 	public String getHeaderValueOf(boolean isRequest, String headerName) {
@@ -712,13 +714,14 @@ public class LineEntry {
 		return "";
 	}
 
+	@Deprecated
 	public void freshASNInfo() {
 		try {
 			Iterator<String> it = this.IPSet.iterator();
 			if (it.hasNext()) {
 				String ip = it.next();
 				if (IPAddressUtils.isValidIP(ip) && !IPAddressUtils.isPrivateIPv4(ip)) {
-					ASNEntry asn = ASNQuery.query(ip);
+					ASNEntry asn = ASNQuery.getInstance().query(ip);
 					if (null != asn) {
 						this.ASNInfo = asn.fetchASNDescription();
 					}
