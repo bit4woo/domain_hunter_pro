@@ -290,7 +290,7 @@ public class LineEntry {
 
 			// 第四步：获取证书域名
 			if (this.url.toLowerCase().startsWith("https://")) {
-				this.CertDomainSet = CertInfo.getAlternativeDomains(url);
+				this.CertDomainSet = new CertInfo().getAlternativeDomains(url);
 			}
 		} else {
 			// 当域名可以解析，但是所有URL请求都失败的情况下。添加一条DNS解析记录
@@ -319,7 +319,7 @@ public class LineEntry {
 		try {
 			String url = this.getUrl();
 			if (url.toLowerCase().startsWith("https")) {
-				CertDomainSet = CertInfo.getAlternativeDomains(url);
+				CertDomainSet = new CertInfo().getAlternativeDomains(url);
 			}
 
 			if (!IPAddressUtils.isValidIP(host)) {// 目标是域名

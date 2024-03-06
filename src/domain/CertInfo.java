@@ -1,8 +1,10 @@
 package domain;
 
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.net.URL;
+import java.security.SecureRandom;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
@@ -14,71 +16,100 @@ import java.util.Set;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import base.Commons;
+import config.ConfigPanel;
 
 public class CertInfo {
-	private static TrustManager myX509TrustManager = new X509TrustManager() { 
-
-		@Override 
-		public X509Certificate[] getAcceptedIssuers() { 
-			return null; 
-		} 
-
-		@Override 
-		public void checkServerTrusted(X509Certificate[] chain, String authType) 
-				throws CertificateException { 
-		} 
-
-		@Override 
-		public void checkClientTrusted(X509Certificate[] chain, String authType) 
-				throws CertificateException { 
-		}
-
-	};
-
-
-	public static Certificate[] getCerts(String aURL) throws Exception {
-		HostnameVerifier allHostsValid = new HostnameVerifier() {
-			public boolean verify(String hostname, SSLSession session) {
-				return true;
+	
+	
+	private static String proxyHost;
+	private static Integer proxyPort;
+	
+	@Deprecated
+	public CertInfo(String proxyHost, Integer proxyPort) {
+		CertInfo.proxyHost = proxyHost;
+		CertInfo.proxyPort = proxyPort;
+	}
+	
+	public CertInfo() {
+		try {
+			String proxy = ConfigPanel.textFieldProxyForGetCert.getText();
+			if (proxy != null && !proxy.isEmpty() && proxy.contains(":")) {
+				String[] parts = proxy.split(":");
+				if (parts.length==2) {
+					CertInfo.proxyHost = parts[0];
+					CertInfo.proxyPort = Integer.parseInt(parts[1]);
+				}
 			}
-		};
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * 核心方法
+	 * @param url
+	 * @param proxyHost
+	 * @param proxyPort
+	 * @return
+	 * @throws Exception
+	 */
+	private static Certificate[] getCertificates(String url, String proxyHost, Integer proxyPort) throws Exception {
+		// 全局忽略主机验证
+		HostnameVerifier allHostsValid = (hostname, session) -> true;
 
 		HttpsURLConnection conn = null;
 		try {
-			TrustManager[] tm = new TrustManager[]{myX509TrustManager};
-			SSLContext sslContext = SSLContext.getInstance("SSL", "SunJSSE");    
-			sslContext.init(null, tm, new java.security.SecureRandom());
+			// 初始化 SSL 上下文
+			TrustManager[] tm = {new X509TrustManager() {
+				public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+					return null;
+				}
+				public void checkClientTrusted(java.security.cert.X509Certificate[] certs, String authType) {
+				}
+				public void checkServerTrusted(java.security.cert.X509Certificate[] certs, String authType) {
+				}
+			}};
+			SSLContext sslContext = SSLContext.getInstance("SSL");
+			sslContext.init(null, tm, new SecureRandom());
 			HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
-			HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);//do not check certification
+			HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
 
-			URL destinationURL = new URL(aURL);
-			conn = (HttpsURLConnection) destinationURL.openConnection();
+			URL urlObject = new URL(url);
+			
+            // 如果代理相关参数为空，则不设置代理
+            if (proxyHost != null && proxyPort != null) {
+                Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
+                conn = (HttpsURLConnection) urlObject.openConnection(proxy);
+            } else {
+                conn = (HttpsURLConnection) urlObject.openConnection();
+            }
 			conn.connect();
-			Certificate[] certs = conn.getServerCertificates();
-			return certs;
-		}catch (Exception e) {
-			throw e;
-		}finally {
-			if (conn!=null) {
+
+			// 获取证书信息
+			return conn.getServerCertificates();//Certificate[]
+		} finally {
+			if (conn != null) {
 				conn.disconnect();
 			}
 		}
 	}
-	
+
+
+
+
 	/**
 	 * 	get all SANs ---证书中所有的域名信息
 	 * @param url
 	 * @return
 	 */
-	public static Set<String> getAlternativeDomains(String url){
+	public Set<String> getAlternativeDomains(String url){
 		try {
 			if (url.toLowerCase().startsWith("https://")){
-				Certificate[] certs = getCerts(url);
+				Certificate[] certs = getCertificates(url,proxyHost,proxyPort);
 				Set<String> domains = getAlternativeDomains(certs);
 				return domains;
 			}
@@ -133,7 +164,7 @@ public class CertInfo {
 		}
 		return -1;
 	}
-	
+
 	private static String getCertIssuer(Certificate[] certs) {
 		if (certs == null) return null;
 		StringBuffer result = new StringBuffer();
@@ -151,7 +182,7 @@ public class CertInfo {
 	public static String getCertIssuer(String url) {
 		try {
 			if (url.startsWith("https://")){
-				Certificate[] certs = getCerts(url);
+				Certificate[] certs = getCertificates(url,proxyHost,proxyPort);
 				String info = getCertIssuer(certs);
 				String org = info.split(",")[1];
 				org = org.replaceFirst("O=", "");
@@ -162,11 +193,11 @@ public class CertInfo {
 		}
 		return null;
 	}
-	
+
 	public static String getCertTime(String url) {
 		try {
 			if (url.startsWith("https://")){
-				Certificate[] certs = getCerts(url);
+				Certificate[] certs = getCertificates(url, proxyHost, proxyPort);
 				long outtime = getDateRange(certs);//过期时间
 				return Commons.TimeToString(outtime);
 			}
@@ -181,7 +212,7 @@ public class CertInfo {
 	 */
 	public static Set<String> getSANsbyKeyword(String aURL,Set<String> domainKeywords){//only when domain key word in the Principal,return SANs
 		try {
-			Certificate[] certs = getCerts(aURL);
+			Certificate[] certs = getCertificates(aURL, proxyHost, proxyPort);
 			for (Certificate cert : certs) {
 				//System.out.println("Certificate is: " + cert);
 				if(cert instanceof X509Certificate) {
@@ -231,12 +262,27 @@ public class CertInfo {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public static void test2() {
 		System.out.println("aaaa".contains(""));
 	}
 
+	public static void test3() {
+		String url = "https://google.com";
+		String proxyHost = "127.0.0.1";
+		int proxyPort = 8080;
+
+		try {
+			Certificate[] certs = getCertificates(url, proxyHost, proxyPort);
+			for (Certificate cert : certs) {
+				System.out.println(cert);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 	public static void main(String[] args) {
-		getCertIssuer("https://shopee.com/index.html");
+		test3();
 	}
 }

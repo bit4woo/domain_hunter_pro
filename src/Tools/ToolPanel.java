@@ -563,7 +563,7 @@ public class ToolPanel extends JPanel {
 				Iterator<String> it = urls.iterator();
 				while (it.hasNext()) {
 					String url = it.next();
-					Set<String> domains = CertInfo.getAlternativeDomains(url);
+					Set<String> domains = new CertInfo().getAlternativeDomains(url);
 					result.add(url + " " + domains.toString());
 					System.out.println(url + " " + domains.toString());
 				}

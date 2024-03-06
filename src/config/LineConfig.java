@@ -59,6 +59,8 @@ public class LineConfig {
 
 	private String quakeAPIKey = "";
 	private String hunterAPIKey = "";
+	
+	private String proxy = "127.0.0.1:7890";
 
 	private boolean showItemsInOne = false;
 	private boolean enableElastic = false;
@@ -269,6 +271,14 @@ public class LineConfig {
 
 	public void setHunterAPIKey(String hunterAPIKey) {
 		this.hunterAPIKey = hunterAPIKey;
+	}
+
+	public String getProxy() {
+		return proxy;
+	}
+
+	public void setProxy(String proxy) {
+		this.proxy = proxy;
 	}
 
 	public boolean isShowItemsInOne() {

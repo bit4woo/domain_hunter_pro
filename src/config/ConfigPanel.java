@@ -62,7 +62,9 @@ public class ConfigPanel extends JPanel{
 
 	public static JTextField textFieldQuakeAPIKey;
 	public static JTextField textFieldHunterAPIKey;
+	public static JTextField textFieldProxyForGetCert;
 
+	
 	public LineConfig getLineConfig() {
 		return lineConfig;
 	}
@@ -121,6 +123,7 @@ public class ConfigPanel extends JPanel{
 		textFieldFofaKey.setText(lineConfig.getFofaKey());
 		textFieldQuakeAPIKey.setText(lineConfig.getQuakeAPIKey());
 		textFieldHunterAPIKey.setText(lineConfig.getHunterAPIKey());
+		textFieldProxyForGetCert.setText(lineConfig.getProxy());
 
 		showItemsInOne.setSelected(lineConfig.isShowItemsInOne());
 		rdbtnSaveTrafficTo.setSelected(lineConfig.isEnableElastic());
@@ -140,6 +143,7 @@ public class ConfigPanel extends JPanel{
 		lineConfig.setFofaKey(textFieldFofaKey.getText());
 		lineConfig.setQuakeAPIKey(textFieldQuakeAPIKey.getText());
 		lineConfig.setHunterAPIKey(textFieldHunterAPIKey.getText());
+		lineConfig.setProxy(textFieldProxyForGetCert.getText());
 
 		lineConfig.setToolPanelText(((SuperJTextArea)ToolPanel.inputTextArea).getTextAsDisplay());
 		lineConfig.setShowItemsInOne(showItemsInOne.isSelected());
@@ -260,6 +264,12 @@ public class ConfigPanel extends JPanel{
 		textFieldHunterAPIKey.setColumns(30);
 		textFieldHunterAPIKey.getDocument().addDocumentListener(new textFieldListener());
 
+		
+		JLabel lblProxyForGetCert = new JLabel("proxy for get certificates:");
+
+		textFieldProxyForGetCert = new JTextField();
+		textFieldProxyForGetCert.setColumns(30);
+		textFieldProxyForGetCert.getDocument().addDocumentListener(new textFieldListener());
 
 		///////下方是JRadioButton/////
 
@@ -412,6 +422,9 @@ public class ConfigPanel extends JPanel{
 		add(textFieldQuakeAPIKey,new MyGridBagLayout(rowIndex,2));
 		add(lblHunterAPIKey, new MyGridBagLayout(++rowIndex,1));
 		add(textFieldHunterAPIKey,new MyGridBagLayout(rowIndex,2));
+		
+		add(lblProxyForGetCert, new MyGridBagLayout(++rowIndex,1));
+		add(textFieldProxyForGetCert,new MyGridBagLayout(rowIndex,2));
 		
 		add(DisplayContextMenuOfBurp, new MyGridBagLayout(++rowIndex,2));
 		add(showItemsInOne, new MyGridBagLayout(++rowIndex,2));
