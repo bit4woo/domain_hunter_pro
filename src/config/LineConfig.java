@@ -341,9 +341,9 @@ public class LineConfig {
 	public static boolean isRedirectToHttps(LineEntry item) {
 		if (item.getProtocol().equalsIgnoreCase("http")) {
 			if (400>item.getStatuscode() && item.getStatuscode() >=300) {
-				String locationUrl = item.getHeaderValueOf(false,"Location");
+				String locationUrl = item.getHeaderValueOf(false,"Location");//不包含默认端口
 				locationUrl = locationUrl.toLowerCase().replace("https://", "http://");
-				if (locationUrl.equalsIgnoreCase(item.getUrl())) {
+				if (locationUrl.equalsIgnoreCase(item.fetchUrlWithCommonFormate())) {
 					return true;
 				}
 			}
@@ -444,11 +444,12 @@ public class LineConfig {
 			return entry;
 		}
 
+		/*显示出来，方便加入黑名单，提高下次请求的效率
 		if (entry.getStatuscode() == 403 && entry.getTitle().equals("Direct IP access not allowed | Cloudflare")) {
 			stdout.println(String.format("--- [%s] --- Direct Cloudflare IP access",entry.getUrl()));
 			entry.setCheckStatus(LineEntry.CheckStatus_Checked);
 			return entry;
-		}
+		}*/
 
 		//<head><title>403 Forbidden</title></head>
 		/*
