@@ -57,9 +57,10 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	private static final String[] standardTitles = new String[] {
 			"#", "URL", "Status", "Length", "Title","Comments","Server","isChecked",
 			"AssetType","Source","CheckDoneTime","IP", "CNAME|CertInfo","ASNInfo","Favicon","IconHash"};
-	private static List<String> titleList = new ArrayList<>(Arrays.asList(standardTitles));
+	
 	//为了实现动态表结构
 	public static List<String> getTitleList() {
+		List<String> titleList = new ArrayList<>(Arrays.asList(standardTitles));
 		//titletList.remove("Server");
 		//titletList.remove("Time");
 		return titleList;
@@ -126,25 +127,25 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	@Override
 	public int getColumnCount()
 	{
-		return titleList.size();//the one is the request String + response String,for search
+		return getTitleList().size();//the one is the request String + response String,for search
 	}
 
 	@Override
 	public Class<?> getColumnClass(int columnIndex)
 	{
-		if (columnIndex == titleList.indexOf("#")) {
+		if (columnIndex == getTitleList().indexOf("#")) {
 			return Integer.class;//id
 		}
-		if (columnIndex == titleList.indexOf("Status")) {
+		if (columnIndex == getTitleList().indexOf("Status")) {
 			return Integer.class;
 		}
-		if (columnIndex == titleList.indexOf("Length")) {
+		if (columnIndex == getTitleList().indexOf("Length")) {
 			return Integer.class;
 		}
-		if (columnIndex == titleList.indexOf("isChecked")) {
+		if (columnIndex == getTitleList().indexOf("isChecked")) {
 			return String.class;
 		}
-		if (columnIndex == titleList.indexOf("Favicon")) {
+		if (columnIndex == getTitleList().indexOf("Favicon")) {
 			return ImageIcon.class;
 		}
 		return String.class;
@@ -159,8 +160,8 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	//define header of table???
 	@Override
 	public String getColumnName(int columnIndex) {
-		if (columnIndex >= 0 && columnIndex <= titleList.size()) {
-			return titleList.get(columnIndex);
+		if (columnIndex >= 0 && columnIndex <= getTitleList().size()) {
+			return getTitleList().get(columnIndex);
 		}else {
 			return "";
 		}
@@ -168,7 +169,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 
 	@Override
 	public boolean isCellEditable(int rowIndex, int columnIndex) {
-		if (titleList.get(columnIndex).equals("Comments")) {//可以编辑comment
+		if (getTitleList().get(columnIndex).equals("Comments")) {//可以编辑comment
 			return true;
 		}else {
 			return false;
@@ -185,43 +186,43 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		LineEntry entry = lineEntries.get(rowIndex);
 		//entry.parse();---
 		//"#", "URL", "Status", "Length", "Server","Title", "IP", "CDN", "Comments","Time","isChecked"};
-		if (columnIndex == titleList.indexOf("#")) {
+		if (columnIndex == getTitleList().indexOf("#")) {
 			return rowIndex;
 		}
-		else if (columnIndex == titleList.indexOf("URL")){
+		else if (columnIndex == getTitleList().indexOf("URL")){
 			return entry.getUrl();
 		}
-		else if (columnIndex == titleList.indexOf("Status")){
+		else if (columnIndex == getTitleList().indexOf("Status")){
 			return entry.getStatuscode();
 		}
-		else if (columnIndex == titleList.indexOf("Length")){
+		else if (columnIndex == getTitleList().indexOf("Length")){
 			return entry.getContentLength();
 		}
-		else if (columnIndex == titleList.indexOf("Server")){
+		else if (columnIndex == getTitleList().indexOf("Server")){
 			return entry.getWebcontainer();
 		}
-		else if (columnIndex == titleList.indexOf("Title")){
+		else if (columnIndex == getTitleList().indexOf("Title")){
 			return entry.getTitle();
 		}
-		else if (columnIndex == titleList.indexOf("IP")){
+		else if (columnIndex == getTitleList().indexOf("IP")){
 			return String.join(",", new TreeSet<String>(entry.getIPSet()));//用TreeSet进行排序
 		}
-		else if (columnIndex == titleList.indexOf("CNAME|CertInfo")){
+		else if (columnIndex == getTitleList().indexOf("CNAME|CertInfo")){
 			return entry.fetchCNAMEAndCertInfo();
 		}
-		else if (columnIndex == titleList.indexOf("Comments")){
+		else if (columnIndex == getTitleList().indexOf("Comments")){
 			return String.join(",", new TreeSet<String>(entry.getComments()));//用TreeSet进行排序
 		}
-		else if (columnIndex == titleList.indexOf("CheckDoneTime")){
+		else if (columnIndex == getTitleList().indexOf("CheckDoneTime")){
 			return entry.getTime();
 		}
-		else if (columnIndex == titleList.indexOf("isChecked")){
+		else if (columnIndex == getTitleList().indexOf("isChecked")){
 			return entry.getCheckStatus();
 		}
-		else if (columnIndex == titleList.indexOf("AssetType")){
+		else if (columnIndex == getTitleList().indexOf("AssetType")){
 			return entry.getAssetType();
 		}
-		else if (columnIndex == titleList.indexOf("Favicon")){
+		else if (columnIndex == getTitleList().indexOf("Favicon")){
 			//return entry.getIcon_hash();
 			byte[] data = entry.getIcon_bytes();
 			String hash = entry.getIcon_hash();
@@ -232,13 +233,13 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			}
 			return null;
 		}
-		else if (columnIndex == titleList.indexOf("IconHash")){
+		else if (columnIndex == getTitleList().indexOf("IconHash")){
 			return entry.getIcon_hash();
 		}
-		else if (columnIndex == titleList.indexOf("ASNInfo")){
+		else if (columnIndex == getTitleList().indexOf("ASNInfo")){
 			return entry.getASNInfo();
 		}
-		else if (columnIndex == titleList.indexOf("Source")) {
+		else if (columnIndex == getTitleList().indexOf("Source")) {
 			return entry.getEntrySource();
 		}
 		return "";
@@ -250,7 +251,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		if (entry == null) {
 			throw new ArrayIndexOutOfBoundsException("can't find item with index "+row);
 		}
-		if (col == titleList.indexOf("Comments")){
+		if (col == getTitleList().indexOf("Comments")){
 			String valueStr = ((String) value).trim();
 			entry.setComments(new HashSet<>(Arrays.asList(valueStr.split(","))));
 			titleDao.addOrUpdateTitle(entry);//写入数据库
