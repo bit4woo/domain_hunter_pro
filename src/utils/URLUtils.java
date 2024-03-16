@@ -49,7 +49,7 @@ public class URLUtils {
 			return url;
 		}
 	}
-	
+
 	/**
 	 * baseUrl格式：https://www.runoob.com
 	 * @param urlString
@@ -70,6 +70,45 @@ public class URLUtils {
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 			return urlString;
+		}
+	}
+
+
+
+	public static String getHost(String urlString) {
+		try {
+			//urlString = "https://www.runoob.com";
+			URL url = new URL(urlString);
+			String host = url.getHost();
+			return host;
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+			return urlString;
+		}
+	}
+
+
+	public static int getPort(String urlString) {
+		try {
+			URL url = new URL(urlString);
+			int port = url.getPort();
+
+			if (port == -1) {
+				port = url.getDefaultPort();
+			}
+			return port;
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+			return -1;
+		}
+	}
+	
+	public static boolean isVaildUrl(String urlString) {
+		try {
+			new URL(urlString);
+			return true;
+		} catch (Exception e) {
+			return false;
 		}
 	}
 

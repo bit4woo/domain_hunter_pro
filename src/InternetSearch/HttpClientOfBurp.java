@@ -1,4 +1,4 @@
-package assetSearch;
+package InternetSearch;
 
 import java.net.URL;
 

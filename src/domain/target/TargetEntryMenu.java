@@ -19,7 +19,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingWorker;
 
 import GUI.GUIMain;
-import assetSearch.Search;
+import InternetSearch.Search;
 import base.Commons;
 import burp.BurpExtender;
 import config.ConfigPanel;
