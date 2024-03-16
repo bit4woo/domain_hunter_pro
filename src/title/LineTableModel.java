@@ -54,18 +54,29 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	PrintWriter stderr;
 	private GUIMain guiMain;
 
-	private static final String[] standardTitles = new String[] {
-			"#", "URL", "Status", "Length", "Title","Comments","Server","isChecked",
-			"AssetType","Source","CheckDoneTime","IP", "CNAME|CertInfo","ASNInfo","Favicon","IconHash"};
-	
+
 	//为了实现动态表结构
 	public static List<String> getTitleList() {
+		String[] standardTitles = new String[] {
+				"#", "URL", "Status", "Length", "Title","Comments","Server","isChecked",
+				"AssetType","Source","CheckDoneTime","IP", "CNAME|CertInfo","ASNInfo","Favicon","IconHash"};
 		List<String> titleList = new ArrayList<>(Arrays.asList(standardTitles));
 		//titletList.remove("Server");
 		//titletList.remove("Time");
 		return titleList;
 	}
-
+	
+	/**
+	 * 可用于FoFa等网络搜索引擎的header字段
+	 * @return
+	 */
+	public static List<String> getTitleListOfSearch() {
+		String[] Titles = new String[] {
+				 "Title","Comments","Server", "IP", "CNAME|CertInfo","ASNInfo","Favicon","IconHash"};
+		List<String> titleList = new ArrayList<>(Arrays.asList(Titles));
+		return titleList;
+	}
+	
 
 	public LineTableModel(GUIMain guiMain){
 		this.guiMain = guiMain;
@@ -241,6 +252,21 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		}
 		else if (columnIndex == getTitleList().indexOf("Source")) {
 			return entry.getEntrySource();
+		}
+		return "";
+	}
+	
+	
+	/**
+	 * 返回可以用于网络搜索引擎进行搜索地字段
+	 * @param rowIndex
+	 * @param columnIndex
+	 * @return
+	 */
+	public String getValueAtForSearch(int rowIndex, int columnIndex) {
+		String columnName = getTitleList().get(columnIndex);
+		if (getTitleListOfSearch().contains(columnName) && getColumnClass(columnIndex).equals(String.class)) {
+			return (String) getValueAt(rowIndex,columnIndex);
 		}
 		return "";
 	}

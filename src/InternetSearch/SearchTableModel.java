@@ -86,15 +86,6 @@ public class SearchTableModel extends AbstractTableModel {
 		if (columnIndex == getTitleList().indexOf("#")) {
 			return Integer.class;//id
 		}
-		if (columnIndex == getTitleList().indexOf("Status")) {
-			return Integer.class;
-		}
-		if (columnIndex == getTitleList().indexOf("Length")) {
-			return Integer.class;
-		}
-		if (columnIndex == getTitleList().indexOf("isChecked")) {
-			return String.class;
-		}
 		if (columnIndex == getTitleList().indexOf("Favicon")) {
 			return ImageIcon.class;
 		}
@@ -128,12 +119,16 @@ public class SearchTableModel extends AbstractTableModel {
 		if (rowIndex >= lineEntries.size()) {
 			return "IndexOutOfBoundsException";
 		}
+//		"#", "URL/Host", "Title","Server","Source","IP", "CertInfo","ASNInfo","Favicon","IconHash"};
 		SearchResultEntry entry = lineEntries.get(rowIndex);
 		if (columnIndex == getTitleList().indexOf("#")) {
 			return rowIndex;
 		}
 		else if (columnIndex == getTitleList().indexOf("URL/Host")){
 			return entry.getHost();
+		}
+		else if (columnIndex == getTitleList().indexOf("Title")){
+			return entry.getTitle();
 		}
 		else if (columnIndex == getTitleList().indexOf("Server")){
 			return entry.getWebcontainer();
@@ -156,6 +151,9 @@ public class SearchTableModel extends AbstractTableModel {
 		}
 		else if (columnIndex == getTitleList().indexOf("IconHash")){
 			return entry.getIcon_hash();
+		}
+		else if (columnIndex == getTitleList().indexOf("CertInfo")){
+			return String.join(",", new TreeSet<String>(entry.getCertDomainSet()));
 		}
 		else if (columnIndex == getTitleList().indexOf("ASNInfo")){
 			return entry.getASNInfo();

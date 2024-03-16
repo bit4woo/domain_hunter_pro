@@ -117,13 +117,14 @@ public class LineEntryMenu extends JPopupMenu {
 					return;
 				}
 				for (int row:modelRows) {
-					LineEntry firstEntry = lineTable.getLineTableModel().getLineEntries().get(row);
-					String searchContent = getSearchValueFromEntry(firstEntry,columnIndex);
-					String url= "https://github.com/search?q=%22"+searchContent+"%22+%22jdbc.url%22&type=Code";
-					try {
-						Commons.browserOpen(url, null);
-					} catch (Exception e) {
-						e.printStackTrace(stderr);
+					String searchContent = lineTable.getLineTableModel().getValueAtForSearch(row,columnIndex);
+					if (searchContent != "") {
+						String url= "https://github.com/search?q=%22"+searchContent+"%22+%22jdbc.url%22&type=Code";
+						try {
+							Commons.browserOpen(url, null);
+						} catch (Exception e) {
+							e.printStackTrace(stderr);
+						}
 					}
 				}
 			}
@@ -137,15 +138,16 @@ public class LineEntryMenu extends JPopupMenu {
 					return;
 				}
 				for (int row:modelRows) {
-					LineEntry firstEntry = lineTable.getLineTableModel().getLineEntries().get(row);
-					String searchContent = getSearchValueFromEntry(firstEntry,columnIndex);
-					searchContent = new String(Base64.getEncoder().encode(searchContent.getBytes()));
-					String url= "https://fofa.info/result?qbase64=%s";
-					url= String.format(url, searchContent);
-					try {
-						Commons.browserOpen(url, null);
-					} catch (Exception e) {
-						e.printStackTrace(stderr);
+					String searchContent = lineTable.getLineTableModel().getValueAtForSearch(row,columnIndex);
+					if (searchContent != "") {
+						searchContent = new String(Base64.getEncoder().encode(searchContent.getBytes()));
+						String url= "https://fofa.info/result?qbase64=%s";
+						url= String.format(url, searchContent);
+						try {
+							Commons.browserOpen(url, null);
+						} catch (Exception e) {
+							e.printStackTrace(stderr);
+						}
 					}
 				}
 			}
@@ -183,16 +185,17 @@ public class LineEntryMenu extends JPopupMenu {
 					return;
 				}
 				for (int row:modelRows) {
-					LineEntry firstEntry = lineTable.getLineTableModel().getLineEntries().get(row);
-					String searchContent = getSearchValueFromEntry(firstEntry,columnIndex);
-					searchContent = URLEncoder.encode(searchContent);
-					String url= "https://www.shodan.io/search?query=%s";
-					//https://www.shodan.io/search?query=baidu.com
-					url= String.format(url, searchContent);
-					try {
-						Commons.browserOpen(url, null);
-					} catch (Exception e) {
-						e.printStackTrace(stderr);
+					String searchContent = lineTable.getLineTableModel().getValueAtForSearch(row,columnIndex);
+					if (searchContent != "") {
+						searchContent = URLEncoder.encode(searchContent);
+						String url= "https://www.shodan.io/search?query=%s";
+						//https://www.shodan.io/search?query=baidu.com
+						url= String.format(url, searchContent);
+						try {
+							Commons.browserOpen(url, null);
+						} catch (Exception e) {
+							e.printStackTrace(stderr);
+						}
 					}
 				}
 			}
@@ -230,15 +233,16 @@ public class LineEntryMenu extends JPopupMenu {
 					return;
 				}
 				for (int row:modelRows) {
-					LineEntry firstEntry = lineTable.getLineTableModel().getLineEntries().get(row);
-					String searchContent = getSearchValueFromEntry(firstEntry,columnIndex);
-					searchContent = URLEncoder.encode(searchContent);
-					String url= "https://quake.360.net/quake/#/searchResult?searchVal=%s";
-					url= String.format(url, searchContent);
-					try {
-						Commons.browserOpen(url, null);
-					} catch (Exception e) {
-						e.printStackTrace(stderr);
+					String searchContent = lineTable.getLineTableModel().getValueAtForSearch(row,columnIndex);
+					if (searchContent != "") {
+						searchContent = URLEncoder.encode(searchContent);
+						String url= "https://quake.360.net/quake/#/searchResult?searchVal=%s";
+						url= String.format(url, searchContent);
+						try {
+							Commons.browserOpen(url, null);
+						} catch (Exception e) {
+							e.printStackTrace(stderr);
+						}
 					}
 				}
 			}
@@ -255,15 +259,16 @@ public class LineEntryMenu extends JPopupMenu {
 					return;
 				}
 				for (int row:modelRows) {
-					LineEntry firstEntry = lineTable.getLineTableModel().getLineEntries().get(row);
-					String searchContent = getSearchValueFromEntry(firstEntry,columnIndex);
-					searchContent = URLEncoder.encode(searchContent);
-					String url= "https://www.zoomeye.org/searchResult?q=%s";
-					url= String.format(url, searchContent);
-					try {
-						Commons.browserOpen(url, null);
-					} catch (Exception e) {
-						e.printStackTrace(stderr);
+					String searchContent = lineTable.getLineTableModel().getValueAtForSearch(row,columnIndex);
+					if (searchContent != "") {
+						searchContent = URLEncoder.encode(searchContent);
+						String url= "https://www.zoomeye.org/searchResult?q=%s";
+						url= String.format(url, searchContent);
+						try {
+							Commons.browserOpen(url, null);
+						} catch (Exception e) {
+							e.printStackTrace(stderr);
+						}
 					}
 				}
 			}
@@ -291,6 +296,16 @@ public class LineEntryMenu extends JPopupMenu {
 				}
 			}
 		});
+
+
+		JMenuItem APISearchOnZoom = new JMenuItem(new AbstractAction("API Seach ZoomEye") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				//TODO
+			}
+		});
+
+
 
 
 		JMenuItem ASNInfoItem = new JMenuItem(new AbstractAction("ASN Info") {
@@ -1348,7 +1363,8 @@ public class LineEntryMenu extends JPopupMenu {
 	 * @param columnIndex
 	 * @return
 	 */
-	public String getSearchValueFromEntry(LineEntry firstEntry,int columnIndex) {
+	@Deprecated
+	public String getSearchValueFromEntry11(LineEntry firstEntry,int columnIndex) {
 
 		String columnName = lineTable.getColumnName(columnIndex);
 
@@ -1364,6 +1380,9 @@ public class LineEntryMenu extends JPopupMenu {
 		}else if (columnName.equalsIgnoreCase("CNAME|CertInfo")){
 			String cdn = firstEntry.getCNAMESet().toString();
 			return cdn;
+		}else if (columnName.equalsIgnoreCase("Favicon") || columnName.equalsIgnoreCase("iconHash")){
+			String hash = firstEntry.getIcon_hash().toString();
+			return hash;
 		}else {
 			String host = firstEntry.getHost();
 			return host;

@@ -11,6 +11,7 @@ public class SearchResultEntry {
 	private String protocol = "";
 	private String rootDomain;
 	private String webcontainer = "";
+	private String title = "";
 	private Set<String> CertDomainSet = new HashSet<String>();
 	
 	private Set<String> IPSet = new HashSet<String>();
@@ -126,6 +127,14 @@ public class SearchResultEntry {
 			host = URLUtils.getHost(host);
 		}
 		return host+":"+port;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
 	}
 	
 }
