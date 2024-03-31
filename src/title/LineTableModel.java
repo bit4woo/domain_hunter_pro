@@ -3,8 +3,10 @@ package title;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -65,18 +67,8 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		//titletList.remove("Time");
 		return titleList;
 	}
-	
-	/**
-	 * 可用于FoFa等网络搜索引擎的header字段
-	 * @return
-	 */
-	public static List<String> getTitleListOfSearch() {
-		String[] Titles = new String[] {
-				 "Title","Comments","Server", "IP", "CNAME|CertInfo","ASNInfo","Favicon","IconHash"};
-		List<String> titleList = new ArrayList<>(Arrays.asList(Titles));
-		return titleList;
-	}
-	
+
+
 
 	public LineTableModel(GUIMain guiMain){
 		this.guiMain = guiMain;
@@ -255,21 +247,8 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		}
 		return "";
 	}
-	
-	
-	/**
-	 * 返回可以用于网络搜索引擎进行搜索地字段
-	 * @param rowIndex
-	 * @param columnIndex
-	 * @return
-	 */
-	public String getValueAtForSearch(int rowIndex, int columnIndex) {
-		String columnName = getTitleList().get(columnIndex);
-		if (getTitleListOfSearch().contains(columnName) && getColumnClass(columnIndex).equals(String.class)) {
-			return (String) getValueAt(rowIndex,columnIndex);
-		}
-		return "";
-	}
+
+
 
 	@Override
 	public void setValueAt(Object value, int row, int col) {

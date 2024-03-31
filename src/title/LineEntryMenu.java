@@ -49,6 +49,7 @@ public class LineEntryMenu extends JPopupMenu {
 	private LineTable lineTable;
 	private TitlePanel titlepanel;
 	private GUIMain guiMain;
+	private LineTableModel lineTableModel;
 
 	/**
 	 * 这处理传入的行index数据是经过转换的 model中的index，不是原始的JTable中的index。
@@ -60,6 +61,7 @@ public class LineEntryMenu extends JPopupMenu {
 		this.guiMain = guiMain;
 		this.titlepanel = guiMain.getTitlePanel();
 		this.lineTable = titlepanel.getTitleTable();
+		this.lineTableModel = lineTable.getLineTableModel();
 
 		JMenuItem itemNumber = new JMenuItem(new AbstractAction(modelRows.length+" Items Selected") {
 			@Override
@@ -67,246 +69,18 @@ public class LineEntryMenu extends JPopupMenu {
 			}
 		});
 
-		JMenuItem googleSearchItem = new JMenuItem(new AbstractAction("Seach On Google (double click index)") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-				if (modelRows.length >=50) {
-					return;
-				}
-				for (int row:modelRows) {
-					LineEntry firstEntry = lineTable.getLineTableModel().getLineEntries().get(row);
-					String searchContent = getValue(firstEntry,columnIndex);
-					searchContent = URLEncoder.encode(searchContent);
-					String url= "https://www.google.com/search?q="+searchContent;
-					try {
-						Commons.browserOpen(url, null);
-					} catch (Exception e) {
-						e.printStackTrace(stderr);
-					}
-				}
-			}
+		JMenuItem googleSearchItem = new JMenuItem(new BrowserSearchAction(this.lineTableModel,modelRows,columnIndex,"Google"));
 
-			public String getValue(LineEntry firstEntry,int columnIndex) {
-
-				String columnName = lineTable.getColumnName(columnIndex);
-
-				if (columnName.equalsIgnoreCase("Title")){
-					String title = firstEntry.getTitle();
-					return "intitle:"+title;
-				}else if (columnName.equalsIgnoreCase("Comments")){
-					String comment = firstEntry.getComments().toString();
-					return comment;
-				}else if (columnName.equalsIgnoreCase("IP")){
-					String ip = firstEntry.getIPSet().toString();
-					return ip;
-				}else if (columnName.equalsIgnoreCase("CNAME|CertInfo")){
-					String cdn = firstEntry.getCNAMESet().toString();
-					return cdn;
-				}else {
-					String host = firstEntry.getHost();
-					return "site:"+host;
-				}
-			}
-		});
-
-
-		JMenuItem SearchOnGithubItem = new JMenuItem(new AbstractAction("Seach On Github") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-				if (modelRows.length >=50) {
-					return;
-				}
-				for (int row:modelRows) {
-					String searchContent = lineTable.getLineTableModel().getValueAtForSearch(row,columnIndex);
-					if (searchContent != "") {
-						String url= "https://github.com/search?q=%22"+searchContent+"%22+%22jdbc.url%22&type=Code";
-						try {
-							Commons.browserOpen(url, null);
-						} catch (Exception e) {
-							e.printStackTrace(stderr);
-						}
-					}
-				}
-			}
-		});
-
-		JMenuItem SearchOnFoFaItem = new JMenuItem(new AbstractAction("Seach On FoFa") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-
-				if (modelRows.length >=50) {
-					return;
-				}
-				for (int row:modelRows) {
-					String searchContent = lineTable.getLineTableModel().getValueAtForSearch(row,columnIndex);
-					if (searchContent != "") {
-						searchContent = new String(Base64.getEncoder().encode(searchContent.getBytes()));
-						String url= "https://fofa.info/result?qbase64=%s";
-						url= String.format(url, searchContent);
-						try {
-							Commons.browserOpen(url, null);
-						} catch (Exception e) {
-							e.printStackTrace(stderr);
-						}
-					}
-				}
-			}
-		});
-
-		JMenuItem SearchOnFoFaWithIconhashItem = new JMenuItem(new AbstractAction("Seach IconHash On FoFa") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-
-				if (modelRows.length >=50) {
-					return;
-				}
-				for (int row:modelRows) {
-					LineEntry firstEntry = lineTable.getLineTableModel().getLineEntries().get(row);
-					String searchContent = firstEntry.getIcon_hash();
-					searchContent = String.format("icon_hash=\"%s\"", searchContent);//icon_hash="-247388890"
-					searchContent = new String(Base64.getEncoder().encode(searchContent.getBytes()));
-					String url= "https://fofa.info/result?qbase64=%s";
-					url= String.format(url, searchContent);
-					try {
-						Commons.browserOpen(url, null);
-					} catch (Exception e) {
-						e.printStackTrace(stderr);
-					}
-				}
-			}
-		});
-
-
-		JMenuItem SearchOnShodanItem = new JMenuItem(new AbstractAction("Seach On Shodan") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-
-				if (modelRows.length >=50) {
-					return;
-				}
-				for (int row:modelRows) {
-					String searchContent = lineTable.getLineTableModel().getValueAtForSearch(row,columnIndex);
-					if (searchContent != "") {
-						searchContent = URLEncoder.encode(searchContent);
-						String url= "https://www.shodan.io/search?query=%s";
-						//https://www.shodan.io/search?query=baidu.com
-						url= String.format(url, searchContent);
-						try {
-							Commons.browserOpen(url, null);
-						} catch (Exception e) {
-							e.printStackTrace(stderr);
-						}
-					}
-				}
-			}
-		});
-
-		//https://www.shodan.io/search?query=http.favicon.hash%3A-1588080585
-		JMenuItem SearchOnShodanWithIconhashItem = new JMenuItem(new AbstractAction("Seach IconHash On Shodan") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-
-				if (modelRows.length >=50) {
-					return;
-				}
-				for (int row:modelRows) {
-					LineEntry firstEntry = lineTable.getLineTableModel().getLineEntries().get(row);
-					String searchContent = firstEntry.getIcon_hash();
-					String url= "https://www.shodan.io/search?query=http.favicon.hash:%s";
-					url= String.format(url, searchContent);
-					try {
-						Commons.browserOpen(url, null);
-					} catch (Exception e) {
-						e.printStackTrace(stderr);
-					}
-				}
-			}
-		});
-
-		//360quake,zoomeye,hunter,shodan
-		//https://quake.360.net/quake/#/searchResult?searchVal=baidu.com
-		JMenuItem SearchOn360QuakeItem = new JMenuItem(new AbstractAction("Seach On 360Quake") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-
-				if (modelRows.length >=50) {
-					return;
-				}
-				for (int row:modelRows) {
-					String searchContent = lineTable.getLineTableModel().getValueAtForSearch(row,columnIndex);
-					if (searchContent != "") {
-						searchContent = URLEncoder.encode(searchContent);
-						String url= "https://quake.360.net/quake/#/searchResult?searchVal=%s";
-						url= String.format(url, searchContent);
-						try {
-							Commons.browserOpen(url, null);
-						} catch (Exception e) {
-							e.printStackTrace(stderr);
-						}
-					}
-				}
-			}
-		});
-
-		//https://quake.360.net/quake/#/searchResult?searchVal=favicon%3A%20%22c5618c85980459ce4325eb324428d622%22
-
-
-		JMenuItem SearchOnZoomEyeItem = new JMenuItem(new AbstractAction("Seach On ZoomEye") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-
-				if (modelRows.length >=50) {
-					return;
-				}
-				for (int row:modelRows) {
-					String searchContent = lineTable.getLineTableModel().getValueAtForSearch(row,columnIndex);
-					if (searchContent != "") {
-						searchContent = URLEncoder.encode(searchContent);
-						String url= "https://www.zoomeye.org/searchResult?q=%s";
-						url= String.format(url, searchContent);
-						try {
-							Commons.browserOpen(url, null);
-						} catch (Exception e) {
-							e.printStackTrace(stderr);
-						}
-					}
-				}
-			}
-		});
-
-		JMenuItem SearchOnZoomEyeWithIconhashItem = new JMenuItem(new AbstractAction("Seach IconHash On ZoomEye") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-
-				if (modelRows.length >=50) {
-					return;
-				}
-				for (int row:modelRows) {
-					LineEntry firstEntry = lineTable.getLineTableModel().getLineEntries().get(row);
-					String searchContent = firstEntry.getIcon_hash();
-					searchContent= String.format("iconhash:\"%s\"", searchContent);
-					searchContent = URLEncoder.encode(searchContent);
-
-					String url= "https://www.zoomeye.org/searchResult?q="+searchContent;
-					try {
-						Commons.browserOpen(url, null);
-					} catch (Exception e) {
-						e.printStackTrace(stderr);
-					}
-				}
-			}
-		});
-
-
-		JMenuItem APISearchOnZoom = new JMenuItem(new AbstractAction("API Seach ZoomEye") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-				//TODO
-			}
-		});
-
-
-
+		JMenuItem SearchOnGithubItem = new JMenuItem(new BrowserSearchAction(this.lineTableModel,modelRows,columnIndex,"Github"));
+		
+		JMenuItem SearchOnFoFaItem = new JMenuItem(new BrowserSearchAction(this.lineTableModel,modelRows,columnIndex,"FoFa"));
+		
+		JMenuItem SearchOnShodanItem = new JMenuItem(new BrowserSearchAction(this.lineTableModel,modelRows,columnIndex,"Shodan"));
+		
+		JMenuItem SearchOn360QuakeItem = new JMenuItem(new BrowserSearchAction(this.lineTableModel,modelRows,columnIndex,"360Quake"));
+		
+		JMenuItem SearchOnZoomEyeItem = new JMenuItem(new BrowserSearchAction(this.lineTableModel,modelRows,columnIndex,"ZoomEye"));
+		
 
 		JMenuItem ASNInfoItem = new JMenuItem(new AbstractAction("ASN Info") {
 			@Override
@@ -1318,10 +1092,6 @@ public class LineEntryMenu extends JPopupMenu {
 		SearchMenu.add(SearchOnZoomEyeItem);
 		SearchMenu.add(SearchOn360QuakeItem);
 
-		SearchMenu.add(SearchOnFoFaWithIconhashItem);
-		SearchMenu.add(SearchOnShodanWithIconhashItem);
-		SearchMenu.add(SearchOnZoomEyeWithIconhashItem);
-
 		SearchMenu.addSeparator();//网络搜索引擎
 
 		SearchMenu.add(ASNInfoItem);
@@ -1388,4 +1158,8 @@ public class LineEntryMenu extends JPopupMenu {
 			return host;
 		}
 	}
+	
+	
+	
+	
 }
