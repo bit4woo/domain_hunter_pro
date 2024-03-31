@@ -5,9 +5,7 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.io.PrintWriter;
-import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -19,6 +17,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingWorker;
 
 import GUI.GUIMain;
+import InternetSearch.BrowserSearchAction;
 import InternetSearch.Search;
 import base.Commons;
 import burp.BurpExtender;
@@ -204,189 +203,23 @@ public class TargetEntryMenu extends JPopupMenu {
 		/**
 		 * 查找邮箱的搜索引擎
 		 */
-		JMenuItem SearchEmailOnHunterIOItem = new JMenuItem(new AbstractAction("Seach Email On hunter.io") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
+		JMenuItem SearchEmailOnHunterIOItem = new JMenuItem(new BrowserSearchAction(this.rootDomainTable.getTargetModel(),modelRows,columnIndex,"hunter.io"));
 
-				if (modelRows.length >=50) {
-					return;
-				}
-				for (int row:modelRows) {
-					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,rootDomainColumnIndex);
-					String url= "https://hunter.io/try/search/%s";
-					//https://hunter.io/try/search/shopee.com?locale=en
-					url= String.format(url, rootDomain);
-					try {
-						Commons.browserOpen(url, null);
-					} catch (Exception e) {
-						e.printStackTrace(stderr);
-					}
-				}
-			}
-		});
+		JMenuItem SearchOnFoFaItem = new JMenuItem(new BrowserSearchAction(this.rootDomainTable.getTargetModel(),modelRows,columnIndex,"fofa"));
+		
+		JMenuItem SearchOnShodanItem = new JMenuItem(new BrowserSearchAction(this.rootDomainTable.getTargetModel(),modelRows,columnIndex,"shodan"));
 
+		JMenuItem SearchOn360QuakeItem = new JMenuItem(new BrowserSearchAction(this.rootDomainTable.getTargetModel(),modelRows,columnIndex,"quake"));
 
-		JMenuItem SearchOnFoFaItem = new JMenuItem(new AbstractAction("Seach On fofa.info") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-
-				if (modelRows.length >=50) {
-					return;
-				}
-				for (int row:modelRows) {
-					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,rootDomainColumnIndex);
-					rootDomain = new String(Base64.getEncoder().encode(rootDomain.getBytes()));
-					String url= "https://fofa.info/result?qbase64=%s";
-					url= String.format(url, rootDomain);
-					try {
-						Commons.browserOpen(url, null);
-					} catch (Exception e) {
-						e.printStackTrace(stderr);
-					}
-				}
-			}
-		});
-
-
-
-		JMenuItem SearchOnShodanItem = new JMenuItem(new AbstractAction("Seach On shodan.io") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-
-				if (modelRows.length >=50) {
-					return;
-				}
-				for (int row:modelRows) {
-					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,rootDomainColumnIndex);
-					rootDomain = URLEncoder.encode(rootDomain);
-					String url= "https://www.shodan.io/search?query=%s";
-					//https://www.shodan.io/search?query=baidu.com
-					url= String.format(url, rootDomain);
-					try {
-						Commons.browserOpen(url, null);
-					} catch (Exception e) {
-						e.printStackTrace(stderr);
-					}
-				}
-			}
-		});
-
-		//360quake,zoomeye,hunter,shodan
-		//https://quake.360.net/quake/#/searchResult?searchVal=baidu.com
-		JMenuItem SearchOn360QuakeItem = new JMenuItem(new AbstractAction("Seach On quake.360.net") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-
-				if (modelRows.length >=50) {
-					return;
-				}
-				for (int row:modelRows) {
-					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,rootDomainColumnIndex);
-					rootDomain = URLEncoder.encode(rootDomain);
-					String url= "https://quake.360.net/quake/#/searchResult?searchVal=%s";
-					url= String.format(url, rootDomain);
-					try {
-						Commons.browserOpen(url, null);
-					} catch (Exception e) {
-						e.printStackTrace(stderr);
-					}
-				}
-			}
-		});
-
-		//https://ti.qianxin.com/v2/search?type=domain&value=example.com
-		JMenuItem SearchOnTiQianxinItem = new JMenuItem(new AbstractAction("Seach On ti.qianxin.com") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-
-				if (modelRows.length >=50) {
-					return;
-				}
-				for (int row:modelRows) {
-					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,rootDomainColumnIndex);
-					rootDomain = URLEncoder.encode(rootDomain);
-					String url= "https://ti.qianxin.com/v2/search?type=domain&value=%s";
-					url= String.format(url, rootDomain);
-					try {
-						Commons.browserOpen(url, null);
-					} catch (Exception e) {
-						e.printStackTrace(stderr);
-					}
-				}
-			}
-		});
-
-		//https://ti.360.net/#/detailpage/searchresult?query=baidu.com
-		JMenuItem SearchOnTi360Item = new JMenuItem(new AbstractAction("Seach On ti.360.net") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-
-				if (modelRows.length >=50) {
-					return;
-				}
-				for (int row:modelRows) {
-					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,rootDomainColumnIndex);
-					rootDomain = URLEncoder.encode(rootDomain);
-					String url= "https://ti.360.net/#/detailpage/searchresult?query=%s";
-					url= String.format(url, rootDomain);
-					try {
-						Commons.browserOpen(url, null);
-					} catch (Exception e) {
-						e.printStackTrace(stderr);
-					}
-				}
-			}
-		});
-
-		//https://hunter.qianxin.com/list?search=domain%3D%22example.com%22
-		JMenuItem SearchOnHunterQianxinItem = new JMenuItem(new AbstractAction("Seach On hunter.qianxin.com") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-
-				if (modelRows.length >=50) {
-					return;
-				}
-				for (int row:modelRows) {
-					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,rootDomainColumnIndex);
-					String domainPara = String.format("domain=\"%s\"",rootDomain);
-					domainPara = URLEncoder.encode(domainPara);
-					String url= "https://hunter.qianxin.com/list?search=%s";
-					url= String.format(url, domainPara);
-					try {
-						Commons.browserOpen(url, null);
-					} catch (Exception e) {
-						e.printStackTrace(stderr);
-					}
-				}
-			}
-		});
-
-
-		//https://quake.360.net/quake/#/searchResult?searchVal=favicon%3A%20%22c5618c85980459ce4325eb324428d622%22
-
-
-		JMenuItem SearchOnZoomEyeItem = new JMenuItem(new AbstractAction("Seach On zoomeye.org") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-
-				if (modelRows.length >=50) {
-					return;
-				}
-				for (int row:modelRows) {
-					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,rootDomainColumnIndex);
-					rootDomain = URLEncoder.encode(rootDomain);
-					String url= "https://www.zoomeye.org/searchResult?q=%s";
-					url= String.format(url, rootDomain);
-					try {
-						Commons.browserOpen(url, null);
-					} catch (Exception e) {
-						e.printStackTrace(stderr);
-					}
-				}
-			}
-		});
-
-
+		JMenuItem SearchOnTiQianxinItem = new JMenuItem(new BrowserSearchAction(this.rootDomainTable.getTargetModel(),modelRows,columnIndex,"ti.qianxin.com"));
+		
+		JMenuItem SearchOnTi360Item = new JMenuItem(new BrowserSearchAction(this.rootDomainTable.getTargetModel(),modelRows,columnIndex,"ti.360.net"));
+		
+		JMenuItem SearchOnHunterQianxinItem = new JMenuItem(new BrowserSearchAction(this.rootDomainTable.getTargetModel(),modelRows,columnIndex,"hunter"));
+		
+		JMenuItem SearchOnZoomEyeItem = new JMenuItem(new BrowserSearchAction(this.rootDomainTable.getTargetModel(),modelRows,columnIndex,"zoomeye"));
+		
+		
 		JMenuItem SearchOnFoFaAutoItem = new JMenuItem(new AbstractAction("Auto Search On fofa.info") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {

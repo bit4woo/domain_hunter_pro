@@ -26,6 +26,7 @@ import javax.swing.SwingWorker;
 import ASN.ASNEntry;
 import ASN.ASNQuery;
 import GUI.GUIMain;
+import InternetSearch.BrowserSearchAction;
 import Tools.ToolPanel;
 import base.Commons;
 import base.IndexedHashMap;

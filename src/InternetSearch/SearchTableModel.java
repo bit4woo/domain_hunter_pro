@@ -12,6 +12,9 @@ import javax.swing.table.AbstractTableModel;
 import GUI.GUIMain;
 import base.IndexedHashMap;
 import burp.BurpExtender;
+import title.LineEntry;
+import title.LineTableModel;
+import utils.DomainNameUtils;
 
 
 public class SearchTableModel extends AbstractTableModel {
@@ -162,6 +165,69 @@ public class SearchTableModel extends AbstractTableModel {
 			return entry.getSource();
 		}
 		return "";
+	}
+	
+
+	
+	
+	/**
+	 * 返回可以用于网络搜索引擎进行搜索地字段
+	 * @param rowIndex
+	 * @param columnIndex
+	 * @return
+	 */
+	public String getValueForSearch(int rowIndex, int columnIndex,String engine) {
+		String columnName = getTitleList().get(columnIndex);
+
+		String[] Titles = new String[] {
+				"Title","URL/Host","Server", "IP", "CertInfo","ASNInfo","IconHash"};
+		List<String> titleList = new ArrayList<>(Arrays.asList(Titles));
+
+		String value =null;
+		boolean isHost =false;
+		if (titleList.contains(columnName)) {
+			value = getValueAt(rowIndex,columnIndex).toString();
+		}else {
+			SearchResultEntry firstEntry = lineEntries.get(rowIndex);
+			if (columnName.equalsIgnoreCase("Favicon")) {
+				value = firstEntry.getIcon_hash().toString();
+			}else {
+				value = firstEntry.getHost();
+				isHost = true;
+			}
+		}
+
+		if (columnName.equalsIgnoreCase("Title")){
+			if (engine.equalsIgnoreCase("google")) {
+				value =  "intitle:"+value;
+			}
+		}else if (columnName.equalsIgnoreCase("Comments")){
+		}else if (columnName.equalsIgnoreCase("Server")){
+		}else if (columnName.equalsIgnoreCase("IP")){
+		}else if (columnName.equalsIgnoreCase("CNAME|CertInfo")){
+		}else if (columnName.equalsIgnoreCase("ASNInfo")){
+		}else if (columnName.equalsIgnoreCase("Favicon") || columnName.equalsIgnoreCase("iconHash")){
+			if (engine.equalsIgnoreCase("fofa")) {
+				value = "icon_hash=\""+value+"\"";
+			}
+			else if (engine.equalsIgnoreCase("fofa")) {
+				value = "http.favicon.hash:"+value;
+			}
+			else if (engine.equalsIgnoreCase("ZoomEye")) {
+				value = "iconhash:"+value;
+			}
+		}else if (isHost){
+			if (engine.equalsIgnoreCase("google")) {
+				value = "site:"+value;
+			}
+			if (engine.equalsIgnoreCase("hunter")) {
+				if (DomainNameUtils.isValidDomain(value)){
+					value = "domain=\""+value+"\"";
+				}
+			}
+		}
+
+		return value;
 	}
 
 	///////////////////^^^多个行内容的增删查改^^^/////////////////////////////////

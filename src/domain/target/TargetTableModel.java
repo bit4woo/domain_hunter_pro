@@ -127,6 +127,43 @@ public class TargetTableModel extends AbstractTableModel {
 		}
 		return "";
 	}
+	
+	
+	/**
+	 * 返回可以用于网络搜索引擎进行搜索地字段
+	 * @param rowIndex
+	 * @param columnIndex
+	 * @return
+	 */
+	public String getValueForSearch(int rowIndex, int columnIndex,String engine) {
+		String columnName = getTitleList().get(columnIndex);
+
+		String[] Titles = new String[] {
+				"Domain/Subnet","Keyword","Comment"};
+		List<String> titleList = new ArrayList<>(Arrays.asList(Titles));
+
+		String value =null;
+		boolean isHost =false;
+		if (titleList.contains(columnName)) {
+			value = getValueAt(rowIndex,columnIndex).toString();
+		}else {
+			TargetEntry firstEntry = targetEntries.get(rowIndex);
+			value = firstEntry.getTarget();
+			isHost = true;
+		}
+
+		if (columnName.equalsIgnoreCase("Domain/Subnet")|| isHost){
+			if (engine.equalsIgnoreCase("google")) {
+				value = "site:"+value;
+			}
+			if (engine.equalsIgnoreCase("hunter")) {
+				value = "domain=\""+value+"\"";
+			}
+		}else if (columnName.equalsIgnoreCase("Comments")){
+
+		}
+		return value;
+	}
 
 
 	@Override
