@@ -1,5 +1,6 @@
 package InternetSearch;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -23,6 +24,10 @@ public class SearchResultEntry {
 	private String ASNInfo = "";
 	
 	public SearchResultEntry(String host) {
+
+	}
+	
+	public SearchResultEntry() {
 
 	}
 
@@ -135,6 +140,15 @@ public class SearchResultEntry {
 
 	public void setTitle(String title) {
 		this.title = title;
+	}
+
+	@Override
+	public String toString() {
+		return "SearchResultEntry [port=" + port + ", host=" + host + ", protocol=" + protocol + ", rootDomain="
+				+ rootDomain + ", webcontainer=" + webcontainer + ", title=" + title + ", CertDomainSet="
+				+ CertDomainSet + ", IPSet=" + IPSet + ", icon_url=" + icon_url + ", icon_bytes="
+				+ Arrays.toString(icon_bytes) + ", icon_hash=" + icon_hash + ", source=" + source + ", ASNInfo="
+				+ ASNInfo + "]";
 	}
 	
 }

@@ -14,7 +14,6 @@ import org.apache.logging.log4j.Logger;
 import GUI.GUIMain;
 import bsh.This;
 import config.ConfigPanel;
-import config.DataLoadManager;
 
 public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListener, IContextMenuFactory, IHttpListener {
 	/**
@@ -31,7 +30,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	private static final String Extension_Setting_Name_DB_File = "DomainHunterProDbFilePath";
 	private static final Logger log = LogManager.getLogger(BurpExtender.class);
 
-	private GUIMain gui;
+	private static GUIMain gui;
 
 
 	public static PrintWriter getStdout() {
@@ -61,7 +60,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		return github;
 	}
 
-	public GUIMain getGui() {
+	public static GUIMain getGui() {
 		return gui;
 	}
 

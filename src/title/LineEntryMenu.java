@@ -26,6 +26,7 @@ import javax.swing.SwingWorker;
 import ASN.ASNEntry;
 import ASN.ASNQuery;
 import GUI.GUIMain;
+import InternetSearch.APISearchAction;
 import InternetSearch.BrowserSearchAction;
 import Tools.ToolPanel;
 import base.Commons;
@@ -82,7 +83,8 @@ public class LineEntryMenu extends JPopupMenu {
 		
 		JMenuItem SearchOnZoomEyeItem = new JMenuItem(new BrowserSearchAction(this.lineTableModel,modelRows,columnIndex,"ZoomEye"));
 		
-
+		JMenuItem APISearchOnfofaItem = new JMenuItem(new APISearchAction(this.lineTableModel,modelRows,columnIndex,"fofa"));
+		
 		JMenuItem ASNInfoItem = new JMenuItem(new AbstractAction("ASN Info") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -1092,7 +1094,10 @@ public class LineEntryMenu extends JPopupMenu {
 		SearchMenu.add(SearchOnShodanItem);
 		SearchMenu.add(SearchOnZoomEyeItem);
 		SearchMenu.add(SearchOn360QuakeItem);
-
+		SearchMenu.addSeparator();
+		
+		SearchMenu.add(APISearchOnfofaItem);
+		
 		SearchMenu.addSeparator();//网络搜索引擎
 
 		SearchMenu.add(ASNInfoItem);

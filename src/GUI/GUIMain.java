@@ -3,6 +3,7 @@ package GUI;
 import java.awt.EventQueue;
 import java.io.File;
 import java.io.PrintWriter;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
@@ -14,6 +15,8 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingWorker;
 
+import InternetSearch.SearchPanel;
+import InternetSearch.SearchResultEntry;
 import Tools.ToolPanel;
 import base.Commons;
 import base.dbFileChooser;
@@ -197,6 +200,10 @@ public class GUIMain extends JFrame {
 			projectMenu.setText("DomainHunter");
 			ConfigPanel.DisplayContextMenuOfBurp.setSelected(true);//显示右键菜单
 		}
+	}
+	
+	public void addSearchPanel(List<SearchResultEntry> entries) {
+		((JTabbedPane)this.getContentPane()).addTab("Search",null,new SearchPanel(this,entries),null);
 	}
 
 

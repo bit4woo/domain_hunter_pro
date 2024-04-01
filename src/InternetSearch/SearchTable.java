@@ -36,6 +36,12 @@ public class SearchTable extends JTable
 		this.guiMain = guiMain;
 	}
 
+	public SearchTable(GUIMain guiMain,SearchTableModel model)
+	{
+		this(guiMain);
+		setModel(model);
+		tableHeaderWidthinit();
+	}
 
 	public SearchTableModel getSearchTableModel(){
 		return (SearchTableModel)getModel();
