@@ -8,6 +8,7 @@ import java.util.List;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.border.EmptyBorder;
 
 import GUI.GUIMain;
@@ -16,16 +17,14 @@ import burp.BurpExtender;
 public class SearchPanel extends JPanel {
 
 	JLabel lblSummary;
-	SearchTableModel searchTableModel;
-	SearchTable searchTable;
+
+	JTabbedPane centerPanel;
 	GUIMain guiMain;
 	PrintWriter stdout;
 	PrintWriter stderr;
 	
-	public SearchPanel(GUIMain guimain,List<SearchResultEntry> entries) {
+	public SearchPanel(GUIMain guiMain) {
 		this.guiMain = guiMain;
-		searchTableModel= new SearchTableModel(guimain,entries);
-		searchTable = new SearchTable(guimain,searchTableModel);
 
 		try{
 			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
@@ -38,13 +37,18 @@ public class SearchPanel extends JPanel {
 		this.setBorder(new EmptyBorder(5, 5, 5, 5));
 		this.setLayout(new BorderLayout(0, 0));
 		this.add(createButtonPanel(), BorderLayout.NORTH);
+		centerPanel = new JTabbedPane();
 
+		this.add(centerPanel,BorderLayout.CENTER);
+	}
+	
+	public void addSearchTab(String tabName,List<SearchResultEntry> entries) {
+		
+		SearchTableModel searchTableModel= new SearchTableModel(this.guiMain,entries);
+		SearchTable searchTable = new SearchTable(this.guiMain,searchTableModel);
 		JScrollPane scrollPane = new JScrollPane(searchTable,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
 				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);//table area
-
-
-		this.add(scrollPane,BorderLayout.CENTER);
-
+		centerPanel.addTab(tabName, null, scrollPane, null);
 	}
 
 	public JPanel createButtonPanel() {

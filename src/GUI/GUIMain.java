@@ -3,8 +3,6 @@ package GUI;
 import java.awt.EventQueue;
 import java.io.File;
 import java.io.PrintWriter;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -13,10 +11,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
-import javax.swing.SwingWorker;
 
 import InternetSearch.SearchPanel;
-import InternetSearch.SearchResultEntry;
 import Tools.ToolPanel;
 import base.Commons;
 import base.dbFileChooser;
@@ -42,6 +38,7 @@ public class GUIMain extends JFrame {
 	public TitlePanel titlePanel;
 	public ToolPanel toolPanel;
 	public ConfigPanel configPanel;
+	public SearchPanel searchPanel;
 
 	public File currentDBFile;
 	public ProjectMenu projectMenu;
@@ -84,6 +81,13 @@ public class GUIMain extends JFrame {
 	}
 	public void setConfigPanel(ConfigPanel configPanel) {
 		this.configPanel = configPanel;
+	}
+	
+	public SearchPanel getSearchPanel() {
+		return searchPanel;
+	}
+	public void setSearchPanel(SearchPanel searchPanel) {
+		this.searchPanel = searchPanel;
 	}
 	public File getCurrentDBFile() {
 		return currentDBFile;
@@ -168,10 +172,12 @@ public class GUIMain extends JFrame {
 		titlePanel = new TitlePanel(this);
 		toolPanel = new ToolPanel(this);
 		configPanel = new ConfigPanel(this);
+		searchPanel = new SearchPanel(this);
 		tabbedWrapper.addTab("Domains", null, domainPanel, null);
 		tabbedWrapper.addTab("Titles", null, titlePanel, null);
 		tabbedWrapper.addTab("Tools", null,toolPanel,null);
 		tabbedWrapper.addTab("Config", null,configPanel,null);
+		tabbedWrapper.addTab("Search", null,searchPanel,null);
 
 		setProjectMenu(new ProjectMenu(this));
 		getProjectMenu().Add();
@@ -201,12 +207,6 @@ public class GUIMain extends JFrame {
 			ConfigPanel.DisplayContextMenuOfBurp.setSelected(true);//显示右键菜单
 		}
 	}
-	
-	public void addSearchPanel(List<SearchResultEntry> entries) {
-		((JTabbedPane)this.getContentPane()).addTab("Search",null,new SearchPanel(this,entries),null);
-	}
-
-
 
 
 	/**

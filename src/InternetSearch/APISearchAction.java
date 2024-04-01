@@ -86,7 +86,7 @@ public class APISearchAction extends AbstractAction{
 					if (resp_body != null && resp_body.length()>0){
 						List<SearchResultEntry> entries = parseResp(resp_body,engine);
 
-						BurpExtender.getGui().addSearchPanel(entries);
+						BurpExtender.getGui().getSearchPanel().addSearchTab(searchContent, entries);
 					}
 				}
 				return null;
@@ -250,7 +250,7 @@ public class APISearchAction extends AbstractAction{
 	}
 	
 	public static void main(String[] args) {
-		String aaa = "{\"error\":false,\"consumed_fpoint\":0,\"required_fpoints\":0,\"size\":457,\"page\":1,\"mode\":\"extended\",\"query\":\"icon_hash=\\\"-1551025814\\\"\",\"results\":[[\"lab-paas-dev.utest.21kunpeng.com\",\"119.29.46.72\",\"21kunpeng.com\",\"80\",\"http\",\"APISIX/3.0.0\"],[\"https://lab-paas-dev.utest.21kunpeng.com\",\"119.29.46.72\",\"21kunpeng.com\",\"443\",\"https\",\"APISIX/3.0.0\"],[\"mobility-analytics.smart-mobility.alstom.com\",\"52.138.155.206\",\"alstom.com\",\"80\",\"http\",\"\"],[\"https://rancher.collab.infraview.net\",\"185.207.63.122\",\"infraview.net\",\"443\",\"https\",\"\"],[\"44.204.19.4:8080\",\"44.204.19.4\",\"\",\"8080\",\"http\",\"\"],[\"https://121.40.65.104\",\"121.40.65.104\",\"\",\"443\",\"https\",\"nginx\"],[\"149.28.209.94:8080\",\"149.28.209.94\",\"\",\"8080\",\"http\",\"\"],[\"https://rancher.master.k3s.getvisibility.com\",\"172.67.26.114\",\"getvisibility.com\",\"443\",\"https\",\"cloudflare\"],[\"rancher.gvdevelopment.k3s.getvisibility.com\",\"172.67.26.114\",\"getvisibility.com\",\"80\",\"http\",\"cloudflare\"],[\"rancher.master.k3s.getvisibility.com\",\"104.22.59.129\",\"getvisibility.com\",\"80\",\"http\",\"cloudflare\"],[\"https://rancher.gvdevelopment.k3s.getvisibility.com\",\"104.22.59.129\",\"getvisibility.com\",\"443\",\"https\",\"cloudflare\"],[\"39.96.65.93:8080\",\"39.96.65.93\",\"\",\"8080\",\"http\",\"\"],[\"121.199.161.48:8080\",\"121.199.161.48\",\"\",\"8080\",\"http\",\"\"],[\"120.27.16.243:8080\",\"120.27.16.243\",\"\",\"8080\",\"http\",\"\"],[\"https://appvzt.com.br\",\"167.172.13.62\",\"appvzt.com.br\",\"443\",\"https\",\"\"],[\"139.155.140.158:8080\",\"139.155.140.158\",\"\",\"8080\",\"http\",\"\"],[\"8.130.102.96:8080\",\"8.130.102.96\",\"\",\"8080\",\"http\",\"\"],[\"114.116.241.40:8089\",\"114.116.241.40\",\"\",\"8089\",\"http\",\"\"],[\"13.251.126.163:8080\",\"13.251.126.163\",\"\",\"8080\",\"http\",\"\"],[\"8.134.76.220:8080\",\"8.134.76.220\",\"\",\"8080\",\"http\",\"\"],[\"58.87.71.252:8080\",\"58.87.71.252\",\"\",\"8080\",\"http\",\"\"],[\"https://harvester.dl-labs.ai\",\"16.1.32.148\",\"dl-labs.ai\",\"443\",\"https\",\"nginx/1.18.0 (Ubuntu)\"],[\"https://20.4.127.238\",\"20.4.127.238\",\"\",\"443\",\"https\",\"\"]]}";
+		String aaa="";
 		List<SearchResultEntry> bbb = parseResp(aaa,"fofa");
 		for (SearchResultEntry item:bbb) {
 			System.out.println(item);
