@@ -341,9 +341,6 @@ public class SearchResultEntryMenu extends JPopupMenu {
 
 		this.addSeparator();
 
-		JMenu DoMenu = new JMenu("Do");
-		this.add(DoMenu);
-
 		JMenu SearchMenu = new JMenu("Search");
 		this.add(SearchMenu);
 		SearchMenu.addSeparator();

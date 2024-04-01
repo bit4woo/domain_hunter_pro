@@ -38,8 +38,9 @@ public class APISearchAction extends AbstractAction{
 
 
 	private boolean autoAddToTarget;
+	private boolean showInGUI;
 
-	public APISearchAction(AbstractTableModel lineModel, int[] modelRows, int columnIndex, String engine,boolean autoAddToTarget) {
+	public APISearchAction(AbstractTableModel lineModel, int[] modelRows, int columnIndex, String engine,boolean autoAddToTarget,boolean showInGUI) {
 		super();
 
 		if (!lineModel.getClass().equals(LineTableModel.class) && 
@@ -54,10 +55,11 @@ public class APISearchAction extends AbstractAction{
 		this.engine = engine;
 		putValue(Action.NAME, "Search On "+capitalizeFirstLetter(engine.trim())+" API");
 		this.autoAddToTarget = autoAddToTarget;
+		this.showInGUI = showInGUI;
 	}
 	
 	public APISearchAction(AbstractTableModel lineModel, int[] modelRows, int columnIndex, String engine) {
-		this(lineModel,modelRows,columnIndex,engine,false);
+		this(lineModel,modelRows,columnIndex,engine,false,true);
 	}
 
 
@@ -98,7 +100,9 @@ public class APISearchAction extends AbstractAction{
 					}
 					
 					List<SearchResultEntry> entries = parseResp(resp_body,engine);
-					BurpExtender.getGui().getSearchPanel().addSearchTab(searchContent, entries);
+					if (showInGUI) {
+						BurpExtender.getGui().getSearchPanel().addSearchTab(searchContent, entries);
+					}
 					
 					if (autoAddToTarget) {
 						for (SearchResultEntry entry:entries) {

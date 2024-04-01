@@ -51,6 +51,7 @@ public class SearchTable extends JTable
 		this(guiMain);
 		setModel(model);
 		tableHeaderWidthinit();
+		registerListeners();
 	}
 
 	public SearchTableModel getSearchTableModel(){
@@ -91,12 +92,11 @@ public class SearchTable extends JTable
 	
 	public int[] SelectedRowsToModelRows(int[] SelectedRows) {
 
-		int[] rows = SelectedRows;
-		for (int i=0; i < rows.length; i++){
-			rows[i] = convertRowIndexToModel(rows[i]);//转换为Model的索引，否则排序后索引不对应〿
+		for (int i = 0; i < SelectedRows.length; i++){
+			SelectedRows[i] = convertRowIndexToModel(SelectedRows[i]);//转换为Model的索引，否则排序后索引不对应〿
 		}
-		Arrays.sort(rows);//升序
-		return rows;
+		Arrays.sort(SelectedRows);//升序
+		return SelectedRows;
 	}
 	
 	
@@ -155,13 +155,13 @@ public class SearchTable extends JTable
 				}
 			}
 
-			@Override//title表格中的鼠标右键菜单
+			@Override//表格中的鼠标右键菜单
 			public void mouseReleased( MouseEvent e ){//在windows中触发,因为isPopupTrigger在windows中是在鼠标释放是触发的，而在mac中，是鼠标点击时触发的。
 				//https://stackoverflow.com/questions/5736872/java-popup-trigger-in-linux
 				if ( SwingUtilities.isRightMouseButton( e )){
 					if (e.isPopupTrigger() && e.getComponent() instanceof JTable ) {
 						int[] rows = getSelectedRows();
-						int col = ((LineTable) e.getSource()).columnAtPoint(e.getPoint()); // 获得列位置
+						int col = ((SearchTable) e.getSource()).columnAtPoint(e.getPoint()); // 获得列位置
 						int modelCol = convertColumnIndexToModel(col);
 						if (rows.length>0){
 							int[] modelRows = SelectedRowsToModelRows(rows);

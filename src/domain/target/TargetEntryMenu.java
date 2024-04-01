@@ -217,11 +217,11 @@ public class TargetEntryMenu extends JPopupMenu {
 		JMenuItem SearchOnZoomEyeItem = new JMenuItem(new BrowserSearchAction(this.rootDomainTable.getTargetModel(),modelRows,columnIndex,"zoomeye"));
 
 
-		JMenuItem SearchOnFoFaAutoItem = new JMenuItem(new APISearchAction(this.rootDomainTable.getTargetModel(),modelRows,columnIndex,"fofa"));
+		JMenuItem SearchOnFoFaAutoItem = new JMenuItem(new APISearchAction(this.rootDomainTable.getTargetModel(),modelRows,columnIndex,"fofa",true,false));
 
-		JMenuItem SearchOnQuakeAutoItem = new JMenuItem(new APISearchAction(this.rootDomainTable.getTargetModel(),modelRows,columnIndex,"quake"));
+		JMenuItem SearchOnQuakeAutoItem = new JMenuItem(new APISearchAction(this.rootDomainTable.getTargetModel(),modelRows,columnIndex,"quake",true,false));
 
-		JMenuItem SearchOnHunterAutoItem = new JMenuItem(new APISearchAction(this.rootDomainTable.getTargetModel(),modelRows,columnIndex,"hunter"));
+		JMenuItem SearchOnHunterAutoItem = new JMenuItem(new APISearchAction(this.rootDomainTable.getTargetModel(),modelRows,columnIndex,"hunter",true,false));
 
 
 		JMenuItem SearchAllItem = new JMenuItem(new AbstractAction("Search On All Engines") {

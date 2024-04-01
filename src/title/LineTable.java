@@ -47,13 +47,12 @@ public class LineTable extends JTable
 	//将选中的行（图形界面的行）转换为Model中的行数（数据队列中的index）.因为图形界面排序等操作会导致图像和数据队列的index不是线性对应的。
 	public int[] SelectedRowsToModelRows(int[] SelectedRows) {
 
-		int[] rows = SelectedRows;
-		for (int i=0; i < rows.length; i++){
-			rows[i] = convertRowIndexToModel(rows[i]);//转换为Model的索引，否则排序后索引不对应〿
+		for (int i = 0; i < SelectedRows.length; i++){
+			SelectedRows[i] = convertRowIndexToModel(SelectedRows[i]);//转换为Model的索引，否则排序后索引不对应〿
 		}
-		Arrays.sort(rows);//升序
+		Arrays.sort(SelectedRows);//升序
 
-		return rows;
+		return SelectedRows;
 	}
 
 	public LineTable(GUIMain guiMain)
