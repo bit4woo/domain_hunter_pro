@@ -20,7 +20,7 @@ public class SearchTable extends JTable
 	private static final long serialVersionUID = 1L;
 	PrintWriter stdout;
 	PrintWriter stderr;
-	private GUIMain guiMain;
+	GUIMain guiMain;
 
 	public SearchTable(GUIMain guiMain)
 	{
@@ -76,7 +76,7 @@ public class SearchTable extends JTable
 			}
 		}
 		this.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);//配合横向滚动条
-		
+
 		//this.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS); 全自动调整列表，就用这个
 	}
 }

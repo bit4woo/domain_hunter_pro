@@ -1,10 +1,15 @@
 package InternetSearch;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.FlowLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.PrintWriter;
 import java.util.List;
 
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -22,7 +27,7 @@ public class SearchPanel extends JPanel {
 	GUIMain guiMain;
 	PrintWriter stdout;
 	PrintWriter stderr;
-	
+
 	public SearchPanel(GUIMain guiMain) {
 		this.guiMain = guiMain;
 
@@ -41,14 +46,47 @@ public class SearchPanel extends JPanel {
 
 		this.add(centerPanel,BorderLayout.CENTER);
 	}
-	
+
 	public void addSearchTab(String tabName,List<SearchResultEntry> entries) {
-		
+
 		SearchTableModel searchTableModel= new SearchTableModel(this.guiMain,entries);
 		SearchTable searchTable = new SearchTable(this.guiMain,searchTableModel);
 		JScrollPane scrollPane = new JScrollPane(searchTable,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
 				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);//table area
-		centerPanel.addTab(tabName, null, scrollPane, null);
+
+
+		//用一个panel实现tab那个小块
+		JPanel tabPanel = new JPanel(new BorderLayout());
+
+		JLabel titleLabel = new JLabel(tabName);
+		tabPanel.add(titleLabel, BorderLayout.CENTER);
+
+		JButton closeButton = new JButton("x");
+		closeButton.setMargin(new Insets(0, 2, 0, 2)); // 设置按钮边距
+		closeButton.setFocusable(false); // 禁用焦点
+		closeButton.addActionListener(new CloseTabListener(centerPanel, scrollPane));
+		tabPanel.add(closeButton, BorderLayout.EAST);
+
+
+		centerPanel.addTab(null, scrollPane);
+		int index = centerPanel.getTabCount() - 1;
+		centerPanel.setTabComponentAt(index, tabPanel);
+	}
+
+
+	static class CloseTabListener implements ActionListener {
+		private JTabbedPane tabbedPane;
+		private Component component;
+
+		public CloseTabListener(JTabbedPane tabbedPane, Component component) {
+			this.tabbedPane = tabbedPane;
+			this.component = component;
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			tabbedPane.remove(component);
+		}
 	}
 
 	public JPanel createButtonPanel() {
@@ -67,8 +105,8 @@ public class SearchPanel extends JPanel {
 			}
 		});
 		buttonPanel.add(buttonSearch);
-		*/
-		
+		 */
+
 
 		lblSummary = new JLabel("^_^");
 		buttonPanel.add(lblSummary);
