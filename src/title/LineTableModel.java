@@ -177,7 +177,6 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		}
 	}
 
-
 	@Override
 	public Object getValueAt(int rowIndex, int columnIndex)
 	{

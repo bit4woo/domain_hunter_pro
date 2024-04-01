@@ -199,7 +199,6 @@ public class APISearchAction extends AbstractAction{
 				e.printStackTrace(BurpExtender.getStderr());
 			}
 		}
-
 		return result;
 	}
 
