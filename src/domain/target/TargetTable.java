@@ -114,6 +114,12 @@ public class TargetTable extends JTable{
 
 					int row = ((TargetTable) e.getSource()).rowAtPoint(e.getPoint()); // 获得列位置
 					int col = ((TargetTable) e.getSource()).columnAtPoint(e.getPoint()); // 获得列位置
+					
+					if (row > TargetTable.this.getRowCount()-1) {
+						//当在空白处点击时，JTable.getValueAt会越界
+						return;
+					}
+					
 					String value = (String)TargetTable.this.getValueAt(row, col);
 
 					int modelCol = TargetTable.this.convertColumnIndexToModel(col);

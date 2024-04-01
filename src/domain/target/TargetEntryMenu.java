@@ -8,7 +8,6 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;
@@ -17,13 +16,11 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingWorker;
 
 import GUI.GUIMain;
+import InternetSearch.APISearchAction;
 import InternetSearch.BrowserSearchAction;
-import InternetSearch.Search;
 import base.Commons;
 import burp.BurpExtender;
-import config.ConfigPanel;
 import utils.DomainNameUtils;
-import utils.GrepUtils;
 import utils.IPAddressUtils;
 
 public class TargetEntryMenu extends JPopupMenu {
@@ -206,130 +203,26 @@ public class TargetEntryMenu extends JPopupMenu {
 		JMenuItem SearchEmailOnHunterIOItem = new JMenuItem(new BrowserSearchAction(this.rootDomainTable.getTargetModel(),modelRows,columnIndex,"hunter.io"));
 
 		JMenuItem SearchOnFoFaItem = new JMenuItem(new BrowserSearchAction(this.rootDomainTable.getTargetModel(),modelRows,columnIndex,"fofa"));
-		
+
 		JMenuItem SearchOnShodanItem = new JMenuItem(new BrowserSearchAction(this.rootDomainTable.getTargetModel(),modelRows,columnIndex,"shodan"));
 
 		JMenuItem SearchOn360QuakeItem = new JMenuItem(new BrowserSearchAction(this.rootDomainTable.getTargetModel(),modelRows,columnIndex,"quake"));
 
 		JMenuItem SearchOnTiQianxinItem = new JMenuItem(new BrowserSearchAction(this.rootDomainTable.getTargetModel(),modelRows,columnIndex,"ti.qianxin.com"));
-		
+
 		JMenuItem SearchOnTi360Item = new JMenuItem(new BrowserSearchAction(this.rootDomainTable.getTargetModel(),modelRows,columnIndex,"ti.360.net"));
-		
+
 		JMenuItem SearchOnHunterQianxinItem = new JMenuItem(new BrowserSearchAction(this.rootDomainTable.getTargetModel(),modelRows,columnIndex,"hunter"));
-		
+
 		JMenuItem SearchOnZoomEyeItem = new JMenuItem(new BrowserSearchAction(this.rootDomainTable.getTargetModel(),modelRows,columnIndex,"zoomeye"));
-		
-		
-		JMenuItem SearchOnFoFaAutoItem = new JMenuItem(new AbstractAction("Auto Search On fofa.info") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-					@Override
-					protected Map doInBackground() throws Exception {
-						String email = ConfigPanel.textFieldFofaEmail.getText();
-						String key = ConfigPanel.textFieldFofaKey.getText();
-						if (email.equals("") ||key.equals("")) {
-							stdout.println("fofa.info emaill or key not configurated!");
-							return null;
-						}
-						for (int row:modelRows) {
-							String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,rootDomainColumnIndex);
-							String responseBody = Search.searchFofa(email,key,rootDomain);
-
-							Set<String> domains = GrepUtils.grepDomain(responseBody);
-							List<String> iplist = GrepUtils.grepIP(responseBody);
-							stdout.println(String.format("%s: %s sub-domain names; %s ip addresses found by fofa.info",rootDomain,domains.size(),iplist.size()));
-							guiMain.getDomainPanel().getDomainResult().addIfValid(domains);
-							guiMain.getDomainPanel().getDomainResult().getSpecialPortTargets().addAll(iplist);
-							if (domains.size()==0 && iplist.size()==0) {
-								stdout.println("fofa.info No assets found for ["+rootDomain+"], print reponse for debug");
-								stdout.println(responseBody);
-							}
-						}
-						return null;
-					}
-
-					@Override
-					protected void done(){
-					}
-				};
-				worker.execute();
-			}
-		});
 
 
-		JMenuItem SearchOnQuakeAutoItem = new JMenuItem(new AbstractAction("Auto Search On quake.360.net") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-					@Override
-					protected Map doInBackground() throws Exception {
-						String key = ConfigPanel.textFieldQuakeAPIKey.getText();
-						if (key.equals("")) {
-							stdout.println("quake.360.net API key not configurated!");
-							return null;
-						}
-						for (int row:modelRows) {
-							String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,rootDomainColumnIndex);
-							String responseBody = Search.searchQuake(key,rootDomain);
+		JMenuItem SearchOnFoFaAutoItem = new JMenuItem(new APISearchAction(this.rootDomainTable.getTargetModel(),modelRows,columnIndex,"fofa"));
 
-							Set<String> domains = GrepUtils.grepDomain(responseBody);
-							List<String> iplist = GrepUtils.grepIP(responseBody);
-							stdout.println(String.format("%s: %s sub-domain names; %s ip addresses found by quake.360.net",rootDomain,domains.size(),iplist.size()));
-							guiMain.getDomainPanel().getDomainResult().addIfValid(domains);
-							guiMain.getDomainPanel().getDomainResult().getSpecialPortTargets().addAll(iplist);
-							if (domains.size()==0 && iplist.size()==0) {
-								stdout.println("quake.360.net No assets found for ["+rootDomain+"], print reponse for debug");
-								stdout.println(responseBody);
-							}
-						}
-						return null;
-					}
+		JMenuItem SearchOnQuakeAutoItem = new JMenuItem(new APISearchAction(this.rootDomainTable.getTargetModel(),modelRows,columnIndex,"quake"));
 
-					@Override
-					protected void done(){
-					}
-				};
-				worker.execute();
-			}
-		});
+		JMenuItem SearchOnHunterAutoItem = new JMenuItem(new APISearchAction(this.rootDomainTable.getTargetModel(),modelRows,columnIndex,"hunter"));
 
-
-		JMenuItem SearchOnHunterAutoItem = new JMenuItem(new AbstractAction("Auto Search On hunter.qianxin.com") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-					@Override
-					protected Map doInBackground() throws Exception {
-						String key = ConfigPanel.textFieldHunterAPIKey.getText();
-						if (key.equals("")) {
-							stdout.println("hunter.qianxin.com API key not configurated!");
-							return null;
-						}
-						for (int row:modelRows) {
-							String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,rootDomainColumnIndex);
-							String responseBody = Search.searchHunter(key,rootDomain);
-
-							Set<String> domains = GrepUtils.grepDomain(responseBody);
-							List<String> iplist = GrepUtils.grepIP(responseBody);
-							stdout.println(String.format("%s: %s sub-domain names; %s ip addresses found by hunter.qianxin.com",rootDomain,domains.size(),iplist.size()));
-							guiMain.getDomainPanel().getDomainResult().addIfValid(domains);
-							guiMain.getDomainPanel().getDomainResult().getSpecialPortTargets().addAll(iplist);
-							if (domains.size()==0 && iplist.size()==0) {
-								stdout.println("hunter.qianxin.com No assets found for ["+rootDomain+"], print reponse for debug");
-								stdout.println(responseBody);
-							}
-						}
-						return null;
-					}
-
-					@Override
-					protected void done(){
-					}
-				};
-				worker.execute();
-			}
-		});
 
 		JMenuItem SearchAllItem = new JMenuItem(new AbstractAction("Search On All Engines") {
 			@Override

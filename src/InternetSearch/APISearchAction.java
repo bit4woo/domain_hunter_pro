@@ -36,7 +36,10 @@ public class APISearchAction extends AbstractAction{
 	int columnIndex;
 	String engine;
 
-	public APISearchAction(AbstractTableModel lineModel, int[] modelRows, int columnIndex, String engine) {
+
+	private boolean autoAddToTarget;
+
+	public APISearchAction(AbstractTableModel lineModel, int[] modelRows, int columnIndex, String engine,boolean autoAddToTarget) {
 		super();
 
 		if (!lineModel.getClass().equals(LineTableModel.class) && 
@@ -50,6 +53,11 @@ public class APISearchAction extends AbstractAction{
 		this.columnIndex = columnIndex;
 		this.engine = engine;
 		putValue(Action.NAME, "Search On "+capitalizeFirstLetter(engine.trim())+" API");
+		this.autoAddToTarget = autoAddToTarget;
+	}
+	
+	public APISearchAction(AbstractTableModel lineModel, int[] modelRows, int columnIndex, String engine) {
+		this(lineModel,modelRows,columnIndex,engine,false);
 	}
 
 
@@ -83,10 +91,30 @@ public class APISearchAction extends AbstractAction{
 					}
 
 					String resp_body = DoSearch(searchContent,engine);
-					if (resp_body != null && resp_body.length()>0){
-						List<SearchResultEntry> entries = parseResp(resp_body,engine);
-
-						BurpExtender.getGui().getSearchPanel().addSearchTab(searchContent, entries);
+					
+					
+					if (resp_body == null || resp_body.length()<=0){
+						continue;
+					}
+					
+					List<SearchResultEntry> entries = parseResp(resp_body,engine);
+					BurpExtender.getGui().getSearchPanel().addSearchTab(searchContent, entries);
+					
+					if (autoAddToTarget) {
+						for (SearchResultEntry entry:entries) {
+							//TODO
+							/*
+							 * Set<String> domains = GrepUtils.grepDomain(responseBody); List<String> iplist
+							 * = GrepUtils.grepIP(responseBody); stdout.println(String.
+							 * format("%s: %s sub-domain names; %s ip addresses found by fofa.info"
+							 * ,rootDomain,domains.size(),iplist.size()));
+							 * guiMain.getDomainPanel().getDomainResult().addIfValid(domains);
+							 * guiMain.getDomainPanel().getDomainResult().getSpecialPortTargets().addAll(
+							 * iplist); if (domains.size()==0 && iplist.size()==0) {
+							 * stdout.println("fofa.info No assets found for ["
+							 * +rootDomain+"], print reponse for debug"); stdout.println(responseBody); }
+							 */
+						}
 					}
 				}
 				return null;
@@ -201,8 +229,8 @@ public class APISearchAction extends AbstractAction{
 		else if (engine.equalsIgnoreCase("shodan")) {
 			url= "https://www.shodan.io/search?query="+searchContent;
 		}
-		else if (engine.equalsIgnoreCase("360Quake")) {
-			url= "https://quake.360.net/quake/#/searchResult?searchVal="+searchContent;
+		else if (engine.equalsIgnoreCase("360Quake") || engine.equalsIgnoreCase("Quake")) {
+			url= "https://quake.360.net/api/v3/search/quake_service";
 		}
 		else if (engine.equalsIgnoreCase("ZoomEye")) {
 			url= "https://www.zoomeye.org/searchResult?q="+searchContent;
@@ -248,7 +276,7 @@ public class APISearchAction extends AbstractAction{
 		}
 		return str.substring(0, 1).toUpperCase() + str.toLowerCase().substring(1);
 	}
-	
+
 	public static void main(String[] args) {
 		String aaa="";
 		List<SearchResultEntry> bbb = parseResp(aaa,"fofa");
