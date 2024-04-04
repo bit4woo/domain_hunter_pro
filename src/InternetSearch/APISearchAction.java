@@ -18,34 +18,33 @@ import org.json.JSONObject;
 
 import Tools.JSONHandler;
 import burp.BurpExtender;
+import burp.IPAddressUtils;
 import config.ConfigPanel;
+import domain.DomainManager;
 import domain.target.TargetTableModel;
 import title.LineTableModel;
+import utils.GrepUtils;
 
-
-
-public class APISearchAction extends AbstractAction{
+public class APISearchAction extends AbstractAction {
 
 	/**
 	 */
 	private static final long serialVersionUID = 1933197856582351336L;
-
 
 	AbstractTableModel lineModel;
 	int[] modelRows;
 	int columnIndex;
 	String engine;
 
-
 	private boolean autoAddToTarget;
 	private boolean showInGUI;
 
-	public APISearchAction(AbstractTableModel lineModel, int[] modelRows, int columnIndex, String engine,boolean autoAddToTarget,boolean showInGUI) {
+	public APISearchAction(AbstractTableModel lineModel, int[] modelRows, int columnIndex, String engine,
+			boolean autoAddToTarget, boolean showInGUI) {
 		super();
 
-		if (!lineModel.getClass().equals(LineTableModel.class) && 
-				!lineModel.getClass().equals(SearchTableModel.class) &&
-				!lineModel.getClass().equals(TargetTableModel.class)) {
+		if (!lineModel.getClass().equals(LineTableModel.class) && !lineModel.getClass().equals(SearchTableModel.class)
+				&& !lineModel.getClass().equals(TargetTableModel.class)) {
 			BurpExtender.getCallbacks().printError("wrong AbstractTableModel object");
 		}
 
@@ -53,15 +52,14 @@ public class APISearchAction extends AbstractAction{
 		this.modelRows = modelRows;
 		this.columnIndex = columnIndex;
 		this.engine = engine;
-		putValue(Action.NAME, "Search On "+capitalizeFirstLetter(engine.trim())+" API");
+		putValue(Action.NAME, "Search On " + capitalizeFirstLetter(engine.trim()) + " API");
 		this.autoAddToTarget = autoAddToTarget;
 		this.showInGUI = showInGUI;
 	}
-	
-	public APISearchAction(AbstractTableModel lineModel, int[] modelRows, int columnIndex, String engine) {
-		this(lineModel,modelRows,columnIndex,engine,false,true);
-	}
 
+	public APISearchAction(AbstractTableModel lineModel, int[] modelRows, int columnIndex, String engine) {
+		this(lineModel, modelRows, columnIndex, engine, false, true);
+	}
 
 	@Override
 	public final void actionPerformed(ActionEvent e) {
@@ -69,55 +67,53 @@ public class APISearchAction extends AbstractAction{
 			@Override
 			protected Map doInBackground() throws Exception {
 
-				if (modelRows.length >=50) {
+				if (modelRows.length >= 50) {
 					BurpExtender.getStderr().print("too many items selected!! should less than 50");
 					return null;
 				}
-				for (int row:modelRows) {
-					String searchContent =null;
+				for (int row : modelRows) {
+					String searchContent = null;
 					if (lineModel.getClass().equals(LineTableModel.class)) {
-						searchContent = ((LineTableModel)lineModel).getValueForSearch(row,columnIndex,engine);
+						searchContent = ((LineTableModel) lineModel).getValueForSearch(row, columnIndex, engine);
 					}
 
 					if (lineModel.getClass().equals(SearchTableModel.class)) {
-						searchContent = ((SearchTableModel)lineModel).getValueForSearch(row,columnIndex,engine);
+						searchContent = ((SearchTableModel) lineModel).getValueForSearch(row, columnIndex, engine);
 					}
 
 					if (lineModel.getClass().equals(TargetTableModel.class)) {
-						searchContent = ((TargetTableModel)lineModel).getValueForSearch(row,columnIndex,engine);
+						searchContent = ((TargetTableModel) lineModel).getValueForSearch(row, columnIndex, engine);
 					}
 
-					if (searchContent == null ||  searchContent.equals("")) {
+					if (searchContent == null || searchContent.equals("")) {
 						BurpExtender.getStderr().print("nothing to search...");
 						return null;
 					}
 
-					String resp_body = DoSearch(searchContent,engine);
-					
-					
-					if (resp_body == null || resp_body.length()<=0){
+					String resp_body = DoSearch(searchContent, engine);
+
+					if (resp_body == null || resp_body.length() <= 0) {
 						continue;
 					}
-					
-					List<SearchResultEntry> entries = parseResp(resp_body,engine);
+
+					List<SearchResultEntry> entries = parseResp(resp_body, engine);
 					if (showInGUI) {
 						BurpExtender.getGui().getSearchPanel().addSearchTab(searchContent, entries);
 					}
-					
+
 					if (autoAddToTarget) {
-						for (SearchResultEntry entry:entries) {
-							//TODO
-							/*
-							 * Set<String> domains = GrepUtils.grepDomain(responseBody); List<String> iplist
-							 * = GrepUtils.grepIP(responseBody); stdout.println(String.
-							 * format("%s: %s sub-domain names; %s ip addresses found by fofa.info"
-							 * ,rootDomain,domains.size(),iplist.size()));
-							 * guiMain.getDomainPanel().getDomainResult().addIfValid(domains);
-							 * guiMain.getDomainPanel().getDomainResult().getSpecialPortTargets().addAll(
-							 * iplist); if (domains.size()==0 && iplist.size()==0) {
-							 * stdout.println("fofa.info No assets found for ["
-							 * +rootDomain+"], print reponse for debug"); stdout.println(responseBody); }
-							 */
+						DomainManager result = BurpExtender.getGui().getDomainPanel().getDomainResult();
+						for (SearchResultEntry entry : entries) {
+							 String host = entry.getHost();
+							 String rootDomain = entry.getRootDomain();
+							 result.addIfValid(host);
+							 List<String> ips = GrepUtils.grepIPAndPort(host);
+							 for (String ip:ips) {
+								 if (IPAddressUtils.isValidIP(ip)) {
+									 result.getSpecialPortTargets().add(ip);
+									}
+							 }
+							 result.getSimilarDomainSet().add(rootDomain);
 						}
 					}
 				}
@@ -125,35 +121,35 @@ public class APISearchAction extends AbstractAction{
 			}
 
 			@Override
-			protected void done(){
+			protected void done() {
 			}
 		};
 		worker.execute();
 	}
 
-	public String DoSearch(String searchContent,String engine) {
-		if (searchContent == null || searchContent.equals("")){
+	public String DoSearch(String searchContent, String engine) {
+		if (searchContent == null || searchContent.equals("")) {
 			return "";
 		}
 		if (engine.equalsIgnoreCase("hunter")) {
 			String queryResult = "";
-			int page =1;
-			while(true){
+			int page = 1;
+			while (true) {
 				try {
-					String url = buildSearchUrl("hunter",searchContent,page);
+					String url = buildSearchUrl("hunter", searchContent, page);
 					String body = HttpClientOfBurp.doRequest(new URL(url));
 					if (!body.contains("\"code\":200,")) {
 						BurpExtender.getStderr().print(body);
 						break;
-					}else {
-						queryResult = queryResult+"  "+body;
+					} else {
+						queryResult = queryResult + "  " + body;
 						ArrayList<String> result = JSONHandler.grepValueFromJson(body, "total");
-						if (result.size() >=1) {
+						if (result.size() >= 1) {
 							int total = Integer.parseInt(result.get(0));
-							if (total> page*100) {
+							if (total > page * 100) {
 								page++;
 								continue;
-							}else {
+							} else {
 								break;
 							}
 						}
@@ -163,12 +159,12 @@ public class APISearchAction extends AbstractAction{
 				}
 			}
 			return queryResult;
-		}else {
-			String url = buildSearchUrl(engine,searchContent,-1);
-			byte[] raw = buildRawData(engine,searchContent);
+		} else {
+			String url = buildSearchUrl(engine, searchContent, -1);
+			byte[] raw = buildRawData(engine, searchContent);
 
 			try {
-				String resp_body = HttpClientOfBurp.doRequest(new URL(url),raw);
+				String resp_body = HttpClientOfBurp.doRequest(new URL(url), raw);
 				return resp_body;
 			} catch (Exception err) {
 				err.printStackTrace(BurpExtender.getStderr());
@@ -177,18 +173,18 @@ public class APISearchAction extends AbstractAction{
 		}
 	}
 
-	public static List<SearchResultEntry> parseResp(String respbody,String engine) {
+	public static List<SearchResultEntry> parseResp(String respbody, String engine) {
 		List<SearchResultEntry> result = new ArrayList<SearchResultEntry>();
 		if (engine.equalsIgnoreCase("fofa")) {
 			try {
 				JSONObject obj = new JSONObject(respbody);
-				Boolean error = (Boolean)obj.get("error");
+				Boolean error = (Boolean) obj.get("error");
 				if (!error) {
 					JSONArray results = (JSONArray) obj.get("results");
-					for(Object item:results) {
-						JSONArray parts = (JSONArray)item; 
-						//host,ip,domain,port,protocol,server
-						//["www.xxx.com","11.11.11.11","xxx.com","80","http","nginx/1.20.1"]
+					for (Object item : results) {
+						JSONArray parts = (JSONArray) item;
+						// host,ip,domain,port,protocol,server
+						// ["www.xxx.com","11.11.11.11","xxx.com","80","http","nginx/1.20.1"]
 						SearchResultEntry entry = new SearchResultEntry();
 						entry.setHost(parts.getString(0));
 						entry.getIPSet().add(parts.getString(1));
@@ -196,6 +192,7 @@ public class APISearchAction extends AbstractAction{
 						entry.setPort(Integer.parseInt(parts.getString(3)));
 						entry.setProtocol(parts.getString(4));
 						entry.setWebcontainer(parts.getString(5));
+						entry.setSource(engine);
 						result.add(entry);
 					}
 				}
@@ -203,69 +200,64 @@ public class APISearchAction extends AbstractAction{
 				e.printStackTrace(BurpExtender.getStderr());
 			}
 		}
+		if (engine.equalsIgnoreCase("hunter")) {
+			
+		}
 		return result;
 	}
+	
+	public static boolean hasNextPage(String respbody, String engine) {
+		return false;
+		//TODO
+	}
 
-
-	public String buildSearchUrl(String engine,String searchContent,int page) {
+	public String buildSearchUrl(String engine, String searchContent, int page) {
 		searchContent = URLEncoder.encode(searchContent);
 		String url = null;
 		if (engine.equalsIgnoreCase("google")) {
-			url= "https://www.google.com/search?q="+searchContent;
-		}
-		else if (engine.equalsIgnoreCase("Github")) {
-			url= "https://github.com/search?q=%22"+searchContent+"%22&type=Code";
-		}
-		else if (engine.equalsIgnoreCase("fofa")) {
+			url = "https://www.google.com/search?q=" + searchContent;
+		} else if (engine.equalsIgnoreCase("Github")) {
+			url = "https://github.com/search?q=%22" + searchContent + "%22&type=Code";
+		} else if (engine.equalsIgnoreCase("fofa")) {
 
 			String email = ConfigPanel.textFieldFofaEmail.getText();
 			String key = ConfigPanel.textFieldFofaKey.getText();
-			if (email.equals("") ||key.equals("")) {
+			if (email.equals("") || key.equals("")) {
 				BurpExtender.getStderr().println("fofa.info emaill or key not configurated!");
 				return null;
 			}
 			searchContent = new String(Base64.getEncoder().encode(searchContent.getBytes()));
 
-			url= String.format("https://fofa.info/api/v1/search/all?email=%s&key=%s&page=1&size=2000&fields=host,ip,domain,port,protocol,server&qbase64=%s",
-					email,key,searchContent);
-		}
-		else if (engine.equalsIgnoreCase("shodan")) {
-			url= "https://www.shodan.io/search?query="+searchContent;
-		}
-		else if (engine.equalsIgnoreCase("360Quake") || engine.equalsIgnoreCase("Quake")) {
-			url= "https://quake.360.net/api/v3/search/quake_service";
-		}
-		else if (engine.equalsIgnoreCase("ZoomEye")) {
-			url= "https://www.zoomeye.org/searchResult?q="+searchContent;
-		}
-		else if (engine.equalsIgnoreCase("ti.360.net")) {
-		}
-		else if (engine.equalsIgnoreCase("hunter")) {
+			url = String.format(
+					"https://fofa.info/api/v1/search/all?email=%s&key=%s&page=1&size=2000&fields=host,ip,domain,port,protocol,server&qbase64=%s",
+					email, key, searchContent);
+		} else if (engine.equalsIgnoreCase("shodan")) {
+			url = "https://www.shodan.io/search?query=" + searchContent;
+		} else if (engine.equalsIgnoreCase("360Quake") || engine.equalsIgnoreCase("Quake")) {
+			url = "https://quake.360.net/api/v3/search/quake_service";
+		} else if (engine.equalsIgnoreCase("ZoomEye")) {
+			url = "https://www.zoomeye.org/searchResult?q=" + searchContent;
+		} else if (engine.equalsIgnoreCase("ti.360.net")) {
+		} else if (engine.equalsIgnoreCase("hunter")) {
 
-			if (page>0) {
+			if (page > 0) {
 				String key = ConfigPanel.textFieldHunterAPIKey.getText();
 				String domainBase64 = new String(Base64.getEncoder().encode(searchContent.getBytes()));
-				url= String.format("https://hunter.qianxin.com/openApi/search?&api-key=%s&search=%s&page=%s&page_size=100",
-						key,domainBase64,page);
+				url = String.format(
+						"https://hunter.qianxin.com/openApi/search?&api-key=%s&search=%s&page=%s&page_size=100", key,
+						domainBase64, page);
 			}
 		}
 		return url;
 	}
 
-
-	public byte[] buildRawData(String engine,String searchContent) {
+	public byte[] buildRawData(String engine, String searchContent) {
 		searchContent = URLEncoder.encode(searchContent);
 		if (engine.equalsIgnoreCase("360Quake")) {
 			String key = ConfigPanel.textFieldFofaKey.getText();
-			String raw = "POST /api/v3/search/quake_service HTTP/1.1\r\n"
-					+ "Host: quake.360.net\r\n"
-					+ "User-Agent: curl/7.81.0\r\n"
-					+ "Accept: */*\r\n"
-					+ "X-Quaketoken: %s\r\n"
-					+ "Content-Type: application/json\r\n"
-					+ "Content-Length: 52\r\n"
-					+ "Connection: close\r\n"
-					+ "\r\n"
+			String raw = "POST /api/v3/search/quake_service HTTP/1.1\r\n" + "Host: quake.360.net\r\n"
+					+ "User-Agent: curl/7.81.0\r\n" + "Accept: */*\r\n" + "X-Quaketoken: %s\r\n"
+					+ "Content-Type: application/json\r\n" + "Content-Length: 52\r\n" + "Connection: close\r\n" + "\r\n"
 					+ "{\"query\": \"domain:%s\", \"start\": 0, \"size\": 500}";
 			raw = String.format(raw, key, searchContent);
 			return raw.getBytes();
@@ -281,9 +273,9 @@ public class APISearchAction extends AbstractAction{
 	}
 
 	public static void main(String[] args) {
-		String aaa="";
-		List<SearchResultEntry> bbb = parseResp(aaa,"fofa");
-		for (SearchResultEntry item:bbb) {
+		String aaa = "";
+		List<SearchResultEntry> bbb = parseResp(aaa, "fofa");
+		for (SearchResultEntry item : bbb) {
 			System.out.println(item);
 		}
 	}
