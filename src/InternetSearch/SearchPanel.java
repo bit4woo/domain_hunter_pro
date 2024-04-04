@@ -74,7 +74,7 @@ public class SearchPanel extends JPanel {
 		JButton closeButton = new JButton("x");
 		closeButton.setMargin(new Insets(0, 2, 0, 2)); // 设置按钮边距
 		closeButton.setFocusable(false); // 禁用焦点
-		closeButton.addActionListener(new CloseTabListener(centerPanel, scrollPane));
+		closeButton.addActionListener(new CloseTabListener(centerPanel, containerpanel));
 		tabPanel.add(closeButton, BorderLayout.EAST);
 
 
