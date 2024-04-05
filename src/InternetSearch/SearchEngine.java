@@ -1,8 +1,15 @@
 package InternetSearch;
 
+import java.awt.event.ActionEvent;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.swing.AbstractAction;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.table.AbstractTableModel;
 
 public class SearchEngine {
 
@@ -33,10 +40,10 @@ public class SearchEngine {
 	public static final String ASN_INFO_BGP_HE_NET = "bgp.he.net";
 	//	https://ipinfo.io/8.8.8.8
 	public static final String IPINFO_IO = "ipinfo.io";
-	
+
 	public static final String WHOIS_CHINAZ = "whois.chinaz.com";
 	public static final String WHOIS = "www.whois.com";
-	
+
 
 
 	public static List<String> getAllEngineList(){
@@ -57,13 +64,13 @@ public class SearchEngine {
 		}
 		return result;
 	}
-	
+
 	public static List<String> getEmailSearchEngineList(){
 		List<String> result = new ArrayList<String>();
 		result.add(HUNTER_IO);
 		return result;
 	}
-	
+
 	/**
 	 * 域名、网段、IP等对象的扩展信息搜索引擎
 	 * @return
@@ -76,8 +83,8 @@ public class SearchEngine {
 		result.add(WHOIS);
 		return result;
 	}
-	
-	
+
+
 	public static List<String> getAssetSearchEngineList(){
 		List<String> result = new ArrayList<String>();
 		result.add(FOFA);
@@ -89,11 +96,83 @@ public class SearchEngine {
 		result.add(TI_360);
 		return result;
 	}
-	
+
 	public static List<String> getCommonSearchEngineList(){
 		List<String> result = new ArrayList<String>();
 		result.add(GOOGLE);
 		result.add(GITHUB);
 		return result;
+	}
+
+
+	public static void AddSearchMenuItems(JPopupMenu parentMenu,AbstractTableModel tableModel,int[] modelRows,int columnIndex) {
+		JMenu BrowserAssetSearchMenu = new JMenu("Asset Search");
+		List<JMenuItem> BrowserAssetSearchItems = new ArrayList<>();
+		for (String engine:SearchEngine.getAssetSearchEngineList()) {//浏览器资产搜索
+			JMenuItem Item = new JMenuItem(new BrowserSearchAction(tableModel,modelRows,columnIndex,engine));
+			BrowserAssetSearchMenu.add(Item);
+			BrowserAssetSearchItems.add(Item);
+		}
+
+
+		JMenu CommonSearchMenu = new JMenu("Common Search");
+		for (String engine:SearchEngine.getCommonSearchEngineList()) {//通用搜索引擎和GitHub
+			JMenuItem Item = new JMenuItem(new BrowserSearchAction(tableModel,modelRows,columnIndex,engine));
+			CommonSearchMenu.add(Item);
+		}
+
+
+		JMenu APIAssetSearchMenu = new JMenu("API Asset Search");
+		List<JMenuItem> APIAssetSearchItems = new ArrayList<>();
+		for (String engine:SearchEngine.getAssetSearchEngineList()) {
+			JMenuItem Item = new JMenuItem(new APISearchAction(tableModel,modelRows,columnIndex,engine));
+			APIAssetSearchMenu.add(Item);
+			APIAssetSearchItems.add(Item);
+		}
+
+
+		JMenu EmailSearchMenu = new JMenu("Email Search");
+		for (String engine:SearchEngine.getEmailSearchEngineList()) {
+			JMenuItem item = new JMenuItem(new BrowserSearchAction(tableModel,modelRows,columnIndex,engine));
+			EmailSearchMenu.add(item);
+		}
+
+
+		JMenu ExtendInfoSearchMenu = new JMenu("Extend Info Search");
+		for (String engine:SearchEngine.getExtendInfoSearchEngineList()) {
+			JMenuItem item = new JMenuItem(new BrowserSearchAction(tableModel,modelRows,columnIndex,engine));
+			ExtendInfoSearchMenu.add(item);
+		}
+
+
+		JMenuItem BrowserSearchAllItem = new JMenuItem(new AbstractAction("Asset Search All In One") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				for (JMenuItem item:BrowserAssetSearchItems) {
+					item.doClick();
+				}
+			}
+		});
+
+		JMenuItem APISearchAllItem = new JMenuItem(new AbstractAction("API Asset Search All In One") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				for (JMenuItem item:APIAssetSearchItems) {
+					item.doClick();
+				}
+			}
+		});
+
+
+		parentMenu.add(BrowserSearchAllItem);
+		parentMenu.add(APISearchAllItem);
+
+		parentMenu.addSeparator();
+
+		parentMenu.add(BrowserAssetSearchMenu);
+		parentMenu.add(APIAssetSearchMenu);
+		parentMenu.add(CommonSearchMenu);
+		parentMenu.add(EmailSearchMenu);
+		parentMenu.add(ExtendInfoSearchMenu);
 	}
 }

@@ -37,7 +37,7 @@ public class BrowserSearchAction extends AbstractAction{
 		this.modelRows = modelRows;
 		this.columnIndex = columnIndex;
 		this.engine = engine;
-		putValue(Action.NAME, "Search On "+capitalizeFirstLetter(engine.trim()));
+		putValue(Action.NAME, "Search On "+engine.trim());
 	}
 
 

@@ -47,7 +47,7 @@ public class APISearchAction extends AbstractAction {
 		this.modelRows = modelRows;
 		this.columnIndex = columnIndex;
 		this.engine = engine;
-		putValue(Action.NAME, "Search On " + capitalizeFirstLetter(engine.trim()) + " API");
+		putValue(Action.NAME, "Search On " + engine.trim());
 		this.autoAddToTarget = autoAddToTarget;
 		this.showInGUI = showInGUI;
 	}

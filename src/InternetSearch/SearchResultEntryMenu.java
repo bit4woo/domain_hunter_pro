@@ -2,6 +2,7 @@ package InternetSearch;
 
 import java.awt.event.ActionEvent;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -167,31 +168,8 @@ public class SearchResultEntryMenu extends JPopupMenu {
 
 
 		this.addSeparator();
-
-		
-		JMenu SearchMenu = new JMenu("Browser Search");
-		
-		for (String engine:SearchEngine.getAssetSearchEngineList()) {
-			JMenuItem Item = new JMenuItem(new BrowserSearchAction(this.searchTableModel,modelRows,columnIndex,engine));
-			SearchMenu.add(Item);
-		}
-		SearchMenu.addSeparator();
-		
-		for (String engine:SearchEngine.getCommonSearchEngineList()) {//通用搜索引擎和GitHub
-			JMenuItem Item = new JMenuItem(new BrowserSearchAction(this.searchTableModel,modelRows,columnIndex,engine));
-			SearchMenu.add(Item);
-		}
-		SearchMenu.addSeparator();
-		
-		this.add(SearchMenu);
-		
-		
-		JMenu APISearchMenu = new JMenu("API Search");
-		for (String engine:SearchEngine.getAssetSearchEngineList()) {
-			JMenuItem Item = new JMenuItem(new APISearchAction(this.searchTableModel,modelRows,columnIndex,engine));
-			APISearchMenu.add(Item);
-		}
-		this.add(APISearchMenu);
+		SearchEngine.AddSearchMenuItems(this,searchTableModel,modelRows,columnIndex);
+		this.addSeparator();
 
 	}
 }

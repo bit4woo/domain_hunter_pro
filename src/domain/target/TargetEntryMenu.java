@@ -162,64 +162,7 @@ public class TargetEntryMenu extends JPopupMenu {
 		this.add(addToBlackItem);
 		this.addSeparator();
 
-
-		for (String engine:SearchEngine.getCommonSearchEngineList()) {
-			JMenuItem Item = new JMenuItem(new BrowserSearchAction(this.targetTableModel,modelRows,columnIndex,engine));
-			this.add(Item);
-		}
-
-		this.addSeparator();
-		
-		List<JMenuItem> AssetSearchItems = new ArrayList<>();
-		for (String engine:SearchEngine.getAssetSearchEngineList()) {
-			JMenuItem Item = new JMenuItem(new BrowserSearchAction(this.targetTableModel,modelRows,columnIndex,engine));
-			this.add(Item);
-			AssetSearchItems.add(Item);
-		}
-		
-		JMenuItem SearchAllItem = new JMenuItem(new AbstractAction("Browser Search On All Engines") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-				for (JMenuItem item:AssetSearchItems) {
-					item.doClick();
-				}
-			}
-		});
-		
-		this.add(SearchAllItem);
-		this.addSeparator();
-		
-		
-		for (String engine:SearchEngine.getEmailSearchEngineList()) {
-			JMenuItem Item = new JMenuItem(new BrowserSearchAction(this.targetTableModel,modelRows,columnIndex,engine));
-			this.add(Item);
-		}
-		
-		for (String engine:SearchEngine.getExtendInfoSearchEngineList()) {
-			JMenuItem Item = new JMenuItem(new BrowserSearchAction(this.targetTableModel,modelRows,columnIndex,engine));
-			this.add(Item);
-		}
-		this.addSeparator();
-		
-		List<JMenuItem> APIAssetSearchItems = new ArrayList<>();
-		for (String engine:SearchEngine.getAssetSearchEngineList()) {
-			JMenuItem Item = new JMenuItem(new APISearchAction(this.targetTableModel,modelRows,columnIndex,engine));
-			this.add(Item);
-		}
-		
-		
-		
-		JMenuItem SearchAllAutoItem = new JMenuItem(new AbstractAction("API Search On All Engines") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-				for (JMenuItem item:APIAssetSearchItems) {
-					item.doClick();
-				}
-			}
-		});
-		this.add(SearchAllItem);
-		this.add(SearchAllAutoItem);
-		
+		SearchEngine.AddSearchMenuItems(this,targetTableModel,modelRows,columnIndex);
 		
 		this.addSeparator();
 		

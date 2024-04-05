@@ -28,6 +28,7 @@ import ASN.ASNQuery;
 import GUI.GUIMain;
 import InternetSearch.APISearchAction;
 import InternetSearch.BrowserSearchAction;
+import InternetSearch.SearchEngine;
 import Tools.ToolPanel;
 import base.Commons;
 import base.IndexedHashMap;
@@ -71,71 +72,6 @@ public class LineEntryMenu extends JPopupMenu {
 			}
 		});
 
-		JMenuItem googleSearchItem = new JMenuItem(new BrowserSearchAction(this.lineTableModel,modelRows,columnIndex,"Google"));
-
-		JMenuItem SearchOnGithubItem = new JMenuItem(new BrowserSearchAction(this.lineTableModel,modelRows,columnIndex,"Github"));
-		
-		JMenuItem SearchOnFoFaItem = new JMenuItem(new BrowserSearchAction(this.lineTableModel,modelRows,columnIndex,"FoFa"));
-		
-		JMenuItem SearchOnShodanItem = new JMenuItem(new BrowserSearchAction(this.lineTableModel,modelRows,columnIndex,"Shodan"));
-		
-		JMenuItem SearchOn360QuakeItem = new JMenuItem(new BrowserSearchAction(this.lineTableModel,modelRows,columnIndex,"360Quake"));
-		
-		JMenuItem SearchOnZoomEyeItem = new JMenuItem(new BrowserSearchAction(this.lineTableModel,modelRows,columnIndex,"ZoomEye"));
-		
-		JMenuItem APISearchOnfofaItem = new JMenuItem(new APISearchAction(this.lineTableModel,modelRows,columnIndex,"fofa"));
-		
-		JMenuItem ASNInfoItem = new JMenuItem(new AbstractAction("ASN Info") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-				for (int row:modelRows) {
-					LineEntry entry = lineTable.getLineTableModel().getLineEntries().get(row);
-					String target = entry.getFirstIP();
-					try {
-						//https://bgp.he.net/dns/shopee.com
-						//https://bgp.he.net/net/143.92.111.0/24
-						//https://bgp.he.net/ip/143.92.127.1
-						String url =null;
-						if (IPAddressUtils.isValidIP(target)){
-							url = "https://bgp.he.net/ip/"+target;
-						}
-						if (IPAddressUtils.isValidSubnet(target)){
-							url = "https://bgp.he.net/net/"+target;
-						}
-						if (DomainNameUtils.isValidDomain(target)){
-							url = "https://bgp.he.net/dns/"+target;
-						}
-						if (url!= null){
-							Commons.browserOpen(url,null);
-						}
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-			}
-		});
-
-		//https://ipinfo.io/8.8.8.8
-		JMenuItem IPInfoItem = new JMenuItem(new AbstractAction("IP Info") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-				for (int row:modelRows) {
-					LineEntry entry = lineTable.getLineTableModel().getLineEntries().get(row);
-					String target = entry.getFirstIP();
-					if (target == null) {
-						target = entry.getHost();
-					}
-					try {
-						if (IPAddressUtils.isValidIP(target)){
-							String url = "https://ipinfo.io/"+target;
-							Commons.browserOpen(url,null);
-						}
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-			}
-		});
 
 		JMenuItem SearchOnHunterItem = new JMenuItem(new AbstractAction("Seach This") {
 			@Override
@@ -1081,27 +1017,6 @@ public class LineEntryMenu extends JPopupMenu {
 
 		DoMenu.add(setASNAliasItem);
 
-		JMenu SearchMenu = new JMenu("Search");
-		this.add(SearchMenu);
-		SearchMenu.add(SearchOnHunterItem);//在插件内搜索
-		SearchMenu.addSeparator();
-
-		SearchMenu.add(googleSearchItem);
-		SearchMenu.add(SearchOnGithubItem);
-		SearchMenu.addSeparator();//通用搜索引擎和GitHub
-
-		SearchMenu.add(SearchOnFoFaItem);
-		SearchMenu.add(SearchOnShodanItem);
-		SearchMenu.add(SearchOnZoomEyeItem);
-		SearchMenu.add(SearchOn360QuakeItem);
-		SearchMenu.addSeparator();
-		
-		SearchMenu.add(APISearchOnfofaItem);
-		
-		SearchMenu.addSeparator();//网络搜索引擎
-
-		SearchMenu.add(ASNInfoItem);
-		SearchMenu.add(IPInfoItem);
 
 		JMenu CopyMenu = new JMenu("Copy");
 		this.add(CopyMenu);
@@ -1121,6 +1036,10 @@ public class LineEntryMenu extends JPopupMenu {
 		CopyMenu.add(copyHeaderValueItem);
 		CopyMenu.add(copyCDNAndCertInfoItem);
 		CopyMenu.add(copyIconhashItem);
+		
+		this.addSeparator();
+		SearchEngine.AddSearchMenuItems(this,lineTableModel,modelRows,columnIndex);
+		this.add(SearchOnHunterItem);//在插件内搜索
 
 		this.addSeparator();
 		this.add(addToblackListItem);//加入黑名单
