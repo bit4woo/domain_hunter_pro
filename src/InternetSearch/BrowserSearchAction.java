@@ -73,36 +73,39 @@ public class BrowserSearchAction extends AbstractAction{
 	public String buildSearchUrl(String engine,String searchContent) {
 		searchContent = URLEncoder.encode(searchContent);
 		String url = null;
-		if (engine.equalsIgnoreCase("google")) {
+		if (engine.equalsIgnoreCase(SearchEngine.GOOGLE)) {
 			url= "https://www.google.com/search?q="+searchContent;
 		}
-		else if (engine.equalsIgnoreCase("Github")) {
+		else if (engine.equalsIgnoreCase(SearchEngine.GITHUB)) {
 			url= "https://github.com/search?q=%22"+searchContent+"%22&type=Code";
 		}
-		else if (engine.equalsIgnoreCase("fofa")) {
+		
+		
+		else if (engine.equalsIgnoreCase(SearchEngine.FOFA)) {
 			searchContent = new String(Base64.getEncoder().encode(searchContent.getBytes()));
 			url= "https://fofa.info/result?qbase64="+searchContent;
 		}
-		else if (engine.equalsIgnoreCase("shodan")) {
+		else if (engine.equalsIgnoreCase(SearchEngine.SHODAN)) {
 			url= "https://www.shodan.io/search?query="+searchContent;
 		}
-		else if (engine.equalsIgnoreCase("360Quake")) {
+		else if (engine.equalsIgnoreCase(SearchEngine.QUAKE_360)) {
 			url= "https://quake.360.net/quake/#/searchResult?searchVal="+searchContent;
 		}
-		else if (engine.equalsIgnoreCase("ti.qianxin.com")) {
+		else if (engine.equalsIgnoreCase(SearchEngine.QIANXIN_TI)) {
 			url= "https://ti.qianxin.com/v2/search?type=domain&value="+searchContent;
 		}
-		else if (engine.equalsIgnoreCase("ti.360.net")) {
+		else if (engine.equalsIgnoreCase(SearchEngine.TI_360)) {
 			url= "https://ti.360.net/#/detailpage/searchresult?query="+searchContent;
 		}
-		else if (engine.equalsIgnoreCase("ZoomEye")) {
+		else if (engine.equalsIgnoreCase(SearchEngine.ZOOMEYE)) {
 			url= "https://www.zoomeye.org/searchResult?q="+searchContent;
 		}
-		else if (engine.equalsIgnoreCase("hunter")) {
+		else if (engine.equalsIgnoreCase(SearchEngine.QIANXIN_HUNTER)) {
 			url= "https://hunter.qianxin.com/list?search="+searchContent;
 		}
 		
-		else if (engine.equalsIgnoreCase("hunter.io")) {
+		//邮箱搜索
+		else if (engine.equalsIgnoreCase(SearchEngine.HUNTER_IO)) {
 			url= "https://hunter.io/try/search/"+searchContent;;
 		}
 		return url;

@@ -16,6 +16,7 @@ import com.google.common.net.InternetDomainName;
 import com.google.gson.Gson;
 
 import GUI.GUIMain;
+import InternetSearch.SearchEngine;
 import base.Commons;
 import base.IndexedHashMap;
 import base.IntArraySlice;
@@ -153,10 +154,10 @@ public class TargetTableModel extends AbstractTableModel {
 		}
 
 		if (columnName.equalsIgnoreCase("Domain/Subnet")|| isHost){
-			if (engine.equalsIgnoreCase("google")) {
+			if (engine.equalsIgnoreCase(SearchEngine.GOOGLE)) {
 				value = "site:"+value;
 			}
-			if (engine.equalsIgnoreCase("hunter")) {
+			if (engine.equalsIgnoreCase(SearchEngine.QIANXIN_HUNTER)) {
 				value = "domain=\""+value+"\"";
 			}
 		}else if (columnName.equalsIgnoreCase("Comments")){

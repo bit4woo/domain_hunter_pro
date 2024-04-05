@@ -198,7 +198,7 @@ public class SearchTableModel extends AbstractTableModel {
 		}
 
 		if (columnName.equalsIgnoreCase("Title")){
-			if (engine.equalsIgnoreCase("google")) {
+			if (engine.equalsIgnoreCase(SearchEngine.GOOGLE)) {
 				value =  "intitle:"+value;
 			}
 		}else if (columnName.equalsIgnoreCase("Comments")){
@@ -207,20 +207,20 @@ public class SearchTableModel extends AbstractTableModel {
 		}else if (columnName.equalsIgnoreCase("CNAME|CertInfo")){
 		}else if (columnName.equalsIgnoreCase("ASNInfo")){
 		}else if (columnName.equalsIgnoreCase("Favicon") || columnName.equalsIgnoreCase("iconHash")){
-			if (engine.equalsIgnoreCase("fofa")) {
+			if (engine.equalsIgnoreCase(SearchEngine.FOFA)) {
 				value = "icon_hash=\""+value+"\"";
 			}
-			else if (engine.equalsIgnoreCase("fofa")) {
+			else if (engine.equalsIgnoreCase(SearchEngine.SHODAN)) {
 				value = "http.favicon.hash:"+value;
 			}
-			else if (engine.equalsIgnoreCase("ZoomEye")) {
+			else if (engine.equalsIgnoreCase(SearchEngine.ZOOMEYE)) {
 				value = "iconhash:"+value;
 			}
 		}else if (isHost){
-			if (engine.equalsIgnoreCase("google")) {
+			if (engine.equalsIgnoreCase(SearchEngine.GOOGLE)) {
 				value = "site:"+value;
 			}
-			if (engine.equalsIgnoreCase("hunter")) {
+			if (engine.equalsIgnoreCase(SearchEngine.QIANXIN_HUNTER)) {
 				if (DomainNameUtils.isValidDomain(value)){
 					value = "domain=\""+value+"\"";
 				}
