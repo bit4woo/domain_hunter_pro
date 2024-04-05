@@ -160,6 +160,9 @@ public class TargetTableModel extends AbstractTableModel {
 			if (engine.equalsIgnoreCase(SearchEngine.QIANXIN_HUNTER)) {
 				value = "domain=\""+value+"\"";
 			}
+			if (engine.equalsIgnoreCase(SearchEngine.ZOOMEYE)) {
+				value = "hostname:"+value;
+			}
 		}else if (columnName.equalsIgnoreCase("Comments")){
 
 		}

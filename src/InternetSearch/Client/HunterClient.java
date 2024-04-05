@@ -21,28 +21,73 @@ public class HunterClient extends BaseClient {
 		return SearchEngine.QIANXIN_HUNTER;
 	}
 
+	
+	/**
+	 * 样例数据
+	 * {
+    "code": 200,
+    "data": {
+        "account_type": "个人账号",
+        "total": 192,
+        "time": 55,
+        "arr": [
+            {
+                "is_risk": "",
+                "url": "http://www.xxx.com:2082",
+                "ip": "xxx.xx.xxx.xxx",
+                "port": 2082,
+                "web_title": "Sign in",
+                "domain": "www.xxx.com",
+                "is_risk_protocol": "",
+                "protocol": "http",
+                "base_protocol": "tcp",
+                "status_code": 200,
+                "component": [
+                    {
+                        "name": "Cloudflare",
+                        "version": ""
+                    }
+                ],
+                "os": "",
+                "company": "",
+                "number": "",
+                "country": "美国",
+                "province": "",
+                "city": "",
+                "updated_at": "2024-03-25",
+                "is_web": "是",
+                "as_org": "Cloudflare, Inc.",
+                "isp": "Cloudflare, Inc.",
+                "banner": "HTTP/1.1 400 Bad Request",
+                "vul_list": ""
+            }
+        ]
+	    }
+	}
+	 */
 	@Override
 	public List<SearchResultEntry> parseResp(String respbody) {
 		List<SearchResultEntry> result = new ArrayList<SearchResultEntry>();
 		try {
 			JSONObject obj = new JSONObject(respbody);
-			Boolean error = (Boolean) obj.get("error");
-			if (!error) {
-				JSONArray results = (JSONArray) obj.get("results");
-				for (Object item : results) {
-					JSONArray parts = (JSONArray) item;
-					// host,ip,domain,port,protocol,server
-					// ["www.xxx.com","11.11.11.11","xxx.com","80","http","nginx/1.20.1"]
+			int code = obj.getInt("code");
+			if (code ==200) {
+				JSONObject data = obj.getJSONObject("data");
+				JSONArray items = data.getJSONArray("arr");
+				for (Object item : items) {				
+					JSONObject entryitem = (JSONObject) item;
 					SearchResultEntry entry = new SearchResultEntry();
-					entry.setHost(parts.getString(0));
-					entry.getIPSet().add(parts.getString(1));
-					entry.setRootDomain(parts.getString(2));
-					entry.setPort(Integer.parseInt(parts.getString(3)));
-					entry.setProtocol(parts.getString(4));
-					entry.setWebcontainer(parts.getString(5));
+					entry.setHost(entryitem.getString("url"));
+					entry.getIPSet().add(entryitem.getString("ip"));
+					entry.setRootDomain(entryitem.getString("domain"));
+					entry.setPort(entryitem.getInt("port"));
+					entry.setProtocol(entryitem.getString("protocol"));
+					entry.setWebcontainer(entryitem.get("component").toString());
 					entry.setSource(getEngineName());
 					result.add(entry);
 				}
+			}else {
+				BurpExtender.getStderr().println(respbody);
 			}
 		} catch (Exception e) {
 			e.printStackTrace(BurpExtender.getStderr());
@@ -80,5 +125,9 @@ public class HunterClient extends BaseClient {
 	public byte[] buildRawData(String searchContent, int page) {
 		return null;
 	}
-
+	
+	public static void main(String[] args) {
+		String aaa = "";
+		System.out.println(new HunterClient().parseResp(aaa));
+	}
 }

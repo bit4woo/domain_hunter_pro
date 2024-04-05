@@ -13,7 +13,7 @@ import Tools.JSONHandler;
 import burp.BurpExtender;
 import config.ConfigPanel;
 
-public class FoFaClient extends BaseClient {
+public class ZoomEyeClient extends BaseClient {
 
 	@Override
 	public String getEngineName() {
@@ -42,8 +42,6 @@ public class FoFaClient extends BaseClient {
 					entry.setSource(getEngineName());
 					result.add(entry);
 				}
-			}else {
-				BurpExtender.getStderr().println(respbody);
 			}
 		} catch (Exception e) {
 			e.printStackTrace(BurpExtender.getStderr());
@@ -76,16 +74,16 @@ public class FoFaClient extends BaseClient {
 			BurpExtender.getStderr().println("fofa.info emaill or key not configurated!");
 			return null;
 		}
-		searchContent = new String(Base64.getEncoder().encode(searchContent.getBytes()));
 
 		String url = String.format(
-				"https://fofa.info/api/v1/search/all?email=%s&key=%s&page=1&size=2000&fields=host,ip,domain,port,protocol,server&qbase64=%s",
-				email, key, searchContent);
+				"https://api.zoomeye.hk/host/search?query=%s",searchContent);
 		return url;
 	}
 
 	@Override
 	public byte[] buildRawData(String searchContent, int page) {
+		//"API-KEY:1AD12149-024c-8xxxx-3xxxx-4f054xxxx7f3"
+		//TODO
 		return null;
 	}
 

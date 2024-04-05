@@ -15,8 +15,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import GUI.GUIMain;
 import burp.BurpExtender;
@@ -49,7 +47,7 @@ public class SearchPanel extends JPanel {
 		this.add(centerPanel,BorderLayout.CENTER);
 	}
 
-	public void addSearchTab(String tabName,List<SearchResultEntry> entries) {
+	public void addSearchTab(String tabName,List<SearchResultEntry> entries,String engineName) {
 		JPanel containerpanel = new JPanel();//Tab的最外层容器面板
 		containerpanel.setLayout(new BorderLayout(0, 0));
 		
@@ -59,7 +57,7 @@ public class SearchPanel extends JPanel {
 				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);//table area
 		
 		JLabel status = new JLabel("^_^");
-		status.setText( entries.size() +" items found");
+		status.setText( engineName+": "+entries.size()+" items found");
 	
 		containerpanel.add(scrollPane,BorderLayout.CENTER);
 		containerpanel.add(status,BorderLayout.SOUTH);
@@ -77,7 +75,7 @@ public class SearchPanel extends JPanel {
 		closeButton.addActionListener(new CloseTabListener(centerPanel, containerpanel));
 		tabPanel.add(closeButton, BorderLayout.EAST);
 
-
+		
 		centerPanel.addTab(null, containerpanel);
 		int index = centerPanel.getTabCount() - 1;
 		centerPanel.setTabComponentAt(index, tabPanel);

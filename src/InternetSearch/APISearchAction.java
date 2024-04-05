@@ -10,9 +10,7 @@ import javax.swing.Action;
 import javax.swing.SwingWorker;
 import javax.swing.table.AbstractTableModel;
 
-import InternetSearch.Client.FoFaClient;
-import InternetSearch.Client.HunterClient;
-import InternetSearch.Client.QuakeClient;
+import InternetSearch.Client.*;
 import burp.BurpExtender;
 import burp.IPAddressUtils;
 import domain.DomainManager;
@@ -88,7 +86,7 @@ public class APISearchAction extends AbstractAction {
 					List<SearchResultEntry> entries = DoSearch(searchContent, engine);
 					
 					if (showInGUI) {
-						BurpExtender.getGui().getSearchPanel().addSearchTab(searchContent, entries);
+						BurpExtender.getGui().getSearchPanel().addSearchTab(searchContent, entries, engine);
 					}
 					
 					//暂时不启用，之所以要设计图形界面，就是为了加入人为判断。
@@ -127,7 +125,7 @@ public class APISearchAction extends AbstractAction {
 		}else if (engine.equals(SearchEngine.SHODAN)) {
 			
 		}else if (engine.equals(SearchEngine.ZOOMEYE)) {
-			
+			entries = new ZoomEyeClient().SearchToGetEntry(searchContent);
 		}else if (engine.equals(SearchEngine.QIANXIN_HUNTER)) {
 			entries = new HunterClient().SearchToGetEntry(searchContent);
 		}else if (engine.equals(SearchEngine.QIANXIN_TI)) {
