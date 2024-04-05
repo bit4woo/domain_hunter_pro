@@ -2,6 +2,9 @@ package InternetSearch;
 
 import java.awt.event.ActionEvent;
 import java.io.PrintWriter;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.JMenu;
@@ -9,7 +12,14 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
 import GUI.GUIMain;
+import base.Commons;
 import burp.BurpExtender;
+import burp.IPAddressUtils;
+import burp.SystemUtils;
+import domain.DomainManager;
+import utils.DomainNameUtils;
+import utils.GrepUtils;
+import utils.PortScanUtils;
 
 public class SearchResultEntryMenu extends JPopupMenu {
 
@@ -38,32 +48,14 @@ public class SearchResultEntryMenu extends JPopupMenu {
 			}
 		});
 
-		JMenuItem googleSearchItem = new JMenuItem(new BrowserSearchAction(this.searchTableModel,modelRows,columnIndex,"Google"));
-
-		JMenuItem SearchOnGithubItem = new JMenuItem(new BrowserSearchAction(this.searchTableModel,modelRows,columnIndex,"Github"));
-
-		JMenuItem SearchOnFoFaItem = new JMenuItem(new BrowserSearchAction(this.searchTableModel,modelRows,columnIndex,"FoFa"));
-
-		JMenuItem SearchOnShodanItem = new JMenuItem(new BrowserSearchAction(this.searchTableModel,modelRows,columnIndex,"Shodan"));
-
-		JMenuItem SearchOn360QuakeItem = new JMenuItem(new BrowserSearchAction(this.searchTableModel,modelRows,columnIndex,"360Quake"));
-
-		JMenuItem SearchOnZoomEyeItem = new JMenuItem(new BrowserSearchAction(this.searchTableModel,modelRows,columnIndex,"ZoomEye"));
-
-		JMenuItem APISearchOnfofaItem = new JMenuItem(new APISearchAction(this.searchTableModel,modelRows,columnIndex,"fofa"));
-
-
-		/*
-		JMenuItem copyHostItem = new JMenuItem(new AbstractAction("Copy Host") {
+		
+		JMenuItem copyHostItem = new JMenuItem(new AbstractAction("Copy URL/Host") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				try{
-					java.util.List<String> urls = lineTable.getLineTableModel().getHosts(modelRows);
+					java.util.List<String> urls = searchTableModel.getMultipleValue(modelRows,"URL/Host");
 					String textUrls = String.join(System.lineSeparator(), urls);
-
-					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-					StringSelection selection = new StringSelection(textUrls);
-					clipboard.setContents(selection, null);
+					SystemUtils.writeToClipboard(textUrls);
 				}
 				catch (Exception e1)
 				{
@@ -72,165 +64,13 @@ public class SearchResultEntryMenu extends JPopupMenu {
 			}
 		});
 
-		JMenuItem copyHostAndPortItem = new JMenuItem(new AbstractAction("Copy Host:Port") {
+		JMenuItem copyIPItem = new JMenuItem(new AbstractAction("Copy IP") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				try{
-					java.util.List<String> items = lineTable.getLineTableModel().getHostsAndPorts(modelRows);
-					String text = String.join(System.lineSeparator(), items);
-
-					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-					StringSelection selection = new StringSelection(text);
-					clipboard.setContents(selection, null);
-				}
-				catch (Exception e1)
-				{
-					e1.printStackTrace(stderr);
-				}
-			}
-		});
-
-		JMenuItem copyHostAndIPAddressItem = new JMenuItem(new AbstractAction("Copy Host+IPAddress") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-				try{
-					java.util.List<String> items = lineTable.getLineTableModel().getHostsAndIPAddresses(modelRows);
-					String text = String.join(System.lineSeparator(), items);
-
-					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-					StringSelection selection = new StringSelection(text);
-					clipboard.setContents(selection, null);
-				}
-				catch (Exception e1)
-				{
-					e1.printStackTrace(stderr);
-				}
-			}
-		});
-
-		JMenuItem copyIPItem = new JMenuItem(new AbstractAction("Copy IP Set") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-				try{
-					Set<String> IPs = lineTable.getLineTableModel().getIPs(modelRows);
-					String text = String.join(System.lineSeparator(), IPs);
-
-					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-					StringSelection selection = new StringSelection(text);
-					clipboard.setContents(selection, null);
-				}
-				catch (Exception e1)
-				{
-					e1.printStackTrace(stderr);
-				}
-			}
-		});
-
-
-		JMenuItem copyIPWithCommaItem = new JMenuItem(new AbstractAction("Copy IP Set (comma separated)") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-				try{
-					Set<String> IPs = lineTable.getLineTableModel().getIPs(modelRows);
-					String text = String.join(",", IPs);
-
-					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-					StringSelection selection = new StringSelection(text);
-					clipboard.setContents(selection, null);
-				}
-				catch (Exception e1)
-				{
-					e1.printStackTrace(stderr);
-				}
-			}
-		});
-
-
-		JMenuItem copyIPWithSpaceItem = new JMenuItem(new AbstractAction("Copy IP Set (space separated)") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-				try{
-					Set<String> IPs = lineTable.getLineTableModel().getIPs(modelRows);
-					String text = String.join(" ", IPs);
-
-					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-					StringSelection selection = new StringSelection(text);
-					clipboard.setContents(selection, null);
-				}
-				catch (Exception e1)
-				{
-					e1.printStackTrace(stderr);
-				}
-			}
-		});
-
-		JMenuItem copyURLItem = new JMenuItem(new AbstractAction("Copy URL") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-				try{
-					java.util.List<String> urls = lineTable.getLineTableModel().getURLs(modelRows);
-					String textUrls = String.join(System.lineSeparator(), urls);
-
-					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-					StringSelection selection = new StringSelection(textUrls);
-					clipboard.setContents(selection, null);
-				}
-				catch (Exception e1)
-				{
-					e1.printStackTrace(stderr);
-				}
-			}
-		});
-
-		JMenuItem copyCommonURLItem = new JMenuItem(new AbstractAction("Copy URL With Common Formate") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-				try{
-					java.util.List<String> urls = lineTable.getLineTableModel().getCommonURLs(modelRows);
-					String textUrls = String.join(System.lineSeparator(), urls);
-
-					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-					StringSelection selection = new StringSelection(textUrls);
-					clipboard.setContents(selection, null);
-				}
-				catch (Exception e1)
-				{
-					e1.printStackTrace(stderr);
-				}
-			}
-		});
-
-		JMenuItem copyURLOfIconItem = new JMenuItem(new AbstractAction("Copy URL Of favicon.ico") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-				try{
-					java.util.List<String> urls = lineTable.getLineTableModel().getURLsOfFavicon(modelRows);
-					String textUrls = String.join(System.lineSeparator(), urls);
-
-					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-					StringSelection selection = new StringSelection(textUrls);
-					clipboard.setContents(selection, null);
-				}
-				catch (Exception e1)
-				{
-					e1.printStackTrace(stderr);
-				}
-			}
-		});
-
-
-		JMenuItem doPortScan = new JMenuItem(new AbstractAction("Do Run Port Scan") {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				try{
-					Set<String> IPs = lineTable.getLineTableModel().getIPs(modelRows);
-					String nmapPath = guiMain.getConfigPanel().getLineConfig().getNmapPath();
-
-					String command = PortScanUtils.genCmd(nmapPath, IPs);
-
-					String filepath = SystemUtils.genBatchFile(command, "Nmap-latest-command.bat");
-					SystemUtils.runBatchFile(filepath);
+					java.util.List<String> ip_list = searchTableModel.getMultipleValue(modelRows,"IP");
+					String textUrls = String.join(System.lineSeparator(), ip_list);
+					SystemUtils.writeToClipboard(textUrls);
 				}
 				catch (Exception e1)
 				{
@@ -245,10 +85,9 @@ public class SearchResultEntryMenu extends JPopupMenu {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try{
-					List<String> IPs = lineTable.getLineTableModel().getHosts(modelRows);
-
+					java.util.List<String> ip_list = searchTableModel.getMultipleValue(modelRows,"IP");
 					String nmapPath = guiMain.getConfigPanel().getLineConfig().getNmapPath();
-					PortScanUtils.genCmdAndCopy(nmapPath, new HashSet<>(IPs));
+					PortScanUtils.genCmdAndCopy(nmapPath, new HashSet<>(ip_list));
 				}
 				catch (Exception e1)
 				{
@@ -257,31 +96,12 @@ public class SearchResultEntryMenu extends JPopupMenu {
 			}
 		});
 
-		JMenuItem genDirSearchCmd = new JMenuItem(new AbstractAction("Copy DirSearch Cmd") {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				try{
-					java.util.List<String> urls = lineTable.getLineTableModel().getURLs(modelRows);
-					java.util.List<String> cmds = new ArrayList<String>();
-					for(String url:urls) {
-						//python dirsearch.py -t 8 --proxy=localhost:7890 --random-agent -e * -f -x 400,404,500,502,503,514,550,564 -u url
-						String cmd = guiMain.getConfigPanel().getLineConfig().getDirSearchPath().replace("{url}", url);
-						cmds.add(cmd);
-					}
-					SystemUtils.writeToClipboard(String.join(System.lineSeparator(), cmds));
-				}
-				catch (Exception e1)
-				{
-					e1.printStackTrace(stderr);
-				}
-			}
-		});
 
 		JMenuItem openURLwithBrowserItem = new JMenuItem(new AbstractAction("Open With Browser(double click url)") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				try{
-					java.util.List<String> urls = lineTable.getLineTableModel().getURLs(modelRows);
+					java.util.List<String> urls = searchTableModel.getMultipleValue(modelRows,"URL/Host");
 					if (urls.size() >= 50){//避免一次开太多网页导致系统卡死
 						return;
 					}
@@ -296,14 +116,36 @@ public class SearchResultEntryMenu extends JPopupMenu {
 			}
 		});
 
-
-		JMenuItem copyCDNAndCertInfoItem = new JMenuItem(new AbstractAction("Copy CDN|CertInfo") {
+		JMenuItem addToTargetItem = new JMenuItem(new AbstractAction("Add To Target") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				try{
-					List<String> urls = lineTable.getLineTableModel().getCDNAndCertInfos(modelRows);
+					java.util.List<String> urls = searchTableModel.getMultipleValue(modelRows,"URL/Host");
 					String textUrls = String.join(System.lineSeparator(), urls);
-					SystemUtils.writeToClipboard(textUrls);
+					Set<String> Domains = GrepUtils.grepDomain(textUrls);
+					List<String> ips = GrepUtils.grepIP(textUrls);
+					
+					DomainManager domainResult = guiMain.getDomainPanel().getDomainResult();
+					for (String item:Domains) {
+						try {
+							domainResult.addToTargetAndSubDomain(item,true);
+						} catch (Exception e2) {
+							e2.printStackTrace(stderr);
+						}
+					}
+					
+					for (String item:ips) {
+						try {
+							if (IPAddressUtils.isValidIP(item)) {
+								domainResult.getSpecialPortTargets().add(item);
+							}
+						} catch (Exception e2) {
+							e2.printStackTrace(stderr);
+						}
+					}
+					
+					guiMain.getDomainPanel().saveDomainDataToDB();
+					
 				}
 				catch (Exception e1)
 				{
@@ -311,65 +153,45 @@ public class SearchResultEntryMenu extends JPopupMenu {
 				}
 			}
 		});
-
-		JMenuItem copyIconhashItem = new JMenuItem(new AbstractAction("Copy Icon Hash") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-				try{
-					List<String> urls = lineTable.getLineTableModel().getIconHashes(modelRows);
-					String textUrls = String.join(System.lineSeparator(), urls);
-					SystemUtils.writeToClipboard(textUrls);
-				}
-				catch (Exception e1)
-				{
-					e1.printStackTrace(stderr);
-				}
-			}
-		});
-		*/
-
-
+		
 		this.add(itemNumber);
 
 		this.addSeparator();
 
 		//常用多选操作
-		/*
-		 * this.add(genPortScanCmd); this.add(genDirSearchCmd);
-		 */
+		this.add(addToTargetItem);
+		this.add(copyHostItem);
+		this.add(copyIPItem);
+		this.add(openURLwithBrowserItem);
+		this.add(genPortScanCmd);
 
 
 		this.addSeparator();
 
-		JMenu SearchMenu = new JMenu("Search");
+		
+		JMenu SearchMenu = new JMenu("Browser Search");
+		
+		for (String engine:SearchEngine.getAssetSearchEngineList()) {
+			JMenuItem Item = new JMenuItem(new BrowserSearchAction(this.searchTableModel,modelRows,columnIndex,engine));
+			SearchMenu.add(Item);
+		}
+		SearchMenu.addSeparator();
+		
+		for (String engine:SearchEngine.getCommonSearchEngineList()) {//通用搜索引擎和GitHub
+			JMenuItem Item = new JMenuItem(new BrowserSearchAction(this.searchTableModel,modelRows,columnIndex,engine));
+			SearchMenu.add(Item);
+		}
+		SearchMenu.addSeparator();
+		
 		this.add(SearchMenu);
-		SearchMenu.addSeparator();
-
-		SearchMenu.add(googleSearchItem);
-		SearchMenu.add(SearchOnGithubItem);
-		SearchMenu.addSeparator();//通用搜索引擎和GitHub
-
-		SearchMenu.add(SearchOnFoFaItem);
-		SearchMenu.add(SearchOnShodanItem);
-		SearchMenu.add(SearchOnZoomEyeItem);
-		SearchMenu.add(SearchOn360QuakeItem);
-		SearchMenu.addSeparator();
-
-		SearchMenu.add(APISearchOnfofaItem);
-
-		SearchMenu.addSeparator();//网络搜索引擎
-
-		JMenu CopyMenu = new JMenu("Copy");
-		this.add(CopyMenu);
-
-		/*
-		 * CopyMenu.add(copyHostItem); CopyMenu.add(copyHostAndPortItem);
-		 * CopyMenu.add(copyHostAndIPAddressItem); CopyMenu.add(copyIPItem);
-		 * CopyMenu.add(copyIPWithCommaItem);//常用 CopyMenu.add(copyIPWithSpaceItem);
-		 * CopyMenu.add(copyURLItem); CopyMenu.add(copyURLOfIconItem);
-		 * CopyMenu.add(copyCommonURLItem); CopyMenu.add(copyCDNAndCertInfoItem);
-		 * CopyMenu.add(copyIconhashItem);
-		 */
+		
+		
+		JMenu APISearchMenu = new JMenu("API Search");
+		for (String engine:SearchEngine.getAssetSearchEngineList()) {
+			JMenuItem Item = new JMenuItem(new APISearchAction(this.searchTableModel,modelRows,columnIndex,engine));
+			APISearchMenu.add(Item);
+		}
+		this.add(APISearchMenu);
 
 	}
 }

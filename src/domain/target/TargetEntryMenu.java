@@ -18,10 +18,9 @@ import javax.swing.SwingWorker;
 import GUI.GUIMain;
 import InternetSearch.APISearchAction;
 import InternetSearch.BrowserSearchAction;
+import InternetSearch.SearchEngine;
 import base.Commons;
 import burp.BurpExtender;
-import utils.DomainNameUtils;
-import utils.IPAddressUtils;
 
 public class TargetEntryMenu extends JPopupMenu {
 
@@ -31,9 +30,11 @@ public class TargetEntryMenu extends JPopupMenu {
 	private TargetTable rootDomainTable;
 	private GUIMain guiMain;
 	private int rootDomainColumnIndex;
+	private TargetTableModel targetTableModel;
 
 	public TargetEntryMenu(GUIMain guiMain,final TargetTable rootDomainTable, final int[] modelRows, final int columnIndex){
 		this.rootDomainTable = rootDomainTable;
+		this.targetTableModel = rootDomainTable.getTargetModel();
 		this.guiMain = guiMain;
 		this.rootDomainColumnIndex =1;//设定为rootDomain所在列
 
@@ -113,51 +114,6 @@ public class TargetEntryMenu extends JPopupMenu {
 			}
 		});
 
-		JMenuItem whoisItem = new JMenuItem(new AbstractAction("Whois") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-				for (int row:modelRows) {
-					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,rootDomainColumnIndex);
-					try {
-						Commons.browserOpen("https://whois.chinaz.com/"+rootDomain,null);
-						Commons.browserOpen("https://www.whois.com/whois/"+rootDomain,null);
-					} catch (Exception e) {
-						e.printStackTrace(stderr);
-					}
-				}
-			}
-		});
-
-		JMenuItem ASNInfoItem = new JMenuItem(new AbstractAction("ASN Info") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-				for (int row:modelRows) {
-					String target = (String) rootDomainTable.getTargetModel().getValueAt(row,rootDomainColumnIndex);
-
-					try {
-						//https://bgp.he.net/dns/shopee.com
-						//https://bgp.he.net/net/143.92.111.0/24
-						//https://bgp.he.net/ip/143.92.127.1
-						String url =null;
-						if (IPAddressUtils.isValidIP(target)){
-							url = "https://bgp.he.net/ip/"+target;
-						}
-						if (IPAddressUtils.isValidSubnet(target)){
-							url = "https://bgp.he.net/net/"+target;
-						}
-						if (DomainNameUtils.isValidDomain(target)){
-							url = "https://bgp.he.net/dns/"+target;
-						}
-						if (url!= null){
-							Commons.browserOpen(url,null);
-						}
-					} catch (Exception e) {
-						e.printStackTrace(stderr);
-					}
-				}
-			}
-		});
-
 		JMenuItem OpenWithBrowserItem = new JMenuItem(new AbstractAction("Open With Browser") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -197,55 +153,6 @@ public class TargetEntryMenu extends JPopupMenu {
 			}
 		});
 
-		/**
-		 * 查找邮箱的搜索引擎
-		 */
-		JMenuItem SearchEmailOnHunterIOItem = new JMenuItem(new BrowserSearchAction(this.rootDomainTable.getTargetModel(),modelRows,columnIndex,"hunter.io"));
-
-		JMenuItem SearchOnFoFaItem = new JMenuItem(new BrowserSearchAction(this.rootDomainTable.getTargetModel(),modelRows,columnIndex,"fofa"));
-
-		JMenuItem SearchOnShodanItem = new JMenuItem(new BrowserSearchAction(this.rootDomainTable.getTargetModel(),modelRows,columnIndex,"shodan"));
-
-		JMenuItem SearchOn360QuakeItem = new JMenuItem(new BrowserSearchAction(this.rootDomainTable.getTargetModel(),modelRows,columnIndex,"quake"));
-
-		JMenuItem SearchOnTiQianxinItem = new JMenuItem(new BrowserSearchAction(this.rootDomainTable.getTargetModel(),modelRows,columnIndex,"ti.qianxin.com"));
-
-		JMenuItem SearchOnTi360Item = new JMenuItem(new BrowserSearchAction(this.rootDomainTable.getTargetModel(),modelRows,columnIndex,"ti.360.net"));
-
-		JMenuItem SearchOnHunterQianxinItem = new JMenuItem(new BrowserSearchAction(this.rootDomainTable.getTargetModel(),modelRows,columnIndex,"hunter"));
-
-		JMenuItem SearchOnZoomEyeItem = new JMenuItem(new BrowserSearchAction(this.rootDomainTable.getTargetModel(),modelRows,columnIndex,"zoomeye"));
-
-
-		JMenuItem SearchOnFoFaAutoItem = new JMenuItem(new APISearchAction(this.rootDomainTable.getTargetModel(),modelRows,columnIndex,"fofa",true,true));
-
-		JMenuItem SearchOnQuakeAutoItem = new JMenuItem(new APISearchAction(this.rootDomainTable.getTargetModel(),modelRows,columnIndex,"quake",true,true));
-
-		JMenuItem SearchOnHunterAutoItem = new JMenuItem(new APISearchAction(this.rootDomainTable.getTargetModel(),modelRows,columnIndex,"hunter",true,true));
-
-
-		JMenuItem SearchAllItem = new JMenuItem(new AbstractAction("Search On All Engines") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-				SearchOnFoFaItem.doClick();
-				SearchOn360QuakeItem.doClick();
-				SearchOnTi360Item.doClick();
-				SearchOnTiQianxinItem.doClick();
-				SearchOnHunterQianxinItem.doClick();
-				SearchOnZoomEyeItem.doClick();
-				SearchOnShodanItem.doClick();
-			}
-		});
-
-
-		JMenuItem SearchAllAutoItem = new JMenuItem(new AbstractAction("Auto Search On All Engines") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-				SearchOnFoFaAutoItem.doClick();
-				SearchOnQuakeAutoItem.doClick();
-				SearchOnHunterAutoItem.doClick();
-			}
-		});
 
 		this.add(itemNumber);
 		this.add(getSubDomainsOf);
@@ -255,30 +162,71 @@ public class TargetEntryMenu extends JPopupMenu {
 		this.add(addToBlackItem);
 		this.addSeparator();
 
+
+		for (String engine:SearchEngine.getCommonSearchEngineList()) {
+			JMenuItem Item = new JMenuItem(new BrowserSearchAction(this.targetTableModel,modelRows,columnIndex,engine));
+			this.add(Item);
+		}
+
+		this.addSeparator();
+		
+		List<JMenuItem> AssetSearchItems = new ArrayList<>();
+		for (String engine:SearchEngine.getAssetSearchEngineList()) {
+			JMenuItem Item = new JMenuItem(new BrowserSearchAction(this.targetTableModel,modelRows,columnIndex,engine));
+			this.add(Item);
+			AssetSearchItems.add(Item);
+		}
+		
+		JMenuItem SearchAllItem = new JMenuItem(new AbstractAction("Browser Search On All Engines") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				for (JMenuItem item:AssetSearchItems) {
+					item.doClick();
+				}
+			}
+		});
+		
 		this.add(SearchAllItem);
-		this.add(SearchOnFoFaItem);
-		this.add(SearchOn360QuakeItem);
-		this.add(SearchOnTi360Item);
-		this.add(SearchOnTiQianxinItem);
-		this.add(SearchOnHunterQianxinItem);
-		this.add(SearchOnZoomEyeItem);
-		this.add(SearchOnShodanItem);
 		this.addSeparator();
-
+		
+		
+		for (String engine:SearchEngine.getEmailSearchEngineList()) {
+			JMenuItem Item = new JMenuItem(new BrowserSearchAction(this.targetTableModel,modelRows,columnIndex,engine));
+			this.add(Item);
+		}
+		
+		for (String engine:SearchEngine.getExtendInfoSearchEngineList()) {
+			JMenuItem Item = new JMenuItem(new BrowserSearchAction(this.targetTableModel,modelRows,columnIndex,engine));
+			this.add(Item);
+		}
+		this.addSeparator();
+		
+		List<JMenuItem> APIAssetSearchItems = new ArrayList<>();
+		for (String engine:SearchEngine.getAssetSearchEngineList()) {
+			JMenuItem Item = new JMenuItem(new APISearchAction(this.targetTableModel,modelRows,columnIndex,engine));
+			this.add(Item);
+		}
+		
+		
+		
+		JMenuItem SearchAllAutoItem = new JMenuItem(new AbstractAction("API Search On All Engines") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				for (JMenuItem item:APIAssetSearchItems) {
+					item.doClick();
+				}
+			}
+		});
+		this.add(SearchAllItem);
 		this.add(SearchAllAutoItem);
-		this.add(SearchOnFoFaAutoItem);
-		this.add(SearchOnQuakeAutoItem);
-		this.add(SearchOnHunterAutoItem);
+		
+		
 		this.addSeparator();
-
+		
 		this.add(OpenWithBrowserItem);
-		this.add(whoisItem);
-		this.add(ASNInfoItem);
-		this.add(SearchEmailOnHunterIOItem);
 		this.add(zoneTransferCheck);
 		this.add(zoneTransferCheckAll);
-
+		
 		this.addSeparator();
 	}
-
 }

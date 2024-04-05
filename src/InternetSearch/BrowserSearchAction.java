@@ -12,6 +12,8 @@ import base.Commons;
 import burp.BurpExtender;
 import domain.target.TargetTableModel;
 import title.LineTableModel;
+import utils.DomainNameUtils;
+import utils.IPAddressUtils;
 
 
 
@@ -107,6 +109,28 @@ public class BrowserSearchAction extends AbstractAction{
 		//邮箱搜索
 		else if (engine.equalsIgnoreCase(SearchEngine.HUNTER_IO)) {
 			url= "https://hunter.io/try/search/"+searchContent;;
+		}
+		else if (engine.equalsIgnoreCase(SearchEngine.ASN_INFO_BGP_HE_NET)) {
+			//https://bgp.he.net/dns/shopee.com
+			//https://bgp.he.net/net/143.92.111.0/24
+			//https://bgp.he.net/ip/143.92.127.1
+			if (IPAddressUtils.isValidIP(searchContent)){
+				url = "https://bgp.he.net/ip/"+searchContent;
+			}
+			if (IPAddressUtils.isValidSubnet(searchContent)){
+				url = "https://bgp.he.net/net/"+searchContent;
+			}
+			if (DomainNameUtils.isValidDomain(searchContent)){
+				url = "https://bgp.he.net/dns/"+searchContent;
+			}
+		}
+		
+		//whois查询
+		else if (engine.equalsIgnoreCase(SearchEngine.WHOIS)) {
+			url= "https://www.whois.com/whois/"+searchContent;;
+		}
+		else if (engine.equalsIgnoreCase(SearchEngine.WHOIS_CHINAZ)) {
+			url= "https://whois.chinaz.com/"+searchContent;;
 		}
 		return url;
 	}

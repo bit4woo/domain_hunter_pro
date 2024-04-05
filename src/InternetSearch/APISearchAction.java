@@ -1,10 +1,7 @@
 package InternetSearch;
 
 import java.awt.event.ActionEvent;
-import java.net.URL;
-import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
@@ -13,13 +10,11 @@ import javax.swing.Action;
 import javax.swing.SwingWorker;
 import javax.swing.table.AbstractTableModel;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import Tools.JSONHandler;
+import InternetSearch.Client.FoFaClient;
+import InternetSearch.Client.HunterClient;
+import InternetSearch.Client.QuakeClient;
 import burp.BurpExtender;
 import burp.IPAddressUtils;
-import config.ConfigPanel;
 import domain.DomainManager;
 import domain.target.TargetTableModel;
 import title.LineTableModel;
@@ -90,17 +85,14 @@ public class APISearchAction extends AbstractAction {
 						return null;
 					}
 
-					String resp_body = DoSearch(searchContent, engine);
-
-					if (resp_body == null || resp_body.length() <= 0) {
-						continue;
-					}
-
-					List<SearchResultEntry> entries = parseResp(resp_body, engine);
+					List<SearchResultEntry> entries = DoSearch(searchContent, engine);
+					
 					if (showInGUI) {
 						BurpExtender.getGui().getSearchPanel().addSearchTab(searchContent, entries);
 					}
-
+					
+					//暂时不启用，之所以要设计图形界面，就是为了加入人为判断。
+					autoAddToTarget = false;
 					if (autoAddToTarget) {
 						DomainManager result = BurpExtender.getGui().getDomainPanel().getDomainResult();
 						for (SearchResultEntry entry : entries) {
@@ -128,6 +120,28 @@ public class APISearchAction extends AbstractAction {
 		worker.execute();
 	}
 	
+	protected List<SearchResultEntry> DoSearch(String searchContent, String engine) {
+		List<SearchResultEntry> entries = new ArrayList<>();
+		if (engine.equals(SearchEngine.FOFA)) {
+			entries = new FoFaClient().SearchToGetEntry(searchContent);
+		}else if (engine.equals(SearchEngine.SHODAN)) {
+			
+		}else if (engine.equals(SearchEngine.ZOOMEYE)) {
+			
+		}else if (engine.equals(SearchEngine.QIANXIN_HUNTER)) {
+			entries = new HunterClient().SearchToGetEntry(searchContent);
+		}else if (engine.equals(SearchEngine.QIANXIN_TI)) {
+			
+		}else if (engine.equals(SearchEngine.QUAKE_360)) {
+			entries = new QuakeClient().SearchToGetEntry(searchContent);
+		}else if (engine.equals(SearchEngine.TI_360)) {
+			
+		}else if (engine.equals(SearchEngine.HUNTER_IO)) {
+			
+		}
+		return entries;
+	}
+
 	public static String capitalizeFirstLetter(String str) {
 		if (str == null || str.isEmpty()) {
 			return str;

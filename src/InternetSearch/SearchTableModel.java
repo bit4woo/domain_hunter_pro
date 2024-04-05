@@ -12,8 +12,6 @@ import javax.swing.table.AbstractTableModel;
 import GUI.GUIMain;
 import base.IndexedHashMap;
 import burp.BurpExtender;
-import title.LineEntry;
-import title.LineTableModel;
 import utils.DomainNameUtils;
 
 
@@ -113,6 +111,24 @@ public class SearchTableModel extends AbstractTableModel {
 	@Override
 	public boolean isCellEditable(int rowIndex, int columnIndex) {
 		return false;
+	}
+	
+	
+	public int getColumnIndexByName(String Name) {
+		return getTitleList().indexOf(Name);
+	}
+	
+	public List<String> getMultipleValue(int[] rowIndexes, String columnName)
+	{
+		List<String> result = new ArrayList<>();
+		int columnIndex = getColumnIndexByName(columnName);
+		if (columnIndex < 0) {
+			result.add("Wrong column name to get value");
+		}
+		for (int rowIndex:rowIndexes) {
+			result.add((String)getValueAt(rowIndex,columnIndex));
+		}
+		return result;
 	}
 
 
