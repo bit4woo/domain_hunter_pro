@@ -22,7 +22,7 @@ public class ConfigManager {
 
 	private String configManagerName = "";
 	private List<ConfigEntry> configList = new ArrayList<ConfigEntry>();
-	
+
 	private static int MaximumEntries = 1000;//控制显示的条目数，减少内存占用
 
 	//用于本地保存的路径
@@ -41,14 +41,13 @@ public class ConfigManager {
 			+ "--random-agent -e * -f -x 400,404,500,502,503,514,550,564 -u {url}";
 	public static final String macDefaultBrowserPath = "/Applications/Firefox.app/Contents/MacOS/firefox";
 	public static final  String defaultDirDictPath ="D:\\github\\webdirscan\\dict\\dict.txt";
-	
 
 	private GUIMain gui;
 
 	ConfigManager(){
 		//to resolve "default constructor not found" error
 	}
-	
+
 	public String getBrowserPath() {
 		if (Commons.isMac()) {
 			return macDefaultBrowserPath;
@@ -70,23 +69,23 @@ public class ConfigManager {
 		configList.add(new ConfigEntry(ConfigName.DirDictPath,"","",true,true));
 		configList.add(new ConfigEntry(ConfigName.ElasticURL,"http://10.12.72.55:9200/","",true,true));
 		configList.add(new ConfigEntry(ConfigName.ElasticUserPass,"elastic:changeme","username and password of elastic API",true,true));
-		
+
 		configList.add(new ConfigEntry(ConfigName.UploadApiURL,"","",true,true));
 		configList.add(new ConfigEntry(ConfigName.UploadApiToken,"","",true,true));
-		
+
 		configList.add(new ConfigEntry(ConfigName.FofaEmail,"","",true,true));
 		configList.add(new ConfigEntry(ConfigName.FofaKey,"","",true,true));
-		
+
 		configList.add(new ConfigEntry(ConfigName.Quake360APIKey,"","",true,true));
 		configList.add(new ConfigEntry(ConfigName.Ti360APIKey,"","",true,true));
 		configList.add(new ConfigEntry(ConfigName.QianxinHunterAPIKey,"","",true,true));
 		configList.add(new ConfigEntry(ConfigName.QianxinTiAPIKey,"","",true,true));
 		configList.add(new ConfigEntry(ConfigName.ZoomEyeAPIKey,"","",true,true));
 		configList.add(new ConfigEntry(ConfigName.ShodanAPIKey,"","",true,true));
-		
+
 		configList.add(new ConfigEntry(ConfigName.ProxyForGetCert,"127.0.0.1:7890","",true,true));
-		
-		
+
+
 		configList.add(new ConfigEntry(ConfigName.showBurpMenu,"true","",true,true));
 		configList.add(new ConfigEntry(ConfigName.showMenuItemsInOne,"true","",true,true));
 		configList.add(new ConfigEntry(ConfigName.ignoreHTTPS,"false","",true,true));
@@ -114,6 +113,17 @@ public class ConfigManager {
 	public static ConfigManager FromJson(String json){//注意函数名称，如果是get set开头，会被认为是Getter和Setter函数，会在序列化过程中被调用。
 		return new Gson().fromJson(json, ConfigManager.class);
 	}
+
+	public String getConfigByKey(String configKey) {
+		if(ConfigName.getAllConfigNames().contains(configKey)) {
+			for (ConfigEntry entry:configList) {
+				if (entry.getKey().equalsIgnoreCase(configKey)) {
+					return entry.getValue();
+				}
+			}
+		}
+		return null;
+	}
 	
 
 	/**
@@ -125,10 +135,10 @@ public class ConfigManager {
 	}
 
 	public static void main(String[] args) {
-		System.out.println(new LineConfig().ToJson());
+		System.out.println(new ConfigManager().ToJson());
 	}
 
-	
+
 
 	public static int getMaximumEntries() {
 		return MaximumEntries;

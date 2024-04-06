@@ -1,5 +1,11 @@
 package config;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+
+import InternetSearch.SearchEngine;
+
 public class ConfigName {
 	//boolean config
 	public static final String showBurpMenu = "Display context menu of burp";
@@ -37,4 +43,23 @@ public class ConfigName {
 
 	public static final String ProxyForGetCert = "Proxy for get certificates";
 
+	
+	public static List<String> getAllConfigNames(){
+		List<String> result = new ArrayList<String>();
+		Field[] fields = SearchEngine.class.getDeclaredFields();
+		for (Field field : fields) {
+			//String varName = field.getName();// 对于每个属性，获取属性名
+			if (field.getGenericType().toString().equals("class java.lang.String")) {// 如果type是类类型，则前面包含"class "，后面跟类名
+				try {
+					String value = (String) field.get(SearchEngine.class);//获取属性值
+					result.add(value);
+				} catch (IllegalArgumentException e) {
+					e.printStackTrace();
+				} catch (IllegalAccessException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return result;
+	}
 }
