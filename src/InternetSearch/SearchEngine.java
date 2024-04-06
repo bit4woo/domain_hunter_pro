@@ -43,8 +43,7 @@ public class SearchEngine {
 
 	public static final String WHOIS_CHINAZ = "whois.chinaz.com";
 	public static final String WHOIS = "www.whois.com";
-
-
+	
 
 	public static List<String> getAllEngineList(){
 		List<String> result = new ArrayList<String>();
@@ -96,7 +95,7 @@ public class SearchEngine {
 		result.add(TI_360);
 		return result;
 	}
-
+	
 	public static List<String> getCommonSearchEngineList(){
 		List<String> result = new ArrayList<String>();
 		result.add(GOOGLE);
@@ -157,10 +156,9 @@ public class SearchEngine {
 		JMenuItem APISearchAllItem = new JMenuItem(new AbstractAction("API Asset Search All In One") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				for (JMenuItem item:APIAssetSearchItems) {
-					item.doClick();
-				}
-			}
+		        APISearchAction action = new APISearchAction(tableModel, modelRows, columnIndex, SearchEngine.getAssetSearchEngineList());
+		        action.actionPerformed(actionEvent);
+		    }
 		});
 		
 

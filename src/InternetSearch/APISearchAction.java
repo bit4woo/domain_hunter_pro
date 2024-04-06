@@ -10,7 +10,10 @@ import javax.swing.Action;
 import javax.swing.SwingWorker;
 import javax.swing.table.AbstractTableModel;
 
-import InternetSearch.Client.*;
+import InternetSearch.Client.FoFaClient;
+import InternetSearch.Client.HunterClient;
+import InternetSearch.Client.QuakeClient;
+import InternetSearch.Client.ZoomEyeClient;
 import burp.BurpExtender;
 import burp.IPAddressUtils;
 import domain.DomainManager;
@@ -27,12 +30,12 @@ public class APISearchAction extends AbstractAction {
 	AbstractTableModel lineModel;
 	int[] modelRows;
 	int columnIndex;
-	String engine;
 
 	private boolean autoAddToTarget;
 	private boolean showInGUI;
+	private List<String> engineList;//适配一键用多个搜索引擎进行搜索的逻辑
 
-	public APISearchAction(AbstractTableModel lineModel, int[] modelRows, int columnIndex, String engine,
+	public APISearchAction(AbstractTableModel lineModel, int[] modelRows, int columnIndex, List<String> engineList,
 			boolean autoAddToTarget, boolean showInGUI) {
 		super();
 
@@ -44,14 +47,27 @@ public class APISearchAction extends AbstractAction {
 		this.lineModel = lineModel;
 		this.modelRows = modelRows;
 		this.columnIndex = columnIndex;
-		this.engine = engine;
-		putValue(Action.NAME, "Search On " + engine.trim());
+		this.engineList = engineList;
+		if(engineList.size() ==1) {
+			putValue(Action.NAME, "Search On " + engineList.get(0).trim());
+		}else {
+			putValue(Action.NAME, "Search On " + engineList.size()+" engines");
+		}
 		this.autoAddToTarget = autoAddToTarget;
 		this.showInGUI = showInGUI;
 	}
 
+	public APISearchAction(AbstractTableModel lineModel, int[] modelRows, int columnIndex, String engine,boolean autoAddToTarget, boolean showInGUI) {
+		this(lineModel, modelRows, columnIndex,new ArrayList<>(), autoAddToTarget, showInGUI);
+		engineList.add(engine);
+	}
+
 	public APISearchAction(AbstractTableModel lineModel, int[] modelRows, int columnIndex, String engine) {
-		this(lineModel, modelRows, columnIndex, engine, false, true);
+		this(lineModel, modelRows, columnIndex,engine, false, true);
+	}
+
+	public APISearchAction(AbstractTableModel lineModel, int[] modelRows, int columnIndex, List<String> engineList) {
+		this(lineModel, modelRows, columnIndex,engineList, false, true);
 	}
 
 	@Override
@@ -65,45 +81,51 @@ public class APISearchAction extends AbstractAction {
 					return null;
 				}
 				for (int row : modelRows) {
+
+					List<SearchResultEntry> entries = new ArrayList<>();
 					String searchContent = null;
-					if (lineModel.getClass().equals(LineTableModel.class)) {
-						searchContent = ((LineTableModel) lineModel).getValueForSearch(row, columnIndex, engine);
+					for (String engine:engineList) {
+
+						if (lineModel.getClass().equals(LineTableModel.class)) {
+							searchContent = ((LineTableModel) lineModel).getValueForSearch(row, columnIndex, engine);
+						}
+
+						if (lineModel.getClass().equals(SearchTableModel.class)) {
+							searchContent = ((SearchTableModel) lineModel).getValueForSearch(row, columnIndex, engine);
+						}
+
+						if (lineModel.getClass().equals(TargetTableModel.class)) {
+							searchContent = ((TargetTableModel) lineModel).getValueForSearch(row, columnIndex, engine);
+						}
+
+						if (searchContent == null || searchContent.equals("")) {
+							BurpExtender.getStderr().print("nothing to search...");
+							return null;
+						}
+						List<SearchResultEntry> tmp_entries = DoSearch(searchContent, engine);
+						entries.addAll(tmp_entries);
 					}
 
-					if (lineModel.getClass().equals(SearchTableModel.class)) {
-						searchContent = ((SearchTableModel) lineModel).getValueForSearch(row, columnIndex, engine);
-					}
-
-					if (lineModel.getClass().equals(TargetTableModel.class)) {
-						searchContent = ((TargetTableModel) lineModel).getValueForSearch(row, columnIndex, engine);
-					}
-
-					if (searchContent == null || searchContent.equals("")) {
-						BurpExtender.getStderr().print("nothing to search...");
-						return null;
-					}
-
-					List<SearchResultEntry> entries = DoSearch(searchContent, engine);
-					
 					if (showInGUI) {
-						BurpExtender.getGui().getSearchPanel().addSearchTab(searchContent, entries, engine);
+						//searchContent是最后一个搜索引擎的搜索内容
+						BurpExtender.getGui().getSearchPanel().addSearchTab(searchContent, entries, engineList.toString());
 					}
-					
+
 					//暂时不启用，之所以要设计图形界面，就是为了加入人为判断。
 					autoAddToTarget = false;
 					if (autoAddToTarget) {
 						DomainManager result = BurpExtender.getGui().getDomainPanel().getDomainResult();
 						for (SearchResultEntry entry : entries) {
-							 String host = entry.getHost();
-							 String rootDomain = entry.getRootDomain();
-							 result.addIfValid(host);
-							 List<String> ips = GrepUtils.grepIPAndPort(host);
-							 for (String ip:ips) {
-								 if (IPAddressUtils.isValidIP(ip)) {
-									 result.getSpecialPortTargets().add(ip);
-									}
-							 }
-							 result.getSimilarDomainSet().add(rootDomain);
+							String host = entry.getHost();
+							String rootDomain = entry.getRootDomain();
+							result.addIfValid(host);
+							List<String> ips = GrepUtils.grepIPAndPort(host);
+							for (String ip:ips) {
+								if (IPAddressUtils.isValidIP(ip)) {
+									result.getSpecialPortTargets().add(ip);
+								}
+							}
+							result.getSimilarDomainSet().add(rootDomain);
 						}
 					}
 				}
@@ -112,30 +134,30 @@ public class APISearchAction extends AbstractAction {
 
 			@Override
 			protected void done() {
-				
+
 			}
 		};
 		worker.execute();
 	}
-	
+
 	protected List<SearchResultEntry> DoSearch(String searchContent, String engine) {
 		List<SearchResultEntry> entries = new ArrayList<>();
 		if (engine.equals(SearchEngine.FOFA)) {
 			entries = new FoFaClient().SearchToGetEntry(searchContent);
 		}else if (engine.equals(SearchEngine.SHODAN)) {
-			
+
 		}else if (engine.equals(SearchEngine.ZOOMEYE)) {
 			entries = new ZoomEyeClient().SearchToGetEntry(searchContent);
 		}else if (engine.equals(SearchEngine.QIANXIN_HUNTER)) {
 			entries = new HunterClient().SearchToGetEntry(searchContent);
 		}else if (engine.equals(SearchEngine.QIANXIN_TI)) {
-			
+
 		}else if (engine.equals(SearchEngine.QUAKE_360)) {
 			entries = new QuakeClient().SearchToGetEntry(searchContent);
 		}else if (engine.equals(SearchEngine.TI_360)) {
-			
+
 		}else if (engine.equals(SearchEngine.HUNTER_IO)) {
-			
+
 		}
 		return entries;
 	}
