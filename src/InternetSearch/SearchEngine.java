@@ -162,15 +162,15 @@ public class SearchEngine {
 				}
 			}
 		});
+		
 
-
-		parentMenu.add(BrowserSearchAllItem);
 		parentMenu.add(APISearchAllItem);
+		parentMenu.add(BrowserSearchAllItem);
 
 		parentMenu.addSeparator();
-
-		parentMenu.add(BrowserAssetSearchMenu);
+		
 		parentMenu.add(APIAssetSearchMenu);
+		parentMenu.add(BrowserAssetSearchMenu);
 		parentMenu.add(CommonSearchMenu);
 		parentMenu.add(EmailSearchMenu);
 		parentMenu.add(ExtendInfoSearchMenu);

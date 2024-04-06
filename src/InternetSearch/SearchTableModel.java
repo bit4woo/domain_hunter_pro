@@ -25,7 +25,7 @@ public class SearchTableModel extends AbstractTableModel {
 	private GUIMain guiMain;
 
 	private static final String[] standardTitles = new String[] {
-			"#", "URL/Host", "Title","Server","Source","IP", "CertInfo","ASNInfo","Favicon","IconHash"};
+			"#", "URL/Host","Protocol","Port","Title","Server","Source","IP", "CertInfo","ASNInfo","Favicon","IconHash"};
 	
 	//为了实现动态表结构
 	public static List<String> getTitleList() {
@@ -144,7 +144,13 @@ public class SearchTableModel extends AbstractTableModel {
 			return rowIndex;
 		}
 		else if (columnIndex == getTitleList().indexOf("URL/Host")){
-			return entry.getHost();
+			return entry.getIdentify();
+		}
+		else if (columnIndex == getTitleList().indexOf("Protocol")){
+			return entry.getProtocol();
+		}
+		else if (columnIndex == getTitleList().indexOf("Port")){
+			return entry.getPort();
 		}
 		else if (columnIndex == getTitleList().indexOf("Title")){
 			return entry.getTitle();

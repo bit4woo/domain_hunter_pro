@@ -4,8 +4,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import utils.URLUtils;
-
 public class SearchResultEntry {
 	private int port = -1;
 	private String host = "";
@@ -128,10 +126,26 @@ public class SearchResultEntry {
 	}
 	
 	public String getIdentify() {
-		if (URLUtils.isVaildUrl(host)) {
-			host = URLUtils.getHost(host);
+		return getService();
+	}
+	
+	/**
+	 * service 类似： http://www.example.com:8442
+	 * @return
+	 */
+	public String getService() {
+		StringBuilder sb = new StringBuilder();
+		if (protocol != null && protocol.length()>0) {
+			sb.append(protocol);
+			sb.append("://");
 		}
-		return host+":"+port;
+		if (host != null && host.length()>0) {
+			sb.append(host);
+		}
+		if (port>=0 && 0<=65535) {
+			sb.append(":"+port);
+		}
+		return sb.toString();
 	}
 
 	public String getTitle() {

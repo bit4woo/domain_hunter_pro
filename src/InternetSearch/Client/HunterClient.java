@@ -21,49 +21,8 @@ public class HunterClient extends BaseClient {
 		return SearchEngine.QIANXIN_HUNTER;
 	}
 
-	
+
 	/**
-	 * 样例数据
-	 * {
-    "code": 200,
-    "data": {
-        "account_type": "个人账号",
-        "total": 192,
-        "time": 55,
-        "arr": [
-            {
-                "is_risk": "",
-                "url": "http://www.xxx.com:2082",
-                "ip": "xxx.xx.xxx.xxx",
-                "port": 2082,
-                "web_title": "Sign in",
-                "domain": "www.xxx.com",
-                "is_risk_protocol": "",
-                "protocol": "http",
-                "base_protocol": "tcp",
-                "status_code": 200,
-                "component": [
-                    {
-                        "name": "Cloudflare",
-                        "version": ""
-                    }
-                ],
-                "os": "",
-                "company": "",
-                "number": "",
-                "country": "美国",
-                "province": "",
-                "city": "",
-                "updated_at": "2024-03-25",
-                "is_web": "是",
-                "as_org": "Cloudflare, Inc.",
-                "isp": "Cloudflare, Inc.",
-                "banner": "HTTP/1.1 400 Bad Request",
-                "vul_list": ""
-            }
-        ]
-	    }
-	}
 	 */
 	@Override
 	public List<SearchResultEntry> parseResp(String respbody) {
@@ -125,7 +84,7 @@ public class HunterClient extends BaseClient {
 	public byte[] buildRawData(String searchContent, int page) {
 		return null;
 	}
-	
+
 	public static void main(String[] args) {
 		String aaa = "";
 		System.out.println(new HunterClient().parseResp(aaa));
