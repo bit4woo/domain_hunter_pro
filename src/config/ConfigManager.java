@@ -3,6 +3,7 @@ package config;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -10,28 +11,24 @@ import java.util.Set;
 import org.apache.commons.io.FileUtils;
 
 import com.alibaba.fastjson.JSON;
+import com.google.gson.Gson;
 
 import GUI.GUIMain;
 import base.Commons;
 import burp.BurpExtender;
 import title.LineEntry;
 
-public class LineConfig {
+public class ConfigManager {
+
+	private String configManagerName = "";
+	private List<ConfigEntry> configList = new ArrayList<ConfigEntry>();
+	
 	private static int MaximumEntries = 1000;//控制显示的条目数，减少内存占用
 
 	//用于本地保存的路径
 	public static final String localdir = 
 			System.getProperty("user.home")+File.separator+".domainhunter";
 
-	//跑title时根据各字段过滤某些条目
-	//private static Set<String> blacklistHostSet = new HashSet<String>(); //其实不需要
-	private Set<String> blacklistStatusCodeSet = new HashSet<String>(); 
-	private Set<String> blacklistIPSet = new HashSet<String>(); 
-	private Set<String> blacklistCDNSet = new HashSet<String>(); 
-	private Set<String> blacklistWebContainerSet = new HashSet<String>(); 
-	//对于内外网域名或IP的处理分为2种情况：
-	//1、外网模式，即在自己公司挖掘别人公司的漏洞。这个是时候收集到的域名如果是解析到私有IP的，仅仅显示就可以了；如果是私有IP地址则直接忽略。
-	//2、内网模式，即在自己公司挖掘自己公司的漏洞。这个时候所有域名一视同仁，全部和外网域名一样进行请求并获取title，因为内网的IP也是可以访问的。
 	public static final String[] winDefaultBrowserPaths = {
 			"C:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe",
 			"C:\\Program Files\\Mozilla Firefox\\firefox.exe",
@@ -43,29 +40,81 @@ public class LineConfig {
 	public static final String defaultDirSearch = "python3 dirsearch.py -t 8 --proxy=127.0.0.1:8080 "
 			+ "--random-agent -e * -f -x 400,404,500,502,503,514,550,564 -u {url}";
 	public static final String macDefaultBrowserPath = "/Applications/Firefox.app/Contents/MacOS/firefox";
-
-	private String dirSearchPath = defaultDirSearch;
-	private String browserPath = "";
-	private String nmapPath =defaultNmap;
-	private String bruteDict ="D:\\github\\webdirscan\\dict\\dict.txt";
-	private String toolPanelText = "";
-	private String elasticApiUrl = "http://10.12.72.55:9200/";
-	private String elasticUsernameAndPassword = "elastic:changeme";
-	private String uploadApiToken = "";
-	private String uploadUrl = "";
-
-	private String fofaEmail = "";
-	private String fofaKey = "";
-
-	private String quakeAPIKey = "";
-	private String hunterAPIKey = "";
+	public static final  String defaultDirDictPath ="D:\\github\\webdirscan\\dict\\dict.txt";
 	
-	private String proxy = "127.0.0.1:7890";
-
-	private boolean showItemsInOne = false;
-	private boolean enableElastic = false;
 
 	private GUIMain gui;
+
+	ConfigManager(){
+		//to resolve "default constructor not found" error
+	}
+	
+	public String getBrowserPath() {
+		if (Commons.isMac()) {
+			return macDefaultBrowserPath;
+		}else {
+			for (String path : winDefaultBrowserPaths) {
+				if (new File(path).exists()) {
+					return path;
+				}
+			}
+		}
+		return "";
+	}
+
+	public ConfigManager(String Name){
+		this.configManagerName = Name;
+		configList.add(new ConfigEntry(ConfigName.BrowserPath,getBrowserPath(),"",true,true));
+		configList.add(new ConfigEntry(ConfigName.PortScanCmd,defaultNmap,"",true,true));
+		configList.add(new ConfigEntry(ConfigName.DirBruteCmd,defaultDirSearch,"",true,true));
+		configList.add(new ConfigEntry(ConfigName.DirDictPath,"","",true,true));
+		configList.add(new ConfigEntry(ConfigName.ElasticURL,"http://10.12.72.55:9200/","",true,true));
+		configList.add(new ConfigEntry(ConfigName.ElasticUserPass,"elastic:changeme","username and password of elastic API",true,true));
+		
+		configList.add(new ConfigEntry(ConfigName.UploadApiURL,"","",true,true));
+		configList.add(new ConfigEntry(ConfigName.UploadApiToken,"","",true,true));
+		
+		configList.add(new ConfigEntry(ConfigName.FofaEmail,"","",true,true));
+		configList.add(new ConfigEntry(ConfigName.FofaKey,"","",true,true));
+		
+		configList.add(new ConfigEntry(ConfigName.Quake360APIKey,"","",true,true));
+		configList.add(new ConfigEntry(ConfigName.Ti360APIKey,"","",true,true));
+		configList.add(new ConfigEntry(ConfigName.QianxinHunterAPIKey,"","",true,true));
+		configList.add(new ConfigEntry(ConfigName.QianxinTiAPIKey,"","",true,true));
+		configList.add(new ConfigEntry(ConfigName.ZoomEyeAPIKey,"","",true,true));
+		configList.add(new ConfigEntry(ConfigName.ShodanAPIKey,"","",true,true));
+		
+		configList.add(new ConfigEntry(ConfigName.ProxyForGetCert,"127.0.0.1:7890","",true,true));
+		
+		
+		configList.add(new ConfigEntry(ConfigName.showBurpMenu,"true","",true,true));
+		configList.add(new ConfigEntry(ConfigName.showMenuItemsInOne,"true","",true,true));
+		configList.add(new ConfigEntry(ConfigName.ignoreHTTPS,"false","",true,true));
+		configList.add(new ConfigEntry(ConfigName.ignoreHTTP,"true","",true,true));
+		configList.add(new ConfigEntry(ConfigName.ignoreHTTPStaus500,"true","",true,true));
+		configList.add(new ConfigEntry(ConfigName.ignoreHTTPStaus400,"true","",true,true));
+		configList.add(new ConfigEntry(ConfigName.ignoreWrongCAHost,"false","",true,true));
+		configList.add(new ConfigEntry(ConfigName.removeItemIfIgnored,"true","",true,true));
+		configList.add(new ConfigEntry(ConfigName.SaveTrafficToElastic,"false","",true,true));
+	}
+
+	public String getConfigManagerName() {
+		return configManagerName;
+	}
+
+	public void setConfigManagerName(String configManagerName) {
+		this.configManagerName = configManagerName;
+	}
+
+
+	public String ToJson(){//注意函数名称，如果是get set开头，会被认为是Getter和Setter函数，会在序列化过程中被调用。
+		return new Gson().toJson(this);
+	}
+
+	public static ConfigManager FromJson(String json){//注意函数名称，如果是get set开头，会被认为是Getter和Setter函数，会在序列化过程中被调用。
+		return new Gson().fromJson(json, ConfigManager.class);
+	}
+	
 
 	/**
 	 * 当从文件恢复出当前对象后，需要通过setter来设置gui
@@ -75,29 +124,11 @@ public class LineConfig {
 		this.gui = gui;
 	}
 
-	LineConfig(GUIMain gui){
-		this.gui = gui;
-		if (Commons.isMac()) {
-			browserPath = macDefaultBrowserPath;
-		}else {
-			for (String path : winDefaultBrowserPaths) {
-				if (new File(path).exists()) {
-					browserPath = path;
-				}
-			}
-		}
-	}
-
 	public static void main(String[] args) {
 		System.out.println(new LineConfig().ToJson());
 	}
 
-	/**
-	 * 用于JSON的序列化反序列化
-	 */
-	LineConfig(){
-
-	}
+	
 
 	public static int getMaximumEntries() {
 		return MaximumEntries;
@@ -108,203 +139,12 @@ public class LineConfig {
 	}
 
 
-	public static boolean isIgnoreHttpsOrHttpIfOneOK() {
-		return ConfigPanel.ignoreHTTPS.isSelected();
-	}
-
-	public Set<String> getBlacklistStatusCodeSet() {
-		return blacklistStatusCodeSet;
-	}
-
-
-	public void setBlacklistStatusCodeSet(Set<String> blacklistStatusCodeSet) {
-		this.blacklistStatusCodeSet = blacklistStatusCodeSet;
-	}
-
-
-	public Set<String> getBlacklistIPSet() {
-		return blacklistIPSet;
-	}
-
-
-	public void setBlacklistIPSet(Set<String> blacklistIPSet) {
-		this.blacklistIPSet = blacklistIPSet;
-	}
-
-
-	public Set<String> getBlacklistCDNSet() {
-		return blacklistCDNSet;
-	}
-
-
-	public void setBlacklistCDNSet(Set<String> blacklistCDNSet) {
-		this.blacklistCDNSet = blacklistCDNSet;
-	}
-
-
-	public Set<String> getBlacklistWebContainerSet() {
-		return blacklistWebContainerSet;
-	}
-
-
-	public void setBlacklistWebContainerSet(Set<String> blacklistWebContainerSet) {
-		this.blacklistWebContainerSet = blacklistWebContainerSet;
-	}
-
-
-	public static void setIgnoreHttpsIfHttpOK(boolean ignoreHttpsIfHttpOK) {
-		ConfigPanel.ignoreHTTPS.setSelected(ignoreHttpsIfHttpOK);
-	}
-
-	public String getDirSearchPath() {
-		return dirSearchPath;
-	}
-
-	public void setDirSearchPath(String dirSearchPath) {
-		this.dirSearchPath = dirSearchPath;
-	}
-
-	public String getBrowserPath() {
-		return browserPath;
-	}
-
-	public void setBrowserPath(String browserPath) {
-		this.browserPath = browserPath;
-	}
-
-	public String getNmapPath() {
-		return nmapPath;
-	}
-
-	public void setNmapPath(String nmapPath) {
-		this.nmapPath = nmapPath;
-	}
-
-	public String getBruteDict() {
-		return bruteDict;
-	}
-
-	public void setBruteDict(String bruteDict) {
-		this.bruteDict = bruteDict;
-	}
-
-	public String getToolPanelText() {
-		return toolPanelText;
-	}
-
-	public void setToolPanelText(String toolPanelText) {
-		this.toolPanelText = toolPanelText;
-	}
-
-	public String getElasticApiUrl() {
-		return elasticApiUrl;
-	}
-
-
-
-	public void setElasticApiUrl(String elasticApiUrl) {
-		this.elasticApiUrl = elasticApiUrl;
-	}
-
-
-
-	public String getElasticUsernameAndPassword() {
-		return elasticUsernameAndPassword;
-	}
-
-
-
-	public void setElasticUsernameAndPassword(String elasticUsernameAndPassword) {
-		this.elasticUsernameAndPassword = elasticUsernameAndPassword;
-	}
-
-
-
-	public String getUploadApiToken() {
-		return uploadApiToken;
-	}
-
-
-
-	public void setUploadApiToken(String uploadApiToken) {
-		this.uploadApiToken = uploadApiToken;
-	}
-
-
-
-	public String getUploadUrl() {
-		return uploadUrl;
-	}
-
-
-	public void setUploadUrl(String uploadUrl) {
-		this.uploadUrl = uploadUrl;
-	}
-
-	public String getFofaEmail() {
-		return fofaEmail;
-	}
-
-	public void setFofaEmail(String fofaEmail) {
-		this.fofaEmail = fofaEmail;
-	}
-
-	public String getFofaKey() {
-		return fofaKey;
-	}
-
-	public void setFofaKey(String fofaKey) {
-		this.fofaKey = fofaKey;
-	}
-
-	public String getQuakeAPIKey() {
-		return quakeAPIKey;
-	}
-
-	public void setQuakeAPIKey(String quakeAPIKey) {
-		this.quakeAPIKey = quakeAPIKey;
-	}
-
-	public String getHunterAPIKey() {
-		return hunterAPIKey;
-	}
-
-	public void setHunterAPIKey(String hunterAPIKey) {
-		this.hunterAPIKey = hunterAPIKey;
-	}
-
-	public String getProxy() {
-		return proxy;
-	}
-
-	public void setProxy(String proxy) {
-		this.proxy = proxy;
-	}
-
-	public boolean isShowItemsInOne() {
-		return showItemsInOne;
-	}
-
-	public void setShowItemsInOne(boolean showItemsInOne) {
-		this.showItemsInOne = showItemsInOne;
-	}
-
-	public boolean isEnableElastic() {
-		return enableElastic;
-	}
-
-	public void setEnableElastic(boolean enableElastic) {
-		this.enableElastic = enableElastic;
-	}
-
-
-
 	/**
 	 * 注意：这里获取到的lineConfig对象，其中的gui属性是null
 	 * @param projectFile
 	 * @return
 	 */
-	public static LineConfig loadFromDisk(String projectFile) {
+	public static ConfigManager loadFromDisk(String projectFile) {
 		if (projectFile == null){
 			return  null;
 		}
@@ -312,7 +152,7 @@ public class LineConfig {
 			File localFile = new File(projectFile);
 			if (localFile.exists()) {
 				String jsonstr = FileUtils.readFileToString(localFile);
-				LineConfig config = FromJson(jsonstr);
+				ConfigManager config = FromJson(jsonstr);
 				return config;
 			}
 		} catch (IOException e) {
@@ -320,19 +160,6 @@ public class LineConfig {
 			e.printStackTrace(BurpExtender.getStderr());
 		}
 		return null;
-	}
-
-
-	public String ToJson() {
-		return JSON.toJSONString(this);
-		//https://blog.csdn.net/qq_27093465/article/details/73277291
-		//return new Gson().toJson(this);
-	}
-
-
-	public  static LineConfig FromJson(String instanceString) {// throws Exception {
-		return JSON.parseObject(instanceString,LineConfig.class);
-		//return new Gson().fromJson(instanceString, LineConfig.class);
 	}
 
 	/**
@@ -516,5 +343,4 @@ public class LineConfig {
 
 		return entry;
 	}
-
 }

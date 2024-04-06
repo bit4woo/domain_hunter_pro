@@ -1,5 +1,6 @@
 package InternetSearch.Client;
 
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -73,16 +74,33 @@ public class ZoomEyeClient extends BaseClient {
 			BurpExtender.getStderr().println("fofa.info emaill or key not configurated!");
 			return null;
 		}
-
+		//https://www.zoomeye.hk/api/domain/search?q=google.com&p=1&s=10&type=1
+		//https://www.zoomeye.hk/api/search?q=site%3A%22baidu.com%22&page=1
 		String url = String.format(
-				"https://api.zoomeye.hk/host/search?query=%s",searchContent);
+				"https://api.zoomeye.hk/api/search?q=%s&page=%s",searchContent,page);
 		return url;
 	}
 
 	@Override
 	public byte[] buildRawData(String searchContent, int page) {
-		//"API-KEY:1AD12149-024c-8xxxx-3xxxx-4f054xxxx7f3"
-		//TODO
+		//site:"baidu.com"
+		String raw = "GET /api/search?q=%s&page=%s HTTP/1.1\r\n"
+				+ "Host: www.zoomeye.hk\r\n"
+				+ "Accept: application/json, text/plain, */*\r\n"
+				+ "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36\r\n"
+				+ "Accept-Encoding: gzip, deflate\r\n"
+				+ "Accept-Language: zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7\r\n"
+				+ "API-KEY: %s\r\n"
+				+ "Connection: close\r\n"
+				+ "\r\n"
+				+ "";
+		
+		searchContent = URLEncoder.encode(searchContent);
+		String key = ConfigPanel.textFieldQuakeAPIKey.getText();
+		int size = 500;
+		int start = size*(page-1); 
+		raw = String.format(raw,searchContent,page,key);
+		return raw.getBytes();
 		return null;
 	}
 

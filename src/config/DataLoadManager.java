@@ -168,7 +168,7 @@ public class DataLoadManager {
 		if (ConfigFilePath == null || ConfigFilePath.equals("")) {
 			ConfigFilePath = defaultConfigFilename;
 		}
-		LineConfig config = gui.configPanel.getConfigFromGUI();
+		ConfigManager config = gui.configPanel.getConfigFromGUI();
 
 		try {
 			File localFile = new File(ConfigFilePath);
