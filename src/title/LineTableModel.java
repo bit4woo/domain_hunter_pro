@@ -17,6 +17,7 @@ import javax.swing.table.AbstractTableModel;
 
 import GUI.GUIMain;
 import InternetSearch.SearchEngine;
+import InternetSearch.SearchType;
 import base.Commons;
 import base.IndexedHashMap;
 import base.IntArraySlice;
@@ -274,28 +275,19 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		}
 
 		if (columnName.equalsIgnoreCase("Title")){
-			if (engine.equalsIgnoreCase(SearchEngine.GOOGLE)) {
-				value =  "intitle:"+value;
-			}
+			value = SearchEngine.buildSearchDork(value,engine,SearchType.Title);
 		}else if (columnName.equalsIgnoreCase("Comments")){
 		}else if (columnName.equalsIgnoreCase("Server")){
 		}else if (columnName.equalsIgnoreCase("IP")){
 		}else if (columnName.equalsIgnoreCase("CNAME|CertInfo")){
 		}else if (columnName.equalsIgnoreCase("ASNInfo")){
 		}else if (columnName.equalsIgnoreCase("Favicon") || columnName.equalsIgnoreCase("iconHash")){
-			if (engine.equalsIgnoreCase(SearchEngine.FOFA)) {
-				value = "icon_hash=\""+value+"\"";
-			}
-			else if (engine.equalsIgnoreCase(SearchEngine.SHODAN)) {
-				value = "http.favicon.hash:"+value;
-			}
-			else if (engine.equalsIgnoreCase(SearchEngine.ZOOMEYE)) {
-				value = "iconhash:"+value;
-			}
+			value = SearchEngine.buildSearchDork(value,engine,SearchType.IconHash);
 		}else if (isHost){
 			if (engine.equalsIgnoreCase(SearchEngine.GOOGLE)) {
 				value = "site:"+value;
 			}
+			value = SearchEngine.buildSearchDork(value,engine,SearchType.Domain);
 		}
 
 		return value;

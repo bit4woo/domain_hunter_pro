@@ -229,24 +229,12 @@ public class SearchTableModel extends AbstractTableModel {
 		}else if (columnName.equalsIgnoreCase("CNAME|CertInfo")){
 		}else if (columnName.equalsIgnoreCase("ASNInfo")){
 		}else if (columnName.equalsIgnoreCase("Favicon") || columnName.equalsIgnoreCase("iconHash")){
-			if (engine.equalsIgnoreCase(SearchEngine.FOFA)) {
-				value = "icon_hash=\""+value+"\"";
-			}
-			else if (engine.equalsIgnoreCase(SearchEngine.SHODAN)) {
-				value = "http.favicon.hash:"+value;
-			}
-			else if (engine.equalsIgnoreCase(SearchEngine.ZOOMEYE)) {
-				value = "iconhash:"+value;
-			}
+			value = SearchEngine.buildSearchDork(value,engine,SearchType.IconHash);
 		}else if (isHost){
 			if (engine.equalsIgnoreCase(SearchEngine.GOOGLE)) {
 				value = "site:"+value;
 			}
-			if (engine.equalsIgnoreCase(SearchEngine.QIANXIN_HUNTER)) {
-				if (DomainNameUtils.isValidDomain(value)){
-					value = "domain=\""+value+"\"";
-				}
-			}
+			value = SearchEngine.buildSearchDork(value,engine,SearchType.Domain);
 		}
 
 		return value;

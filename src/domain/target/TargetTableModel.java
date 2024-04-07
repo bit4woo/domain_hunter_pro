@@ -17,6 +17,7 @@ import com.google.gson.Gson;
 
 import GUI.GUIMain;
 import InternetSearch.SearchEngine;
+import InternetSearch.SearchType;
 import base.Commons;
 import base.IndexedHashMap;
 import base.IntArraySlice;
@@ -154,30 +155,7 @@ public class TargetTableModel extends AbstractTableModel {
 		}
 
 		if (columnName.equalsIgnoreCase("Domain/Subnet")|| isHost){
-			if (engine.equalsIgnoreCase(SearchEngine.GOOGLE)) {
-				value = "site:"+value;
-			}
-			else if (engine.equalsIgnoreCase(SearchEngine.FOFA)) {
-				value = "domain=\""+value+"\"";
-			}
-			else if (engine.equalsIgnoreCase(SearchEngine.ZOOMEYE)) {
-				value = "site:\""+value+"\"";
-			}
-			else if (engine.equalsIgnoreCase(SearchEngine.SHODAN)) {
-				
-			}
-			else if (engine.equalsIgnoreCase(SearchEngine.QIANXIN_HUNTER)) {
-				value = "domain=\""+value+"\"";
-			}
-			else if (engine.equalsIgnoreCase(SearchEngine.QIANXIN_TI)) {
-				
-			}
-			else if (engine.equalsIgnoreCase(SearchEngine.TI_360)) {
-				
-			}
-			else if (engine.equalsIgnoreCase(SearchEngine.QUAKE_360)) {
-				
-			}
+			value = SearchEngine.buildSearchDork(value,engine,SearchType.Domain);
 		}else if (columnName.equalsIgnoreCase("Comments")){
 
 		}

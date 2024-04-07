@@ -11,6 +11,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.table.AbstractTableModel;
 
+import burp.BurpExtender;
+
 public class SearchEngine {
 
 	//public static final String BAIDU = "baidu";
@@ -103,11 +105,67 @@ public class SearchEngine {
 		return result;
 	}
 	
-	public static String buildSearchDork(String content,String type){
-		//TODO
-		return "";
+	//TODO
+	public static String buildSearchDork(String value,String engine,String type){
+		if (SearchType.getSearchTypeList().contains(type)) {
+			if (type.equals(SearchType.Host)) {
+				
+			}else if(type.equals(SearchType.IP)) {
+				
+			}else if(type.equals(SearchType.Domain)) {
+				if (engine.equalsIgnoreCase(SearchEngine.GOOGLE)) {
+					value = "site:"+value;
+				}
+				else if (engine.equalsIgnoreCase(SearchEngine.FOFA)) {
+					value = "domain=\""+value+"\"";
+				}
+				else if (engine.equalsIgnoreCase(SearchEngine.ZOOMEYE)) {
+					value = "site:\""+value+"\"";
+				}
+				else if (engine.equalsIgnoreCase(SearchEngine.SHODAN)) {
+					
+				}
+				else if (engine.equalsIgnoreCase(SearchEngine.QIANXIN_HUNTER)) {
+					value = "domain=\""+value+"\"";
+				}
+				else if (engine.equalsIgnoreCase(SearchEngine.QIANXIN_TI)) {
+					
+				}
+				else if (engine.equalsIgnoreCase(SearchEngine.TI_360)) {
+					
+				}
+				else if (engine.equalsIgnoreCase(SearchEngine.QUAKE_360)) {
+					
+				}
+				
+			}else if(type.equals(SearchType.Subnet)) {
+				
+			}else if(type.equals(SearchType.Title)) {
+				if (engine.equalsIgnoreCase(SearchEngine.GOOGLE)) {
+					value =  "intitle:"+value;
+				}
+				
+			}else if(type.equals(SearchType.IconHash)) {
+				if (engine.equalsIgnoreCase(SearchEngine.FOFA)) {
+					value = "icon_hash=\""+value+"\"";
+				}
+				else if (engine.equalsIgnoreCase(SearchEngine.SHODAN)) {
+					value = "http.favicon.hash:"+value;
+				}
+				else if (engine.equalsIgnoreCase(SearchEngine.ZOOMEYE)) {
+					value = "iconhash:"+value;
+				}
+				
+			}else if(type.equals(SearchType.Host)) {
+				
+			}else if(type.equals(SearchType.Host)) {
+				
+			}
+		}else {
+			BurpExtender.getStderr().println("wrong search type");
+		}
+		return value;
 	}
-	
 
 
 	public static void AddSearchMenuItems(JPopupMenu parentMenu,AbstractTableModel tableModel,int[] modelRows,int columnIndex) {
