@@ -4,10 +4,13 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import utils.URLUtils;
+
 public class SearchResultEntry {
 	private int port = -1;
 	private String host = "";
 	private String protocol = "";
+	private String uri = null;
 	private String rootDomain;
 	private String webcontainer = "";
 	private String title = "";
@@ -42,7 +45,10 @@ public class SearchResultEntry {
 	}
 
 	public void setHost(String host) {
-		this.host = host;
+		if (URLUtils.isVaildUrl(host)) {
+			this.uri = host;
+		}
+		this.host = URLUtils.getHost(host);
 	}
 
 	public String getProtocol() {
@@ -126,14 +132,14 @@ public class SearchResultEntry {
 	}
 	
 	public String getIdentify() {
-		return getService();
+		return getUri();
 	}
 	
 	/**
-	 * service 类似： http://www.example.com:8442
+	 * 类似： http://www.example.com:8442
 	 * @return
 	 */
-	public String getService() {
+	private String buildUri() {
 		StringBuilder sb = new StringBuilder();
 		if (protocol != null && protocol.length()>0) {
 			sb.append(protocol);
@@ -146,6 +152,18 @@ public class SearchResultEntry {
 			sb.append(":"+port);
 		}
 		return sb.toString();
+	}
+	
+	
+	public String getUri() {
+		if (uri != null && uri.length()>0) {
+			return uri;
+		}
+		return buildUri();
+	}
+
+	public void setUri(String uri) {
+		this.uri = uri;
 	}
 
 	public String getTitle() {
