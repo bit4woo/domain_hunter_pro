@@ -21,7 +21,7 @@ public class ZoomEyeClient extends BaseClient {
 
 	@Override
 	public String getEngineName() {
-		return SearchEngine.FOFA;
+		return SearchEngine.ZOOMEYE;
 	}
 
 	@Override

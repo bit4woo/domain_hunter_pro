@@ -45,7 +45,7 @@ public class SearchEngine {
 
 	public static final String WHOIS_CHINAZ = "whois.chinaz.com";
 	public static final String WHOIS = "www.whois.com";
-	
+
 
 	public static List<String> getAllEngineList(){
 		List<String> result = new ArrayList<String>();
@@ -97,70 +97,196 @@ public class SearchEngine {
 		result.add(TI_360);
 		return result;
 	}
-	
+
 	public static List<String> getCommonSearchEngineList(){
 		List<String> result = new ArrayList<String>();
 		result.add(GOOGLE);
 		result.add(GITHUB);
 		return result;
 	}
-	
-	//TODO
+
+
+	//TODO 大量语法需要补全
 	public static String buildSearchDork(String value,String engine,String type){
 		if (SearchType.getSearchTypeList().contains(type)) {
-			if (type.equals(SearchType.Host)) {
-				
-			}else if(type.equals(SearchType.IP)) {
-				
-			}else if(type.equals(SearchType.Domain)) {
-				if (engine.equalsIgnoreCase(SearchEngine.GOOGLE)) {
+			if (engine.equalsIgnoreCase(GOOGLE)) {
+				//https://www.exploit-db.com/google-hacking-database
+				if (type.equals(SearchType.Host)) {
 					value = "site:"+value;
+				}else if(type.equals(SearchType.IP)) {
+					value = "site:"+value;
+				}else if(type.equals(SearchType.Domain)) {
+					value = "site:"+value;
+				}else if(type.equals(SearchType.Subnet)) {
+
+				}else if(type.equals(SearchType.Title)) {
+					value = "intitle:"+value;
+				}else if(type.equals(SearchType.IconHash)) {
+
+				}else if(type.equals(SearchType.Server)) {
+
+				}else if(type.equals(SearchType.Asn)) {
+
 				}
-				else if (engine.equalsIgnoreCase(SearchEngine.FOFA)) {
-					value = "domain=\""+value+"\"";
-				}
-				else if (engine.equalsIgnoreCase(SearchEngine.ZOOMEYE)) {
-					value = "site:\""+value+"\"";
-				}
-				else if (engine.equalsIgnoreCase(SearchEngine.SHODAN)) {
-					
-				}
-				else if (engine.equalsIgnoreCase(SearchEngine.QIANXIN_HUNTER)) {
-					value = "domain=\""+value+"\"";
-				}
-				else if (engine.equalsIgnoreCase(SearchEngine.QIANXIN_TI)) {
-					
-				}
-				else if (engine.equalsIgnoreCase(SearchEngine.TI_360)) {
-					
-				}
-				else if (engine.equalsIgnoreCase(SearchEngine.QUAKE_360)) {
-					
-				}
-				
-			}else if(type.equals(SearchType.Subnet)) {
-				
-			}else if(type.equals(SearchType.Title)) {
-				if (engine.equalsIgnoreCase(SearchEngine.GOOGLE)) {
-					value =  "intitle:"+value;
-				}
-				
-			}else if(type.equals(SearchType.IconHash)) {
-				if (engine.equalsIgnoreCase(SearchEngine.FOFA)) {
-					value = "icon_hash=\""+value+"\"";
-				}
-				else if (engine.equalsIgnoreCase(SearchEngine.SHODAN)) {
-					value = "http.favicon.hash:"+value;
-				}
-				else if (engine.equalsIgnoreCase(SearchEngine.ZOOMEYE)) {
-					value = "iconhash:"+value;
-				}
-				
-			}else if(type.equals(SearchType.Host)) {
-				
-			}else if(type.equals(SearchType.Host)) {
-				
 			}
+			else if (engine.equalsIgnoreCase(FOFA)) {
+				if (type.equals(SearchType.Host)) {
+					value = String.format("host=\"%s\"", value);//查询结果比domain多一些
+				} else if (type.equals(SearchType.IP)) {
+					value = String.format("ip=\"%s\"", value);
+				} else if (type.equals(SearchType.Domain)) {
+					value = String.format("domain=\"%s\"", value);
+				} else if(type.equals(SearchType.Subnet)) {
+					value = String.format("ip=\"%s\"", value);
+				} else if (type.equals(SearchType.Title)) {
+					value = String.format("title=\"%s\"", value);
+				} else if (type.equals(SearchType.IconHash)) {
+					value = String.format("icon_hash=\"%s\"", value);
+				}else if(type.equals(SearchType.Server)) {
+
+				}else if(type.equals(SearchType.Asn)) {
+
+				}
+			}
+			else if (engine.equalsIgnoreCase(ZOOMEYE)) {
+				//https://www.zoomeye.hk/
+				//title:"Cisco ASDM"
+				//cidr:52.2.254.36/24
+				//asn:42893
+				//hostname:google.com
+				//site:google.com--查子域名资产用这个
+				//iconhash:"f3418a443e7d841097c714d69ec4bcb8"
+				if (type.equals(SearchType.Host)) {
+					value = "hostname:"+value;
+				}else if(type.equals(SearchType.IP)) {
+					value = String.format("ip:\"%s\"", value);
+				}else if(type.equals(SearchType.Domain)) {
+					value = "site:"+value;
+				}else if(type.equals(SearchType.Subnet)) {
+					value = "cidr:"+value;
+				}else if(type.equals(SearchType.Title)) {
+					value = String.format("title:\"%s\"", value);
+				}else if(type.equals(SearchType.IconHash)) {
+					value = String.format("iconhash:\"%s\"", value);
+				}else if(type.equals(SearchType.Server)) {
+
+				}else if(type.equals(SearchType.Asn)) {
+
+				}
+			}
+			else if (engine.equalsIgnoreCase(SHODAN)) {
+				if (type.equals(SearchType.Host)) {
+
+				}else if(type.equals(SearchType.IP)) {
+					value = "site:"+value;
+				}else if(type.equals(SearchType.Domain)) {
+
+				}else if(type.equals(SearchType.Subnet)) {
+
+				}else if(type.equals(SearchType.Title)) {
+
+				}else if(type.equals(SearchType.IconHash)) {
+
+				}else if(type.equals(SearchType.Server)) {
+
+				}else if(type.equals(SearchType.Asn)) {
+
+				}
+			}
+			else if (engine.equalsIgnoreCase(QIANXIN_HUNTER)) {
+				/**
+				domain="qianxin.com"	
+				搜索域名包含"qianxin.com"的网站 --这个可能包含第三方服务
+
+				domain.suffix="qianxin.com" 
+				搜索主域为"qianxin.com"的网站
+
+				header.server=="Microsoft-IIS/10"
+				web.title="北京"
+				web.body="网络空间测绘"
+				ip="1.1.1.1"
+				ip="220.181.111.0/24"
+				web.icon="22eeab765346f14faf564a4709f98548"
+				 */
+
+				if (type.equals(SearchType.Host)) {
+
+				}else if(type.equals(SearchType.IP)) {
+					value = String.format("ip=\"%s\"", value);
+				}else if(type.equals(SearchType.Domain)) {
+					value = String.format("domain=\"%s\"", value);
+				}else if(type.equals(SearchType.Subnet)) {
+					value = String.format("ip=\"%s\"", value);
+				}else if(type.equals(SearchType.Title)) {
+					value = String.format("web.title=\"%s\"", value);
+				}else if(type.equals(SearchType.IconHash)) {
+					//这里的Hash及算法方法和fofa一致吗
+					value = String.format("web.icon=\"%s\"", value);
+				}else if(type.equals(SearchType.Server)) {
+					value = String.format("header.server=\"%s\"", value);
+				}else if(type.equals(SearchType.Asn)) {
+
+				}
+			}
+			else if (engine.equalsIgnoreCase(QIANXIN_TI)) {
+				if (type.equals(SearchType.Host)) {
+
+				}else if(type.equals(SearchType.IP)) {
+					value = "site:"+value;
+				}else if(type.equals(SearchType.Domain)) {
+
+				}else if(type.equals(SearchType.Subnet)) {
+
+				}else if(type.equals(SearchType.Title)) {
+
+				}else if(type.equals(SearchType.IconHash)) {
+
+				}else if(type.equals(SearchType.Server)) {
+
+				}else if(type.equals(SearchType.Asn)) {
+
+				}
+			}
+			else if (engine.equalsIgnoreCase(TI_360)) {
+				if (type.equals(SearchType.Host)) {
+
+				}else if(type.equals(SearchType.IP)) {
+					value = "site:"+value;
+				}else if(type.equals(SearchType.Domain)) {
+
+				}else if(type.equals(SearchType.Subnet)) {
+
+				}else if(type.equals(SearchType.Title)) {
+
+				}else if(type.equals(SearchType.IconHash)) {
+
+				}else if(type.equals(SearchType.Server)) {
+
+				}else if(type.equals(SearchType.Asn)) {
+
+				}
+
+			}
+			else if (engine.equalsIgnoreCase(QUAKE_360)) {
+				if (type.equals(SearchType.Host)) {
+
+				}else if(type.equals(SearchType.IP)) {
+					value = "site:"+value;
+				}else if(type.equals(SearchType.Domain)) {
+
+				}else if(type.equals(SearchType.Subnet)) {
+
+				}else if(type.equals(SearchType.Title)) {
+
+				}else if(type.equals(SearchType.IconHash)) {
+
+				}else if(type.equals(SearchType.Server)) {
+
+				}else if(type.equals(SearchType.Asn)) {
+
+				}
+			}
+
 		}else {
 			BurpExtender.getStderr().println("wrong search type");
 		}
@@ -220,17 +346,17 @@ public class SearchEngine {
 		JMenuItem APISearchAllItem = new JMenuItem(new AbstractAction("API Asset Search All In One") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-		        APISearchAction action = new APISearchAction(tableModel, modelRows, columnIndex, SearchEngine.getAssetSearchEngineList());
-		        action.actionPerformed(actionEvent);
-		    }
+				APISearchAction action = new APISearchAction(tableModel, modelRows, columnIndex, SearchEngine.getAssetSearchEngineList());
+				action.actionPerformed(actionEvent);
+			}
 		});
-		
+
 
 		parentMenu.add(APISearchAllItem);
 		parentMenu.add(BrowserSearchAllItem);
 
 		parentMenu.addSeparator();
-		
+
 		parentMenu.add(APIAssetSearchMenu);
 		parentMenu.add(BrowserAssetSearchMenu);
 		parentMenu.add(CommonSearchMenu);

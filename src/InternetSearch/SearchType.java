@@ -6,13 +6,14 @@ import java.util.List;
 
 public class SearchType {
 
-	public static final String Host = "Host";
+	public static final String Host = "Host";//Host和Domain有时候分不清
 	public static final String IP = "IP";
 	public static final String Subnet = "Subnet";
 	public static final String Domain = "Domain";
 	public static final String Title = "Title";
 	public static final String IconHash = "IconHash";
-	
+	public static final String Server = "Server"; //server="Microsoft-IIS/10"
+	public static final String Asn = "Asn"; //asn="19551"
 	
 	public static List<String> getSearchTypeList(){
 		List<String> result = new ArrayList<String>();
