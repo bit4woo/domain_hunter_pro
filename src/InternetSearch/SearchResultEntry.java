@@ -52,8 +52,9 @@ public class SearchResultEntry {
 	public void setHost(String host) {
 		if (URLUtils.isVaildUrl(host)) {
 			this.uri = host;
+			this.host = URLUtils.getHost(host);
 		}
-		this.host = URLUtils.getHost(host);
+		this.host = host;
 	}
 
 	public String getProtocol() {
