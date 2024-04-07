@@ -114,7 +114,6 @@ public class TargetTableModel extends AbstractTableModel {
 		if (columnIndex == titletList.indexOf("#")) {
 			return rowIndex;
 		}
-
 		if (columnIndex == titletList.indexOf("Domain/Subnet")) {
 			return entry.getTarget();
 		}
@@ -138,28 +137,19 @@ public class TargetTableModel extends AbstractTableModel {
 	 * @return
 	 */
 	public String getValueForSearch(int rowIndex, int columnIndex,String engine) {
-		String columnName = getTitleList().get(columnIndex);
-
-		String[] Titles = new String[] {
-				"Domain/Subnet","Keyword","Comment"};
-		List<String> titleList = new ArrayList<>(Arrays.asList(Titles));
-
-		String value =null;
-		boolean isHost =false;
-		if (titleList.contains(columnName)) {
-			value = getValueAt(rowIndex,columnIndex).toString();
+		
+		if(columnIndex ==getTitleList().indexOf("Keyword")) {
+			String value = getValueAt(rowIndex,columnIndex).toString();
+			return value;
+		}else if(columnIndex ==getTitleList().indexOf("Comment")) {
+			String value = getValueAt(rowIndex,columnIndex).toString();
+			return value;
 		}else {
-			TargetEntry firstEntry = targetEntries.get(rowIndex);
-			value = firstEntry.getTarget();
-			isHost = true;
-		}
-
-		if (columnName.equalsIgnoreCase("Domain/Subnet")|| isHost){
+			columnIndex =getTitleList().indexOf("Domain/Subnet");
+			String value = getValueAt(rowIndex,columnIndex).toString();
 			value = SearchEngine.buildSearchDork(value,engine,SearchType.Domain);
-		}else if (columnName.equalsIgnoreCase("Comments")){
-
+			return value;
 		}
-		return value;
 	}
 
 

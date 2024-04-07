@@ -2,15 +2,14 @@ package InternetSearch;
 
 import java.awt.event.ActionEvent;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import javax.swing.AbstractAction;
-import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.SwingWorker;
 
 import GUI.GUIMain;
 import base.Commons;
@@ -20,7 +19,6 @@ import burp.SystemUtils;
 import config.ConfigManager;
 import config.ConfigName;
 import domain.DomainManager;
-import utils.DomainNameUtils;
 import utils.GrepUtils;
 import utils.PortScanUtils;
 
@@ -51,12 +49,27 @@ public class SearchResultEntryMenu extends JPopupMenu {
 			}
 		});
 
-		
-		JMenuItem copyHostItem = new JMenuItem(new AbstractAction("Copy URL/Host") {
+
+		JMenuItem copyUrlItem = new JMenuItem(new AbstractAction("Copy URL") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				try{
-					java.util.List<String> urls = searchTableModel.getMultipleValue(modelRows,"URL/Host");
+					java.util.List<String> urls = searchTableModel.getMultipleValue(modelRows,"URL");
+					String textUrls = String.join(System.lineSeparator(), urls);
+					SystemUtils.writeToClipboard(textUrls);
+				}
+				catch (Exception e1)
+				{
+					e1.printStackTrace(stderr);
+				}
+			}
+		});
+
+		JMenuItem copyHostItem = new JMenuItem(new AbstractAction("Copy Host") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				try{
+					java.util.List<String> urls = searchTableModel.getMultipleValue(modelRows,"Host");
 					String textUrls = String.join(System.lineSeparator(), urls);
 					SystemUtils.writeToClipboard(textUrls);
 				}
@@ -119,50 +132,37 @@ public class SearchResultEntryMenu extends JPopupMenu {
 			}
 		});
 
-		JMenuItem addToTargetItem = new JMenuItem(new AbstractAction("Add To Target") {
+		JMenuItem addToTargetItem = new JMenuItem(new AbstractAction("Add Host/Domain To Target") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				try{
-					java.util.List<String> urls = searchTableModel.getMultipleValue(modelRows,"URL/Host");
-					String textUrls = String.join(System.lineSeparator(), urls);
-					Set<String> Domains = GrepUtils.grepDomain(textUrls);
-					List<String> ips = GrepUtils.grepIP(textUrls);
-					
-					DomainManager domainResult = guiMain.getDomainPanel().getDomainResult();
-					for (String item:Domains) {
-						try {
-							domainResult.addToTargetAndSubDomain(item,true);
-						} catch (Exception e2) {
-							e2.printStackTrace(stderr);
-						}
-					}
-					
-					for (String item:ips) {
-						try {
-							if (IPAddressUtils.isValidIP(item)) {
-								domainResult.getSpecialPortTargets().add(item);
+				new SwingWorker(){
+					@Override
+					protected Object doInBackground() throws Exception {
+						try{
+							List<SearchResultEntry> entries = searchTableModel.getEntries(modelRows);
+							for (SearchResultEntry entry:entries) {
+								entry.AddToTarget();
 							}
-						} catch (Exception e2) {
-							e2.printStackTrace(stderr);
+							guiMain.getDomainPanel().saveDomainDataToDB();
 						}
+						catch (Exception e1)
+						{
+							e1.printStackTrace(stderr);
+						}
+						return null;
 					}
-					
-					guiMain.getDomainPanel().saveDomainDataToDB();
-					
-				}
-				catch (Exception e1)
-				{
-					e1.printStackTrace(stderr);
-				}
+				}.execute();
+
 			}
 		});
-		
+
 		this.add(itemNumber);
 
 		this.addSeparator();
 
 		//常用多选操作
 		this.add(addToTargetItem);
+		this.add(copyUrlItem);
 		this.add(copyHostItem);
 		this.add(copyIPItem);
 		this.add(openURLwithBrowserItem);

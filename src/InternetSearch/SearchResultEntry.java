@@ -4,6 +4,11 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import burp.BurpExtender;
+import burp.IPAddressUtils;
+import domain.DomainManager;
+import domain.target.TargetEntry;
+import utils.DomainNameUtils;
 import utils.URLUtils;
 
 public class SearchResultEntry {
@@ -172,6 +177,27 @@ public class SearchResultEntry {
 
 	public void setTitle(String title) {
 		this.title = title;
+	}
+	
+	public void AddToTarget() {
+		DomainManager domainResult = BurpExtender.getGui().getDomainPanel().getDomainResult();
+		if (IPAddressUtils.isValidIP(this.host)) {
+			domainResult.getSpecialPortTargets().add(this.host);
+			if (this.port >=0 && this.port <= 65535) {
+				domainResult.getSpecialPortTargets().add(this.host+":"+this.port);
+			}
+		}
+		
+		if (DomainNameUtils.isValidDomain(this.host)) {
+			domainResult.addToTargetAndSubDomain(this.host,true);
+			if (this.port >=0 && this.port <= 65535) {
+				domainResult.addToTargetAndSubDomain(this.host+":"+this.port,true);
+			}
+		}
+		
+		if (this.rootDomain != null && !this.rootDomain.equals("")) {
+			domainResult.addToTargetAndSubDomain(this.rootDomain,true);
+		}
 	}
 
 	@Override

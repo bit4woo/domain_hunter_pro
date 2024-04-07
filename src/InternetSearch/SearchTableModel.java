@@ -25,7 +25,7 @@ public class SearchTableModel extends AbstractTableModel {
 	private GUIMain guiMain;
 
 	private static final String[] standardTitles = new String[] {
-			"#", "URL/Host","Protocol","Port","Title","Server","Source","IP", "CertInfo","ASNInfo","Favicon","IconHash"};
+			"#", "URL","Protocol","Host","Port","Title","Server","Source","IP", "CertInfo","ASNInfo","Favicon","IconHash"};
 	
 	//为了实现动态表结构
 	public static List<String> getTitleList() {
@@ -118,6 +118,18 @@ public class SearchTableModel extends AbstractTableModel {
 		return getTitleList().indexOf(Name);
 	}
 	
+	
+	public List<SearchResultEntry> getEntries(int[] rowIndexes)
+	{
+		List<SearchResultEntry> result = new ArrayList<>();
+		for (int rowIndex:rowIndexes) {
+			SearchResultEntry entry = lineEntries.get(rowIndex);
+			result.add(entry);
+		}
+		return result;
+	}
+	
+	
 	public List<String> getMultipleValue(int[] rowIndexes, String columnName)
 	{
 		List<String> result = new ArrayList<>();
@@ -143,11 +155,14 @@ public class SearchTableModel extends AbstractTableModel {
 		if (columnIndex == getTitleList().indexOf("#")) {
 			return rowIndex;
 		}
-		else if (columnIndex == getTitleList().indexOf("URL/Host")){
+		else if (columnIndex == getTitleList().indexOf("URL")){
 			return entry.getIdentify();
 		}
 		else if (columnIndex == getTitleList().indexOf("Protocol")){
 			return entry.getProtocol();
+		}
+		else if (columnIndex == getTitleList().indexOf("Host")){
+			return entry.getHost();
 		}
 		else if (columnIndex == getTitleList().indexOf("Port")){
 			return entry.getPort();
@@ -202,7 +217,7 @@ public class SearchTableModel extends AbstractTableModel {
 		String columnName = getTitleList().get(columnIndex);
 
 		String[] Titles = new String[] {
-				"Title","URL/Host","Server", "IP", "CertInfo","ASNInfo","IconHash"};
+				"Title","URL","Server","Host", "IP", "CertInfo","ASNInfo","IconHash"};
 		List<String> titleList = new ArrayList<>(Arrays.asList(Titles));
 
 		String value =null;
