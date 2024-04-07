@@ -157,11 +157,26 @@ public class TargetTableModel extends AbstractTableModel {
 			if (engine.equalsIgnoreCase(SearchEngine.GOOGLE)) {
 				value = "site:"+value;
 			}
-			if (engine.equalsIgnoreCase(SearchEngine.QIANXIN_HUNTER)) {
+			else if (engine.equalsIgnoreCase(SearchEngine.FOFA)) {
 				value = "domain=\""+value+"\"";
 			}
-			if (engine.equalsIgnoreCase(SearchEngine.ZOOMEYE)) {
-				value = "hostname:"+value;
+			else if (engine.equalsIgnoreCase(SearchEngine.ZOOMEYE)) {
+				value = "site:\""+value+"\"";
+			}
+			else if (engine.equalsIgnoreCase(SearchEngine.SHODAN)) {
+				
+			}
+			else if (engine.equalsIgnoreCase(SearchEngine.QIANXIN_HUNTER)) {
+				value = "domain=\""+value+"\"";
+			}
+			else if (engine.equalsIgnoreCase(SearchEngine.QIANXIN_TI)) {
+				
+			}
+			else if (engine.equalsIgnoreCase(SearchEngine.TI_360)) {
+				
+			}
+			else if (engine.equalsIgnoreCase(SearchEngine.QUAKE_360)) {
+				
 			}
 		}else if (columnName.equalsIgnoreCase("Comments")){
 

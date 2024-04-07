@@ -1,9 +1,12 @@
 package InternetSearch.Client;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -13,7 +16,6 @@ import Tools.JSONHandler;
 import burp.BurpExtender;
 import config.ConfigManager;
 import config.ConfigName;
-import config.ConfigPanel;
 
 public class ZoomEyeClient extends BaseClient {
 
@@ -27,20 +29,27 @@ public class ZoomEyeClient extends BaseClient {
 		List<SearchResultEntry> result = new ArrayList<SearchResultEntry>();
 		try {
 			JSONObject obj = new JSONObject(respbody);
-			Boolean error = (Boolean) obj.get("error");
-			if (!error) {
-				JSONArray results = (JSONArray) obj.get("results");
+			int status = obj.getInt("status");
+			if (status ==200) {
+				JSONArray results = obj.getJSONArray("matches");
 				for (Object item : results) {
-					JSONArray parts = (JSONArray) item;
-					// host,ip,domain,port,protocol,server
-					// ["www.xxx.com","11.11.11.11","xxx.com","80","http","nginx/1.20.1"]
+
+					JSONObject entryitem = (JSONObject) item;
+
 					SearchResultEntry entry = new SearchResultEntry();
-					entry.setHost(parts.getString(0));
-					entry.getIPSet().add(parts.getString(1));
-					entry.setRootDomain(parts.getString(2));
-					entry.setPort(Integer.parseInt(parts.getString(3)));
-					entry.setProtocol(parts.getString(4));
-					entry.setWebcontainer(parts.getString(5));
+
+					entry.getIPSet().add(entryitem.getString("ip"));
+					entry.setHost(entryitem.getString("rdns"));
+
+					int port = entryitem.getJSONObject("portinfo").getInt("port");
+					entry.setPort(port);
+
+					String serviceName = entryitem.getJSONObject("portinfo").getString("service");
+					String title = entryitem.getJSONObject("portinfo").get("title").toString();
+
+					entry.setProtocol(serviceName);
+					entry.setTitle(title);
+
 					entry.setSource(getEngineName());
 					result.add(entry);
 				}
@@ -55,12 +64,13 @@ public class ZoomEyeClient extends BaseClient {
 	public boolean hasNextPage(String respbody,int currentPage) {
 		// "size":83,"page":1,
 		try {
-			ArrayList<String> result = JSONHandler.grepValueFromJson(respbody, "size");
-			if (result.size() >= 1) {
-				int total = Integer.parseInt(result.get(0));
-				if (total > currentPage * 2000) {//size=2000
+			int pageSize = 10;
+			ArrayList<String> tmp_result = JSONHandler.grepValueFromJson(respbody, "total");
+			if (tmp_result.size() >= 1) {
+				int total = Integer.parseInt(tmp_result.get(0));
+				if (total > currentPage * pageSize) {
 					return true;
-				} 
+				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace(BurpExtender.getStderr());
@@ -95,13 +105,21 @@ public class ZoomEyeClient extends BaseClient {
 				+ "Connection: close\r\n"
 				+ "\r\n"
 				+ "";
-		
+
 		searchContent = URLEncoder.encode(searchContent);
 		String key = ConfigManager.getStringConfigByKey(ConfigName.ZoomEyeAPIKey);
+		if (key.equals("")) {
+			BurpExtender.getStderr().println("zoomeye key not configurated!");
+			return null;
+		}
 		int size = 500;
 		int start = size*(page-1); 
 		raw = String.format(raw,searchContent,page,key);
 		return raw.getBytes();
 	}
 
+	public static void main(String[] args) throws IOException {
+		String aaa = FileUtils.readFileToString(new File("G:/github/domain_hunter_pro/src/InternetSearch/Client/example_data_ZoomEye.txt"),"UTF-8");
+		System.out.println(new ZoomEyeClient().parseResp(aaa));
+	}
 }

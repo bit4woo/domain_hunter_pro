@@ -102,6 +102,12 @@ public class SearchEngine {
 		result.add(GITHUB);
 		return result;
 	}
+	
+	public static String buildSearchDork(String content,String type){
+		//TODO
+		return "";
+	}
+	
 
 
 	public static void AddSearchMenuItems(JPopupMenu parentMenu,AbstractTableModel tableModel,int[] modelRows,int columnIndex) {
