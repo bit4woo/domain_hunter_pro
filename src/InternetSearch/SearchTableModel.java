@@ -12,7 +12,6 @@ import javax.swing.table.AbstractTableModel;
 import GUI.GUIMain;
 import base.IndexedHashMap;
 import burp.BurpExtender;
-import utils.DomainNameUtils;
 
 
 public class SearchTableModel extends AbstractTableModel {
@@ -24,14 +23,8 @@ public class SearchTableModel extends AbstractTableModel {
 	PrintWriter stderr;
 	private GUIMain guiMain;
 
-	private static final String[] standardTitles = new String[] {
-			"#", "URL","Protocol","Host","Port","Title","Server","Source","IP", "CertInfo","ASNInfo","Favicon","IconHash"};
-	
-	//为了实现动态表结构
-	public static List<String> getTitleList() {
-		List<String> titleList = new ArrayList<>(Arrays.asList(standardTitles));
-		//titletList.remove("Time");
-		return titleList;
+	public static List<String> getTableHeadList() {
+		return SearchTableHead.getTableHeadList();
 	}
 
 	public SearchTableModel(GUIMain guiMain){
@@ -78,16 +71,16 @@ public class SearchTableModel extends AbstractTableModel {
 	@Override
 	public int getColumnCount()
 	{
-		return getTitleList().size();
+		return getTableHeadList().size();
 	}
 
 	@Override
 	public Class<?> getColumnClass(int columnIndex)
 	{
-		if (columnIndex == getTitleList().indexOf("#")) {
+		if (columnIndex == getTableHeadList().indexOf(SearchTableHead.Index)) {
 			return Integer.class;//id
 		}
-		if (columnIndex == getTitleList().indexOf("Favicon")) {
+		if (columnIndex == getTableHeadList().indexOf(SearchTableHead.Favicon)) {
 			return ImageIcon.class;
 		}
 		return String.class;
@@ -101,8 +94,8 @@ public class SearchTableModel extends AbstractTableModel {
 
 	@Override
 	public String getColumnName(int columnIndex) {
-		if (columnIndex >= 0 && columnIndex <= getTitleList().size()) {
-			return getTitleList().get(columnIndex);
+		if (columnIndex >= 0 && columnIndex <= getTableHeadList().size()) {
+			return getTableHeadList().get(columnIndex);
 		}else {
 			return "";
 		}
@@ -112,13 +105,13 @@ public class SearchTableModel extends AbstractTableModel {
 	public boolean isCellEditable(int rowIndex, int columnIndex) {
 		return false;
 	}
-	
-	
+
+
 	public int getColumnIndexByName(String Name) {
-		return getTitleList().indexOf(Name);
+		return getTableHeadList().indexOf(Name);
 	}
-	
-	
+
+
 	public List<SearchResultEntry> getEntries(int[] rowIndexes)
 	{
 		List<SearchResultEntry> result = new ArrayList<>();
@@ -128,8 +121,8 @@ public class SearchTableModel extends AbstractTableModel {
 		}
 		return result;
 	}
-	
-	
+
+
 	public List<String> getMultipleValue(int[] rowIndexes, String columnName)
 	{
 		List<String> result = new ArrayList<>();
@@ -150,35 +143,34 @@ public class SearchTableModel extends AbstractTableModel {
 		if (rowIndex >= lineEntries.size()) {
 			return "IndexOutOfBoundsException";
 		}
-//		"#", "URL/Host", "Title","Server","Source","IP", "CertInfo","ASNInfo","Favicon","IconHash"};
 		SearchResultEntry entry = lineEntries.get(rowIndex);
-		if (columnIndex == getTitleList().indexOf("#")) {
+		if (columnIndex == getTableHeadList().indexOf(SearchTableHead.Index)) {
 			return rowIndex;
 		}
-		else if (columnIndex == getTitleList().indexOf("URL")){
+		else if (columnIndex == getTableHeadList().indexOf(SearchTableHead.URL)){
 			return entry.getIdentify();
 		}
-		else if (columnIndex == getTitleList().indexOf("Protocol")){
+		else if (columnIndex == getTableHeadList().indexOf(SearchTableHead.Protocol)){
 			return entry.getProtocol();
 		}
-		else if (columnIndex == getTitleList().indexOf("Host")){
+		else if (columnIndex == getTableHeadList().indexOf(SearchTableHead.Host)){
 			return entry.getHost();
 		}
-		else if (columnIndex == getTitleList().indexOf("Port")){
+		else if (columnIndex == getTableHeadList().indexOf(SearchTableHead.Port)){
 			return entry.getPort();
 		}
-		else if (columnIndex == getTitleList().indexOf("Title")){
+		else if (columnIndex == getTableHeadList().indexOf(SearchTableHead.Title)){
 			return entry.getTitle();
 		}
-		else if (columnIndex == getTitleList().indexOf("Server")){
+		else if (columnIndex == getTableHeadList().indexOf(SearchTableHead.Server)){
 			return entry.getWebcontainer();
 		}
 
-		else if (columnIndex == getTitleList().indexOf("IP")){
+		else if (columnIndex == getTableHeadList().indexOf(SearchTableHead.IP)){
 			return String.join(",", new TreeSet<String>(entry.getIPSet()));//用TreeSet进行排序
 		}
 
-		else if (columnIndex == getTitleList().indexOf("Favicon")){
+		else if (columnIndex == getTableHeadList().indexOf(SearchTableHead.Favicon)){
 			//return entry.getIcon_hash();
 			byte[] data = entry.getIcon_bytes();
 			String hash = entry.getIcon_hash();
@@ -189,24 +181,24 @@ public class SearchTableModel extends AbstractTableModel {
 			}
 			return null;
 		}
-		else if (columnIndex == getTitleList().indexOf("IconHash")){
+		else if (columnIndex == getTableHeadList().indexOf(SearchTableHead.IconHash)){
 			return entry.getIcon_hash();
 		}
-		else if (columnIndex == getTitleList().indexOf("CertInfo")){
+		else if (columnIndex == getTableHeadList().indexOf(SearchTableHead.CertInfo)){
 			return String.join(",", new TreeSet<String>(entry.getCertDomainSet()));
 		}
-		else if (columnIndex == getTitleList().indexOf("ASNInfo")){
+		else if (columnIndex == getTableHeadList().indexOf(SearchTableHead.ASNInfo)){
 			return entry.getASNInfo();
 		}
-		else if (columnIndex == getTitleList().indexOf("Source")) {
+		else if (columnIndex == getTableHeadList().indexOf(SearchTableHead.Source)) {
 			return entry.getSource();
 		}
 		return "";
 	}
-	
 
-	
-	
+
+
+
 	/**
 	 * 返回可以用于网络搜索引擎进行搜索地字段
 	 * @param rowIndex
@@ -214,7 +206,7 @@ public class SearchTableModel extends AbstractTableModel {
 	 * @return
 	 */
 	public String getValueForSearch(int rowIndex, int columnIndex,String engine) {
-		String columnName = getTitleList().get(columnIndex);
+		String columnName = getTableHeadList().get(columnIndex);
 
 		String[] Titles = new String[] {
 				"Title","URL","Server","Host", "IP", "CertInfo","ASNInfo","IconHash"};
@@ -281,4 +273,7 @@ public class SearchTableModel extends AbstractTableModel {
 		}
 	}
 
+	public static void main(String[] args) {
+		System.out.println(getTableHeadList());
+	}
 }

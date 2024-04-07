@@ -20,8 +20,6 @@ import burp.BurpExtender;
 import burp.SystemUtils;
 import config.ConfigManager;
 import config.ConfigName;
-import title.LineTable;
-import title.LineTableModel;
 
 
 public class SearchTable extends JTable
@@ -77,7 +75,7 @@ public class SearchTable extends JTable
 		preferredWidths.put("CertInfo",30);
 		preferredWidths.put("Server",10);
 		preferredWidths.put("IconHash", "-17480088888".length());
-		for(String header:SearchTableModel.getTitleList()){
+		for(String header:SearchTableHead.getTableHeadList()){
 			try{//避免动态删除表字段时，出错
 				if (preferredWidths.keySet().contains(header)){
 					int multiNumber = preferredWidths.get(header);
@@ -91,7 +89,7 @@ public class SearchTable extends JTable
 
 		this.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS); //全自动调整列表，就用这个
 	}
-	
+
 	public int[] SelectedRowsToModelRows(int[] SelectedRows) {
 
 		for (int i = 0; i < SelectedRows.length; i++){
@@ -100,8 +98,8 @@ public class SearchTable extends JTable
 		Arrays.sort(SelectedRows);//升序
 		return SelectedRows;
 	}
-	
-	
+
+
 	/**
 	 * 鼠标事件
 	 */
@@ -115,12 +113,12 @@ public class SearchTable extends JTable
 				if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2){//左键双击
 					int[] rows = SelectedRowsToModelRows(getSelectedRows());
 
-					//int row = ((LineTable) e.getSource()).rowAtPoint(e.getPoint()); // 获得行位置
-					int col = ((LineTable) e.getSource()).columnAtPoint(e.getPoint()); // 获得列位置
+					//int row = ((SearchTable) e.getSource()).rowAtPoint(e.getPoint()); // 获得行位置
+					int col = ((SearchTable) e.getSource()).columnAtPoint(e.getPoint()); // 获得列位置
 					int modelCol = convertColumnIndexToModel(col);
 
 					SearchResultEntry selecteEntry = getSearchTableModel().getRowAt(rows[0]);
-					if ((modelCol == LineTableModel.getTitleList().indexOf("#") )) {//双击index在google中搜索host。
+					if ((modelCol == SearchTableModel.getTableHeadList().indexOf(SearchTableHead.Index) )) {//双击index在google中搜索host。
 						String host = selecteEntry.getHost();
 						String url= "https://www.google.com/search?q=site%3A"+host;
 						try {
@@ -132,7 +130,7 @@ public class SearchTable extends JTable
 						} catch (Exception e2) {
 							e2.printStackTrace();
 						}
-					}else if(modelCol==LineTableModel.getTitleList().indexOf("URL/Host")) {//双击url在浏览器中打开
+					}else if(modelCol==SearchTableModel.getTableHeadList().indexOf(SearchTableHead.URL)) {//双击url在浏览器中打开
 						try{
 							String url = selecteEntry.getHost();
 							if (url != null && !url.toLowerCase().startsWith("http://") && !url.toLowerCase().startsWith("https://")) {
@@ -142,9 +140,9 @@ public class SearchTable extends JTable
 						}catch (Exception e1){
 							e1.printStackTrace(stderr);
 						}
-					}else if (modelCol == LineTableModel.getTitleList().indexOf("ASNInfo")) {
-						
-					}else if (modelCol == LineTableModel.getTitleList().indexOf("Favicon")) {
+					}else if (modelCol == SearchTableModel.getTableHeadList().indexOf(SearchTableHead.ASNInfo)) {
+
+					}else if (modelCol == SearchTableModel.getTableHeadList().indexOf(SearchTableHead.Favicon)) {
 						try {
 							Commons.browserOpen(selecteEntry.getIcon_url(),ConfigManager.getStringConfigByKey(ConfigName.BrowserPath));
 						} catch (Exception e1) {
