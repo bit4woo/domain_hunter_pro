@@ -1,17 +1,12 @@
 package config;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
-import org.apache.commons.io.FileUtils;
-
-import com.alibaba.fastjson.JSON;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import GUI.GUIMain;
 import base.Commons;
@@ -21,9 +16,7 @@ import title.LineEntry;
 public class ConfigManager {
 
 	private String configManagerName = "";
-	private List<ConfigEntry> configList = new ArrayList<ConfigEntry>();
-
-	private static int MaximumEntries = 1000;//控制显示的条目数，减少内存占用
+	private static List<ConfigEntry> configList = new ArrayList<ConfigEntry>();
 
 	//用于本地保存的路径
 	public static final String localdir = 
@@ -59,6 +52,14 @@ public class ConfigManager {
 			}
 		}
 		return "";
+	}
+
+	public static List<ConfigEntry> getConfigList() {
+		return configList;
+	}
+
+	public static void setConfigList(List<ConfigEntry> configList) {
+		ConfigManager.configList = configList;
 	}
 
 	public ConfigManager(String Name){
@@ -105,24 +106,100 @@ public class ConfigManager {
 		this.configManagerName = configManagerName;
 	}
 
-
-	public String ToJson(){//注意函数名称，如果是get set开头，会被认为是Getter和Setter函数，会在序列化过程中被调用。
+	@Deprecated
+	public String ToJsonDeprecated(){//注意函数名称，如果是get set开头，会被认为是Getter和Setter函数，会在序列化过程中被调用。
 		return new Gson().toJson(this);
 	}
 
-	public static ConfigManager FromJson(String json){//注意函数名称，如果是get set开头，会被认为是Getter和Setter函数，会在序列化过程中被调用。
+	@Deprecated
+	public static ConfigManager FromJsonDeprecated(String json){//注意函数名称，如果是get set开头，会被认为是Getter和Setter函数，会在序列化过程中被调用。
 		return new Gson().fromJson(json, ConfigManager.class);
 	}
+	
+	
+	public static String ToJson(){//注意函数名称，如果是get set开头，会被认为是Getter和Setter函数，会在序列化过程中被调用。
+		return configListToJson();
+	}
 
-	public String getConfigByKey(String configKey) {
+	public static void FromJson(String json){//注意函数名称，如果是get set开头，会被认为是Getter和Setter函数，会在序列化过程中被调用。
+		configList = configListFromJson(json);
+	}
+	
+	public static String configListToJson(){
+		return new Gson().toJson(configList);
+	}
+
+	public static List<ConfigEntry> configListFromJson(String json){
+		// 创建一个Gson对象
+	    Gson gson = new Gson();
+	    // 使用TypeToken来获取List<ConfigEntry>的Type
+	    java.lang.reflect.Type listType = new TypeToken<List<ConfigEntry>>(){}.getType();
+
+	    // 使用fromJson方法将JSON字符串反序列化为List<ConfigEntry>对象
+	    List<ConfigEntry> configList = gson.fromJson(json, listType);
+	    return configList;
+	}
+	
+
+
+    // 现在你可以使用configList了，它是一个List<ConfigEntry>对象
+
+	public static String getStringConfigByKey(String configKey) {
 		if(ConfigName.getAllConfigNames().contains(configKey)) {
 			for (ConfigEntry entry:configList) {
 				if (entry.getKey().equalsIgnoreCase(configKey)) {
 					return entry.getValue();
 				}
 			}
+		}else {
+			BurpExtender.getStderr().println("Config key not found: " + configKey);
 		}
 		return null;
+	}
+
+	public static boolean getBooleanConfigByKey(String configKey){
+		if(ConfigName.getAllConfigNames().contains(configKey)) {
+		    for (ConfigEntry entry : configList) {
+		        if (entry.getKey().equalsIgnoreCase(configKey)) {
+		            try {
+		                return Boolean.parseBoolean(entry.getValue());
+		            } catch (IllegalArgumentException e) {
+		            	BurpExtender.getStderr().println("Invalid boolean value for config key: " + configKey);
+		            }
+		        }
+		    }
+	    }else {
+			BurpExtender.getStderr().println("Config key not found: " + configKey);
+		}
+		return false;
+	}
+	
+	
+	public static void setConfigValue(String configKey,String configValue) {
+		if(ConfigName.getAllConfigNames().contains(configKey)) {
+			for (ConfigEntry entry:configList) {
+				if (entry.getKey().equalsIgnoreCase(configKey)) {
+					entry.setValue(configValue);
+				}
+			}
+		}else {
+			BurpExtender.getStderr().println("Config key not found: " + configKey);
+		}
+	}
+
+	public static boolean setConfigValue(String configKey,boolean configValue){
+		if(ConfigName.getAllConfigNames().contains(configKey)) {
+		    for (ConfigEntry entry : configList) {
+		        if (entry.getKey().equalsIgnoreCase(configKey)) {
+		        	if (entry.getKey().equalsIgnoreCase(configKey)) {
+						entry.setValue(configValue+"");
+					}
+		        }
+		    }
+	    }else {
+			BurpExtender.getStderr().println("Config key not found: " + configKey);
+		}
+		return false;
 	}
 	
 
@@ -135,42 +212,9 @@ public class ConfigManager {
 	}
 
 	public static void main(String[] args) {
-		System.out.println(new ConfigManager().ToJson());
+		System.out.println(new ConfigManager("test").ToJson());
 	}
 
-
-
-	public static int getMaximumEntries() {
-		return MaximumEntries;
-	}
-
-	public void setMaximumEntries(int maximumEntries) {
-		MaximumEntries = maximumEntries;
-	}
-
-
-	/**
-	 * 注意：这里获取到的lineConfig对象，其中的gui属性是null
-	 * @param projectFile
-	 * @return
-	 */
-	public static ConfigManager loadFromDisk(String projectFile) {
-		if (projectFile == null){
-			return  null;
-		}
-		try {
-			File localFile = new File(projectFile);
-			if (localFile.exists()) {
-				String jsonstr = FileUtils.readFileToString(localFile);
-				ConfigManager config = FromJson(jsonstr);
-				return config;
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-			e.printStackTrace(BurpExtender.getStderr());
-		}
-		return null;
-	}
 
 	/**
 	 *是否是从http跳转到相同URL的https 
@@ -198,7 +242,8 @@ public class ConfigManager {
 	 */
 	public static List<LineEntry> doSameHostFilter(List<LineEntry> entries) {
 
-		if (!ConfigPanel.ignoreHTTP.isSelected() && !ConfigPanel.ignoreHTTPS.isSelected()) {
+		if (!ConfigManager.getBooleanConfigByKey(ConfigName.ignoreHTTP) && 
+				!ConfigManager.getBooleanConfigByKey(ConfigName.ignoreHTTPS)) {
 			return entries;
 		}
 
@@ -235,17 +280,17 @@ public class ConfigManager {
 		}
 
 		if (httpsOk !=null && httpOk !=null ) {
-			if (ConfigPanel.ignoreHTTP.isSelected()) {
+			if (ConfigManager.getBooleanConfigByKey(ConfigName.ignoreHTTP)) {
 				httpOk.setCheckStatus(LineEntry.CheckStatus_Checked);
-			}else if (ConfigPanel.ignoreHTTPS.isSelected()) {
+			}else if (ConfigManager.getBooleanConfigByKey(ConfigName.ignoreHTTPS)) {
 				httpsOk.setCheckStatus(LineEntry.CheckStatus_Checked);
 			}
 		}
 
 		if (otherPorthttpsOk !=null && otherPorthttpOk !=null ) {
-			if (ConfigPanel.ignoreHTTP.isSelected()) {
+			if (ConfigManager.getBooleanConfigByKey(ConfigName.ignoreHTTP)) {
 				otherPorthttpOk.setCheckStatus(LineEntry.CheckStatus_Checked);
-			}else if (ConfigPanel.ignoreHTTPS.isSelected()) {
+			}else if (ConfigManager.getBooleanConfigByKey(ConfigName.ignoreHTTPS)) {
 				otherPorthttpsOk.setCheckStatus(LineEntry.CheckStatus_Checked);
 			}
 		}
@@ -269,13 +314,13 @@ public class ConfigManager {
 			return entry;
 		}
 
-		if (entry.getStatuscode() >=500 && ConfigPanel.ignoreHTTPStaus500.isSelected()) {
+		if (entry.getStatuscode() >=500 && getBooleanConfigByKey(ConfigName.ignoreHTTPStaus500)) {
 			stdout.println(String.format("--- [%s] --- status code >= 500",entry.getUrl()));
 			entry.setCheckStatus(LineEntry.CheckStatus_Checked);
 			return entry;
 		}
 
-		if (entry.getStatuscode() == 400 && ConfigPanel.ignoreHTTPStaus400.isSelected()) {//400 The plain HTTP request was sent to HTTPS port
+		if (entry.getStatuscode() == 400 && getBooleanConfigByKey(ConfigName.ignoreHTTPStaus400)) {//400 The plain HTTP request was sent to HTTPS port
 			stdout.println(String.format("--- [%s] --- status code == 400",entry.getUrl()));
 			entry.setCheckStatus(LineEntry.CheckStatus_Checked);
 			return entry;

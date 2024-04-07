@@ -48,6 +48,8 @@ import GUI.GUIMain;
 import base.BackGroundButton;
 import base.Commons;
 import burp.BurpExtender;
+import config.ConfigManager;
+import config.ConfigName;
 import config.ConfigPanel;
 import domain.CertInfo;
 import title.WebIcon;
@@ -147,7 +149,6 @@ public class ToolPanel extends JPanel {
 
 		JScrollPanelWithHeaderForTool InputPanel = new JScrollPanelWithHeaderForTool("Input","",true,true);
 		inputTextArea = InputPanel.getTextArea();
-		inputTextArea.getDocument().addDocumentListener(new textAreaListener(inputTextArea));
 		inputTextArea.addMouseListener(new TextAreaMouseListener(guiMain,inputTextArea));
 
 
@@ -524,6 +525,7 @@ public class ToolPanel extends JPanel {
 					it = urls.iterator();
 					inputTextAreaChanged = false;
 				}
+				String browserPath = ConfigManager.getStringConfigByKey(ConfigName.BrowserPath);
 				try {
 					int i = 50;
 					while (i > 0 && it.hasNext()) {
@@ -533,15 +535,15 @@ public class ToolPanel extends JPanel {
 							url = "http://" + url;
 							URL tmpUrl = new URL(url);
 							if (tmpUrl.getPort() == -1) {
-								Commons.browserOpen(url, guiMain.getConfigPanel().getLineConfig().getBrowserPath());
-								Commons.browserOpen(url.replaceFirst("http://", "https://"), guiMain.getConfigPanel().getLineConfig().getBrowserPath());
+								Commons.browserOpen(url, browserPath);
+								Commons.browserOpen(url.replaceFirst("http://", "https://"), browserPath);
 							} else if (Integer.toString(tmpUrl.getPort()).endsWith("443")) {
-								Commons.browserOpen(url.replaceFirst("http://", "https://"), guiMain.getConfigPanel().getLineConfig().getBrowserPath());
+								Commons.browserOpen(url.replaceFirst("http://", "https://"), browserPath);
 							} else {
-								Commons.browserOpen(url, guiMain.getConfigPanel().getLineConfig().getBrowserPath());
+								Commons.browserOpen(url, browserPath);
 							}
 						} else {
-							Commons.browserOpen(url, guiMain.getConfigPanel().getLineConfig().getBrowserPath());
+							Commons.browserOpen(url, browserPath);
 						}
 						i--;
 						left--;
@@ -1368,40 +1370,6 @@ public class ToolPanel extends JPanel {
 			}
 		}
 		return null;
-	}
-
-	//保存文本框的数据
-	class textAreaListener implements DocumentListener {
-
-		private JTextArea textArea;
-
-		textAreaListener(JTextArea inputTextArea){
-			this.textArea = inputTextArea;
-		}
-
-		@Override
-		public void removeUpdate(DocumentEvent e) {
-			if (ConfigPanel.listenerIsOn) {
-				guiMain.getConfigPanel().getLineConfig().setToolPanelText(((SuperJTextArea) textArea).getTextAsDisplay());
-				inputTextAreaChanged = true;
-			}
-		}
-
-		@Override
-		public void insertUpdate(DocumentEvent e) {
-			if (ConfigPanel.listenerIsOn) {
-				guiMain.getConfigPanel().getLineConfig().setToolPanelText(((SuperJTextArea) textArea).getTextAsDisplay());
-				inputTextAreaChanged = true;
-			}
-		}
-
-		@Override
-		public void changedUpdate(DocumentEvent arg0) {
-			if (ConfigPanel.listenerIsOn) {
-				guiMain.getConfigPanel().getLineConfig().setToolPanelText(((SuperJTextArea) textArea).getTextAsDisplay());
-				inputTextAreaChanged = true;
-			}
-		}
 	}
 
 

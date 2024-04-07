@@ -11,6 +11,8 @@ import InternetSearch.SearchEngine;
 import InternetSearch.SearchResultEntry;
 import Tools.JSONHandler;
 import burp.BurpExtender;
+import config.ConfigManager;
+import config.ConfigName;
 import config.ConfigPanel;
 
 public class QuakeClient extends BaseClient {
@@ -105,7 +107,7 @@ public class QuakeClient extends BaseClient {
 	@Override
 	public byte[] buildRawData(String searchContent, int page) {
 		searchContent = URLEncoder.encode(searchContent);
-		String key = ConfigPanel.textFieldQuakeAPIKey.getText();
+		String key = ConfigManager.getStringConfigByKey(ConfigName.Quake360APIKey);
 		int size = 500;
 		int start = size*(page-1); 
 		String raw = "POST /api/v3/search/quake_service HTTP/1.1\r\n" + "Host: quake.360.net\r\n"

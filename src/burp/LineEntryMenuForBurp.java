@@ -23,6 +23,8 @@ import Tools.ToolPanel;
 import base.BackGroundActionListener;
 import base.Commons;
 import base.HttpMessageCharSet;
+import config.ConfigManager;
+import config.ConfigName;
 import config.ConfigPanel;
 import domain.DomainManager;
 import title.LineEntry;
@@ -109,7 +111,7 @@ public class LineEntryMenuForBurp{
 		JMenuItemList.add(doSearch);
 
 
-		if (ConfigPanel.showItemsInOne.isSelected()) {
+		if (ConfigManager.getBooleanConfigByKey(ConfigName.showMenuItemsInOne)) {
 			ArrayList<JMenuItem> result = new ArrayList<JMenuItem>();
 
 			JMenu domainHunterPro = new JMenu("^_^ Domain Hunter Pro");

@@ -13,6 +13,8 @@ import org.apache.logging.log4j.Logger;
 
 import GUI.GUIMain;
 import bsh.This;
+import config.ConfigManager;
+import config.ConfigName;
 import config.ConfigPanel;
 
 public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListener, IContextMenuFactory, IHttpListener {
@@ -167,7 +169,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 
 	@Override
 	public List<JMenuItem> createMenuItems(IContextMenuInvocation invocation) {
-		if (ConfigPanel.DisplayContextMenuOfBurp.isSelected()) {
+		if (ConfigManager.getBooleanConfigByKey(ConfigName.showBurpMenu)) {
 			return new LineEntryMenuForBurp(gui).createMenuItemsForBurp(invocation);
 		} else {
 			return null;

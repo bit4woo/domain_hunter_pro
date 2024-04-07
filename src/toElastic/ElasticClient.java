@@ -21,6 +21,8 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 
 import burp.BurpExtender;
+import config.ConfigManager;
+import config.ConfigName;
 import config.ConfigPanel;
 import title.LineEntry;
 
@@ -126,8 +128,8 @@ public class ElasticClient {
 	 * @param entry
 	 */
 	public static void writeData(LineEntry entry) {
-		String apiUrl = ConfigPanel.textFieldElasticURL.getText().trim();
-		String userAndPass = ConfigPanel.textFieldElasticUserPass.getText();
+		String apiUrl = ConfigManager.getStringConfigByKey(ConfigName.ElasticURL).trim();
+		String userAndPass = ConfigManager.getStringConfigByKey(ConfigName.ElasticUserPass);
 		if (userAndPass.contains(":")) {
 			String[] arr = userAndPass.split(":");
 			writeData(apiUrl,arr[0],arr[1],entry);

@@ -139,27 +139,6 @@ public class DataLoadManager {
 	}
 
 	/**
-	 * 加载tool panel config 到 domain hunter
-	 * 
-	 * 所有指定文件的加载，都复制到默认路径文件。这样实现多个项目共享一个配置。设想的常见的是一个电脑用户下，一般都应该只有一份配置。
-	 * 
-	 * @param ConfigFilePath
-	 */
-	public void loadConfigToHunter(String ConfigFilePath) {
-		if (ConfigFilePath == null || ConfigFilePath.equals("")) {
-			ConfigFilePath = defaultConfigFilename;
-		}
-		gui.configPanel.loadConfigToGUI(ConfigFilePath);
-		if (new File(ConfigFilePath).exists() && !ConfigFilePath.equals(defaultConfigFilename)) {
-			try {
-				FileUtils.copyFile(new File(ConfigFilePath), new File(defaultConfigFilename));//会自动覆盖
-			} catch (IOException e) {
-				e.printStackTrace(BurpExtender.getStderr());
-			}
-		}
-	}
-
-	/**
 	 * 1、指定文件名，相当于save as
 	 * 2、未指定文件名，保存到默认路径文件
 	 * @param ConfigFilePath
@@ -168,11 +147,10 @@ public class DataLoadManager {
 		if (ConfigFilePath == null || ConfigFilePath.equals("")) {
 			ConfigFilePath = defaultConfigFilename;
 		}
-		ConfigManager config = gui.configPanel.getConfigFromGUI();
 
 		try {
 			File localFile = new File(ConfigFilePath);
-			FileUtils.write(localFile, config.ToJson());
+			FileUtils.write(localFile, ConfigManager.ToJson(),"UTF-8");
 			BurpExtender.getStdout().println("Tool Panel Config Saved To Disk!");
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -186,7 +164,6 @@ public class DataLoadManager {
 			@Override
 			protected Map doInBackground() throws Exception {
 				loadDbfileToHunter(null);
-				loadConfigToHunter(null);
 				return null;
 			}
 			@Override

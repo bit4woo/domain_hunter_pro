@@ -14,8 +14,8 @@ import base.IndexedHashMap;
 import burp.BurpExtender;
 import burp.IBurpExtenderCallbacks;
 import burp.IExtensionHelpers;
-import config.ConfigPanel;
-import config.LineConfig;
+import config.ConfigManager;
+import config.ConfigName;
 import title.LineEntry;
 import utils.DomainToURLs;
 
@@ -79,8 +79,8 @@ public class Producer extends Thread {//Producer do
 				for (URL Url:urls) {
 					LineEntry item = new LineEntry(Url).firstRequest(guiMain.getTitlePanel().getTempConfig());
 
-					LineConfig.doFilter(item);
-					if (ConfigPanel.removeItemIfIgnored.isSelected() && item.getCheckStatus().equals(LineEntry.CheckStatus_Checked)) {
+					ConfigManager.doFilter(item);
+					if (ConfigManager.getBooleanConfigByKey(ConfigName.removeItemIfIgnored) && item.getCheckStatus().equals(LineEntry.CheckStatus_Checked)) {
 						continue;
 					}
 					item.setEntrySource(type);
@@ -107,10 +107,10 @@ public class Producer extends Thread {//Producer do
 					tempEntries.add(item);
 				}
 
-				tempEntries = LineConfig.doSameHostFilter(tempEntries);
+				tempEntries = ConfigManager.doSameHostFilter(tempEntries);
 
 				for (LineEntry item:tempEntries) {
-					if (ConfigPanel.removeItemIfIgnored.isSelected() && item.getCheckStatus().equals(LineEntry.CheckStatus_Checked)) {
+					if (ConfigManager.getBooleanConfigByKey(ConfigName.removeItemIfIgnored) && item.getCheckStatus().equals(LineEntry.CheckStatus_Checked)) {
 						continue;
 					}
 					guiMain.getTitlePanel().getTitleTable().getLineTableModel().addNewLineEntry(item);

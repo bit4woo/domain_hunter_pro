@@ -20,6 +20,8 @@ import burp.BurpExtender;
 import burp.IBurpExtender;
 import burp.IHttpRequestResponse;
 import burp.ProjectMenu;
+import config.ConfigManager;
+import config.ConfigName;
 import config.ConfigPanel;
 import config.DataLoadManager;
 import dao.DomainDao;
@@ -39,6 +41,8 @@ public class GUIMain extends JFrame {
 	public ToolPanel toolPanel;
 	public ConfigPanel configPanel;
 	public SearchPanel searchPanel;
+	
+	public JTabbedPane tabbedWrapper;
 
 	public File currentDBFile;
 	public ProjectMenu projectMenu;
@@ -163,7 +167,7 @@ public class GUIMain extends JFrame {
 			stderr = new PrintWriter(System.out, true);
 		}
 
-		JTabbedPane tabbedWrapper = new JTabbedPane();
+		tabbedWrapper = new JTabbedPane();
 		tabbedWrapper.setName("DomainHunterPro");//需要在从burpFrame向下查找该插件时用到
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 1174, 497);
@@ -176,35 +180,41 @@ public class GUIMain extends JFrame {
 		tabbedWrapper.addTab("Domains", null, domainPanel, null);
 		tabbedWrapper.addTab("Titles", null, titlePanel, null);
 		tabbedWrapper.addTab("Tools", null,toolPanel,null);
-		tabbedWrapper.addTab("Config", null,configPanel,null);
 		tabbedWrapper.addTab("Search", null,searchPanel,null);
+		tabbedWrapper.addTab("Config", null,configPanel,null);
 
 		setProjectMenu(new ProjectMenu(this));
 		getProjectMenu().Add();
 		
 		dataLoadManager = getDataLoadManager();
 	}
+	
+	public void renewConfigPanel() {
+		tabbedWrapper.remove(configPanel);
+		new ConfigPanel(this);
+		tabbedWrapper.addTab("Config", null,configPanel,null);
+	}
 
 	/**
 	 * 仅仅锁住图形界面，不影响后台处理数据
 	 */
 	public void lockUnlock() {
-		if (this.getContentPane().isEnabled()) {
-			((JTabbedPane)this.getContentPane()).addTab("Locked",null,new JPanel(),null);
-			int size = ((JTabbedPane)this.getContentPane()).getTabCount();
-			((JTabbedPane)this.getContentPane()).setSelectedIndex(size-1);
+		if (tabbedWrapper.isEnabled()) {
+			tabbedWrapper.addTab("Locked",null,new JPanel(),null);
+			int size = tabbedWrapper.getTabCount();
+			tabbedWrapper.setSelectedIndex(size-1);
 			this.getContentPane().setEnabled(false);
 			projectMenu.setText("DomainHunter*");
 			projectMenu.lockMenu.setText("Unlock");
-			ConfigPanel.DisplayContextMenuOfBurp.setSelected(false);//不显示burp右键菜单
+			ConfigManager.setConfigValue(ConfigName.showBurpMenu,false);//不显示burp右键菜单
 		}else {
-			this.getContentPane().setEnabled(true);
-			int size = ((JTabbedPane)this.getContentPane()).getTabCount();
-			((JTabbedPane)this.getContentPane()).removeTabAt(size-1);
-			((JTabbedPane)this.getContentPane()).setSelectedIndex(0);
+			tabbedWrapper.setEnabled(true);
+			int size = tabbedWrapper.getTabCount();
+			tabbedWrapper.removeTabAt(size-1);
+			tabbedWrapper.setSelectedIndex(0);
 			projectMenu.lockMenu.setText("Lock");
 			projectMenu.setText("DomainHunter");
-			ConfigPanel.DisplayContextMenuOfBurp.setSelected(true);//显示右键菜单
+			ConfigManager.setConfigValue(ConfigName.showBurpMenu,true);//显示右键菜单
 		}
 	}
 

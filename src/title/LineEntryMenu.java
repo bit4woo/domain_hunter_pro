@@ -37,6 +37,8 @@ import burp.Getter;
 import burp.IBurpExtenderCallbacks;
 import burp.LineEntryMenuForBurp;
 import burp.SystemUtils;
+import config.ConfigManager;
+import config.ConfigName;
 import title.search.SearchNumbericDork;
 import title.search.SearchStringDork;
 import utils.DomainNameUtils;
@@ -327,7 +329,7 @@ public class LineEntryMenu extends JPopupMenu {
 			public void actionPerformed(ActionEvent e) {
 				try{
 					Set<String> IPs = lineTable.getLineTableModel().getIPs(modelRows);
-					String nmapPath = guiMain.getConfigPanel().getLineConfig().getNmapPath();
+					String nmapPath = ConfigManager.getStringConfigByKey(ConfigName.PortScanCmd);
 
 					String command = PortScanUtils.genCmd(nmapPath, IPs);
 
@@ -353,7 +355,7 @@ public class LineEntryMenu extends JPopupMenu {
 				try{
 					List<String> IPs = lineTable.getLineTableModel().getHosts(modelRows);
 
-					String nmapPath = guiMain.getConfigPanel().getLineConfig().getNmapPath();
+					String nmapPath = ConfigManager.getStringConfigByKey(ConfigName.PortScanCmd);
 					PortScanUtils.genCmdAndCopy(nmapPath, new HashSet<>(IPs));
 				}
 				catch (Exception e1)
@@ -371,7 +373,7 @@ public class LineEntryMenu extends JPopupMenu {
 					java.util.List<String> cmds = new ArrayList<String>();
 					for(String url:urls) {
 						//python dirsearch.py -t 8 --proxy=localhost:7890 --random-agent -e * -f -x 400,404,500,502,503,514,550,564 -u url
-						String cmd = guiMain.getConfigPanel().getLineConfig().getDirSearchPath().replace("{url}", url);
+						String cmd = ConfigManager.getStringConfigByKey(ConfigName.DirBruteCmd).replace("{url}", url);
 						cmds.add(cmd);
 					}
 					SystemUtils.writeToClipboard(String.join(System.lineSeparator(), cmds));
@@ -392,7 +394,7 @@ public class LineEntryMenu extends JPopupMenu {
 						return;
 					}
 					for (String url:urls){
-						Commons.browserOpen(url,guiMain.getConfigPanel().getLineConfig().getBrowserPath());
+						Commons.browserOpen(url,ConfigManager.getStringConfigByKey(ConfigName.BrowserPath));
 					}
 				}
 				catch (Exception e1)

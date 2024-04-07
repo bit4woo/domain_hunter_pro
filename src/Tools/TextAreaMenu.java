@@ -14,6 +14,8 @@ import GUI.GUIMain;
 import base.Commons;
 import burp.BurpExtender;
 import burp.IPAddressUtils;
+import config.ConfigManager;
+import config.ConfigName;
 import domain.DomainManager;
 import utils.PortScanUtils;
 
@@ -59,7 +61,7 @@ public class TextAreaMenu extends JPopupMenu {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try{
-					String nmapPath = guiMain.getConfigPanel().getLineConfig().getNmapPath();
+					String nmapPath = ConfigManager.getStringConfigByKey(ConfigName.PortScanCmd);
 					PortScanUtils.genCmdAndCopy(nmapPath, selectedItems);
 				}
 				catch (Exception e1)

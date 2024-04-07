@@ -20,6 +20,8 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import base.Commons;
+import config.ConfigManager;
+import config.ConfigName;
 import config.ConfigPanel;
 
 public class CertInfo {
@@ -36,7 +38,7 @@ public class CertInfo {
 	
 	public CertInfo() {
 		try {
-			String proxy = ConfigPanel.textFieldProxyForGetCert.getText();
+			String proxy = ConfigManager.getStringConfigByKey(ConfigName.ProxyForGetCert);
 			if (proxy != null && !proxy.isEmpty() && proxy.contains(":")) {
 				String[] parts = proxy.split(":");
 				if (parts.length==2) {

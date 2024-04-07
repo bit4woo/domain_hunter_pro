@@ -22,6 +22,8 @@ import Tools.DomainComparator;
 import Tools.LengthComparator;
 import base.Commons;
 import burp.BurpExtender;
+import config.ConfigManager;
+import config.ConfigName;
 import title.search.SearchStringDork;
 import utils.DomainNameUtils;
 import utils.IPAddressUtils;
@@ -91,7 +93,7 @@ public class TextAreaMenu extends JPopupMenu {
 					}
 
 					try {
-						Commons.browserOpen(item, domainPanel.getGuiMain().getConfigPanel().getLineConfig().getBrowserPath());
+						Commons.browserOpen(item, ConfigManager.getStringConfigByKey(ConfigName.BrowserPath));
 					} catch (Exception e) {
 						e.printStackTrace(stderr);
 					}
@@ -320,7 +322,7 @@ public class TextAreaMenu extends JPopupMenu {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try{
-					String nmapPath = domainPanel.getGuiMain().getConfigPanel().getLineConfig().getNmapPath();
+					String nmapPath = ConfigManager.getStringConfigByKey(ConfigName.PortScanCmd);
 					PortScanUtils.genCmdAndCopy(nmapPath, selectedItems);
 				}
 				catch (Exception e1)

@@ -11,6 +11,8 @@ import burp.IBurpExtenderCallbacks;
 import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
 import burp.IHttpService;
+import config.ConfigManager;
+import config.ConfigName;
 import config.ConfigPanel;
 import title.LineEntry;
 import toElastic.ElasticClient;
@@ -165,7 +167,7 @@ public class DomainProducer extends Thread {//Producer do
 					}
 				}
 
-				if (ConfigPanel.rdbtnSaveTrafficTo.isSelected()) {
+				if (ConfigManager.getBooleanConfigByKey(ConfigName.SaveTrafficToElastic)) {
 					if (type != DomainManager.USELESS && !Commons.uselessExtension(urlString)) {//grep domains from response and classify
 						if (threadNo == 9999) {
 							try {//写入elastic的逻辑，只对目标资产生效

@@ -11,6 +11,8 @@ import InternetSearch.SearchEngine;
 import InternetSearch.SearchResultEntry;
 import Tools.JSONHandler;
 import burp.BurpExtender;
+import config.ConfigManager;
+import config.ConfigName;
 import config.ConfigPanel;
 
 public class FoFaClient extends BaseClient {
@@ -70,8 +72,8 @@ public class FoFaClient extends BaseClient {
 
 	@Override
 	public String buildSearchUrl(String searchContent, int page) {
-		String email = ConfigPanel.textFieldFofaEmail.getText();
-		String key = ConfigPanel.textFieldFofaKey.getText();
+		String email = ConfigManager.getStringConfigByKey(ConfigName.FofaEmail);
+		String key = ConfigManager.getStringConfigByKey(ConfigName.FofaKey);
 		if (email.equals("") || key.equals("")) {
 			BurpExtender.getStderr().println("fofa.info emaill or key not configurated!");
 			return null;

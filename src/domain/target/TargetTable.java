@@ -25,6 +25,8 @@ import javax.swing.table.TableColumn;
 import GUI.GUIMain;
 import base.Commons;
 import burp.BurpExtender;
+import config.ConfigManager;
+import config.ConfigName;
 
 public class TargetTable extends JTable{
 
@@ -102,7 +104,7 @@ public class TargetTable extends JTable{
 								if (domain != null && !domain.toLowerCase().startsWith("http://") && !domain.toLowerCase().startsWith("https://")) {
 									domain = "http://"+domain;//针对DNS记录中URL字段是host的情况
 								}
-								Commons.browserOpen(domain,guiMain.getConfigPanel().getLineConfig().getBrowserPath());
+								Commons.browserOpen(domain,ConfigManager.getStringConfigByKey(ConfigName.BrowserPath));
 							}
 						}catch (Exception e1){
 							e1.printStackTrace(stderr);

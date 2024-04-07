@@ -52,6 +52,8 @@ import burp.IBurpExtenderCallbacks;
 import burp.IHttpRequestResponse;
 import burp.IHttpService;
 import burp.IScanIssue;
+import config.ConfigManager;
+import config.ConfigName;
 import config.ConfigPanel;
 import dao.DomainDao;
 import dao.TargetDao;
@@ -389,9 +391,9 @@ public class DomainPanel extends JPanel {
 					@Override
 					protected Boolean doInBackground() throws Exception {
 						btnUpload.setEnabled(false);
-						String url = guiMain.getConfigPanel().getLineConfig().getUploadUrl();
+						String url = ConfigManager.getStringConfigByKey(ConfigName.UploadApiURL);;
 						String host = new URL(url).getHost();
-						String token = ConfigPanel.textFieldUploadApiToken.getText().trim();
+						String token = ConfigManager.getStringConfigByKey(ConfigName.UploadApiToken).trim();
 						HashMap<String, String> headers = new HashMap<String, String>();
 						headers.put("Content-Type", "application/json;charset=UTF-8");
 						if (token != null && !token.equals("")) {//vmp

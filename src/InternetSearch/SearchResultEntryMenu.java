@@ -17,6 +17,8 @@ import base.Commons;
 import burp.BurpExtender;
 import burp.IPAddressUtils;
 import burp.SystemUtils;
+import config.ConfigManager;
+import config.ConfigName;
 import domain.DomainManager;
 import utils.DomainNameUtils;
 import utils.GrepUtils;
@@ -87,7 +89,7 @@ public class SearchResultEntryMenu extends JPopupMenu {
 			public void actionPerformed(ActionEvent e) {
 				try{
 					java.util.List<String> ip_list = searchTableModel.getMultipleValue(modelRows,"IP");
-					String nmapPath = guiMain.getConfigPanel().getLineConfig().getNmapPath();
+					String nmapPath = ConfigManager.getStringConfigByKey(ConfigName.PortScanCmd);
 					PortScanUtils.genCmdAndCopy(nmapPath, new HashSet<>(ip_list));
 				}
 				catch (Exception e1)
@@ -107,7 +109,7 @@ public class SearchResultEntryMenu extends JPopupMenu {
 						return;
 					}
 					for (String url:urls){
-						Commons.browserOpen(url,guiMain.getConfigPanel().getLineConfig().getBrowserPath());
+						Commons.browserOpen(url,ConfigManager.getStringConfigByKey(ConfigName.BrowserPath));
 					}
 				}
 				catch (Exception e1)

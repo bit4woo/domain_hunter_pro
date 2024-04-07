@@ -21,6 +21,8 @@ import InternetSearch.BrowserSearchAction;
 import InternetSearch.SearchEngine;
 import base.Commons;
 import burp.BurpExtender;
+import config.ConfigManager;
+import config.ConfigName;
 
 public class TargetEntryMenu extends JPopupMenu {
 
@@ -120,7 +122,7 @@ public class TargetEntryMenu extends JPopupMenu {
 				for (int row:modelRows) {
 					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,rootDomainColumnIndex);
 					try {
-						Commons.browserOpen("https://"+rootDomain, guiMain.getConfigPanel().getLineConfig().getBrowserPath());
+						Commons.browserOpen("https://"+rootDomain, ConfigManager.getStringConfigByKey(ConfigName.BrowserPath));
 					} catch (Exception e) {
 						e.printStackTrace(stderr);
 					}

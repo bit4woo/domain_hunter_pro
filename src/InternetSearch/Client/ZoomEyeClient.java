@@ -11,6 +11,8 @@ import InternetSearch.SearchEngine;
 import InternetSearch.SearchResultEntry;
 import Tools.JSONHandler;
 import burp.BurpExtender;
+import config.ConfigManager;
+import config.ConfigName;
 import config.ConfigPanel;
 
 public class ZoomEyeClient extends BaseClient {
@@ -68,10 +70,9 @@ public class ZoomEyeClient extends BaseClient {
 
 	@Override
 	public String buildSearchUrl(String searchContent, int page) {
-		String email = ConfigPanel.textFieldFofaEmail.getText();
-		String key = ConfigPanel.textFieldFofaKey.getText();
-		if (email.equals("") || key.equals("")) {
-			BurpExtender.getStderr().println("fofa.info emaill or key not configurated!");
+		String key = ConfigManager.getStringConfigByKey(ConfigName.ZoomEyeAPIKey);
+		if (key.equals("")) {
+			BurpExtender.getStderr().println("zoomeye key not configurated!");
 			return null;
 		}
 		//https://www.zoomeye.hk/api/domain/search?q=google.com&p=1&s=10&type=1
@@ -96,12 +97,11 @@ public class ZoomEyeClient extends BaseClient {
 				+ "";
 		
 		searchContent = URLEncoder.encode(searchContent);
-		String key = ConfigPanel.textFieldQuakeAPIKey.getText();
+		String key = ConfigManager.getStringConfigByKey(ConfigName.ZoomEyeAPIKey);
 		int size = 500;
 		int start = size*(page-1); 
 		raw = String.format(raw,searchContent,page,key);
 		return raw.getBytes();
-		return null;
 	}
 
 }

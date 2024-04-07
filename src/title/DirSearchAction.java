@@ -6,6 +6,8 @@ import java.awt.event.ActionListener;
 import GUI.GUIMain;
 import burp.BurpExtender;
 import burp.SystemUtils;
+import config.ConfigManager;
+import config.ConfigName;
 
 class DirSearchAction implements ActionListener{
 
@@ -25,7 +27,7 @@ class DirSearchAction implements ActionListener{
 			java.util.List<String> urls = lineTable.getLineTableModel().getURLs(rows);
 			for(String url:urls) {
 				//python dirsearch.py -t 8 --proxy=localhost:7890 --random-agent -e * -f -x 400,404,500,502,503,514,550,564 -u url
-				String cmd = guiMain.getConfigPanel().getLineConfig().getDirSearchPath().replace("{url}", url);
+				String cmd = ConfigManager.getStringConfigByKey(ConfigName.DirBruteCmd).replace("{url}", url);
 				String batFilePathString  = SystemUtils.genBatchFile(cmd, "dirsearch-latest-command.bat");
 				
 				SystemUtils.runBatchFile(batFilePathString);

@@ -18,6 +18,8 @@ import GUI.GUIMain;
 import base.Commons;
 import burp.BurpExtender;
 import burp.SystemUtils;
+import config.ConfigManager;
+import config.ConfigName;
 import title.LineTable;
 import title.LineTableModel;
 
@@ -136,7 +138,7 @@ public class SearchTable extends JTable
 							if (url != null && !url.toLowerCase().startsWith("http://") && !url.toLowerCase().startsWith("https://")) {
 								url = "http://"+url;//针对DNS记录中URL字段是host的情况
 							}
-							Commons.browserOpen(url,guiMain.getConfigPanel().getLineConfig().getBrowserPath());
+							Commons.browserOpen(url,ConfigManager.getStringConfigByKey(ConfigName.BrowserPath));
 						}catch (Exception e1){
 							e1.printStackTrace(stderr);
 						}
@@ -144,7 +146,7 @@ public class SearchTable extends JTable
 						
 					}else if (modelCol == LineTableModel.getTitleList().indexOf("Favicon")) {
 						try {
-							Commons.browserOpen(selecteEntry.getIcon_url(),guiMain.getConfigPanel().getLineConfig().getBrowserPath());
+							Commons.browserOpen(selecteEntry.getIcon_url(),ConfigManager.getStringConfigByKey(ConfigName.BrowserPath));
 						} catch (Exception e1) {
 							e1.printStackTrace();
 						}
