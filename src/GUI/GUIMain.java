@@ -191,8 +191,7 @@ public class GUIMain extends JFrame {
 	
 	public void renewConfigPanel() {
 		tabbedWrapper.remove(configPanel);
-		new ConfigPanel(this);
-		tabbedWrapper.addTab("Config", null,configPanel,null);
+		tabbedWrapper.addTab("Config", null,new ConfigPanel(this),null);
 	}
 
 	/**

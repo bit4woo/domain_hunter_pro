@@ -48,6 +48,9 @@ public class Stack {
         return stack.contains(t);
     }
 
+    public List<String> getItemList(){
+    	return new ArrayList<>(stack);
+    }
 
     public static void main(String[] args) {
         Stack stack = new Stack();

@@ -1,9 +1,12 @@
 package config;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.commons.io.FileUtils;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -33,7 +36,7 @@ public class ConfigManager {
 	public static final String defaultDirSearch = "python3 dirsearch.py -t 8 --proxy=127.0.0.1:8080 "
 			+ "--random-agent -e * -f -x 400,404,500,502,503,514,550,564 -u {url}";
 	public static final String macDefaultBrowserPath = "/Applications/Firefox.app/Contents/MacOS/firefox";
-	public static final  String defaultDirDictPath ="D:\\github\\webdirscan\\dict\\dict.txt";
+	public static final String defaultDirDictPath ="D:\\github\\webdirscan\\dict\\dict.txt";
 
 	private GUIMain gui;
 
@@ -41,7 +44,7 @@ public class ConfigManager {
 		//to resolve "default constructor not found" error
 	}
 
-	public String getBrowserPath() {
+	public static String getBrowserPath() {
 		if (Commons.isMac()) {
 			return macDefaultBrowserPath;
 		}else {
@@ -62,40 +65,74 @@ public class ConfigManager {
 		ConfigManager.configList = configList;
 	}
 
-	public ConfigManager(String Name){
-		this.configManagerName = Name;
-		configList.add(new ConfigEntry(ConfigName.BrowserPath,getBrowserPath(),"",true,true));
-		configList.add(new ConfigEntry(ConfigName.PortScanCmd,defaultNmap,"",true,true));
-		configList.add(new ConfigEntry(ConfigName.DirBruteCmd,defaultDirSearch,"",true,true));
-		configList.add(new ConfigEntry(ConfigName.DirDictPath,"","",true,true));
-		configList.add(new ConfigEntry(ConfigName.ElasticURL,"http://10.12.72.55:9200/","",true,true));
-		configList.add(new ConfigEntry(ConfigName.ElasticUserPass,"elastic:changeme","username and password of elastic API",true,true));
+	public static void init(String configManagerFile) {
+		if (initFromFile(configManagerFile) && configList.size() >0) {
+			return;
+		}
+		initDefault();
+	}
 
-		configList.add(new ConfigEntry(ConfigName.UploadApiURL,"","",true,true));
-		configList.add(new ConfigEntry(ConfigName.UploadApiToken,"","",true,true));
+	/**
+	 * 从文件中初始化ConfigManager对象
+	 * @param configManagerFile
+	 * @return
+	 */
+	private static boolean initFromFile(String configManagerFile) {
+		if (configManagerFile != null){
+			try {
+				File localFile = new File(configManagerFile);
+				if (localFile.exists()) {
+					String jsonstr = FileUtils.readFileToString(localFile,"UTF-8");
+					FromJson(jsonstr);
+					return true;
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+				e.printStackTrace(BurpExtender.getStderr());
+			}
+		}
+		return false;
+	}
 
-		configList.add(new ConfigEntry(ConfigName.FofaEmail,"","",true,true));
-		configList.add(new ConfigEntry(ConfigName.FofaKey,"","",true,true));
+	private static boolean initDefault(){
+		try {
+			configList.add(new ConfigEntry(ConfigName.BrowserPath,getBrowserPath(),"",true,true));
+			configList.add(new ConfigEntry(ConfigName.PortScanCmd,defaultNmap,"",true,true));
+			configList.add(new ConfigEntry(ConfigName.DirBruteCmd,defaultDirSearch,"",true,true));
+			configList.add(new ConfigEntry(ConfigName.DirDictPath,defaultDirDictPath,"",true,true));
+			configList.add(new ConfigEntry(ConfigName.ElasticURL,"http://10.12.72.55:9200/","",true,true));
+			configList.add(new ConfigEntry(ConfigName.ElasticUserPass,"elastic:changeme","username and password of elastic API",true,true));
 
-		configList.add(new ConfigEntry(ConfigName.Quake360APIKey,"","",true,true));
-		configList.add(new ConfigEntry(ConfigName.Ti360APIKey,"","",true,true));
-		configList.add(new ConfigEntry(ConfigName.QianxinHunterAPIKey,"","",true,true));
-		configList.add(new ConfigEntry(ConfigName.QianxinTiAPIKey,"","",true,true));
-		configList.add(new ConfigEntry(ConfigName.ZoomEyeAPIKey,"","",true,true));
-		configList.add(new ConfigEntry(ConfigName.ShodanAPIKey,"","",true,true));
+			configList.add(new ConfigEntry(ConfigName.UploadApiURL,"","",true,true));
+			configList.add(new ConfigEntry(ConfigName.UploadApiToken,"","",true,true));
 
-		configList.add(new ConfigEntry(ConfigName.ProxyForGetCert,"127.0.0.1:7890","",true,true));
+			configList.add(new ConfigEntry(ConfigName.FofaEmail,"","",true,true));
+			configList.add(new ConfigEntry(ConfigName.FofaKey,"","",true,true));
+
+			configList.add(new ConfigEntry(ConfigName.Quake360APIKey,"","",true,true));
+			configList.add(new ConfigEntry(ConfigName.Ti360APIKey,"","",true,true));
+			configList.add(new ConfigEntry(ConfigName.QianxinHunterAPIKey,"","",true,true));
+			configList.add(new ConfigEntry(ConfigName.QianxinTiAPIKey,"","",true,true));
+			configList.add(new ConfigEntry(ConfigName.ZoomEyeAPIKey,"","",true,true));
+			configList.add(new ConfigEntry(ConfigName.ShodanAPIKey,"","",true,true));
+
+			configList.add(new ConfigEntry(ConfigName.ProxyForGetCert,"127.0.0.1:7890","",true,true));
 
 
-		configList.add(new ConfigEntry(ConfigName.showBurpMenu,"true","",true,true));
-		configList.add(new ConfigEntry(ConfigName.showMenuItemsInOne,"true","",true,true));
-		configList.add(new ConfigEntry(ConfigName.ignoreHTTPS,"false","",true,true));
-		configList.add(new ConfigEntry(ConfigName.ignoreHTTP,"true","",true,true));
-		configList.add(new ConfigEntry(ConfigName.ignoreHTTPStaus500,"true","",true,true));
-		configList.add(new ConfigEntry(ConfigName.ignoreHTTPStaus400,"true","",true,true));
-		configList.add(new ConfigEntry(ConfigName.ignoreWrongCAHost,"false","",true,true));
-		configList.add(new ConfigEntry(ConfigName.removeItemIfIgnored,"true","",true,true));
-		configList.add(new ConfigEntry(ConfigName.SaveTrafficToElastic,"false","",true,true));
+			configList.add(new ConfigEntry(ConfigName.showBurpMenu,"true","",true,true));
+			configList.add(new ConfigEntry(ConfigName.showMenuItemsInOne,"true","",true,true));
+			configList.add(new ConfigEntry(ConfigName.ignoreHTTPS,"false","",true,true));
+			configList.add(new ConfigEntry(ConfigName.ignoreHTTP,"true","",true,true));
+			configList.add(new ConfigEntry(ConfigName.ignoreHTTPStaus500,"true","",true,true));
+			configList.add(new ConfigEntry(ConfigName.ignoreHTTPStaus400,"true","",true,true));
+			configList.add(new ConfigEntry(ConfigName.ignoreWrongCAHost,"false","",true,true));
+			configList.add(new ConfigEntry(ConfigName.removeItemIfIgnored,"true","",true,true));
+			configList.add(new ConfigEntry(ConfigName.SaveTrafficToElastic,"false","",true,true));
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
 	}
 
 	public String getConfigManagerName() {
@@ -115,8 +152,8 @@ public class ConfigManager {
 	public static ConfigManager FromJsonDeprecated(String json){//注意函数名称，如果是get set开头，会被认为是Getter和Setter函数，会在序列化过程中被调用。
 		return new Gson().fromJson(json, ConfigManager.class);
 	}
-	
-	
+
+
 	public static String ToJson(){//注意函数名称，如果是get set开头，会被认为是Getter和Setter函数，会在序列化过程中被调用。
 		return configListToJson();
 	}
@@ -124,25 +161,25 @@ public class ConfigManager {
 	public static void FromJson(String json){//注意函数名称，如果是get set开头，会被认为是Getter和Setter函数，会在序列化过程中被调用。
 		configList = configListFromJson(json);
 	}
-	
+
 	public static String configListToJson(){
 		return new Gson().toJson(configList);
 	}
 
 	public static List<ConfigEntry> configListFromJson(String json){
 		// 创建一个Gson对象
-	    Gson gson = new Gson();
-	    // 使用TypeToken来获取List<ConfigEntry>的Type
-	    java.lang.reflect.Type listType = new TypeToken<List<ConfigEntry>>(){}.getType();
+		Gson gson = new Gson();
+		// 使用TypeToken来获取List<ConfigEntry>的Type
+		java.lang.reflect.Type listType = new TypeToken<List<ConfigEntry>>(){}.getType();
 
-	    // 使用fromJson方法将JSON字符串反序列化为List<ConfigEntry>对象
-	    List<ConfigEntry> configList = gson.fromJson(json, listType);
-	    return configList;
+		// 使用fromJson方法将JSON字符串反序列化为List<ConfigEntry>对象
+		List<ConfigEntry> configList = gson.fromJson(json, listType);
+		return configList;
 	}
-	
 
 
-    // 现在你可以使用configList了，它是一个List<ConfigEntry>对象
+
+	// 现在你可以使用configList了，它是一个List<ConfigEntry>对象
 
 	public static String getStringConfigByKey(String configKey) {
 		if(ConfigName.getAllConfigNames().contains(configKey)) {
@@ -159,22 +196,22 @@ public class ConfigManager {
 
 	public static boolean getBooleanConfigByKey(String configKey){
 		if(ConfigName.getAllConfigNames().contains(configKey)) {
-		    for (ConfigEntry entry : configList) {
-		        if (entry.getKey().equalsIgnoreCase(configKey)) {
-		            try {
-		                return Boolean.parseBoolean(entry.getValue());
-		            } catch (IllegalArgumentException e) {
-		            	BurpExtender.getStderr().println("Invalid boolean value for config key: " + configKey);
-		            }
-		        }
-		    }
-	    }else {
+			for (ConfigEntry entry : configList) {
+				if (entry.getKey().equalsIgnoreCase(configKey)) {
+					try {
+						return Boolean.parseBoolean(entry.getValue());
+					} catch (IllegalArgumentException e) {
+						BurpExtender.getStderr().println("Invalid boolean value for config key: " + configKey);
+					}
+				}
+			}
+		}else {
 			BurpExtender.getStderr().println("Config key not found: " + configKey);
 		}
 		return false;
 	}
-	
-	
+
+
 	public static void setConfigValue(String configKey,String configValue) {
 		if(ConfigName.getAllConfigNames().contains(configKey)) {
 			for (ConfigEntry entry:configList) {
@@ -189,19 +226,19 @@ public class ConfigManager {
 
 	public static boolean setConfigValue(String configKey,boolean configValue){
 		if(ConfigName.getAllConfigNames().contains(configKey)) {
-		    for (ConfigEntry entry : configList) {
-		        if (entry.getKey().equalsIgnoreCase(configKey)) {
-		        	if (entry.getKey().equalsIgnoreCase(configKey)) {
+			for (ConfigEntry entry : configList) {
+				if (entry.getKey().equalsIgnoreCase(configKey)) {
+					if (entry.getKey().equalsIgnoreCase(configKey)) {
 						entry.setValue(configValue+"");
 					}
-		        }
-		    }
-	    }else {
+				}
+			}
+		}else {
 			BurpExtender.getStderr().println("Config key not found: " + configKey);
 		}
 		return false;
 	}
-	
+
 
 	/**
 	 * 当从文件恢复出当前对象后，需要通过setter来设置gui
@@ -212,9 +249,8 @@ public class ConfigManager {
 	}
 
 	public static void main(String[] args) {
-		System.out.println(new ConfigManager("test").ToJson());
+		System.out.println(new ConfigManager().ToJson());
 	}
-
 
 	/**
 	 *是否是从http跳转到相同URL的https 

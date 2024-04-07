@@ -1,9 +1,14 @@
 package config;
 
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
+import javax.swing.AbstractAction;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.SwingWorker;
 
 import org.apache.commons.io.FileUtils;
@@ -56,7 +61,7 @@ public class DataLoadManager {
 	public void saveToDisk() {
 		File localFile = new File(localdir);
 		try {
-			FileUtils.write(localFile, this.toJson());
+			FileUtils.write(localFile, this.toJson(),"UTF-8");
 		} catch (IOException e) {
 			e.printStackTrace();
 			e.printStackTrace(BurpExtender.getStderr());
@@ -72,7 +77,7 @@ public class DataLoadManager {
 		gui = guiMain;
 		try {
 			if (localFile.exists()) {
-				String jsonstr = FileUtils.readFileToString(localFile);
+				String jsonstr = FileUtils.readFileToString(localFile,"UTF-8");
 				DataLoadManager manager = fromJson(jsonstr);
 				return manager;
 			}
@@ -116,7 +121,7 @@ public class DataLoadManager {
 			return;
 		}
 		gui.loadDataBase(dbFilePath);
-		//pushRecentDatabaseFile(dbFilePath);//保存最近的加载
+		pushRecentDatabaseFile(dbFilePath);//保存最近的加载
 		saveToDisk();
 	}
 	
@@ -158,12 +163,34 @@ public class DataLoadManager {
 		}
 	}
 	
+	/**
+	 * 加载tool panel config 到 domain hunter
+	 * 
+	 * 所有指定文件的加载，都复制到默认路径文件。这样实现多个项目共享一个配置。设想的常见的是一个电脑用户下，一般都应该只有一份配置。
+	 * 
+	 * @param ConfigFilePath
+	 */
+	public void loadConfigToHunter(String ConfigFilePath) {
+		if (ConfigFilePath == null || ConfigFilePath.equals("")) {
+			ConfigFilePath = defaultConfigFilename;
+		}
+		ConfigManager.init(ConfigFilePath);
+		gui.renewConfigPanel();
+		if (new File(ConfigFilePath).exists() && !ConfigFilePath.equals(defaultConfigFilename)) {
+			try {
+				FileUtils.copyFile(new File(ConfigFilePath), new File(defaultConfigFilename));//会自动覆盖
+			} catch (IOException e) {
+				e.printStackTrace(BurpExtender.getStderr());
+			}
+		}
+	}
 
 	public void loadDbAndConfig() {
 		SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
 			@Override
 			protected Map doInBackground() throws Exception {
 				loadDbfileToHunter(null);
+				loadConfigToHunter(null);
 				return null;
 			}
 			@Override
@@ -171,5 +198,17 @@ public class DataLoadManager {
 			}
 		};
 		worker.execute();
+	}
+	
+	public void createRecentOpenItem(JMenu parentMenu){
+		for(String item:recentProjectDatabaseFiles.getItemList()) {
+			JMenuItem menuItem = new JMenuItem(new AbstractAction(item) {
+				@Override
+				public void actionPerformed(ActionEvent actionEvent) {
+					loadDbfileToHunter(item);
+				}
+			} );
+			parentMenu.add(menuItem);
+		}
 	}
 }

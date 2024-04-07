@@ -2,6 +2,7 @@ package InternetSearch;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -58,8 +59,7 @@ public class APISearchAction extends AbstractAction {
 	}
 
 	public APISearchAction(AbstractTableModel lineModel, int[] modelRows, int columnIndex, String engine,boolean autoAddToTarget, boolean showInGUI) {
-		this(lineModel, modelRows, columnIndex,new ArrayList<>(), autoAddToTarget, showInGUI);
-		engineList.add(engine);
+		this(lineModel, modelRows, columnIndex,new ArrayList<>(Collections.singletonList(engine)), autoAddToTarget, showInGUI);
 	}
 
 	public APISearchAction(AbstractTableModel lineModel, int[] modelRows, int columnIndex, String engine) {

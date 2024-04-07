@@ -54,6 +54,10 @@ public class ProjectMenu extends JMenu{
 		openMenu.setToolTipText("Open Domain Hunter Project File(DB File)");
 		this.add(openMenu);
 
+		JMenu openRecentMenu = new JMenu("Open Recent");
+		gui.getDataLoadManager().createRecentOpenItem(openRecentMenu);
+		openMenu.setToolTipText("Open Recent Domain Hunter Project File(DB File)");
+		this.add(openRecentMenu);
 
 		JMenuItem renameMenu = new JMenuItem(new AbstractAction("Rename(Save As)")
 		{
@@ -188,6 +192,14 @@ public class ProjectMenu extends JMenu{
 	}
 
 	public void openDb() {
+		File file = gui.dbfc.dialog(true,".db");
+		if (null != file) {
+			gui.getDataLoadManager().loadDbfileToHunter(file.toString());
+		}
+	}
+
+
+	public void openRecentDb() {
 		File file = gui.dbfc.dialog(true,".db");
 		if (null != file) {
 			gui.getDataLoadManager().loadDbfileToHunter(file.toString());

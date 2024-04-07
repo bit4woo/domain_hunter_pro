@@ -70,7 +70,7 @@ public class ConfigPanel extends JPanel{
 
 			add(radioButton, new MyGridBagLayout(++rowIndex,2));
 		}else {
-			JLabel label = new JLabel(config.getKey());
+			JLabel label = new JLabel(config.getKey()+":");
 
 			JTextField textField = new JTextField();
 			textField.setText(config.getValue());
@@ -100,7 +100,7 @@ public class ConfigPanel extends JPanel{
 			});
 
 			// 添加到界面
-			add(label, new MyGridBagLayout(++rowIndex,1));
+			add(label, new MyGridBagLayout(rowIndex,1));
 			add(textField, new MyGridBagLayout(rowIndex,2));
 		}
 	}
@@ -114,9 +114,9 @@ public class ConfigPanel extends JPanel{
 		for (JButton button:creatControlButtons()) {
 			add(button, new MyGridBagLayout(++rowIndex,1));
 		}
-
+		//需要提取初始化ConfigManager
 		for (ConfigEntry config:ConfigManager.getConfigList()) {
-			addConfigItem(config,rowIndex);
+			addConfigItem(config,++rowIndex);
 		}
 	}
 
