@@ -2,13 +2,13 @@ package InternetSearch;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -21,9 +21,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 
 import GUI.GUIMain;
-import GUI.JScrollPanelWithHeader;
 import burp.BurpExtender;
-import domain.TextAreaType;
 
 public class SearchPanel extends JPanel {
 
@@ -33,19 +31,45 @@ public class SearchPanel extends JPanel {
 	GUIMain guiMain;
 	PrintWriter stdout;
 	PrintWriter stderr;
-	
+
 	public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            JFrame frame = new JFrame("Table Sync Example");
-            SearchPanel spanel = new SearchPanel(null);
-            frame.getContentPane().add(spanel);
-            frame.setSize(400, 300);
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.setVisible(true);
-            
-            spanel.addSearchTab("111",new ArrayList<SearchResultEntry>(),"xxx");
-        });
-		
+		test();
+	}
+
+	public static void test() {
+		SwingUtilities.invokeLater(() -> {
+			JFrame frame = new JFrame("test");
+			frame.setSize(400, 300);
+			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+			frame.setVisible(true);
+
+
+			SearchResultEntry test = new SearchResultEntry();
+			test.setHost("8.8.8.8");
+			test.setPort(88);
+			test.setProtocol("https");
+
+			SearchTableModel searchTableModel= new SearchTableModel(null,new ArrayList<SearchResultEntry>(Collections.singletonList(test)));
+			SearchTable searchTable = new SearchTable(null,searchTableModel);
+
+			frame.getContentPane().add(searchTable);
+		});
+	}
+	
+	public static void test1() {
+		SwingUtilities.invokeLater(() -> {
+			JFrame frame = new JFrame("Table Sync Example");
+			SearchPanel spanel = new SearchPanel(null);
+			frame.getContentPane().add(spanel);
+			frame.setSize(400, 300);
+			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+			frame.setVisible(true);
+			SearchResultEntry test = new SearchResultEntry();
+			test.setHost("8.8.8.8");
+			test.setPort(88);
+			test.setProtocol("https");
+			spanel.addSearchTab("111",new ArrayList<SearchResultEntry>(Collections.singletonList(test)),"xxx");
+		});
 	}
 
 	public SearchPanel(GUIMain guiMain) {
@@ -70,20 +94,20 @@ public class SearchPanel extends JPanel {
 	public void addSearchTab(String tabName,List<SearchResultEntry> entries,String engineName) {
 		JPanel containerpanel = new JPanel();//Tab的最外层容器面板
 		containerpanel.setLayout(new BorderLayout(0, 0));
-		
+
 		SearchTableModel searchTableModel= new SearchTableModel(this.guiMain,entries);
 		SearchTable searchTable = new SearchTable(this.guiMain,searchTableModel);
 		JScrollPane scrollPane = new JScrollPane(searchTable,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
 				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);//table area
-		
+
 		JLabel status = new JLabel("^_^");
 		status.setText( engineName+": "+entries.size()+" items found");
 		//TODO
-	
+
 		containerpanel.add(scrollPane,BorderLayout.CENTER);
 		containerpanel.add(status,BorderLayout.SOUTH);
 
-		
+
 		//用一个panel实现tab那个小块
 		JPanel tabPanel = new JPanel(new BorderLayout());
 
@@ -96,7 +120,7 @@ public class SearchPanel extends JPanel {
 		closeButton.addActionListener(new CloseTabListener(centerPanel, containerpanel));
 		tabPanel.add(closeButton, BorderLayout.EAST);
 
-		
+
 		centerPanel.addTab(null, containerpanel);
 		int index = centerPanel.getTabCount() - 1;
 		centerPanel.setTabComponentAt(index, tabPanel);

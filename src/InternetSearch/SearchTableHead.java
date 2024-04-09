@@ -23,7 +23,7 @@ public class SearchTableHead {
 
 	public static List<String> getTableHeadList() {
 		List<String> result = new ArrayList<>();
-		Field[] fields = SearchTable.class.getDeclaredFields();
+		Field[] fields = SearchTableHead.class.getDeclaredFields();
 		for (Field field : fields) {
 			//if (isPublicStaticFinalString(field)) {
 			if (field.getType() == String.class) {

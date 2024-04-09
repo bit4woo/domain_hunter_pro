@@ -142,6 +142,9 @@ public class APISearchAction extends AbstractAction {
 
 	protected List<SearchResultEntry> DoSearch(String searchContent, String engine) {
 		List<SearchResultEntry> entries = new ArrayList<>();
+		if (searchContent == null || searchContent.equals("")){
+			return entries;
+		}
 		if (engine.equals(SearchEngine.FOFA)) {
 			entries = new FoFaClient().SearchToGetEntry(searchContent);
 		}else if (engine.equals(SearchEngine.SHODAN)) {
