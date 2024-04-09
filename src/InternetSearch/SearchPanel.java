@@ -141,7 +141,7 @@ public class SearchPanel extends JPanel {
 			String source = entry.getSource();
 			if (engines.contains(source)) {
 				int num = status.get(source);
-				status.put(source, num++);
+				status.put(source, num + 1);
 			}else {
 				unknown++;
 			}
