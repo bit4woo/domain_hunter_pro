@@ -2,18 +2,18 @@ package InternetSearch;
 
 import java.net.URL;
 
-import org.apache.commons.io.FileUtils;
-
 import burp.BurpExtender;
 import burp.HelperPlus;
 import burp.IBurpExtenderCallbacks;
 import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
 import burp.IHttpService;
+import title.LineEntry;
 
 
 public class HttpClientOfBurp {
-	private static Logger logger = new Logger("HttpClientOfBurp_log.txt", 10 * 1024 * 1024);//10M
+	
+	
 	public static IHttpService getHttpService(URL url) {
 		IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
 		IExtensionHelpers helpers = callbacks.getHelpers();
@@ -50,12 +50,18 @@ public class HttpClientOfBurp {
 
 		IHttpService service =getHttpService(url);
 		IHttpRequestResponse message = callbacks.makeHttpRequest(service, byteRequest);
+
 		HelperPlus getter = new HelperPlus(helpers);
 		int code = getter.getStatusCode(message);
 		if (code != 200) {
-			logger.log(new String(message.getRequest()));
-			logger.log(new String(message.getResponse()));
-			BurpExtender.getStderr().print("see log file for more info: "+logger.getLogFile());
+			try {
+				//将debug请求存储到title中
+				LineEntry entry = new LineEntry(message);
+				entry.addComment("API Search Debug Info");
+				BurpExtender.getGui().getTitlePanel().getTitleTable().getLineTableModel().addNewLineEntry(entry);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 			return "";
 		}
 		byte[] byteBody = getter.getBody(false, message);

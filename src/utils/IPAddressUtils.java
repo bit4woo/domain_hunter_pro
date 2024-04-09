@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.util.SubnetUtils;
 import org.apache.commons.net.util.SubnetUtils.SubnetInfo;
 
@@ -187,7 +188,7 @@ public class IPAddressUtils {
 					}
 				} // 每个tmpIPSet就是一个C段的IP集合
 				String tmpSmallNet = ipset2cidr(tmpIPSet);
-				if (tmpSmallNet != null && !tmpSmallNet.equals("")) {
+				if (!StringUtils.isEmpty(tmpSmallNet)) {
 					smallSubNets.add(tmpSmallNet);// 把一个C段中的多个IP计算出其CIDR，即更小的网段
 				}
 			}

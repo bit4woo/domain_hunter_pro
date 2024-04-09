@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -337,7 +338,7 @@ public class LineEntry {
 	 * @return
 	 */
 	public String getUrl() {// 为了格式统一，和查找匹配更精确，都包含了默认端口
-		if (url == null || url.equals("")) {
+		if (StringUtils.isEmpty(url)) {
 			return protocol + "://" + host + ":" + port + "/";
 		}
 		return URLUtils.getUrlWithDefaultPort(url);
@@ -350,7 +351,7 @@ public class LineEntry {
 	 * @return
 	 */
 	public String fetchUrlWithCommonFormate() {
-		if (url == null || url.equals("")) {
+		if (StringUtils.isEmpty(url)) {
 			url = protocol + "://" + host + ":" + port + "/";
 		}
 		// 不要修改原始url的格式！即都包含默认端口。因为数据库中更新对应记录是以URL为依据的，否则不能成功更新记录。
@@ -429,10 +430,10 @@ public class LineEntry {
 		String CNames = String.join(",", getCNAMESet());
 		String CertDomains = String.join(",", getCertDomainSet());
 		Set<String> tmp = new HashSet<>();
-		if (!CNames.equals("")) {
+		if (!StringUtils.isEmpty(CNames)) {
 			tmp.add(CNames);
 		}
-		if (!CertDomains.equals("")) {
+		if (!StringUtils.isEmpty(CertDomains)) {
 			tmp.add(CertDomains);
 		}
 		return String.join("|", tmp);

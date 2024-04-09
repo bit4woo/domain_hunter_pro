@@ -38,6 +38,7 @@ import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -396,7 +397,7 @@ public class DomainPanel extends JPanel {
 						String token = ConfigManager.getStringConfigByKey(ConfigName.UploadApiToken).trim();
 						HashMap<String, String> headers = new HashMap<String, String>();
 						headers.put("Content-Type", "application/json;charset=UTF-8");
-						if (token != null && !token.equals("")) {//vmp
+						if (StringUtils.isNotEmpty(token)) {//vmp
 							headers.put("Authorization", "Token " + token);
 						}
 						if (host.startsWith("vmp.test.shopee.") ||
@@ -736,7 +737,7 @@ public class DomainPanel extends JPanel {
 		int i = 0;
 		while (i <= 2) {
 			for (String rootdomain : rootdomains) {
-				if (!rootdomain.contains(".") || rootdomain.endsWith(".") || rootdomain.equals("")) {
+				if (!rootdomain.contains(".") || rootdomain.endsWith(".") || StringUtils.isEmpty(rootdomain)) {
 					//如果域名为空，或者（不包含.号，或者点号在末尾的）
 				} else {
 					IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
@@ -832,7 +833,7 @@ public class DomainPanel extends JPanel {
 		File file = guiMain.getCurrentDBFile();
 		if (file == null) return;
 		String suffix = ".bak" + Commons.getNowTimeString();
-		if (keyword!=null && !keyword.equals("")) {
+		if (!StringUtils.isEmpty(keyword)) {
 			keyword = keyword.replaceAll("\\s+", "-");
 			suffix += keyword;
 		}

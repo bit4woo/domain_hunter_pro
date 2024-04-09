@@ -1,12 +1,12 @@
 package ASN;
 
-import java.util.List;
-
 import inet.ipaddr.AddressStringException;
 import inet.ipaddr.IPAddress;
 import inet.ipaddr.IPAddressSeqRange;
 import inet.ipaddr.IPAddressString;
 import utils.IPAddressUtils;
+import org.apache.commons.lang3.StringUtils;
+import java.util.List;
 
 /**
  *存储
@@ -122,7 +122,7 @@ public class ASNEntry {
 	 * get开头的函数会被序列化过程调用
 	 */
 	public String fetchASNDescription() {
-		if (!getAlias().equals("")){
+		if (StringUtils.isNotEmpty(getAlias())){
 			return getAlias();
 		}else{
 			return getAsname_long();

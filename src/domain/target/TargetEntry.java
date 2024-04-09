@@ -15,6 +15,7 @@ import com.google.common.net.InternetDomainName;
 
 import base.Commons;
 import burp.BurpExtender;
+import org.apache.commons.lang3.StringUtils;
 import utils.DomainNameUtils;
 import utils.IPAddressUtils;
 
@@ -165,7 +166,7 @@ public class TargetEntry {
 	}
 
 	public void addComment(String commentToAdd) {
-		if (commentToAdd == null || commentToAdd.trim().equals("")) return;
+		if (StringUtils.isEmpty(commentToAdd)) return;
 		comments.addAll(Arrays.asList(commentToAdd.split(",")));
 	}
 

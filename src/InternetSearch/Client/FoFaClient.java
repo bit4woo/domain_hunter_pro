@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import InternetSearch.SearchEngine;
 import InternetSearch.SearchResultEntry;
 import Tools.JSONHandler;
-import burp.BurpExtender;
 import config.ConfigManager;
 import config.ConfigName;
 
@@ -73,7 +73,7 @@ public class FoFaClient extends BaseClient {
 	public String buildSearchUrl(String searchContent, int page) {
 		String email = ConfigManager.getStringConfigByKey(ConfigName.FofaEmail);
 		String key = ConfigManager.getStringConfigByKey(ConfigName.FofaKey);
-		if (email.equals("") || key.equals("")) {
+		if (StringUtils.isEmpty(key)) {
 			stderr.println("fofa.info emaill or key not configurated!");
 			return null;
 		}

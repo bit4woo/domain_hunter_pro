@@ -17,6 +17,7 @@ import Tools.DomainComparator;
 import burp.BurpExtender;
 import domain.target.TargetEntry;
 import domain.target.TargetTableModel;
+import org.apache.commons.lang3.StringUtils;
 import utils.GrepUtils;
 
 /*
@@ -235,7 +236,7 @@ public class DomainManager {
 	 */
 	public boolean isChanged(){
 		String status = getSummary();
-		if (!status.equals(summary) && !summary.equals("")){
+		if (!status.equals(summary) && !StringUtils.isEmpty(summary)){
 			summary = getSummary();
 			guiMain.getDomainPanel().getLblSummary().setText(summary);
 			return true;

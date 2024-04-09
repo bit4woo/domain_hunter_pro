@@ -3,13 +3,13 @@ package InternetSearch.Client;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import InternetSearch.SearchEngine;
 import InternetSearch.SearchResultEntry;
 import Tools.JSONHandler;
-import burp.BurpExtender;
 import config.ConfigManager;
 import config.ConfigName;
 
@@ -77,7 +77,7 @@ public class ShodanClient extends BaseClient {
 	@Override
 	public String buildSearchUrl(String searchContent, int page) {
 		String key = ConfigManager.getStringConfigByKey(ConfigName.ShodanAPIKey);
-		if (key.equals("")) {
+		if (StringUtils.isEmpty(key)) {
 			stderr.println("shodan key not configurated!");
 			return null;
 		}

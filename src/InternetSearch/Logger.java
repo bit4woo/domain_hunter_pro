@@ -14,20 +14,14 @@ public class Logger {
         this.logFile = new File(filePath);
         this.maxFileSize = maxFileSize;
     }
-    
-    
 
     public File getLogFile() {
 		return logFile;
 	}
 
-
-
 	public void setLogFile(File logFile) {
 		this.logFile = logFile;
 	}
-
-
 
 	public void log(String message) {
         // 检查文件大小是否超过限制

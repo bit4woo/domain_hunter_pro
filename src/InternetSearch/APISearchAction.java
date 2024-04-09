@@ -12,6 +12,8 @@ import javax.swing.Action;
 import javax.swing.SwingWorker;
 import javax.swing.table.AbstractTableModel;
 
+import org.apache.commons.lang3.StringUtils;
+
 import InternetSearch.Client.FoFaClient;
 import InternetSearch.Client.HunterClient;
 import InternetSearch.Client.QuakeClient;
@@ -113,7 +115,7 @@ public class APISearchAction extends AbstractAction {
 							searchContent = ((TargetTableModel) lineModel).getValueForSearch(row, columnIndex, engine);
 						}
 
-						if (searchContent == null || searchContent.equals("")) {
+						if (StringUtils.isEmpty(searchContent)) {
 							stderr.print("nothing to search...");
 							return null;
 						}
@@ -157,7 +159,7 @@ public class APISearchAction extends AbstractAction {
 
 	public static List<SearchResultEntry> DoSearch(String searchContent, String engine) {
 		List<SearchResultEntry> entries = new ArrayList<>();
-		if (searchContent == null || searchContent.equals("")){
+		if (StringUtils.isEmpty(searchContent)){
 			return entries;
 		}
 		if (engine.equals(SearchEngine.FOFA)) {
@@ -184,7 +186,7 @@ public class APISearchAction extends AbstractAction {
 	}
 
 	public static String capitalizeFirstLetter(String str) {
-		if (str == null || str.isEmpty()) {
+		if (StringUtils.isEmpty(str)) {
 			return str;
 		}
 		return str.substring(0, 1).toUpperCase() + str.toLowerCase().substring(1);

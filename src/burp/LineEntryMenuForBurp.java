@@ -27,6 +27,7 @@ import config.ConfigManager;
 import config.ConfigName;
 import config.ConfigPanel;
 import domain.DomainManager;
+import org.apache.commons.lang3.StringUtils;
 import title.LineEntry;
 import title.LineTable;
 import title.TitlePanel;
@@ -302,7 +303,7 @@ public class LineEntryMenuForBurp{
 				IHttpRequestResponse[] messages = getSelectedMessages(invocation);
 				Getter getter = new Getter(helpers);
 				String comment = getCommentInfo();
-				if (comment == null || comment.equals("")) {
+				if (StringUtils.isEmpty(comment)) {
 					return;
 				}
 				for (IHttpRequestResponse message:messages){

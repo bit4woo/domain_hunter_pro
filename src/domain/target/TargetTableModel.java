@@ -9,6 +9,7 @@ import java.util.Set;
 
 import javax.swing.table.AbstractTableModel;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -213,10 +214,10 @@ public class TargetTableModel extends AbstractTableModel {
 	 * @return
 	 */
 	public static boolean ifValid(TargetEntry entry) {
-		if (entry.getTarget() == null || entry.getTarget().equals("")) {
+		if (StringUtils.isEmpty(entry.getTarget())) {
 			return false;
 		}
-		if (entry.getType() == null || !TargetEntry.TargetTypeList.contains(entry.getType())) {
+		if (StringUtils.isEmpty(entry.getType()) || !TargetEntry.TargetTypeList.contains(entry.getType())) {
 			return false;
 		}
 		return true;

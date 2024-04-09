@@ -26,6 +26,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JTextArea;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.util.SubnetUtils;
 
 import com.ibm.icu.text.CharsetDetector;
@@ -122,7 +123,7 @@ public class Commons {
 
 
 	public static byte[] buildCookieRequest(IExtensionHelpers helpers,String cookie, byte[] request) {
-		if (cookie != null && !cookie.equals("")){
+		if (StringUtils.isNotEmpty(cookie)){
 			if (!cookie.startsWith("Cookie: ")){
 				cookie = "Cookie: "+cookie;
 			}
@@ -222,7 +223,7 @@ public class Commons {
 	public static List<Integer> Port_prompt(Component prompt, String str){
 		String defaultPorts = "8080,8000,8443";
 		String user_input = JOptionPane.showInputDialog(prompt, str,defaultPorts);
-		if (null == user_input || user_input.trim().equals("")) return  null; 
+		if (StringUtils.isEmpty(user_input)) return  null; 
 		List<Integer> portList = new ArrayList<Integer>();
 		for (String port: user_input.trim().split(",")) {
 			int portint = Integer.parseInt(port);
@@ -313,7 +314,7 @@ public class Commons {
 				urlString = urlString.replace(host, newHost);
 			}
 
-			if (path.equals("")) {
+			if (StringUtils.isEmpty(path)) {
 				urlString = urlString+"/";
 			}
 		} catch (MalformedURLException e) {

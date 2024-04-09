@@ -23,6 +23,7 @@ import base.Commons;
 import burp.BurpExtender;
 import config.ConfigManager;
 import config.ConfigName;
+import org.apache.commons.lang3.StringUtils;
 
 public class TargetEntryMenu extends JPopupMenu {
 
@@ -134,7 +135,7 @@ public class TargetEntryMenu extends JPopupMenu {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				String Comments = JOptionPane.showInputDialog("Comments", null).trim();
-				while(Comments.trim().equals("")){
+				while(StringUtils.isBlank(Comments)){
 					Comments = JOptionPane.showInputDialog("Comments", null).trim();
 				}
 				rootDomainTable.getTargetModel().updateComments(modelRows,Comments);

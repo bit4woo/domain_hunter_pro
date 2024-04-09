@@ -42,6 +42,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 
 import GUI.GUIMain;
@@ -365,7 +366,7 @@ public class ToolPanel extends JPanel {
 			@Override
 			protected void action() {
 				String content = inputTextArea.getText();
-				if (null != content && !content.equals("")) {
+				if (StringUtils.isNotEmpty(content)) {
 
 					List<String> lines = Commons.textToLines(content);
 					HashMap<String, Set<String>> ipAndPorts = new HashMap<String,Set<String>>();
@@ -402,7 +403,7 @@ public class ToolPanel extends JPanel {
 			@Override
 			protected void action() {
 				String content = inputTextArea.getText();
-				if (null != content && !content.equals("")) {
+				if (StringUtils.isNotEmpty(content)) {
 
 					List<String> lines = Commons.textToLines(content);
 					List<String> result = new ArrayList<String>();
@@ -430,7 +431,7 @@ public class ToolPanel extends JPanel {
 			@Override
 			protected void action() {
 				String content = inputTextArea.getText();
-				if (null != content && !content.equals("")) {
+				if (StringUtils.isNotEmpty(content)) {
 					List<String> result = new ArrayList<String>();
 
 					List<String> iplist = GrepUtils.grepIP(content);
@@ -465,7 +466,7 @@ public class ToolPanel extends JPanel {
 			@Override
 			protected void action() {
 				String content = inputTextArea.getText();
-				if (null != content && !content.equals("")) {
+				if (StringUtils.isNotEmpty(content)) {
 
 					List<String> result = new ArrayList<String>();
 

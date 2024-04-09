@@ -18,6 +18,7 @@ import com.google.gson.Gson;
 import GUI.GUIMain;
 import base.Stack;
 import burp.BurpExtender;
+import org.apache.commons.lang3.StringUtils;
 
 //专门用于存储数据的对象，即被用户序列化和反序列进行存储的对象。
 
@@ -114,10 +115,10 @@ public class DataLoadManager {
 	 * @param dbFilePath
 	 */
 	public void loadDbfileToHunter(String dbFilePath) {
-		if (dbFilePath == null || dbFilePath.equals("")) {
+		if (StringUtils.isEmpty(dbFilePath)) {
 			dbFilePath = popRecentDatabaseFile();
 		}
-		if (dbFilePath == null || dbFilePath.equals("")) {
+		if (StringUtils.isEmpty(dbFilePath)) {
 			return;
 		}
 		gui.loadDataBase(dbFilePath);
@@ -131,12 +132,12 @@ public class DataLoadManager {
 	 * @param dbFilePath
 	 */
 	public void unloadDbfile(String dbFilePath) {
-		if (dbFilePath == null || dbFilePath.equals("")) {
+		if (StringUtils.isEmpty(dbFilePath)) {
 			if (gui.getCurrentDBFile() != null) {
 				dbFilePath =gui.getCurrentDBFile().getAbsolutePath();
 			}
 		}
-		if (dbFilePath == null || dbFilePath.equals("")) {
+		if (StringUtils.isEmpty(dbFilePath)) {
 			return;
 		}
 		pushRecentDatabaseFile(dbFilePath);//保存最近的加载
@@ -149,7 +150,7 @@ public class DataLoadManager {
 	 * @param ConfigFilePath
 	 */
 	public void saveCurrentConfig(String ConfigFilePath) {
-		if (ConfigFilePath == null || ConfigFilePath.equals("")) {
+		if (StringUtils.isEmpty(ConfigFilePath)) {
 			ConfigFilePath = defaultConfigFilename;
 		}
 
@@ -171,7 +172,7 @@ public class DataLoadManager {
 	 * @param ConfigFilePath
 	 */
 	public void loadConfigToHunter(String ConfigFilePath) {
-		if (ConfigFilePath == null || ConfigFilePath.equals("")) {
+		if (StringUtils.isEmpty(ConfigFilePath)) {
 			ConfigFilePath = defaultConfigFilename;
 		}
 		ConfigManager.init(ConfigFilePath);

@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Entities;
@@ -116,7 +117,7 @@ public class WebIcon {
 	public static String FaviconExtractor_old(String html) {
 		String faviconPath = "/favicon.ico"; // 默认值
 
-		if (html == null || html.equals("")) {
+		if (StringUtils.isEmpty(html)) {
 			return faviconPath;
 		}
 		String regex = "<link\\s+rel=[\"|\'][shortcut\\s+]*icon[\"|\']\\s+href=[\"|\'](.*?)[\"|\']";
@@ -143,7 +144,7 @@ public class WebIcon {
 	public static String FaviconExtractor(String html) {
 		String faviconPath = "/favicon.ico"; // 默认值
 
-		if (html == null || html.equals("")) {
+		if (StringUtils.isEmpty(html)) {
 			return faviconPath;
 		}
 

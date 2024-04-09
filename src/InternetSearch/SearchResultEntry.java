@@ -1,15 +1,15 @@
 package InternetSearch;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
 import burp.BurpExtender;
 import burp.IPAddressUtils;
 import domain.DomainManager;
-import domain.target.TargetEntry;
+import org.apache.commons.lang3.StringUtils;
 import utils.DomainNameUtils;
 import utils.URLUtils;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 public class SearchResultEntry {
 	private int port = -1;
@@ -197,7 +197,7 @@ public class SearchResultEntry {
 			}
 		}
 		
-		if (this.rootDomain != null && !this.rootDomain.equals("")) {
+		if (StringUtils.isEmpty(this.rootDomain)) {
 			domainResult.addToTargetAndSubDomain(this.rootDomain,true);
 		}
 	}

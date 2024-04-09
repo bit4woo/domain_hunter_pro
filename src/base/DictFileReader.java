@@ -9,6 +9,7 @@ import java.io.LineNumberReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -70,7 +71,7 @@ public class DictFileReader {
 							continue;
 						}else if (currentIndex >= beginIndex &&  currentIndex <= endIndex) {
 							lineStr = lineStr.trim();
-							if (!lineStr.equals("")) {
+							if (StringUtils.isNotEmpty(lineStr)) {
 								dicts.add(lineStr+suffix);
 								//dicts.addAll(AltDomainGenerator.genKeywordDomain(Config.specialKeywords, lineStr, suffix));
 							}

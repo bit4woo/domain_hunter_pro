@@ -553,7 +553,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 
 	public List<String> getHeaderValues(int[] rows,boolean isRequest,String headerName) {
 		List<String> result = new ArrayList<>();
-		if (headerName ==null ||headerName.trim().equals("")) {
+		if (org.apache.commons.lang3.StringUtils.isEmpty(headerName)) {
 			return result;
 		}
 

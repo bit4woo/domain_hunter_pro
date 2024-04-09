@@ -1,5 +1,7 @@
 package GUI;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.awt.Color;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -35,7 +37,7 @@ public class JTextFieldHintListener implements FocusListener {
 	public void focusLost(FocusEvent e) {	
 		//失去焦点时，没有输入内容，显示提示内容
 		String temp = textField.getText();
-		if(temp.equals("")) {
+		if(StringUtils.isEmpty(temp)) {
 			textField.setForeground(Color.GRAY);
 			textField.setText(hintText);
 		}

@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -82,7 +83,7 @@ public class ZoomEyeClient extends BaseClient {
 	@Override
 	public String buildSearchUrl(String searchContent, int page) {
 		String key = ConfigManager.getStringConfigByKey(ConfigName.ZoomEyeAPIKey);
-		if (key.equals("")) {
+		if (StringUtils.isEmpty(key)) {
 			stderr.println("zoomeye key not configurated!");
 			return null;
 		}
@@ -109,7 +110,7 @@ public class ZoomEyeClient extends BaseClient {
 
 		searchContent = URLEncoder.encode(searchContent);
 		String key = ConfigManager.getStringConfigByKey(ConfigName.ZoomEyeAPIKey);
-		if (key.equals("")) {
+		if (StringUtils.isEmpty(key)) {
 			stderr.println("zoomeye key not configurated!");
 			return null;
 		}
