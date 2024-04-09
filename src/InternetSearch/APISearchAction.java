@@ -1,6 +1,7 @@
 package InternetSearch;
 
 import java.awt.event.ActionEvent;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -14,6 +15,7 @@ import javax.swing.table.AbstractTableModel;
 import InternetSearch.Client.FoFaClient;
 import InternetSearch.Client.HunterClient;
 import InternetSearch.Client.QuakeClient;
+import InternetSearch.Client.ShodanClient;
 import InternetSearch.Client.ZoomEyeClient;
 import burp.BurpExtender;
 import burp.IPAddressUtils;
@@ -36,13 +38,26 @@ public class APISearchAction extends AbstractAction {
 	private boolean showInGUI;
 	private List<String> engineList;//适配一键用多个搜索引擎进行搜索的逻辑
 
+	private PrintWriter stdout;
+	private PrintWriter stderr;
+	
+	APISearchAction(){
+		try{
+			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
+			stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
+		}catch (Exception e){
+			stdout = new PrintWriter(System.out, true);
+			stderr = new PrintWriter(System.out, true);
+		}
+	}
+
 	public APISearchAction(AbstractTableModel lineModel, int[] modelRows, int columnIndex, List<String> engineList,
 			boolean autoAddToTarget, boolean showInGUI) {
 		super();
 
 		if (!lineModel.getClass().equals(LineTableModel.class) && !lineModel.getClass().equals(SearchTableModel.class)
 				&& !lineModel.getClass().equals(TargetTableModel.class)) {
-			BurpExtender.getCallbacks().printError("wrong AbstractTableModel object");
+			stderr.println("wrong AbstractTableModel object");
 		}
 
 		this.lineModel = lineModel;
@@ -77,7 +92,7 @@ public class APISearchAction extends AbstractAction {
 			protected Map doInBackground() throws Exception {
 
 				if (modelRows.length >= 50) {
-					BurpExtender.getStderr().print("too many items selected!! should less than 50");
+					stderr.print("too many items selected!! should less than 50");
 					return null;
 				}
 				for (int row : modelRows) {
@@ -99,7 +114,7 @@ public class APISearchAction extends AbstractAction {
 						}
 
 						if (searchContent == null || searchContent.equals("")) {
-							BurpExtender.getStderr().print("nothing to search...");
+							stderr.print("nothing to search...");
 							return null;
 						}
 						List<SearchResultEntry> tmp_entries = DoSearch(searchContent, engine);
@@ -148,19 +163,22 @@ public class APISearchAction extends AbstractAction {
 		if (engine.equals(SearchEngine.FOFA)) {
 			entries = new FoFaClient().SearchToGetEntry(searchContent);
 		}else if (engine.equals(SearchEngine.SHODAN)) {
-
+			entries = new ShodanClient().SearchToGetEntry(searchContent);
 		}else if (engine.equals(SearchEngine.ZOOMEYE)) {
 			entries = new ZoomEyeClient().SearchToGetEntry(searchContent);
 		}else if (engine.equals(SearchEngine.QIANXIN_HUNTER)) {
 			entries = new HunterClient().SearchToGetEntry(searchContent);
 		}else if (engine.equals(SearchEngine.QIANXIN_TI)) {
-
+			//entries = new Client().SearchToGetEntry(searchContent);
+			//TODO
 		}else if (engine.equals(SearchEngine.QUAKE_360)) {
 			entries = new QuakeClient().SearchToGetEntry(searchContent);
 		}else if (engine.equals(SearchEngine.TI_360)) {
-
+			//entries = new Client().SearchToGetEntry(searchContent);
+			//TODO
 		}else if (engine.equals(SearchEngine.HUNTER_IO)) {
-
+			//entries = new Client().SearchToGetEntry(searchContent);
+			//TODO
 		}
 		return entries;
 	}
