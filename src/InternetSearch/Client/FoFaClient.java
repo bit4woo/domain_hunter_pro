@@ -48,7 +48,7 @@ public class FoFaClient extends BaseClient {
 		} catch (Exception e) {
 			e.printStackTrace(stderr);
 		}
-		stderr.println(respbody.substring(0,200));
+		printDebugInfo(respbody,"response");
 		return result;
 	}
 

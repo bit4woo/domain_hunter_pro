@@ -31,8 +31,7 @@ public abstract class BaseClient {
 			stderr = new PrintWriter(System.out, true);
 		}
 	}
-
-
+	
 	public abstract String getEngineName();
 
 	/**
@@ -71,6 +70,19 @@ public abstract class BaseClient {
 			}
 		}
 		return resp_bodies;
+	}
+	
+	public void printDebugInfo(String content,String tips) {
+		content = content+"";//可以将null转化为字符串
+		tips = content+"";
+		
+		if (content.length()>200) {
+			content = content.substring(0,200);
+		}
+		stderr.println("=========="+tips+":"+content.length()+"==========");
+		stderr.println(content);
+		stderr.println("=========="+tips+":"+content.length()+"==========");
+		
 	}
 
 	public List<SearchResultEntry> SearchToGetEntry(String searchContent){

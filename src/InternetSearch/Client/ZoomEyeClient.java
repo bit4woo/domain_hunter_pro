@@ -13,7 +13,6 @@ import org.json.JSONObject;
 import InternetSearch.SearchEngine;
 import InternetSearch.SearchResultEntry;
 import Tools.JSONHandler;
-import burp.BurpExtender;
 import config.ConfigManager;
 import config.ConfigName;
 
@@ -58,7 +57,7 @@ public class ZoomEyeClient extends BaseClient {
 		} catch (Exception e) {
 			e.printStackTrace(stderr);
 		}
-		stderr.println(respbody.substring(0,200));
+		printDebugInfo(respbody,"response");
 		return result;
 	}
 
