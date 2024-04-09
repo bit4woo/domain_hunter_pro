@@ -10,6 +10,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -17,7 +18,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 
 import GUI.GUIMain;
@@ -55,10 +58,10 @@ public class SearchPanel extends JPanel {
 			frame.getContentPane().add(searchTable);
 		});
 	}
-	
+
 	public static void test1() {
 		SwingUtilities.invokeLater(() -> {
-			JFrame frame = new JFrame("Table Sync Example");
+			JFrame frame = new JFrame("test");
 			SearchPanel spanel = new SearchPanel(null);
 			frame.getContentPane().add(spanel);
 			frame.setSize(400, 300);
@@ -68,7 +71,7 @@ public class SearchPanel extends JPanel {
 			test.setHost("8.8.8.8");
 			test.setPort(88);
 			test.setProtocol("https");
-			spanel.addSearchTab("111",new ArrayList<SearchResultEntry>(Collections.singletonList(test)),"xxx");
+			spanel.addSearchTab("111",new ArrayList<SearchResultEntry>(Collections.singletonList(test)),new ArrayList<String>(Collections.singletonList("xxx")));
 		});
 	}
 
@@ -91,7 +94,7 @@ public class SearchPanel extends JPanel {
 		this.add(centerPanel,BorderLayout.CENTER);
 	}
 
-	public void addSearchTab(String tabName,List<SearchResultEntry> entries,String engineName) {
+	public void addSearchTab(String tabName,List<SearchResultEntry> entries,List<String> engines) {
 		JPanel containerpanel = new JPanel();//Tab的最外层容器面板
 		containerpanel.setLayout(new BorderLayout(0, 0));
 
@@ -101,7 +104,7 @@ public class SearchPanel extends JPanel {
 				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);//table area
 
 		JLabel status = new JLabel("^_^");
-		status.setText( engineName+": "+entries.size()+" items found");
+		status.setText( engines.toString()+": "+entries.size()+" items found");
 		//TODO
 
 		containerpanel.add(scrollPane,BorderLayout.CENTER);
@@ -146,19 +149,37 @@ public class SearchPanel extends JPanel {
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
 
-		/**
-		JButton buttonSearch = new JButton("Search");
-		SearchTextField textFieldSearch = new SearchTextField("",buttonSearch);
+		JTextField textFieldSearch = new JTextField();
+		textFieldSearch.setColumns(30);
 		buttonPanel.add(textFieldSearch);
 
+		JButton buttonSearch = new JButton("Search");
 		buttonSearch.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				String keyword = textFieldSearch.getText();
-				searchTable.search(keyword);
+				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+					@Override
+					protected Map doInBackground() throws Exception {
+						String content = textFieldSearch.getText();
+						List<SearchResultEntry> result = new ArrayList<>();
+						List<String> engines = SearchEngine.getAssetSearchEngineList();
+						for (String engine:engines) {
+							result.addAll(APISearchAction.DoSearch(content,engine));
+						}
+						SearchPanel.this.addSearchTab(content,result,engines);
+
+						return null;
+					}
+
+					@Override
+					protected void done() {
+
+					}
+				};
+				worker.execute();
 			}
 		});
 		buttonPanel.add(buttonSearch);
-		 */
+
 
 
 		lblSummary = new JLabel("^_^");

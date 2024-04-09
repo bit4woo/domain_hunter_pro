@@ -2,12 +2,12 @@ package InternetSearch.Client;
 
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 
 import InternetSearch.HttpClientOfBurp;
 import InternetSearch.SearchResultEntry;
 import burp.BurpExtender;
+import utils.URLUtils;
 
 /**
  * 什么时候使用Interface，什么时候使用abstract class?
@@ -33,18 +33,23 @@ public abstract class BaseClient {
 			try {
 				String url = buildSearchUrl(searchContent, page);
 				byte[] raw = buildRawData(searchContent, page);
-				String body = HttpClientOfBurp.doRequest(new URL(url),raw);
-				
-				if (body.length()<=0) {
-					break;
-				} else {
-					resp_bodies.add(body);
-					if (hasNextPage(body,page)) {
-						page++;
-						continue;
-					}else {
+				if (URLUtils.isVaildUrl(url)) {
+					String body = HttpClientOfBurp.doRequest(new URL(url),raw);
+					
+					if (body.length()<=0) {
 						break;
+					} else {
+						resp_bodies.add(body);
+						if (hasNextPage(body,page)) {
+							page++;
+							continue;
+						}else {
+							break;
+						}
 					}
+				}else {
+					BurpExtender.getStderr().println(this.getClass()+" invalid URL to search: "+url);
+					break;
 				}
 			} catch (Exception e) {
 				e.printStackTrace(BurpExtender.getStderr());

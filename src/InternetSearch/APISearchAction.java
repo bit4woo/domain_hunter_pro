@@ -108,7 +108,7 @@ public class APISearchAction extends AbstractAction {
 
 					if (showInGUI) {
 						//searchContent是最后一个搜索引擎的搜索内容
-						BurpExtender.getGui().getSearchPanel().addSearchTab(searchContent, entries, engineList.toString());
+						BurpExtender.getGui().getSearchPanel().addSearchTab(searchContent, entries, engineList);
 					}
 
 					//暂时不启用，之所以要设计图形界面，就是为了加入人为判断。
@@ -140,7 +140,7 @@ public class APISearchAction extends AbstractAction {
 		worker.execute();
 	}
 
-	protected List<SearchResultEntry> DoSearch(String searchContent, String engine) {
+	public static List<SearchResultEntry> DoSearch(String searchContent, String engine) {
 		List<SearchResultEntry> entries = new ArrayList<>();
 		if (searchContent == null || searchContent.equals("")){
 			return entries;

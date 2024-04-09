@@ -13,7 +13,6 @@ import Tools.JSONHandler;
 import burp.BurpExtender;
 import config.ConfigManager;
 import config.ConfigName;
-import config.ConfigPanel;
 
 public class FoFaClient extends BaseClient {
 
@@ -29,7 +28,7 @@ public class FoFaClient extends BaseClient {
 			JSONObject obj = new JSONObject(respbody);
 			Boolean error = (Boolean) obj.get("error");
 			if (!error) {
-				JSONArray results = (JSONArray) obj.get("results");
+				JSONArray results = obj.getJSONArray("results");
 				for (Object item : results) {
 					JSONArray parts = (JSONArray) item;
 					// host,ip,domain,port,protocol,server
@@ -45,10 +44,11 @@ public class FoFaClient extends BaseClient {
 					result.add(entry);
 				}
 			}else {
-				BurpExtender.getStderr().println(respbody);
+				BurpExtender.getStderr().println(respbody.substring(0,200));
 			}
 		} catch (Exception e) {
 			e.printStackTrace(BurpExtender.getStderr());
+			BurpExtender.getStderr().println(respbody.substring(0,200));
 		}
 		return result;
 	}

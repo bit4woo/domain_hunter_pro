@@ -74,9 +74,12 @@ public class QuakeClient extends BaseClient {
 					entry.setSource(getEngineName());
 					result.add(entry);
 				}
+			}else {
+				BurpExtender.getStderr().println(respbody.substring(0,200));
 			}
 		} catch (Exception e) {
 			e.printStackTrace(BurpExtender.getStderr());
+			BurpExtender.getStderr().println(respbody.substring(0,200));
 		}
 		return result;
 	}

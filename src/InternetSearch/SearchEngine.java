@@ -175,6 +175,7 @@ public class SearchEngine {
 				}
 			}
 			else if (engine.equalsIgnoreCase(SHODAN)) {
+				//https://beta.shodan.io/search/filters
 				if (type.equals(SearchType.Host)) {
 
 				}else if(type.equals(SearchType.IP)) {
