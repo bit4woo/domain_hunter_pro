@@ -43,13 +43,12 @@ public class FoFaClient extends BaseClient {
 					entry.setSource(getEngineName());
 					result.add(entry);
 				}
-			}else {
-				BurpExtender.getStderr().println(respbody.substring(0,200));
+				return result;
 			}
 		} catch (Exception e) {
-			e.printStackTrace(BurpExtender.getStderr());
-			BurpExtender.getStderr().println(respbody.substring(0,200));
+			e.printStackTrace(stderr);
 		}
+		stderr.println(respbody.substring(0,200));
 		return result;
 	}
 
@@ -65,7 +64,7 @@ public class FoFaClient extends BaseClient {
 				} 
 			}
 		} catch (Exception e) {
-			e.printStackTrace(BurpExtender.getStderr());
+			e.printStackTrace(stderr);
 		}
 		return false;
 	}
@@ -75,7 +74,7 @@ public class FoFaClient extends BaseClient {
 		String email = ConfigManager.getStringConfigByKey(ConfigName.FofaEmail);
 		String key = ConfigManager.getStringConfigByKey(ConfigName.FofaKey);
 		if (email.equals("") || key.equals("")) {
-			BurpExtender.getStderr().println("fofa.info emaill or key not configurated!");
+			stderr.println("fofa.info emaill or key not configurated!");
 			return null;
 		}
 		searchContent = new String(Base64.getEncoder().encode(searchContent.getBytes()));

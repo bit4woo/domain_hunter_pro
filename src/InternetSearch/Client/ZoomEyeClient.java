@@ -53,13 +53,12 @@ public class ZoomEyeClient extends BaseClient {
 					entry.setSource(getEngineName());
 					result.add(entry);
 				}
-			}else {
-				BurpExtender.getStderr().println(respbody.substring(0,200));
+				return result;
 			}
 		} catch (Exception e) {
-			e.printStackTrace(BurpExtender.getStderr());
-			BurpExtender.getStderr().println(respbody.substring(0,200));
+			e.printStackTrace(stderr);
 		}
+		stderr.println(respbody.substring(0,200));
 		return result;
 	}
 
@@ -76,7 +75,7 @@ public class ZoomEyeClient extends BaseClient {
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace(BurpExtender.getStderr());
+			e.printStackTrace(stderr);
 		}
 		return false;
 	}
@@ -85,7 +84,7 @@ public class ZoomEyeClient extends BaseClient {
 	public String buildSearchUrl(String searchContent, int page) {
 		String key = ConfigManager.getStringConfigByKey(ConfigName.ZoomEyeAPIKey);
 		if (key.equals("")) {
-			BurpExtender.getStderr().println("zoomeye key not configurated!");
+			stderr.println("zoomeye key not configurated!");
 			return null;
 		}
 		//https://www.zoomeye.hk/api/domain/search?q=google.com&p=1&s=10&type=1
@@ -112,7 +111,7 @@ public class ZoomEyeClient extends BaseClient {
 		searchContent = URLEncoder.encode(searchContent);
 		String key = ConfigManager.getStringConfigByKey(ConfigName.ZoomEyeAPIKey);
 		if (key.equals("")) {
-			BurpExtender.getStderr().println("zoomeye key not configurated!");
+			stderr.println("zoomeye key not configurated!");
 			return null;
 		}
 		int size = 500;

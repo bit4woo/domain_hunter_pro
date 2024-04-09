@@ -47,13 +47,12 @@ public class ShodanClient extends BaseClient {
 					entry.setSource(getEngineName());
 					result.add(entry);
 				}
-			}else {
-				BurpExtender.getStderr().println(respbody.substring(0,200));
+				return result;
 			}
 		} catch (Exception e) {
-			e.printStackTrace(BurpExtender.getStderr());
-			BurpExtender.getStderr().println(respbody.substring(0,200));
+			e.printStackTrace(stderr);
 		}
+		stderr.println(respbody.substring(0,200));
 		return result;
 	}
 
@@ -70,7 +69,7 @@ public class ShodanClient extends BaseClient {
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace(BurpExtender.getStderr());
+			e.printStackTrace(stderr);
 		}
 		return false;
 	}
@@ -79,7 +78,7 @@ public class ShodanClient extends BaseClient {
 	public String buildSearchUrl(String searchContent, int page) {
 		String key = ConfigManager.getStringConfigByKey(ConfigName.ShodanAPIKey);
 		if (key.equals("")) {
-			BurpExtender.getStderr().println("shodan key not configurated!");
+			stderr.println("shodan key not configurated!");
 			return null;
 		}
 		//curl -X GET "https://api.shodan.io/shodan/host/search?key=xxxxx&query=product:nginx&facets=country"

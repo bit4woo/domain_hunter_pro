@@ -1,5 +1,6 @@
 package InternetSearch.Client;
 
+import java.io.PrintWriter;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +18,20 @@ import utils.URLUtils;
  *
  */
 public abstract class BaseClient {
-	
+
+	protected PrintWriter stdout;
+	protected PrintWriter stderr;
+
+	BaseClient(){
+		try{
+			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
+			stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
+		}catch (Exception e){
+			stdout = new PrintWriter(System.out, true);
+			stderr = new PrintWriter(System.out, true);
+		}
+	}
+
 
 	public abstract String getEngineName();
 
@@ -35,7 +49,7 @@ public abstract class BaseClient {
 				byte[] raw = buildRawData(searchContent, page);
 				if (URLUtils.isVaildUrl(url)) {
 					String body = HttpClientOfBurp.doRequest(new URL(url),raw);
-					
+
 					if (body.length()<=0) {
 						break;
 					} else {
@@ -48,31 +62,35 @@ public abstract class BaseClient {
 						}
 					}
 				}else {
-					BurpExtender.getStderr().println(this.getClass()+" invalid URL to search: "+url);
+					stderr.println(this.getClass()+" invalid URL to search: "+url);
 					break;
 				}
 			} catch (Exception e) {
-				e.printStackTrace(BurpExtender.getStderr());
+				e.printStackTrace(stderr);
 				break;
 			}
 		}
 		return resp_bodies;
 	}
-	
+
 	public List<SearchResultEntry> SearchToGetEntry(String searchContent){
 		List<SearchResultEntry> result = new ArrayList<>();
-		List<String> resp_bodies = Search(searchContent);
-		for (String body:resp_bodies) {
-			List<SearchResultEntry> tmp_result = parseResp(body);
-			if (tmp_result != null && tmp_result.size()>0) {
-				result.addAll(tmp_result);
+		try {
+			List<String> resp_bodies = Search(searchContent);
+			for (String body:resp_bodies) {
+				List<SearchResultEntry> tmp_result = parseResp(body);
+				if (tmp_result != null && tmp_result.size()>0) {
+					result.addAll(tmp_result);
+				}
 			}
+		} catch (Exception e) {
+			e.printStackTrace(stderr);
 		}
 		return result;
 	};
 
 	public abstract List<SearchResultEntry> parseResp(String respbody);
-	
+
 	public abstract boolean hasNextPage(String respbody,int currentPage);
 
 	public abstract String buildSearchUrl(String searchContent, int page); 
