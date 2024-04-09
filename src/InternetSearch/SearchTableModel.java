@@ -81,6 +81,9 @@ public class SearchTableModel extends AbstractTableModel {
 		if (columnIndex == HeadList.indexOf(SearchTableHead.Favicon)) {
 			return ImageIcon.class;
 		}
+		if (columnIndex == HeadList.indexOf(SearchTableHead.Port)) {
+			return Integer.class;
+		}
 		return String.class;
 	}
 

@@ -10,10 +10,8 @@ import org.json.JSONObject;
 import InternetSearch.SearchEngine;
 import InternetSearch.SearchResultEntry;
 import Tools.JSONHandler;
-import burp.BurpExtender;
 import config.ConfigManager;
 import config.ConfigName;
-import config.ConfigPanel;
 
 public class QuakeClient extends BaseClient {
 
@@ -31,8 +29,9 @@ public class QuakeClient extends BaseClient {
 		List<SearchResultEntry> result = new ArrayList<SearchResultEntry>();
 		try {
 			JSONObject obj = new JSONObject(respbody);
-			int code = obj.getInt("code");
-			if (code == 0) {
+			//q5000 或者 0
+			String code = obj.get("code")+"";
+			if (code.equals("0")) {
 				JSONArray results = obj.getJSONArray("data");
 				for (Object item : results) {
 
@@ -79,7 +78,7 @@ public class QuakeClient extends BaseClient {
 		} catch (Exception e) {
 			e.printStackTrace(stderr);
 		}
-		stderr.println(respbody.substring(0,200));
+		printDebugInfo(respbody,"response");
 		return result;
 	}
 

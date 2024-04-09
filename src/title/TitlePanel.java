@@ -443,9 +443,11 @@ public class TitlePanel extends JPanel {
 	}
 
 	private void loadData(LineTableModel titleTableModel){
-
+		
+		//实现点击排序
 		TableRowSorter<LineTableModel> tableRowSorter = new TableRowSorter<LineTableModel>(titleTableModel);
 		titleTable.setRowSorter(tableRowSorter);
+		
 		titleTable.setModel(titleTableModel);
 		//IndexOutOfBoundsException size为0，为什么会越界？
 		//!!!注意：这里必须先setRowSorter，然后再setModel。否则就会出现越界问题。因为当setModel时，会触发数据变更事件，这个时候会调用Sorter。

@@ -9,6 +9,7 @@ import java.awt.event.ActionListener;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -22,6 +23,8 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
+
+import com.google.gson.Gson;
 
 import GUI.GUIMain;
 import burp.BurpExtender;
@@ -104,8 +107,7 @@ public class SearchPanel extends JPanel {
 				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);//table area
 
 		JLabel status = new JLabel("^_^");
-		status.setText( engines.toString()+": "+entries.size()+" items found");
-		//TODO
+		status.setText(getStatusInfo(entries,engines));
 
 		containerpanel.add(scrollPane,BorderLayout.CENTER);
 		containerpanel.add(status,BorderLayout.SOUTH);
@@ -127,6 +129,28 @@ public class SearchPanel extends JPanel {
 		centerPanel.addTab(null, containerpanel);
 		int index = centerPanel.getTabCount() - 1;
 		centerPanel.setTabComponentAt(index, tabPanel);
+	}
+	
+	public String getStatusInfo(List<SearchResultEntry> entries,List<String> engines) {
+		Map<String,Integer> status = new HashMap<>();
+		for (String engine:engines) {
+			status.put(engine, 0);
+		}
+		int unknown=0;
+		for (SearchResultEntry entry:entries){
+			String source = entry.getSource();
+			if (engines.contains(source)) {
+				int num = status.get(source);
+				status.put(source, num++);
+			}else {
+				unknown++;
+			}
+		}
+		if (unknown>0) {
+			status.put("unknown", unknown);
+		}
+		
+		return new Gson().toJson(status);
 	}
 
 

@@ -14,6 +14,7 @@ import java.util.Map;
 
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
+import javax.swing.table.TableRowSorter;
 
 import GUI.GUIMain;
 import base.Commons;
@@ -21,6 +22,7 @@ import burp.BurpExtender;
 import burp.SystemUtils;
 import config.ConfigManager;
 import config.ConfigName;
+import title.LineTableModel;
 
 
 public class SearchTable extends JTable
@@ -51,6 +53,11 @@ public class SearchTable extends JTable
 	public SearchTable(GUIMain guiMain,SearchTableModel model)
 	{
 		this(guiMain);
+		
+		//实现点击排序
+		TableRowSorter<SearchTableModel> tableRowSorter = new TableRowSorter<SearchTableModel>(model);
+		setRowSorter(tableRowSorter);
+		
 		setModel(model);
 		tableHeaderWidthinit();
 		registerListeners();
