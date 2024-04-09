@@ -21,6 +21,9 @@ public abstract class BaseClient {
 
 	protected PrintWriter stdout;
 	protected PrintWriter stderr;
+	private String url;
+	private byte[] raw;
+	private String resp_body;
 
 	BaseClient(){
 		try{
@@ -31,7 +34,7 @@ public abstract class BaseClient {
 			stderr = new PrintWriter(System.out, true);
 		}
 	}
-	
+
 	public abstract String getEngineName();
 
 	/**
@@ -44,11 +47,11 @@ public abstract class BaseClient {
 		int page=1;
 		while (true) {
 			try {
-				String url = buildSearchUrl(searchContent, page);
-				byte[] raw = buildRawData(searchContent, page);
+				this.url = buildSearchUrl(searchContent, page);
+				this.raw = buildRawData(searchContent, page);
 				if (URLUtils.isVaildUrl(url)) {
 					String body = HttpClientOfBurp.doRequest(new URL(url),raw);
-
+					this.resp_body = body;
 					if (body.length()<=0) {
 						break;
 					} else {
@@ -71,18 +74,32 @@ public abstract class BaseClient {
 		}
 		return resp_bodies;
 	}
-	
-	public void printDebugInfo(String content,String tips) {
+
+	@Deprecated
+	public void printDebugInfoxx(String content,String tips) {
 		content = content+"";//可以将null转化为字符串
-		tips = content+"";
-		
+		tips = tips+"";
+
 		if (content.length()>200) {
 			content = content.substring(0,200);
 		}
-		stderr.println("=========="+tips+":"+content.length()+"==========");
+		stderr.println("=========="+tips+"==========");
 		stderr.println(content);
-		stderr.println("=========="+tips+":"+content.length()+"==========");
-		
+		stderr.println("=========="+tips+"==========");
+	}
+
+	public void printDebugInfo() {
+		String content;
+		if (resp_body.length()>200) {
+			content = resp_body.substring(0,200);
+		}else {
+			content = resp_body;
+		}
+		stderr.println("====================");
+		stderr.println(this.url);
+		stderr.println(this.raw);
+		stderr.println(content);
+		stderr.println("====================");
 	}
 
 	public List<SearchResultEntry> SearchToGetEntry(String searchContent){

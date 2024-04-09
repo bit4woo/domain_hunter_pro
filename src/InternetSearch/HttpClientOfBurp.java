@@ -2,6 +2,8 @@ package InternetSearch;
 
 import java.net.URL;
 
+import org.apache.commons.io.FileUtils;
+
 import burp.BurpExtender;
 import burp.HelperPlus;
 import burp.IBurpExtenderCallbacks;
@@ -11,7 +13,7 @@ import burp.IHttpService;
 
 
 public class HttpClientOfBurp {
-
+	private static Logger logger = new Logger("HttpClientOfBurp_log.txt", 10 * 1024 * 1024);//10M
 	public static IHttpService getHttpService(URL url) {
 		IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
 		IExtensionHelpers helpers = callbacks.getHelpers();
@@ -51,7 +53,9 @@ public class HttpClientOfBurp {
 		HelperPlus getter = new HelperPlus(helpers);
 		int code = getter.getStatusCode(message);
 		if (code != 200) {
-			BurpExtender.getStderr().print(new String(message.getResponse()));
+			logger.log(new String(message.getRequest()));
+			logger.log(new String(message.getResponse()));
+			BurpExtender.getStderr().print("see log file for more info: "+logger.getLogFile());
 			return "";
 		}
 		byte[] byteBody = getter.getBody(false, message);

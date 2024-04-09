@@ -57,7 +57,7 @@ public class ZoomEyeClient extends BaseClient {
 		} catch (Exception e) {
 			e.printStackTrace(stderr);
 		}
-		printDebugInfo(respbody,"response");
+		printDebugInfo();
 		return result;
 	}
 
