@@ -128,6 +128,7 @@ public class ConfigManager {
 			configList.add(new ConfigEntry(ConfigName.ignoreWrongCAHost,"false","",true,true));
 			configList.add(new ConfigEntry(ConfigName.removeItemIfIgnored,"true","",true,true));
 			configList.add(new ConfigEntry(ConfigName.SaveTrafficToElastic,"false","",true,true));
+			configList.add(new ConfigEntry(ConfigName.ApiReqToTitle,"true","",true,true));
 			return true;
 		} catch (Exception e) {
 			e.printStackTrace();

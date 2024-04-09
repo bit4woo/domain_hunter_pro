@@ -17,6 +17,7 @@ public class ConfigName {
 	public static final String removeItemIfIgnored = "Remove item if ignored(Marked as check done by default)";
 
 	public static final String SaveTrafficToElastic = "Save traffic to Elastic";
+	public static final String ApiReqToTitle = "Save all API search request to title";
 
 	//String config
 	public static final String BrowserPath = "Browser Path";
