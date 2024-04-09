@@ -2,7 +2,6 @@ package InternetSearch;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.TreeSet;
 
@@ -12,6 +11,7 @@ import javax.swing.table.AbstractTableModel;
 import GUI.GUIMain;
 import base.IndexedHashMap;
 import burp.BurpExtender;
+import burp.IPAddressUtils;
 
 
 public class SearchTableModel extends AbstractTableModel {
@@ -22,10 +22,8 @@ public class SearchTableModel extends AbstractTableModel {
 	PrintWriter stdout;
 	PrintWriter stderr;
 	private GUIMain guiMain;
+	public static final List<String> HeadList = SearchTableHead.getTableHeadList();
 
-	public static List<String> getTableHeadList() {
-		return SearchTableHead.getTableHeadList();
-	}
 
 	public SearchTableModel(GUIMain guiMain){
 		this.guiMain = guiMain;
@@ -71,16 +69,16 @@ public class SearchTableModel extends AbstractTableModel {
 	@Override
 	public int getColumnCount()
 	{
-		return getTableHeadList().size();
+		return HeadList.size();
 	}
 
 	@Override
 	public Class<?> getColumnClass(int columnIndex)
 	{
-		if (columnIndex == getTableHeadList().indexOf(SearchTableHead.Index)) {
+		if (columnIndex == HeadList.indexOf(SearchTableHead.Index)) {
 			return Integer.class;//id
 		}
-		if (columnIndex == getTableHeadList().indexOf(SearchTableHead.Favicon)) {
+		if (columnIndex == HeadList.indexOf(SearchTableHead.Favicon)) {
 			return ImageIcon.class;
 		}
 		return String.class;
@@ -94,8 +92,8 @@ public class SearchTableModel extends AbstractTableModel {
 
 	@Override
 	public String getColumnName(int columnIndex) {
-		if (columnIndex >= 0 && columnIndex <= getTableHeadList().size()) {
-			return getTableHeadList().get(columnIndex);
+		if (columnIndex >= 0 && columnIndex <= HeadList.size()) {
+			return HeadList.get(columnIndex);
 		}else {
 			return "";
 		}
@@ -108,7 +106,7 @@ public class SearchTableModel extends AbstractTableModel {
 
 
 	public int getColumnIndexByName(String Name) {
-		return getTableHeadList().indexOf(Name);
+		return HeadList.indexOf(Name);
 	}
 
 
@@ -144,33 +142,33 @@ public class SearchTableModel extends AbstractTableModel {
 			return "IndexOutOfBoundsException";
 		}
 		SearchResultEntry entry = lineEntries.get(rowIndex);
-		if (columnIndex == getTableHeadList().indexOf(SearchTableHead.Index)) {
+		if (columnIndex == HeadList.indexOf(SearchTableHead.Index)) {
 			return rowIndex;
 		}
-		else if (columnIndex == getTableHeadList().indexOf(SearchTableHead.URL)){
+		else if (columnIndex == HeadList.indexOf(SearchTableHead.URL)){
 			return entry.getIdentify();
 		}
-		else if (columnIndex == getTableHeadList().indexOf(SearchTableHead.Protocol)){
+		else if (columnIndex == HeadList.indexOf(SearchTableHead.Protocol)){
 			return entry.getProtocol();
 		}
-		else if (columnIndex == getTableHeadList().indexOf(SearchTableHead.Host)){
+		else if (columnIndex == HeadList.indexOf(SearchTableHead.Host)){
 			return entry.getHost();
 		}
-		else if (columnIndex == getTableHeadList().indexOf(SearchTableHead.Port)){
+		else if (columnIndex == HeadList.indexOf(SearchTableHead.Port)){
 			return entry.getPort();
 		}
-		else if (columnIndex == getTableHeadList().indexOf(SearchTableHead.Title)){
+		else if (columnIndex == HeadList.indexOf(SearchTableHead.Title)){
 			return entry.getTitle();
 		}
-		else if (columnIndex == getTableHeadList().indexOf(SearchTableHead.Server)){
+		else if (columnIndex == HeadList.indexOf(SearchTableHead.Server)){
 			return entry.getWebcontainer();
 		}
 
-		else if (columnIndex == getTableHeadList().indexOf(SearchTableHead.IP)){
+		else if (columnIndex == HeadList.indexOf(SearchTableHead.IP)){
 			return String.join(",", new TreeSet<String>(entry.getIPSet()));//用TreeSet进行排序
 		}
 
-		else if (columnIndex == getTableHeadList().indexOf(SearchTableHead.Favicon)){
+		else if (columnIndex == HeadList.indexOf(SearchTableHead.Favicon)){
 			//return entry.getIcon_hash();
 			byte[] data = entry.getIcon_bytes();
 			String hash = entry.getIcon_hash();
@@ -181,71 +179,72 @@ public class SearchTableModel extends AbstractTableModel {
 			}
 			return null;
 		}
-		else if (columnIndex == getTableHeadList().indexOf(SearchTableHead.IconHash)){
+		else if (columnIndex == HeadList.indexOf(SearchTableHead.IconHash)){
 			return entry.getIcon_hash();
 		}
-		else if (columnIndex == getTableHeadList().indexOf(SearchTableHead.CertInfo)){
+		else if (columnIndex == HeadList.indexOf(SearchTableHead.CertInfo)){
 			return String.join(",", new TreeSet<String>(entry.getCertDomainSet()));
 		}
-		else if (columnIndex == getTableHeadList().indexOf(SearchTableHead.ASNInfo)){
+		else if (columnIndex == HeadList.indexOf(SearchTableHead.ASNInfo)){
 			return entry.getASNInfo();
 		}
-		else if (columnIndex == getTableHeadList().indexOf(SearchTableHead.Source)) {
+		else if (columnIndex == HeadList.indexOf(SearchTableHead.Source)) {
 			return entry.getSource();
 		}
 		return "";
 	}
 
 
-
-
 	/**
-	 * 返回可以用于网络搜索引擎进行搜索地字段
+	 * 返回可以用于网络搜索引擎进行搜索的字段
 	 * @param rowIndex
 	 * @param columnIndex
 	 * @return
 	 */
-	public String getValueForSearch(int rowIndex, int columnIndex,String engine) {
-		String columnName = getTableHeadList().get(columnIndex);
-
-		String[] Titles = new String[] {
-				"Title","URL","Server","Host", "IP", "CertInfo","ASNInfo","IconHash"};
-		List<String> titleList = new ArrayList<>(Arrays.asList(Titles));
-
-		String value =null;
-		boolean isHost =false;
-		if (titleList.contains(columnName)) {
-			value = getValueAt(rowIndex,columnIndex).toString();
-		}else {
-			SearchResultEntry firstEntry = lineEntries.get(rowIndex);
-			if (columnName.equalsIgnoreCase("Favicon")) {
-				value = firstEntry.getIcon_hash().toString();
-			}else {
-				value = firstEntry.getHost();
-				isHost = true;
-			}
+	public String getValueForSearch(int rowIndex, int columnIndex,String engine)
+	{
+		if (rowIndex >= lineEntries.size()) {
+			return null;
 		}
-
-		if (columnName.equalsIgnoreCase("Title")){
-			if (engine.equalsIgnoreCase(SearchEngine.GOOGLE)) {
-				value =  "intitle:"+value;
-			}
-		}else if (columnName.equalsIgnoreCase("Comments")){
-		}else if (columnName.equalsIgnoreCase("Server")){
-		}else if (columnName.equalsIgnoreCase("IP")){
-		}else if (columnName.equalsIgnoreCase("CNAME|CertInfo")){
-		}else if (columnName.equalsIgnoreCase("ASNInfo")){
-		}else if (columnName.equalsIgnoreCase("Favicon") || columnName.equalsIgnoreCase("iconHash")){
+		SearchResultEntry entry = lineEntries.get(rowIndex);
+		if (columnIndex == HeadList.indexOf(SearchTableHead.Port)){
+			return entry.getPort()+"";
+		}
+		else if (columnIndex == HeadList.indexOf(SearchTableHead.Title)){
+			String value =  entry.getTitle();
+			value = SearchEngine.buildSearchDork(value,engine,SearchType.Title);
+			return value;
+		}
+		else if (columnIndex == HeadList.indexOf(SearchTableHead.Server)){
+			String value =  entry.getWebcontainer();
+			value = SearchEngine.buildSearchDork(value,engine,SearchType.Server);
+			return value;
+		}else if (columnIndex == HeadList.indexOf(SearchTableHead.IP)){
+			String value = String.join(",", new TreeSet<String>(entry.getIPSet()));//用TreeSet进行排序
+			value = SearchEngine.buildSearchDork(value,engine,SearchType.IP);
+			return value;
+		}else if (columnIndex == HeadList.indexOf(SearchTableHead.Favicon) || columnIndex == HeadList.indexOf(SearchTableHead.IconHash)){
+			String value = entry.getIcon_hash();
 			value = SearchEngine.buildSearchDork(value,engine,SearchType.IconHash);
-		}else if (isHost){
-			if (engine.equalsIgnoreCase(SearchEngine.GOOGLE)) {
-				value = "site:"+value;
-			}
+			return value;
+		}else if (columnIndex == HeadList.indexOf(SearchTableHead.CertInfo)){
+			String value =  String.join(",", new TreeSet<String>(entry.getCertDomainSet()));
 			value = SearchEngine.buildSearchDork(value,engine,SearchType.Domain);
+			return value;
+		}else if (columnIndex == HeadList.indexOf(SearchTableHead.ASNInfo)){
+			//TODO，应该获取ASN编号
+			return entry.getASNInfo();
+		}else {
+			String value = entry.getHost();
+			if (IPAddressUtils.isValidIP(value)) {
+				value = SearchEngine.buildSearchDork(value,engine,SearchType.IP);
+			}else {
+				value = SearchEngine.buildSearchDork(value,engine,SearchType.Domain);
+			}
+			return value;
 		}
-
-		return value;
 	}
+
 
 	///////////////////^^^多个行内容的增删查改^^^/////////////////////////////////
 
@@ -274,6 +273,6 @@ public class SearchTableModel extends AbstractTableModel {
 	}
 
 	public static void main(String[] args) {
-		System.out.println(getTableHeadList());
+		System.out.println(HeadList);
 	}
 }

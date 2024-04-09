@@ -2,22 +2,28 @@ package InternetSearch;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 
 import GUI.GUIMain;
+import GUI.JScrollPanelWithHeader;
 import burp.BurpExtender;
+import domain.TextAreaType;
 
 public class SearchPanel extends JPanel {
 
@@ -27,6 +33,20 @@ public class SearchPanel extends JPanel {
 	GUIMain guiMain;
 	PrintWriter stdout;
 	PrintWriter stderr;
+	
+	public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            JFrame frame = new JFrame("Table Sync Example");
+            SearchPanel spanel = new SearchPanel(null);
+            frame.getContentPane().add(spanel);
+            frame.setSize(400, 300);
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setVisible(true);
+            
+            spanel.addSearchTab("111",new ArrayList<SearchResultEntry>(),"xxx");
+        });
+		
+	}
 
 	public SearchPanel(GUIMain guiMain) {
 		this.guiMain = guiMain;
@@ -58,6 +78,7 @@ public class SearchPanel extends JPanel {
 		
 		JLabel status = new JLabel("^_^");
 		status.setText( engineName+": "+entries.size()+" items found");
+		//TODO
 	
 		containerpanel.add(scrollPane,BorderLayout.CENTER);
 		containerpanel.add(status,BorderLayout.SOUTH);

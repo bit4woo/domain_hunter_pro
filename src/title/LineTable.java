@@ -37,10 +37,11 @@ public class LineTable extends JTable
 	private static final long serialVersionUID = 1L;
 	//private TableRowSorter<LineTableModel> tableRowSorter;//TableRowSorter vs. RowSorter
 
-
 	PrintWriter stdout;
 	PrintWriter stderr;
 	private GUIMain guiMain;
+	public static final List<String> HeadList = LineTableHead.getTableHeadList();
+
 
 	public LineEntry getRowAt(int row) {
 		return ((LineTableModel) getModel()).getRowAt(convertRowIndexToModel(row));
@@ -105,20 +106,20 @@ public class LineTable extends JTable
 
 
 		Map<String,Integer> preferredWidths = new HashMap<String,Integer>();
-		preferredWidths.put("#",5);
-		preferredWidths.put("URL",25);
-		preferredWidths.put("Status",6);
-		preferredWidths.put("Length",10);
-		preferredWidths.put("Title",30);
-		preferredWidths.put("Comments",30);
-		preferredWidths.put("CheckDoneTime","2019-05-28-14-13-16".length());
-		preferredWidths.put("isChecked"," isChecked ".length());
-		preferredWidths.put("IP",30);
-		preferredWidths.put("CNAME|CertInfo",30);
-		preferredWidths.put("Server",10);
-		preferredWidths.put("IconHash", "-17480088888".length());
-		preferredWidths.put("ASNInfo","HUAWEI CLOUD SERVICE DATA CENTER".length());
-		for(String header:LineTableModel.getTitleList()){
+		preferredWidths.put(LineTableHead.Index,5);
+		preferredWidths.put(LineTableHead.URL,25);
+		preferredWidths.put(LineTableHead.Status,6);
+		preferredWidths.put(LineTableHead.Length,10);
+		preferredWidths.put(LineTableHead.Title,30);
+		preferredWidths.put(LineTableHead.Comments,30);
+		preferredWidths.put(LineTableHead.CheckDoneTime,"2019-05-28-14-13-16".length());
+		preferredWidths.put(LineTableHead.isChecked," isChecked ".length());
+		preferredWidths.put(LineTableHead.IP,30);
+		preferredWidths.put(LineTableHead.CNAMEAndCertInfo,30);
+		preferredWidths.put(LineTableHead.Server,10);
+		preferredWidths.put(LineTableHead.IconHash, "-17480088888".length());
+		preferredWidths.put(LineTableHead.ASNInfo,"HUAWEI CLOUD SERVICE DATA CENTER".length());
+		for(String header:HeadList){
 			try{//避免动态删除表字段时，出错
 				if (preferredWidths.keySet().contains(header)){
 					int multiNumber = preferredWidths.get(header);
@@ -130,7 +131,7 @@ public class LineTable extends JTable
 		}
 		this.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);//配合横向滚动条
 
-		int index = LineTableModel.getTitleList().indexOf("IconHash");
+		int index = HeadList.indexOf(LineTableHead.IconHash);
 		getColumnModel().getColumn(index).setCellRenderer(new FaviconTableCellRenderer()); // 第二列显示图片,必须在setModel之后
 	}
 
@@ -186,7 +187,7 @@ public class LineTable extends JTable
 					int modelCol = LineTable.this.convertColumnIndexToModel(col);
 
 					LineEntry selecteEntry = getLineTableModel().getRowAt(rows[0]);
-					if ((modelCol == LineTableModel.getTitleList().indexOf("#") )) {//双击index在google中搜索host。
+					if ((modelCol == HeadList.indexOf(LineTableHead.Index) )) {//双击index在google中搜索host。
 						String host = selecteEntry.getHost();
 						String url= "https://www.google.com/search?q=site%3A"+host;
 						try {
@@ -198,7 +199,7 @@ public class LineTable extends JTable
 						} catch (Exception e2) {
 							e2.printStackTrace();
 						}
-					}else if(modelCol==LineTableModel.getTitleList().indexOf("URL")) {//双击url在浏览器中打开
+					}else if(modelCol==HeadList.indexOf(LineTableHead.URL)) {//双击url在浏览器中打开
 						try{
 							String url = selecteEntry.getUrl();
 							if (url != null && !url.toLowerCase().startsWith("http://") && !url.toLowerCase().startsWith("https://")) {
@@ -208,7 +209,7 @@ public class LineTable extends JTable
 						}catch (Exception e1){
 							e1.printStackTrace(stderr);
 						}
-					}else if (modelCol == LineTableModel.getTitleList().indexOf("isChecked")) {
+					}else if (modelCol == HeadList.indexOf(LineTableHead.isChecked)) {
 						try{
 							//LineTable.this.lineTableModel.updateRowsStatus(rows,LineEntry.CheckStatus_Checked);//处理多行
 							String currentStatus= selecteEntry.getCheckStatus();
@@ -224,7 +225,7 @@ public class LineTable extends JTable
 						}catch (Exception e1){
 							e1.printStackTrace(stderr);
 						}
-					}else if (modelCol == LineTableModel.getTitleList().indexOf("AssetType")) {
+					}else if (modelCol == HeadList.indexOf(LineTableHead.AssetType)) {
 						String currentLevel = selecteEntry.getAssetType();
 						List<String> tmpList = Arrays.asList(LineEntry.AssetTypeArray);
 						int index = tmpList.indexOf(currentLevel);
@@ -232,20 +233,20 @@ public class LineTable extends JTable
 						selecteEntry.setAssetType(newLevel);
 						stdout.println(String.format("$$$ %s updated [AssetType-->%s]",selecteEntry.getUrl(),newLevel));
 						getLineTableModel().fireTableRowsUpdated(rows[0], rows[0]);
-					}else if (modelCol == LineTableModel.getTitleList().indexOf("ASNInfo")) {
+					}else if (modelCol == HeadList.indexOf(LineTableHead.ASNInfo)) {
 						if (selecteEntry.getASNInfo().equals("")){
 							selecteEntry.freshASNInfo();
 						}else {
 							SystemUtils.writeToClipboard(selecteEntry.getASNInfo());
 						}
-					}else if (modelCol == LineTableModel.getTitleList().indexOf("Favicon")) {
+					}else if (modelCol == HeadList.indexOf(LineTableHead.Favicon)) {
 						try {
 							Commons.browserOpen(selecteEntry.getIcon_url(),ConfigManager.getStringConfigByKey(ConfigName.BrowserPath));
 						} catch (Exception e1) {
 							e1.printStackTrace();
 						}
 					} else{
-						//LineTableModel.getTitleList().indexOf("CDN|CertInfo")
+						//HeadList.indexOf("CDN|CertInfo")
 						//String value = guiMain.getTitlePanel().getTitleTable().getValueAt(rows[0], col).toString();//rows[0]是转换过的，不能再转换
 						//调用的是原始Jtable中的getValueAt，它本质上也是调用model中的getValueAt，但是有一次转换的过程！！！
 						String value = getLineTableModel().getValueAt(rows[0],modelCol).toString();
@@ -300,7 +301,7 @@ public class LineTable extends JTable
 				int colunm = guiMain.getTitlePanel().getTitleTable().columnAtPoint(evt.getPoint());
 				int modelColunm = guiMain.getTitlePanel().getTitleTable().convertColumnIndexToModel(colunm);
 
-				int headerIndex = LineTableModel.getTitleList().indexOf("CDN|CertInfo");
+				int headerIndex = HeadList.indexOf(LineTableHead.CNAMEAndCertInfo);
 
 				if (modelColunm == headerIndex) {
 					String informations = guiMain.getTitlePanel().getTitleTable().getValueAt(row, colunm).toString();

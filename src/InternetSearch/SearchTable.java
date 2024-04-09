@@ -9,6 +9,7 @@ import java.io.PrintWriter;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.JTable;
@@ -31,6 +32,7 @@ public class SearchTable extends JTable
 	PrintWriter stdout;
 	PrintWriter stderr;
 	GUIMain guiMain;
+	public static final List<String> HeadList = SearchTableHead.getTableHeadList();
 
 	public SearchTable(GUIMain guiMain)
 	{
@@ -67,15 +69,16 @@ public class SearchTable extends JTable
 		FontMetrics fm = this.getFontMetrics(f);
 		int width = fm.stringWidth("A");//一个字符的宽度
 
+		//TODO
 		Map<String,Integer> preferredWidths = new HashMap<String,Integer>();
-		preferredWidths.put("#",5);
-		preferredWidths.put("URL/Host",25);
-		preferredWidths.put("Title",30);
-		preferredWidths.put("IP",30);
-		preferredWidths.put("CertInfo",30);
-		preferredWidths.put("Server",10);
-		preferredWidths.put("IconHash", "-17480088888".length());
-		for(String header:SearchTableHead.getTableHeadList()){
+		preferredWidths.put(SearchTableHead.Index,5);
+		preferredWidths.put(SearchTableHead.URL,25);
+		preferredWidths.put(SearchTableHead.Title,30);
+		preferredWidths.put(SearchTableHead.IP,30);
+		preferredWidths.put(SearchTableHead.CertInfo,30);
+		preferredWidths.put(SearchTableHead.Server,10);
+		preferredWidths.put(SearchTableHead.IconHash, "-17480088888".length());
+		for(String header:HeadList){
 			try{//避免动态删除表字段时，出错
 				if (preferredWidths.keySet().contains(header)){
 					int multiNumber = preferredWidths.get(header);
@@ -118,7 +121,7 @@ public class SearchTable extends JTable
 					int modelCol = convertColumnIndexToModel(col);
 
 					SearchResultEntry selecteEntry = getSearchTableModel().getRowAt(rows[0]);
-					if ((modelCol == SearchTableModel.getTableHeadList().indexOf(SearchTableHead.Index) )) {//双击index在google中搜索host。
+					if ((modelCol == HeadList.indexOf(SearchTableHead.Index) )) {//双击index在google中搜索host。
 						String host = selecteEntry.getHost();
 						String url= "https://www.google.com/search?q=site%3A"+host;
 						try {
@@ -130,7 +133,7 @@ public class SearchTable extends JTable
 						} catch (Exception e2) {
 							e2.printStackTrace();
 						}
-					}else if(modelCol==SearchTableModel.getTableHeadList().indexOf(SearchTableHead.URL)) {//双击url在浏览器中打开
+					}else if(modelCol==HeadList.indexOf(SearchTableHead.URL)) {//双击url在浏览器中打开
 						try{
 							String url = selecteEntry.getHost();
 							if (url != null && !url.toLowerCase().startsWith("http://") && !url.toLowerCase().startsWith("https://")) {
@@ -140,9 +143,9 @@ public class SearchTable extends JTable
 						}catch (Exception e1){
 							e1.printStackTrace(stderr);
 						}
-					}else if (modelCol == SearchTableModel.getTableHeadList().indexOf(SearchTableHead.ASNInfo)) {
+					}else if (modelCol == HeadList.indexOf(SearchTableHead.ASNInfo)) {
 
-					}else if (modelCol == SearchTableModel.getTableHeadList().indexOf(SearchTableHead.Favicon)) {
+					}else if (modelCol == HeadList.indexOf(SearchTableHead.Favicon)) {
 						try {
 							Commons.browserOpen(selecteEntry.getIcon_url(),ConfigManager.getStringConfigByKey(ConfigName.BrowserPath));
 						} catch (Exception e1) {
