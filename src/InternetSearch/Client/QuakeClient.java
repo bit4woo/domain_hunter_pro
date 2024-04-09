@@ -9,6 +9,7 @@ import org.json.JSONObject;
 
 import InternetSearch.SearchEngine;
 import InternetSearch.SearchResultEntry;
+import InternetSearch.SearchType;
 import Tools.JSONHandler;
 import config.ConfigManager;
 import config.ConfigName;
@@ -102,7 +103,9 @@ public class QuakeClient extends BaseClient {
 
 	@Override
 	public String buildSearchUrl(String searchContent, int page) {
-		return "https://quake.360.net/api/v3/search/quake_service";
+		
+		return "https://quake.360.net/api/v3/search/quake_host";
+		//return "https://quake.360.net/api/v3/search/quake_service";//这个是web页面使用的接口
 	}
 
 	@Override
@@ -110,12 +113,24 @@ public class QuakeClient extends BaseClient {
 		searchContent = URLEncoder.encode(searchContent);
 		String key = ConfigManager.getStringConfigByKey(ConfigName.Quake360APIKey);
 		int size = 500;
-		int start = size*(page-1); 
-		String raw = "POST /api/v3/search/quake_service HTTP/1.1\r\n" + "Host: quake.360.net\r\n"
-				+ "User-Agent: curl/7.81.0\r\n" + "Accept: */*\r\n" + "X-Quaketoken: %s\r\n"
-				+ "Content-Type: application/json\r\n" + "Connection: close\r\n" + "\r\n"
-				+ "{\"query\": \"domain:%s\", \"start\": %s, \"size\": %s}";
+		int start = size*(page-1);
+		String raw;
+		if (searchContent.startsWith(SearchType.IconHash)) {
+			searchContent = searchContent.substring(SearchType.IconHash.length());
+			raw = "POST /api/v3/query/similar_icon/aggregation HTTP/1.1\r\n" + "Host: quake.360.net\r\n"
+					+ "User-Agent: curl/7.81.0\r\n" + "Accept: */*\r\n" + "X-Quaketoken: %s\r\n"
+					+ "Content-Type: application/json\r\n" + "Connection: close\r\n" + "\r\n"
+					+ "{\"favicon_hash\": \"%s\",\"similar\": 0.9, \"start\": %s, \"size\": %s}";
+			
+		}else {
+			raw = "POST /api/v3/search/quake_host HTTP/1.1\r\n" + "Host: quake.360.net\r\n"
+					+ "User-Agent: curl/7.81.0\r\n" + "Accept: */*\r\n" + "X-Quaketoken: %s\r\n"
+					+ "Content-Type: application/json\r\n" + "Connection: close\r\n" + "\r\n"
+					+ "{\"query\": \"%s\",\"start\": %s, \"size\": %s}";
+		}
+
 		raw = String.format(raw, key, searchContent,start,size);
+		
 		return raw.getBytes();
 	}
 

@@ -31,20 +31,23 @@ public class HunterClient extends BaseClient {
 			int code = obj.getInt("code");
 			if (code ==200) {
 				JSONObject data = obj.getJSONObject("data");
-				JSONArray items = data.getJSONArray("arr");
-				for (Object item : items) {				
-					JSONObject entryitem = (JSONObject) item;
-					SearchResultEntry entry = new SearchResultEntry();
-					entry.setHost(entryitem.getString("url"));
-					entry.getIPSet().add(entryitem.getString("ip"));
-					entry.setRootDomain(entryitem.getString("domain"));
-					entry.setPort(entryitem.getInt("port"));
-					entry.setProtocol(entryitem.getString("protocol"));
-					entry.setWebcontainer(entryitem.get("component").toString());
-					entry.setSource(getEngineName());
-					result.add(entry);
+				if (data.get("arr") != null) {
+					//"arr":null
+					JSONArray items = data.getJSONArray("arr");
+					for (Object item : items) {				
+						JSONObject entryitem = (JSONObject) item;
+						SearchResultEntry entry = new SearchResultEntry();
+						entry.setHost(entryitem.getString("url"));
+						entry.getIPSet().add(entryitem.getString("ip"));
+						entry.setRootDomain(entryitem.getString("domain"));
+						entry.setPort(entryitem.getInt("port"));
+						entry.setProtocol(entryitem.getString("protocol"));
+						entry.setWebcontainer(entryitem.get("component").toString());
+						entry.setSource(getEngineName());
+						result.add(entry);
+					}
+					return result;
 				}
-				return result;
 			}
 		} catch (Exception e) {
 			e.printStackTrace(stderr);

@@ -274,13 +274,14 @@ public class SearchEngine {
 				}else if(type.equals(SearchType.IP)) {
 					value = "site:"+value;
 				}else if(type.equals(SearchType.Domain)) {
-
+					value = "domain:"+value;
 				}else if(type.equals(SearchType.Subnet)) {
 
 				}else if(type.equals(SearchType.Title)) {
 
 				}else if(type.equals(SearchType.IconHash)) {
-
+					value = SearchType.IconHash+":"+value;
+					//语法上是不需要的，为了告诉请求构造逻辑，这是iconhash搜索。
 				}else if(type.equals(SearchType.Server)) {
 
 				}else if(type.equals(SearchType.Asn)) {

@@ -5,11 +5,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
-
-import com.google.common.base.Strings;
-
 import InternetSearch.HttpClientOfBurp;
 import InternetSearch.SearchResultEntry;
 import burp.BurpExtender;
@@ -107,12 +102,11 @@ public abstract class BaseClient {
 		}else {
 			reqRaw = new String(this.raw);
 		}
-		stderr.println("====================");
+		stderr.println("====================>>");
 		stderr.println(this.url);
 		stderr.println(reqRaw);
 		stderr.println(content);
-		stderr.println("====================");
-		
+		stderr.println("<<====================");
 	}
 
 	public List<SearchResultEntry> SearchToGetEntry(String searchContent){
