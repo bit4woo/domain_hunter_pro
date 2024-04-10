@@ -280,7 +280,7 @@ public class SearchEngine {
 				}else if(type.equals(SearchType.Title)) {
 
 				}else if(type.equals(SearchType.IconHash)) {
-					value = SearchType.IconHash+":"+value;
+					value = SearchType.IconHash+value;
 					//语法上是不需要的，为了告诉请求构造逻辑，这是iconhash搜索。
 				}else if(type.equals(SearchType.Server)) {
 
