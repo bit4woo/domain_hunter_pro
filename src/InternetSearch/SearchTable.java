@@ -77,7 +77,9 @@ public class SearchTable extends JTable
 
 		Map<String,Integer> preferredWidths = new HashMap<String,Integer>();
 		preferredWidths.put(SearchTableHead.Index,5);
-		preferredWidths.put(SearchTableHead.URL,25);
+		preferredWidths.put(SearchTableHead.URL,30);
+		preferredWidths.put(SearchTableHead.Host,25);
+		preferredWidths.put(SearchTableHead.Source,25);
 		preferredWidths.put(SearchTableHead.Title,30);
 		preferredWidths.put(SearchTableHead.IP,30);
 		preferredWidths.put(SearchTableHead.CertInfo,30);
