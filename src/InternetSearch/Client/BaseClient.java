@@ -102,11 +102,13 @@ public abstract class BaseClient {
 		}else {
 			reqRaw = new String(this.raw);
 		}
+		stderr.println();
 		stderr.println("====================>>");
 		stderr.println(this.url);
 		stderr.println(reqRaw);
 		stderr.println(content);
 		stderr.println("<<====================");
+		stderr.println();
 	}
 
 	public List<SearchResultEntry> SearchToGetEntry(String searchContent){
