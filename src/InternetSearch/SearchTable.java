@@ -22,7 +22,6 @@ import burp.BurpExtender;
 import burp.SystemUtils;
 import config.ConfigManager;
 import config.ConfigName;
-import title.LineTableModel;
 
 
 public class SearchTable extends JTable
@@ -76,7 +75,6 @@ public class SearchTable extends JTable
 		FontMetrics fm = this.getFontMetrics(f);
 		int width = fm.stringWidth("A");//一个字符的宽度
 
-		//TODO
 		Map<String,Integer> preferredWidths = new HashMap<String,Integer>();
 		preferredWidths.put(SearchTableHead.Index,5);
 		preferredWidths.put(SearchTableHead.URL,25);
@@ -95,9 +93,8 @@ public class SearchTable extends JTable
 				e.printStackTrace();
 			}
 		}
-		//this.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);//配合横向滚动条
-
-		this.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS); //全自动调整列表，就用这个
+		this.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);//配合横向滚动条
+		//this.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS); //全自动调整列表，就用这个
 	}
 
 	public int[] SelectedRowsToModelRows(int[] SelectedRows) {
