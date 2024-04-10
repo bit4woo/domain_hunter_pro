@@ -40,6 +40,7 @@ public class FoFaClient extends BaseClient {
 					entry.setPort(Integer.parseInt(parts.getString(3)));
 					entry.setProtocol(parts.getString(4));
 					entry.setWebcontainer(parts.getString(5));
+					entry.setTitle(parts.getString(6));
 					entry.setSource(getEngineName());
 					result.add(entry);
 				}
@@ -80,7 +81,7 @@ public class FoFaClient extends BaseClient {
 		searchContent = new String(Base64.getEncoder().encode(searchContent.getBytes()));
 
 		String url = String.format(
-				"https://fofa.info/api/v1/search/all?email=%s&key=%s&page=1&size=2000&fields=host,ip,domain,port,protocol,server&qbase64=%s",
+				"https://fofa.info/api/v1/search/all?email=%s&key=%s&page=1&size=2000&fields=host,ip,domain,port,protocol,server,title&qbase64=%s",
 				email, key, searchContent);
 		return url;
 	}
