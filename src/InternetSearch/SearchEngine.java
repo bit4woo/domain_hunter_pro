@@ -31,6 +31,12 @@ public class SearchEngine {
 
 	public static final String QUAKE_360 = "quake.360.net";
 	public static final String TI_360 = "ti.360.net";
+	
+	//https://search.censys.io/api
+	//https://api-docs.fullhunt.io/#introduction
+	//TODO
+	public static final String CENSYS = "censys";
+	public static final String FullHunt = "fullhunt";
 
 	//邮箱搜索
 	public static final String HUNTER_IO = "hunter.io";
@@ -95,6 +101,8 @@ public class SearchEngine {
 		result.add(QIANXIN_TI);
 		result.add(QUAKE_360);
 		result.add(TI_360);
+		result.add(CENSYS);
+		result.add(FullHunt);
 		return result;
 	}
 

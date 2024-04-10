@@ -1,0 +1,82 @@
+{
+  "domain": "kaspersky.com",
+  "hosts": [
+    {
+      "cdn": "",
+      "cloud": {
+        "provider": "GCP",
+        "region": "global"
+      },
+      "dns": {
+        "a": [
+          "35.186.208.154"
+        ],
+        "aaaa": null,
+        "cname": [
+          "kpcpt.cname.nexway.com."
+        ],
+        "mx": null,
+        "ns": null,
+        "ptr": [
+          "154.208.186.35.bc.googleusercontent.com."
+        ],
+        "txt": null
+      },
+      "domain": "kaspersky.com",
+      "has_ipv6": false,
+      "has_private_ip": false,
+      "host": "loja.center.kaspersky.com",
+      "http_status_code": 0,
+      "http_title": "",
+      "ip_address": "35.186.208.154",
+      "ip_metadata": {
+        "asn": 15169,
+        "city_name": "",
+        "country_code": "US",
+        "country_name": "United States",
+        "isp": "Google Cloud",
+        "location_latitude": 37.751,
+        "location_longitude": -97.822,
+        "organization": "Google Cloud",
+        "postal_code": "",
+        "region": ""
+      },
+      "is_cdn": false,
+      "is_cloud": true,
+      "is_cloudflare": false,
+      "is_live": true,
+      "is_resolvable": true,
+      "network_ports": [
+        1935,
+        30000,
+        3389,
+        5672,
+        5901,
+        5999,
+        80,
+        83,
+        85,
+        87
+      ],
+      "tags": [
+        "cname",
+        "cloud",
+        "gcp",
+        "rdp",
+        "amqp"
+      ],
+      "tld": "com"
+    }
+  ],
+  "status": 200,
+  "message": "",
+  "metadata": {
+    "all_results_count": 349,
+    "available_results_for_user": 300,
+    "domain": "kaspersky.com",
+    "last_scanned": 1626577921,
+    "max_results_for_user": 300,
+    "timestamp": 1634004417,
+    "user_plan": "advanced"
+  }
+}
