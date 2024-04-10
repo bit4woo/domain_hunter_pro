@@ -266,9 +266,9 @@ public class SearchEngine {
 				}else if(type.equals(SearchType.Asn)) {
 
 				}
-
 			}
 			else if (engine.equalsIgnoreCase(QUAKE_360)) {
+				//https://quake.360.net/quake/#/help?id=5e774244cb9954d2f8a0165a&title=%E6%9C%8D%E5%8A%A1%E6%95%B0%E6%8D%AE%E6%8E%A5%E5%8F%A3
 				if (type.equals(SearchType.Host)) {
 
 				}else if(type.equals(SearchType.IP)) {
@@ -288,7 +288,6 @@ public class SearchEngine {
 
 				}
 			}
-
 		}else {
 			BurpExtender.getStderr().println("wrong search type");
 		}

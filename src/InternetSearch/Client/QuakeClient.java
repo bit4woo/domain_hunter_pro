@@ -1,6 +1,5 @@
 package InternetSearch.Client;
 
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -103,9 +102,8 @@ public class QuakeClient extends BaseClient {
 
 	@Override
 	public String buildSearchUrl(String searchContent, int page) {
-		
-		return "https://quake.360.net/api/v3/search/quake_host";
-		//return "https://quake.360.net/api/v3/search/quake_service";//这个是web页面使用的接口
+		//https://quake.360.net/quake/#/help?id=5e774244cb9954d2f8a0165a&title=%E6%9C%8D%E5%8A%A1%E6%95%B0%E6%8D%AE%E6%8E%A5%E5%8F%A3
+		return "https://quake.360.net/api/v3/search/quake_service";
 	}
 
 	@Override
@@ -122,7 +120,7 @@ public class QuakeClient extends BaseClient {
 					+ "{\"favicon_hash\": \"%s\",\"similar\": 0.9, \"start\": %s, \"size\": %s}";
 			
 		}else {
-			raw = "POST /api/v3/search/quake_host HTTP/1.1\r\n" + "Host: quake.360.net\r\n"
+			raw = "POST /api/v3/search/quake_service HTTP/1.1\r\n" + "Host: quake.360.net\r\n"
 					+ "User-Agent: curl/7.81.0\r\n" + "Accept: */*\r\n" + "X-Quaketoken: %s\r\n"
 					+ "Content-Type: application/json\r\n" + "Connection: close\r\n" + "\r\n"
 					+ "{\"query\": \"%s\",\"start\": %s, \"size\": %s}";

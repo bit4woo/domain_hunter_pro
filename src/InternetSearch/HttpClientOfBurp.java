@@ -2,6 +2,7 @@ package InternetSearch;
 
 import java.net.URL;
 
+import base.Commons;
 import burp.BurpExtender;
 import burp.HelperPlus;
 import burp.IBurpExtenderCallbacks;
@@ -62,7 +63,7 @@ public class HttpClientOfBurp {
 			try {
 				//将debug请求存储到title中
 				LineEntry entry = new LineEntry(message);
-				entry.addComment("API Search Debug Info");
+				entry.addComment("API Search Debug Info:"+Commons.getNowTimeString());
 				BurpExtender.getGui().getTitlePanel().getTitleTable().getLineTableModel().addNewLineEntry(entry);
 			} catch (Exception e) {
 				e.printStackTrace();

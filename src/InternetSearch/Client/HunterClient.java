@@ -43,6 +43,7 @@ public class HunterClient extends BaseClient {
 						entry.setPort(entryitem.getInt("port"));
 						entry.setProtocol(entryitem.getString("protocol"));
 						entry.setWebcontainer(entryitem.get("component").toString());
+						entry.setTitle(entryitem.getString("web_title"));
 						entry.setSource(getEngineName());
 						result.add(entry);
 					}
