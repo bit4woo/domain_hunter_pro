@@ -455,7 +455,7 @@ public class DomainNameUtils {
 
 	public static void main(String[] args) {
 		//System.out.println(isWhiteListTDL("test.example.co.th","example.com"));
-		System.out.println(isValidDomain("test-api.xxx.services"));
+		System.out.println(isValidDomain("test-api.xxx.services:22"));
 		//testWild();
 
 		//System.out.println(isValidWildCardDomain("aaaaaaaaa-aaaaaaaaaaaaaaa-aaaaaaaaaaaaaa.www1.baidu.com"));

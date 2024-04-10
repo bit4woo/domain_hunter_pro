@@ -110,7 +110,6 @@ public class QuakeClient extends BaseClient {
 
 	@Override
 	public byte[] buildRawData(String searchContent, int page) {
-		searchContent = URLEncoder.encode(searchContent);
 		String key = ConfigManager.getStringConfigByKey(ConfigName.Quake360APIKey);
 		int size = 500;
 		int start = size*(page-1);

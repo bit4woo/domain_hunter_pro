@@ -84,6 +84,7 @@ public class ConfigManager {
 				if (localFile.exists()) {
 					String jsonstr = FileUtils.readFileToString(localFile,"UTF-8");
 					FromJson(jsonstr);
+					mergeConfig();
 					return true;
 				}
 			} catch (IOException e) {
@@ -95,6 +96,33 @@ public class ConfigManager {
 	}
 
 	private static boolean initDefault(){
+		try {
+			configList = getInitConfigs();
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	/**
+	 * 向当前配置中，添加新的配置项
+	 * @return
+	 */
+	private static void mergeConfig(){
+		try {
+			for (ConfigEntry entry:getInitConfigs()) {
+				if(!isConfigExist(entry.getKey())) {
+					configList.add(entry);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	private static List<ConfigEntry> getInitConfigs() throws Exception{
+		List<ConfigEntry> configList = new ArrayList<ConfigEntry>();
 		try {
 			configList.add(new ConfigEntry(ConfigName.BrowserPath,getBrowserPath(),"",true,true));
 			configList.add(new ConfigEntry(ConfigName.PortScanCmd,defaultNmap,"",true,true));
@@ -129,11 +157,11 @@ public class ConfigManager {
 			configList.add(new ConfigEntry(ConfigName.removeItemIfIgnored,"true","",true,true));
 			configList.add(new ConfigEntry(ConfigName.SaveTrafficToElastic,"false","",true,true));
 			configList.add(new ConfigEntry(ConfigName.ApiReqToTitle,"true","",true,true));
-			return true;
+
 		} catch (Exception e) {
-			e.printStackTrace();
-			return false;
+			throw e;
 		}
+		return configList;
 	}
 
 	public String getConfigManagerName() {
@@ -212,6 +240,14 @@ public class ConfigManager {
 		return false;
 	}
 
+	public static boolean isConfigExist(String configKey){
+		for (ConfigEntry entry : configList) {
+			if (entry.getKey().equalsIgnoreCase(configKey)) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 	public static void setConfigValue(String configKey,String configValue) {
 		if(ConfigName.getAllConfigNames().contains(configKey)) {

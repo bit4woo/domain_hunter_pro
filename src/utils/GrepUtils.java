@@ -486,12 +486,13 @@ public class GrepUtils {
 
 
 	public static void main(String[] args) {
-		test();
+		test3();
 	}
 
 
 	public static void test5(){
 		System.out.println(grepEmail("111 cs@ph.aaa.com"));
+		
 	}
 
 	public static void test4(){
@@ -503,6 +504,7 @@ public class GrepUtils {
 		System.out.println(grepDomain("baidu.com."));
 		System.out.println(grepDomain("http://baidu.com."));
 		System.out.println(grepDomain("http://baidu.com:200."));
+		System.out.println(grepDomainNoPort("testopenapi.xxx.com:22"));
 	}
 
 	public static void test2() {

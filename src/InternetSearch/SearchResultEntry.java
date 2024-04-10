@@ -3,10 +3,13 @@ package InternetSearch;
 import burp.BurpExtender;
 import burp.IPAddressUtils;
 import domain.DomainManager;
+
 import org.apache.commons.lang3.StringUtils;
 import utils.DomainNameUtils;
+import utils.GrepUtils;
 import utils.URLUtils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -53,7 +56,13 @@ public class SearchResultEntry {
 		if (URLUtils.isVaildUrl(host)) {
 			this.uri = host;
 			this.host = URLUtils.getHost(host);
-		}else {
+		}else{
+			Set<String> hosts = GrepUtils.grepDomainNoPort(host);
+			if (hosts.size()>0) {
+				this.host = new ArrayList<>(hosts).get(0);
+			}
+		}
+		if (StringUtils.isEmpty(this.host)) {
 			this.host = host;
 		}
 	}
