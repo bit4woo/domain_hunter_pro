@@ -5,6 +5,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+
 import InternetSearch.HttpClientOfBurp;
 import InternetSearch.SearchResultEntry;
 import burp.BurpExtender;
@@ -90,7 +92,9 @@ public abstract class BaseClient {
 
 	public void printDebugInfo() {
 		String content;
-		if (resp_body.length()>200) {
+		
+		if (StringUtils.length(resp_body)>200) {
+			//可以处理是null的情况
 			content = resp_body.substring(0,200);
 		}else {
 			content = resp_body;

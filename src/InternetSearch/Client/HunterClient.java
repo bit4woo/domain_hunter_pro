@@ -31,10 +31,10 @@ public class HunterClient extends BaseClient {
 			int code = obj.getInt("code");
 			if (code ==200) {
 				JSONObject data = obj.getJSONObject("data");
-				if (data.get("arr") != null) {
-					//"arr":null
+				if (!data.get("arr").toString().equals("null")) {
+					//"arr":null 这里有点反直觉
 					JSONArray items = data.getJSONArray("arr");
-					for (Object item : items) {				
+					for (Object item : items) {
 						JSONObject entryitem = (JSONObject) item;
 						SearchResultEntry entry = new SearchResultEntry();
 						entry.setHost(entryitem.getString("url"));
@@ -89,7 +89,7 @@ public class HunterClient extends BaseClient {
 	}
 
 	public static void main(String[] args) {
-		String aaa = "";
+		String aaa = "{\"code\":200,\"data\":{\"account_type\":\"个人账号\",\"total\":0,\"time\":331,\"arr\":null,\"consume_quota\":\"消耗积分：1\",\"rest_quota\":\"今日剩余积分：5176\",\"syntax_prompt\":\"\"},\"message\":\"success\"}";
 		System.out.println(new HunterClient().parseResp(aaa));
 	}
 }

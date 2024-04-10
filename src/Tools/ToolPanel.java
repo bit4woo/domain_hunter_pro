@@ -1187,18 +1187,7 @@ public class ToolPanel extends JPanel {
 					ArrayList<String> result = new ArrayList<String>();
 					List<String> items = Commons.getLinesFromTextArea(inputTextArea);
 					for (String item:items) {
-						item = item.replace("\u00A0", " ").replace("\u2002", " ").replace("\u2003", " ").
-								replace("\u2004", " ").replace("\u2005", " ").replace("\u2006", " ").
-								replace("\u2007", " ").replace("\u2008", " ").replace("\u2009", " ").
-								replace("\u200A", " ").replace("\u3000", " ");
-						try {
-							item = item.strip();
-						} catch (Exception e) {
-						}
-						try {
-							item = item.trim();
-						} catch (Exception e) {
-						}
+						item = StringUtils.strip(item);
 						result.add(item);
 					}
 					outputTextArea.setText(String.join(System.lineSeparator(), result));
