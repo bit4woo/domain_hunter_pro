@@ -198,6 +198,9 @@ public class SearchPanel extends JPanel {
 							searchType = SearchType.OriginalString;
 						}
 
+						if (StringUtils.isEmpty(searchType)||StringUtils.isEmpty(content)) {
+							return null;
+						}
 						List<SearchResultEntry> result = new ArrayList<>();
 						List<String> engines = SearchEngine.getAssetSearchEngineList();
 						for (String engine:engines) {
@@ -232,7 +235,9 @@ public class SearchPanel extends JPanel {
 
 						String searchType = SearchType.choseSearchType();
 
-						if (StringUtils.isEmpty(searchType)) return null;
+						if (StringUtils.isEmpty(searchType)||StringUtils.isEmpty(content)) {
+							return null;
+						}
 
 						for (String engine:engines) {
 							result.addAll(APISearchAction.DoSearch(searchType,content,engine));
