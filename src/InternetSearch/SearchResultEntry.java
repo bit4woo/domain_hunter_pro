@@ -148,7 +148,8 @@ public class SearchResultEntry {
 	}
 	
 	public String getIdentify() {
-		return getUri();
+		//不同搜索引擎的结果，是否要去重？
+		return getUri()+"#"+System.currentTimeMillis();
 	}
 	
 	/**

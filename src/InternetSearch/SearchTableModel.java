@@ -149,7 +149,7 @@ public class SearchTableModel extends AbstractTableModel {
 			return rowIndex;
 		}
 		else if (columnIndex == HeadList.indexOf(SearchTableHead.URL)){
-			return entry.getIdentify();
+			return entry.getUri();
 		}
 		else if (columnIndex == HeadList.indexOf(SearchTableHead.Protocol)){
 			return entry.getProtocol();

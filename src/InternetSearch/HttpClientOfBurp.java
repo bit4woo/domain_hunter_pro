@@ -64,8 +64,8 @@ public class HttpClientOfBurp {
 			try {
 				//将debug请求存储到title中
 				LineEntry entry = new LineEntry(message);
-				entry.addComment("API Search Debug Info:"+Commons.TimeToString(new Date().getTime()));
-				BurpExtender.getGui().getTitlePanel().getTitleTable().getLineTableModel().addNewLineEntry(entry);
+				entry.addComment("AssetInfo:"+Commons.TimeToString(new Date().getTime()));
+				BurpExtender.getGui().getTitlePanel().getTitleTable().getLineTableModel().addNewLineEntryWithTime(entry);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
