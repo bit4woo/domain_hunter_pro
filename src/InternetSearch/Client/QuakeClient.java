@@ -39,7 +39,6 @@ public class QuakeClient extends BaseClient {
 
 					SearchResultEntry entry = new SearchResultEntry();
 
-
 					entry.getIPSet().add(entryitem.getString("ip"));
 					entry.setRootDomain(entryitem.getString("domain"));
 
@@ -89,7 +88,8 @@ public class QuakeClient extends BaseClient {
 			int size = 500;
 			ArrayList<String> result = JSONHandler.grepValueFromJson(respbody, "total");
 			if (result.size() >= 1) {
-				int total = Integer.parseInt(result.get(0));
+				int total = Integer.parseInt(result.get(result.size()-1));
+				//取最后一个值，因为返回数据包中这部分信息在末尾
 				if (total > currentPage * size) {//size=500
 					return true;
 				}
@@ -113,12 +113,12 @@ public class QuakeClient extends BaseClient {
 		int start = size*(page-1);
 		String body;
 		String raw;
-		
+
 		if (searchContent.startsWith(SearchType.IconHash)) {
 			searchContent = searchContent.substring(SearchType.IconHash.length());
-			
+
 			body = "{\"favicon_hash\": \"%s\",\"similar\": 0.9, \"start\": %s, \"size\": %s}";
-			
+
 			raw = "POST /api/v3/query/similar_icon/aggregation HTTP/1.1\r\n" 
 					+ "Host: quake.360.net\r\n"
 					+ "User-Agent: curl/7.81.0\r\n" 
@@ -128,11 +128,11 @@ public class QuakeClient extends BaseClient {
 					+ "Content-Length: %s\r\n"
 					+ "\r\n"
 					+ "%s";
-			
+
 
 		}else {
 			body = "{\"query\": \"%s\",\"start\": %s, \"size\": %s}";
-			
+
 			raw = "POST /api/v3/search/quake_service HTTP/1.1\r\n" 
 					+ "Host: quake.360.net\r\n"
 					+ "User-Agent: curl/7.81.0\r\n" 
@@ -145,7 +145,7 @@ public class QuakeClient extends BaseClient {
 					+ "%s";
 		}
 		//必须包含Content-Length,否则服务端报错
-		
+
 		body = String.format(body,searchContent,start,size);
 		raw = String.format(raw, key, body.length(),body);
 
