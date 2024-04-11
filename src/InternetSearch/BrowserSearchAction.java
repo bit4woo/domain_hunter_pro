@@ -56,33 +56,33 @@ public class BrowserSearchAction extends AbstractAction{
 			String searchContent =null;
 
 			if (tableModel.getClass().equals(LineTableModel.class)) {
-				InfoTuple<String, String> result = ((LineTableModel) tableModel).getSearchTypeAndValue(row, columnIndex, engine);
+				InfoTuple<String, String> result = ((LineTableModel) tableModel).getSearchTypeAndValue(row, columnIndex);
 				searchType = result.first;
 				searchContent = result.second;
 			}
 
 			if (tableModel.getClass().equals(SearchTableModel.class)) {
-				InfoTuple<String, String> result = ((SearchTableModel) tableModel).getSearchTypeAndValue(row, columnIndex, engine);
+				InfoTuple<String, String> result = ((SearchTableModel) tableModel).getSearchTypeAndValue(row, columnIndex);
 				searchType = result.first;
 				searchContent = result.second;
 			}
 
 			if (tableModel.getClass().equals(TargetTableModel.class)) {
-				InfoTuple<String, String> result = ((TargetTableModel) tableModel).getSearchTypeAndValue(row, columnIndex, engine);
+				InfoTuple<String, String> result = ((TargetTableModel) tableModel).getSearchTypeAndValue(row, columnIndex);
 				searchType = result.first;
 				searchContent = result.second;
 			}
 
-			if (StringUtils.isEmpty(searchContent) || StringUtils.isEmpty(searchType)) {
+			if (StringUtils.isEmpty(searchContent) || StringUtils.isEmpty(searchType)) return;
 
-				searchContent = SearchEngine.buildSearchDork(searchContent, engine, searchType);
-				String url = buildSearchUrl(engine,searchContent);
 
-				try {
-					Commons.browserOpen(url, null);
-				} catch (Exception err) {
-					err.printStackTrace(BurpExtender.getStderr());
-				}
+			searchContent = SearchEngine.buildSearchDork(searchContent, engine, searchType);
+			String url = buildSearchUrl(engine,searchContent);
+
+			try {
+				Commons.browserOpen(url, null);
+			} catch (Exception err) {
+				err.printStackTrace(BurpExtender.getStderr());
 			}
 		}
 	}
