@@ -24,8 +24,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.google.gson.Gson;
 
 import GUI.GUIMain;
@@ -198,16 +196,7 @@ public class SearchPanel extends JPanel {
 							searchType = SearchType.OriginalString;
 						}
 
-						if (StringUtils.isEmpty(searchType)||StringUtils.isEmpty(content)) {
-							return null;
-						}
-						List<SearchResultEntry> result = new ArrayList<>();
-						List<String> engines = SearchEngine.getAssetSearchEngineList();
-						for (String engine:engines) {
-							result.addAll(APISearchAction.DoSearch(searchType,content,engine));
-						}
-						String tabname = String.format("%s(%s)",searchType,content);
-						SearchPanel.this.addSearchTab(tabname,result,engines);
+						APISearchAction.DoAllInOnSearch(searchType,content);
 
 						return null;
 					}
@@ -230,20 +219,10 @@ public class SearchPanel extends JPanel {
 					@Override
 					protected Void doInBackground() throws Exception {
 						String content = textFieldSearch.getText();
-						List<SearchResultEntry> result = new ArrayList<>();
-						List<String> engines = SearchEngine.getAssetSearchEngineList();
 
 						String searchType = SearchType.choseSearchType();
 
-						if (StringUtils.isEmpty(searchType)||StringUtils.isEmpty(content)) {
-							return null;
-						}
-
-						for (String engine:engines) {
-							result.addAll(APISearchAction.DoSearch(searchType,content,engine));
-						}
-						String tabname = String.format("%s(%s)",searchType,content);
-						SearchPanel.this.addSearchTab(tabname,result,engines);
+						APISearchAction.DoAllInOnSearch(searchType,content);
 
 						return null;
 					}

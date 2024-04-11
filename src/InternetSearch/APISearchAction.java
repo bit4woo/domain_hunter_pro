@@ -42,7 +42,7 @@ public class APISearchAction extends AbstractAction {
 
 	private PrintWriter stdout;
 	private PrintWriter stderr;
-	
+
 	APISearchAction(){
 		try{
 			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
@@ -100,61 +100,30 @@ public class APISearchAction extends AbstractAction {
 				for (int row : modelRows) {
 
 					List<SearchResultEntry> entries = new ArrayList<>();
-					
+
 					String searchType = null;
 					String searchContent = null;
-					
-					for (String engine:engineList) {
 
-						if (lineModel.getClass().equals(LineTableModel.class)) {
-							InfoTuple<String, String> result = ((LineTableModel) lineModel).getSearchTypeAndValue(row, columnIndex, engine);
-							searchType = result.first;
-							searchContent = result.second;
-						}
-
-						if (lineModel.getClass().equals(SearchTableModel.class)) {
-							InfoTuple<String, String> result = ((SearchTableModel) lineModel).getSearchTypeAndValue(row, columnIndex, engine);
-							searchType = result.first;
-							searchContent = result.second;
-						}
-
-						if (lineModel.getClass().equals(TargetTableModel.class)) {
-							InfoTuple<String, String> result = ((TargetTableModel) lineModel).getSearchTypeAndValue(row, columnIndex, engine);
-							searchType = result.first;
-							searchContent = result.second;
-						}
-
-						if (StringUtils.isEmpty(searchContent)) {
-							stderr.print("nothing to search...");
-							return null;
-						}
-						
-						List<SearchResultEntry> tmp_entries = DoSearch(searchType,searchContent, engine);
-						entries.addAll(tmp_entries);
+					if (lineModel.getClass().equals(LineTableModel.class)) {
+						InfoTuple<String, String> result = ((LineTableModel) lineModel).getSearchTypeAndValue(row, columnIndex);
+						searchType = result.first;
+						searchContent = result.second;
 					}
 
-					if (showInGUI) {
-						//searchContent是最后一个搜索引擎的搜索内容
-						BurpExtender.getGui().getSearchPanel().addSearchTab(searchContent, entries, engineList);
+					if (lineModel.getClass().equals(SearchTableModel.class)) {
+						InfoTuple<String, String> result = ((SearchTableModel) lineModel).getSearchTypeAndValue(row, columnIndex);
+						searchType = result.first;
+						searchContent = result.second;
 					}
 
-					//暂时不启用，之所以要设计图形界面，就是为了加入人为判断。
-					autoAddToTarget = false;
-					if (autoAddToTarget) {
-						DomainManager result = BurpExtender.getGui().getDomainPanel().getDomainResult();
-						for (SearchResultEntry entry : entries) {
-							String host = entry.getHost();
-							String rootDomain = entry.getRootDomain();
-							result.addIfValid(host);
-							List<String> ips = GrepUtils.grepIPAndPort(host);
-							for (String ip:ips) {
-								if (IPAddressUtils.isValidIP(ip)) {
-									result.getSpecialPortTargets().add(ip);
-								}
-							}
-							result.getSimilarDomainSet().add(rootDomain);
-						}
+					if (lineModel.getClass().equals(TargetTableModel.class)) {
+						InfoTuple<String, String> result = ((TargetTableModel) lineModel).getSearchTypeAndValue(row, columnIndex);
+						searchType = result.first;
+						searchContent = result.second;
 					}
+
+					DoAllInOnSearch(searchType,searchContent);
+
 				}
 				return null;
 			}
@@ -172,9 +141,9 @@ public class APISearchAction extends AbstractAction {
 		if (StringUtils.isEmpty(searchContent)){
 			return entries;
 		}
-		
+
 		searchContent = SearchEngine.buildSearchDork(searchContent, engine, searchType);
-		
+
 		if (engine.equals(SearchEngine.FOFA)) {
 			entries = new FoFaClient().SearchToGetEntry(searchContent);
 		}else if (engine.equals(SearchEngine.SHODAN)) {
@@ -195,6 +164,48 @@ public class APISearchAction extends AbstractAction {
 			//entries = new Client().SearchToGetEntry(searchContent);
 			//TODO
 		}
+		return entries;
+	}
+
+	public static List<SearchResultEntry> DoAllInOnSearch(String searchType,String content) {
+		return DoAllInOnSearch(searchType,content,true,false);
+	}
+
+	public static List<SearchResultEntry> DoAllInOnSearch(String searchType,String content,boolean showInGUI,boolean autoAddToTarget) {
+		if (StringUtils.isEmpty(content) || StringUtils.isEmpty(searchType)) {
+			BurpExtender.getStderr().print("nothing to search...");
+			return null;
+		}
+		List<SearchResultEntry> entries = new ArrayList<>();
+
+		List<String> engines = SearchEngine.getAssetSearchEngineList();
+		for (String engine:engines) {
+			entries.addAll(APISearchAction.DoSearch(searchType,content,engine));
+		}
+
+		if (showInGUI) {
+			String tabname = String.format("%s(%s)",searchType,content);
+			BurpExtender.getGui().getSearchPanel().addSearchTab(tabname, entries, engines);
+		}
+
+		//暂时不启用，之所以要设计图形界面，就是为了加入人为判断。
+		autoAddToTarget = false;
+		if (autoAddToTarget) {
+			DomainManager result = BurpExtender.getGui().getDomainPanel().getDomainResult();
+			for (SearchResultEntry entry : entries) {
+				String host = entry.getHost();
+				String rootDomain = entry.getRootDomain();
+				result.addIfValid(host);
+				List<String> ips = GrepUtils.grepIPAndPort(host);
+				for (String ip:ips) {
+					if (IPAddressUtils.isValidIP(ip)) {
+						result.getSpecialPortTargets().add(ip);
+					}
+				}
+				result.getSimilarDomainSet().add(rootDomain);
+			}
+		}
+
 		return entries;
 	}
 

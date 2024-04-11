@@ -137,7 +137,7 @@ public class TargetTableModel extends AbstractTableModel {
 	 * @param columnIndex
 	 * @return
 	 */
-	public InfoTuple<String, String> getSearchTypeAndValue(int rowIndex, int columnIndex,String engine) {
+	public InfoTuple<String, String> getSearchTypeAndValue(int rowIndex, int columnIndex) {
 		if(columnIndex ==getTitleList().indexOf("Keyword")) {
 			String value = getValueAt(rowIndex,columnIndex).toString();
 			return new InfoTuple<>(SearchType.OriginalString, value);

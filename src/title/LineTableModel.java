@@ -244,7 +244,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	 * @param columnIndex
 	 * @return
 	 */
-	public InfoTuple<String, String> getSearchTypeAndValue(int rowIndex, int columnIndex,String engine) {
+	public InfoTuple<String, String> getSearchTypeAndValue(int rowIndex, int columnIndex) {
 		if (rowIndex >= lineEntries.size()) {
 			return new InfoTuple<>(null,null);
 		}
@@ -281,10 +281,8 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		}else {
 			String value = entry.getHost();
 			if (IPAddressUtils.isValidIP(value)) {
-				value = SearchEngine.buildSearchDork(value,engine,SearchType.IP);
 				return new InfoTuple<>(SearchType.IP, value);
 			}else {
-				value = SearchEngine.buildSearchDork(value,engine,SearchType.Domain);
 				return new InfoTuple<>(SearchType.Domain, value);
 			}
 		}

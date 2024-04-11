@@ -204,7 +204,7 @@ public class SearchTableModel extends AbstractTableModel {
 	 * @param columnIndex
 	 * @return
 	 */
-	public InfoTuple<String, String> getSearchTypeAndValue(int rowIndex, int columnIndex, String engine)
+	public InfoTuple<String, String> getSearchTypeAndValue(int rowIndex, int columnIndex)
 	{
 		if (rowIndex >= lineEntries.size()) {
 			return new InfoTuple<>(null, null);
