@@ -4,6 +4,8 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
@@ -54,9 +56,16 @@ public class ProjectMenu extends JMenu{
 		openMenu.setToolTipText("Open Domain Hunter Project File(DB File)");
 		this.add(openMenu);
 
+
 		JMenu openRecentMenu = new JMenu("Open Recent");
-		gui.getDataLoadManager().createRecentOpenItem(openRecentMenu);
-		openMenu.setToolTipText("Open Recent Domain Hunter Project File(DB File)");
+		openRecentMenu.addMouseMotionListener(new MouseMotionAdapter() {
+			@Override
+			public void mouseMoved(MouseEvent e) {
+				// 当鼠标移动到菜单上时创建新的菜单项并添加到菜单中
+				gui.getDataLoadManager().createRecentOpenItem(openRecentMenu);
+			}
+		});
+		openRecentMenu.setToolTipText("Open Recent Domain Hunter Project File(DB File)");
 		this.add(openRecentMenu);
 
 		JMenuItem renameMenu = new JMenuItem(new AbstractAction("Rename(Save As)")

@@ -202,6 +202,7 @@ public class DataLoadManager {
 	}
 	
 	public void createRecentOpenItem(JMenu parentMenu){
+		parentMenu.removeAll();
 		for(String item:recentProjectDatabaseFiles.getItemList()) {
 			JMenuItem menuItem = new JMenuItem(new AbstractAction(item) {
 				@Override
