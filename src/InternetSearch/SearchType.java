@@ -4,6 +4,8 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JOptionPane;
+
 public class SearchType {
 
 	public static final String Host = "Host";//Host和Domain有时候分不清
@@ -14,7 +16,9 @@ public class SearchType {
 	public static final String IconHash = "IconHash";
 	public static final String Server = "Server"; //server="Microsoft-IIS/10"
 	public static final String Asn = "Asn"; //asn="19551"
-	
+
+	public static final String OriginalString = "OriginalString";
+
 	public static List<String> getSearchTypeList(){
 		List<String> result = new ArrayList<String>();
 		Field[] fields = SearchType.class.getDeclaredFields();
@@ -33,4 +37,31 @@ public class SearchType {
 		}
 		return result;
 	}
+
+	public static String choseFromList(String[] options) {
+		// 创建一个包含选项的数组
+		//String[] options = { "Option 1", "Option 2", "Option 3" };
+
+		// 显示弹窗并获取用户选择的选项
+		String selectedOption = (String) JOptionPane.showInputDialog(
+				null,
+				"Choose one option:",
+				"Options",
+				JOptionPane.PLAIN_MESSAGE,
+				null,
+				options,
+				options[0]);
+
+		return selectedOption;
+	}
+
+	public static String choseSearchType() {
+		return choseFromList(getSearchTypeList().toArray(String[]::new));
+	}
+
+
+	public static void main(String[] args) {
+		//choseFromList();
+	}
+
 }

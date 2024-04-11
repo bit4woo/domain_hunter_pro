@@ -8,6 +8,8 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.table.AbstractTableModel;
 
+import org.apache.commons.lang3.StringUtils;
+
 import base.Commons;
 import burp.BurpExtender;
 import domain.target.TargetTableModel;
@@ -48,18 +50,32 @@ public class BrowserSearchAction extends AbstractAction{
 			BurpExtender.getStderr().print("too many items selected!! should less than 50");
 			return;
 		}
-		
+
 		for (int row:modelRows) {
+			String searchType = null;
 			String searchContent =null;
+
 			if (tableModel.getClass().equals(LineTableModel.class)) {
-				searchContent = ((LineTableModel)tableModel).getValueForSearch(row,columnIndex,engine);
+				InfoTuple<String, String> result = ((LineTableModel) tableModel).getSearchTypeAndValue(row, columnIndex, engine);
+				searchType = result.first;
+				searchContent = result.second;
+			}
+
+			if (tableModel.getClass().equals(SearchTableModel.class)) {
+				InfoTuple<String, String> result = ((SearchTableModel) tableModel).getSearchTypeAndValue(row, columnIndex, engine);
+				searchType = result.first;
+				searchContent = result.second;
 			}
 
 			if (tableModel.getClass().equals(TargetTableModel.class)) {
-				searchContent = ((TargetTableModel)tableModel).getValueForSearch(row,columnIndex,engine);
+				InfoTuple<String, String> result = ((TargetTableModel) tableModel).getSearchTypeAndValue(row, columnIndex, engine);
+				searchType = result.first;
+				searchContent = result.second;
 			}
 
-			if (searchContent != null) {
+			if (StringUtils.isEmpty(searchContent) || StringUtils.isEmpty(searchType)) {
+
+				searchContent = SearchEngine.buildSearchDork(searchContent, engine, searchType);
 				String url = buildSearchUrl(engine,searchContent);
 
 				try {
@@ -81,8 +97,8 @@ public class BrowserSearchAction extends AbstractAction{
 		else if (engine.equalsIgnoreCase(SearchEngine.GITHUB)) {
 			url= "https://github.com/search?q=%22"+searchContent+"%22&type=Code";
 		}
-		
-		
+
+
 		else if (engine.equalsIgnoreCase(SearchEngine.FOFA)) {
 			searchContent = new String(Base64.getEncoder().encode(searchContent.getBytes()));
 			url= "https://fofa.info/result?qbase64="+searchContent;
@@ -105,7 +121,7 @@ public class BrowserSearchAction extends AbstractAction{
 		else if (engine.equalsIgnoreCase(SearchEngine.QIANXIN_HUNTER)) {
 			url= "https://hunter.qianxin.com/list?search="+searchContent;
 		}
-		
+
 		//邮箱搜索
 		else if (engine.equalsIgnoreCase(SearchEngine.HUNTER_IO)) {
 			url= "https://hunter.io/try/search/"+searchContent;;
@@ -124,7 +140,7 @@ public class BrowserSearchAction extends AbstractAction{
 				url = "https://bgp.he.net/dns/"+searchContent;
 			}
 		}
-		
+
 		//whois查询
 		else if (engine.equalsIgnoreCase(SearchEngine.WHOIS)) {
 			url= "https://www.whois.com/whois/"+searchContent;;

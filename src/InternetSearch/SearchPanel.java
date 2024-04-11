@@ -24,10 +24,14 @@ import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.google.gson.Gson;
 
 import GUI.GUIMain;
 import burp.BurpExtender;
+import burp.IPAddressUtils;
+import utils.DomainNameUtils;
 
 public class SearchPanel extends JPanel {
 
@@ -130,7 +134,7 @@ public class SearchPanel extends JPanel {
 		int index = centerPanel.getTabCount() - 1;
 		centerPanel.setTabComponentAt(index, tabPanel);
 	}
-	
+
 	public String getStatusInfo(List<SearchResultEntry> entries,List<String> engines) {
 		Map<String,Integer> status = new HashMap<>();
 		for (String engine:engines) {
@@ -149,7 +153,7 @@ public class SearchPanel extends JPanel {
 		if (unknown>0) {
 			status.put("unknown", unknown);
 		}
-		
+
 		return new Gson().toJson(status);
 	}
 
@@ -180,16 +184,61 @@ public class SearchPanel extends JPanel {
 		JButton buttonSearch = new JButton("Search");
 		buttonSearch.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
+				SwingWorker<Void, Void> worker = new SwingWorker<Void,Void>() {
 					@Override
-					protected Map doInBackground() throws Exception {
+					protected Void doInBackground() throws Exception {
 						String content = textFieldSearch.getText();
+						String searchType=null;
+
+						if(DomainNameUtils.isValidDomain(content)) {
+							searchType = SearchType.Domain;
+						}else if (IPAddressUtils.isValidIP(content)) {
+							searchType = SearchType.IP;
+						}else {
+							searchType = SearchType.OriginalString;
+						}
+
 						List<SearchResultEntry> result = new ArrayList<>();
 						List<String> engines = SearchEngine.getAssetSearchEngineList();
 						for (String engine:engines) {
-							result.addAll(APISearchAction.DoSearch(content,engine));
+							result.addAll(APISearchAction.DoSearch(searchType,content,engine));
 						}
-						SearchPanel.this.addSearchTab(content,result,engines);
+						String tabname = String.format("%s(%s)",searchType,content);
+						SearchPanel.this.addSearchTab(tabname,result,engines);
+
+						return null;
+					}
+
+					@Override
+					protected void done() {
+
+					} 
+				};
+				worker.execute();
+			}
+		});
+		buttonPanel.add(buttonSearch);
+
+
+		JButton buttonSearchAs = new JButton("Search As");
+		buttonSearchAs.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				SwingWorker<Void, Void> worker = new SwingWorker<Void,Void>() {
+					@Override
+					protected Void doInBackground() throws Exception {
+						String content = textFieldSearch.getText();
+						List<SearchResultEntry> result = new ArrayList<>();
+						List<String> engines = SearchEngine.getAssetSearchEngineList();
+
+						String searchType = SearchType.choseSearchType();
+
+						if (StringUtils.isEmpty(searchType)) return null;
+
+						for (String engine:engines) {
+							result.addAll(APISearchAction.DoSearch(searchType,content,engine));
+						}
+						String tabname = String.format("%s(%s)",searchType,content);
+						SearchPanel.this.addSearchTab(tabname,result,engines);
 
 						return null;
 					}
@@ -202,8 +251,7 @@ public class SearchPanel extends JPanel {
 				worker.execute();
 			}
 		});
-		buttonPanel.add(buttonSearch);
-
+		buttonPanel.add(buttonSearchAs);
 
 
 		lblSummary = new JLabel("^_^");

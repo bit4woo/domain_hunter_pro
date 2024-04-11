@@ -16,6 +16,7 @@ import javax.swing.ImageIcon;
 import javax.swing.table.AbstractTableModel;
 
 import GUI.GUIMain;
+import InternetSearch.InfoTuple;
 import InternetSearch.SearchEngine;
 import InternetSearch.SearchType;
 import base.Commons;
@@ -236,54 +237,57 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		return "";
 	}
 
+
 	/**
 	 * 返回可以用于网络搜索引擎进行搜索地字段
 	 * @param rowIndex
 	 * @param columnIndex
 	 * @return
 	 */
-	public String getValueForSearch(int rowIndex, int columnIndex,String engine) {
+	public InfoTuple<String, String> getSearchTypeAndValue(int rowIndex, int columnIndex,String engine) {
 		if (rowIndex >= lineEntries.size()) {
-			return null;
+			return new InfoTuple<>(null,null);
 		}
 		LineEntry entry = lineEntries.get(rowIndex);
 
 		if (columnIndex == HeadList.indexOf(LineTableHead.Title)){
 			String value =  entry.getTitle();
-			value = SearchEngine.buildSearchDork(value,engine,SearchType.Title);
-			return value;
-		}
-		else if (columnIndex == HeadList.indexOf(LineTableHead.Server)){
+			return new InfoTuple<>(SearchType.Title, value);
+		}else if (columnIndex == HeadList.indexOf(LineTableHead.Server)){
 			String value =  entry.getWebcontainer();
-			value = SearchEngine.buildSearchDork(value,engine,SearchType.Server);
-			return value;
+			return new InfoTuple<>(SearchType.Server, value);
 		}else if (columnIndex == HeadList.indexOf(LineTableHead.IP)){
 			String value = String.join(",", new TreeSet<String>(entry.getIPSet()));//用TreeSet进行排序
-			value = SearchEngine.buildSearchDork(value,engine,SearchType.IP);
-			return value;
+			return new InfoTuple<>(SearchType.IP, value);
 		}else if (columnIndex == HeadList.indexOf(LineTableHead.Favicon) || columnIndex == HeadList.indexOf(LineTableHead.IconHash)){
 			String value = entry.getIcon_hash();
-			value = SearchEngine.buildSearchDork(value,engine,SearchType.IconHash);
-			return value;
+			return new InfoTuple<>(SearchType.IconHash, value);
 		}else if (columnIndex == HeadList.indexOf(LineTableHead.CNAMEAndCertInfo)){
 			String value =  String.join(",", new TreeSet<String>(entry.getCertDomainSet()));
-			value = SearchEngine.buildSearchDork(value,engine,SearchType.Domain);
-			return value;
+			return new InfoTuple<>(SearchType.Domain, value);
 		}else if (columnIndex == HeadList.indexOf(LineTableHead.ASNInfo)){
-			//TODO，应该获取ASN编号
-			return entry.getASNInfo();
+			//应该获取ASN编号
+			String value =  entry.getASNInfo();
+			try {
+				Integer.parseInt(value);
+				return new InfoTuple<>(SearchType.Asn, value);
+			} catch (Exception e) {
+				e.printStackTrace();
+				return new InfoTuple<>(SearchType.Asn, null);
+			}
 		}else if (columnIndex == HeadList.indexOf(LineTableHead.Comments)){
-			return entry.getComments().toString();
+			String value =  String.join(",", new TreeSet<String>(entry.getComments()));
+			return new InfoTuple<>(SearchType.OriginalString, value);
 		}else {
 			String value = entry.getHost();
 			if (IPAddressUtils.isValidIP(value)) {
 				value = SearchEngine.buildSearchDork(value,engine,SearchType.IP);
+				return new InfoTuple<>(SearchType.IP, value);
 			}else {
 				value = SearchEngine.buildSearchDork(value,engine,SearchType.Domain);
+				return new InfoTuple<>(SearchType.Domain, value);
 			}
-			return value;
 		}
-
 	}
 
 	@Override

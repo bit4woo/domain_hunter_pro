@@ -100,26 +100,36 @@ public class APISearchAction extends AbstractAction {
 				for (int row : modelRows) {
 
 					List<SearchResultEntry> entries = new ArrayList<>();
+					
+					String searchType = null;
 					String searchContent = null;
+					
 					for (String engine:engineList) {
 
 						if (lineModel.getClass().equals(LineTableModel.class)) {
-							searchContent = ((LineTableModel) lineModel).getValueForSearch(row, columnIndex, engine);
+							InfoTuple<String, String> result = ((LineTableModel) lineModel).getSearchTypeAndValue(row, columnIndex, engine);
+							searchType = result.first;
+							searchContent = result.second;
 						}
 
 						if (lineModel.getClass().equals(SearchTableModel.class)) {
-							searchContent = ((SearchTableModel) lineModel).getValueForSearch(row, columnIndex, engine);
+							InfoTuple<String, String> result = ((SearchTableModel) lineModel).getSearchTypeAndValue(row, columnIndex, engine);
+							searchType = result.first;
+							searchContent = result.second;
 						}
 
 						if (lineModel.getClass().equals(TargetTableModel.class)) {
-							searchContent = ((TargetTableModel) lineModel).getValueForSearch(row, columnIndex, engine);
+							InfoTuple<String, String> result = ((TargetTableModel) lineModel).getSearchTypeAndValue(row, columnIndex, engine);
+							searchType = result.first;
+							searchContent = result.second;
 						}
 
 						if (StringUtils.isEmpty(searchContent)) {
 							stderr.print("nothing to search...");
 							return null;
 						}
-						List<SearchResultEntry> tmp_entries = DoSearch(searchContent, engine);
+						
+						List<SearchResultEntry> tmp_entries = DoSearch(searchType,searchContent, engine);
 						entries.addAll(tmp_entries);
 					}
 
@@ -157,11 +167,14 @@ public class APISearchAction extends AbstractAction {
 		worker.execute();
 	}
 
-	public static List<SearchResultEntry> DoSearch(String searchContent, String engine) {
+	public static List<SearchResultEntry> DoSearch(String searchType,String searchContent, String engine) {
 		List<SearchResultEntry> entries = new ArrayList<>();
 		if (StringUtils.isEmpty(searchContent)){
 			return entries;
 		}
+		
+		searchContent = SearchEngine.buildSearchDork(searchContent, engine, searchType);
+		
 		if (engine.equals(SearchEngine.FOFA)) {
 			entries = new FoFaClient().SearchToGetEntry(searchContent);
 		}else if (engine.equals(SearchEngine.SHODAN)) {

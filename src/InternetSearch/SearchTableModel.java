@@ -204,47 +204,50 @@ public class SearchTableModel extends AbstractTableModel {
 	 * @param columnIndex
 	 * @return
 	 */
-	public String getValueForSearch(int rowIndex, int columnIndex,String engine)
+	public InfoTuple<String, String> getSearchTypeAndValue(int rowIndex, int columnIndex, String engine)
 	{
 		if (rowIndex >= lineEntries.size()) {
-			return null;
+			return new InfoTuple<>(null, null);
 		}
 		SearchResultEntry entry = lineEntries.get(rowIndex);
 		if (columnIndex == HeadList.indexOf(SearchTableHead.Port)){
-			return entry.getPort()+"";
+			String value =  entry.getPort()+"";
+			return new InfoTuple<>(SearchType.OriginalString, value);
 		}
 		else if (columnIndex == HeadList.indexOf(SearchTableHead.Title)){
 			String value =  entry.getTitle();
-			value = SearchEngine.buildSearchDork(value,engine,SearchType.Title);
-			return value;
+			return new InfoTuple<>(SearchType.Title, value);
 		}
 		else if (columnIndex == HeadList.indexOf(SearchTableHead.Server)){
 			String value =  entry.getWebcontainer();
-			value = SearchEngine.buildSearchDork(value,engine,SearchType.Server);
-			return value;
+			return new InfoTuple<>(SearchType.Server, value);
 		}else if (columnIndex == HeadList.indexOf(SearchTableHead.IP)){
 			String value = String.join(",", new TreeSet<String>(entry.getIPSet()));//用TreeSet进行排序
-			value = SearchEngine.buildSearchDork(value,engine,SearchType.IP);
-			return value;
+			return new InfoTuple<>(SearchType.IP, value);
 		}else if (columnIndex == HeadList.indexOf(SearchTableHead.Favicon) || columnIndex == HeadList.indexOf(SearchTableHead.IconHash)){
 			String value = entry.getIcon_hash();
-			value = SearchEngine.buildSearchDork(value,engine,SearchType.IconHash);
-			return value;
+			return new InfoTuple<>(SearchType.IconHash, value);
 		}else if (columnIndex == HeadList.indexOf(SearchTableHead.CertInfo)){
 			String value =  String.join(",", new TreeSet<String>(entry.getCertDomainSet()));
-			value = SearchEngine.buildSearchDork(value,engine,SearchType.Domain);
-			return value;
+			//TODO
+			return new InfoTuple<>(SearchType.Domain, null);
 		}else if (columnIndex == HeadList.indexOf(SearchTableHead.ASNInfo)){
-			//TODO，应该获取ASN编号
-			return entry.getASNInfo();
+			//应该获取ASN编号
+			String value =  entry.getASNInfo();
+			try {
+				Integer.parseInt(value);
+				return new InfoTuple<>(SearchType.Asn, value);
+			} catch (Exception e) {
+				e.printStackTrace();
+				return new InfoTuple<>(SearchType.Asn, null);
+			}
 		}else {
 			String value = entry.getHost();
 			if (IPAddressUtils.isValidIP(value)) {
-				value = SearchEngine.buildSearchDork(value,engine,SearchType.IP);
+				return new InfoTuple<>(SearchType.IP, value);
 			}else {
-				value = SearchEngine.buildSearchDork(value,engine,SearchType.Domain);
+				return new InfoTuple<>(SearchType.Domain, value);
 			}
-			return value;
 		}
 	}
 

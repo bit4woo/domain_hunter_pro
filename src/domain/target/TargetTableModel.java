@@ -17,7 +17,7 @@ import com.google.common.net.InternetDomainName;
 import com.google.gson.Gson;
 
 import GUI.GUIMain;
-import InternetSearch.SearchEngine;
+import InternetSearch.InfoTuple;
 import InternetSearch.SearchType;
 import base.Commons;
 import base.IndexedHashMap;
@@ -129,27 +129,25 @@ public class TargetTableModel extends AbstractTableModel {
 		}
 		return "";
 	}
-	
-	
+
+
 	/**
 	 * 返回可以用于网络搜索引擎进行搜索地字段
 	 * @param rowIndex
 	 * @param columnIndex
 	 * @return
 	 */
-	public String getValueForSearch(int rowIndex, int columnIndex,String engine) {
-		
+	public InfoTuple<String, String> getSearchTypeAndValue(int rowIndex, int columnIndex,String engine) {
 		if(columnIndex ==getTitleList().indexOf("Keyword")) {
 			String value = getValueAt(rowIndex,columnIndex).toString();
-			return value;
+			return new InfoTuple<>(SearchType.OriginalString, value);
 		}else if(columnIndex ==getTitleList().indexOf("Comment")) {
 			String value = getValueAt(rowIndex,columnIndex).toString();
-			return value;
+			return new InfoTuple<>(SearchType.OriginalString, value);
 		}else {
 			columnIndex =getTitleList().indexOf("Domain/Subnet");
 			String value = getValueAt(rowIndex,columnIndex).toString();
-			value = SearchEngine.buildSearchDork(value,engine,SearchType.Domain);
-			return value;
+			return new InfoTuple<>(SearchType.Domain, value);
 		}
 	}
 
