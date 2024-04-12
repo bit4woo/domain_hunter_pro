@@ -56,7 +56,8 @@ public class SearchType {
 	}
 
 	public static String choseSearchType() {
-		return choseFromList(getSearchTypeList().toArray(String[]::new));
+		String[] array = getSearchTypeList().toArray(new String[0]);
+		return choseFromList(array);
 	}
 
 

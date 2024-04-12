@@ -13,7 +13,7 @@ import java.util.List;
  */
 public class ASNEntry {
 
-	String asn = "";//自治系统编号
+	String asn = "";//自治系统编号，多个资产搜索引擎可以用这个编号进行搜索
 	String asname_long = "";
 	String asname_short = "";
 	String prefix = "";//网段信息

@@ -24,6 +24,7 @@ import burp.BurpExtender;
 import burp.SystemUtils;
 import config.ConfigManager;
 import config.ConfigName;
+import org.apache.commons.lang3.StringUtils;
 import title.search.History;
 import title.search.SearchManager;
 import title.search.SearchTextField;
@@ -234,7 +235,7 @@ public class LineTable extends JTable
 						stdout.println(String.format("$$$ %s updated [AssetType-->%s]",selecteEntry.getUrl(),newLevel));
 						getLineTableModel().fireTableRowsUpdated(rows[0], rows[0]);
 					}else if (modelCol == HeadList.indexOf(LineTableHead.ASNInfo)) {
-						if (selecteEntry.getASNInfo().equals("")){
+						if (StringUtils.isEmpty(selecteEntry.getASNInfo())){
 							selecteEntry.freshASNInfo();
 						}else {
 							SystemUtils.writeToClipboard(selecteEntry.getASNInfo());

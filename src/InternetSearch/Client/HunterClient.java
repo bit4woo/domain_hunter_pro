@@ -5,6 +5,7 @@ import java.util.Base64;
 import java.util.List;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import InternetSearch.SearchEngine;
@@ -42,7 +43,14 @@ public class HunterClient extends BaseClient {
 						entry.setRootDomain(entryitem.getString("domain"));
 						entry.setPort(entryitem.getInt("port"));
 						entry.setProtocol(entryitem.getString("protocol"));
-						entry.setWebcontainer(entryitem.get("component").toString());
+
+						String  component =entryitem.get("component").toString();
+						try {
+							ArrayList<String> names = JSONHandler.grepValueFromJson(component, "name");
+							entry.setWebcontainer(String.join(",",names));
+						} catch (JSONException e) {
+							entry.setWebcontainer(component);
+						}
 						entry.setTitle(entryitem.getString("web_title"));
 						entry.setSource(getEngineName());
 						result.add(entry);

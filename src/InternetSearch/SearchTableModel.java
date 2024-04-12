@@ -233,12 +233,10 @@ public class SearchTableModel extends AbstractTableModel {
 			return new InfoTuple<>(SearchType.Domain, null);
 		}else if (columnIndex == HeadList.indexOf(SearchTableHead.ASNInfo)){
 			//应该获取ASN编号
-			String value =  entry.getASNInfo();
-			try {
-				Integer.parseInt(value);
-				return new InfoTuple<>(SearchType.Asn, value);
-			} catch (Exception e) {
-				e.printStackTrace();
+			int num =  entry.getAsnNum();
+			if (num > 0){
+				return new InfoTuple<>(SearchType.Asn, num+"");
+			}else {
 				return new InfoTuple<>(SearchType.Asn, null);
 			}
 		}else {

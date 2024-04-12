@@ -30,6 +30,8 @@ public class SearchResultEntry {
 	private String icon_hash = "";
 	private String source = "";
 	private String ASNInfo = "";
+
+	private int AsnNum =-1;
 	
 	public SearchResultEntry(String host) {
 
@@ -145,7 +147,15 @@ public class SearchResultEntry {
 	public void setASNInfo(String aSNInfo) {
 		ASNInfo = aSNInfo;
 	}
-	
+
+	public int getAsnNum() {
+		return AsnNum;
+	}
+
+	public void setAsnNum(int asnNum) {
+		AsnNum = asnNum;
+	}
+
 	public String getIdentify() {
 		//不同搜索引擎的结果，是否要去重？
 		return getUri()+"#"+System.currentTimeMillis();

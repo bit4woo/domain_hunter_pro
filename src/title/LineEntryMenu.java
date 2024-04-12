@@ -1017,7 +1017,7 @@ public class LineEntryMenu extends JPopupMenu {
 		DoMenu.add(batchRefreshIconHashItem);
 		DoMenu.add(batchClearCommentsItem);
 
-		DoMenu.add(setASNAliasItem);
+		//DoMenu.add(setASNAliasItem);//基本用不上
 
 
 		JMenu CopyMenu = new JMenu("Copy");

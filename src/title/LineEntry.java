@@ -104,6 +104,7 @@ public class LineEntry {
 	private byte[] icon_bytes = new byte[0];
 	private String icon_hash = "";
 	private String ASNInfo = "";
+	private int AsnNum =-1;
 	private String time = "";
 	// 如上几个字段需要网络请求或查询
 
@@ -711,6 +712,14 @@ public class LineEntry {
 		this.ASNInfo = ASNInfo;
 	}
 
+	public int getAsnNum() {
+		return AsnNum;
+	}
+
+	public void setAsnNum(int asnNum) {
+		AsnNum = asnNum;
+	}
+
 	public String getFirstIP() {
 		Iterator<String> it = this.IPSet.iterator();
 		if (it.hasNext()) {
@@ -730,6 +739,7 @@ public class LineEntry {
 					ASNEntry asn = ASNQuery.getInstance().query(ip);
 					if (null != asn) {
 						this.ASNInfo = asn.fetchASNDescription();
+						this.AsnNum = Integer.parseInt(asn.getAsn());
 					}
 				}
 			}
@@ -739,14 +749,14 @@ public class LineEntry {
 	}
 
 	public void addComment(String commentToAdd) {
-		if (commentToAdd == null || commentToAdd.trim().equals(""))
+		if (StringUtils.isEmpty(commentToAdd))
 			return;
 		// commentToAdd本身可能就是以逗号分隔的
 		comments.addAll(Arrays.asList(commentToAdd.split(",")));
 	}
 
 	public void removeComment(String commentToRemove) {
-		if (commentToRemove == null || commentToRemove.trim().equals(""))
+		if (StringUtils.isEmpty(commentToRemove))
 			return;
 
 		comments.remove(commentToRemove);

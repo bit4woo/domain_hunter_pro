@@ -83,7 +83,7 @@ public class SearchTable extends JTable
 		preferredWidths.put(SearchTableHead.Title,30);
 		preferredWidths.put(SearchTableHead.IP,30);
 		preferredWidths.put(SearchTableHead.CertInfo,30);
-		preferredWidths.put(SearchTableHead.Server,10);
+		preferredWidths.put(SearchTableHead.Server,20);
 		preferredWidths.put(SearchTableHead.IconHash, "-17480088888".length());
 		for(String header:HeadList){
 			try{//避免动态删除表字段时，出错
