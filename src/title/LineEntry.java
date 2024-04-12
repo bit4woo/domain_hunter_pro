@@ -525,7 +525,6 @@ public class LineEntry {
 		if (statuscode >= 300 && statuscode <= 308) {
 			IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
 			Getter getter = new Getter(helpers);
-
 			String Locationurl = getter.getHeaderValueOf(false, response, "Location");
 			if (null != Locationurl) {
 				title = " --> " + Locationurl;
@@ -559,16 +558,10 @@ public class LineEntry {
 	public String getHeaderValueOf(boolean isRequest, String headerName) {
 		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
 		Getter getter = new Getter(helpers);
-		try {
-			if (isRequest) {
-				String value = getter.getHeaderValueOf(false, request, headerName);
-			} else {
-				String value = getter.getHeaderValueOf(false, response, headerName);
-			}
-			return title;
-		} catch (Exception e) {
-			// e.printStackTrace();
-			return "";
+		if (isRequest) {
+			return getter.getHeaderValueOf(false, request, headerName);
+		} else {
+			return getter.getHeaderValueOf(false, response, headerName);
 		}
 	}
 
@@ -585,12 +578,16 @@ public class LineEntry {
 	private static String grepTitle(String bodyText) {
 		String title = "";
 
+		if (!isHtml(bodyText)){
+			return title;
+		}
+
 		String regex = "<title(.*?)>(.*?)</title>";
 		Pattern p = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
 		Matcher m = p.matcher(bodyText);
 		while (m.find()) {
 			title = m.group(2);// 注意
-			if (title != null && !title.equals("")) {
+			if (!StringUtils.isEmpty(title)) {
 				return title;
 			}
 		}
@@ -600,11 +597,19 @@ public class LineEntry {
 		Matcher mh = ph.matcher(bodyText);
 		while (mh.find()) {
 			title = mh.group(2);
-			if (title != null && !title.equals("")) {
+			if (!StringUtils.isEmpty(title)) {
 				return title;
 			}
 		}
 		return title;
+	}
+
+	private static boolean isHtml(String bodyText){
+		if (StringUtils.isEmpty(bodyText)){
+			return false;
+		}
+
+		return bodyText.contains("<!DOCTYPE html>") || bodyText.contains("<html>");
 	}
 
 	public int getPort() {

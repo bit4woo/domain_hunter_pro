@@ -3,7 +3,6 @@ package InternetSearch;
 import burp.BurpExtender;
 import burp.IPAddressUtils;
 import domain.DomainManager;
-
 import org.apache.commons.lang3.StringUtils;
 import utils.DomainNameUtils;
 import utils.GrepUtils;
@@ -165,10 +164,10 @@ public class SearchResultEntry {
 		if (host != null && host.length()>0) {
 			sb.append(host);
 		}
-		if (port>=0 && 0<=65535) {
-			sb.append(":"+port);
+		if (port>=0 && port<=65535) {
+			sb.append(":").append(port);
 		}
-		return sb.toString();
+		return URLUtils.getUrlWithDefaultPort(sb.toString());
 	}
 	
 	
