@@ -75,6 +75,9 @@ public class FoFaClient extends BaseClient {
 		return false;
 	}
 
+	/*
+	https://en.fofa.info/api
+	 */
 	@Override
 	public String buildSearchUrl(String searchContent, int page) {
 		String email = ConfigManager.getStringConfigByKey(ConfigName.FofaEmail);
