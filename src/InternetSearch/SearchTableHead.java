@@ -14,10 +14,12 @@ public class SearchTableHead {
 	public static final String Server="Server";
 	public static final String Source="Source";
 	public static final String IP="IP";
-	public static final String CertInfo="CertInfo";
+	public static final String ASN="ASN"; //ASN编号
 	public static final String ASNInfo="ASNInfo";
 	public static final String Favicon="Favicon";
 	public static final String IconHash="IconHash";
+
+	public static final String CertInfo="CertInfo";
 	
 	public static final List<String> HeadList = getTableHeadList();
 

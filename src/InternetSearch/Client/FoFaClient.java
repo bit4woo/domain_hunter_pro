@@ -1,18 +1,17 @@
 package InternetSearch.Client;
 
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
-
-import org.apache.commons.lang3.StringUtils;
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import InternetSearch.SearchEngine;
 import InternetSearch.SearchResultEntry;
 import Tools.JSONHandler;
 import config.ConfigManager;
 import config.ConfigName;
+import org.apache.commons.lang3.StringUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
 
 public class FoFaClient extends BaseClient {
 
@@ -41,6 +40,12 @@ public class FoFaClient extends BaseClient {
 					entry.setProtocol(parts.getString(4));
 					entry.setWebcontainer(parts.getString(5));
 					entry.setTitle(parts.getString(6));
+					try {
+						entry.setAsnNum(Integer.parseInt(parts.getString(7)));
+					} catch (Exception e) {
+
+					}
+					entry.setASNInfo(parts.getString(8));
 					entry.setSource(getEngineName());
 					result.add(entry);
 				}
@@ -79,9 +84,9 @@ public class FoFaClient extends BaseClient {
 			return null;
 		}
 		searchContent = new String(Base64.getEncoder().encode(searchContent.getBytes()));
-
+		//[820001] 没有权限搜索icon_hash字段
 		String url = String.format(
-				"https://fofa.info/api/v1/search/all?email=%s&key=%s&page=1&size=2000&fields=host,ip,domain,port,protocol,server,title&qbase64=%s",
+				"https://fofa.info/api/v1/search/all?email=%s&key=%s&page=1&size=2000&fields=host,ip,domain,port,protocol,server,title,as_number,as_organization&qbase64=%s",
 				email, key, searchContent);
 		return url;
 	}

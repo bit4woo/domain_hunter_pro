@@ -95,12 +95,12 @@ public class SearchEngine {
 	public static List<String> getAssetSearchEngineList(){
 		List<String> result = new ArrayList<String>();
 		result.add(FOFA);
-		result.add(SHODAN);
+		//result.add(SHODAN);//有cloudflare人机验证，不能直接调用，暂时剔除
 		result.add(ZOOMEYE);
 		result.add(QIANXIN_HUNTER);
-		result.add(QIANXIN_TI);
+		//result.add(QIANXIN_TI);
 		result.add(QUAKE_360);
-		result.add(TI_360);
+		//result.add(TI_360);
 		result.add(CENSYS);
 		result.add(FullHunt);
 		return result;

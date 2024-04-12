@@ -84,6 +84,9 @@ public class SearchTableModel extends AbstractTableModel {
 		if (columnIndex == HeadList.indexOf(SearchTableHead.Port)) {
 			return Integer.class;
 		}
+		if (columnIndex == HeadList.indexOf(SearchTableHead.ASN)) {
+			return Integer.class;
+		}
 		return String.class;
 	}
 
@@ -191,6 +194,9 @@ public class SearchTableModel extends AbstractTableModel {
 		else if (columnIndex == HeadList.indexOf(SearchTableHead.ASNInfo)){
 			return entry.getASNInfo();
 		}
+		else if (columnIndex == HeadList.indexOf(SearchTableHead.ASN)){
+			return entry.getAsnNum();
+		}
 		else if (columnIndex == HeadList.indexOf(SearchTableHead.Source)) {
 			return entry.getSource();
 		}
@@ -231,7 +237,7 @@ public class SearchTableModel extends AbstractTableModel {
 			String value =  String.join(",", new TreeSet<String>(entry.getCertDomainSet()));
 			//TODO
 			return new InfoTuple<>(SearchType.Domain, null);
-		}else if (columnIndex == HeadList.indexOf(SearchTableHead.ASNInfo)){
+		}else if (columnIndex == HeadList.indexOf(SearchTableHead.ASNInfo) || columnIndex == HeadList.indexOf(SearchTableHead.ASN)){
 			//应该获取ASN编号
 			int num =  entry.getAsnNum();
 			if (num > 0){

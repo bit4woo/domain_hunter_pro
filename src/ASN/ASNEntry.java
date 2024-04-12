@@ -9,7 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.List;
 
 /**
- *存储
+ *数据样例：ASNEntry{asn='3215', asname_long='AS3215', asname_short='', prefix='2.0.0.0-2.15.255.255', geo='FR'}
  */
 public class ASNEntry {
 
@@ -123,9 +123,9 @@ public class ASNEntry {
 	 */
 	public String fetchASNDescription() {
 		if (StringUtils.isNotEmpty(getAlias())){
-			return getAlias();
+			return asn+":"+getAlias();
 		}else{
-			return getAsname_long();
+			return asn+":"+getAsname_long();
 		}
 	}
 

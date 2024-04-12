@@ -52,6 +52,7 @@ public class HunterClient extends BaseClient {
 							entry.setWebcontainer(component);
 						}
 						entry.setTitle(entryitem.getString("web_title"));
+						entry.setASNInfo(entryitem.getString("as_org"));
 						entry.setSource(getEngineName());
 						result.add(entry);
 					}
