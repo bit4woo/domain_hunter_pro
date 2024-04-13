@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -38,8 +39,16 @@ public class HunterClient extends BaseClient {
 					for (Object item : items) {
 						JSONObject entryitem = (JSONObject) item;
 						SearchResultEntry entry = new SearchResultEntry();
-						entry.setHost(entryitem.getString("url"));
-						entry.getIPSet().add(entryitem.getString("ip"));
+
+						String url = entryitem.getString("url");
+						String ip = entryitem.getString("ip");
+						if (StringUtils.isNotEmpty(url)) {
+							entry.setHost(url);
+						}else {
+							entry.setHost(ip);
+						}
+
+						entry.getIPSet().add(ip);
 						entry.setRootDomain(entryitem.getString("domain"));
 						entry.setPort(entryitem.getInt("port"));
 						entry.setProtocol(entryitem.getString("protocol"));

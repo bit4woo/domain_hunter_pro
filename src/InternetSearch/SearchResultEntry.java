@@ -1,18 +1,19 @@
 package InternetSearch;
 
-import burp.BurpExtender;
-import burp.IPAddressUtils;
-import domain.DomainManager;
-import org.apache.commons.lang3.StringUtils;
-import utils.DomainNameUtils;
-import utils.GrepUtils;
-import utils.URLUtils;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import org.apache.commons.lang3.StringUtils;
+
+import burp.BurpExtender;
+import burp.IPAddressUtils;
+import domain.DomainManager;
+import utils.DomainNameUtils;
+import utils.GrepUtils;
+import utils.URLUtils;
 
 public class SearchResultEntry {
 	private int port = -1;
@@ -23,9 +24,9 @@ public class SearchResultEntry {
 	private String webcontainer = "";
 	private String title = "";
 	private Set<String> CertDomainSet = new HashSet<String>();
-	
+
 	private Set<String> IPSet = new HashSet<String>();
-	
+
 	private String icon_url = "";
 	private byte[] icon_bytes = new byte[0];
 	private String icon_hash = "";
@@ -33,11 +34,11 @@ public class SearchResultEntry {
 	private String ASNInfo = "";
 
 	private int AsnNum =-1;
-	
+
 	public SearchResultEntry(String host) {
 
 	}
-	
+
 	public SearchResultEntry() {
 
 	}
@@ -166,7 +167,7 @@ public class SearchResultEntry {
 		//不同搜索引擎的结果，是否要去重？
 		return getUri()+"#"+System.currentTimeMillis();
 	}
-	
+
 	/**
 	 * 类似： http://www.example.com:8442
 	 * @return
@@ -185,8 +186,8 @@ public class SearchResultEntry {
 		}
 		return URLUtils.getUrlWithDefaultPort(sb.toString());
 	}
-	
-	
+
+
 	public String getUri() {
 		if (uri != null && uri.length()>0) {
 			return uri;
@@ -205,7 +206,7 @@ public class SearchResultEntry {
 	public void setTitle(String title) {
 		this.title = title;
 	}
-	
+
 	public void AddToTarget() {
 		DomainManager domainResult = BurpExtender.getGui().getDomainPanel().getDomainResult();
 		if (IPAddressUtils.isValidIP(this.host)) {
@@ -214,14 +215,14 @@ public class SearchResultEntry {
 				domainResult.getSpecialPortTargets().add(this.host+":"+this.port);
 			}
 		}
-		
+
 		if (DomainNameUtils.isValidDomain(this.host)) {
 			domainResult.addToTargetAndSubDomain(this.host,true);
 			if (this.port >=0 && this.port <= 65535) {
 				domainResult.addToTargetAndSubDomain(this.host+":"+this.port,true);
 			}
 		}
-		
+
 		if (StringUtils.isEmpty(this.rootDomain)) {
 			domainResult.addToTargetAndSubDomain(this.rootDomain,true);
 		}
@@ -235,7 +236,7 @@ public class SearchResultEntry {
 				+ Arrays.toString(icon_bytes) + ", icon_hash=" + icon_hash + ", source=" + source + ", ASNInfo="
 				+ ASNInfo + "]";
 	}
-	
+
 	public static void main(String[] args) {
 		SearchResultEntry item = new SearchResultEntry();
 		item.setHost("11.11.11.11:7000");

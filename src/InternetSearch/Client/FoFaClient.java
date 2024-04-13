@@ -1,17 +1,18 @@
 package InternetSearch.Client;
 
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
+
+import org.apache.commons.lang3.StringUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import InternetSearch.SearchEngine;
 import InternetSearch.SearchResultEntry;
 import Tools.JSONHandler;
 import config.ConfigManager;
 import config.ConfigName;
-import org.apache.commons.lang3.StringUtils;
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
 
 public class FoFaClient extends BaseClient {
 
