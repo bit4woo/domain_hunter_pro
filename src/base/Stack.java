@@ -8,7 +8,7 @@ public class Stack {
     private List<String> stack;
 
     public Stack() {
-        stack = new ArrayList<String>(10);//初始容量为10
+        stack = new ArrayList<>(10);//初始容量为10
     }
 
     //判断是否为空
@@ -29,9 +29,7 @@ public class Stack {
      * @param t
      */
     public void push(String t) {
-        if (stack.contains(t)) {
-            stack.remove(t);
-        }
+        stack.remove(t);//不存在也没关系
         stack.add(t);
     }
 
@@ -54,13 +52,18 @@ public class Stack {
 
     public static void main(String[] args) {
         Stack stack = new Stack();
+        stack.hashCode();
         System.out.println(stack.peek());
         System.out.println(stack.isEmpty());
         stack.push("java");
         stack.push("is");
         stack.push("beautiful");
         stack.push("language");
+
+        System.out.println(stack.hashCode());
         System.out.println(stack.pop());
+        stack.push("language");
+        System.out.println(stack.hashCode());
         System.out.println(stack.isEmpty());
         System.out.println(stack.peek());
     }

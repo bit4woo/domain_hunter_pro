@@ -3,7 +3,6 @@ package config;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 import javax.swing.AbstractAction;
@@ -12,18 +11,19 @@ import javax.swing.JMenuItem;
 import javax.swing.SwingWorker;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.google.gson.Gson;
 
 import GUI.GUIMain;
 import base.Stack;
 import burp.BurpExtender;
-import org.apache.commons.lang3.StringUtils;
 
 //专门用于存储数据的对象，即被用户序列化和反序列进行存储的对象。
 
 public class DataLoadManager {
 	private Stack recentProjectDatabaseFiles = new Stack();
+	private int recentStackHash = -1;
 	private static GUIMain gui;
 	public static final String localdir = 
 			System.getProperty("user.home")+File.separator+".domainhunter"+File.separator+"DomainHunterProRecent";
@@ -104,6 +104,9 @@ public class DataLoadManager {
 	}
 
 	private void pushRecentDatabaseFile(String dbfilename) {
+		if (StringUtils.isEmpty(dbfilename)||!new File(dbfilename).exists()) {
+			return;
+		}
 		recentProjectDatabaseFiles.push(dbfilename);
 	}
 
@@ -125,8 +128,8 @@ public class DataLoadManager {
 		pushRecentDatabaseFile(dbFilePath);//保存最近的加载
 		saveToDisk();
 	}
-	
-	
+
+
 	/**
 	 * 单纯用于记录最近情况
 	 * @param dbFilePath
@@ -163,7 +166,7 @@ public class DataLoadManager {
 			e.printStackTrace(BurpExtender.getStderr());
 		}
 	}
-	
+
 	/**
 	 * 加载tool panel config 到 domain hunter
 	 * 
@@ -200,17 +203,27 @@ public class DataLoadManager {
 		};
 		worker.execute();
 	}
-	
+
 	public void createRecentOpenItem(JMenu parentMenu){
-		parentMenu.removeAll();
-		for(String item:recentProjectDatabaseFiles.getItemList()) {
-			JMenuItem menuItem = new JMenuItem(new AbstractAction(item) {
-				@Override
-				public void actionPerformed(ActionEvent actionEvent) {
-					loadDbfileToHunter(item);
-				}
-			} );
-			parentMenu.add(menuItem);
+		if (isRecentStackChanged()){
+			parentMenu.removeAll();
+			for(String item:recentProjectDatabaseFiles.getItemList()) {
+				JMenuItem menuItem = new JMenuItem(new AbstractAction(item) {
+					@Override
+					public void actionPerformed(ActionEvent actionEvent) {
+						loadDbfileToHunter(item);
+					}
+				});
+				parentMenu.add(menuItem);
+			}
+		}
+	}
+	public boolean isRecentStackChanged(){
+		if (recentProjectDatabaseFiles.hashCode() == recentStackHash){
+			return false;
+		}else {
+			recentStackHash = recentProjectDatabaseFiles.hashCode();
+			return true;
 		}
 	}
 }
