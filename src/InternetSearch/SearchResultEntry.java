@@ -11,6 +11,7 @@ import utils.URLUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class SearchResultEntry {
@@ -57,8 +58,13 @@ public class SearchResultEntry {
 		if (URLUtils.isVaildUrl(host)) {
 			this.uri = host;
 			this.host = URLUtils.getHost(host);
-		}else{
+		}else if(DomainNameUtils.isValidDomain(host)){//包含端口的
 			Set<String> hosts = GrepUtils.grepDomainNoPort(host);
+			if (hosts.size()>0) {
+				this.host = new ArrayList<>(hosts).get(0);
+			}
+		}else {
+			List<String> hosts = GrepUtils.grepIP(host);
 			if (hosts.size()>0) {
 				this.host = new ArrayList<>(hosts).get(0);
 			}
@@ -230,4 +236,9 @@ public class SearchResultEntry {
 				+ ASNInfo + "]";
 	}
 	
+	public static void main(String[] args) {
+		SearchResultEntry item = new SearchResultEntry();
+		item.setHost("11.11.11.11:7000");
+		System.out.println(item.toString());
+	}
 }
