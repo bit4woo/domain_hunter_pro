@@ -6,6 +6,8 @@ import java.awt.FlowLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,7 +18,9 @@ import java.util.Map;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
@@ -131,6 +135,16 @@ public class SearchPanel extends JPanel {
 		centerPanel.addTab(null, containerpanel);
 		int index = centerPanel.getTabCount() - 1;
 		centerPanel.setTabComponentAt(index, tabPanel);
+
+
+		centerPanel.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				if (SwingUtilities.isRightMouseButton(e)) {
+					showPopupMenu(centerPanel,e);
+				}
+			}
+		});
 	}
 
 	public String getStatusInfo(List<SearchResultEntry> entries,List<String> engines) {
@@ -169,6 +183,58 @@ public class SearchPanel extends JPanel {
 		public void actionPerformed(ActionEvent e) {
 			tabbedPane.remove(component);
 		}
+	}
+
+	// 显示右键菜单
+	private void showPopupMenu(JTabbedPane tabbedPane,MouseEvent e) {
+		JPopupMenu popupMenu = new JPopupMenu();
+
+		int tabIndex = tabbedPane.indexAtLocation(e.getX(), e.getY());
+		if (tabIndex == -1) {
+			return;
+		}
+		// 添加菜单项：关闭当前 tab
+		JMenuItem closeCurrentTabMenuItem = new JMenuItem("Close Current Tab");
+		closeCurrentTabMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				tabbedPane.remove(tabIndex);
+			}
+		});
+		popupMenu.add(closeCurrentTabMenuItem);
+
+		// 添加菜单项：关闭所有 tab
+		JMenuItem closeAllTabsMenuItem = new JMenuItem("Close All Tabs");
+		closeAllTabsMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				tabbedPane.removeAll();
+			}
+		});
+		popupMenu.add(closeAllTabsMenuItem);
+
+		// 添加菜单项：关闭至左边
+		JMenuItem closeTabsToLeftMenuItem = new JMenuItem("Close Tabs to Left");
+		closeTabsToLeftMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				for (int i = tabIndex - 1; i >= 0; i--) {
+					tabbedPane.remove(i);
+				}
+			}
+		});
+		popupMenu.add(closeTabsToLeftMenuItem);
+
+		// 添加菜单项：关闭至右边
+		JMenuItem closeTabsToRightMenuItem = new JMenuItem("Close Tabs to Right");
+		closeTabsToRightMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				for (int i = tabbedPane.getTabCount() - 1; i > tabIndex; i--) {
+					tabbedPane.remove(i);
+				}
+			}
+		});
+		popupMenu.add(closeTabsToRightMenuItem);
+
+		// 显示右键菜单
+		popupMenu.show(tabbedPane, e.getX(), e.getY());
 	}
 
 	public JPanel createButtonPanel() {
