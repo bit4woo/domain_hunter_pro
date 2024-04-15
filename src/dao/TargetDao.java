@@ -91,7 +91,8 @@ public class TargetDao {
 	 * @return
 	 */
 	public List<TargetEntry> selectAll(){
-		String sql = "select * from TargetTable";
+		String sql = "select * from TargetTable order by ID";
+		//在SQL中，如果你没有显式地指定排序规则（使用ORDER BY子句），那么结果的顺序是不确定的
 		return jdbcTemplate.query(sql,new TargetMapper());
 	}
 

@@ -3,6 +3,8 @@ package config;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.AbstractAction;
@@ -207,7 +209,10 @@ public class DataLoadManager {
 	public void createRecentOpenItem(JMenu parentMenu){
 		if (isRecentStackChanged()){
 			parentMenu.removeAll();
-			for(String item:recentProjectDatabaseFiles.getItemList()) {
+
+			List<String> list = recentProjectDatabaseFiles.getItemList();
+			Collections.reverse(list);
+			for(String item:list) {
 				JMenuItem menuItem = new JMenuItem(new AbstractAction(item) {
 					@Override
 					public void actionPerformed(ActionEvent actionEvent) {
