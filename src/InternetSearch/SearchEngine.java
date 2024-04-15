@@ -206,9 +206,10 @@ public class SearchEngine {
 				/**
 				domain="qianxin.com"	
 				搜索域名包含"qianxin.com"的网站 --这个可能包含第三方服务
+				误报太多，会出现类似这样的域名： www.step-qianxin.com、www.webmail.qianxin.com.ar
 
 				domain.suffix="qianxin.com" 
-				搜索主域为"qianxin.com"的网站
+				搜索主域为"qianxin.com"的网站--使用这个
 
 				header.server=="Microsoft-IIS/10"
 				web.title="北京"
@@ -223,7 +224,7 @@ public class SearchEngine {
 				}else if(type.equals(SearchType.IP)) {
 					value = String.format("ip=\"%s\"", value);
 				}else if(type.equals(SearchType.Domain)) {
-					value = String.format("domain=\"%s\"", value);
+					value = String.format("domain.suffix=\"%s\"", value);
 				}else if(type.equals(SearchType.Subnet)) {
 					value = String.format("ip=\"%s\"", value);
 				}else if(type.equals(SearchType.Title)) {
