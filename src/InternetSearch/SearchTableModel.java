@@ -163,6 +163,9 @@ public class SearchTableModel extends AbstractTableModel {
 		else if (columnIndex == HeadList.indexOf(SearchTableHead.Port)){
 			return entry.getPort();
 		}
+		else if (columnIndex == HeadList.indexOf(SearchTableHead.RootDomain)){
+			return entry.getRootDomain();
+		}
 		else if (columnIndex == HeadList.indexOf(SearchTableHead.Title)){
 			return entry.getTitle();
 		}
@@ -220,6 +223,10 @@ public class SearchTableModel extends AbstractTableModel {
 			String value =  entry.getPort()+"";
 			return new InfoTuple<>(SearchType.OriginalString, value);
 		}
+		else if (columnIndex == HeadList.indexOf(SearchTableHead.RootDomain)){
+			String value =  entry.getRootDomain();
+			return new InfoTuple<>(SearchType.SubDomain, value);
+		}
 		else if (columnIndex == HeadList.indexOf(SearchTableHead.Title)){
 			String value =  entry.getTitle();
 			return new InfoTuple<>(SearchType.Title, value);
@@ -227,17 +234,29 @@ public class SearchTableModel extends AbstractTableModel {
 		else if (columnIndex == HeadList.indexOf(SearchTableHead.Server)){
 			String value =  entry.getWebcontainer();
 			return new InfoTuple<>(SearchType.Server, value);
-		}else if (columnIndex == HeadList.indexOf(SearchTableHead.IP)){
-			String value = String.join(",", new TreeSet<String>(entry.getIPSet()));//用TreeSet进行排序
-			return new InfoTuple<>(SearchType.IP, value);
-		}else if (columnIndex == HeadList.indexOf(SearchTableHead.Favicon) || columnIndex == HeadList.indexOf(SearchTableHead.IconHash)){
+		}
+		else if (columnIndex == HeadList.indexOf(SearchTableHead.IP)){
+			if (entry.getIPSet().iterator().hasNext()) {
+				String value = entry.getIPSet().iterator().next();
+				if (IPAddressUtils.isValidIP(value) && !IPAddressUtils.isPrivateIPv4(value)) {
+					return new InfoTuple<>(SearchType.IP, value);
+				}
+			}
+			return new InfoTuple<>(null, null);
+		}
+		else if (columnIndex == HeadList.indexOf(SearchTableHead.Favicon) || columnIndex == HeadList.indexOf(SearchTableHead.IconHash)){
 			String value = entry.getIcon_hash();
 			return new InfoTuple<>(SearchType.IconHash, value);
-		}else if (columnIndex == HeadList.indexOf(SearchTableHead.CertInfo)){
-			String value =  String.join(",", new TreeSet<String>(entry.getCertDomainSet()));
-			//TODO
-			return new InfoTuple<>(SearchType.Domain, null);
-		}else if (columnIndex == HeadList.indexOf(SearchTableHead.ASNInfo) || columnIndex == HeadList.indexOf(SearchTableHead.ASN)){
+		}
+		else if (columnIndex == HeadList.indexOf(SearchTableHead.CertInfo)){
+			if (entry.getCertDomainSet().iterator().hasNext()) {
+				String value = entry.getCertDomainSet().iterator().next();
+				return new InfoTuple<>(SearchType.SubDomain, value);
+			}
+			return new InfoTuple<>(null, null);
+
+		}
+		else if (columnIndex == HeadList.indexOf(SearchTableHead.ASNInfo) || columnIndex == HeadList.indexOf(SearchTableHead.ASN)){
 			//应该获取ASN编号
 			int num =  entry.getAsnNum();
 			if (num > 0){
@@ -245,12 +264,13 @@ public class SearchTableModel extends AbstractTableModel {
 			}else {
 				return new InfoTuple<>(SearchType.Asn, null);
 			}
-		}else {
+		}
+		else {
 			String value = entry.getHost();
 			if (IPAddressUtils.isValidIP(value)) {
 				return new InfoTuple<>(SearchType.IP, value);
 			}else {
-				return new InfoTuple<>(SearchType.Domain, value);
+				return new InfoTuple<>(SearchType.SubDomain, value);
 			}
 		}
 	}

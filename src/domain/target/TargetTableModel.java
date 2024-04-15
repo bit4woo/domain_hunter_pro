@@ -147,7 +147,7 @@ public class TargetTableModel extends AbstractTableModel {
 		}else {
 			columnIndex =getTitleList().indexOf("Domain/Subnet");
 			String value = getValueAt(rowIndex,columnIndex).toString();
-			return new InfoTuple<>(SearchType.Domain, value);
+			return new InfoTuple<>(SearchType.SubDomain, value);
 		}
 	}
 

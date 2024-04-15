@@ -17,7 +17,6 @@ import javax.swing.table.AbstractTableModel;
 
 import GUI.GUIMain;
 import InternetSearch.InfoTuple;
-import InternetSearch.SearchEngine;
 import InternetSearch.SearchType;
 import base.Commons;
 import base.IndexedHashMap;
@@ -257,14 +256,23 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			String value =  entry.getWebcontainer();
 			return new InfoTuple<>(SearchType.Server, value);
 		}else if (columnIndex == HeadList.indexOf(LineTableHead.IP)){
-			String value = String.join(",", new TreeSet<String>(entry.getIPSet()));//用TreeSet进行排序
-			return new InfoTuple<>(SearchType.IP, value);
+			if (entry.getIPSet().iterator().hasNext()) {
+				String value = entry.getIPSet().iterator().next();
+				if (IPAddressUtils.isValidIP(value) && !IPAddressUtils.isPrivateIPv4(value)) {
+					return new InfoTuple<>(SearchType.IP, value);
+				}
+			}
+			return new InfoTuple<>(null, null);
 		}else if (columnIndex == HeadList.indexOf(LineTableHead.Favicon) || columnIndex == HeadList.indexOf(LineTableHead.IconHash)){
 			String value = entry.getIcon_hash();
 			return new InfoTuple<>(SearchType.IconHash, value);
 		}else if (columnIndex == HeadList.indexOf(LineTableHead.CNAMEAndCertInfo)){
-			String value =  String.join(",", new TreeSet<String>(entry.getCertDomainSet()));
-			return new InfoTuple<>(SearchType.Domain, value);
+			//String value =  String.join(",", new TreeSet<String>(entry.getCertDomainSet()));
+			if (entry.getCertDomainSet().iterator().hasNext()) {
+				String value = entry.getCertDomainSet().iterator().next();
+				return new InfoTuple<>(SearchType.SubDomain, value);
+			}
+			return new InfoTuple<>(null, null);
 		}else if (columnIndex == HeadList.indexOf(LineTableHead.ASNInfo)){
 			//应该获取ASN编号
 			int num =  entry.getAsnNum();
@@ -274,14 +282,17 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 				return new InfoTuple<>(SearchType.Asn, null);
 			}
 		}else if (columnIndex == HeadList.indexOf(LineTableHead.Comments)){
-			String value =  String.join(",", new TreeSet<String>(entry.getComments()));
-			return new InfoTuple<>(SearchType.OriginalString, value);
+			if (entry.getComments().iterator().hasNext()) {
+				String value = entry.getComments().iterator().next();
+				return new InfoTuple<>(SearchType.OriginalString, value);
+			}
+			return new InfoTuple<>(null, null);
 		}else {
 			String value = entry.getHost();
 			if (IPAddressUtils.isValidIP(value)) {
 				return new InfoTuple<>(SearchType.IP, value);
 			}else {
-				return new InfoTuple<>(SearchType.Domain, value);
+				return new InfoTuple<>(SearchType.SubDomain, value);
 			}
 		}
 	}

@@ -10,6 +10,7 @@ public class SearchTableHead {
 	public static final String Protocol="Protocol";
 	public static final String Host="Host";
 	public static final String Port="Port";
+	public static final String RootDomain="RootDomain";
 	public static final String Title="Title";
 	public static final String Server="Server";
 	public static final String Source="Source";

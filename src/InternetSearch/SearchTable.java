@@ -81,6 +81,7 @@ public class SearchTable extends JTable
 		preferredWidths.put(SearchTableHead.Host,25);
 		preferredWidths.put(SearchTableHead.Source,25);
 		preferredWidths.put(SearchTableHead.Title,30);
+		preferredWidths.put(SearchTableHead.RootDomain,20);
 		preferredWidths.put(SearchTableHead.IP,30);
 		preferredWidths.put(SearchTableHead.CertInfo,30);
 		preferredWidths.put(SearchTableHead.Server,20);

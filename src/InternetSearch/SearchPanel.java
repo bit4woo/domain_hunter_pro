@@ -255,7 +255,7 @@ public class SearchPanel extends JPanel {
 						String searchType=null;
 
 						if(DomainNameUtils.isValidDomain(content)) {
-							searchType = SearchType.Domain;
+							searchType = SearchType.SubDomain;
 						}else if (IPAddressUtils.isValidIP(content)) {
 							searchType = SearchType.IP;
 						}else {

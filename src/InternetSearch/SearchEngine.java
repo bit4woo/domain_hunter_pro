@@ -31,7 +31,7 @@ public class SearchEngine {
 
 	public static final String QUAKE_360 = "quake.360.net";
 	public static final String TI_360 = "ti.360.net";
-	
+
 	//https://search.censys.io/api
 	//https://api-docs.fullhunt.io/#introduction
 	//TODO
@@ -123,7 +123,7 @@ public class SearchEngine {
 					value = "site:"+value;
 				}else if(type.equals(SearchType.IP)) {
 					value = "site:"+value;
-				}else if(type.equals(SearchType.Domain)) {
+				}else if(type.equals(SearchType.SubDomain)) {
 					value = "site:"+value;
 				}else if(type.equals(SearchType.Subnet)) {
 
@@ -138,11 +138,12 @@ public class SearchEngine {
 				}
 			}
 			else if (engine.equalsIgnoreCase(FOFA)) {
+				//https://en.fofa.info/api
 				if (type.equals(SearchType.Host)) {
 					value = String.format("host=\"%s\"", value);//查询结果比domain多一些
 				} else if (type.equals(SearchType.IP)) {
 					value = String.format("ip=\"%s\"", value);
-				} else if (type.equals(SearchType.Domain)) {
+				} else if (type.equals(SearchType.SubDomain)) {
 					value = String.format("domain=\"%s\"", value);
 				} else if(type.equals(SearchType.Subnet)) {
 					value = String.format("ip=\"%s\"", value);
@@ -168,7 +169,7 @@ public class SearchEngine {
 					value = "hostname:"+value;
 				}else if(type.equals(SearchType.IP)) {
 					value = String.format("ip:\"%s\"", value);
-				}else if(type.equals(SearchType.Domain)) {
+				}else if(type.equals(SearchType.SubDomain)) {
 					value = "site:"+value;
 				}else if(type.equals(SearchType.Subnet)) {
 					value = "cidr:"+value;
@@ -188,7 +189,7 @@ public class SearchEngine {
 
 				}else if(type.equals(SearchType.IP)) {
 					value = "site:"+value;
-				}else if(type.equals(SearchType.Domain)) {
+				}else if(type.equals(SearchType.SubDomain)) {
 
 				}else if(type.equals(SearchType.Subnet)) {
 
@@ -223,8 +224,10 @@ public class SearchEngine {
 
 				}else if(type.equals(SearchType.IP)) {
 					value = String.format("ip=\"%s\"", value);
-				}else if(type.equals(SearchType.Domain)) {
+				}else if(type.equals(SearchType.SubDomain)) {
 					value = String.format("domain.suffix=\"%s\"", value);
+				}else if(type.equals(SearchType.SimilarDomain)) {
+					value = String.format("domain=\"%s\"", value);
 				}else if(type.equals(SearchType.Subnet)) {
 					value = String.format("ip=\"%s\"", value);
 				}else if(type.equals(SearchType.Title)) {
@@ -243,7 +246,7 @@ public class SearchEngine {
 
 				}else if(type.equals(SearchType.IP)) {
 					value = "site:"+value;
-				}else if(type.equals(SearchType.Domain)) {
+				}else if(type.equals(SearchType.SubDomain)) {
 
 				}else if(type.equals(SearchType.Subnet)) {
 
@@ -262,7 +265,7 @@ public class SearchEngine {
 
 				}else if(type.equals(SearchType.IP)) {
 					value = "site:"+value;
-				}else if(type.equals(SearchType.Domain)) {
+				}else if(type.equals(SearchType.SubDomain)) {
 
 				}else if(type.equals(SearchType.Subnet)) {
 
@@ -282,7 +285,7 @@ public class SearchEngine {
 
 				}else if(type.equals(SearchType.IP)) {
 					value = "site:"+value;
-				}else if(type.equals(SearchType.Domain)) {
+				}else if(type.equals(SearchType.SubDomain)) {
 					value = "domain:"+value;
 				}else if(type.equals(SearchType.Subnet)) {
 

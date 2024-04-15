@@ -8,10 +8,13 @@ import javax.swing.JOptionPane;
 
 public class SearchType {
 
-	public static final String Host = "Host";//Host和Domain有时候分不清
+	@Deprecated
+	public static final String Host = "Host";//Host和Domain有时候分不清，还需研究TODO
+	
 	public static final String IP = "IP";
 	public static final String Subnet = "Subnet";
-	public static final String Domain = "Domain";
+	public static final String SubDomain = "SubDomain";
+	public static final String SimilarDomain = "SimilarDomain";
 	public static final String Title = "Title";
 	public static final String IconHash = "IconHash";
 	public static final String Server = "Server"; //server="Microsoft-IIS/10"
