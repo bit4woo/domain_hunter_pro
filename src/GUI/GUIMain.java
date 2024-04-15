@@ -179,8 +179,8 @@ public class GUIMain extends JFrame {
 		searchPanel = new SearchPanel(this);
 		tabbedWrapper.addTab("Domains", null, domainPanel, null);
 		tabbedWrapper.addTab("Titles", null, titlePanel, null);
-		tabbedWrapper.addTab("Tools", null,toolPanel,null);
 		tabbedWrapper.addTab("Search", null,searchPanel,null);
+		tabbedWrapper.addTab("Tools", null,toolPanel,null);
 		tabbedWrapper.addTab("Config", null,configPanel,null);
 
 		setProjectMenu(new ProjectMenu(this));
