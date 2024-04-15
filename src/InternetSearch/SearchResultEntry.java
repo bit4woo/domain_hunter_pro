@@ -184,7 +184,12 @@ public class SearchResultEntry {
 		if (port>=0 && port<=65535) {
 			sb.append(":").append(port);
 		}
-		return URLUtils.getUrlWithDefaultPort(sb.toString());
+		try {
+			uri = URLUtils.getUrlWithDefaultPort(sb.toString());
+		} catch (Exception e) {
+			uri = sb.toString();
+		}
+		return uri;
 	}
 
 

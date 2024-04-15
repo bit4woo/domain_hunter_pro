@@ -36,10 +36,6 @@ public class APISearchAction extends AbstractAction {
 	int[] modelRows;
 	int columnIndex;
 
-	private boolean autoAddToTarget;
-	private boolean showInGUI;
-	private List<String> engineList;//适配一键用多个搜索引擎进行搜索的逻辑
-
 	private PrintWriter stdout;
 	private PrintWriter stderr;
 
@@ -65,14 +61,11 @@ public class APISearchAction extends AbstractAction {
 		this.lineModel = lineModel;
 		this.modelRows = modelRows;
 		this.columnIndex = columnIndex;
-		this.engineList = engineList;
 		if(engineList.size() ==1) {
 			putValue(Action.NAME, "Search On " + engineList.get(0).trim());
 		}else {
 			putValue(Action.NAME, "Search On " + engineList.size()+" engines");
 		}
-		this.autoAddToTarget = autoAddToTarget;
-		this.showInGUI = showInGUI;
 	}
 
 	public APISearchAction(AbstractTableModel lineModel, int[] modelRows, int columnIndex, String engine,boolean autoAddToTarget, boolean showInGUI) {
@@ -98,8 +91,6 @@ public class APISearchAction extends AbstractAction {
 					return null;
 				}
 				for (int row : modelRows) {
-
-					List<SearchResultEntry> entries = new ArrayList<>();
 
 					String searchType = null;
 					String searchContent = null;

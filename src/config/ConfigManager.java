@@ -148,7 +148,7 @@ public class ConfigManager {
 
 
 			configList.add(new ConfigEntry(ConfigName.showBurpMenu,"true","",true,true));
-			configList.add(new ConfigEntry(ConfigName.showMenuItemsInOne,"true","",true,true));
+			configList.add(new ConfigEntry(ConfigName.showMenuItemsInOne,"false","",true,true));
 			configList.add(new ConfigEntry(ConfigName.ignoreHTTPS,"false","",true,true));
 			configList.add(new ConfigEntry(ConfigName.ignoreHTTP,"true","",true,true));
 			configList.add(new ConfigEntry(ConfigName.ignoreHTTPStaus500,"true","",true,true));

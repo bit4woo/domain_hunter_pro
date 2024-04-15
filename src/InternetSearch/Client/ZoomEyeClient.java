@@ -37,8 +37,18 @@ public class ZoomEyeClient extends BaseClient {
 					JSONObject entryitem = (JSONObject) item;
 
 					SearchResultEntry entry = new SearchResultEntry();
-
-					entry.getIPSet().add(entryitem.getString("ip"));
+					try {
+						//title:xxx 获得的是IP string
+						entry.getIPSet().add(entryitem.getString("ip"));
+					}catch(Exception e) {
+						//site:xxx.com 获得的是IP List
+						JSONArray ipList = entryitem.getJSONArray("ip");
+						for (int i = 0; i < ipList.length(); i++) {
+				            String element = ipList.getString(i);
+				            entry.getIPSet().add(element);
+				        }
+					}
+					
 					entry.setHost(entryitem.getString("rdns"));
 
 					int port = entryitem.getJSONObject("portinfo").getInt("port");
@@ -98,7 +108,7 @@ public class ZoomEyeClient extends BaseClient {
 	public byte[] buildRawData(String searchContent, int page) {
 		//site:"baidu.com"
 		String raw = "GET /api/search?q=%s&page=%s HTTP/1.1\r\n"
-				+ "Host: www.zoomeye.hk\r\n"
+				+ "Host: api.zoomeye.hk\r\n"
 				+ "Accept: application/json, text/plain, */*\r\n"
 				+ "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36\r\n"
 				+ "Accept-Encoding: gzip, deflate\r\n"

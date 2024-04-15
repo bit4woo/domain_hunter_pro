@@ -60,7 +60,8 @@ public class ConfigPanel extends JPanel{
 			radioButton.setSelected(Boolean.parseBoolean(value));
 			radioButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					//如何
+					config.setValue(radioButton.isSelected()+"");
+					gui.getDataLoadManager().saveCurrentConfig(null);
 				}
 			});
 
