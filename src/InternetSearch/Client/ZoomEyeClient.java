@@ -100,7 +100,7 @@ public class ZoomEyeClient extends BaseClient {
 		//https://www.zoomeye.hk/api/domain/search?q=google.com&p=1&s=10&type=1
 		//https://www.zoomeye.hk/api/search?q=site%3A%22baidu.com%22&page=1
 		String url = String.format(
-				"https://api.zoomeye.hk/api/search?q=%s&page=%s",searchContent,page);
+				"https://www.zoomeye.hk/api/search?q=%s&page=%s",searchContent,page);
 		return url;
 	}
 
@@ -108,7 +108,7 @@ public class ZoomEyeClient extends BaseClient {
 	public byte[] buildRawData(String searchContent, int page) {
 		//site:"baidu.com"
 		String raw = "GET /api/search?q=%s&page=%s HTTP/1.1\r\n"
-				+ "Host: api.zoomeye.hk\r\n"
+				+ "Host: www.zoomeye.hk\r\n"
 				+ "Accept: application/json, text/plain, */*\r\n"
 				+ "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36\r\n"
 				+ "Accept-Encoding: gzip, deflate\r\n"

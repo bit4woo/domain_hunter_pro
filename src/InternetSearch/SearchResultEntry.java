@@ -76,7 +76,7 @@ public class SearchResultEntry {
 
 		if (StringUtils.isEmpty(rootDomain)) {
 			if(DomainNameUtils.isValidDomain(host)) {
-				rootDomain = DomainNameUtils.getRootDomain(host);
+				this.rootDomain = DomainNameUtils.getRootDomain(host);
 			}
 		}
 	}
@@ -94,7 +94,11 @@ public class SearchResultEntry {
 	}
 
 	public void setRootDomain(String rootDomain) {
-		this.rootDomain = rootDomain;
+		if(DomainNameUtils.isValidDomain(rootDomain)) {
+			this.rootDomain = DomainNameUtils.getRootDomain(rootDomain);
+		}else{
+			this.rootDomain = rootDomain;
+		}
 	}
 
 	public String getWebcontainer() {
