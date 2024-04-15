@@ -73,6 +73,12 @@ public class SearchResultEntry {
 		if (StringUtils.isEmpty(this.host)) {
 			this.host = host;
 		}
+
+		if (StringUtils.isEmpty(rootDomain)) {
+			if(DomainNameUtils.isValidDomain(host)) {
+				rootDomain = DomainNameUtils.getRootDomain(host);
+			}
+		}
 	}
 
 	public String getProtocol() {
