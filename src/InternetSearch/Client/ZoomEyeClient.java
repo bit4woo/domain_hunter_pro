@@ -49,7 +49,11 @@ public class ZoomEyeClient extends BaseClient {
 				        }
 					}
 					
-					entry.setHost(entryitem.getString("rdns"));
+					try {
+						entry.setHost(entryitem.getString("rdns"));
+					} catch (Exception e) {
+						entry.setHost(entryitem.getString("ip"));
+					}
 
 					int port = entryitem.getJSONObject("portinfo").getInt("port");
 					entry.setPort(port);
