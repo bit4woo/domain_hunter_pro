@@ -337,6 +337,9 @@ public class SearchEngine {
 		for (String engine:SearchEngine.getEmailSearchEngineList()) {
 			JMenuItem item = new JMenuItem(new BrowserSearchAction(tableModel,modelRows,columnIndex,engine));
 			EmailSearchMenu.add(item);
+
+			JMenuItem itemAPI = new JMenuItem(new APISearchAction(tableModel,modelRows,columnIndex,engine));
+			EmailSearchMenu.add(itemAPI);
 		}
 
 

@@ -245,7 +245,7 @@ public class SearchResultEntry {
 
 	@Override
 	public String toString() {
-		return "SearchResultEntry [port=" + port + ", host=" + host + ", protocol=" + protocol + ", rootDomain="
+		return "SearchResultEntry [uri=" + uri +", port=" + port + ", host=" + host + ", protocol=" + protocol + ", rootDomain="
 				+ rootDomain + ", webcontainer=" + webcontainer + ", title=" + title + ", CertDomainSet="
 				+ CertDomainSet + ", IPSet=" + IPSet + ", icon_url=" + icon_url + ", icon_bytes="
 				+ Arrays.toString(icon_bytes) + ", icon_hash=" + icon_hash + ", source=" + source + ", ASNInfo="

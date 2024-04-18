@@ -1,21 +1,5 @@
 package domain.target;
 
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.swing.table.AbstractTableModel;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import com.google.common.net.InternetDomainName;
-import com.google.gson.Gson;
-
 import GUI.GUIMain;
 import InternetSearch.InfoTuple;
 import InternetSearch.SearchType;
@@ -23,9 +7,18 @@ import base.Commons;
 import base.IndexedHashMap;
 import base.IntArraySlice;
 import burp.BurpExtender;
+import com.google.common.net.InternetDomainName;
+import com.google.gson.Gson;
 import domain.DomainManager;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import utils.DomainNameUtils;
 import utils.IPAddressUtils;
+
+import javax.swing.table.AbstractTableModel;
+import java.io.PrintWriter;
+import java.util.*;
 
 public class TargetTableModel extends AbstractTableModel {
 

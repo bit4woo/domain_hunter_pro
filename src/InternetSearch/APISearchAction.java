@@ -12,13 +12,9 @@ import javax.swing.Action;
 import javax.swing.SwingWorker;
 import javax.swing.table.AbstractTableModel;
 
+import InternetSearch.Client.*;
 import org.apache.commons.lang3.StringUtils;
 
-import InternetSearch.Client.FoFaClient;
-import InternetSearch.Client.HunterClient;
-import InternetSearch.Client.QuakeClient;
-import InternetSearch.Client.ShodanClient;
-import InternetSearch.Client.ZoomEyeClient;
 import burp.BurpExtender;
 import burp.IPAddressUtils;
 import domain.DomainManager;
@@ -31,6 +27,7 @@ public class APISearchAction extends AbstractAction {
 	/**
 	 */
 	private static final long serialVersionUID = 1933197856582351336L;
+	private List<String> engineList = new ArrayList<>();
 
 	AbstractTableModel lineModel;
 	int[] modelRows;
@@ -61,10 +58,11 @@ public class APISearchAction extends AbstractAction {
 		this.lineModel = lineModel;
 		this.modelRows = modelRows;
 		this.columnIndex = columnIndex;
+		this.engineList = engineList;
 		if(engineList.size() ==1) {
-			putValue(Action.NAME, "Search On " + engineList.get(0).trim());
+			putValue(Action.NAME, "API Search On " + engineList.get(0).trim());
 		}else {
-			putValue(Action.NAME, "Search On " + engineList.size()+" engines");
+			putValue(Action.NAME, "API Search On " + engineList.size()+" engines");
 		}
 	}
 
@@ -113,7 +111,7 @@ public class APISearchAction extends AbstractAction {
 						searchContent = result.second;
 					}
 
-					DoAllInOnSearch(searchType,searchContent);
+					DoSearchAllInOn(searchType,searchContent,APISearchAction.this.engineList);
 
 				}
 				return null;
@@ -152,31 +150,42 @@ public class APISearchAction extends AbstractAction {
 			//entries = new Client().SearchToGetEntry(searchContent);
 			//TODO
 		}else if (engine.equals(SearchEngine.HUNTER_IO)) {
-			//entries = new Client().SearchToGetEntry(searchContent);
-			//TODO
+			entries = new HunterIoClient().SearchToGetEntry(searchContent);
 		}
+		//https://api.hunter.io/v2/domain-search?domain=intercom.com
 		return entries;
 	}
 
-	public static List<SearchResultEntry> DoAllInOnSearch(String searchType,String content) {
-		return DoAllInOnSearch(searchType,content,true,false);
+	/**
+	 * 多个搜索引擎 进行同类型搜索时使用，比如都搜索子域名
+	 * @param searchType
+	 * @param content
+	 * @param engineList
+	 * @return
+	 */
+	public static List<SearchResultEntry> DoSearchAllInOn(String searchType,String content,List<String> engineList) {
+		return DoSearchAllInOn(searchType,content,engineList,true,false);
 	}
 
-	public static List<SearchResultEntry> DoAllInOnSearch(String searchType,String content,boolean showInGUI,boolean autoAddToTarget) {
+	public static List<SearchResultEntry> DoSearchAllInOn(String searchType,String content,List<String> engineList,boolean showInGUI,boolean autoAddToTarget) {
 		if (StringUtils.isEmpty(content) || StringUtils.isEmpty(searchType)) {
 			BurpExtender.getStderr().print("nothing to search...");
 			return null;
 		}
 		List<SearchResultEntry> entries = new ArrayList<>();
 
-		List<String> engines = SearchEngine.getAssetSearchEngineList();
-		for (String engine:engines) {
+
+		for (String engine:engineList) {
+			if (engine.equals(SearchEngine.HUNTER_IO)){
+				//这个逻辑有点不严谨，目前看时没问题的，后续有重大变更时注意
+				searchType = SearchType.Email;
+			}
 			entries.addAll(APISearchAction.DoSearch(searchType,content,engine));
 		}
 
 		if (showInGUI) {
 			String tabname = String.format("%s(%s)",searchType,content);
-			BurpExtender.getGui().getSearchPanel().addSearchTab(tabname, entries, engines);
+			BurpExtender.getGui().getSearchPanel().addSearchTab(tabname, entries, engineList);
 		}
 
 		//暂时不启用，之所以要设计图形界面，就是为了加入人为判断。

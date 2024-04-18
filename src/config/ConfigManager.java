@@ -143,6 +143,7 @@ public class ConfigManager {
 			configList.add(new ConfigEntry(ConfigName.QianxinTiAPIKey,"","",true,true));
 			configList.add(new ConfigEntry(ConfigName.ZoomEyeAPIKey,"","",true,true));
 			configList.add(new ConfigEntry(ConfigName.ShodanAPIKey,"","",true,true));
+			configList.add(new ConfigEntry(ConfigName.HunterIoAPIKey,"","",true,true));
 
 			configList.add(new ConfigEntry(ConfigName.ProxyForGetCert,"127.0.0.1:7890","",true,true));
 

@@ -39,6 +39,7 @@ public class ConfigName {
 
 	public static final String ZoomEyeAPIKey = "zoomeye.hk API Key";
 	public static final String ShodanAPIKey = "shodan.io API Key";
+	public static final String HunterIoAPIKey = "hunter.io API Key";
 
 	public static final String ProxyForGetCert = "Proxy for get certificates";
 

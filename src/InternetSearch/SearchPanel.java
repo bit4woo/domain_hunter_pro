@@ -262,7 +262,7 @@ public class SearchPanel extends JPanel {
 							searchType = SearchType.OriginalString;
 						}
 
-						APISearchAction.DoAllInOnSearch(searchType,content);
+						APISearchAction.DoSearchAllInOn(searchType,content,SearchEngine.getAssetSearchEngineList());
 
 						return null;
 					}
@@ -288,7 +288,11 @@ public class SearchPanel extends JPanel {
 
 						String searchType = SearchType.choseSearchType();
 
-						APISearchAction.DoAllInOnSearch(searchType,content);
+						if (SearchType.Email.equals(searchType)){
+							APISearchAction.DoSearchAllInOn(searchType,content,SearchEngine.getEmailSearchEngineList());
+						}else{
+							APISearchAction.DoSearchAllInOn(searchType,content,SearchEngine.getAssetSearchEngineList());
+						}
 
 						return null;
 					}

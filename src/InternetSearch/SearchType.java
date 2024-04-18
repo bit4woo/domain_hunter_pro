@@ -14,6 +14,9 @@ public class SearchType {
 	public static final String IP = "IP";
 	public static final String Subnet = "Subnet";
 	public static final String SubDomain = "SubDomain";
+
+	public static final String Email = "Email";
+
 	public static final String SimilarDomain = "SimilarDomain";
 	public static final String Title = "Title";
 	public static final String IconHash = "IconHash";
