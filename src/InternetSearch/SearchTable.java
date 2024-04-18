@@ -16,6 +16,8 @@ import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.table.TableRowSorter;
 
+import org.apache.commons.lang3.StringUtils;
+
 import GUI.GUIMain;
 import base.Commons;
 import burp.BurpExtender;
@@ -143,8 +145,11 @@ public class SearchTable extends JTable
 						}
 					}else if(modelCol==HeadList.indexOf(SearchTableHead.URL)) {//双击url在浏览器中打开
 						try{
-							String url = selecteEntry.getHost();
-							if (url != null && !url.toLowerCase().startsWith("http://") && !url.toLowerCase().startsWith("https://")) {
+							String url = selecteEntry.getUri();
+							if (StringUtils.isEmpty(url)) {
+								return;
+							}
+							if (!url.toLowerCase().startsWith("http://") && !url.toLowerCase().startsWith("https://")) {
 								url = "http://"+url;//针对DNS记录中URL字段是host的情况
 							}
 							Commons.browserOpen(url,ConfigManager.getStringConfigByKey(ConfigName.BrowserPath));
