@@ -1,6 +1,7 @@
 package config;
 
 import com.google.gson.Gson;
+import org.apache.commons.lang3.StringUtils;
 
 public class ConfigEntry {
 
@@ -30,6 +31,7 @@ public class ConfigEntry {
 		this.comment = comment;
 		this.enable = enable;
 		this.display = display;
+		detectType();
 	}
 
 	public ConfigEntry(String key,String value,String comment,String type,boolean enable,boolean display){
@@ -41,6 +43,13 @@ public class ConfigEntry {
 		this.type = type;
 	}
 
+	private void detectType(){
+		if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")){
+			this.type = Value_Type_Boolean;
+		}else {
+			this.type = Value_Type_String;
+		}
+	}
 	public String getKey() {
 		return key;
 	}
@@ -58,6 +67,9 @@ public class ConfigEntry {
 	}
 
 	public String getType() {
+		if (StringUtils.isEmpty(type)){
+			detectType();
+		}
 		return type;
 	}
 

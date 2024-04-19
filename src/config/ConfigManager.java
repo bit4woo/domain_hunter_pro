@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
@@ -113,9 +115,18 @@ public class ConfigManager {
 		try {
 			for (ConfigEntry entry:getInitConfigs()) {
 				if(!isConfigExist(entry.getKey())) {
-					configList.add(entry);
+					configList.add(entry);//应该根据类型选择位置
 				}
 			}
+
+			// 按照name属性进行排序
+			Collections.sort(configList, new Comparator<ConfigEntry>() {
+				@Override
+				public int compare(ConfigEntry entry1, ConfigEntry entry2) {
+					//按类型排序就OK了，String的在前面，boolean的在后面
+					return -entry1.getType().compareTo(entry2.getType());
+				}
+			});
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
