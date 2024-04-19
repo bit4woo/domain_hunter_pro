@@ -9,6 +9,7 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import InternetSearch.SearchEngine;
@@ -37,7 +38,12 @@ public class HunterIoClient extends BaseClient {
 				JSONObject entryitem = (JSONObject) item;
 				JSONArray sources = entryitem.getJSONArray("sources");
 				String email = entryitem.getString("value");
-				String position = entryitem.getString("position");
+				String position = null;
+				try {
+					position = entryitem.getString("position");
+				} catch (JSONException e) {
+
+				}
 
 				for (Object source:sources){
 					JSONObject sourceitem = (JSONObject) source;
@@ -46,7 +52,9 @@ public class HunterIoClient extends BaseClient {
 					entry.setUri(url);
 					entry.setRootDomain(email);
 					entry.setSource(getEngineName());
-					entry.setTitle(position);
+					if (StringUtils.isNotEmpty(position)){
+						entry.setTitle(position);
+					}
 					result.add(entry);
 				}
 			}
@@ -85,7 +93,7 @@ public class HunterIoClient extends BaseClient {
 		}
 		int offset = pageSize *(page-1);
 		String url = String.format(
-				"https://api.hunter.io/v2/domain-search?domain=%s&offset=%s",searchContent,offset);
+				"https://api.hunter.io/v2/domain-search?api_key=%s&domain=%s&offset=%s",key,searchContent,offset);
 		return url;
 	}
 
