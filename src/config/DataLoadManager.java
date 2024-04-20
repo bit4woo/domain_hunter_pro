@@ -80,6 +80,9 @@ public class DataLoadManager {
 	}
 
 
+	/**
+	 * DataLoadManager的自我保存
+	 */
 	public void saveToDisk() {
 		File localFile = new File(localdir);
 		try {
@@ -215,6 +218,7 @@ public class DataLoadManager {
 			gui.getProjectMenu().AddDBNameMenuItem(name);
 			gui.getProjectMenu().AddDBNameTab(name);
 			//gui.repaint();//NO need
+
 		}
 	}
 

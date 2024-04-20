@@ -124,7 +124,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 
 		SwingUtilities.invokeLater(new Runnable() {//create GUI
 			public void run() {
-				gui = new GUIMain(BurpExtender.this);
+				gui = new GUIMain();
 				dataLoadManager = DataLoadManager.loadFromDisk(gui);
 				callbacks.addSuiteTab(BurpExtender.this);
 				//这里的BurpExtender.this实质是指ITab对象，也就是getUiComponent()中的contentPane.这个参数由GUI()函数初始化。

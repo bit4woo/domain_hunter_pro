@@ -210,11 +210,6 @@ public class ProjectMenu extends JMenu{
 		});
 		this.add(lockMenu);
 
-		//为了菜单能够区分
-		File dbFile = BurpExtender.getDataLoadManager().getCurrentDBFile();
-		if (dbFile != null){
-			AddDBNameMenuItem(dbFile.getName());
-		}
 	}
 
 	public void createNewDb(GUIMain gui) {
