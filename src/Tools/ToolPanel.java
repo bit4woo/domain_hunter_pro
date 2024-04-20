@@ -376,7 +376,7 @@ public class ToolPanel extends JPanel {
 							try {
 								String port = line.split(" ")[3].split("/")[0];
 								String host = line.split(" ")[5];
-								Set<String>      ports = ipAndPorts.get(host);
+								Set<String>  ports = ipAndPorts.get(host);
 								if (ports == null) {
 									ports = new HashSet<String>();
 								}

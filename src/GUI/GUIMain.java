@@ -35,14 +35,13 @@ import title.TitlePanel;
 public class GUIMain extends JFrame {
 
 	//当多个实例都有相同的是static field时，对象间对static属性的修改会互相影响，因为多个对象共享一个属性的copy！！
-	private IBurpExtender burp;
 	private DomainPanel domainPanel;
 	private TitlePanel titlePanel;
 	private ToolPanel toolPanel;
 	private ConfigPanel configPanel;
 	private SearchPanel searchPanel;
 
-	private JTabbedPane tabbedWrapper;
+	private final JTabbedPane tabbedWrapper;
 
 	private ProjectMenu projectMenu;
 
@@ -141,8 +140,7 @@ public class GUIMain extends JFrame {
 		}
 	}
 
-	public GUIMain(IBurpExtender burp) {//构造函数
-		this.burp = burp;
+	public GUIMain() {//构造函数
 		try{
 			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
 			stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
@@ -248,7 +246,7 @@ public class GUIMain extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					GUIMain frame = new GUIMain(null);
+					GUIMain frame = new GUIMain();
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();

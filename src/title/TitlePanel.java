@@ -315,7 +315,7 @@ public class TitlePanel extends JPanel {
 	 * @return
 	 */
 	public Set<String> getCertainDomains() {
-		Set<String> targetsToReq = new HashSet<String>();
+		Set<String> targetsToReq = new HashSet<>();
 		targetsToReq.addAll(guiMain.getDomainPanel().getDomainResult().getSubDomainSet());
 		targetsToReq.addAll(guiMain.getDomainPanel().fetchTargetModel().fetchTargetIPSet());
 		targetsToReq.addAll(guiMain.getDomainPanel().getDomainResult().getIPSetOfCert());
@@ -328,7 +328,7 @@ public class TitlePanel extends JPanel {
 	 * @return
 	 */
 	public Set<String> getCustomDomains() {
-		Set<String> targetsToReq = new HashSet<String>();
+		Set<String> targetsToReq = new HashSet<>();
 		targetsToReq.addAll(guiMain.getDomainPanel().getDomainResult().getSpecialPortTargets());
 		targetsToReq.removeAll(guiMain.getDomainPanel().getDomainResult().getNotTargetIPSet());
 		return targetsToReq;
