@@ -33,7 +33,9 @@ import com.google.gson.Gson;
 import GUI.GUIMain;
 import burp.BurpExtender;
 import burp.IPAddressUtils;
+import title.WebIcon;
 import utils.DomainNameUtils;
+import utils.URLUtils;
 
 public class SearchPanel extends JPanel {
 
@@ -287,13 +289,20 @@ public class SearchPanel extends JPanel {
 						String content = textFieldSearch.getText();
 
 						String searchType = SearchType.choseSearchType();
-
-						if (SearchType.Email.equals(searchType)){
-							APISearchAction.DoSearchAllInOn(searchType,content,SearchEngine.getEmailSearchEngineList());
-						}else{
-							APISearchAction.DoSearchAllInOn(searchType,content,SearchEngine.getAssetSearchEngineList());
+						switch (searchType){
+							case SearchType.Email:
+								APISearchAction.DoSearchAllInOn(searchType,content,SearchEngine.getEmailSearchEngineList());
+								break;
+							case SearchType.IconHash:
+								if (URLUtils.isVaildUrl(content)){
+									byte[] imageData = WebIcon.getFavicon(content);
+									if (imageData.length>0){
+										content = WebIcon.getHash(imageData);
+									}
+								}
+							default:
+								APISearchAction.DoSearchAllInOn(searchType,content,SearchEngine.getAssetSearchEngineList());
 						}
-
 						return null;
 					}
 
