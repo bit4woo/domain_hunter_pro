@@ -2,13 +2,14 @@ package base;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Stack {
     //实现栈的List
     private List<String> stack;
-
+    public static final int sizeOfStack = 10;
     public Stack() {
-        stack = new ArrayList<>(10);//初始容量为10
+        stack = new ArrayList<>(sizeOfStack);//初始容量为10
     }
 
     //判断是否为空
@@ -30,6 +31,9 @@ public class Stack {
      */
     public void push(String t) {
         stack.remove(t);//不存在也没关系
+        if (stack.size() >= sizeOfStack-1){
+            stack.remove(0);
+        }
         stack.add(t);
     }
 
@@ -48,6 +52,20 @@ public class Stack {
 
     public List<String> getItemList(){
     	return new ArrayList<>(stack);
+    }
+
+    @Override
+    public int hashCode() {
+        // 创建一个 StringBuilder 来存储连接后的字符串
+        StringBuilder stringBuilder = new StringBuilder();
+
+        // 将 List 中的所有字符串连接成一个大字符串
+        for (String str : stack) {
+            stringBuilder.append(str);
+        }
+
+        // 使用连接后的大字符串的 hashCode 作为 hashCode 方法的返回值
+        return Objects.hash(stringBuilder.toString());
     }
 
     public static void main(String[] args) {

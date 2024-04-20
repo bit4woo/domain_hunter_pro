@@ -8,6 +8,7 @@ import java.util.List;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 
+import config.DataLoadManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -28,12 +29,10 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	private static String Version = This.class.getPackage().getImplementationVersion();
 	private static String Author = "by bit4woo";
 	private static String github = "https://github.com/bit4woo/domain_hunter_pro";
-	private static final String Extension_Setting_Name_Line_Config = "domain-Hunter-pro-line-config";
 	private static final String Extension_Setting_Name_DB_File = "DomainHunterProDbFilePath";
-	private static final Logger log = LogManager.getLogger(BurpExtender.class);
 
 	private static GUIMain gui;
-
+	private static DataLoadManager dataLoadManager;
 
 	public static PrintWriter getStdout() {
 		//不同的时候调用这个参数，可能得到不同的值
@@ -66,6 +65,9 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		return gui;
 	}
 
+	public static DataLoadManager getDataLoadManager(){
+		return dataLoadManager;
+	}
 	public static String getExtenderName() {
 		return ExtenderName;
 	}
@@ -80,8 +82,8 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	public void saveDBfilepathToExtension() {
 		//to save domain result to extensionSetting
 		//仅仅存储sqllite数据库的名称,也就是domainResult的项目名称
-		if (gui.getCurrentDBFile() != null) {
-			String dbfilepath = gui.getCurrentDBFile().getAbsolutePath();
+		if (dataLoadManager.getCurrentDBFile() != null) {
+			String dbfilepath = dataLoadManager.getCurrentDBFile().getAbsolutePath();
 			stdout.println("Saving Current DB File Path To Disk: " + dbfilepath);
 			System.out.println("Loaded DB File Path From Disk: " + dbfilepath);
 			callbacks.saveExtensionSetting(Extension_Setting_Name_DB_File, dbfilepath);
@@ -123,10 +125,11 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		SwingUtilities.invokeLater(new Runnable() {//create GUI
 			public void run() {
 				gui = new GUIMain(BurpExtender.this);
+				dataLoadManager = DataLoadManager.loadFromDisk(gui);
 				callbacks.addSuiteTab(BurpExtender.this);
 				//这里的BurpExtender.this实质是指ITab对象，也就是getUiComponent()中的contentPane.这个参数由GUI()函数初始化。
 				//如果这里报java.lang.NullPointerException: Component cannot be null 错误，需要排查contentPane的初始化是否正确。
-				gui.getDataLoadManager().loadDbAndConfig();
+				dataLoadManager.loadDbAndConfig();
 				gui.startLiveCapture();
 			}
 		});
@@ -134,7 +137,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 
 	@Override
 	public void extensionUnloaded() {
-		gui.getDataLoadManager().unloadDbfile(null);
+		dataLoadManager.unloadDbfile(null);
 		gui.stopLiveCapture();
 
 		try {//避免这里错误导致保存逻辑的失效
@@ -150,7 +153,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		}
 
 		try {
-			gui.getDataLoadManager().saveCurrentConfig(null);
+			dataLoadManager.saveCurrentConfig(null);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

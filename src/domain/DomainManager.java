@@ -190,8 +190,8 @@ public class DomainManager {
 
 	public String getSummary() {
 		String filename = "unknown";
-		if (guiMain.getCurrentDBFile() != null) {
-			filename = guiMain.getCurrentDBFile().getName();
+		if (BurpExtender.getDataLoadManager().getCurrentDBFile() != null) {
+			filename = BurpExtender.getDataLoadManager().getCurrentDBFile().getName();
 		}
 		int targetSum = 0;
 		try {

@@ -21,6 +21,7 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import burp.BurpExtender;
 import org.apache.commons.io.FileUtils;
 
 import com.google.common.io.Files;
@@ -61,7 +62,7 @@ public class ConfigPanel extends JPanel{
 			radioButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					config.setValue(radioButton.isSelected()+"");
-					gui.getDataLoadManager().saveCurrentConfig(null);
+					BurpExtender.getDataLoadManager().saveCurrentConfig(null);
 				}
 			});
 
@@ -84,19 +85,19 @@ public class ConfigPanel extends JPanel{
 				public void insertUpdate(DocumentEvent e) {
 					config.setValue(textField.getText());
 					//TODO Check
-					gui.getDataLoadManager().saveCurrentConfig(null);
+					BurpExtender.getDataLoadManager().saveCurrentConfig(null);
 				}
 
 				@Override
 				public void removeUpdate(DocumentEvent e) {
 					config.setValue(textField.getText());
-					gui.getDataLoadManager().saveCurrentConfig(null);
+					BurpExtender.getDataLoadManager().saveCurrentConfig(null);
 				}
 
 				@Override
 				public void changedUpdate(DocumentEvent e) {
 					config.setValue(textField.getText());
-					gui.getDataLoadManager().saveCurrentConfig(null);
+					BurpExtender.getDataLoadManager().saveCurrentConfig(null);
 				}
 			});
 
@@ -161,8 +162,8 @@ public class ConfigPanel extends JPanel{
 					if(!(file.getName().toLowerCase().endsWith(".json"))){
 						file=new File(fc.getCurrentDirectory(),file.getName()+".json");
 					}
-					gui.getDataLoadManager().saveCurrentConfig(null);//burp 用户目录下
-					gui.getDataLoadManager().saveCurrentConfig(file.getAbsolutePath());
+					BurpExtender.getDataLoadManager().saveCurrentConfig(null);//burp 用户目录下
+					BurpExtender.getDataLoadManager().saveCurrentConfig(file.getAbsolutePath());
 					String content= ConfigManager.ToJson();
 					try{
 						if(file.exists()){

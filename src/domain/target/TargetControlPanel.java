@@ -43,7 +43,7 @@ public class TargetControlPanel extends JPanel {
 		addButton.setToolTipText("add Top-Level domain");
 		addButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if (domainPanel.getDomainResult() == null || domainPanel.getGuiMain().getCurrentDBFile() == null) {
+				if (domainPanel.getDomainResult() == null || BurpExtender.getDataLoadManager().getCurrentDBFile() == null) {
 					domainPanel.createOrOpenDB();
 				} else {
 					String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);

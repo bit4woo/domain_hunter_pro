@@ -12,6 +12,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.SwingWorker;
 
+import base.Commons;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -24,13 +25,16 @@ import burp.BurpExtender;
 //专门用于存储数据的对象，即被用户序列化和反序列进行存储的对象。
 
 public class DataLoadManager {
-	private Stack recentProjectDatabaseFiles = new Stack();
+	private Stack recentDbFiles = new Stack();
 	private int recentStackHash = -1;
+	private File currentDBFile;
 	private static GUIMain gui;
 	public static final String localdir = 
 			System.getProperty("user.home")+File.separator+".domainhunter"+File.separator+"DomainHunterProRecent";
 	public static final String defaultConfigFilename = 
 			System.getProperty("user.home")+File.separator+".domainhunter"+File.separator+"DomainHunterToolPanelConfig.json";
+
+
 	//为了fastjson反序列化，必须要有这个函数
 	DataLoadManager(){
 
@@ -40,24 +44,39 @@ public class DataLoadManager {
 		gui = guiMain;
 	}
 	//getter setter为了序列化
-	public Stack getRecentProjectDatabaseFiles() {
-		return recentProjectDatabaseFiles;
+
+	public Stack getRecentDbFiles() {
+		return recentDbFiles;
 	}
 
-	public void setRecentProjectDatabaseFiles(Stack recentProjectDatabaseFiles) {
-		this.recentProjectDatabaseFiles = recentProjectDatabaseFiles;
+	public void setRecentDbFiles(Stack recentDbFiles) {
+		this.recentDbFiles = recentDbFiles;
+	}
+
+	public int getRecentStackHash() {
+		return recentStackHash;
+	}
+
+	public void setRecentStackHash(int recentStackHash) {
+		this.recentStackHash = recentStackHash;
+	}
+
+	public File getCurrentDBFile() {
+		return currentDBFile;
+	}
+
+	public void setCurrentDBFile(File currentDBFile) {
+		this.currentDBFile = currentDBFile;
 	}
 
 	//序列化和反序列化
 	public String toJson(){
-		String modelStr = new Gson().toJson(this);
-		return modelStr;
+		return new Gson().toJson(this);
 	}
 
 
 	public static DataLoadManager fromJson(String modelStr){
-		DataLoadManager model = new Gson().fromJson(modelStr,DataLoadManager.class);
-		return model;
+		return new Gson().fromJson(modelStr,DataLoadManager.class);
 	}
 
 
@@ -81,8 +100,7 @@ public class DataLoadManager {
 		try {
 			if (localFile.exists()) {
 				String jsonstr = FileUtils.readFileToString(localFile,"UTF-8");
-				DataLoadManager manager = fromJson(jsonstr);
-				return manager;
+				return fromJson(jsonstr);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -97,11 +115,10 @@ public class DataLoadManager {
 	///////以下是栈操作////////
 
 	private String popRecentDatabaseFile() {
-		if (recentProjectDatabaseFiles.isEmpty()) {
+		if (recentDbFiles.isEmpty()) {
 			return null;
 		}else {
-			String result = recentProjectDatabaseFiles.pop();
-			return result;
+			return recentDbFiles.pop();
 		}
 	}
 
@@ -109,7 +126,7 @@ public class DataLoadManager {
 		if (StringUtils.isEmpty(dbfilename)||!new File(dbfilename).exists()) {
 			return;
 		}
-		recentProjectDatabaseFiles.push(dbfilename);
+		recentDbFiles.push(dbfilename);
 	}
 
 	///////以下是做为管理者应该具备的能力////////
@@ -126,7 +143,7 @@ public class DataLoadManager {
 		if (StringUtils.isEmpty(dbFilePath)) {
 			return;
 		}
-		gui.loadDataBase(dbFilePath);
+		loadDataBase(dbFilePath);
 		pushRecentDatabaseFile(dbFilePath);//保存最近的加载
 		saveToDisk();
 	}
@@ -138,8 +155,8 @@ public class DataLoadManager {
 	 */
 	public void unloadDbfile(String dbFilePath) {
 		if (StringUtils.isEmpty(dbFilePath)) {
-			if (gui.getCurrentDBFile() != null) {
-				dbFilePath =gui.getCurrentDBFile().getAbsolutePath();
+			if (getCurrentDBFile() != null) {
+				dbFilePath =getCurrentDBFile().getAbsolutePath();
 			}
 		}
 		if (StringUtils.isEmpty(dbFilePath)) {
@@ -147,6 +164,58 @@ public class DataLoadManager {
 		}
 		pushRecentDatabaseFile(dbFilePath);//保存最近的加载
 		saveToDisk();
+	}
+
+
+
+	/**
+	 * 加载数据库文件：
+	 * 1、加载target对象到DomainPanel中的table内
+	 * 2、加载domainManager对象到DomainPanel中的文本框
+	 * 3、加载Title数据到TitlePanel
+	 * @param dbFilePath
+	 */
+	private boolean loadDataBase(String dbFilePath){
+		try {//这其中的异常会导致burp退出
+			System.out.println("=================================");
+			System.out.println("==Start Loading Data From: " + dbFilePath+" "+ Commons.getNowTimeString()+"==");
+			BurpExtender.getStdout().println("==Start Loading Data From: " + dbFilePath+" "+Commons.getNowTimeString()+"==");
+			currentDBFile = new File(dbFilePath);
+			if (!currentDBFile.exists()){
+				BurpExtender.getStdout().println("==Load database file [" + dbFilePath+"] failed,file does not exist "+Commons.getNowTimeString()+"==");
+				return false;
+			}
+
+			gui.getDomainPanel().LoadTargetsData(currentDBFile.toString());
+			gui.getDomainPanel().LoadDomainData(currentDBFile.toString());
+			gui.getTitlePanel().loadData(currentDBFile.toString());
+
+			displayProjectName();
+			System.out.println("==End Loading Data From: "+ dbFilePath+" "+Commons.getNowTimeString() +"==");//输出到debug console
+			BurpExtender.getStdout().println("==End Loading Data From: "+ dbFilePath+" "+Commons.getNowTimeString() +"==");
+			return true;
+		} catch (Exception e) {
+			BurpExtender.getStdout().println("Loading Failed!");
+			e.printStackTrace();//输出到debug console
+			e.printStackTrace(BurpExtender.getStderr());
+			return false;
+		}
+	}
+
+
+	//显示项目名称，加载多个该插件时，进行区分，避免混淆
+	public void displayProjectName() {
+		if (gui.getDomainPanel().getDomainResult() !=null){
+			String name = currentDBFile.getName();
+			//String newName = String.format(BurpExtender.getFullExtenderName()+" [%s]",name);
+			//v2021.8的版本中，邮件菜单会用到插件名称，所以减小名称的长度
+			String newName = String.format(BurpExtender.getExtenderName()+" [%s]",name);
+
+			BurpExtender.getCallbacks().setExtensionName(newName); //新插件名称
+			gui.getProjectMenu().AddDBNameMenuItem(name);
+			gui.getProjectMenu().AddDBNameTab(name);
+			//gui.repaint();//NO need
+		}
 	}
 
 	/**
@@ -210,7 +279,7 @@ public class DataLoadManager {
 		if (isRecentStackChanged()){
 			parentMenu.removeAll();
 
-			List<String> list = recentProjectDatabaseFiles.getItemList();
+			List<String> list = recentDbFiles.getItemList();
 			Collections.reverse(list);
 			for(String item:list) {
 				JMenuItem menuItem = new JMenuItem(new AbstractAction(item) {
@@ -224,10 +293,13 @@ public class DataLoadManager {
 		}
 	}
 	public boolean isRecentStackChanged(){
-		if (recentProjectDatabaseFiles.hashCode() == recentStackHash){
+		if (recentDbFiles.hashCode() == recentStackHash){
 			return false;
 		}else {
-			recentStackHash = recentProjectDatabaseFiles.hashCode();
+			//当一个list，其中的元素发生改变，它的内存地址会改变吗?它的hashcode会改变吗?
+			//在 Java 中，当一个 List 对象的元素发生改变时，它的内存地址不会改变。List 是一个对象引用类型，它保存的是对存储在堆内存中的元素的引用。因此，无论 List 中的元素如何改变，List 对象本身的引用都不会改变。
+			//Java 中的 List 类并没有提供重写 hashCode 方法的行为。因此，List 对象的 hashCode 方法仍然是基于其内存地址计算的，即使列表中的元素发生改变，List 对象的 hashCode 也不会改变。
+			recentStackHash = recentDbFiles.hashCode();
 			return true;
 		}
 	}

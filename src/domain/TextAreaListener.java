@@ -9,6 +9,7 @@ import javax.swing.event.DocumentListener;
 import GUI.GUIMain;
 import GUI.JScrollPanelWithHeader;
 import base.Commons;
+import burp.BurpExtender;
 import dao.DomainDao;
 
 /**
@@ -28,7 +29,7 @@ public class TextAreaListener implements DocumentListener {
 	 */
 	public void saveToDBAndSyncModel(){
 		if (domainPanel.isListenerIsOn()){
-			DomainDao dao = new DomainDao(domainPanel.getGuiMain().currentDBFile);
+			DomainDao dao = new DomainDao(BurpExtender.getDataLoadManager().getCurrentDBFile());
 			Set<String> content = Commons.getSetFromTextArea(TextAreaPanel.getTextArea());
 			TextAreaType type = TextAreaPanel.getTextAreaType();
 			domainPanel.getDomainResult().fillContentByType(type,content);

@@ -61,7 +61,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 
 	public LineTableModel(GUIMain guiMain){
 		this.guiMain = guiMain;
-		titleDao = new TitleDao(guiMain.getCurrentDBFile());
+		titleDao = new TitleDao(BurpExtender.getDataLoadManager().getCurrentDBFile());
 		try{
 			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
 			stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);

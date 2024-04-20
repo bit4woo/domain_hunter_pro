@@ -35,22 +35,20 @@ import title.TitlePanel;
 public class GUIMain extends JFrame {
 
 	//当多个实例都有相同的是static field时，对象间对static属性的修改会互相影响，因为多个对象共享一个属性的copy！！
-	public IBurpExtender burp;
-	public DomainPanel domainPanel;
-	public TitlePanel titlePanel;
-	public ToolPanel toolPanel;
-	public ConfigPanel configPanel;
-	public SearchPanel searchPanel;
-	
-	public JTabbedPane tabbedWrapper;
+	private IBurpExtender burp;
+	private DomainPanel domainPanel;
+	private TitlePanel titlePanel;
+	private ToolPanel toolPanel;
+	private ConfigPanel configPanel;
+	private SearchPanel searchPanel;
 
-	public File currentDBFile;
-	public ProjectMenu projectMenu;
+	private JTabbedPane tabbedWrapper;
 
-	public PrintWriter stdout;
-	public PrintWriter stderr;
+	private ProjectMenu projectMenu;
 
-	public dbFileChooser dbfc = new dbFileChooser();
+	private PrintWriter stdout;
+	private PrintWriter stderr;
+
 	//use to store messageInfo
 	private Set<String> httpsChecked = new CopyOnWriteArraySet<>();
 
@@ -60,7 +58,6 @@ public class GUIMain extends JFrame {
 	//temp variable to identify checked https用于记录已经做过HTTPS证书信息获取的httpService
 
 	private DomainProducer liveAnalysisTread;
-	private DataLoadManager dataLoadManager;
 
 	public DomainPanel getDomainPanel() {
 		return domainPanel;
@@ -92,12 +89,6 @@ public class GUIMain extends JFrame {
 	}
 	public void setSearchPanel(SearchPanel searchPanel) {
 		this.searchPanel = searchPanel;
-	}
-	public File getCurrentDBFile() {
-		return currentDBFile;
-	}
-	public void setCurrentDBFile(File currentDBFile) {
-		this.currentDBFile = currentDBFile;
 	}
 	public ProjectMenu getProjectMenu() {
 		return projectMenu;
@@ -138,13 +129,6 @@ public class GUIMain extends JFrame {
 		this.liveAnalysisTread = liveAnalysisTread;
 	}
 
-	public DataLoadManager getDataLoadManager() {
-		//每次都应该从新从磁盘加载，因为它可能被更改过了
-		return dataLoadManager =DataLoadManager.loadFromDisk(this);
-	}
-	public void setDataLoadManager(DataLoadManager dataLoadManager) {
-		this.dataLoadManager = dataLoadManager;
-	}
 	public void startLiveCapture() {
 		liveAnalysisTread = new DomainProducer(this, liveinputQueue, 9999);//必须是9999，才能保证流量进程不退出。
 		liveAnalysisTread.start();
@@ -185,8 +169,6 @@ public class GUIMain extends JFrame {
 
 		setProjectMenu(new ProjectMenu(this));
 		getProjectMenu().Add();
-		
-		dataLoadManager = getDataLoadManager();
 	}
 	
 	public void renewConfigPanel() {
@@ -218,54 +200,8 @@ public class GUIMain extends JFrame {
 	}
 
 
-	/**
-	 * 加载数据库文件：
-	 * 1、加载target对象到DomainPanel中的table内
-	 * 2、加载domainManager对象到DomainPanel中的文本框
-	 * 3、加载Title数据到TitlePanel
-	 * @param dbFilePath
-	 */
-	public boolean loadDataBase(String dbFilePath){
-		try {//这其中的异常会导致burp退出
-			System.out.println("=================================");
-			System.out.println("==Start Loading Data From: " + dbFilePath+" "+Commons.getNowTimeString()+"==");
-			BurpExtender.getStdout().println("==Start Loading Data From: " + dbFilePath+" "+Commons.getNowTimeString()+"==");
-			currentDBFile = new File(dbFilePath);
-			if (!currentDBFile.exists()){
-				BurpExtender.getStdout().println("==Load database file [" + dbFilePath+"] failed,file does not exist "+Commons.getNowTimeString()+"==");
-				return false;
-			}
 
-			domainPanel.LoadTargetsData(currentDBFile.toString());
-			domainPanel.LoadDomainData(currentDBFile.toString());
-			titlePanel.loadData(currentDBFile.toString());
 
-			displayProjectName();
-			System.out.println("==End Loading Data From: "+ dbFilePath+" "+Commons.getNowTimeString() +"==");//输出到debug console
-			BurpExtender.getStdout().println("==End Loading Data From: "+ dbFilePath+" "+Commons.getNowTimeString() +"==");
-			return true;
-		} catch (Exception e) {
-			BurpExtender.getStdout().println("Loading Failed!");
-			e.printStackTrace();//输出到debug console
-			e.printStackTrace(BurpExtender.getStderr());
-			return false;
-		}
-	}
-
-	//显示项目名称，加载多个该插件时，进行区分，避免混淆
-	public void displayProjectName() {
-		if (domainPanel.getDomainResult() !=null){
-			String name = currentDBFile.getName();
-			//String newName = String.format(BurpExtender.getFullExtenderName()+" [%s]",name);
-			//v2021.8的版本中，邮件菜单会用到插件名称，所以减小名称的长度
-			String newName = String.format(BurpExtender.getExtenderName()+" [%s]",name);
-
-			BurpExtender.getCallbacks().setExtensionName(newName); //新插件名称
-			getProjectMenu().AddDBNameMenuItem(name);
-			getProjectMenu().AddDBNameTab(name);
-			//gui.repaint();//NO need
-		}
-	}
 
 	/*
 	使用数据模型监听后，不需再自行单独保存当前项目了。
@@ -288,7 +224,7 @@ public class GUIMain extends JFrame {
 					}
 					return false;
 				}else {
-					TitleDao titleDao = new TitleDao(dbFilePath.toString());
+					TitleDao titleDao = new TitleDao(dbFilePath);
 					boolean titleSaved  = titleDao.addOrUpdateTitles(getTitlePanel().getTitleTable().getLineTableModel().getLineEntries());
 					if (targetSaved && domainSaved && titleSaved){
 						stdout.println("Save Domain And Title Success! "+ Commons.getNowTimeString());

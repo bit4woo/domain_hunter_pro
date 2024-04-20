@@ -518,7 +518,7 @@ public class DomainPanel extends JPanel {
 			public void mouseClicked(MouseEvent e) {
 				if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2) {//左键双击
 					try {
-						Commons.OpenFolder(guiMain.getCurrentDBFile().getParent());
+						Commons.OpenFolder(BurpExtender.getDataLoadManager().getCurrentDBFile().getParent());
 					} catch (Exception e2) {
 						e2.printStackTrace(stderr);
 					}
@@ -531,7 +531,7 @@ public class DomainPanel extends JPanel {
 			@Override
 			public void mouseEntered(MouseEvent e) {
 				lblSummary.setForeground(Color.RED);
-				lblSummary.setToolTipText(guiMain.getCurrentDBFile().toString());
+				lblSummary.setToolTipText(BurpExtender.getDataLoadManager().getCurrentDBFile().toString());
 			}
 
 			@Override
@@ -596,10 +596,10 @@ public class DomainPanel extends JPanel {
 	 */
 	public void saveDomainDataToDB() {
 		try {
-			File file = guiMain.getCurrentDBFile();
+			File file = BurpExtender.getDataLoadManager().getCurrentDBFile();
 			if (file == null || !file.exists()) {
-				file = guiMain.dbfc.dialog(false,".db");
-				guiMain.setCurrentDBFile(file);
+				file = new dbFileChooser().dialog(false,".db");
+				BurpExtender.getDataLoadManager().setCurrentDBFile(file);
 			}
 			DomainDao dao = new DomainDao(file.toString());
 			dao.saveDomainManager(domainResult);
@@ -796,7 +796,7 @@ public class DomainPanel extends JPanel {
 	 */
 	public File saveDomainOnly() {
 		try {
-			File file = guiMain.dbfc.dialog(false,".db");
+			File file = new dbFileChooser().dialog(false,".db");
 			if (file != null) {
 				DomainDao dao = new DomainDao(file.toString());
 				TargetDao dao1 = new TargetDao(file.toString());
@@ -830,7 +830,7 @@ public class DomainPanel extends JPanel {
 	}
 
 	public void backupDB(String keyword) {
-		File file = guiMain.getCurrentDBFile();
+		File file = BurpExtender.getDataLoadManager().getCurrentDBFile();
 		if (file == null) return;
 		String suffix = ".bak" + Commons.getNowTimeString();
 		if (!StringUtils.isEmpty(keyword)) {
@@ -847,7 +847,7 @@ public class DomainPanel extends JPanel {
 	}
 
 	public void renameDB() {
-		File file = guiMain.getCurrentDBFile();
+		File file = BurpExtender.getDataLoadManager().getCurrentDBFile();
 		if (file == null) return;
 		
 		String currentName = file.getName();
@@ -861,7 +861,7 @@ public class DomainPanel extends JPanel {
 				File newFile = new File(currentPath+File.separator+newFilename);
 				FileUtils.moveFile(file, newFile);
 				if (newFile.exists()) {
-					guiMain.getDataLoadManager().loadDbfileToHunter(newFile.toString());
+					BurpExtender.getDataLoadManager().loadDbfileToHunter(newFile.toString());
 				}
 			} catch (IOException e) {
 				e.printStackTrace(stderr);
