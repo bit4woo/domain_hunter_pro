@@ -33,6 +33,10 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 
 	private static GUIMain gui;
 	private static DataLoadManager dataLoadManager;
+	// 通常情况下，当使用了静态变量，多个实例之间对静态变量的修改会相互影响，见src/test/StaticFieldTest.java
+	// 然而为了快捷访问某些对象（通过类名称访问很直接），又会常常使用静态变量。
+	// 好消息是：burp的插件机制是每个插件实例都由独立的类加载器加载，保证了插件之间的相互隔离。也就是说，使用了静态变量也没有关系。
+	// 后续解决方案：创建一个context对象，各个对象构造函数都传递这个context对象。当要访问某个对象时，就通过context对象进行访问。
 
 	public static PrintWriter getStdout() {
 		//不同的时候调用这个参数，可能得到不同的值

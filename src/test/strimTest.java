@@ -15,7 +15,7 @@ public class strimTest {
 			items.add(aaa);
 			for (String item:items) {
 				try {
-					item = item.strip();
+//					item = item.strip();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -42,7 +42,7 @@ public class strimTest {
 			items.add(aaa);
 			for (String item : items) {
 				try {
-					item = item.strip();
+//					item = item.strip();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
