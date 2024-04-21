@@ -144,7 +144,8 @@ public class SearchEngine {
 				} else if (type.equals(SearchType.IP)) {
 					value = String.format("ip=\"%s\"", value);
 				} else if (type.equals(SearchType.SubDomain)) {
-					value = String.format("domain=\"%s\"", value);
+					//value = String.format("domain=\"%s\"", value);
+					//直接搜索原始字符串，反而有更多结果
 				} else if(type.equals(SearchType.Subnet)) {
 					value = String.format("ip=\"%s\"", value);
 				} else if (type.equals(SearchType.Title)) {
