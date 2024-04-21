@@ -237,5 +237,13 @@
 			<artifactId>jsoup</artifactId>
 			<version>1.14.3</version> <!-- 使用最新版本 -->
 		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/commons-validator/commons-validator -->
+		<dependency>
+			<groupId>commons-validator</groupId>
+			<artifactId>commons-validator</artifactId>
+			<version>1.8.0</version>
+		</dependency>
+
 	</dependencies>
 </project>

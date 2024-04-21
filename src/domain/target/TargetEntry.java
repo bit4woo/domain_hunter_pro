@@ -1,23 +1,18 @@
 package domain.target;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.commons.io.FileUtils;
-
-import com.alibaba.fastjson.JSON;
-import com.google.common.net.InternetDomainName;
-
 import base.Commons;
 import burp.BurpExtender;
+import com.alibaba.fastjson.JSON;
+import com.google.common.net.InternetDomainName;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.validator.routines.EmailValidator;
 import utils.DomainNameUtils;
 import utils.IPAddressUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 
 public class TargetEntry {
 	private String target = "";//根域名、网段、或者IP
@@ -50,10 +45,14 @@ public class TargetEntry {
 		this(input,true);
 	}
 
-
 	public TargetEntry(String input,boolean autoSub) {
 
 		String domain = DomainNameUtils.clearDomainWithoutPort(input);
+
+		if (EmailValidator.getInstance().isValid(domain)){
+			domain = domain.substring(domain.indexOf("@")+1);
+		}
+
 		if (DomainNameUtils.isValidDomain(domain)) {
 			type = Target_Type_Domain;
 
@@ -73,8 +72,7 @@ public class TargetEntry {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}*/
-		}
-		else if (IPAddressUtils.isValidSubnet(domain)) {
+		} else if (IPAddressUtils.isValidSubnet(domain)) {
 			type = Target_Type_Subnet;
 			target = domain;
 		}

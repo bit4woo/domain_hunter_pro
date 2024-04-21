@@ -36,10 +36,8 @@ public class TextAreaMenu extends JPopupMenu {
 	JTextArea textArea;
 	String selectedText;
 	List<String> selectedItems = new ArrayList<>();
-	private DomainPanel domainPanel;
 
 	TextAreaMenu(DomainPanel domainPanel,JTextArea textArea){
-		this.domainPanel = domainPanel;
 		this.textArea = textArea;
 		selectedText = textArea.getSelectedText();
 		if (selectedText != null && !selectedText.equalsIgnoreCase("")){
@@ -127,7 +125,7 @@ public class TextAreaMenu extends JPopupMenu {
 				for (String item:selectedItems) {
 					try {
 						String url= "https://github.com/search?q=%s&type=Code";
-						String keyword= String.format("\"%s\" \"jdbc.url\"",item);
+						String keyword= String.format("\"%s\"",item);
 						URI uri = new URI(String.format(url, URLEncoder.encode(keyword)));
 						Desktop desktop = Desktop.getDesktop();
 						if(Desktop.isDesktopSupported()&&desktop.isSupported(Desktop.Action.BROWSE)){
