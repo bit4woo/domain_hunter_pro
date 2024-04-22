@@ -56,10 +56,14 @@ public class DataLoadManager {
 	public int getRecentStackHash() {
 		return recentStackHash;
 	}
-
+	
+	/**
+	 * 不使用set函数，以便反序列化时不修改其初始值，这样才能在第一次加载时创建recent menu
+	 * @param recentStackHash
+	 *
 	public void setRecentStackHash(int recentStackHash) {
 		this.recentStackHash = recentStackHash;
-	}
+	}*/
 
 	public File getCurrentDBFile() {
 		return currentDBFile;
