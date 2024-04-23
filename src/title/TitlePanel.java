@@ -22,6 +22,8 @@ import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.TableRowSorter;
 
 import GUI.GUIMain;
@@ -37,7 +39,7 @@ import utils.IPAddressUtils;
 public class TitlePanel extends JPanel {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 1L;
 	private JPanel buttonPanel;
@@ -443,11 +445,27 @@ public class TitlePanel extends JPanel {
 	}
 
 	private void loadData(LineTableModel titleTableModel){
-		
+
 		//实现点击排序
-		TableRowSorter<LineTableModel> tableRowSorter = new TableRowSorter<LineTableModel>(titleTableModel);
+		TableRowSorter<LineTableModel> tableRowSorter = new TableRowSorter<>(titleTableModel);
 		titleTable.setRowSorter(tableRowSorter);
-		
+
+		if (titleTableModel != null && tableRowSorter != null) {
+			titleTableModel.addTableModelListener(new TableModelListener() {
+				@Override
+				public void tableChanged(TableModelEvent e) {
+					if (e.getType() == TableModelEvent.INSERT ||
+							e.getType() == TableModelEvent.DELETE ||
+							e.getType() == TableModelEvent.UPDATE) {
+						tableRowSorter.modelStructureChanged(); // 更新排序器的视图
+						//addNewLineEntry中fireTablexxx经常发生越界错误，大概率是因为排序器和数据模型不同步导致的
+					}
+				}
+			});
+		}else {
+			System.out.println("TableModel or TableRowSorter is null");
+		}
+
 		titleTable.setModel(titleTableModel);
 		//IndexOutOfBoundsException size为0，为什么会越界？
 		//!!!注意：这里必须先setRowSorter，然后再setModel。否则就会出现越界问题。因为当setModel时，会触发数据变更事件，这个时候会调用Sorter。
@@ -456,6 +474,8 @@ public class TitlePanel extends JPanel {
 		//titleTable.setAutoCreateRowSorter(true);//这样应该也可以❎，
 		//这里设置后就进行了创建，创建过程会getModel这个时候新model还未设置呢，保险起见不使用这个方式
 		//titleTable.setModel(titleTableModel);
+
+
 
 		int row = titleTableModel.getLineEntries().size();
 		System.out.println(row+" title entries loaded from database file");
