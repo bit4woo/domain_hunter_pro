@@ -693,14 +693,18 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			try {
 				LineEntry entry = lineEntries.get(i);
 				if (entry == null) {
-					throw new ArrayIndexOutOfBoundsException("can't find item with index "+i);
+					continue;
 				}
-				String url = entry.getUrl();
-				String host = entry.getHost();
-				int port = entry.getPort();
+				if (entry.getEntrySource().equalsIgnoreCase(LineEntry.Source_Manual_Saved)){
+					continue;
+				}
 				if (entry.getCertDomainSet().contains("ingress.local")){
 					continue;
 				}
+
+				String url = entry.getUrl();
+				String host = entry.getHost();
+				int port = entry.getPort();
 
 				int type = model.assetType(host);
 				//规则1
@@ -726,8 +730,8 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 							}
 						}
 
-						if (uselessCount == certDomains.size() && 
-								(entry.getEntrySource().equals(LineEntry.Source_Custom_Input) || 
+						if (uselessCount == certDomains.size() &&
+								(entry.getEntrySource().equals(LineEntry.Source_Custom_Input) ||
 										entry.getEntrySource().equals(LineEntry.Source_Subnet_Extend))
 								) {
 							guiMain.getDomainPanel().getDomainResult().getSpecialPortTargets().remove(host);
@@ -1014,7 +1018,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	}
 
 	/**
-	 * 
+	 *
 	 * 这个方法更新了URL的比对方法，无论是否包含默认端口都可以成功匹配
 	 */
 	public LineEntry findLineEntry(String url) {//这里的URL需要包含默认端口!!!
@@ -1073,7 +1077,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 
 
 	/**
-	 * 
+	 *
 	 * find all lineEntries base host and port，通常根据IP+端口来确定一个服务。
 	 */
 	public List<LineEntry> findLineEntriesByHostAndPort(String host,int port) {//
@@ -1102,7 +1106,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 
 	/**
 	 * 查找完全一模一样的数据包（带时间戳锚点的URL可以不同）
-	 * 
+	 *
 	 * 相同IP和端口,URL path下，即使域名不同，返回包不同（页面包含随机js、css链接），只要status和length相同，就是重复的web服务了
 	 */
 	public void markFullSameEntries(LineEntry entry) {//
