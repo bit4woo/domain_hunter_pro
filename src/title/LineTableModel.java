@@ -995,20 +995,22 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		LineEntry ret = lineEntries.put(key,lineEntry);
 		//以前的做法是，put之后再次统计size来判断是新增还是替换，这种方法在多线程时可能不准确，
 		//concurrentHashMap的put方法会在替换时返回原来的值，可用于判断是替换还是新增
+		titleDao.addOrUpdateTitle(lineEntry);//写入数据库
+
 		int index = lineEntries.IndexOfKey(key);
 		try {
 			if (ret == null) {
 				fireTableRowsInserted(index, index);
 				//出错只会暂时影响显示，不影响数据内容，不再打印
 				//这里偶尔出现IndexOutOfBoundsException错误，但是debug发现javax.swing.DefaultRowSorter.checkAgainstModel在条件为false时(即未越界)抛出了异常，奇怪！
+				//大概率是因为排序器和数据模型不同步导致的，但是每次同步排序器会导致界面数据不停刷新，这个过程中难以操作数据表。
 			}else {
 				fireTableRowsUpdated(index, index);
 			}
 		} catch (Exception e) {
-			e.printStackTrace(stderr);
+			//e.printStackTrace(stderr);
 		}
 
-		titleDao.addOrUpdateTitle(lineEntry);//写入数据库
 		//need to use row-1 when add setRowSorter to table. why??
 		//https://stackoverflow.com/questions/6165060/after-adding-a-tablerowsorter-adding-values-to-model-cause-java-lang-indexoutofb
 		//fireTableRowsInserted(newsize-1, newsize-1);

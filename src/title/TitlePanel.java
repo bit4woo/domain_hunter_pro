@@ -442,7 +442,8 @@ public class TitlePanel extends JPanel {
 		TableRowSorter<LineTableModel> tableRowSorter = new TableRowSorter<>(titleTableModel);
 		titleTable.setRowSorter(tableRowSorter);
 
-		if (titleTableModel != null && tableRowSorter != null) {
+		boolean enable =false;//deprecate这段代码
+		if (enable && titleTableModel != null && tableRowSorter != null) {
 			titleTableModel.addTableModelListener(new TableModelListener() {
 				@Override
 				public void tableChanged(TableModelEvent e) {
@@ -450,21 +451,10 @@ public class TitlePanel extends JPanel {
 							e.getType() == TableModelEvent.DELETE ||
 							e.getType() == TableModelEvent.UPDATE) {
 						//addNewLineEntry中fireTablexxx经常发生越界错误，大概率是因为排序器和数据模型不同步导致的
-						tableRowSorter.modelStructureChanged(); // 更新排序器的视图，这会导致排序被重置
-                        /*
-						List<? extends RowSorter.SortKey> currentSortKeys = tableRowSorter.getSortKeys();
-						tableRowSorter.modelStructureChanged(); // 更新排序器的视图，这会导致排序被重置
-                        if (currentSortKeys != null && !currentSortKeys.isEmpty()) {
-                            tableRowSorter.setSortKeys(currentSortKeys); // 恢复之前的排序状态
-							//java.lang.IllegalArgumentException: Comparison method violates its general contract!
-                        }
-                        */
-
+						tableRowSorter.modelStructureChanged(); // 更新排序器的视图，这会导致排序被重置，导致界面不停刷新，影响数据操作，Deprecated
 					}
 				}
 			});
-		}else {
-			System.out.println("TableModel or TableRowSorter is null");
 		}
 
 		titleTable.setModel(titleTableModel);
