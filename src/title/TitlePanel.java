@@ -449,12 +449,17 @@ public class TitlePanel extends JPanel {
 					if (e.getType() == TableModelEvent.INSERT ||
 							e.getType() == TableModelEvent.DELETE ||
 							e.getType() == TableModelEvent.UPDATE) {
-                        List<? extends RowSorter.SortKey> currentSortKeys = tableRowSorter.getSortKeys();
+						//addNewLineEntry中fireTablexxx经常发生越界错误，大概率是因为排序器和数据模型不同步导致的
+						tableRowSorter.modelStructureChanged(); // 更新排序器的视图，这会导致排序被重置
+                        /*
+						List<? extends RowSorter.SortKey> currentSortKeys = tableRowSorter.getSortKeys();
 						tableRowSorter.modelStructureChanged(); // 更新排序器的视图，这会导致排序被重置
                         if (currentSortKeys != null && !currentSortKeys.isEmpty()) {
                             tableRowSorter.setSortKeys(currentSortKeys); // 恢复之前的排序状态
+							//java.lang.IllegalArgumentException: Comparison method violates its general contract!
                         }
-						//addNewLineEntry中fireTablexxx经常发生越界错误，大概率是因为排序器和数据模型不同步导致的
+                        */
+
 					}
 				}
 			});
