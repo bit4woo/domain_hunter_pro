@@ -26,7 +26,8 @@ import burp.BurpExtender;
 
 public class DataLoadManager {
 	private Stack recentDbFiles = new Stack();
-	private int recentStackHash = -1;
+	private transient int recentStackHash = -1;
+	//使用transient便反序列化时不处理这个field，避免修改其初始值，这样才能在第一次加载时创建recent menu
 	private File currentDBFile;
 	private static GUIMain gui;
 	public static final String localdir = 
@@ -52,18 +53,6 @@ public class DataLoadManager {
 	public void setRecentDbFiles(Stack recentDbFiles) {
 		this.recentDbFiles = recentDbFiles;
 	}
-
-	public int getRecentStackHash() {
-		return recentStackHash;
-	}
-	
-	/**
-	 * 不使用set函数，以便反序列化时不修改其初始值，这样才能在第一次加载时创建recent menu
-	 * @param recentStackHash
-	 *
-	public void setRecentStackHash(int recentStackHash) {
-		this.recentStackHash = recentStackHash;
-	}*/
 
 	public File getCurrentDBFile() {
 		return currentDBFile;
