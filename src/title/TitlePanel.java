@@ -12,15 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -457,7 +449,11 @@ public class TitlePanel extends JPanel {
 					if (e.getType() == TableModelEvent.INSERT ||
 							e.getType() == TableModelEvent.DELETE ||
 							e.getType() == TableModelEvent.UPDATE) {
-						tableRowSorter.modelStructureChanged(); // 更新排序器的视图
+                        List<? extends RowSorter.SortKey> currentSortKeys = tableRowSorter.getSortKeys();
+						tableRowSorter.modelStructureChanged(); // 更新排序器的视图，这会导致排序被重置
+                        if (currentSortKeys != null && !currentSortKeys.isEmpty()) {
+                            tableRowSorter.setSortKeys(currentSortKeys); // 恢复之前的排序状态
+                        }
 						//addNewLineEntry中fireTablexxx经常发生越界错误，大概率是因为排序器和数据模型不同步导致的
 					}
 				}
