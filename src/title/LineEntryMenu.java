@@ -7,11 +7,8 @@ import java.awt.event.ActionEvent;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -23,26 +20,23 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingWorker;
 
+import com.bit4woo.utilbox.burp.HelperPlus;
+import com.bit4woo.utilbox.utils.SystemUtils;
+
 import ASN.ASNEntry;
 import ASN.ASNQuery;
 import GUI.GUIMain;
-import InternetSearch.APISearchAction;
-import InternetSearch.BrowserSearchAction;
 import InternetSearch.SearchEngine;
 import Tools.ToolPanel;
 import base.Commons;
 import base.IndexedHashMap;
 import burp.BurpExtender;
-import burp.Getter;
 import burp.IBurpExtenderCallbacks;
 import burp.LineEntryMenuForBurp;
-import burp.SystemUtils;
 import config.ConfigManager;
 import config.ConfigName;
 import title.search.SearchNumbericDork;
 import title.search.SearchStringDork;
-import utils.DomainNameUtils;
-import utils.IPAddressUtils;
 import utils.PortScanUtils;
 
 public class LineEntryMenu extends JPopupMenu {
@@ -768,11 +762,8 @@ public class LineEntryMenu extends JPopupMenu {
 							}
 
 							byte[] request = entry.getRequest();
-							Getter getter = new Getter(callbacks.getHelpers());
-							LinkedHashMap<String, String> headers = getter.getHeaderMap(true,request);
-							headers.put("Cookie",cookieValue);
-							byte[] body = getter.getBody(true,request);
-							request = callbacks.getHelpers().buildHttpMessage(getter.headerMapToHeaderList(headers),body);
+							HelperPlus getter = BurpExtender.getHelperPlus();
+							request = getter.addOrUpdateHeader(true, request, "Cookie", cookieValue);
 
 							String tabCaption = row+"DH";
 							callbacks.sendToRepeater(

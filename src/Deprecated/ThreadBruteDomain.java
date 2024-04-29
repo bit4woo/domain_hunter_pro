@@ -63,7 +63,7 @@ class ThreadBruteDomain{
         stdout.println("checking wildcard DNS record");
         for (String rootDomain: rootDomains){
             String badDomain = "domain-hunter-pro-test."+rootDomain;
-            Set<String> ipset = DomainNameUtils.dnsquery(badDomain).get("IP");
+            Set<String> ipset = DomainUtils.dnsquery(badDomain).get("IP");
             badRecords.put(rootDomain,ipset);
         }
 

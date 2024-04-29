@@ -25,8 +25,8 @@ import burp.BurpExtender;
 import config.ConfigManager;
 import config.ConfigName;
 import title.search.SearchStringDork;
-import utils.DomainNameUtils;
-import utils.IPAddressUtils;
+import com.bit4woo.utilbox.utils.DomainUtils;
+import com.bit4woo.utilbox.utils.IPAddressUtils;
 import utils.PortScanUtils;
 
 public class TextAreaMenu extends JPopupMenu {
@@ -181,13 +181,13 @@ public class TextAreaMenu extends JPopupMenu {
 						//https://bgp.he.net/net/143.92.111.0/24
 						//https://bgp.he.net/ip/143.92.127.1
 						String url =null;
-						if (IPAddressUtils.isValidIP(target)){
+						if (IPAddressUtils.isValidIPv4(target)){
 							url = "https://bgp.he.net/ip/"+target;
 						}
 						if (IPAddressUtils.isValidSubnet(target)){
 							url = "https://bgp.he.net/net/"+target;
 						}
-						if (DomainNameUtils.isValidDomain(target)){
+						if (DomainUtils.isValidDomainNoPort(target)){
 							url = "https://bgp.he.net/dns/"+target;
 						}
 						if (url!= null){

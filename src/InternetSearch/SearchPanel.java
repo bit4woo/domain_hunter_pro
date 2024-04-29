@@ -28,13 +28,13 @@ import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 
+import com.bit4woo.utilbox.utils.IPAddressUtils;
 import com.google.gson.Gson;
 
 import GUI.GUIMain;
 import burp.BurpExtender;
-import burp.IPAddressUtils;
 import title.WebIcon;
-import utils.DomainNameUtils;
+import com.bit4woo.utilbox.utils.DomainUtils;
 import utils.URLUtils;
 
 public class SearchPanel extends JPanel {
@@ -256,9 +256,9 @@ public class SearchPanel extends JPanel {
 						String content = textFieldSearch.getText();
 						String searchType=null;
 
-						if(DomainNameUtils.isValidDomain(content)) {
+						if(DomainUtils.isValidDomainNoPort(content)) {
 							searchType = SearchType.SubDomain;
-						}else if (IPAddressUtils.isValidIP(content)) {
+						}else if (IPAddressUtils.isValidIPv4(content)) {
 							searchType = SearchType.IP;
 						}else {
 							searchType = SearchType.OriginalString;

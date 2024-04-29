@@ -54,9 +54,13 @@ import config.ConfigName;
 import config.ConfigPanel;
 import domain.CertInfo;
 import title.WebIcon;
-import utils.DomainNameUtils;
+import com.bit4woo.utilbox.utils.DomainUtils;
+import com.bit4woo.utilbox.utils.EmailUtils;
+
 import utils.GrepUtils;
-import utils.IPAddressUtils;
+import com.bit4woo.utilbox.utils.IPAddressUtils;
+import com.bit4woo.utilbox.utils.TextUtils;
+import com.bit4woo.utilbox.utils.UrlUtils;
 
 /**
  * 所有配置的修改，界面的操作，都立即写入LineConfig对象，如有必要保存到磁盘，再调用一次SaveConfig函数，思路要清晰
@@ -228,10 +232,9 @@ public class ToolPanel extends JPanel {
 				String content = inputTextArea.getText();
 				//stdout.println(content);
 				if (null != content) {
-					Set<String> domains = GrepUtils.grepDomain(content);
-					ArrayList<String> tmpList = new ArrayList<String>(domains);
-					Collections.sort(tmpList, new DomainComparator());
-					outputTextArea.setText(String.join(System.lineSeparator(), tmpList));
+					List<String> domains = DomainUtils.grepDomainAndPort(content);
+					Collections.sort(domains, new DomainComparator());
+					outputTextArea.setText(String.join(System.lineSeparator(), domains));
 					guiMain.getDomainPanel().getDomainResult().addIfValid(domains);
 				}
 			}
@@ -243,10 +246,9 @@ public class ToolPanel extends JPanel {
 				String content = inputTextArea.getText();
 				//stdout.println(content);
 				if (null != content) {
-					Set<String> domains = GrepUtils.grepDomainNoPort(content);
-					ArrayList<String> tmpList = new ArrayList<String>(domains);
-					Collections.sort(tmpList, new DomainComparator());
-					outputTextArea.setText(String.join(System.lineSeparator(), tmpList));
+					List<String> domains = DomainUtils.grepDomainNoPort(content);
+					Collections.sort(domains, new DomainComparator());
+					outputTextArea.setText(String.join(System.lineSeparator(), domains));
 					guiMain.getDomainPanel().getDomainResult().addIfValid(domains);
 				}
 			}
@@ -258,19 +260,19 @@ public class ToolPanel extends JPanel {
 			protected void action() {
 				String content = inputTextArea.getText();
 				if (null != content) {
-					List<String> urls = GrepUtils.grepURL(content);
+					List<String> urls = UrlUtils.grepUrls(content);
 					outputTextArea.setText(String.join(System.lineSeparator(), urls));
 				}
 			}
 		};
 
 
-		JButton btnFindUrls1 = new BackGroundButton("Find URL 1") {
+		JButton btnFindUrls1 = new BackGroundButton("Find URL (NotStartWith/)") {
 			@Override
 			protected void action() {
 				String content = inputTextArea.getText();
 				if (null != content) {
-					List<String> urls = GrepUtils.grepURL1(content);
+					List<String> urls = UrlUtils.grepUrlPathNotStartWithSlash(content);
 					outputTextArea.setText(String.join(System.lineSeparator(), urls));
 				}
 			}
@@ -285,7 +287,7 @@ public class ToolPanel extends JPanel {
 					List<String> result = new ArrayList<String>();
 
 					for (String item:lines) {
-						if (GrepUtils.uselessExtension(item)) {
+						if (UrlUtils.uselessExtension(item)) {
 							continue;
 						}else {
 							result.add(item);
@@ -303,7 +305,7 @@ public class ToolPanel extends JPanel {
 			protected void action() {
 				String content = inputTextArea.getText();
 				if (null != content) {
-					List<String> iplist = GrepUtils.grepIP(content);
+					List<String> iplist = IPAddressUtils.grepIPv4(content);
 					outputTextArea.setText(String.join(System.lineSeparator(), iplist));
 				}
 			}
@@ -314,7 +316,7 @@ public class ToolPanel extends JPanel {
 			protected void action() {
 				String content = inputTextArea.getText();
 				if (null != content) {
-					List<String> iplist = GrepUtils.grepPublicIP(content);
+					List<String> iplist = IPAddressUtils.grepPublicIPv4(content);
 					outputTextArea.setText(String.join(System.lineSeparator(), iplist));
 				}
 			}
@@ -326,7 +328,7 @@ public class ToolPanel extends JPanel {
 			protected void action() {
 				String content = inputTextArea.getText();
 				if (null != content) {
-					List<String> iplist = GrepUtils.grepPrivateIP(content);
+					List<String> iplist = IPAddressUtils.grepPrivateIPv4(content);
 					outputTextArea.setText(String.join(System.lineSeparator(), iplist));
 				}
 			}
@@ -338,7 +340,7 @@ public class ToolPanel extends JPanel {
 			protected void action() {
 				String content = inputTextArea.getText();
 				if (null != content) {
-					List<String> iplist = GrepUtils.grepIPAndPort(content);
+					List<String> iplist = IPAddressUtils.grepIPAndPort(content);
 					outputTextArea.setText(String.join(System.lineSeparator(), iplist));
 				}
 			}
@@ -352,7 +354,7 @@ public class ToolPanel extends JPanel {
 					List<String> result = new ArrayList<String>();
 					List<String> lines = Commons.textToLines(content);
 					for (String line:lines) {
-						List<String> portlist = GrepUtils.grepPort(line);
+						List<String> portlist = IPAddressUtils.grepPort(line);
 						result.addAll(portlist);
 					}
 					outputTextArea.setText(String.join(System.lineSeparator(), result));
@@ -434,19 +436,19 @@ public class ToolPanel extends JPanel {
 				if (StringUtils.isNotEmpty(content)) {
 					List<String> result = new ArrayList<String>();
 
-					List<String> iplist = GrepUtils.grepIP(content);
+					List<String> iplist = IPAddressUtils.grepIPv4(content);
 					List<String> lines = Commons.textToLines(content);
 
 					for (String line:lines) {
 						if (line.toLowerCase().contains("ssl")) {
-							List<String> portlist = GrepUtils.grepPort(line);
+							List<String> portlist = IPAddressUtils.grepPort(line);
 							for (String port:portlist) {
 								for (String host:iplist) {
 									result.add("https://"+host+":"+port);
 								}
 							}
 						}else if (line.toLowerCase().contains("http")) {
-							List<String> portlist = GrepUtils.grepPort(line);
+							List<String> portlist = IPAddressUtils.grepPort(line);
 							for (String port:portlist) {
 								for (String host:iplist) {
 									result.add("http://"+host+":"+port);
@@ -470,8 +472,8 @@ public class ToolPanel extends JPanel {
 
 					List<String> result = new ArrayList<String>();
 
-					List<String> iplist = GrepUtils.grepIP(content);
-					List<String> portlist = GrepUtils.grepPort(content);
+					List<String> iplist = IPAddressUtils.grepIPv4(content);
+					List<String> portlist = IPAddressUtils.grepPort(content);
 
 					for (String host:iplist) {
 						for (String port:portlist) {
@@ -491,7 +493,7 @@ public class ToolPanel extends JPanel {
 			protected void action() {
 				String content = inputTextArea.getText();
 				if (null != content) {
-					List<String> subnets = GrepUtils.grepSubnet(content);
+					List<String> subnets = IPAddressUtils.grepSubnet(content);
 					outputTextArea.setText(String.join(System.lineSeparator(), subnets));
 				}
 			}
@@ -503,7 +505,7 @@ public class ToolPanel extends JPanel {
 			protected void action() {
 				String content = inputTextArea.getText();
 				if (null != content) {
-					Set<String> emails = GrepUtils.grepEmail(content);
+					List<String> emails = EmailUtils.grepEmail(content);
 					outputTextArea.setText(String.join(System.lineSeparator(), emails));
 					guiMain.getDomainPanel().getDomainResult().addIfValidEmail(emails);
 				}
@@ -638,10 +640,10 @@ public class ToolPanel extends JPanel {
 					Iterator<String> it = domains.iterator();
 					while (it.hasNext()) {
 						String domain = it.next();
-						if (IPAddressUtils.isValidIP(domain)) {//目标是一个IP
+						if (IPAddressUtils.isValidIPv4(domain)) {//目标是一个IP
 							result.add(domain);
-						} else if (DomainNameUtils.isValidDomain(domain)) {//目标是域名
-							HashMap<String, Set<String>> temp = DomainNameUtils.dnsquery(domain,null);
+						} else if (DomainUtils.isValidDomainNoPort(domain)) {//目标是域名
+							HashMap<String, Set<String>> temp = DomainUtils.dnsQuery(domain,null);
 							Set<String> IPSet = temp.get("IP");
 							result.addAll(IPSet);
 						}
@@ -660,7 +662,7 @@ public class ToolPanel extends JPanel {
 			protected void action() {
 				try {
 					String content = inputTextArea.getText();
-					List<String> result = GrepUtils.grepChinese(content);
+					List<String> result = TextUtils.grepChinese(content);
 					outputTextArea.setText(String.join(System.lineSeparator(), result));
 				} catch (Exception e1) {
 					outputTextArea.setText(e1.getMessage());

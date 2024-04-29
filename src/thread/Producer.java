@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 
+import com.bit4woo.utilbox.utils.DomainUtils;
+
 import GUI.GUIMain;
 import base.IndexedHashMap;
 import burp.BurpExtender;
@@ -17,7 +19,6 @@ import burp.IExtensionHelpers;
 import config.ConfigManager;
 import config.ConfigName;
 import title.LineEntry;
-import utils.DomainToURLs;
 
 /** 
  * @author bit4woo
@@ -73,7 +74,7 @@ public class Producer extends Thread {//Producer do
 				Map.Entry<String,String> entry = domainQueue.take();
 				String host = entry.getKey();
 				String type = entry.getValue();
-				Set<URL> urls = new DomainToURLs(host).getUrls();
+				Set<URL> urls = new HashSet<>(new DomainUtils().toURLs(host));
 
 				List<LineEntry> tempEntries = new ArrayList<LineEntry>();
 				for (URL Url:urls) {

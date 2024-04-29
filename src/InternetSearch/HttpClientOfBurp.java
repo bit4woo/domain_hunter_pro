@@ -3,9 +3,10 @@ package InternetSearch;
 import java.net.URL;
 import java.util.Date;
 
+import com.bit4woo.utilbox.burp.HelperPlus;
+
 import base.Commons;
 import burp.BurpExtender;
-import burp.HelperPlus;
 import burp.IBurpExtenderCallbacks;
 import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
@@ -56,7 +57,7 @@ public class HttpClientOfBurp {
 		IHttpService service =getHttpService(url);
 		IHttpRequestResponse message = callbacks.makeHttpRequest(service, byteRequest);
 
-		HelperPlus getter = new HelperPlus(helpers);
+		HelperPlus getter = BurpExtender.getHelperPlus();
 		int code = getter.getStatusCode(message);
 		
 		if (ConfigManager.getBooleanConfigByKey(ConfigName.ApiReqToTitle)

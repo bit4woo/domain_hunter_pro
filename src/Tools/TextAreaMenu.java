@@ -10,10 +10,11 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextArea;
 
+import com.bit4woo.utilbox.utils.IPAddressUtils;
+
 import GUI.GUIMain;
 import base.Commons;
 import burp.BurpExtender;
-import burp.IPAddressUtils;
 import config.ConfigManager;
 import config.ConfigName;
 import domain.DomainManager;
@@ -93,7 +94,7 @@ public class TextAreaMenu extends JPopupMenu {
 				DomainManager domainResult = guiMain.getDomainPanel().getDomainResult();
 				for (String item:selectedItems) {
 					try {
-						if (IPAddressUtils.isValidIP(item)) {
+						if (IPAddressUtils.isValidIPv4(item)) {
 							domainResult.getSpecialPortTargets().add(item);
 						}
 					} catch (Exception e2) {

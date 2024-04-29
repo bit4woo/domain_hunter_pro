@@ -21,16 +21,16 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Entities;
 import org.jsoup.parser.Parser;
 
+import com.bit4woo.utilbox.burp.HelperPlus;
+import com.bit4woo.utilbox.utils.TextUtils;
 import com.github.kevinsawicki.http.HttpRequest;
 import com.google.common.hash.Hashing;
 
 import burp.BurpExtender;
-import burp.HelperPlus;
 import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
 import burp.IHttpService;
 import net.sf.image4j.codec.ico.ICODecoder;
-import utils.GrepUtils;
 
 public class WebIcon {
 
@@ -49,14 +49,14 @@ public class WebIcon {
 			int port = url.getPort() == -1 ? url.getDefaultPort() : url.getPort();
 			IHttpService service = helpers.buildHttpService(url.getHost(), port, url.getProtocol());
 			IHttpRequestResponse info = BurpExtender.getCallbacks().makeHttpRequest(service, requsetbyte);
-			HelperPlus getter = new HelperPlus(helpers);
+			HelperPlus getter = BurpExtender.getHelperPlus();
 			int status = getter.getStatusCode(info);
 			String ContentType = getter.getHeaderValueOf(false, info, "Content-Type");
 			if (status == 200 && ContentType != null &&
 					(ContentType.toLowerCase().startsWith("image/") || ContentType.toLowerCase().contains("octet-stream"))) {
 				// Content-Type: image/x-icon
 				// Content-Type: binary/octet-stream 有的图片存储在OSS上的
-				byte[] body = getter.getBody(false, info);// 这里不能使用静态方法。
+				byte[] body = HelperPlus.getBody(false, info);// 这里不能使用静态方法。
 				return body;
 			}
 		} catch (MalformedURLException e) {
@@ -195,7 +195,7 @@ public class WebIcon {
 		}
 
 		try {
-			List<String> heads = GrepUtils.grepBetween("<head", "</head", unformattedHtml);
+			List<String> heads = TextUtils.grepBetween("<head", "</head", unformattedHtml);
 			if (heads.size()>0){
 				head = heads.get(0);
 			}

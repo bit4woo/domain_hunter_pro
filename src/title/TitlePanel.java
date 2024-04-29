@@ -26,7 +26,7 @@ import dao.TitleDao;
 import thread.ThreadGetSubnet;
 import thread.ThreadGetTitleWithForceStop;
 import title.search.SearchTextField;
-import utils.IPAddressUtils;
+import com.bit4woo.utilbox.utils.IPAddressUtils;
 
 public class TitlePanel extends JPanel {
 

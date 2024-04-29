@@ -24,15 +24,16 @@ import ASN.ASNEntry;
 import ASN.ASNQuery;
 import base.Commons;
 import burp.BurpExtender;
-import burp.Getter;
-import burp.HelperPlus;
 import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
 import burp.IHttpService;
 import burp.IResponseInfo;
 import domain.CertInfo;
-import utils.DomainNameUtils;
-import utils.IPAddressUtils;
+import com.bit4woo.utilbox.utils.DomainUtils;
+
+import com.bit4woo.utilbox.burp.HelperPlus;
+import com.bit4woo.utilbox.utils.CharsetUtils;
+import com.bit4woo.utilbox.utils.IPAddressUtils;
 import utils.NetworkUtils;
 import utils.URLUtils;
 
@@ -213,7 +214,7 @@ public class LineEntry {
 				IResponseInfo responseInfo = helpers.analyzeResponse(response);
 				statuscode = responseInfo.getStatusCode();
 
-				HelperPlus getter = new HelperPlus(helpers);
+				HelperPlus getter = BurpExtender.getHelperPlus();
 				String tmpServer = getter.getHeaderValueOf(false, response, "Server");
 				if (tmpServer != null) {
 					webcontainer = tmpServer;
@@ -258,7 +259,7 @@ public class LineEntry {
 	 */
 	public LineEntry firstRequest(GetTitleTempConfig config) {
 		// 第一步：DNS解析
-		HashMap<String, Set<String>> dnsResult = DomainNameUtils.dnsquery(host, null);
+		HashMap<String, Set<String>> dnsResult = DomainUtils.dnsQuery(host, null);
 		this.IPSet = dnsResult.get("IP");
 		this.CNAMESet = dnsResult.get("CDN");
 		if (IPSet == null || IPSet.size() <= 0) {
@@ -297,7 +298,7 @@ public class LineEntry {
 		} else {
 			// 当域名可以解析，但是所有URL请求都失败的情况下。添加一条DNS解析记录
 			// TODO 但是IP可以ping通但是无成功的web请求的情况还没有处理
-			if (DomainNameUtils.isValidDomain(host) && !IPSet.isEmpty()) {
+			if (DomainUtils.isValidDomainNoPort(host) && !IPSet.isEmpty()) {
 				setTitle("DNS Record");
 			}
 		}
@@ -324,8 +325,8 @@ public class LineEntry {
 				CertDomainSet = new CertInfo().getAlternativeDomains(url);
 			}
 
-			if (!IPAddressUtils.isValidIP(host)) {// 目标是域名
-				HashMap<String, Set<String>> result = DomainNameUtils.dnsquery(host, null);
+			if (!IPAddressUtils.isValidIPv4(host)) {// 目标是域名
+				HashMap<String, Set<String>> result = DomainUtils.dnsQuery(host, null);
 				CNAMESet = result.get("CDN");
 			}
 		} catch (Exception e) {
@@ -356,7 +357,7 @@ public class LineEntry {
 			url = protocol + "://" + host + ":" + port + "/";
 		}
 		// 不要修改原始url的格式！即都包含默认端口。因为数据库中更新对应记录是以URL为依据的，否则不能成功更新记录。
-		String usualUrl = HelperPlus.removeDefaultPort(url);
+		String usualUrl = HelperPlus.removeUrlDefaultPort(url);
 		return usualUrl;
 	}
 
@@ -481,8 +482,7 @@ public class LineEntry {
 	}
 
 	public String getBodyText() {
-		Getter getter = new Getter(BurpExtender.getCallbacks().getHelpers());
-		byte[] byte_body = getter.getBody(false, response);
+		byte[] byte_body = HelperPlus.getBody(false, response);
 		return new String(byte_body);
 	}
 
@@ -494,12 +494,12 @@ public class LineEntry {
 	}
 
 	public static String covertCharSet(byte[] response) {
-		String originalCharSet = Commons.detectCharset(response);
+		String originalCharSet = CharsetUtils.detectCharset(response);
 		// BurpExtender.getStderr().println(url+"---"+originalCharSet);
 
 		if (originalCharSet != null && !originalCharSet.equalsIgnoreCase(systemCharSet)) {
 			try {
-				System.out.println("正将编码从" + originalCharSet + "转换为" + systemCharSet + "[windows系统编码]");
+				//System.out.println("正将编码从" + originalCharSet + "转换为" + systemCharSet + "[windows系统编码]");
 				byte[] newResponse = new String(response, originalCharSet).getBytes(systemCharSet);
 				return new String(newResponse, systemCharSet);
 			} catch (UnsupportedEncodingException e) {
@@ -507,7 +507,7 @@ public class LineEntry {
 			} catch (Exception e) {
 				e.printStackTrace(BurpExtender.getStderr());
 				log.error(e);
-				BurpExtender.getStderr().print("title 编码转换失败");
+				//BurpExtender.getStderr().print("title 编码转换失败");
 			}
 		}
 		return new String(response);
@@ -525,7 +525,7 @@ public class LineEntry {
 		// https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Redirections
 		if (statuscode >= 300 && statuscode <= 308) {
 			IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
-			Getter getter = new Getter(helpers);
+			HelperPlus getter = BurpExtender.getHelperPlus();
 			String Locationurl = getter.getHeaderValueOf(false, response, "Location");
 			if (null != Locationurl) {
 				title = " --> " + Locationurl;
@@ -558,7 +558,7 @@ public class LineEntry {
 
 	public String getHeaderValueOf(boolean isRequest, String headerName) {
 		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
-		Getter getter = new Getter(helpers);
+		HelperPlus getter = BurpExtender.getHelperPlus();
 		if (isRequest) {
 			return getter.getHeaderValueOf(false, request, headerName);
 		} else {
@@ -735,7 +735,7 @@ public class LineEntry {
 			Iterator<String> it = this.IPSet.iterator();
 			if (it.hasNext()) {
 				String ip = it.next();
-				if (IPAddressUtils.isValidIP(ip) && !IPAddressUtils.isPrivateIPv4(ip)) {
+				if (IPAddressUtils.isValidIPv4(ip) && !IPAddressUtils.isPrivateIPv4(ip)) {
 					ASNEntry asn = ASNQuery.getInstance().query(ip);
 					if (null != asn) {
 						this.ASNInfo = asn.fetchASNDescription();

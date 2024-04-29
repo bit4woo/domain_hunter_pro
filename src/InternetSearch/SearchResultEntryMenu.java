@@ -4,22 +4,19 @@ import java.awt.event.ActionEvent;
 import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingWorker;
 
+import com.bit4woo.utilbox.utils.SystemUtils;
+
 import GUI.GUIMain;
 import base.Commons;
 import burp.BurpExtender;
-import burp.IPAddressUtils;
-import burp.SystemUtils;
 import config.ConfigManager;
 import config.ConfigName;
-import domain.DomainManager;
-import utils.GrepUtils;
 import utils.PortScanUtils;
 
 public class SearchResultEntryMenu extends JPopupMenu {

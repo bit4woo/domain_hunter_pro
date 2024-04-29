@@ -71,7 +71,7 @@ public class DirBruterProducer extends Thread {//Producer do
 				IHttpRequestResponse messageinfo = callbacks.makeHttpRequest(service, request);
 				int leftTaskNum = pathDict.size();
 				stdout.println(String.format("%s tasks left, Runner Checking: %s",leftTaskNum,url.toString()));
-				Getter getter = new Getter(helpers);
+				HelperPlus getter = BurpExtender.getHelperPlus();
 				if (messageinfo !=null) {
 					byte[] response = messageinfo.getResponse();
 					int status = getter.getStatusCode(messageinfo);

@@ -1,8 +1,12 @@
 package domain;
 
 import java.io.PrintWriter;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
+
+import com.bit4woo.utilbox.utils.DomainUtils;
+import com.bit4woo.utilbox.utils.EmailUtils;
 
 import GUI.GUIMain;
 import base.Commons;
@@ -13,10 +17,8 @@ import burp.IHttpRequestResponse;
 import burp.IHttpService;
 import config.ConfigManager;
 import config.ConfigName;
-import config.ConfigPanel;
 import title.LineEntry;
 import toElastic.ElasticClient;
-import utils.GrepUtils;
 
 public class DomainProducer extends Thread {//Producer do
 	private final BlockingQueue<IHttpRequestResponse> inputQueue;//use to store messageInfo
@@ -157,9 +159,9 @@ public class DomainProducer extends Thread {//Producer do
 						if (response.length >= 100000000) {//避免大数据包卡死整个程序
 							response = subByte(response,0,100000000);
 						}
-						Set<String> domains = GrepUtils.grepDomain(new String(response));
+						Set<String> domains = new HashSet<>(DomainUtils.grepDomainAndPort(new String(response)));
 						//List<String> IPs = DomainProducer.grepIPAndPort(new String(response));
-						Set<String> emails = GrepUtils.grepEmail(new String(response));
+						Set<String> emails = new HashSet<>(EmailUtils.grepEmail(new String(response)));
 
 						DomainPanel.getDomainResult().addIfValid(domains);
 						//DomainPanel.getDomainResult().addIfValid(new HashSet<>(IPs));

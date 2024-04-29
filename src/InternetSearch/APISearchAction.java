@@ -12,11 +12,17 @@ import javax.swing.Action;
 import javax.swing.SwingWorker;
 import javax.swing.table.AbstractTableModel;
 
-import InternetSearch.Client.*;
 import org.apache.commons.lang3.StringUtils;
 
+import com.bit4woo.utilbox.utils.IPAddressUtils;
+
+import InternetSearch.Client.FoFaClient;
+import InternetSearch.Client.HunterClient;
+import InternetSearch.Client.HunterIoClient;
+import InternetSearch.Client.QuakeClient;
+import InternetSearch.Client.ShodanClient;
+import InternetSearch.Client.ZoomEyeClient;
 import burp.BurpExtender;
-import burp.IPAddressUtils;
 import domain.DomainManager;
 import domain.target.TargetTableModel;
 import title.LineTableModel;
@@ -196,9 +202,9 @@ public class APISearchAction extends AbstractAction {
                 String host = entry.getHost();
                 String rootDomain = entry.getRootDomain();
                 result.addIfValid(host);
-                List<String> ips = GrepUtils.grepIPAndPort(host);
+                List<String> ips = IPAddressUtils.grepIPAndPort(host);
                 for (String ip : ips) {
-                    if (IPAddressUtils.isValidIP(ip)) {
+                    if (IPAddressUtils.isValidIPv4(ip)) {
                         result.getSpecialPortTargets().add(ip);
                     }
                 }

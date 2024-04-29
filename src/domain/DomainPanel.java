@@ -23,8 +23,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -42,6 +40,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.bit4woo.utilbox.utils.EmailUtils;
 import com.google.common.net.InternetDomainName;
 
 import GUI.GUIMain;
@@ -55,7 +54,6 @@ import burp.IHttpService;
 import burp.IScanIssue;
 import config.ConfigManager;
 import config.ConfigName;
-import config.ConfigPanel;
 import dao.DomainDao;
 import dao.TargetDao;
 import domain.target.TargetControlPanel;
@@ -64,7 +62,6 @@ import domain.target.TargetTable;
 import domain.target.TargetTableModel;
 import thread.ThreadSearhDomain;
 import toElastic.VMP;
-import utils.GrepUtils;
 
 /*
  *注意，所有直接对DomainObject中数据的修改，都不会触发该tableChanged监听器。
@@ -699,15 +696,11 @@ public class DomainPanel extends JPanel {
 	 */
 	public void collectEmailFromIssue() {
 		IScanIssue[] issues = BurpExtender.getCallbacks().getScanIssues(null);
-
-		Pattern pDomainNameOnly = Pattern.compile(GrepUtils.REGEX_EMAIL);
-
 		for (IScanIssue issue : issues) {
 			if (issue.getIssueName().equalsIgnoreCase("Email addresses disclosed")) {
 				String detail = issue.getIssueDetail();
-				Matcher matcher = pDomainNameOnly.matcher(detail);
-				while (matcher.find()) {//多次查找
-					String email = matcher.group();
+				List<String> emails = EmailUtils.grepEmail(detail);
+				for (String email:emails) {
 					if (fetchTargetModel().emailType(email) == DomainManager.CERTAIN_EMAIL) {
 						domainResult.getEmailSet().add(email);
 					}

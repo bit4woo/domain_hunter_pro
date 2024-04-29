@@ -21,7 +21,7 @@ import javax.swing.table.TableRowSorter;
 import GUI.GUIMain;
 import base.Commons;
 import burp.BurpExtender;
-import burp.SystemUtils;
+import com.bit4woo.utilbox.utils.SystemUtils;
 import config.ConfigManager;
 import config.ConfigName;
 import org.apache.commons.lang3.StringUtils;

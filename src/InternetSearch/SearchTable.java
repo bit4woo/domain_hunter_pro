@@ -18,10 +18,11 @@ import javax.swing.table.TableRowSorter;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.bit4woo.utilbox.utils.SystemUtils;
+
 import GUI.GUIMain;
 import base.Commons;
 import burp.BurpExtender;
-import burp.SystemUtils;
 import config.ConfigManager;
 import config.ConfigName;
 

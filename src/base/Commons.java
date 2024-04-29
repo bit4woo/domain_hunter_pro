@@ -29,11 +29,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.util.SubnetUtils;
 
-import com.ibm.icu.text.CharsetDetector;
-import com.ibm.icu.text.CharsetMatch;
-
-import burp.BurpExtender;
-import burp.HelperPlus;
 import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
 
@@ -167,56 +162,6 @@ public class Commons {
 			return charset;
 		}
 		return null;
-	}
-
-	/**
-	 * utf8 utf-8都是可以的。
-	 * @param requestOrResponse
-	 * @return
-	 */
-	public static String detectCharset(byte[] requestOrResponse){
-		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
-		HelperPlus getter = new HelperPlus(helpers);
-		boolean isRequest = true;
-		if (new String(requestOrResponse).startsWith("HTTP/")) {//response
-			isRequest = false;
-		}
-
-		String contentType = getter.getHeaderValueOf(isRequest,requestOrResponse,"Content-Type");
-
-		//1、尝试从contentTpye中获取
-		if (contentType != null){
-			if (contentType.toLowerCase().contains("charset=")) {
-				String tmpcharSet = contentType.toLowerCase().split("charset=")[1];
-				if (tmpcharSet.contains(",")) {
-					tmpcharSet = tmpcharSet.split(",")[0];
-				}
-				if (tmpcharSet != null && tmpcharSet.length() >0) {
-					return tmpcharSet;
-				}
-			}
-		}
-
-		if (!isRequest) {
-			String tmpCharset = detectCharsetInBody(requestOrResponse);
-			System.out.println("响应包中编码识别结果："+tmpCharset);
-			if (null != tmpCharset) {
-				return tmpCharset;
-			}
-		}
-
-
-		//2、尝试使用ICU4J进行编码的检测
-		CharsetDetector detector = new CharsetDetector();
-		detector.setText(requestOrResponse);
-		CharsetMatch cm = detector.detect();
-		System.out.println("ICU4J检测到编码："+cm.getName());
-		if (cm != null) {
-			return cm.getName();
-		}
-
-		//3、http post的默认编码
-		return "ISO-8859-1";
 	}
 
 

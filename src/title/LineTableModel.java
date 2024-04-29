@@ -15,6 +15,9 @@ import java.util.TreeSet;
 import javax.swing.ImageIcon;
 import javax.swing.table.AbstractTableModel;
 
+import com.bit4woo.utilbox.burp.HelperPlus;
+import com.bit4woo.utilbox.utils.IPAddressUtils;
+
 import GUI.GUIMain;
 import InternetSearch.InfoTuple;
 import InternetSearch.SearchType;
@@ -22,8 +25,6 @@ import base.Commons;
 import base.IndexedHashMap;
 import base.IntArraySlice;
 import burp.BurpExtender;
-import burp.Getter;
-import burp.HelperPlus;
 import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
 import burp.IHttpService;
@@ -31,8 +32,7 @@ import burp.IMessageEditorController;
 import dao.TitleDao;
 import domain.DomainManager;
 import domain.target.TargetTableModel;
-import utils.DomainNameUtils;
-import utils.IPAddressUtils;
+import com.bit4woo.utilbox.utils.DomainUtils;
 import utils.URLUtils;
 
 /**
@@ -258,7 +258,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		}else if (columnIndex == HeadList.indexOf(LineTableHead.IP)){
 			if (entry.getIPSet().iterator().hasNext()) {
 				String value = entry.getIPSet().iterator().next();
-				if (IPAddressUtils.isValidIP(value) && !IPAddressUtils.isPrivateIPv4(value)) {
+				if (IPAddressUtils.isValidIPv4(value) && !IPAddressUtils.isPrivateIPv4(value)) {
 					return new InfoTuple<>(SearchType.IP, value);
 				}
 			}
@@ -289,7 +289,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			return new InfoTuple<>(null, null);
 		}else {
 			String value = entry.getHost();
-			if (IPAddressUtils.isValidIP(value)) {
+			if (IPAddressUtils.isValidIPv4(value)) {
 				return new InfoTuple<>(SearchType.IP, value);
 			}else {
 				return new InfoTuple<>(SearchType.SubDomain, value);
@@ -575,8 +575,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 
 		Arrays.sort(rows); //升序
 
-		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
-		HelperPlus getter = new HelperPlus(helpers);
+		HelperPlus getter = BurpExtender.getHelperPlus();
 
 		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
 			LineEntry entry = lineEntries.get(rows[i]);
@@ -708,7 +707,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 
 				int type = model.assetType(host);
 				//规则1
-				if (utils.DomainNameUtils.isValidDomain(host)) {
+				if (DomainUtils.isValidDomainNoPort(host)) {
 					if ((type == DomainManager.USELESS || type==DomainManager.SIMILAR_DOMAIN)
 							&& entry.getEntrySource().equals(LineEntry.Source_Certain)) {
 						lineEntries.remove(i);
@@ -928,7 +927,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			if (item.contains(":")) {//有可能domain:port的情况
 				item = item.split(":")[0];
 			}
-			if (DomainNameUtils.isValidDomain(item)) {
+			if (DomainUtils.isValidDomainNoPort(item)) {
 				tmp.add(item);
 			}
 		}
@@ -937,7 +936,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		for (LineEntry entry:entries) {
 			String ip = new ArrayList<String>(entry.getIPSet()).get(0);//这里可能不严谨，如果IP解析既有外网地址又有内网地址就会出错
 			if (!IPAddressUtils.isPrivateIPv4(ip)) {//移除公网解析记录；剩下无解析记录和内网解析记录
-				if (entry.getStatuscode() == 403 && DomainNameUtils.isValidDomain(entry.getHost())) {
+				if (entry.getStatuscode() == 403 && DomainUtils.isValidDomainNoPort(entry.getHost())) {
 					//do Nothing
 				}else {
 					tmp.remove(entry.getHost());
@@ -1037,12 +1036,11 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	 * @return
 	 */
 	public LineEntry findLineEntryByMessage(IHttpRequestResponse message) {
-		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
-		Getter getter = new Getter(helpers);
+		HelperPlus getter = BurpExtender.getHelperPlus();
 		URL fullurl = getter.getFullURL(message);
 		LineEntry entry = findLineEntry(fullurl.toString());
 		if (entry == null) {
-			URL shortUrl = getter.getShortURL(message);
+			URL shortUrl = HelperPlus.getBaseURL(message);
 			if(!fullurl.equals(shortUrl)) {
 				entry = findLineEntry(shortUrl.toString());
 			}
