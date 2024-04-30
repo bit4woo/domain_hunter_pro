@@ -1,6 +1,5 @@
 package InternetSearch;
 
-import java.net.MalformedURLException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -58,11 +57,7 @@ public class SearchResultEntry {
 	public void setHost(String host) {
 		if (UrlUtils.isVaildUrl(host)) {
 			this.uri = host;
-			try {
-				this.host = new UrlUtils(host).getHost();
-			} catch (MalformedURLException e) {
-				e.printStackTrace();
-			}
+			this.host = UrlUtils.getHost(host);
 		}else if(DomainUtils.isValidDomainMayPort(host)){//包含端口的
 			List<String> hosts = DomainUtils.grepDomainNoPort(host);
 			if (hosts.size()>0) {
@@ -199,7 +194,7 @@ public class SearchResultEntry {
 			sb.append(":").append(port);
 		}
 		try {
-			uri = new UrlUtils(sb.toString()).getFullURLWithDefaultPort();
+			uri = UrlUtils.getFullUrlWithDefaultPort(sb.toString());
 		} catch (Exception e) {
 			uri = sb.toString();
 		}

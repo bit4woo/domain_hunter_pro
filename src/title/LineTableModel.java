@@ -18,6 +18,7 @@ import javax.swing.table.AbstractTableModel;
 import com.bit4woo.utilbox.burp.HelperPlus;
 import com.bit4woo.utilbox.utils.DomainUtils;
 import com.bit4woo.utilbox.utils.IPAddressUtils;
+import com.bit4woo.utilbox.utils.UrlUtils;
 
 import GUI.GUIMain;
 import InternetSearch.InfoTuple;
@@ -33,7 +34,6 @@ import burp.IMessageEditorController;
 import dao.TitleDao;
 import domain.DomainManager;
 import domain.target.TargetTableModel;
-import utils.URLUtils;
 
 /**
  * 关于firexxx，目的是通知各个modelListener。默认的listener中，有一种的目的是：当数据发生变化时，更新GUI的显示。
@@ -531,7 +531,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
 			String url = lineEntries.get(rows[i]).getUrl();
 			if (url != null) {
-				url = URLUtils.getBaseUrl(url)+"/favicon.ico";
+				url = UrlUtils.getBaseUrl(url)+"/favicon.ico";
 				urls.add(url);
 			}
 		}

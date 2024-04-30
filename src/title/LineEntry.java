@@ -18,24 +18,22 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.alibaba.fastjson.JSON;
+import com.bit4woo.utilbox.burp.HelperPlus;
+import com.bit4woo.utilbox.utils.CharsetUtils;
+import com.bit4woo.utilbox.utils.DomainUtils;
+import com.bit4woo.utilbox.utils.IPAddressUtils;
+import com.bit4woo.utilbox.utils.UrlUtils;
 import com.google.common.hash.HashCode;
 
 import ASN.ASNEntry;
 import ASN.ASNQuery;
-import base.Commons;
 import burp.BurpExtender;
 import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
 import burp.IHttpService;
 import burp.IResponseInfo;
 import domain.CertInfo;
-import com.bit4woo.utilbox.utils.DomainUtils;
-
-import com.bit4woo.utilbox.burp.HelperPlus;
-import com.bit4woo.utilbox.utils.CharsetUtils;
-import com.bit4woo.utilbox.utils.IPAddressUtils;
 import utils.NetworkUtils;
-import utils.URLUtils;
 
 public class LineEntry {
 	private static final Logger log = LogManager.getLogger(LineEntry.class);
@@ -238,7 +236,7 @@ public class LineEntry {
 	}
 
 	private void parseURL(URL url) {
-		this.url = URLUtils.getUrlWithDefaultPort(url.toString());// 统一格式，包含默认端口
+		this.url = UrlUtils.getFullUrlWithDefaultPort(url.toString());// 统一格式，包含默认端口
 		port = url.getPort() == -1 ? url.getDefaultPort() : url.getPort();
 		host = url.getHost();
 		protocol = url.getProtocol();
@@ -343,7 +341,7 @@ public class LineEntry {
 		if (StringUtils.isEmpty(url)) {
 			return protocol + "://" + host + ":" + port + "/";
 		}
-		return URLUtils.getUrlWithDefaultPort(url);
+		return UrlUtils.getFullUrlWithDefaultPort(url);
 	}
 
 	/**
