@@ -239,7 +239,7 @@ public class SearchTableModel extends AbstractTableModel {
 		else if (columnIndex == HeadList.indexOf(SearchTableHead.IP)){
 			if (entry.getIPSet().iterator().hasNext()) {
 				String value = entry.getIPSet().iterator().next();
-				if (IPAddressUtils.isValidIPv4(value) && !IPAddressUtils.isPrivateIPv4(value)) {
+				if (IPAddressUtils.isPublicIPv4NoPort(value)) {
 					return new InfoTuple<>(SearchType.IP, value);
 				}
 			}
@@ -268,7 +268,7 @@ public class SearchTableModel extends AbstractTableModel {
 		}
 		else {
 			String value = entry.getHost();
-			if (IPAddressUtils.isValidIPv4(value)) {
+			if (IPAddressUtils.isValidIPv4NoPort(value)) {
 				return new InfoTuple<>(SearchType.IP, value);
 			}else {
 				return new InfoTuple<>(SearchType.SubDomain, value);

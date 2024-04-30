@@ -94,7 +94,7 @@ public class TextAreaMenu extends JPopupMenu {
 				DomainManager domainResult = guiMain.getDomainPanel().getDomainResult();
 				for (String item:selectedItems) {
 					try {
-						if (IPAddressUtils.isValidIPv4(item)) {
+						if (IPAddressUtils.isValidIPv4MayPort(item)) {
 							domainResult.getSpecialPortTargets().add(item);
 						}
 					} catch (Exception e2) {

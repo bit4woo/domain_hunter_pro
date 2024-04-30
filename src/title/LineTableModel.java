@@ -16,6 +16,7 @@ import javax.swing.ImageIcon;
 import javax.swing.table.AbstractTableModel;
 
 import com.bit4woo.utilbox.burp.HelperPlus;
+import com.bit4woo.utilbox.utils.DomainUtils;
 import com.bit4woo.utilbox.utils.IPAddressUtils;
 
 import GUI.GUIMain;
@@ -32,7 +33,6 @@ import burp.IMessageEditorController;
 import dao.TitleDao;
 import domain.DomainManager;
 import domain.target.TargetTableModel;
-import com.bit4woo.utilbox.utils.DomainUtils;
 import utils.URLUtils;
 
 /**
@@ -258,7 +258,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		}else if (columnIndex == HeadList.indexOf(LineTableHead.IP)){
 			if (entry.getIPSet().iterator().hasNext()) {
 				String value = entry.getIPSet().iterator().next();
-				if (IPAddressUtils.isValidIPv4(value) && !IPAddressUtils.isPrivateIPv4(value)) {
+				if (IPAddressUtils.isPublicIPv4NoPort(value)) {
 					return new InfoTuple<>(SearchType.IP, value);
 				}
 			}
@@ -289,7 +289,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			return new InfoTuple<>(null, null);
 		}else {
 			String value = entry.getHost();
-			if (IPAddressUtils.isValidIPv4(value)) {
+			if (IPAddressUtils.isValidIPv4NoPort(value)) {
 				return new InfoTuple<>(SearchType.IP, value);
 			}else {
 				return new InfoTuple<>(SearchType.SubDomain, value);
@@ -363,7 +363,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			}
 
 			for (String ip:line.getIPSet()) {
-				if (excludePrivate && IPAddressUtils.isPrivateIPv4(ip)) {
+				if (excludePrivate && IPAddressUtils.isPrivateIPv4NoPort(ip)) {
 					continue;
 				}
 				result.add(ip);
@@ -935,7 +935,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		Collection<LineEntry> entries = getLineEntries().values();
 		for (LineEntry entry:entries) {
 			String ip = new ArrayList<String>(entry.getIPSet()).get(0);//这里可能不严谨，如果IP解析既有外网地址又有内网地址就会出错
-			if (!IPAddressUtils.isPrivateIPv4(ip)) {//移除公网解析记录；剩下无解析记录和内网解析记录
+			if (!IPAddressUtils.isPrivateIPv4NoPort(ip)) {//移除公网解析记录；剩下无解析记录和内网解析记录
 				if (entry.getStatuscode() == 403 && DomainUtils.isValidDomainNoPort(entry.getHost())) {
 					//do Nothing
 				}else {

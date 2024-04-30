@@ -1,5 +1,6 @@
 package InternetSearch;
 
+import java.net.MalformedURLException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -9,10 +10,10 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.bit4woo.utilbox.utils.DomainUtils;
 import com.bit4woo.utilbox.utils.IPAddressUtils;
+import com.bit4woo.utilbox.utils.UrlUtils;
 
 import burp.BurpExtender;
 import domain.DomainManager;
-import utils.URLUtils;
 
 public class SearchResultEntry {
 	private int port = -1;
@@ -55,16 +56,20 @@ public class SearchResultEntry {
 	}
 
 	public void setHost(String host) {
-		if (URLUtils.isVaildUrl(host)) {
+		if (UrlUtils.isVaildUrl(host)) {
 			this.uri = host;
-			this.host = URLUtils.getHost(host);
-		}else if(DomainUtils.isValidDomainPort(host)){//包含端口的
+			try {
+				this.host = new UrlUtils(host).getHost();
+			} catch (MalformedURLException e) {
+				e.printStackTrace();
+			}
+		}else if(DomainUtils.isValidDomainMayPort(host)){//包含端口的
 			List<String> hosts = DomainUtils.grepDomainNoPort(host);
 			if (hosts.size()>0) {
 				this.host = hosts.get(0);
 			}
 		}else {
-			List<String> hosts = IPAddressUtils.grepIPv4(host);
+			List<String> hosts = IPAddressUtils.grepIPv4NoPort(host);
 			if (hosts.size()>0) {
 				this.host = hosts.get(0);
 			}
@@ -74,7 +79,7 @@ public class SearchResultEntry {
 		}
 
 		if (StringUtils.isEmpty(rootDomain)) {
-			if(DomainUtils.isValidDomainPort(host)) {
+			if(DomainUtils.isValidDomainMayPort(host)) {
 				this.rootDomain = DomainUtils.getRootDomain(host);
 			}
 		}
@@ -93,7 +98,7 @@ public class SearchResultEntry {
 	}
 
 	public void setRootDomain(String rootDomain) {
-		if(DomainUtils.isValidDomainPort(rootDomain)) {
+		if(DomainUtils.isValidDomainMayPort(rootDomain)) {
 			this.rootDomain = DomainUtils.getRootDomain(rootDomain);
 		}else{
 			this.rootDomain = rootDomain;
@@ -194,7 +199,7 @@ public class SearchResultEntry {
 			sb.append(":").append(port);
 		}
 		try {
-			uri = URLUtils.getUrlWithDefaultPort(sb.toString());
+			uri = new UrlUtils(sb.toString()).getFullURLWithDefaultPort();
 		} catch (Exception e) {
 			uri = sb.toString();
 		}
@@ -223,14 +228,14 @@ public class SearchResultEntry {
 
 	public void AddToTarget() {
 		DomainManager domainResult = BurpExtender.getGui().getDomainPanel().getDomainResult();
-		if (IPAddressUtils.isValidIPv4(this.host)) {
+		if (IPAddressUtils.isValidIPv4NoPort(this.host)) {
 			domainResult.getSpecialPortTargets().add(this.host);
 			if (this.port >=0 && this.port <= 65535) {
 				domainResult.getSpecialPortTargets().add(this.host+":"+this.port);
 			}
 		}
 
-		if (DomainUtils.isValidDomainPort(this.host)) {
+		if (DomainUtils.isValidDomainMayPort(this.host)) {
 			domainResult.addToTargetAndSubDomain(this.host,true);
 			if (this.port >=0 && this.port <= 65535) {
 				domainResult.addToTargetAndSubDomain(this.host+":"+this.port,true);

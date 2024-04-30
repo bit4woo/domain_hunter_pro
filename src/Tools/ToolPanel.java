@@ -38,12 +38,16 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
+
+import com.bit4woo.utilbox.utils.DomainUtils;
+import com.bit4woo.utilbox.utils.EmailUtils;
+import com.bit4woo.utilbox.utils.IPAddressUtils;
+import com.bit4woo.utilbox.utils.TextUtils;
+import com.bit4woo.utilbox.utils.UrlUtils;
 
 import GUI.GUIMain;
 import base.BackGroundButton;
@@ -51,16 +55,8 @@ import base.Commons;
 import burp.BurpExtender;
 import config.ConfigManager;
 import config.ConfigName;
-import config.ConfigPanel;
 import domain.CertInfo;
 import title.WebIcon;
-import com.bit4woo.utilbox.utils.DomainUtils;
-import com.bit4woo.utilbox.utils.EmailUtils;
-
-import utils.GrepUtils;
-import com.bit4woo.utilbox.utils.IPAddressUtils;
-import com.bit4woo.utilbox.utils.TextUtils;
-import com.bit4woo.utilbox.utils.UrlUtils;
 
 /**
  * 所有配置的修改，界面的操作，都立即写入LineConfig对象，如有必要保存到磁盘，再调用一次SaveConfig函数，思路要清晰
@@ -305,7 +301,7 @@ public class ToolPanel extends JPanel {
 			protected void action() {
 				String content = inputTextArea.getText();
 				if (null != content) {
-					List<String> iplist = IPAddressUtils.grepIPv4(content);
+					List<String> iplist = IPAddressUtils.grepIPv4NoPort(content);
 					outputTextArea.setText(String.join(System.lineSeparator(), iplist));
 				}
 			}
@@ -316,7 +312,7 @@ public class ToolPanel extends JPanel {
 			protected void action() {
 				String content = inputTextArea.getText();
 				if (null != content) {
-					List<String> iplist = IPAddressUtils.grepPublicIPv4(content);
+					List<String> iplist = IPAddressUtils.grepPublicIPv4NoPort(content);
 					outputTextArea.setText(String.join(System.lineSeparator(), iplist));
 				}
 			}
@@ -328,7 +324,7 @@ public class ToolPanel extends JPanel {
 			protected void action() {
 				String content = inputTextArea.getText();
 				if (null != content) {
-					List<String> iplist = IPAddressUtils.grepPrivateIPv4(content);
+					List<String> iplist = IPAddressUtils.grepPrivateIPv4NoPort(content);
 					outputTextArea.setText(String.join(System.lineSeparator(), iplist));
 				}
 			}
@@ -340,7 +336,7 @@ public class ToolPanel extends JPanel {
 			protected void action() {
 				String content = inputTextArea.getText();
 				if (null != content) {
-					List<String> iplist = IPAddressUtils.grepIPAndPort(content);
+					List<String> iplist = IPAddressUtils.grepIPv4MayPort(content);
 					outputTextArea.setText(String.join(System.lineSeparator(), iplist));
 				}
 			}
@@ -436,7 +432,7 @@ public class ToolPanel extends JPanel {
 				if (StringUtils.isNotEmpty(content)) {
 					List<String> result = new ArrayList<String>();
 
-					List<String> iplist = IPAddressUtils.grepIPv4(content);
+					List<String> iplist = IPAddressUtils.grepIPv4NoPort(content);
 					List<String> lines = Commons.textToLines(content);
 
 					for (String line:lines) {
@@ -472,7 +468,7 @@ public class ToolPanel extends JPanel {
 
 					List<String> result = new ArrayList<String>();
 
-					List<String> iplist = IPAddressUtils.grepIPv4(content);
+					List<String> iplist = IPAddressUtils.grepIPv4NoPort(content);
 					List<String> portlist = IPAddressUtils.grepPort(content);
 
 					for (String host:iplist) {
@@ -640,7 +636,7 @@ public class ToolPanel extends JPanel {
 					Iterator<String> it = domains.iterator();
 					while (it.hasNext()) {
 						String domain = it.next();
-						if (IPAddressUtils.isValidIPv4(domain)) {//目标是一个IP
+						if (IPAddressUtils.isValidIPv4NoPort(domain)) {//目标是一个IP
 							result.add(domain);
 						} else if (DomainUtils.isValidDomainNoPort(domain)) {//目标是域名
 							HashMap<String, Set<String>> temp = DomainUtils.dnsQuery(domain,null);

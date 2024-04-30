@@ -12,11 +12,21 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableRowSorter;
+
+import com.bit4woo.utilbox.utils.IPAddressUtils;
 
 import GUI.GUIMain;
 import base.IndexedHashMap;
@@ -26,7 +36,6 @@ import dao.TitleDao;
 import thread.ThreadGetSubnet;
 import thread.ThreadGetTitleWithForceStop;
 import title.search.SearchTextField;
-import com.bit4woo.utilbox.utils.IPAddressUtils;
 
 public class TitlePanel extends JPanel {
 
@@ -414,7 +423,7 @@ public class TitlePanel extends JPanel {
 			//stdout.println("删除私有IP");
 			for (String subnet :subnets) {
 				String tmp = subnet.split("/")[0];
-				if (IPAddressUtils.isPrivateIPv4(tmp)) {
+				if (IPAddressUtils.isPrivateIPv4NoPort(tmp)) {
 					result.remove(subnet);
 					//stdout.println("删除"+subnet);
 				}

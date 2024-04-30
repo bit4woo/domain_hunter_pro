@@ -270,7 +270,7 @@ public class LineEntry {
 		} else {// 默认过滤私有IP
 			boolean isInPrivateNetwork = config.isHandlePriavte();
 			String ip = new ArrayList<>(IPSet).get(0);
-			if (IPAddressUtils.isPrivateIPv4(ip) && !isInPrivateNetwork) {// 外网模式，内网域名，仅仅显示域名和IP。
+			if (IPAddressUtils.isPrivateIPv4NoPort(ip) && !isInPrivateNetwork) {// 外网模式，内网域名，仅仅显示域名和IP。
 				setTitle("Private IP");
 				return this;
 			}
@@ -325,7 +325,7 @@ public class LineEntry {
 				CertDomainSet = new CertInfo().getAlternativeDomains(url);
 			}
 
-			if (!IPAddressUtils.isValidIPv4(host)) {// 目标是域名
+			if (!IPAddressUtils.isValidIPv4NoPort(host)) {// 目标是域名
 				HashMap<String, Set<String>> result = DomainUtils.dnsQuery(host, null);
 				CNAMESet = result.get("CDN");
 			}
@@ -735,7 +735,7 @@ public class LineEntry {
 			Iterator<String> it = this.IPSet.iterator();
 			if (it.hasNext()) {
 				String ip = it.next();
-				if (IPAddressUtils.isValidIPv4(ip) && !IPAddressUtils.isPrivateIPv4(ip)) {
+				if (IPAddressUtils.isValidIPv4NoPort(ip) && !IPAddressUtils.isPrivateIPv4NoPort(ip)) {
 					ASNEntry asn = ASNQuery.getInstance().query(ip);
 					if (null != asn) {
 						this.ASNInfo = asn.fetchASNDescription();

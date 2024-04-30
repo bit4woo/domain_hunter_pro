@@ -130,7 +130,7 @@ public class BrowserSearchAction extends AbstractAction{
 			//https://bgp.he.net/dns/shopee.com
 			//https://bgp.he.net/net/143.92.111.0/24
 			//https://bgp.he.net/ip/143.92.127.1
-			if (IPAddressUtils.isValidIPv4(searchContent)){
+			if (IPAddressUtils.isValidIPv4NoPort(searchContent)){
 				url = "https://bgp.he.net/ip/"+searchContent;
 			}
 			if (IPAddressUtils.isValidSubnet(searchContent)){

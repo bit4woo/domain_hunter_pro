@@ -181,7 +181,7 @@ public class TextAreaMenu extends JPopupMenu {
 						//https://bgp.he.net/net/143.92.111.0/24
 						//https://bgp.he.net/ip/143.92.127.1
 						String url =null;
-						if (IPAddressUtils.isValidIPv4(target)){
+						if (IPAddressUtils.isValidIPv4NoPort(target)){
 							url = "https://bgp.he.net/ip/"+target;
 						}
 						if (IPAddressUtils.isValidSubnet(target)){

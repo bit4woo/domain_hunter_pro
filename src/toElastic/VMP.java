@@ -31,7 +31,7 @@ public class VMP {
 			String title = entry.getTitle();
 			String IPStr = entry.getIPSet().toString();
 			String header = entry.getHeaderValueOf(false, "Server");
-			if (!IPAddressUtils.isValidIPv4(host)) {
+			if (!IPAddressUtils.isValidIPv4NoPort(host)) {
 				VMPEntry tmp = new VMPEntry(url,title,IPStr,header);
 				result.put(url,tmp);//去重
 			}

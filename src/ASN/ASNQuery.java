@@ -200,7 +200,7 @@ public class ASNQuery {
 	 * @return ASNEntry{asn='3215', asname_long='AS3215', asname_short='', prefix='2.0.0.0-2.15.255.255', geo='FR'}
 	 */
 	public ASNEntry query(String singleIP){
-		if (IPAddressUtils.isValidIPv4(singleIP)){
+		if (IPAddressUtils.isValidIPv4NoPort(singleIP)){
 			//1.从缓存查询
 			ASNEntry result = queryFromRecent(singleIP);
 			//2.从本地数据库文件查询

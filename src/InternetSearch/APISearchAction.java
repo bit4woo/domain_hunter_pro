@@ -26,7 +26,6 @@ import burp.BurpExtender;
 import domain.DomainManager;
 import domain.target.TargetTableModel;
 import title.LineTableModel;
-import utils.GrepUtils;
 
 public class APISearchAction extends AbstractAction {
 
@@ -202,9 +201,9 @@ public class APISearchAction extends AbstractAction {
                 String host = entry.getHost();
                 String rootDomain = entry.getRootDomain();
                 result.addIfValid(host);
-                List<String> ips = IPAddressUtils.grepIPAndPort(host);
+                List<String> ips = IPAddressUtils.grepIPv4MayPort(host);
                 for (String ip : ips) {
-                    if (IPAddressUtils.isValidIPv4(ip)) {
+                    if (IPAddressUtils.isValidIPv4MayPort(ip)) {
                         result.getSpecialPortTargets().add(ip);
                     }
                 }

@@ -53,7 +53,7 @@ public class IPProducer extends Thread {//Producer do
 
 				Set<String> IPSet;
 				Set<String> CDNSet;
-				if (IPAddressUtils.isValidIPv4(host)) {
+				if (IPAddressUtils.isValidIPv4NoPort(host)) {
 					IPSet = new HashSet<>();
 					IPSet.add(host);
 					CDNSet = new HashSet<>();

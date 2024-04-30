@@ -28,14 +28,14 @@ import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 
+import com.bit4woo.utilbox.utils.DomainUtils;
 import com.bit4woo.utilbox.utils.IPAddressUtils;
+import com.bit4woo.utilbox.utils.UrlUtils;
 import com.google.gson.Gson;
 
 import GUI.GUIMain;
 import burp.BurpExtender;
 import title.WebIcon;
-import com.bit4woo.utilbox.utils.DomainUtils;
-import utils.URLUtils;
 
 public class SearchPanel extends JPanel {
 
@@ -258,7 +258,7 @@ public class SearchPanel extends JPanel {
 
 						if(DomainUtils.isValidDomainNoPort(content)) {
 							searchType = SearchType.SubDomain;
-						}else if (IPAddressUtils.isValidIPv4(content)) {
+						}else if (IPAddressUtils.isValidIPv4NoPort(content)) {
 							searchType = SearchType.IP;
 						}else {
 							searchType = SearchType.OriginalString;
@@ -294,7 +294,7 @@ public class SearchPanel extends JPanel {
 								APISearchAction.DoSearchAllInOn(searchType,content,SearchEngine.getEmailSearchEngineList());
 								break;
 							case SearchType.IconHash:
-								if (URLUtils.isVaildUrl(content)){
+								if (UrlUtils.isVaildUrl(content)){
 									byte[] imageData = WebIcon.getFavicon(content);
 									if (imageData.length>0){
 										content = WebIcon.getHash(imageData);

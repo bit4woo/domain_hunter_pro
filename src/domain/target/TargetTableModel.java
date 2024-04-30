@@ -462,7 +462,7 @@ public class TargetTableModel extends AbstractTableModel {
 			domain = domain.substring(0,domain.indexOf(":"));
 		}
 		if (!(DomainUtils.isValidDomainNoPort(domain)||
-				IPAddressUtils.isValidIPv4(domain))) {
+				IPAddressUtils.isValidIPv4NoPort(domain))) {
 			return false;
 		}
 		for (String rootdomain:fetchTargetBlackDomainSet()) {
@@ -529,7 +529,7 @@ public class TargetTableModel extends AbstractTableModel {
 			domainOrIP = DomainUtils.clearDomainWithoutPort(domainOrIP);
 
 			//格式校验，package那么也是符合域名的正则格式的。
-			if (!DomainUtils.isValidDomainNoPort(domainOrIP) && !IPAddressUtils.isValidIPv4(domainOrIP)) {
+			if (!DomainUtils.isValidDomainNoPort(domainOrIP) && !IPAddressUtils.isValidIPv4NoPort(domainOrIP)) {
 				debugPrint(domainOrIP,DomainManager.USELESS,"Not a valid domain or IP address");
 				return DomainManager.USELESS;
 			}
@@ -584,7 +584,7 @@ public class TargetTableModel extends AbstractTableModel {
 				}
 			}
 
-			if(IPAddressUtils.isValidIPv4(domainOrIP)){
+			if(IPAddressUtils.isValidIPv4NoPort(domainOrIP)){
 				debugPrint(domainOrIP,DomainManager.NEED_CONFIRM_IP,"is a valid IP address, but not in target IP Set");
 				return DomainManager.NEED_CONFIRM_IP;
 			}
