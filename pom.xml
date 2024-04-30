@@ -246,10 +246,5 @@
 			<version>1.8.0</version>
 		</dependency>
 
-		<dependency>
-			<groupId>com.bit4woo.utilbox</groupId>
-			<artifactId>java-utilbox</artifactId>
-			<version>0.1</version>
-		</dependency>
 	</dependencies>
 </project>
