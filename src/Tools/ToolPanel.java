@@ -35,6 +35,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
@@ -138,7 +139,6 @@ public class ToolPanel extends JPanel {
 		 */
 
 
-
 		///////////////////////BodyPane//////////////
 
 
@@ -150,31 +150,31 @@ public class ToolPanel extends JPanel {
 		//searchResultTextArea = searhResultPanel.getTextArea();
 
 
-		JScrollPanelWithHeaderForTool InputPanel = new JScrollPanelWithHeaderForTool("Input","",true,true);
+		JScrollPanelWithHeaderForTool InputPanel = new JScrollPanelWithHeaderForTool("Input", "", true, true);
 		inputTextArea = InputPanel.getTextArea();
-		inputTextArea.addMouseListener(new TextAreaMouseListener(guiMain,inputTextArea));
+		inputTextArea.addMouseListener(new TextAreaMouseListener(guiMain, inputTextArea));
 		inputTextArea.getDocument().addDocumentListener(new DocumentListener() {
 
 			@Override
 			public void insertUpdate(DocumentEvent e) {
-				inputTextAreaChanged =true;
+				inputTextAreaChanged = true;
 			}
 
 			@Override
 			public void removeUpdate(DocumentEvent e) {
-				inputTextAreaChanged =true;
+				inputTextAreaChanged = true;
 			}
 
 			@Override
 			public void changedUpdate(DocumentEvent e) {
-				inputTextAreaChanged =true;
+				inputTextAreaChanged = true;
 			}
-			
+
 		});
 
-		JScrollPanelWithHeaderForTool OutPanel = new JScrollPanelWithHeaderForTool("OutPut","",false,false);
+		JScrollPanelWithHeaderForTool OutPanel = new JScrollPanelWithHeaderForTool("OutPut", "", false, false);
 		outputTextArea = OutPanel.getTextArea();
-		outputTextArea.addMouseListener(new TextAreaMouseListener(guiMain,outputTextArea));
+		outputTextArea.addMouseListener(new TextAreaMouseListener(guiMain, outputTextArea));
 
 		JPanel buttonPanel = createButtons();
 
@@ -183,7 +183,6 @@ public class ToolPanel extends JPanel {
 
 		this.add(buttonPanel, BorderLayout.EAST);//这样避免小屏幕按钮显示不完整！
 		//BodyPane.add(buttonPanel);
-
 
 
 		///////////////////////////FooterPanel//////////////////
@@ -301,10 +300,10 @@ public class ToolPanel extends JPanel {
 					List<String> lines = Commons.getLinesFromTextArea(inputTextArea);
 					List<String> result = new ArrayList<String>();
 
-					for (String item:lines) {
+					for (String item : lines) {
 						if (UrlUtils.uselessExtension(item)) {
 							continue;
-						}else {
+						} else {
 							result.add(item);
 						}
 					}//不在使用set方法去重，以便保持去重后的顺序！
@@ -368,7 +367,7 @@ public class ToolPanel extends JPanel {
 				if (null != content) {
 					List<String> result = new ArrayList<String>();
 					List<String> lines = Commons.textToLines(content);
-					for (String line:lines) {
+					for (String line : lines) {
 						List<String> portlist = IPAddressUtils.grepPort(line);
 						result.addAll(portlist);
 					}
@@ -378,7 +377,7 @@ public class ToolPanel extends JPanel {
 		};
 
 
-		JButton btnMasscanResultToNmap = new BackGroundButton("Masscan->Nmap"){
+		JButton btnMasscanResultToNmap = new BackGroundButton("Masscan->Nmap") {
 
 			@Override
 			protected void action() {
@@ -386,14 +385,14 @@ public class ToolPanel extends JPanel {
 				if (StringUtils.isNotEmpty(content)) {
 
 					List<String> lines = Commons.textToLines(content);
-					HashMap<String, Set<String>> ipAndPorts = new HashMap<String,Set<String>>();
+					HashMap<String, Set<String>> ipAndPorts = new HashMap<String, Set<String>>();
 					List<String> nmapCmds = new ArrayList<String>();
-					for (String line:lines) {
+					for (String line : lines) {
 						if (line.contains("Discovered open port")) {
 							try {
 								String port = line.split(" ")[3].split("/")[0];
 								String host = line.split(" ")[5];
-								Set<String>  ports = ipAndPorts.get(host);
+								Set<String> ports = ipAndPorts.get(host);
 								if (ports == null) {
 									ports = new HashSet<String>();
 								}
@@ -405,8 +404,8 @@ public class ToolPanel extends JPanel {
 						}
 					}
 
-					for (String host:ipAndPorts.keySet()) {
-						nmapCmds.add("nmap -v -A -p "+String.join(",", ipAndPorts.get(host))+" "+host);
+					for (String host : ipAndPorts.keySet()) {
+						nmapCmds.add("nmap -v -A -p " + String.join(",", ipAndPorts.get(host)) + " " + host);
 					}
 
 					outputTextArea.setText(String.join(System.lineSeparator(), nmapCmds));
@@ -415,7 +414,7 @@ public class ToolPanel extends JPanel {
 
 		};
 
-		JButton btnMasscanResultToHttp = new BackGroundButton("Masscan->Http"){
+		JButton btnMasscanResultToHttp = new BackGroundButton("Masscan->Http") {
 
 			@Override
 			protected void action() {
@@ -424,13 +423,13 @@ public class ToolPanel extends JPanel {
 
 					List<String> lines = Commons.textToLines(content);
 					List<String> result = new ArrayList<String>();
-					for (String line:lines) {
+					for (String line : lines) {
 						if (line.contains("Discovered open port")) {
 							try {
 								String port = line.split(" ")[3].split("/")[0];
 								String host = line.split(" ")[5];
-								result.add("http://"+host+":"+port);
-								result.add("https://"+host+":"+port);
+								result.add("http://" + host + ":" + port);
+								result.add("https://" + host + ":" + port);
 							} catch (Exception e1) {
 								e1.printStackTrace();
 							}
@@ -443,7 +442,7 @@ public class ToolPanel extends JPanel {
 		};
 
 
-		JButton btnNmapResultToHttp = new BackGroundButton("Nmap->Http"){
+		JButton btnNmapResultToHttp = new BackGroundButton("Nmap->Http") {
 
 			@Override
 			protected void action() {
@@ -454,19 +453,19 @@ public class ToolPanel extends JPanel {
 					List<String> iplist = IPAddressUtils.grepIPv4NoPort(content);
 					List<String> lines = Commons.textToLines(content);
 
-					for (String line:lines) {
+					for (String line : lines) {
 						if (line.toLowerCase().contains("ssl")) {
 							List<String> portlist = IPAddressUtils.grepPort(line);
-							for (String port:portlist) {
-								for (String host:iplist) {
-									result.add("https://"+host+":"+port);
+							for (String port : portlist) {
+								for (String host : iplist) {
+									result.add("https://" + host + ":" + port);
 								}
 							}
-						}else if (line.toLowerCase().contains("http")) {
+						} else if (line.toLowerCase().contains("http")) {
 							List<String> portlist = IPAddressUtils.grepPort(line);
-							for (String port:portlist) {
-								for (String host:iplist) {
-									result.add("http://"+host+":"+port);
+							for (String port : portlist) {
+								for (String host : iplist) {
+									result.add("http://" + host + ":" + port);
 								}
 							}
 						}
@@ -478,7 +477,7 @@ public class ToolPanel extends JPanel {
 		};
 
 
-		JButton btnNmapResultToHttp1 = new BackGroundButton("Nmap->Http 1"){
+		JButton btnNmapResultToHttp1 = new BackGroundButton("Nmap->Http 1") {
 
 			@Override
 			protected void action() {
@@ -490,17 +489,16 @@ public class ToolPanel extends JPanel {
 					List<String> iplist = IPAddressUtils.grepIPv4NoPort(content);
 					List<String> portlist = IPAddressUtils.grepPort(content);
 
-					for (String host:iplist) {
-						for (String port:portlist) {
-							result.add("http://"+host+":"+port);
-							result.add("https://"+host+":"+port);
+					for (String host : iplist) {
+						for (String port : portlist) {
+							result.add("http://" + host + ":" + port);
+							result.add("https://" + host + ":" + port);
 						}
 					}
 					outputTextArea.setText(String.join(System.lineSeparator(), result));
 				}
 			}
 		};
-
 
 
 		JButton btnFindSubnet = new BackGroundButton("Find Subnet") {
@@ -528,7 +526,7 @@ public class ToolPanel extends JPanel {
 		};
 
 
-		JButton btnOpenurls = new BackGroundButton("OpenURLs"){
+		JButton btnOpenurls = new BackGroundButton("OpenURLs") {
 			List<String> urls = new ArrayList<>();
 			Iterator<String> it = urls.iterator();
 			private int totalNumber;
@@ -572,7 +570,6 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		};
-
 
 
 		JButton btnCertDomains = new BackGroundButton("GetCertDomains") {
@@ -633,7 +630,7 @@ public class ToolPanel extends JPanel {
 					Iterator<String> it = urls.iterator();
 					while (it.hasNext()) {
 						String url = it.next();
-						String hash = WebIcon.getHash(url,null);
+						String hash = WebIcon.getHash(url, null);
 						result.add(hash);
 						System.out.println(url + " " + hash);
 					}
@@ -658,7 +655,7 @@ public class ToolPanel extends JPanel {
 						if (IPAddressUtils.isValidIPv4NoPort(domain)) {//目标是一个IP
 							result.add(domain);
 						} else if (DomainUtils.isValidDomainNoPort(domain)) {//目标是域名
-							HashMap<String, Set<String>> temp = DomainUtils.dnsQuery(domain,null);
+							HashMap<String, Set<String>> temp = DomainUtils.dnsQuery(domain, null);
 							Set<String> IPSet = temp.get("IP");
 							result.addAll(IPSet);
 						}
@@ -687,7 +684,7 @@ public class ToolPanel extends JPanel {
 		};
 
 
-		JButton rows2List = new BackGroundButton("Rows To List"){
+		JButton rows2List = new BackGroundButton("Rows To List") {
 
 			@Override
 			protected void action() {
@@ -702,7 +699,7 @@ public class ToolPanel extends JPanel {
 		};
 
 
-		JButton rows2Array = new BackGroundButton("Rows To Array"){
+		JButton rows2Array = new BackGroundButton("Rows To Array") {
 
 			@Override
 			protected void action() {
@@ -721,7 +718,7 @@ public class ToolPanel extends JPanel {
 		};
 
 
-		JButton removeDuplicate = new BackGroundButton("Deduplicate"){
+		JButton removeDuplicate = new BackGroundButton("Deduplicate") {
 
 			@Override
 			protected void action() {
@@ -729,10 +726,10 @@ public class ToolPanel extends JPanel {
 					List<String> content = Commons.getLinesFromTextArea(inputTextArea);
 					List<String> result = new ArrayList<String>();
 
-					for (String item:content) {
+					for (String item : content) {
 						if (result.contains(item)) {
 							continue;
-						}else {
+						} else {
 							result.add(item);
 						}
 					}//不在使用set方法去重，以便保持去重后的顺序！
@@ -746,7 +743,7 @@ public class ToolPanel extends JPanel {
 		};
 
 
-		JButton sort = new BackGroundButton("Sort"){
+		JButton sort = new BackGroundButton("Sort") {
 
 			@Override
 			protected void action() {
@@ -766,7 +763,7 @@ public class ToolPanel extends JPanel {
 		};
 
 
-		JButton sortReverse = new BackGroundButton("Sort(Reverse Str)"){
+		JButton sortReverse = new BackGroundButton("Sort(Reverse Str)") {
 
 			@Override
 			protected void action() {
@@ -775,7 +772,7 @@ public class ToolPanel extends JPanel {
 					Set<String> contentSet = new HashSet<>(content);
 					List<String> tmplist = new ArrayList<>(contentSet);
 
-					Collections.sort(tmplist,new ReverseStrComparator());
+					Collections.sort(tmplist, new ReverseStrComparator());
 					String output = String.join(System.lineSeparator(), tmplist);
 					outputTextArea.setText(output);
 				} catch (Exception e1) {
@@ -786,7 +783,7 @@ public class ToolPanel extends JPanel {
 		};
 
 
-		JButton sortByLength = new BackGroundButton("Sort by Length"){
+		JButton sortByLength = new BackGroundButton("Sort by Length") {
 
 			@Override
 			protected void action() {
@@ -961,7 +958,7 @@ public class ToolPanel extends JPanel {
 		};
 
 
-		JButton btnReplace = new BackGroundButton("ReplaceFirstStr"){
+		JButton btnReplace = new BackGroundButton("ReplaceFirstStr") {
 
 			@Override
 			protected void action() {
@@ -997,7 +994,7 @@ public class ToolPanel extends JPanel {
 		};
 
 
-		JButton btnIPsToCIDR = new BackGroundButton("IPs To CIDR"){
+		JButton btnIPsToCIDR = new BackGroundButton("IPs To CIDR") {
 
 			@Override
 			protected void action() {
@@ -1017,7 +1014,7 @@ public class ToolPanel extends JPanel {
 
 		};
 
-		JButton btnCIDRToIPs = new BackGroundButton("CIDR To IPs"){
+		JButton btnCIDRToIPs = new BackGroundButton("CIDR To IPs") {
 
 			@Override
 			protected void action() {
@@ -1034,7 +1031,7 @@ public class ToolPanel extends JPanel {
 		};
 
 
-		JButton unescapeJava = new BackGroundButton("UnescapeJava"){
+		JButton unescapeJava = new BackGroundButton("UnescapeJava") {
 
 			@Override
 			protected void action() {
@@ -1049,7 +1046,7 @@ public class ToolPanel extends JPanel {
 		};
 
 
-		JButton unescapeHTML = new BackGroundButton("UnescapeHTML"){
+		JButton unescapeHTML = new BackGroundButton("UnescapeHTML") {
 
 			@Override
 			protected void action() {
@@ -1064,7 +1061,7 @@ public class ToolPanel extends JPanel {
 		};
 
 
-		JButton ToUnicode = new BackGroundButton("To Unicode"){
+		JButton ToUnicode = new BackGroundButton("To Unicode") {
 
 			@Override
 			protected void action() {
@@ -1075,6 +1072,7 @@ public class ToolPanel extends JPanel {
 					e1.printStackTrace(stderr);
 				}
 			}
+
 			public String convertToUnicode(String text) {
 				StringBuilder unicodeStringBuilder = new StringBuilder();
 				for (char c : text.toCharArray()) {
@@ -1084,7 +1082,7 @@ public class ToolPanel extends JPanel {
 			}
 		};
 
-		JButton Base64ToFile = new BackGroundButton("Base64ToFile"){
+		JButton Base64ToFile = new BackGroundButton("Base64ToFile") {
 
 			@Override
 			protected void action() {
@@ -1127,7 +1125,7 @@ public class ToolPanel extends JPanel {
 		};
 
 
-		JButton splitButton = new BackGroundButton("Split"){
+		JButton splitButton = new BackGroundButton("Split") {
 
 			@Override
 			protected void action() {
@@ -1142,7 +1140,7 @@ public class ToolPanel extends JPanel {
 		};
 
 
-		JButton combineButton = new BackGroundButton("Combine"){
+		JButton combineButton = new BackGroundButton("Combine") {
 
 			@Override
 			protected void action() {
@@ -1152,21 +1150,19 @@ public class ToolPanel extends JPanel {
 					outputTextArea.setText(String.join(separator, items));
 				}
 			}
-
 		};
 
 
-		JButton toLowerCaseButton = new BackGroundButton("toLowerCase"){
+		JButton toLowerCaseButton = new BackGroundButton("toLowerCase") {
 
 			@Override
 			protected void action() {
 				outputTextArea.setText(inputTextArea.getText().toLowerCase());
 			}
-
 		};
 
 
-		JButton OpenFileButton = new BackGroundButton("Open File"){
+		JButton OpenFileButton = new BackGroundButton("Open File") {
 
 			@Override
 			protected void action() {
@@ -1178,16 +1174,81 @@ public class ToolPanel extends JPanel {
 					statusLabel.setText("your input is not a valid path or file");
 				}
 			}
+		};
 
+		JButton setRemoveAllButton = new BackGroundButton("Remove All(diff)") {
+
+			@Override
+			protected void action() {
+				// 创建一个 JTextArea
+				JTextArea textArea = new JTextArea(10, 20); // 设置行数和列数
+				// 将 JTextArea 放入 JScrollPane 中，以便可以滚动查看
+				JScrollPane scrollPane = new JScrollPane(textArea);
+				// 显示包含 JTextArea 的对话框
+				int result = JOptionPane.showOptionDialog(
+						null, // parentComponent
+						scrollPane, // message
+						"items to remove", // title
+						JOptionPane.OK_CANCEL_OPTION, // optionType
+						JOptionPane.PLAIN_MESSAGE, // messageType
+						null, // icon
+						null, // options
+						null // initialValue
+						);
+
+				// 处理用户输入
+				if (result == JOptionPane.OK_OPTION) {
+					List<String> itemsToRemove = Commons.getLinesFromTextArea(textArea);
+					List<String> items = Commons.getLinesFromTextArea(inputTextArea);
+					items.removeAll(itemsToRemove);
+					outputTextArea.setText(String.join(System.lineSeparator(), items));
+				}
+			}
 		};
 
 
-		JButton testButton = new BackGroundButton("test"){
+		JButton cartesianProductButton = new BackGroundButton("Cartesian Product") {
+
+			@Override
+			protected void action() {
+				// 创建一个 JTextArea
+				JTextArea textArea = new JTextArea(10, 20); // 设置行数和列数
+				// 将 JTextArea 放入 JScrollPane 中，以便可以滚动查看
+				JScrollPane scrollPane = new JScrollPane(textArea);
+				// 显示包含 JTextArea 的对话框
+				int result = JOptionPane.showOptionDialog(
+						null, // parentComponent
+						scrollPane, // message
+						"item list", // title
+						JOptionPane.OK_CANCEL_OPTION, // optionType
+						JOptionPane.PLAIN_MESSAGE, // messageType
+						null, // icon
+						null, // options
+						null // initialValue
+						);
+
+				// 处理用户输入
+				if (result == JOptionPane.OK_OPTION) {
+					List<String> out = new ArrayList<>();
+					List<String> items2 = Commons.getLinesFromTextArea(textArea);
+					List<String> items = Commons.getLinesFromTextArea(inputTextArea);
+					for (String aa : items) {
+						for (String bb : items2) {
+							out.add(aa + bb);
+						}
+					}
+					outputTextArea.setText(String.join(System.lineSeparator(), out));
+				}
+			}
+		};
+
+
+		JButton testButton = new BackGroundButton("test") {
 
 			@Override
 			protected void action() {
 				try {
-					outputTextArea.setText(WebIcon.getHash(inputTextArea.getText(),null));
+					outputTextArea.setText(WebIcon.getHash(inputTextArea.getText(), null));
 				} catch (Exception e1) {
 					outputTextArea.setText(e1.getMessage());
 					e1.printStackTrace(stderr);
@@ -1196,14 +1257,14 @@ public class ToolPanel extends JPanel {
 
 		};
 
-		JButton trimButton = new BackGroundButton("Trim/Strip"){
+		JButton trimButton = new BackGroundButton("Trim/Strip") {
 
 			@Override
 			protected void action() {
 				try {
 					ArrayList<String> result = new ArrayList<String>();
 					List<String> items = Commons.getLinesFromTextArea(inputTextArea);
-					for (String item:items) {
+					for (String item : items) {
 						item = StringUtils.strip(item);
 						result.add(item);
 					}
@@ -1292,10 +1353,10 @@ public class ToolPanel extends JPanel {
 		buttonPanel.add(btnFindEmail, new bagLayout(rowIndex, ++cloumnIndex));
 
 		cloumnIndex = 0;
-		buttonPanel.add(btnMasscanResultToNmap,new bagLayout(++rowIndex, ++cloumnIndex));
-		buttonPanel.add(btnMasscanResultToHttp,new bagLayout(rowIndex, ++cloumnIndex));
-		buttonPanel.add(btnNmapResultToHttp,new bagLayout(rowIndex, ++cloumnIndex));
-		buttonPanel.add(btnNmapResultToHttp1,new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnMasscanResultToNmap, new bagLayout(++rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnMasscanResultToHttp, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnNmapResultToHttp, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnNmapResultToHttp1, new bagLayout(rowIndex, ++cloumnIndex));
 
 		cloumnIndex = 0;
 		buttonPanel.add(btnGrepJson, new bagLayout(++rowIndex, ++cloumnIndex));
@@ -1307,7 +1368,7 @@ public class ToolPanel extends JPanel {
 		cloumnIndex = 0;
 		buttonPanel.add(btnOpenurls, new bagLayout(++rowIndex, ++cloumnIndex));
 		buttonPanel.add(getIPAddressButton, new bagLayout(rowIndex, ++cloumnIndex));
-		buttonPanel.add(grepChineseButton,new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(grepChineseButton, new bagLayout(rowIndex, ++cloumnIndex));
 
 		cloumnIndex = 0;
 		buttonPanel.add(btnCertDomains, new bagLayout(++rowIndex, ++cloumnIndex));
@@ -1330,13 +1391,15 @@ public class ToolPanel extends JPanel {
 
 
 		cloumnIndex = 0;
-		buttonPanel.add(sort,new bagLayout(++rowIndex, ++cloumnIndex));
-		buttonPanel.add(sortReverse,new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(sort, new bagLayout(++rowIndex, ++cloumnIndex));
+		buttonPanel.add(sortReverse, new bagLayout(rowIndex, ++cloumnIndex));
 		buttonPanel.add(sortByLength, new bagLayout(rowIndex, ++cloumnIndex));
 
 		cloumnIndex = 0;
 		buttonPanel.add(btnAddPrefix, new bagLayout(++rowIndex, ++cloumnIndex));
 		buttonPanel.add(btnRemovePrefix, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(setRemoveAllButton, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(cartesianProductButton, new bagLayout(rowIndex, ++cloumnIndex));
 
 		cloumnIndex = 0;
 		buttonPanel.add(unescapeJava, new bagLayout(++rowIndex, ++cloumnIndex));
@@ -1354,7 +1417,6 @@ public class ToolPanel extends JPanel {
 		cloumnIndex = 0;
 		buttonPanel.add(OpenFileButton, new bagLayout(++rowIndex, ++cloumnIndex));
 		buttonPanel.add(testButton, new bagLayout(rowIndex, ++cloumnIndex));
-
 
 		return buttonPanel;
 	}
