@@ -38,6 +38,8 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -151,7 +153,24 @@ public class ToolPanel extends JPanel {
 		JScrollPanelWithHeaderForTool InputPanel = new JScrollPanelWithHeaderForTool("Input","",true,true);
 		inputTextArea = InputPanel.getTextArea();
 		inputTextArea.addMouseListener(new TextAreaMouseListener(guiMain,inputTextArea));
+		inputTextArea.getDocument().addDocumentListener(new DocumentListener() {
 
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				inputTextAreaChanged =true;
+			}
+
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				inputTextAreaChanged =true;
+			}
+
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				inputTextAreaChanged =true;
+			}
+			
+		});
 
 		JScrollPanelWithHeaderForTool OutPanel = new JScrollPanelWithHeaderForTool("OutPut","",false,false);
 		outputTextArea = OutPanel.getTextArea();
