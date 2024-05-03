@@ -191,7 +191,7 @@
 		<dependency>
 			<groupId>org.elasticsearch</groupId>
 			<artifactId>elasticsearch</artifactId>
-			<version>7.15.0</version>
+			<version>7.17.19</version>
 			<exclusions>
 				<exclusion>
 					<groupId>*</groupId>
