@@ -958,7 +958,7 @@ public class ToolPanel extends JPanel {
 		};
 
 
-		JButton btnReplace = new BackGroundButton("ReplaceFirstStr") {
+		JButton btnReplace = new BackGroundButton("ReplaceFirst(regex)") {
 
 			@Override
 			protected void action() {
