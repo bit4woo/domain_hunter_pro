@@ -33,6 +33,7 @@
 						<!-- 编译时排除Deprecated包及下面的资源 -->
 						<exclude>**/Deprecated/**</exclude>
 						<exclude>**/test/**</exclude>
+						<exclude>**/toElastic/**</exclude>
 					</excludes>
 				</configuration>
 			</plugin>
