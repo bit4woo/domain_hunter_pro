@@ -958,7 +958,7 @@ public class ToolPanel extends JPanel {
 		};
 
 
-		JButton btnReplace = new BackGroundButton("ReplaceFirst(regex)") {
+		JButton btnReplaceFirstStr = new BackGroundButton("ReplaceFirst(Str)") {
 
 			@Override
 			protected void action() {
@@ -977,7 +977,7 @@ public class ToolPanel extends JPanel {
 							to = "";
 						}
 
-						replace = Pattern.quote(replace);
+						replace = Pattern.quote(replace);//输入的内容就完全是普通字符串，不再是正则表达式了
 						List<String> content = Commons.getLinesFromTextArea(inputTextArea);
 						for (String item : content) {
 							item = item.replaceFirst(replace, to);
@@ -990,8 +990,108 @@ public class ToolPanel extends JPanel {
 					e1.printStackTrace(stderr);
 				}
 			}
-
 		};
+		
+		JButton btnReplaceFirstRegex = new BackGroundButton("ReplaceFirst(Regex)") {
+
+			@Override
+			protected void action() {
+				try {
+					String replace = JOptionPane.showInputDialog("regex (from)", null);
+					String to = JOptionPane.showInputDialog("replacement (to)", null);
+					ArrayList<String> result = new ArrayList<String>();
+					if (replace == null && to == null) {
+						return;
+					} else {
+						if (replace == null) {
+							replace = "";
+						}
+
+						if (to == null) {
+							to = "";
+						}
+
+						//replace = Pattern.quote(replace);
+						List<String> content = Commons.getLinesFromTextArea(inputTextArea);
+						for (String item : content) {
+							item = item.replaceFirst(replace, to);
+							result.add(item);
+						}
+						outputTextArea.setText(String.join(System.lineSeparator(), result));
+					}
+				} catch (Exception e1) {
+					outputTextArea.setText(e1.getMessage());
+					e1.printStackTrace(stderr);
+				}
+			}
+		};
+		
+		JButton btnReplaceAllStr = new BackGroundButton("ReplaceAll(Str)") {
+
+			@Override
+			protected void action() {
+				try {
+					String replace = JOptionPane.showInputDialog("string (from)", null);
+					String to = JOptionPane.showInputDialog("replacement (to)", null);
+					ArrayList<String> result = new ArrayList<String>();
+					if (replace == null && to == null) {
+						return;
+					} else {
+						if (replace == null) {
+							replace = "";
+						}
+
+						if (to == null) {
+							to = "";
+						}
+
+						List<String> content = Commons.getLinesFromTextArea(inputTextArea);
+						for (String item : content) {
+							item = item.replace(replace, to);
+							result.add(item);
+						}
+						outputTextArea.setText(String.join(System.lineSeparator(), result));
+					}
+				} catch (Exception e1) {
+					outputTextArea.setText(e1.getMessage());
+					e1.printStackTrace(stderr);
+				}
+			}
+		};
+		
+		JButton btnReplaceAllRegex = new BackGroundButton("ReplaceAll(Regex)") {
+
+			@Override
+			protected void action() {
+				try {
+					String replace = JOptionPane.showInputDialog("regex (from)", null);
+					String to = JOptionPane.showInputDialog("replacement (to)", null);
+					ArrayList<String> result = new ArrayList<String>();
+					if (replace == null && to == null) {
+						return;
+					} else {
+						if (replace == null) {
+							replace = "";
+						}
+
+						if (to == null) {
+							to = "";
+						}
+
+						List<String> content = Commons.getLinesFromTextArea(inputTextArea);
+						for (String item : content) {
+							item = item.replaceAll(replace, to);
+							result.add(item);
+						}
+						outputTextArea.setText(String.join(System.lineSeparator(), result));
+					}
+				} catch (Exception e1) {
+					outputTextArea.setText(e1.getMessage());
+					e1.printStackTrace(stderr);
+				}
+			}
+		};
+		
 
 
 		JButton btnIPsToCIDR = new BackGroundButton("IPs To CIDR") {
@@ -1386,9 +1486,13 @@ public class ToolPanel extends JPanel {
 
 		cloumnIndex = 0;
 		buttonPanel.add(removeDuplicate, new bagLayout(++rowIndex, ++cloumnIndex));
-		buttonPanel.add(btnReplace, new bagLayout(rowIndex, ++cloumnIndex));
 		buttonPanel.add(trimButton, new bagLayout(rowIndex, ++cloumnIndex));
-
+		
+		cloumnIndex = 0;
+		buttonPanel.add(btnReplaceFirstStr, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnReplaceFirstRegex, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnReplaceAllStr, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnReplaceAllRegex, new bagLayout(rowIndex, ++cloumnIndex));
 
 		cloumnIndex = 0;
 		buttonPanel.add(sort, new bagLayout(++rowIndex, ++cloumnIndex));
