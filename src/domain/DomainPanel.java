@@ -18,7 +18,6 @@ import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -52,8 +51,6 @@ import burp.IBurpExtenderCallbacks;
 import burp.IHttpRequestResponse;
 import burp.IHttpService;
 import burp.IScanIssue;
-import config.ConfigManager;
-import config.ConfigName;
 import dao.DomainDao;
 import dao.TargetDao;
 import domain.target.TargetControlPanel;
@@ -61,7 +58,6 @@ import domain.target.TargetEntry;
 import domain.target.TargetTable;
 import domain.target.TargetTableModel;
 import thread.ThreadSearhDomain;
-import toElastic.VMP;
 
 /*
  *注意，所有直接对DomainObject中数据的修改，都不会触发该tableChanged监听器。
@@ -380,7 +376,7 @@ public class DomainPanel extends JPanel {
 
 
 
-
+		/*
 		JButton btnUpload = new JButton("Upload");
 		btnUpload.setToolTipText("upload data to Server");
 		btnUpload.addActionListener(new ActionListener() {
@@ -416,6 +412,7 @@ public class DomainPanel extends JPanel {
 			}
 		});
 		HeaderPanel.add(btnUpload);
+		*/
 
 
 		////////////////////////////////////Body Panel area///////////////////////////////////////////////////////

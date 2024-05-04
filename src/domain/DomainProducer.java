@@ -18,7 +18,6 @@ import burp.IHttpService;
 import config.ConfigManager;
 import config.ConfigName;
 import title.LineEntry;
-import toElastic.ElasticClient;
 
 public class DomainProducer extends Thread {//Producer do
 	private final BlockingQueue<IHttpRequestResponse> inputQueue;//use to store messageInfo
@@ -168,7 +167,8 @@ public class DomainProducer extends Thread {//Producer do
 						DomainPanel.getDomainResult().addIfValidEmail(emails);
 					}
 				}
-
+				
+				/*
 				if (ConfigManager.getBooleanConfigByKey(ConfigName.SaveTrafficToElastic)) {
 					if (type != DomainManager.USELESS && !Commons.uselessExtension(urlString)) {//grep domains from response and classify
 						if (threadNo == 9999) {
@@ -181,7 +181,7 @@ public class DomainProducer extends Thread {//Producer do
 							}
 						}
 					}
-				}
+				}*/
 			} catch (InterruptedException error) {
 				BurpExtender.getStdout().println(this.getName() +" exits due to Interrupt signal received");
 			}catch (Exception error) {

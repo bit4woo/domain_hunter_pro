@@ -177,19 +177,19 @@
 			<version>2.0b6</version>
 		</dependency>
 		<!-- Elasticsearch High-Level REST Client -->
-		<dependency>
+		<!--<dependency>
 			<groupId>org.elasticsearch.client</groupId>
 			<artifactId>elasticsearch-rest-high-level-client</artifactId>
 			<version>7.15.0</version>
-		</dependency>
+		</dependency>-->
 		<!-- Elasticsearch Low-Level REST Client -->
-		<dependency>
+		<!--<dependency>
 			<groupId>org.elasticsearch.client</groupId>
 			<artifactId>elasticsearch-rest-client</artifactId>
 			<version>7.17.14</version>
-		</dependency>
+		</dependency>-->
 		<!-- Elasticsearch Core -->
-		<dependency>
+		<!--<dependency>
 			<groupId>org.elasticsearch</groupId>
 			<artifactId>elasticsearch</artifactId>
 			<version>7.17.14</version>
@@ -199,13 +199,13 @@
 					<artifactId>*</artifactId>
 				</exclusion>
 			</exclusions>
-		</dependency>
+		</dependency>-->
 		<!-- Elasticsearch XContent -->
-		<dependency>
+		<!--<dependency>
 			<groupId>org.elasticsearch</groupId>
 			<artifactId>elasticsearch-x-content</artifactId>
 			<version>7.17.14</version>
-		</dependency>
+		</dependency>-->
 		<dependency>
 			<groupId>org.apache.lucene</groupId>
 			<artifactId>lucene-core</artifactId>
