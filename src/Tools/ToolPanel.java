@@ -171,6 +171,16 @@ public class ToolPanel extends JPanel {
 			}
 
 		});
+		
+		InputPanel.getHeadLabel().addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) { // 判断是否是双击事件
+                    // 在双击时执行的操作
+                	inputTextArea.setText(SuperJTextArea.tempFilePath);
+                }
+            }
+        });
 
 		JScrollPanelWithHeaderForTool OutPanel = new JScrollPanelWithHeaderForTool("OutPut", "", false, false);
 		outputTextArea = OutPanel.getTextArea();
@@ -643,7 +653,7 @@ public class ToolPanel extends JPanel {
 		};
 
 
-		JButton getIPAddressButton = new BackGroundButton("GetIPAddress") {
+		JButton dnsQueryButton = new BackGroundButton("DNS Query") {
 			@Override
 			protected void action() {
 				try {
@@ -1467,7 +1477,7 @@ public class ToolPanel extends JPanel {
 		//网络请求类
 		cloumnIndex = 0;
 		buttonPanel.add(btnOpenurls, new bagLayout(++rowIndex, ++cloumnIndex));
-		buttonPanel.add(getIPAddressButton, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(dnsQueryButton, new bagLayout(rowIndex, ++cloumnIndex));
 		buttonPanel.add(grepChineseButton, new bagLayout(rowIndex, ++cloumnIndex));
 
 		cloumnIndex = 0;
