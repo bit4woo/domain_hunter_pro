@@ -906,7 +906,15 @@ public class ToolPanel extends JPanel {
 						String content = inputTextArea.getText();
 						Matcher matcher = pRegex.matcher(content);
 						while (matcher.find()) {//多次查找
-							result.add(matcher.group());
+							// 判断是否有捕获组
+				            if (matcher.groupCount() > 0) {
+				                // 获取第一个捕获组的匹配结果
+				                String group1 = matcher.group(1);
+				                // 将匹配结果添加到列表中
+				                result.add(group1);
+				            }else {
+				            	result.add(matcher.group());
+				            }
 						}
 						outputTextArea.setText(String.join(System.lineSeparator(), result));
 					}
