@@ -15,6 +15,7 @@ import burp.IBurpExtenderCallbacks;
 import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
 import burp.IHttpService;
+import com.bit4woo.utilbox.utils.UrlUtils;
 import config.ConfigManager;
 import config.ConfigName;
 import title.LineEntry;
@@ -151,7 +152,7 @@ public class DomainProducer extends Thread {//Producer do
 				}
 
 				//第三步：对所有流量都进行抓取，这样可以发现更多域名，但同时也会有很多无用功，尤其是使用者同时挖掘多个目标的时候
-				if (!Commons.uselessExtension(urlString)) {//grep domains from response and classify
+				if (!UrlUtils.uselessExtension(urlString)) {//grep domains from response and classify
 					byte[] response = messageinfo.getResponse();
 
 					if (response != null) {

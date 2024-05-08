@@ -16,6 +16,7 @@ import domain.target.TargetTableModel;
 import title.LineTableModel;
 import com.bit4woo.utilbox.utils.DomainUtils;
 import com.bit4woo.utilbox.utils.IPAddressUtils;
+import com.bit4woo.utilbox.utils.SystemUtils;
 
 
 
@@ -80,7 +81,7 @@ public class BrowserSearchAction extends AbstractAction{
 			String url = buildSearchUrl(engine,searchContent);
 
 			try {
-				Commons.browserOpen(url, null);
+				SystemUtils.browserOpen(url, null);
 			} catch (Exception err) {
 				err.printStackTrace(BurpExtender.getStderr());
 			}

@@ -119,7 +119,7 @@ public class SearchResultEntryMenu extends JPopupMenu {
 						return;
 					}
 					for (String url:urls){
-						Commons.browserOpen(url,ConfigManager.getStringConfigByKey(ConfigName.BrowserPath));
+						SystemUtils.browserOpen(url,ConfigManager.getStringConfigByKey(ConfigName.BrowserPath));
 					}
 				}
 				catch (Exception e1)

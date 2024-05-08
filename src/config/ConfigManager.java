@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import com.bit4woo.utilbox.utils.SystemUtils;
 import org.apache.commons.io.FileUtils;
 
 import com.google.gson.Gson;
@@ -48,7 +49,7 @@ public class ConfigManager {
 	}
 
 	public static String getBrowserPath() {
-		if (Commons.isMac()) {
+		if (SystemUtils.isMac()) {
 			return macDefaultBrowserPath;
 		}else {
 			for (String path : winDefaultBrowserPaths) {

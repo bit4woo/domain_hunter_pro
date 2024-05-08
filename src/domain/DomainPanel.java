@@ -34,6 +34,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 
+import com.bit4woo.utilbox.utils.SystemUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -512,7 +513,7 @@ public class DomainPanel extends JPanel {
 			public void mouseClicked(MouseEvent e) {
 				if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2) {//左键双击
 					try {
-						Commons.OpenFolder(BurpExtender.getDataLoadManager().getCurrentDBFile().getParent());
+						SystemUtils.OpenFolder(BurpExtender.getDataLoadManager().getCurrentDBFile().getParent());
 					} catch (Exception e2) {
 						e2.printStackTrace(stderr);
 					}
@@ -734,7 +735,7 @@ public class DomainPanel extends JPanel {
 					IHttpRequestResponse[] items = callbacks.getSiteMap(null); //null to return entire sitemap
 					//int len = items.length;
 					//stdout.println("item number: "+len);
-					Set<URL> NeedToCrawl = new HashSet<URL>();
+					Set<URL> NeedToCrawl = new HashSet<>();
 					for (IHttpRequestResponse x : items) {// 经过验证每次都需要从头开始遍历，按一定offset获取的数据每次都可能不同
 
 						IHttpService httpservice = x.getHttpService();
@@ -810,13 +811,6 @@ public class DomainPanel extends JPanel {
 	@Deprecated
 	public void saveTextAreas() {		
 		domainResult.getSummary();
-	}
-
-	public static Set<String> getSetFromTextArea(JTextArea textarea) {
-		//user input maybe use "\n" in windows, so the System.lineSeparator() not always works fine!
-		Set<String> domainList = new HashSet<>(Arrays.asList(textarea.getText().replaceAll(" ", "").replaceAll("\r\n", "\n").split("\n")));
-		domainList.remove("");
-		return domainList;
 	}
 
 	public void backupDB(String keyword) {

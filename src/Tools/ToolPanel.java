@@ -1,15 +1,23 @@
 package Tools;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Desktop;
-import java.awt.EventQueue;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
-import java.awt.Insets;
+import GUI.GUIMain;
+import base.BackGroundButton;
+import burp.BurpExtender;
+import com.bit4woo.utilbox.utils.*;
+import config.ConfigManager;
+import config.ConfigName;
+import domain.CertInfo;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
+import title.WebIcon;
+
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -17,49 +25,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.swing.JButton;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.text.StringEscapeUtils;
-
-import com.bit4woo.utilbox.utils.DomainUtils;
-import com.bit4woo.utilbox.utils.EmailUtils;
-import com.bit4woo.utilbox.utils.IPAddressUtils;
-import com.bit4woo.utilbox.utils.TextUtils;
-import com.bit4woo.utilbox.utils.UrlUtils;
-
-import GUI.GUIMain;
-import base.BackGroundButton;
-import base.Commons;
-import burp.BurpExtender;
-import config.ConfigManager;
-import config.ConfigName;
-import domain.CertInfo;
-import title.WebIcon;
 
 /**
  * 所有配置的修改，界面的操作，都立即写入LineConfig对象，如有必要保存到磁盘，再调用一次SaveConfig函数，思路要清晰
@@ -307,8 +276,8 @@ public class ToolPanel extends JPanel {
 			protected void action() {
 				String content = inputTextArea.getText();
 				if (null != content) {
-					List<String> lines = Commons.getLinesFromTextArea(inputTextArea);
-					List<String> result = new ArrayList<String>();
+					List<String> lines = SwingUtils.getLinesFromTextArea(inputTextArea);
+					List<String> result = new ArrayList<>();
 
 					for (String item : lines) {
 						if (UrlUtils.uselessExtension(item)) {
@@ -376,7 +345,7 @@ public class ToolPanel extends JPanel {
 				String content = inputTextArea.getText();
 				if (null != content) {
 					List<String> result = new ArrayList<String>();
-					List<String> lines = Commons.textToLines(content);
+					List<String> lines = TextUtils.textToLines(content);
 					for (String line : lines) {
 						List<String> portlist = IPAddressUtils.grepPort(line);
 						result.addAll(portlist);
@@ -394,7 +363,7 @@ public class ToolPanel extends JPanel {
 				String content = inputTextArea.getText();
 				if (StringUtils.isNotEmpty(content)) {
 
-					List<String> lines = Commons.textToLines(content);
+					List<String> lines = TextUtils.textToLines(content);
 					HashMap<String, Set<String>> ipAndPorts = new HashMap<String, Set<String>>();
 					List<String> nmapCmds = new ArrayList<String>();
 					for (String line : lines) {
@@ -431,7 +400,7 @@ public class ToolPanel extends JPanel {
 				String content = inputTextArea.getText();
 				if (StringUtils.isNotEmpty(content)) {
 
-					List<String> lines = Commons.textToLines(content);
+					List<String> lines = TextUtils.textToLines(content);
 					List<String> result = new ArrayList<String>();
 					for (String line : lines) {
 						if (line.contains("Discovered open port")) {
@@ -461,7 +430,7 @@ public class ToolPanel extends JPanel {
 					List<String> result = new ArrayList<String>();
 
 					List<String> iplist = IPAddressUtils.grepIPv4NoPort(content);
-					List<String> lines = Commons.textToLines(content);
+					List<String> lines = TextUtils.textToLines(content);
 
 					for (String line : lines) {
 						if (line.toLowerCase().contains("ssl")) {
@@ -545,7 +514,7 @@ public class ToolPanel extends JPanel {
 			@Override
 			protected void action() {
 				if (inputTextAreaChanged) {//default is true
-					urls = Commons.getLinesFromTextArea(inputTextArea);
+					urls = SwingUtils.getLinesFromTextArea(inputTextArea);
 					totalNumber = urls.size();
 					left = urls.size();
 					it = urls.iterator();
@@ -561,15 +530,15 @@ public class ToolPanel extends JPanel {
 							url = "http://" + url;
 							URL tmpUrl = new URL(url);
 							if (tmpUrl.getPort() == -1) {
-								Commons.browserOpen(url, browserPath);
-								Commons.browserOpen(url.replaceFirst("http://", "https://"), browserPath);
+								SystemUtils.browserOpen(url, browserPath);
+								SystemUtils.browserOpen(url.replaceFirst("http://", "https://"), browserPath);
 							} else if (Integer.toString(tmpUrl.getPort()).endsWith("443")) {
-								Commons.browserOpen(url.replaceFirst("http://", "https://"), browserPath);
+								SystemUtils.browserOpen(url.replaceFirst("http://", "https://"), browserPath);
 							} else {
-								Commons.browserOpen(url, browserPath);
+								SystemUtils.browserOpen(url, browserPath);
 							}
 						} else {
-							Commons.browserOpen(url, browserPath);
+							SystemUtils.browserOpen(url, browserPath);
 						}
 						i--;
 						left--;
@@ -586,7 +555,7 @@ public class ToolPanel extends JPanel {
 			@Override
 			protected void action() {
 				ArrayList<String> result = new ArrayList<String>();
-				List<String> urls = Commons.getLinesFromTextArea(inputTextArea);
+				List<String> urls = SwingUtils.getLinesFromTextArea(inputTextArea);
 				Iterator<String> it = urls.iterator();
 				while (it.hasNext()) {
 					String url = it.next();
@@ -603,7 +572,7 @@ public class ToolPanel extends JPanel {
 			@Override
 			protected void action() {
 				ArrayList<String> result = new ArrayList<String>();
-				List<String> urls = Commons.getLinesFromTextArea(inputTextArea);
+				List<String> urls = SwingUtils.getLinesFromTextArea(inputTextArea);
 				Iterator<String> it = urls.iterator();
 				while (it.hasNext()) {
 					String url = it.next();
@@ -619,7 +588,7 @@ public class ToolPanel extends JPanel {
 			@Override
 			protected void action() {
 				ArrayList<String> result = new ArrayList<String>();
-				List<String> urls = Commons.getLinesFromTextArea(inputTextArea);
+				List<String> urls = SwingUtils.getLinesFromTextArea(inputTextArea);
 				Iterator<String> it = urls.iterator();
 				while (it.hasNext()) {
 					String url = it.next();
@@ -636,7 +605,7 @@ public class ToolPanel extends JPanel {
 			protected void action() {
 				try {
 					ArrayList<String> result = new ArrayList<String>();
-					List<String> urls = Commons.getLinesFromTextArea(inputTextArea);
+					List<String> urls = SwingUtils.getLinesFromTextArea(inputTextArea);
 					Iterator<String> it = urls.iterator();
 					while (it.hasNext()) {
 						String url = it.next();
@@ -658,7 +627,7 @@ public class ToolPanel extends JPanel {
 			protected void action() {
 				try {
 					ArrayList<String> result = new ArrayList<String>();
-					List<String> domains = Commons.getLinesFromTextArea(inputTextArea);
+					List<String> domains = SwingUtils.getLinesFromTextArea(inputTextArea);
 					Iterator<String> it = domains.iterator();
 					while (it.hasNext()) {
 						String domain = it.next();
@@ -699,7 +668,7 @@ public class ToolPanel extends JPanel {
 			@Override
 			protected void action() {
 				try {
-					List<String> content = Commons.getLinesFromTextArea(inputTextArea);
+					List<String> content = SwingUtils.getLinesFromTextArea(inputTextArea);
 					outputTextArea.setText(content.toString());
 				} catch (Exception e1) {
 					outputTextArea.setText(e1.getMessage());
@@ -714,7 +683,7 @@ public class ToolPanel extends JPanel {
 			@Override
 			protected void action() {
 				try {
-					List<String> content = Commons.getLinesFromTextArea(inputTextArea);
+					List<String> content = SwingUtils.getLinesFromTextArea(inputTextArea);
 					for (int i = 0; i < content.size(); i++) {
 						content.set(i, "\"" + content.get(i) + "\"");
 					}
@@ -733,7 +702,7 @@ public class ToolPanel extends JPanel {
 			@Override
 			protected void action() {
 				try {
-					List<String> content = Commons.getLinesFromTextArea(inputTextArea);
+					List<String> content = SwingUtils.getLinesFromTextArea(inputTextArea);
 					List<String> result = new ArrayList<String>();
 
 					for (String item : content) {
@@ -758,7 +727,7 @@ public class ToolPanel extends JPanel {
 			@Override
 			protected void action() {
 				try {
-					List<String> content = Commons.getLinesFromTextArea(inputTextArea);
+					List<String> content = SwingUtils.getLinesFromTextArea(inputTextArea);
 					Set<String> contentSet = new HashSet<>(content);
 					List<String> tmplist = new ArrayList<>(contentSet);
 
@@ -778,7 +747,7 @@ public class ToolPanel extends JPanel {
 			@Override
 			protected void action() {
 				try {
-					List<String> content = Commons.getLinesFromTextArea(inputTextArea);
+					List<String> content = SwingUtils.getLinesFromTextArea(inputTextArea);
 					Set<String> contentSet = new HashSet<>(content);
 					List<String> tmplist = new ArrayList<>(contentSet);
 
@@ -798,7 +767,7 @@ public class ToolPanel extends JPanel {
 			@Override
 			protected void action() {
 				try {
-					List<String> content = Commons.getLinesFromTextArea(inputTextArea);
+					List<String> content = SwingUtils.getLinesFromTextArea(inputTextArea);
 					Set<String> contentSet = new HashSet<>(content);
 					List<String> tmplist = new ArrayList<>(contentSet);
 
@@ -843,7 +812,7 @@ public class ToolPanel extends JPanel {
 						return;
 					} else {
 						history = toFind;
-						List<String> content = Commons.getLinesFromTextArea(inputTextArea);
+						List<String> content = SwingUtils.getLinesFromTextArea(inputTextArea);
 						for (String item : content) {
 							if (item.toLowerCase().contains(toFind.toLowerCase().trim())) {
 								result.add(item);
@@ -875,7 +844,7 @@ public class ToolPanel extends JPanel {
 						return;
 					} else {
 						history = toFind;
-						List<String> content = Commons.getLinesFromTextArea(inputTextArea);
+						List<String> content = SwingUtils.getLinesFromTextArea(inputTextArea);
 						for (String item : content) {
 							if (!item.toLowerCase().contains(toFind.toLowerCase().trim())) {
 								result.add(item);
@@ -944,7 +913,7 @@ public class ToolPanel extends JPanel {
 							toAddSuffix = "";
 						}
 
-						List<String> content = Commons.getLinesFromTextArea(inputTextArea);
+						List<String> content = SwingUtils.getLinesFromTextArea(inputTextArea);
 						for (String item : content) {
 							item = toAddPrefix + item + toAddSuffix;
 							result.add(item);
@@ -964,8 +933,8 @@ public class ToolPanel extends JPanel {
 				try {
 					String Prefix = JOptionPane.showInputDialog("prefix to remove", null);
 					String Suffix = JOptionPane.showInputDialog("suffix to remove", null);
-					List<String> content = Commons.getLinesFromTextArea(inputTextArea);
-					List<String> result = Commons.removePrefixAndSuffix(content, Prefix, Suffix);
+					List<String> content = SwingUtils.getLinesFromTextArea(inputTextArea);
+					List<String> result = TextUtils.removePrefixAndSuffix(content, Prefix, Suffix);
 					outputTextArea.setText(String.join(System.lineSeparator(), result));
 				} catch (Exception e1) {
 					outputTextArea.setText(e1.getMessage());
@@ -996,7 +965,7 @@ public class ToolPanel extends JPanel {
 						}
 
 						replace = Pattern.quote(replace);//输入的内容就完全是普通字符串，不再是正则表达式了
-						List<String> content = Commons.getLinesFromTextArea(inputTextArea);
+						List<String> content = SwingUtils.getLinesFromTextArea(inputTextArea);
 						for (String item : content) {
 							item = item.replaceFirst(replace, to);
 							result.add(item);
@@ -1030,7 +999,7 @@ public class ToolPanel extends JPanel {
 						}
 
 						//replace = Pattern.quote(replace);
-						List<String> content = Commons.getLinesFromTextArea(inputTextArea);
+						List<String> content = SwingUtils.getLinesFromTextArea(inputTextArea);
 						for (String item : content) {
 							item = item.replaceFirst(replace, to);
 							result.add(item);
@@ -1063,7 +1032,7 @@ public class ToolPanel extends JPanel {
 							to = "";
 						}
 
-						List<String> content = Commons.getLinesFromTextArea(inputTextArea);
+						List<String> content = SwingUtils.getLinesFromTextArea(inputTextArea);
 						for (String item : content) {
 							item = item.replace(replace, to);
 							result.add(item);
@@ -1096,7 +1065,7 @@ public class ToolPanel extends JPanel {
 							to = "";
 						}
 
-						List<String> content = Commons.getLinesFromTextArea(inputTextArea);
+						List<String> content = SwingUtils.getLinesFromTextArea(inputTextArea);
 						for (String item : content) {
 							item = item.replaceAll(replace, to);
 							result.add(item);
@@ -1117,7 +1086,7 @@ public class ToolPanel extends JPanel {
 			@Override
 			protected void action() {
 				try {
-					List<String> IPs = Commons.getLinesFromTextArea(inputTextArea);
+					List<String> IPs = SwingUtils.getLinesFromTextArea(inputTextArea);
 					Set<String> subnets = IPAddressUtils.toSmallerSubNets(new HashSet<String>(IPs));
 
 					List<String> tmplist = new ArrayList<>(subnets);//排序
@@ -1137,7 +1106,7 @@ public class ToolPanel extends JPanel {
 			@Override
 			protected void action() {
 				try {
-					List<String> subnets = Commons.getLinesFromTextArea(inputTextArea);
+					List<String> subnets = SwingUtils.getLinesFromTextArea(inputTextArea);
 					List<String> IPs = IPAddressUtils.toIPList(subnets);// 当前所有title结果计算出的IP集合
 					outputTextArea.setText(String.join(System.lineSeparator(), IPs));
 				} catch (Exception e1) {
@@ -1264,7 +1233,7 @@ public class ToolPanel extends JPanel {
 			protected void action() {
 				String separator = JOptionPane.showInputDialog("input connect char", null);
 				if (separator != null) {// && !separator.trim().equals("")
-					List<String> items = Commons.getLinesFromTextArea(inputTextArea);
+					List<String> items = SwingUtils.getLinesFromTextArea(inputTextArea);
 					outputTextArea.setText(String.join(separator, items));
 				}
 			}
@@ -1316,8 +1285,8 @@ public class ToolPanel extends JPanel {
 
 				// 处理用户输入
 				if (result == JOptionPane.OK_OPTION) {
-					List<String> itemsToRemove = Commons.getLinesFromTextArea(textArea);
-					List<String> items = Commons.getLinesFromTextArea(inputTextArea);
+					List<String> itemsToRemove = SwingUtils.getLinesFromTextArea(textArea);
+					List<String> items = SwingUtils.getLinesFromTextArea(inputTextArea);
 					items.removeAll(itemsToRemove);
 					outputTextArea.setText(String.join(System.lineSeparator(), items));
 				}
@@ -1348,8 +1317,8 @@ public class ToolPanel extends JPanel {
 				// 处理用户输入
 				if (result == JOptionPane.OK_OPTION) {
 					List<String> out = new ArrayList<>();
-					List<String> items2 = Commons.getLinesFromTextArea(textArea);
-					List<String> items = Commons.getLinesFromTextArea(inputTextArea);
+					List<String> items2 = SwingUtils.getLinesFromTextArea(textArea);
+					List<String> items = SwingUtils.getLinesFromTextArea(inputTextArea);
 					for (String aa : items) {
 						for (String bb : items2) {
 							out.add(aa + bb);
@@ -1381,7 +1350,7 @@ public class ToolPanel extends JPanel {
 			protected void action() {
 				try {
 					ArrayList<String> result = new ArrayList<String>();
-					List<String> items = Commons.getLinesFromTextArea(inputTextArea);
+					List<String> items = SwingUtils.getLinesFromTextArea(inputTextArea);
 					for (String item : items) {
 						item = StringUtils.strip(item);
 						result.add(item);
@@ -1541,13 +1510,6 @@ public class ToolPanel extends JPanel {
 		buttonPanel.add(testButton, new bagLayout(rowIndex, ++cloumnIndex));
 
 		return buttonPanel;
-	}
-
-	public static Set<String> getSetFromTextArea(JTextArea textarea) {
-		//user input maybe use "\n" in windows, so the System.lineSeparator() not always works fine!
-		Set<String> domainList = new HashSet<>(Arrays.asList(textarea.getText().replaceAll(" ", "").replaceAll("\r\n", "\n").split("\n")));
-		domainList.remove("");
-		return domainList;
 	}
 
 	public static String getContentFromFile(String filename) {

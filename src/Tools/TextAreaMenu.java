@@ -11,6 +11,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTextArea;
 
 import com.bit4woo.utilbox.utils.IPAddressUtils;
+import com.bit4woo.utilbox.utils.TextUtils;
 
 import GUI.GUIMain;
 import base.Commons;
@@ -33,7 +34,7 @@ public class TextAreaMenu extends JPopupMenu {
 		this.textArea = textArea;
 		String selectedText = textArea.getSelectedText();
 		if (selectedText != null && !selectedText.equalsIgnoreCase("")){
-			selectedItems = Commons.textToLines(selectedText);
+			selectedItems = TextUtils.textToLines(selectedText);
 		}
 
 
@@ -45,7 +46,7 @@ public class TextAreaMenu extends JPopupMenu {
 			stderr = new PrintWriter(System.out, true);
 		}
 
-		List<String> selectedItems = Commons.textToLines(selectedText);
+		List<String> selectedItems = TextUtils.textToLines(selectedText);
 
 		if (selectedItems.size() > 0){
 			JMenuItem goToItem = new JMenuItem(new AbstractAction(selectedItems.size()+" items selected") {

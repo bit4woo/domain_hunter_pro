@@ -7,6 +7,7 @@ import base.Commons;
 import base.IndexedHashMap;
 import base.IntArraySlice;
 import burp.BurpExtender;
+import com.bit4woo.utilbox.utils.TextUtils;
 import com.google.common.net.InternetDomainName;
 import com.google.gson.Gson;
 import domain.DomainManager;
@@ -632,7 +633,7 @@ public class TargetTableModel extends AbstractTableModel {
 					String suffixOfDomain = suffixDomain.toString();
 					String suffixOfRootDomain = suffixRootDomain.toString();
 
-					String result = Commons.replaceLast(rootdomain, suffixOfRootDomain, suffixOfDomain);
+					String result = TextUtils.replaceLast(rootdomain, suffixOfRootDomain, suffixOfDomain);
 					return result;
 				}
 			}
