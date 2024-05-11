@@ -1,23 +1,15 @@
 package Tools;
 
-import GUI.GUIMain;
-import base.BackGroundButton;
-import burp.BurpExtender;
-import com.bit4woo.utilbox.utils.*;
-import config.ConfigManager;
-import config.ConfigName;
-import domain.CertInfo;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.text.StringEscapeUtils;
-import title.WebIcon;
-
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Desktop;
+import java.awt.EventQueue;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+import java.awt.Insets;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -25,10 +17,49 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
-import java.util.*;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
+
+import com.bit4woo.utilbox.utils.DomainUtils;
+import com.bit4woo.utilbox.utils.EmailUtils;
+import com.bit4woo.utilbox.utils.IPAddressUtils;
+import com.bit4woo.utilbox.utils.SwingUtils;
+import com.bit4woo.utilbox.utils.SystemUtils;
+import com.bit4woo.utilbox.utils.TextUtils;
+import com.bit4woo.utilbox.utils.UrlUtils;
+
+import GUI.GUIMain;
+import base.BackGroundButton;
+import burp.BurpExtender;
+import config.ConfigManager;
+import config.ConfigName;
+import domain.CertInfo;
+import title.WebIcon;
 
 /**
  * 所有配置的修改，界面的操作，都立即写入LineConfig对象，如有必要保存到磁盘，再调用一次SaveConfig函数，思路要清晰
@@ -140,16 +171,16 @@ public class ToolPanel extends JPanel {
 			}
 
 		});
-		
+
 		InputPanel.getHeadLabel().addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2) { // 判断是否是双击事件
-                    // 在双击时执行的操作
-                	inputTextArea.setText(SuperJTextArea.tempFilePath);
-                }
-            }
-        });
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (e.getClickCount() == 2) { // 判断是否是双击事件
+					// 在双击时执行的操作
+					inputTextArea.setText(SuperJTextArea.tempFilePath);
+				}
+			}
+		});
 
 		JScrollPanelWithHeaderForTool OutPanel = new JScrollPanelWithHeaderForTool("OutPut", "", false, false);
 		outputTextArea = OutPanel.getTextArea();
@@ -258,7 +289,7 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		};
-		
+
 		JButton btnFindUrlsWithProtocol = new BackGroundButton("Find URL With Protocol") {
 			@Override
 			protected void action() {
@@ -271,7 +302,29 @@ public class ToolPanel extends JPanel {
 		};
 
 
-		JButton btnFindUrls1 = new BackGroundButton("Find URL (NotStartWith/)") {
+		JButton btnFindUrlsInQuotes = new BackGroundButton("Find URL In Quotes") {
+			@Override
+			protected void action() {
+				String content = inputTextArea.getText();
+				if (null != content) {
+					List<String> urls = UrlUtils.grepUrlsInQuotes(content);
+					outputTextArea.setText(String.join(System.lineSeparator(), urls));
+				}
+			}
+		};
+
+		JButton btnFindUrlsNotStartWithSlash = new BackGroundButton("Find URL (NotStartWith/)") {
+			@Override
+			protected void action() {
+				String content = inputTextArea.getText();
+				if (null != content) {
+					List<String> urls = UrlUtils.grepUrlPathNotStartWithSlash(content);
+					outputTextArea.setText(String.join(System.lineSeparator(), urls));
+				}
+			}
+		};
+
+		JButton btnFindUrlsNotStartWithSlashInQuotes = new BackGroundButton("Find URL In Quotes(NotStartWith/)") {
 			@Override
 			protected void action() {
 				String content = inputTextArea.getText();
@@ -887,14 +940,14 @@ public class ToolPanel extends JPanel {
 						Matcher matcher = pRegex.matcher(content);
 						while (matcher.find()) {//多次查找
 							// 判断是否有捕获组
-				            if (matcher.groupCount() > 0) {
-				                // 获取第一个捕获组的匹配结果
-				                String group1 = matcher.group(1);
-				                // 将匹配结果添加到列表中
-				                result.add(group1);
-				            }else {
-				            	result.add(matcher.group());
-				            }
+							if (matcher.groupCount() > 0) {
+								// 获取第一个捕获组的匹配结果
+								String group1 = matcher.group(1);
+								// 将匹配结果添加到列表中
+								result.add(group1);
+							}else {
+								result.add(matcher.group());
+							}
 						}
 						outputTextArea.setText(String.join(System.lineSeparator(), result));
 					}
@@ -989,7 +1042,7 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		};
-		
+
 		JButton btnReplaceFirstRegex = new BackGroundButton("ReplaceFirst(Regex)") {
 
 			@Override
@@ -1023,7 +1076,7 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		};
-		
+
 		JButton btnReplaceAllStr = new BackGroundButton("ReplaceAll(Str)") {
 
 			@Override
@@ -1056,7 +1109,7 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		};
-		
+
 		JButton btnReplaceAllRegex = new BackGroundButton("ReplaceAll(Regex)") {
 
 			@Override
@@ -1089,7 +1142,7 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		};
-		
+
 
 
 		JButton btnIPsToCIDR = new BackGroundButton("IPs To CIDR") {
@@ -1436,9 +1489,14 @@ public class ToolPanel extends JPanel {
 
 		cloumnIndex = 0;
 		buttonPanel.add(btnFindUrls, new bagLayout(++rowIndex, ++cloumnIndex));
-		buttonPanel.add(btnFindUrlsWithProtocol, new bagLayout(++rowIndex, ++cloumnIndex));
-		buttonPanel.add(btnFindUrls1, new bagLayout(rowIndex, ++cloumnIndex));
-		buttonPanel.add(btnCleanUrl, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnFindUrlsWithProtocol, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnFindUrlsInQuotes, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnFindUrlsNotStartWithSlash, new bagLayout(rowIndex, ++cloumnIndex));
+
+		cloumnIndex = 0;
+		buttonPanel.add(btnFindUrlsNotStartWithSlashInQuotes, new bagLayout(rowIndex, ++cloumnIndex));
+
+		buttonPanel.add(btnCleanUrl, new bagLayout(++rowIndex, ++cloumnIndex));
 
 		cloumnIndex = 0;
 		buttonPanel.add(btnFindIP, new bagLayout(++rowIndex, ++cloumnIndex));
@@ -1486,7 +1544,7 @@ public class ToolPanel extends JPanel {
 		cloumnIndex = 0;
 		buttonPanel.add(removeDuplicate, new bagLayout(++rowIndex, ++cloumnIndex));
 		buttonPanel.add(trimButton, new bagLayout(rowIndex, ++cloumnIndex));
-		
+
 		cloumnIndex = 0;
 		buttonPanel.add(btnReplaceFirstStr, new bagLayout(rowIndex, ++cloumnIndex));
 		buttonPanel.add(btnReplaceFirstRegex, new bagLayout(rowIndex, ++cloumnIndex));
