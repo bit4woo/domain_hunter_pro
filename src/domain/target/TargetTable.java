@@ -124,13 +124,15 @@ public class TargetTable extends JTable {
 						//当在空白处点击时，JTable.getValueAt会越界，当在空白位置点击时，获取到的值是-1
 						return;
 					}
+					
+					if (TargetTable.this.getColumnClass(col).equals(String.class)) {
+						String value = (String) TargetTable.this.getValueAt(row, col);
 
-					String value = (String) TargetTable.this.getValueAt(row, col);
-
-					int modelCol = TargetTable.this.convertColumnIndexToModel(col);
-					int headerLength = TargetTableModel.getTitleList().get(modelCol).length();
-					if (value.length() > headerLength) {
-						showToolTip(TargetTable.this, e.getPoint(), value);
+						int modelCol = TargetTable.this.convertColumnIndexToModel(col);
+						int headerLength = TargetTableModel.getTitleList().get(modelCol).length();
+						if (value.length() > headerLength) {
+							showToolTip(TargetTable.this, e.getPoint(), value);
+						}
 					}
 				}
 			}

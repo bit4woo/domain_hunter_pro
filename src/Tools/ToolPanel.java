@@ -258,6 +258,17 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		};
+		
+		JButton btnFindUrlsWithProtocol = new BackGroundButton("Find URL With Protocol") {
+			@Override
+			protected void action() {
+				String content = inputTextArea.getText();
+				if (null != content) {
+					List<String> urls = UrlUtils.grepUrlsWithProtocol(content);
+					outputTextArea.setText(String.join(System.lineSeparator(), urls));
+				}
+			}
+		};
 
 
 		JButton btnFindUrls1 = new BackGroundButton("Find URL (NotStartWith/)") {
@@ -265,7 +276,7 @@ public class ToolPanel extends JPanel {
 			protected void action() {
 				String content = inputTextArea.getText();
 				if (null != content) {
-					List<String> urls = UrlUtils.grepUrlPathNotStartWithSlash(content);
+					List<String> urls = UrlUtils.grepUrlPathNotStartWithSlashInQuotes(content);
 					outputTextArea.setText(String.join(System.lineSeparator(), urls));
 				}
 			}
@@ -1425,6 +1436,7 @@ public class ToolPanel extends JPanel {
 
 		cloumnIndex = 0;
 		buttonPanel.add(btnFindUrls, new bagLayout(++rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnFindUrlsWithProtocol, new bagLayout(++rowIndex, ++cloumnIndex));
 		buttonPanel.add(btnFindUrls1, new bagLayout(rowIndex, ++cloumnIndex));
 		buttonPanel.add(btnCleanUrl, new bagLayout(rowIndex, ++cloumnIndex));
 
