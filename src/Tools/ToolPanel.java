@@ -302,7 +302,7 @@ public class ToolPanel extends JPanel {
 		};
 
 
-		JButton btnFindUrlsInQuotes = new BackGroundButton("Find URL In Quotes") {
+		JButton btnFindUrlsInQuotes = new BackGroundButton("Find URL In Quotes('|\")") {
 			@Override
 			protected void action() {
 				String content = inputTextArea.getText();
@@ -313,7 +313,7 @@ public class ToolPanel extends JPanel {
 			}
 		};
 
-		JButton btnFindUrlsNotStartWithSlash = new BackGroundButton("Find URL (NotStartWith/)") {
+		JButton btnFindUrlsNotStartWithSlash = new BackGroundButton("Find URL(img/a.png)") {
 			@Override
 			protected void action() {
 				String content = inputTextArea.getText();
@@ -324,7 +324,7 @@ public class ToolPanel extends JPanel {
 			}
 		};
 
-		JButton btnFindUrlsNotStartWithSlashInQuotes = new BackGroundButton("Find URL In Quotes(NotStartWith/)") {
+		JButton btnFindUrlsNotStartWithSlashInQuotes = new BackGroundButton("Find URL(\"img/a.png\")") {
 			@Override
 			protected void action() {
 				String content = inputTextArea.getText();
@@ -1494,9 +1494,8 @@ public class ToolPanel extends JPanel {
 		buttonPanel.add(btnFindUrlsNotStartWithSlash, new bagLayout(rowIndex, ++cloumnIndex));
 
 		cloumnIndex = 0;
-		buttonPanel.add(btnFindUrlsNotStartWithSlashInQuotes, new bagLayout(rowIndex, ++cloumnIndex));
-
-		buttonPanel.add(btnCleanUrl, new bagLayout(++rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnFindUrlsNotStartWithSlashInQuotes, new bagLayout(++rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnCleanUrl, new bagLayout(rowIndex, ++cloumnIndex));
 
 		cloumnIndex = 0;
 		buttonPanel.add(btnFindIP, new bagLayout(++rowIndex, ++cloumnIndex));
