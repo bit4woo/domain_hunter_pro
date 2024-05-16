@@ -28,7 +28,6 @@ import ASN.ASNQuery;
 import GUI.GUIMain;
 import InternetSearch.SearchEngine;
 import Tools.ToolPanel;
-import base.Commons;
 import base.IndexedHashMap;
 import burp.BurpExtender;
 import burp.IBurpExtenderCallbacks;
@@ -826,7 +825,7 @@ public class LineEntryMenu extends JPopupMenu {
 		/**
 		 * 单纯从title记录中删除,不做其他修改
 		 */
-		JMenuItem removeItem = new JMenuItem(new AbstractAction("Delete This Entry") {//need to show dialog to confirm
+		JMenuItem removeItem = new JMenuItem(new AbstractAction("Delete Entry") {//need to show dialog to confirm
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				new SwingWorker<Map,Map>(){
@@ -848,7 +847,7 @@ public class LineEntryMenu extends JPopupMenu {
 		/**
 		 * 删除明显非目标的记录
 		 */
-		JMenuItem removeItemsNotInTargets = new JMenuItem(new AbstractAction("Delete Entries Not in Targets") {//need to show dialog to confirm
+		JMenuItem removeItemsNotInTargets = new JMenuItem(new AbstractAction("Delete Entries That Not in Targets") {//need to show dialog to confirm
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				new SwingWorker<Map,Map>(){
@@ -931,11 +930,32 @@ public class LineEntryMenu extends JPopupMenu {
 		});
 		removeSubDomainItem.setToolTipText("Delete Host From Subdomain Set In Domain Panel");
 
+		
+		JMenuItem DeleteHostFromTargetItem = new JMenuItem(new AbstractAction("Delete Host From Target") {//need to show dialog to confirm
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				int result = JOptionPane.showConfirmDialog(null,"Delete these hosts from Target(Subdomains and Custom Assets)?");
+				if (result == JOptionPane.YES_OPTION) {
+					//java.util.List<String> hosts = lineTable.getLineTableModel().getHosts(rows);//不包含端口，如果原始记录包含端口就删不掉
+					//如果有 domain domain:8888 两个记录，这种方式就会删错对象
+					java.util.List<String> hostAndPort = lineTable.getLineTableModel().getHostsAndPorts(modelRows);//包含端口，如果原始记录
+					for(String item:hostAndPort) {
+						if (!guiMain.getDomainPanel().getDomainResult().getSpecialPortTargets().remove(item)) {
+							guiMain.getDomainPanel().getDomainResult().getSpecialPortTargets().remove(item.split(":")[0]);
+						}
+						if (!guiMain.getDomainPanel().getDomainResult().getSubDomainSet().remove(item)) {
+							guiMain.getDomainPanel().getDomainResult().getSubDomainSet().remove(item.split(":")[0]);
+						}
+					}
+				}
+			}
+		});
+		removeSubDomainItem.setToolTipText("Delete Host From Subdomain Set In Domain Panel");
 
 		/**
 		 * 黑名单主要用于记录CDN或者云服务IP，避免计算网段时包含这些IP。
 		 */
-		JMenuItem addToblackListItem = new JMenuItem(new AbstractAction("Add IP Address To Black List") {//need to show dialog to confirm
+		JMenuItem addToblackListItem = new JMenuItem(new AbstractAction("Add IP To Black List") {//need to show dialog to confirm
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				int result = JOptionPane.showConfirmDialog(null,"Add these IP to black list?" +
@@ -950,7 +970,7 @@ public class LineEntryMenu extends JPopupMenu {
 		/**
 		 * 黑名单主要用于记录CDN或者云服务IP，避免计算网段时包含这些IP。
 		 */
-		JMenuItem addToblackListAndDeleteItem = new JMenuItem(new AbstractAction("Add IP To Black List And Del Entry") {//need to show dialog to confirm
+		JMenuItem addToblackListAndDeleteItem = new JMenuItem(new AbstractAction("Add IP To Black List And Delete Entry") {//need to show dialog to confirm
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				int result = JOptionPane.showConfirmDialog(null,"Add these IP to black list and Delete entry?" +
@@ -1039,8 +1059,9 @@ public class LineEntryMenu extends JPopupMenu {
 		this.add(addToblackListAndDeleteItem);//加入黑名单并删除
 		this.add(removeItem);//单纯删除记录
 		this.add(removeItemsNotInTargets);
-		this.add(removeSubDomainItem);
-		this.add(removeCustomAssetItem);
+		//this.add(removeSubDomainItem);
+		//this.add(removeCustomAssetItem);
+		this.add(DeleteHostFromTargetItem);
 		this.add(markDuplicateItems);
 
 	}
