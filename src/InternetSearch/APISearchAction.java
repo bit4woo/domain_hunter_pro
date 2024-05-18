@@ -4,11 +4,14 @@ import java.awt.event.ActionEvent;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 import javax.swing.table.AbstractTableModel;
 
@@ -89,8 +92,9 @@ public class APISearchAction extends AbstractAction {
         SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
             @Override
             protected Map doInBackground() throws Exception {
-
+            	Set<String> searchedContent = new HashSet<String>();
                 if (modelRows.length >= 50) {
+                	JOptionPane.showMessageDialog(null, "too many items selected!! should less than 50","Alert",JOptionPane.WARNING_MESSAGE);
                     stderr.print("too many items selected!! should less than 50");
                     return null;
                 }
@@ -117,8 +121,15 @@ public class APISearchAction extends AbstractAction {
                         searchContent = result.second;
                     }
 
-                    DoSearchAllInOn(searchType, searchContent, APISearchAction.this.engineList);
-
+                    String tabname = String.format("%s(%s)", searchType, searchContent);
+                    if (searchedContent.add(tabname)) {
+                    	//保证单次操作，不对相同项进行重复搜索
+                    	Set<String> already = BurpExtender.getGui().getSearchPanel().getAlreadySearchContent();
+                    	if (!already.contains(tabname)) {
+                    		//保证已经存在的搜索内容不再重复
+                    		DoSearchAllInOn(searchType, searchContent, APISearchAction.this.engineList);
+                    	}
+                    }
                 }
                 return null;
             }

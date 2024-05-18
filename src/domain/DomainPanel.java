@@ -376,6 +376,13 @@ public class DomainPanel extends JPanel {
 		HeaderPanel.add(btnBuckupDB);
 
 
+		JButton btnRemoveDB = new JButton("remove DB");
+		btnRemoveDB.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				removeDB();
+			}
+		});
+		HeaderPanel.add(btnRemoveDB);
 
 		/*
 		JButton btnUpload = new JButton("Upload");
@@ -825,6 +832,20 @@ public class DomainPanel extends JPanel {
 		try {
 			FileUtils.copyFile(file, bakfile);
 			BurpExtender.getStdout().println("DB File Backed Up:" + bakfile.getAbsolutePath());
+		} catch (IOException e1) {
+			e1.printStackTrace(BurpExtender.getStderr());
+		}
+	}
+	
+	public void removeDB() {
+		File file = BurpExtender.getDataLoadManager().getCurrentDBFile();
+		if (file == null) return;
+		try {
+			int result = JOptionPane.showConfirmDialog(null,"Are you sure to DELETE this DB file ?");
+			if (result == JOptionPane.YES_OPTION) {
+				FileUtils.delete(file);
+				BurpExtender.getStdout().println("DB File Removed:" + file.getAbsolutePath());
+			}
 		} catch (IOException e1) {
 			e1.printStackTrace(BurpExtender.getStderr());
 		}

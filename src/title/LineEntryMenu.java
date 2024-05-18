@@ -1097,8 +1097,4 @@ public class LineEntryMenu extends JPopupMenu {
 			return host;
 		}
 	}
-	
-	
-	
-	
 }

@@ -12,8 +12,10 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -249,6 +251,16 @@ public class SearchPanel extends JPanel {
 
 		// 显示右键菜单
 		popupMenu.show(tabbedPane, e.getX(), e.getY());
+	}
+	
+	public Set<String> getAlreadySearchContent(){
+		HashSet<String> result = new HashSet<String>();
+		for (int i = centerPanel.getTabCount() - 1; i >= 0; i--) {
+			JPanel panel = ((JPanel) centerPanel.getTabComponentAt(i));
+			JLabel lab = (JLabel) panel.getComponent(0);
+			result.add(lab.getText());
+		}
+		return result;
 	}
 
 	public JPanel createButtonPanel() {
