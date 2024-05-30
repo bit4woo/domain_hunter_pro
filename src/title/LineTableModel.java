@@ -6,11 +6,14 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import javax.swing.ImageIcon;
 import javax.swing.table.AbstractTableModel;
@@ -521,6 +524,26 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			String url = lineEntries.get(rows[i]).getUrl();
 			urls.add(url);
 		}
+		return urls;
+	}
+	
+	
+	public List<String> getURLsDeduplicatedByIP(int[] rows) {
+		Arrays.sort(rows); //升序
+		List<String> urls = new ArrayList<>();
+		
+		Map<String,String> tmpDict = new HashMap<>();
+		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
+			String url = lineEntries.get(rows[i]).getUrl();
+			
+			Set<String> sortedSet = new TreeSet<>(lineEntries.get(rows[i]).getIPSet());
+	        // Join the sorted elements into a single string
+	        String uniqueString = sortedSet.stream()
+	                                       .collect(Collectors.joining(","));
+			tmpDict.put(uniqueString, url);
+			
+		}
+		urls.addAll(tmpDict.values());
 		return urls;
 	}
 

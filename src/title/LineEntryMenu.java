@@ -232,6 +232,24 @@ public class LineEntryMenu extends JPopupMenu {
 				}
 			}
 		});
+		
+		JMenuItem copyDistinctURLItem = new JMenuItem(new AbstractAction("Copy URL deduplicate by IP") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				try{
+					java.util.List<String> urls = lineTable.getLineTableModel().getURLsDeduplicatedByIP(modelRows);
+					String textUrls = String.join(System.lineSeparator(), urls);
+
+					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+					StringSelection selection = new StringSelection(textUrls);
+					clipboard.setContents(selection, null);
+				}
+				catch (Exception e1)
+				{
+					e1.printStackTrace(stderr);
+				}
+			}
+		});
 
 		JMenuItem copyCommonURLItem = new JMenuItem(new AbstractAction("Copy URL With Common Formate") {
 			@Override
@@ -1041,6 +1059,7 @@ public class LineEntryMenu extends JPopupMenu {
 		CopyMenu.add(copyIPWithCommaItem);//常用
 		CopyMenu.add(copyIPWithSpaceItem);
 		CopyMenu.add(copyURLItem);
+		CopyMenu.add(copyDistinctURLItem);
 		CopyMenu.add(copyURLOfIconItem);
 		CopyMenu.add(copyCommonURLItem);
 		CopyMenu.add(copyHostCollisionDomainsItem);

@@ -48,6 +48,7 @@ import org.apache.commons.text.StringEscapeUtils;
 import com.bit4woo.utilbox.utils.DomainUtils;
 import com.bit4woo.utilbox.utils.EmailUtils;
 import com.bit4woo.utilbox.utils.IPAddressUtils;
+import com.bit4woo.utilbox.utils.JsonUtils;
 import com.bit4woo.utilbox.utils.SwingUtils;
 import com.bit4woo.utilbox.utils.SystemUtils;
 import com.bit4woo.utilbox.utils.TextUtils;
@@ -1446,25 +1447,21 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		});
+		 */
 
 
-		JButton JsonBeautify = new BackGroundButton("Beautify Json");
-
-		JsonBeautify.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
+		JButton JsonBeautify = new BackGroundButton("Beautify Json") {
+			protected void action() {
 				String text = ((SuperJTextArea) inputTextArea).getTextAsDisplay();
 				try {
-					Gson gson = new GsonBuilder().setPrettyPrinting().create();
-					String json = gson.toJson(text);
-					outputTextArea.setText(json);
+					outputTextArea.setText(JsonUtils.pretty(text));
 				} catch (Exception e1) {
 					e1.printStackTrace(stderr);
 					statusLabel.setText("your input is not a valid json");
 				}
 			}
-		});
-		 */
+		};
+
 
 		//buttonPanel，里面放操作按钮
 		JPanel buttonPanel = new JPanel();
@@ -1566,7 +1563,7 @@ public class ToolPanel extends JPanel {
 		buttonPanel.add(unescapeHTML, new bagLayout(rowIndex, ++cloumnIndex));
 		buttonPanel.add(ToUnicode, new bagLayout(rowIndex, ++cloumnIndex));
 		//buttonPanel.add(JsonSimplify, new bagLayout(rowIndex, ++cloumnIndex) );
-		//buttonPanel.add(JsonBeautify, new bagLayout(rowIndex, ++cloumnIndex) );
+		buttonPanel.add(JsonBeautify, new bagLayout(rowIndex, ++cloumnIndex) );
 
 		cloumnIndex = 0;
 		buttonPanel.add(toLowerCaseButton, new bagLayout(++rowIndex, ++cloumnIndex));
