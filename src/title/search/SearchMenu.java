@@ -138,6 +138,15 @@ public class SearchMenu extends JPopupMenu {
 			}
 		});
 
+		
+		JMenuItem XXLJob = new JMenuItem(new AbstractAction("XXLJob") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				searchField.setText("color:white;background-color:#525D76;");
+			}
+		});
+		
+		
 		JMenuItem caseSensitive = new JMenuItem(new AbstractAction("Case Sensitive") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -148,7 +157,8 @@ public class SearchMenu extends JPopupMenu {
 				}
 			}
 		});
-
+		
+		
 		SearchTextField searchTextField = ((SearchTextField)searchField);
 		if (searchTextField.isCaseSensitive()) {
 			caseSensitive.setText("Disable Case Sensitive");
@@ -165,6 +175,8 @@ public class SearchMenu extends JPopupMenu {
 		this.addSeparator();//分割线
 		this.add(webpackItemAll);
 		this.add(AllJS);
+		this.addSeparator();//分割线
+		this.add(XXLJob);
 		this.addSeparator();//分割线
 		this.add(ItemsWithResponse);
 		this.add(UrlRedirection);
