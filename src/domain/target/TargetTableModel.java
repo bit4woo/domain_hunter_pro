@@ -7,14 +7,15 @@ import base.Commons;
 import base.IndexedHashMap;
 import base.IntArraySlice;
 import burp.BurpExtender;
+import com.bit4woo.utilbox.utils.TextUtils;
 import com.google.common.net.InternetDomainName;
 import com.google.gson.Gson;
 import domain.DomainManager;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import utils.DomainNameUtils;
-import utils.IPAddressUtils;
+import com.bit4woo.utilbox.utils.DomainUtils;
+import com.bit4woo.utilbox.utils.IPAddressUtils;
 
 import javax.swing.table.AbstractTableModel;
 import java.io.PrintWriter;
@@ -461,8 +462,8 @@ public class TargetTableModel extends AbstractTableModel {
 		if (domain.contains(":")) {//处理带有端口号的域名
 			domain = domain.substring(0,domain.indexOf(":"));
 		}
-		if (!(DomainNameUtils.isValidDomain(domain)||
-				IPAddressUtils.isValidIP(domain))) {
+		if (!(DomainUtils.isValidDomainNoPort(domain)||
+				IPAddressUtils.isValidIPv4NoPort(domain))) {
 			return false;
 		}
 		for (String rootdomain:fetchTargetBlackDomainSet()) {
@@ -526,10 +527,10 @@ public class TargetTableModel extends AbstractTableModel {
 	 */
 	public int assetType(String domainOrIP) {
 		try {
-			domainOrIP = DomainNameUtils.clearDomainWithoutPort(domainOrIP);
+			domainOrIP = DomainUtils.clearDomainWithoutPort(domainOrIP);
 
 			//格式校验，package那么也是符合域名的正则格式的。
-			if (!DomainNameUtils.isValidDomain(domainOrIP) && !IPAddressUtils.isValidIP(domainOrIP)) {
+			if (!DomainUtils.isValidDomainNoPort(domainOrIP) && !IPAddressUtils.isValidIPv4NoPort(domainOrIP)) {
 				debugPrint(domainOrIP,DomainManager.USELESS,"Not a valid domain or IP address");
 				return DomainManager.USELESS;
 			}
@@ -541,7 +542,7 @@ public class TargetTableModel extends AbstractTableModel {
 
 			Set<String> targetDomains = fetchTargetDomainSet();
 			for (String rootdomain:targetDomains) {
-				rootdomain  = DomainNameUtils.clearDomainWithoutPort(rootdomain);
+				rootdomain  = DomainUtils.clearDomainWithoutPort(rootdomain);
 				if (domainOrIP.endsWith("."+rootdomain)||domainOrIP.equalsIgnoreCase(rootdomain)){
 					debugPrint(domainOrIP,DomainManager.SUB_DOMAIN,"sub-domain of "+rootdomain);
 					return DomainManager.SUB_DOMAIN;
@@ -554,8 +555,8 @@ public class TargetTableModel extends AbstractTableModel {
 			}
 
 			for (String rootdomain:targetDomains) {
-				rootdomain  = DomainNameUtils.clearDomainWithoutPort(rootdomain);
-				if (DomainNameUtils.isWhiteListTLD(domainOrIP,rootdomain)) {
+				rootdomain  = DomainUtils.clearDomainWithoutPort(rootdomain);
+				if (DomainUtils.isWhiteListTLD(domainOrIP,rootdomain)) {
 					debugPrint(domainOrIP,DomainManager.TLD_DOMAIN,"TLD-domain of "+rootdomain);
 					return DomainManager.TLD_DOMAIN;
 				}
@@ -563,8 +564,8 @@ public class TargetTableModel extends AbstractTableModel {
 
 			Set<String> targetWildCardDomains = fetchTargetWildCardDomainSet();
 			for (String rootdomain:targetWildCardDomains) {
-				rootdomain  = DomainNameUtils.clearDomainWithoutPort(rootdomain);
-				if (DomainNameUtils.isMatchWildCardDomain(rootdomain,domainOrIP)){
+				rootdomain  = DomainUtils.clearDomainWithoutPort(rootdomain);
+				if (DomainUtils.isMatchWildCardDomain(rootdomain,domainOrIP)){
 					debugPrint(domainOrIP,DomainManager.SUB_DOMAIN,"sub-domain of "+rootdomain);
 					return DomainManager.SUB_DOMAIN;
 				}
@@ -584,7 +585,7 @@ public class TargetTableModel extends AbstractTableModel {
 				}
 			}
 
-			if(IPAddressUtils.isValidIP(domainOrIP)){
+			if(IPAddressUtils.isValidIPv4NoPort(domainOrIP)){
 				debugPrint(domainOrIP,DomainManager.NEED_CONFIRM_IP,"is a valid IP address, but not in target IP Set");
 				return DomainManager.NEED_CONFIRM_IP;
 			}
@@ -621,18 +622,18 @@ public class TargetTableModel extends AbstractTableModel {
 
 
 	public String getTLDDomainToAdd(String domain) {
-		domain = DomainNameUtils.clearDomainWithoutPort(domain);
+		domain = DomainUtils.clearDomainWithoutPort(domain);
 		Set<String> targetDomains = fetchTargetDomainSet();
 		for (String rootdomain : targetDomains) {
-			rootdomain = DomainNameUtils.clearDomainWithoutPort(rootdomain);
-			if (DomainNameUtils.isWhiteListTLD(domain, rootdomain)) {
+			rootdomain = DomainUtils.clearDomainWithoutPort(rootdomain);
+			if (DomainUtils.isWhiteListTLD(domain, rootdomain)) {
 				InternetDomainName suffixDomain = InternetDomainName.from(domain).publicSuffix();
 				InternetDomainName suffixRootDomain = InternetDomainName.from(rootdomain).publicSuffix();
 				if (suffixDomain != null && suffixRootDomain != null) {
 					String suffixOfDomain = suffixDomain.toString();
 					String suffixOfRootDomain = suffixRootDomain.toString();
 
-					String result = Commons.replaceLast(rootdomain, suffixOfRootDomain, suffixOfDomain);
+					String result = TextUtils.replaceLast(rootdomain, suffixOfRootDomain, suffixOfDomain);
 					return result;
 				}
 			}

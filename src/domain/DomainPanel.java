@@ -18,13 +18,10 @@ import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -37,11 +34,13 @@ import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 
+import com.bit4woo.utilbox.utils.SystemUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.bit4woo.utilbox.utils.EmailUtils;
 import com.google.common.net.InternetDomainName;
 
 import GUI.GUIMain;
@@ -53,9 +52,6 @@ import burp.IBurpExtenderCallbacks;
 import burp.IHttpRequestResponse;
 import burp.IHttpService;
 import burp.IScanIssue;
-import config.ConfigManager;
-import config.ConfigName;
-import config.ConfigPanel;
 import dao.DomainDao;
 import dao.TargetDao;
 import domain.target.TargetControlPanel;
@@ -63,8 +59,6 @@ import domain.target.TargetEntry;
 import domain.target.TargetTable;
 import domain.target.TargetTableModel;
 import thread.ThreadSearhDomain;
-import toElastic.VMP;
-import utils.GrepUtils;
 
 /*
  *注意，所有直接对DomainObject中数据的修改，都不会触发该tableChanged监听器。
@@ -382,8 +376,15 @@ public class DomainPanel extends JPanel {
 		HeaderPanel.add(btnBuckupDB);
 
 
+		JButton btnRemoveDB = new JButton("remove DB");
+		btnRemoveDB.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				removeDB();
+			}
+		});
+		HeaderPanel.add(btnRemoveDB);
 
-
+		/*
 		JButton btnUpload = new JButton("Upload");
 		btnUpload.setToolTipText("upload data to Server");
 		btnUpload.addActionListener(new ActionListener() {
@@ -419,6 +420,7 @@ public class DomainPanel extends JPanel {
 			}
 		});
 		HeaderPanel.add(btnUpload);
+		*/
 
 
 		////////////////////////////////////Body Panel area///////////////////////////////////////////////////////
@@ -518,7 +520,7 @@ public class DomainPanel extends JPanel {
 			public void mouseClicked(MouseEvent e) {
 				if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2) {//左键双击
 					try {
-						Commons.OpenFolder(BurpExtender.getDataLoadManager().getCurrentDBFile().getParent());
+						SystemUtils.OpenFolder(BurpExtender.getDataLoadManager().getCurrentDBFile().getParent());
 					} catch (Exception e2) {
 						e2.printStackTrace(stderr);
 					}
@@ -699,15 +701,11 @@ public class DomainPanel extends JPanel {
 	 */
 	public void collectEmailFromIssue() {
 		IScanIssue[] issues = BurpExtender.getCallbacks().getScanIssues(null);
-
-		Pattern pDomainNameOnly = Pattern.compile(GrepUtils.REGEX_EMAIL);
-
 		for (IScanIssue issue : issues) {
 			if (issue.getIssueName().equalsIgnoreCase("Email addresses disclosed")) {
 				String detail = issue.getIssueDetail();
-				Matcher matcher = pDomainNameOnly.matcher(detail);
-				while (matcher.find()) {//多次查找
-					String email = matcher.group();
+				List<String> emails = EmailUtils.grepEmail(detail);
+				for (String email:emails) {
 					if (fetchTargetModel().emailType(email) == DomainManager.CERTAIN_EMAIL) {
 						domainResult.getEmailSet().add(email);
 					}
@@ -744,7 +742,7 @@ public class DomainPanel extends JPanel {
 					IHttpRequestResponse[] items = callbacks.getSiteMap(null); //null to return entire sitemap
 					//int len = items.length;
 					//stdout.println("item number: "+len);
-					Set<URL> NeedToCrawl = new HashSet<URL>();
+					Set<URL> NeedToCrawl = new HashSet<>();
 					for (IHttpRequestResponse x : items) {// 经过验证每次都需要从头开始遍历，按一定offset获取的数据每次都可能不同
 
 						IHttpService httpservice = x.getHttpService();
@@ -822,13 +820,6 @@ public class DomainPanel extends JPanel {
 		domainResult.getSummary();
 	}
 
-	public static Set<String> getSetFromTextArea(JTextArea textarea) {
-		//user input maybe use "\n" in windows, so the System.lineSeparator() not always works fine!
-		Set<String> domainList = new HashSet<>(Arrays.asList(textarea.getText().replaceAll(" ", "").replaceAll("\r\n", "\n").split("\n")));
-		domainList.remove("");
-		return domainList;
-	}
-
 	public void backupDB(String keyword) {
 		File file = BurpExtender.getDataLoadManager().getCurrentDBFile();
 		if (file == null) return;
@@ -841,6 +832,20 @@ public class DomainPanel extends JPanel {
 		try {
 			FileUtils.copyFile(file, bakfile);
 			BurpExtender.getStdout().println("DB File Backed Up:" + bakfile.getAbsolutePath());
+		} catch (IOException e1) {
+			e1.printStackTrace(BurpExtender.getStderr());
+		}
+	}
+	
+	public void removeDB() {
+		File file = BurpExtender.getDataLoadManager().getCurrentDBFile();
+		if (file == null) return;
+		try {
+			int result = JOptionPane.showConfirmDialog(null,"Are you sure to DELETE this DB file ?");
+			if (result == JOptionPane.YES_OPTION) {
+				FileUtils.delete(file);
+				BurpExtender.getStdout().println("DB File Removed:" + file.getAbsolutePath());
+			}
 		} catch (IOException e1) {
 			e1.printStackTrace(BurpExtender.getStderr());
 		}

@@ -9,7 +9,11 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.alibaba.fastjson.JSON;
+import com.bit4woo.utilbox.utils.DomainUtils;
+import com.bit4woo.utilbox.utils.IPAddressUtils;
 import com.google.common.net.InternetDomainName;
 
 import GUI.GUIMain;
@@ -17,8 +21,6 @@ import Tools.DomainComparator;
 import burp.BurpExtender;
 import domain.target.TargetEntry;
 import domain.target.TargetTableModel;
-import org.apache.commons.lang3.StringUtils;
-import utils.GrepUtils;
 
 /*
  *注意，所有直接对DomainObject中数据的修改，都不会触发该tableChanged监听器。
@@ -390,10 +392,16 @@ public class DomainManager {
 			addIfValid(domain);
 		}
 	}
+	
+	public void addIfValid(List<String> domains) {
+		for (String domain:domains) {
+			addIfValid(domain);
+		}
+	}
 
 	public boolean addIfValid(String domain_or_url) {
-		Set<String> domains = GrepUtils.grepDomain(domain_or_url);//这样以支持domain:port形式的资产
-		List<String> ips = GrepUtils.grepIPAndPort(domain_or_url);
+		Set<String> domains = new HashSet<>(DomainUtils.grepDomainAndPort(domain_or_url));//这样以支持domain:port形式的资产
+		List<String> ips = IPAddressUtils.grepIPv4MayPort(domain_or_url);
 		domains.addAll(ips);
 
 		boolean result =false;
@@ -467,6 +475,11 @@ public class DomainManager {
 		}
 	}
 
+	public void addIfValidEmail(List<String> emails) {
+		for (String email:emails) {
+			addIfValidEmail(email);
+		}
+	}
 
 	/**
 	 * 根据已有配置进行添加，不是强行直接添加

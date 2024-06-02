@@ -4,7 +4,7 @@ import inet.ipaddr.AddressStringException;
 import inet.ipaddr.IPAddress;
 import inet.ipaddr.IPAddressSeqRange;
 import inet.ipaddr.IPAddressString;
-import utils.IPAddressUtils;
+import com.bit4woo.utilbox.utils.IPAddressUtils;
 import org.apache.commons.lang3.StringUtils;
 import java.util.List;
 
@@ -139,7 +139,7 @@ public class ASNEntry {
 			try {
 				String start = prefix.split("-")[0];
 				String end = prefix.split("-")[1];
-				return IPAddressUtils.checkIPIsInGivenRange(IP,start,end);//
+				return IPAddressUtils.IsInRange(IP,start,end);//
 			} catch (AddressStringException e) {
 				e.printStackTrace();
 				return false;

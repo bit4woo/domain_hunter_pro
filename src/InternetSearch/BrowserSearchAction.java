@@ -14,8 +14,9 @@ import base.Commons;
 import burp.BurpExtender;
 import domain.target.TargetTableModel;
 import title.LineTableModel;
-import utils.DomainNameUtils;
-import utils.IPAddressUtils;
+import com.bit4woo.utilbox.utils.DomainUtils;
+import com.bit4woo.utilbox.utils.IPAddressUtils;
+import com.bit4woo.utilbox.utils.SystemUtils;
 
 
 
@@ -80,7 +81,7 @@ public class BrowserSearchAction extends AbstractAction{
 			String url = buildSearchUrl(engine,searchContent);
 
 			try {
-				Commons.browserOpen(url, null);
+				SystemUtils.browserOpen(url, null);
 			} catch (Exception err) {
 				err.printStackTrace(BurpExtender.getStderr());
 			}
@@ -130,13 +131,13 @@ public class BrowserSearchAction extends AbstractAction{
 			//https://bgp.he.net/dns/shopee.com
 			//https://bgp.he.net/net/143.92.111.0/24
 			//https://bgp.he.net/ip/143.92.127.1
-			if (IPAddressUtils.isValidIP(searchContent)){
+			if (IPAddressUtils.isValidIPv4NoPort(searchContent)){
 				url = "https://bgp.he.net/ip/"+searchContent;
 			}
 			if (IPAddressUtils.isValidSubnet(searchContent)){
 				url = "https://bgp.he.net/net/"+searchContent;
 			}
-			if (DomainNameUtils.isValidDomain(searchContent)){
+			if (DomainUtils.isValidDomainNoPort(searchContent)){
 				url = "https://bgp.he.net/dns/"+searchContent;
 			}
 		}

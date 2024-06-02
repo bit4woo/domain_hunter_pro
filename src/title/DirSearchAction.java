@@ -5,7 +5,7 @@ import java.awt.event.ActionListener;
 
 import GUI.GUIMain;
 import burp.BurpExtender;
-import burp.SystemUtils;
+import com.bit4woo.utilbox.utils.SystemUtils;
 import config.ConfigManager;
 import config.ConfigName;
 

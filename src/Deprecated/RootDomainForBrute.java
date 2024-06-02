@@ -71,7 +71,7 @@ class RootDomainForBrute{
 		HashMap<String,Set<String>> result = new HashMap();
 		for (String server:nameServers){
 			try {
-				result = DomainNameUtils.dnsquery(domain,server);
+				result = DomainUtils.dnsquery(domain,server);
 				return result;
 			}catch (Exception e){
 				;//do nothing

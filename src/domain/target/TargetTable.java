@@ -22,6 +22,8 @@ import javax.swing.Timer;
 import javax.swing.border.LineBorder;
 import javax.swing.table.TableColumn;
 
+import com.bit4woo.utilbox.utils.SystemUtils;
+
 import GUI.GUIMain;
 import base.Commons;
 import burp.BurpExtender;
@@ -105,7 +107,7 @@ public class TargetTable extends JTable {
 								if (domain != null && !domain.toLowerCase().startsWith("http://") && !domain.toLowerCase().startsWith("https://")) {
 									domain = "http://" + domain;//针对DNS记录中URL字段是host的情况
 								}
-								Commons.browserOpen(domain, ConfigManager.getStringConfigByKey(ConfigName.BrowserPath));
+								SystemUtils.browserOpen(domain, ConfigManager.getStringConfigByKey(ConfigName.BrowserPath));
 							}
 						} catch (Exception e1) {
 							e1.printStackTrace(stderr);
@@ -122,13 +124,15 @@ public class TargetTable extends JTable {
 						//当在空白处点击时，JTable.getValueAt会越界，当在空白位置点击时，获取到的值是-1
 						return;
 					}
+					
+					if (TargetTable.this.getColumnClass(col).equals(String.class)) {
+						String value = (String) TargetTable.this.getValueAt(row, col);
 
-					String value = (String) TargetTable.this.getValueAt(row, col);
-
-					int modelCol = TargetTable.this.convertColumnIndexToModel(col);
-					int headerLength = TargetTableModel.getTitleList().get(modelCol).length();
-					if (value.length() > headerLength) {
-						showToolTip(TargetTable.this, e.getPoint(), value);
+						int modelCol = TargetTable.this.convertColumnIndexToModel(col);
+						int headerLength = TargetTableModel.getTitleList().get(modelCol).length();
+						if (value.length() > headerLength) {
+							showToolTip(TargetTable.this, e.getPoint(), value);
+						}
 					}
 				}
 			}

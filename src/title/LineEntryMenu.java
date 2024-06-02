@@ -7,11 +7,8 @@ import java.awt.event.ActionEvent;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -23,26 +20,22 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingWorker;
 
+import com.bit4woo.utilbox.burp.HelperPlus;
+import com.bit4woo.utilbox.utils.SystemUtils;
+
 import ASN.ASNEntry;
 import ASN.ASNQuery;
 import GUI.GUIMain;
-import InternetSearch.APISearchAction;
-import InternetSearch.BrowserSearchAction;
 import InternetSearch.SearchEngine;
 import Tools.ToolPanel;
-import base.Commons;
 import base.IndexedHashMap;
 import burp.BurpExtender;
-import burp.Getter;
 import burp.IBurpExtenderCallbacks;
 import burp.LineEntryMenuForBurp;
-import burp.SystemUtils;
 import config.ConfigManager;
 import config.ConfigName;
 import title.search.SearchNumbericDork;
 import title.search.SearchStringDork;
-import utils.DomainNameUtils;
-import utils.IPAddressUtils;
 import utils.PortScanUtils;
 
 public class LineEntryMenu extends JPopupMenu {
@@ -239,6 +232,24 @@ public class LineEntryMenu extends JPopupMenu {
 				}
 			}
 		});
+		
+		JMenuItem copyDistinctURLItem = new JMenuItem(new AbstractAction("Copy URL deduplicate by IP") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				try{
+					java.util.List<String> urls = lineTable.getLineTableModel().getURLsDeduplicatedByIP(modelRows);
+					String textUrls = String.join(System.lineSeparator(), urls);
+
+					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+					StringSelection selection = new StringSelection(textUrls);
+					clipboard.setContents(selection, null);
+				}
+				catch (Exception e1)
+				{
+					e1.printStackTrace(stderr);
+				}
+			}
+		});
 
 		JMenuItem copyCommonURLItem = new JMenuItem(new AbstractAction("Copy URL With Common Formate") {
 			@Override
@@ -394,7 +405,7 @@ public class LineEntryMenu extends JPopupMenu {
 						return;
 					}
 					for (String url:urls){
-						Commons.browserOpen(url,ConfigManager.getStringConfigByKey(ConfigName.BrowserPath));
+						SystemUtils.browserOpen(url,ConfigManager.getStringConfigByKey(ConfigName.BrowserPath));
 					}
 				}
 				catch (Exception e1)
@@ -768,11 +779,8 @@ public class LineEntryMenu extends JPopupMenu {
 							}
 
 							byte[] request = entry.getRequest();
-							Getter getter = new Getter(callbacks.getHelpers());
-							LinkedHashMap<String, String> headers = getter.getHeaderMap(true,request);
-							headers.put("Cookie",cookieValue);
-							byte[] body = getter.getBody(true,request);
-							request = callbacks.getHelpers().buildHttpMessage(getter.headerMapToHeaderList(headers),body);
+							HelperPlus getter = BurpExtender.getHelperPlus();
+							request = getter.addOrUpdateHeader(true, request, "Cookie", cookieValue);
 
 							String tabCaption = row+"DH";
 							callbacks.sendToRepeater(
@@ -835,7 +843,7 @@ public class LineEntryMenu extends JPopupMenu {
 		/**
 		 * 单纯从title记录中删除,不做其他修改
 		 */
-		JMenuItem removeItem = new JMenuItem(new AbstractAction("Delete This Entry") {//need to show dialog to confirm
+		JMenuItem removeItem = new JMenuItem(new AbstractAction("Delete Entry") {//need to show dialog to confirm
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				new SwingWorker<Map,Map>(){
@@ -857,7 +865,7 @@ public class LineEntryMenu extends JPopupMenu {
 		/**
 		 * 删除明显非目标的记录
 		 */
-		JMenuItem removeItemsNotInTargets = new JMenuItem(new AbstractAction("Delete Entries Not in Targets") {//need to show dialog to confirm
+		JMenuItem removeItemsNotInTargets = new JMenuItem(new AbstractAction("Delete Entries That Not in Targets") {//need to show dialog to confirm
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				new SwingWorker<Map,Map>(){
@@ -940,11 +948,32 @@ public class LineEntryMenu extends JPopupMenu {
 		});
 		removeSubDomainItem.setToolTipText("Delete Host From Subdomain Set In Domain Panel");
 
+		
+		JMenuItem DeleteHostFromTargetItem = new JMenuItem(new AbstractAction("Delete Host From Target") {//need to show dialog to confirm
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				int result = JOptionPane.showConfirmDialog(null,"Delete these hosts from Target(Subdomains and Custom Assets)?");
+				if (result == JOptionPane.YES_OPTION) {
+					//java.util.List<String> hosts = lineTable.getLineTableModel().getHosts(rows);//不包含端口，如果原始记录包含端口就删不掉
+					//如果有 domain domain:8888 两个记录，这种方式就会删错对象
+					java.util.List<String> hostAndPort = lineTable.getLineTableModel().getHostsAndPorts(modelRows);//包含端口，如果原始记录
+					for(String item:hostAndPort) {
+						if (!guiMain.getDomainPanel().getDomainResult().getSpecialPortTargets().remove(item)) {
+							guiMain.getDomainPanel().getDomainResult().getSpecialPortTargets().remove(item.split(":")[0]);
+						}
+						if (!guiMain.getDomainPanel().getDomainResult().getSubDomainSet().remove(item)) {
+							guiMain.getDomainPanel().getDomainResult().getSubDomainSet().remove(item.split(":")[0]);
+						}
+					}
+				}
+			}
+		});
+		removeSubDomainItem.setToolTipText("Delete Host From Subdomain Set In Domain Panel");
 
 		/**
 		 * 黑名单主要用于记录CDN或者云服务IP，避免计算网段时包含这些IP。
 		 */
-		JMenuItem addToblackListItem = new JMenuItem(new AbstractAction("Add IP Address To Black List") {//need to show dialog to confirm
+		JMenuItem addToblackListItem = new JMenuItem(new AbstractAction("Add IP To Black List") {//need to show dialog to confirm
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				int result = JOptionPane.showConfirmDialog(null,"Add these IP to black list?" +
@@ -959,7 +988,7 @@ public class LineEntryMenu extends JPopupMenu {
 		/**
 		 * 黑名单主要用于记录CDN或者云服务IP，避免计算网段时包含这些IP。
 		 */
-		JMenuItem addToblackListAndDeleteItem = new JMenuItem(new AbstractAction("Add IP To Black List And Del Entry") {//need to show dialog to confirm
+		JMenuItem addToblackListAndDeleteItem = new JMenuItem(new AbstractAction("Add IP To Black List And Delete Entry") {//need to show dialog to confirm
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				int result = JOptionPane.showConfirmDialog(null,"Add these IP to black list and Delete entry?" +
@@ -1030,6 +1059,7 @@ public class LineEntryMenu extends JPopupMenu {
 		CopyMenu.add(copyIPWithCommaItem);//常用
 		CopyMenu.add(copyIPWithSpaceItem);
 		CopyMenu.add(copyURLItem);
+		CopyMenu.add(copyDistinctURLItem);
 		CopyMenu.add(copyURLOfIconItem);
 		CopyMenu.add(copyCommonURLItem);
 		CopyMenu.add(copyHostCollisionDomainsItem);
@@ -1048,8 +1078,9 @@ public class LineEntryMenu extends JPopupMenu {
 		this.add(addToblackListAndDeleteItem);//加入黑名单并删除
 		this.add(removeItem);//单纯删除记录
 		this.add(removeItemsNotInTargets);
-		this.add(removeSubDomainItem);
-		this.add(removeCustomAssetItem);
+		//this.add(removeSubDomainItem);
+		//this.add(removeCustomAssetItem);
+		this.add(DeleteHostFromTargetItem);
 		this.add(markDuplicateItems);
 
 	}
@@ -1085,8 +1116,4 @@ public class LineEntryMenu extends JPopupMenu {
 			return host;
 		}
 	}
-	
-	
-	
-	
 }

@@ -1,8 +1,12 @@
 package domain;
 
 import java.io.PrintWriter;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
+
+import com.bit4woo.utilbox.utils.DomainUtils;
+import com.bit4woo.utilbox.utils.EmailUtils;
 
 import GUI.GUIMain;
 import base.Commons;
@@ -11,12 +15,10 @@ import burp.IBurpExtenderCallbacks;
 import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
 import burp.IHttpService;
+import com.bit4woo.utilbox.utils.UrlUtils;
 import config.ConfigManager;
 import config.ConfigName;
-import config.ConfigPanel;
 import title.LineEntry;
-import toElastic.ElasticClient;
-import utils.GrepUtils;
 
 public class DomainProducer extends Thread {//Producer do
 	private final BlockingQueue<IHttpRequestResponse> inputQueue;//use to store messageInfo
@@ -150,23 +152,24 @@ public class DomainProducer extends Thread {//Producer do
 				}
 
 				//第三步：对所有流量都进行抓取，这样可以发现更多域名，但同时也会有很多无用功，尤其是使用者同时挖掘多个目标的时候
-				if (!Commons.uselessExtension(urlString)) {//grep domains from response and classify
+				if (!UrlUtils.uselessExtension(urlString)) {//grep domains from response and classify
 					byte[] response = messageinfo.getResponse();
 
 					if (response != null) {
 						if (response.length >= 100000000) {//避免大数据包卡死整个程序
 							response = subByte(response,0,100000000);
 						}
-						Set<String> domains = GrepUtils.grepDomain(new String(response));
+						Set<String> domains = new HashSet<>(DomainUtils.grepDomainAndPort(new String(response)));
 						//List<String> IPs = DomainProducer.grepIPAndPort(new String(response));
-						Set<String> emails = GrepUtils.grepEmail(new String(response));
+						Set<String> emails = new HashSet<>(EmailUtils.grepEmail(new String(response)));
 
 						DomainPanel.getDomainResult().addIfValid(domains);
 						//DomainPanel.getDomainResult().addIfValid(new HashSet<>(IPs));
 						DomainPanel.getDomainResult().addIfValidEmail(emails);
 					}
 				}
-
+				
+				/*
 				if (ConfigManager.getBooleanConfigByKey(ConfigName.SaveTrafficToElastic)) {
 					if (type != DomainManager.USELESS && !Commons.uselessExtension(urlString)) {//grep domains from response and classify
 						if (threadNo == 9999) {
@@ -179,7 +182,7 @@ public class DomainProducer extends Thread {//Producer do
 							}
 						}
 					}
-				}
+				}*/
 			} catch (InterruptedException error) {
 				BurpExtender.getStdout().println(this.getName() +" exits due to Interrupt signal received");
 			}catch (Exception error) {

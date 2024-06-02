@@ -3,7 +3,7 @@ package utils;
 import java.util.List;
 import java.util.Set;
 
-import burp.SystemUtils;
+import com.bit4woo.utilbox.utils.SystemUtils;
 
 public class PortScanUtils {
 	

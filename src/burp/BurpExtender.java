@@ -12,6 +12,8 @@ import config.DataLoadManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.bit4woo.utilbox.burp.HelperPlus;
+
 import GUI.GUIMain;
 import bsh.This;
 import config.ConfigManager;
@@ -23,6 +25,9 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	 *
 	 */
 	private static IBurpExtenderCallbacks callbacks;
+	private static IExtensionHelpers helpers;
+	private static HelperPlus helperPlus;
+
 	private static PrintWriter stdout;
 	private static PrintWriter stderr;
 	private static String ExtenderName = "Domain Hunter Pro";
@@ -65,6 +70,14 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		return github;
 	}
 
+	public static IExtensionHelpers getHelpers() {
+		return helpers;
+	}
+
+	public static HelperPlus getHelperPlus() {
+		return helperPlus;
+	}
+
 	public static GUIMain getGui() {
 		return gui;
 	}
@@ -82,39 +95,12 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	}
 
 
-	@Deprecated
-	public void saveDBfilepathToExtension() {
-		//to save domain result to extensionSetting
-		//仅仅存储sqllite数据库的名称,也就是domainResult的项目名称
-		if (dataLoadManager.getCurrentDBFile() != null) {
-			String dbfilepath = dataLoadManager.getCurrentDBFile().getAbsolutePath();
-			stdout.println("Saving Current DB File Path To Disk: " + dbfilepath);
-			System.out.println("Loaded DB File Path From Disk: " + dbfilepath);
-			callbacks.saveExtensionSetting(Extension_Setting_Name_DB_File, dbfilepath);
-		}
-	}
-
-	/**
-	 * 很多时候都获取不到数据，都是null值！有bug
-	 *
-	 * @return
-	 */
-	@Deprecated
-	public static String loadDBfilepathFromExtension() {
-		String dbfilepath = callbacks.loadExtensionSetting(Extension_Setting_Name_DB_File);
-		if (dbfilepath == null) {
-			//dbfilepath = LineConfig.loadFromDisk().getDbfilepath();
-		}
-		stdout.println("Loaded DB File Path From Disk: " + dbfilepath);
-		System.out.println("Loaded DB File Path From Disk: " + dbfilepath);
-		return dbfilepath;
-	}
-
-
 	//插件加载过程中需要做的事
 	@Override
 	public void registerExtenderCallbacks(IBurpExtenderCallbacks callbacks) {
 		BurpExtender.callbacks = callbacks;
+		BurpExtender.helpers = callbacks.getHelpers();
+		BurpExtender.helperPlus = new HelperPlus(helpers);
 
 		getStdout();
 		getStderr();

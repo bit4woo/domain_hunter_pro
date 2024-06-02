@@ -45,6 +45,10 @@ public class Stack {
         }
         return t;
     }
+    
+    public boolean remove(String item) {
+    	return stack.remove(item);
+    }
 
     public boolean contains(String t) {
         return stack.contains(t);

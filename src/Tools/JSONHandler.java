@@ -78,7 +78,7 @@ public class JSONHandler {
 			}
 		}else {
 			String reg = String.format("\"%s\":[\\s]*[\"]{0,1}(.*?)[\"]{0,1}[,}]+", keyName);
-
+			//JSON 标准中定义了字符串必须使用双引号（"）来包裹，因此在合法的 JSON 中，字符串不能使用单引号
 			Pattern pattern = Pattern.compile(reg);
 			Matcher matcher = pattern.matcher(jsonString);
 			while (matcher.find()) {//多次查找

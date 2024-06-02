@@ -12,8 +12,10 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -28,14 +30,15 @@ import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 
+import com.bit4woo.utilbox.utils.DomainUtils;
+import com.bit4woo.utilbox.utils.IPAddressUtils;
+import com.bit4woo.utilbox.utils.SystemUtils;
+import com.bit4woo.utilbox.utils.UrlUtils;
 import com.google.gson.Gson;
 
 import GUI.GUIMain;
 import burp.BurpExtender;
-import burp.IPAddressUtils;
 import title.WebIcon;
-import utils.DomainNameUtils;
-import utils.URLUtils;
 
 public class SearchPanel extends JPanel {
 
@@ -63,8 +66,8 @@ public class SearchPanel extends JPanel {
 			test.setPort(88);
 			test.setProtocol("https");
 
-			SearchTableModel searchTableModel= new SearchTableModel(null,new ArrayList<SearchResultEntry>(Collections.singletonList(test)));
-			SearchTable searchTable = new SearchTable(null,searchTableModel);
+			SearchTableModel searchTableModel = new SearchTableModel(null, new ArrayList<SearchResultEntry>(Collections.singletonList(test)));
+			SearchTable searchTable = new SearchTable(null, searchTableModel);
 
 			frame.getContentPane().add(searchTable);
 		});
@@ -82,17 +85,17 @@ public class SearchPanel extends JPanel {
 			test.setHost("8.8.8.8");
 			test.setPort(88);
 			test.setProtocol("https");
-			spanel.addSearchTab("111",new ArrayList<SearchResultEntry>(Collections.singletonList(test)),new ArrayList<String>(Collections.singletonList("xxx")));
+			spanel.addSearchTab("111", new ArrayList<SearchResultEntry>(Collections.singletonList(test)), new ArrayList<String>(Collections.singletonList("xxx")));
 		});
 	}
 
 	public SearchPanel(GUIMain guiMain) {
 		this.guiMain = guiMain;
 
-		try{
+		try {
 			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
 			stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
-		}catch (Exception e){
+		} catch (Exception e) {
 			stdout = new PrintWriter(System.out, true);
 			stderr = new PrintWriter(System.out, true);
 		}
@@ -102,23 +105,23 @@ public class SearchPanel extends JPanel {
 		this.add(createButtonPanel(), BorderLayout.NORTH);
 		centerPanel = new JTabbedPane();
 
-		this.add(centerPanel,BorderLayout.CENTER);
+		this.add(centerPanel, BorderLayout.CENTER);
 	}
 
-	public void addSearchTab(String tabName,List<SearchResultEntry> entries,List<String> engines) {
+	public void addSearchTab(String tabName, List<SearchResultEntry> entries, List<String> engines) {
 		JPanel containerpanel = new JPanel();//Tab的最外层容器面板
 		containerpanel.setLayout(new BorderLayout(0, 0));
 
-		SearchTableModel searchTableModel= new SearchTableModel(this.guiMain,entries);
-		SearchTable searchTable = new SearchTable(this.guiMain,searchTableModel);
-		JScrollPane scrollPane = new JScrollPane(searchTable,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+		SearchTableModel searchTableModel = new SearchTableModel(this.guiMain, entries);
+		SearchTable searchTable = new SearchTable(this.guiMain, searchTableModel);
+		JScrollPane scrollPane = new JScrollPane(searchTable, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
 				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);//table area
 
 		JLabel status = new JLabel("^_^");
-		status.setText(getStatusInfo(entries,engines));
+		status.setText(getStatusInfo(entries, engines));
 
-		containerpanel.add(scrollPane,BorderLayout.CENTER);
-		containerpanel.add(status,BorderLayout.SOUTH);
+		containerpanel.add(scrollPane, BorderLayout.CENTER);
+		containerpanel.add(status, BorderLayout.SOUTH);
 
 
 		//用一个panel实现tab那个小块
@@ -143,28 +146,28 @@ public class SearchPanel extends JPanel {
 			@Override
 			public void mouseReleased(MouseEvent e) {
 				if (SwingUtilities.isRightMouseButton(e)) {
-					showPopupMenu(centerPanel,e);
+					showPopupMenu(centerPanel, e);
 				}
 			}
 		});
 	}
 
-	public String getStatusInfo(List<SearchResultEntry> entries,List<String> engines) {
-		Map<String,Integer> status = new HashMap<>();
-		for (String engine:engines) {
+	public String getStatusInfo(List<SearchResultEntry> entries, List<String> engines) {
+		Map<String, Integer> status = new HashMap<>();
+		for (String engine : engines) {
 			status.put(engine, 0);
 		}
-		int unknown=0;
-		for (SearchResultEntry entry:entries){
+		int unknown = 0;
+		for (SearchResultEntry entry : entries) {
 			String source = entry.getSource();
 			if (engines.contains(source)) {
 				int num = status.get(source);
 				status.put(source, num + 1);
-			}else {
+			} else {
 				unknown++;
 			}
 		}
-		if (unknown>0) {
+		if (unknown > 0) {
 			status.put("unknown", unknown);
 		}
 
@@ -188,7 +191,7 @@ public class SearchPanel extends JPanel {
 	}
 
 	// 显示右键菜单
-	private void showPopupMenu(JTabbedPane tabbedPane,MouseEvent e) {
+	private void showPopupMenu(JTabbedPane tabbedPane, MouseEvent e) {
 		JPopupMenu popupMenu = new JPopupMenu();
 
 		int tabIndex = tabbedPane.indexAtLocation(e.getX(), e.getY());
@@ -235,8 +238,29 @@ public class SearchPanel extends JPanel {
 		});
 		popupMenu.add(closeTabsToRightMenuItem);
 
+
+		JMenuItem copyTabNameMenuItem = new JMenuItem("Copy Tab Name");
+		copyTabNameMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				JPanel panel = ((JPanel) tabbedPane.getTabComponentAt(tabIndex));
+				JLabel lab = (JLabel) panel.getComponent(0);
+				SystemUtils.writeToClipboard(lab.getText());
+			}
+		});
+		popupMenu.add(copyTabNameMenuItem);
+
 		// 显示右键菜单
 		popupMenu.show(tabbedPane, e.getX(), e.getY());
+	}
+	
+	public Set<String> getAlreadySearchContent(){
+		HashSet<String> result = new HashSet<String>();
+		for (int i = centerPanel.getTabCount() - 1; i >= 0; i--) {
+			JPanel panel = ((JPanel) centerPanel.getTabComponentAt(i));
+			JLabel lab = (JLabel) panel.getComponent(0);
+			result.add(lab.getText());
+		}
+		return result;
 	}
 
 	public JPanel createButtonPanel() {
@@ -250,21 +274,21 @@ public class SearchPanel extends JPanel {
 		JButton buttonSearch = new JButton("Search");
 		buttonSearch.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				SwingWorker<Void, Void> worker = new SwingWorker<Void,Void>() {
+				SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
 					@Override
 					protected Void doInBackground() throws Exception {
 						String content = textFieldSearch.getText();
-						String searchType=null;
+						String searchType = null;
 
-						if(DomainNameUtils.isValidDomain(content)) {
+						if (DomainUtils.isValidDomainNoPort(content)) {
 							searchType = SearchType.SubDomain;
-						}else if (IPAddressUtils.isValidIP(content)) {
+						} else if (IPAddressUtils.isValidIPv4NoPort(content)) {
 							searchType = SearchType.IP;
-						}else {
+						} else {
 							searchType = SearchType.OriginalString;
 						}
 
-						APISearchAction.DoSearchAllInOn(searchType,content,SearchEngine.getAssetSearchEngineList());
+						APISearchAction.DoSearchAllInOn(searchType, content, SearchEngine.getAssetSearchEngineList());
 
 						return null;
 					}
@@ -272,7 +296,7 @@ public class SearchPanel extends JPanel {
 					@Override
 					protected void done() {
 
-					} 
+					}
 				};
 				worker.execute();
 			}
@@ -283,25 +307,25 @@ public class SearchPanel extends JPanel {
 		JButton buttonSearchAs = new JButton("Search As");
 		buttonSearchAs.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				SwingWorker<Void, Void> worker = new SwingWorker<Void,Void>() {
+				SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
 					@Override
 					protected Void doInBackground() throws Exception {
 						String content = textFieldSearch.getText();
 
 						String searchType = SearchType.choseSearchType();
-						switch (searchType){
-							case SearchType.Email:
-								APISearchAction.DoSearchAllInOn(searchType,content,SearchEngine.getEmailSearchEngineList());
-								break;
-							case SearchType.IconHash:
-								if (URLUtils.isVaildUrl(content)){
-									byte[] imageData = WebIcon.getFavicon(content);
-									if (imageData.length>0){
-										content = WebIcon.getHash(imageData);
-									}
+						switch (searchType) {
+						case SearchType.Email:
+							APISearchAction.DoSearchAllInOn(searchType, content, SearchEngine.getEmailSearchEngineList());
+							break;
+						case SearchType.IconHash:
+							if (UrlUtils.isVaildUrl(content)) {
+								byte[] imageData = WebIcon.getFavicon(content);
+								if (imageData.length > 0) {
+									content = WebIcon.getHash(imageData);
 								}
-							default:
-								APISearchAction.DoSearchAllInOn(searchType,content,SearchEngine.getAssetSearchEngineList());
+							}
+						default:
+							APISearchAction.DoSearchAllInOn(searchType, content, SearchEngine.getAssetSearchEngineList());
 						}
 						return null;
 					}

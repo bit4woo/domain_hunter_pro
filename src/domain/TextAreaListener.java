@@ -1,16 +1,14 @@
 package domain;
 
-import java.io.File;
-import java.util.Set;
+import GUI.JScrollPanelWithHeader;
+import burp.BurpExtender;
+import com.bit4woo.utilbox.utils.SwingUtils;
+import dao.DomainDao;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-
-import GUI.GUIMain;
-import GUI.JScrollPanelWithHeader;
-import base.Commons;
-import burp.BurpExtender;
-import dao.DomainDao;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * 保存TextArea的变更
@@ -30,7 +28,7 @@ public class TextAreaListener implements DocumentListener {
 	public void saveToDBAndSyncModel(){
 		if (domainPanel.isListenerIsOn()){
 			DomainDao dao = new DomainDao(BurpExtender.getDataLoadManager().getCurrentDBFile());
-			Set<String> content = Commons.getSetFromTextArea(TextAreaPanel.getTextArea());
+			Set<String> content = new HashSet<>(SwingUtils.getLinesFromTextArea(TextAreaPanel.getTextArea()));
 			TextAreaType type = TextAreaPanel.getTextAreaType();
 			domainPanel.getDomainResult().fillContentByType(type,content);
 			dao.createOrUpdateByType(content, type);

@@ -25,6 +25,8 @@ import config.ConfigManager;
 import config.ConfigName;
 import org.apache.commons.lang3.StringUtils;
 
+import com.bit4woo.utilbox.utils.SystemUtils;
+
 public class TargetEntryMenu extends JPopupMenu {
 
 	private static final long serialVersionUID = 1L;
@@ -123,7 +125,7 @@ public class TargetEntryMenu extends JPopupMenu {
 				for (int row:modelRows) {
 					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,rootDomainColumnIndex);
 					try {
-						Commons.browserOpen("https://"+rootDomain, ConfigManager.getStringConfigByKey(ConfigName.BrowserPath));
+						SystemUtils.browserOpen("https://"+rootDomain, ConfigManager.getStringConfigByKey(ConfigName.BrowserPath));
 					} catch (Exception e) {
 						e.printStackTrace(stderr);
 					}

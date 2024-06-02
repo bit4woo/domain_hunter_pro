@@ -18,10 +18,11 @@ import javax.swing.table.TableRowSorter;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.bit4woo.utilbox.utils.SystemUtils;
+
 import GUI.GUIMain;
 import base.Commons;
 import burp.BurpExtender;
-import burp.SystemUtils;
 import config.ConfigManager;
 import config.ConfigName;
 
@@ -152,7 +153,7 @@ public class SearchTable extends JTable
 							if (!url.toLowerCase().startsWith("http://") && !url.toLowerCase().startsWith("https://")) {
 								url = "http://"+url;//针对DNS记录中URL字段是host的情况
 							}
-							Commons.browserOpen(url,ConfigManager.getStringConfigByKey(ConfigName.BrowserPath));
+							SystemUtils.browserOpen(url,ConfigManager.getStringConfigByKey(ConfigName.BrowserPath));
 						}catch (Exception e1){
 							e1.printStackTrace(stderr);
 						}
@@ -160,7 +161,7 @@ public class SearchTable extends JTable
 
 					}else if (modelCol == HeadList.indexOf(SearchTableHead.Favicon)) {
 						try {
-							Commons.browserOpen(selecteEntry.getIcon_url(),ConfigManager.getStringConfigByKey(ConfigName.BrowserPath));
+							SystemUtils.browserOpen(selecteEntry.getIcon_url(),ConfigManager.getStringConfigByKey(ConfigName.BrowserPath));
 						} catch (Exception e1) {
 							e1.printStackTrace();
 						}

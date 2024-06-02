@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.List;
 
+import com.bit4woo.utilbox.utils.SystemUtils;
 import org.apache.commons.io.FileUtils;
 
 import base.Commons;
@@ -95,7 +96,7 @@ public class portScanner {
 		//linux which
 		//mac which where
 		
-		if (Commons.isWindows()) {
+		if (SystemUtils.isWindows()) {
 			cmd = "where "+cmd;
 		}else {
 			cmd = "which "+cmd;

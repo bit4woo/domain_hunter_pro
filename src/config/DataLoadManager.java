@@ -279,6 +279,14 @@ public class DataLoadManager {
 			List<String> list = recentDbFiles.getItemList();
 			Collections.reverse(list);
 			for(String item:list) {
+				if (StringUtils.isEmpty(item)) {
+					recentDbFiles.remove(item);
+					continue;
+				}
+				if (!new File(item).exists()) {
+					recentDbFiles.remove(item);
+					continue;
+				}
 				JMenuItem menuItem = new JMenuItem(new AbstractAction(item) {
 					@Override
 					public void actionPerformed(ActionEvent actionEvent) {

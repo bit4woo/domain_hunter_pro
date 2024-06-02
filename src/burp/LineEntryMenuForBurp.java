@@ -18,16 +18,18 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 
+import org.apache.commons.lang3.StringUtils;
+
+import com.bit4woo.utilbox.burp.HelperPlus;
+import com.bit4woo.utilbox.utils.CharsetUtils;
+
 import GUI.GUIMain;
 import Tools.ToolPanel;
 import base.BackGroundActionListener;
 import base.Commons;
-import base.HttpMessageCharSet;
 import config.ConfigManager;
 import config.ConfigName;
-import config.ConfigPanel;
 import domain.DomainManager;
-import org.apache.commons.lang3.StringUtils;
 import title.LineEntry;
 import title.LineTable;
 import title.TitlePanel;
@@ -301,7 +303,7 @@ public class LineEntryMenuForBurp{
 			//还是要简化逻辑，如果找不到就不执行！
 			try{
 				IHttpRequestResponse[] messages = getSelectedMessages(invocation);
-				Getter getter = new Getter(helpers);
+				HelperPlus getter = BurpExtender.getHelperPlus();
 				String comment = getCommentInfo();
 				if (StringUtils.isEmpty(comment)) {
 					return;
@@ -394,8 +396,7 @@ public class LineEntryMenuForBurp{
 		{
 			try{
 				IHttpRequestResponse[] messages = getSelectedMessages(invocation);
-				Getter getter = new Getter(helpers);
-				String host = getter.getHost(messages[0]);
+				String host = HelperPlus.getHost(messages[0]);
 				int port = messages[0].getHttpService().getPort();
 				List<LineEntry> entries = titlepanel.getTitleTable().getLineTableModel().findLineEntriesByHostAndPort(host,port);
 
@@ -462,11 +463,11 @@ public class LineEntryMenuForBurp{
 			if (topMenu.getItemCount() == 0) {
 				try{
 					IHttpRequestResponse[] messages = getSelectedMessages(invocation);
-					Getter getter = new Getter(helpers);
+					HelperPlus getter = BurpExtender.getHelperPlus();
 					URL fullurl = getter.getFullURL(messages[0]);
 					LineEntry entry = titlepanel.getTitleTable().getLineTableModel().findLineEntry(fullurl.toString());
 					if (entry == null) {
-						URL shortUrl = getter.getShortURL(messages[0]);
+						URL shortUrl = HelperPlus.getBaseURL(messages[0]);
 						if(!fullurl.equals(shortUrl)) {
 							entry = titlepanel.getTitleTable().getLineTableModel().findLineEntry(shortUrl.toString());
 						}
@@ -573,7 +574,7 @@ public class LineEntryMenuForBurp{
 			//当时为啥要用这个key来存储新增的Request？URL地址一样而数据包不一样的情况？
 			//String hashKey = HashCode.fromBytes(message.getRequest()).toString();
 
-			Getter getter = new Getter(helpers);
+			HelperPlus getter = BurpExtender.getHelperPlus();
 			URL fullurl = getter.getFullURL(message);
 			LineEntry entry = titlepanel.getTitleTable().getLineTableModel().findLineEntry(fullurl.toString());
 
@@ -655,7 +656,7 @@ public class LineEntryMenuForBurp{
 			}
 
 			if(source!=null) {
-				String originalCharSet = HttpMessageCharSet.getCharset(source);
+				String originalCharSet = CharsetUtils.detectCharset(source);
 				String text;
 				try {
 					text = new String(source,originalCharSet);

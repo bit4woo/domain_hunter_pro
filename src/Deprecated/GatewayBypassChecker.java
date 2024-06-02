@@ -28,7 +28,7 @@ public class GatewayBypassChecker extends Thread {//Producer do
 	public PrintWriter stdout = new PrintWriter(callbacks.getStdout(), true);
 	public PrintWriter stderr = new PrintWriter(callbacks.getStderr(), true);
 	public IExtensionHelpers helpers = callbacks.getHelpers();
-	public HelperPlus getter = new HelperPlus(helpers);
+	public HelperPlus getter = BurpExtender.getHelperPlus();
 
 	LineTableModel runnerTableModel;
 

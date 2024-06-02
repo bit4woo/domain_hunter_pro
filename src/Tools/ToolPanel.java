@@ -18,7 +18,6 @@ import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
@@ -35,6 +34,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
@@ -45,18 +45,22 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 
+import com.bit4woo.utilbox.utils.DomainUtils;
+import com.bit4woo.utilbox.utils.EmailUtils;
+import com.bit4woo.utilbox.utils.IPAddressUtils;
+import com.bit4woo.utilbox.utils.JsonUtils;
+import com.bit4woo.utilbox.utils.SwingUtils;
+import com.bit4woo.utilbox.utils.SystemUtils;
+import com.bit4woo.utilbox.utils.TextUtils;
+import com.bit4woo.utilbox.utils.UrlUtils;
+
 import GUI.GUIMain;
 import base.BackGroundButton;
-import base.Commons;
 import burp.BurpExtender;
 import config.ConfigManager;
 import config.ConfigName;
-import config.ConfigPanel;
 import domain.CertInfo;
 import title.WebIcon;
-import utils.DomainNameUtils;
-import utils.GrepUtils;
-import utils.IPAddressUtils;
 
 /**
  * 所有配置的修改，界面的操作，都立即写入LineConfig对象，如有必要保存到磁盘，再调用一次SaveConfig函数，思路要清晰
@@ -136,7 +140,6 @@ public class ToolPanel extends JPanel {
 		 */
 
 
-
 		///////////////////////BodyPane//////////////
 
 
@@ -148,14 +151,41 @@ public class ToolPanel extends JPanel {
 		//searchResultTextArea = searhResultPanel.getTextArea();
 
 
-		JScrollPanelWithHeaderForTool InputPanel = new JScrollPanelWithHeaderForTool("Input","",true,true);
+		JScrollPanelWithHeaderForTool InputPanel = new JScrollPanelWithHeaderForTool("Input", "", true, true);
 		inputTextArea = InputPanel.getTextArea();
-		inputTextArea.addMouseListener(new TextAreaMouseListener(guiMain,inputTextArea));
+		inputTextArea.addMouseListener(new TextAreaMouseListener(guiMain, inputTextArea));
+		inputTextArea.getDocument().addDocumentListener(new DocumentListener() {
 
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				inputTextAreaChanged = true;
+			}
 
-		JScrollPanelWithHeaderForTool OutPanel = new JScrollPanelWithHeaderForTool("OutPut","",false,false);
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				inputTextAreaChanged = true;
+			}
+
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				inputTextAreaChanged = true;
+			}
+
+		});
+
+		InputPanel.getHeadLabel().addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (e.getClickCount() == 2) { // 判断是否是双击事件
+					// 在双击时执行的操作
+					inputTextArea.setText(SuperJTextArea.tempFilePath);
+				}
+			}
+		});
+
+		JScrollPanelWithHeaderForTool OutPanel = new JScrollPanelWithHeaderForTool("OutPut", "", false, false);
 		outputTextArea = OutPanel.getTextArea();
-		outputTextArea.addMouseListener(new TextAreaMouseListener(guiMain,outputTextArea));
+		outputTextArea.addMouseListener(new TextAreaMouseListener(guiMain, outputTextArea));
 
 		JPanel buttonPanel = createButtons();
 
@@ -164,7 +194,6 @@ public class ToolPanel extends JPanel {
 
 		this.add(buttonPanel, BorderLayout.EAST);//这样避免小屏幕按钮显示不完整！
 		//BodyPane.add(buttonPanel);
-
 
 
 		///////////////////////////FooterPanel//////////////////
@@ -228,10 +257,9 @@ public class ToolPanel extends JPanel {
 				String content = inputTextArea.getText();
 				//stdout.println(content);
 				if (null != content) {
-					Set<String> domains = GrepUtils.grepDomain(content);
-					ArrayList<String> tmpList = new ArrayList<String>(domains);
-					Collections.sort(tmpList, new DomainComparator());
-					outputTextArea.setText(String.join(System.lineSeparator(), tmpList));
+					List<String> domains = DomainUtils.grepDomainAndPort(content);
+					Collections.sort(domains, new DomainComparator());
+					outputTextArea.setText(String.join(System.lineSeparator(), domains));
 					guiMain.getDomainPanel().getDomainResult().addIfValid(domains);
 				}
 			}
@@ -243,10 +271,9 @@ public class ToolPanel extends JPanel {
 				String content = inputTextArea.getText();
 				//stdout.println(content);
 				if (null != content) {
-					Set<String> domains = GrepUtils.grepDomainNoPort(content);
-					ArrayList<String> tmpList = new ArrayList<String>(domains);
-					Collections.sort(tmpList, new DomainComparator());
-					outputTextArea.setText(String.join(System.lineSeparator(), tmpList));
+					List<String> domains = DomainUtils.grepDomainNoPort(content);
+					Collections.sort(domains, new DomainComparator());
+					outputTextArea.setText(String.join(System.lineSeparator(), domains));
 					guiMain.getDomainPanel().getDomainResult().addIfValid(domains);
 				}
 			}
@@ -258,19 +285,52 @@ public class ToolPanel extends JPanel {
 			protected void action() {
 				String content = inputTextArea.getText();
 				if (null != content) {
-					List<String> urls = GrepUtils.grepURL(content);
+					List<String> urls = UrlUtils.grepUrls(content);
+					outputTextArea.setText(String.join(System.lineSeparator(), urls));
+				}
+			}
+		};
+
+		JButton btnFindUrlsWithProtocol = new BackGroundButton("Find URL With Protocol") {
+			@Override
+			protected void action() {
+				String content = inputTextArea.getText();
+				if (null != content) {
+					List<String> urls = UrlUtils.grepUrlsWithProtocol(content);
 					outputTextArea.setText(String.join(System.lineSeparator(), urls));
 				}
 			}
 		};
 
 
-		JButton btnFindUrls1 = new BackGroundButton("Find URL 1") {
+		JButton btnFindUrlsInQuotes = new BackGroundButton("Find URL In Quotes('|\")") {
 			@Override
 			protected void action() {
 				String content = inputTextArea.getText();
 				if (null != content) {
-					List<String> urls = GrepUtils.grepURL1(content);
+					List<String> urls = UrlUtils.grepUrlsInQuotes(content);
+					outputTextArea.setText(String.join(System.lineSeparator(), urls));
+				}
+			}
+		};
+
+		JButton btnFindUrlsNotStartWithSlash = new BackGroundButton("Find URL(img/a.png)") {
+			@Override
+			protected void action() {
+				String content = inputTextArea.getText();
+				if (null != content) {
+					List<String> urls = UrlUtils.grepUrlPathNotStartWithSlash(content);
+					outputTextArea.setText(String.join(System.lineSeparator(), urls));
+				}
+			}
+		};
+
+		JButton btnFindUrlsNotStartWithSlashInQuotes = new BackGroundButton("Find URL(\"img/a.png\")") {
+			@Override
+			protected void action() {
+				String content = inputTextArea.getText();
+				if (null != content) {
+					List<String> urls = UrlUtils.grepUrlPathNotStartWithSlashInQuotes(content);
 					outputTextArea.setText(String.join(System.lineSeparator(), urls));
 				}
 			}
@@ -281,13 +341,13 @@ public class ToolPanel extends JPanel {
 			protected void action() {
 				String content = inputTextArea.getText();
 				if (null != content) {
-					List<String> lines = Commons.getLinesFromTextArea(inputTextArea);
-					List<String> result = new ArrayList<String>();
+					List<String> lines = SwingUtils.getLinesFromTextArea(inputTextArea);
+					List<String> result = new ArrayList<>();
 
-					for (String item:lines) {
-						if (GrepUtils.uselessExtension(item)) {
+					for (String item : lines) {
+						if (UrlUtils.uselessExtension(item)) {
 							continue;
-						}else {
+						} else {
 							result.add(item);
 						}
 					}//不在使用set方法去重，以便保持去重后的顺序！
@@ -303,7 +363,7 @@ public class ToolPanel extends JPanel {
 			protected void action() {
 				String content = inputTextArea.getText();
 				if (null != content) {
-					List<String> iplist = GrepUtils.grepIP(content);
+					List<String> iplist = IPAddressUtils.grepIPv4NoPort(content);
 					outputTextArea.setText(String.join(System.lineSeparator(), iplist));
 				}
 			}
@@ -314,7 +374,7 @@ public class ToolPanel extends JPanel {
 			protected void action() {
 				String content = inputTextArea.getText();
 				if (null != content) {
-					List<String> iplist = GrepUtils.grepPublicIP(content);
+					List<String> iplist = IPAddressUtils.grepPublicIPv4NoPort(content);
 					outputTextArea.setText(String.join(System.lineSeparator(), iplist));
 				}
 			}
@@ -326,7 +386,7 @@ public class ToolPanel extends JPanel {
 			protected void action() {
 				String content = inputTextArea.getText();
 				if (null != content) {
-					List<String> iplist = GrepUtils.grepPrivateIP(content);
+					List<String> iplist = IPAddressUtils.grepPrivateIPv4NoPort(content);
 					outputTextArea.setText(String.join(System.lineSeparator(), iplist));
 				}
 			}
@@ -338,7 +398,7 @@ public class ToolPanel extends JPanel {
 			protected void action() {
 				String content = inputTextArea.getText();
 				if (null != content) {
-					List<String> iplist = GrepUtils.grepIPAndPort(content);
+					List<String> iplist = IPAddressUtils.grepIPv4MayPort(content);
 					outputTextArea.setText(String.join(System.lineSeparator(), iplist));
 				}
 			}
@@ -350,9 +410,9 @@ public class ToolPanel extends JPanel {
 				String content = inputTextArea.getText();
 				if (null != content) {
 					List<String> result = new ArrayList<String>();
-					List<String> lines = Commons.textToLines(content);
-					for (String line:lines) {
-						List<String> portlist = GrepUtils.grepPort(line);
+					List<String> lines = TextUtils.textToLines(content);
+					for (String line : lines) {
+						List<String> portlist = IPAddressUtils.grepPort(line);
 						result.addAll(portlist);
 					}
 					outputTextArea.setText(String.join(System.lineSeparator(), result));
@@ -361,22 +421,22 @@ public class ToolPanel extends JPanel {
 		};
 
 
-		JButton btnMasscanResultToNmap = new BackGroundButton("Masscan->Nmap"){
+		JButton btnMasscanResultToNmap = new BackGroundButton("Masscan->Nmap") {
 
 			@Override
 			protected void action() {
 				String content = inputTextArea.getText();
 				if (StringUtils.isNotEmpty(content)) {
 
-					List<String> lines = Commons.textToLines(content);
-					HashMap<String, Set<String>> ipAndPorts = new HashMap<String,Set<String>>();
+					List<String> lines = TextUtils.textToLines(content);
+					HashMap<String, Set<String>> ipAndPorts = new HashMap<String, Set<String>>();
 					List<String> nmapCmds = new ArrayList<String>();
-					for (String line:lines) {
+					for (String line : lines) {
 						if (line.contains("Discovered open port")) {
 							try {
 								String port = line.split(" ")[3].split("/")[0];
 								String host = line.split(" ")[5];
-								Set<String>  ports = ipAndPorts.get(host);
+								Set<String> ports = ipAndPorts.get(host);
 								if (ports == null) {
 									ports = new HashSet<String>();
 								}
@@ -388,8 +448,8 @@ public class ToolPanel extends JPanel {
 						}
 					}
 
-					for (String host:ipAndPorts.keySet()) {
-						nmapCmds.add("nmap -v -A -p "+String.join(",", ipAndPorts.get(host))+" "+host);
+					for (String host : ipAndPorts.keySet()) {
+						nmapCmds.add("nmap -v -A -p " + String.join(",", ipAndPorts.get(host)) + " " + host);
 					}
 
 					outputTextArea.setText(String.join(System.lineSeparator(), nmapCmds));
@@ -398,22 +458,22 @@ public class ToolPanel extends JPanel {
 
 		};
 
-		JButton btnMasscanResultToHttp = new BackGroundButton("Masscan->Http"){
+		JButton btnMasscanResultToHttp = new BackGroundButton("Masscan->Http") {
 
 			@Override
 			protected void action() {
 				String content = inputTextArea.getText();
 				if (StringUtils.isNotEmpty(content)) {
 
-					List<String> lines = Commons.textToLines(content);
+					List<String> lines = TextUtils.textToLines(content);
 					List<String> result = new ArrayList<String>();
-					for (String line:lines) {
+					for (String line : lines) {
 						if (line.contains("Discovered open port")) {
 							try {
 								String port = line.split(" ")[3].split("/")[0];
 								String host = line.split(" ")[5];
-								result.add("http://"+host+":"+port);
-								result.add("https://"+host+":"+port);
+								result.add("http://" + host + ":" + port);
+								result.add("https://" + host + ":" + port);
 							} catch (Exception e1) {
 								e1.printStackTrace();
 							}
@@ -426,7 +486,7 @@ public class ToolPanel extends JPanel {
 		};
 
 
-		JButton btnNmapResultToHttp = new BackGroundButton("Nmap->Http"){
+		JButton btnNmapResultToHttp = new BackGroundButton("Nmap->Http") {
 
 			@Override
 			protected void action() {
@@ -434,22 +494,22 @@ public class ToolPanel extends JPanel {
 				if (StringUtils.isNotEmpty(content)) {
 					List<String> result = new ArrayList<String>();
 
-					List<String> iplist = GrepUtils.grepIP(content);
-					List<String> lines = Commons.textToLines(content);
+					List<String> iplist = IPAddressUtils.grepIPv4NoPort(content);
+					List<String> lines = TextUtils.textToLines(content);
 
-					for (String line:lines) {
+					for (String line : lines) {
 						if (line.toLowerCase().contains("ssl")) {
-							List<String> portlist = GrepUtils.grepPort(line);
-							for (String port:portlist) {
-								for (String host:iplist) {
-									result.add("https://"+host+":"+port);
+							List<String> portlist = IPAddressUtils.grepPort(line);
+							for (String port : portlist) {
+								for (String host : iplist) {
+									result.add("https://" + host + ":" + port);
 								}
 							}
-						}else if (line.toLowerCase().contains("http")) {
-							List<String> portlist = GrepUtils.grepPort(line);
-							for (String port:portlist) {
-								for (String host:iplist) {
-									result.add("http://"+host+":"+port);
+						} else if (line.toLowerCase().contains("http")) {
+							List<String> portlist = IPAddressUtils.grepPort(line);
+							for (String port : portlist) {
+								for (String host : iplist) {
+									result.add("http://" + host + ":" + port);
 								}
 							}
 						}
@@ -461,7 +521,7 @@ public class ToolPanel extends JPanel {
 		};
 
 
-		JButton btnNmapResultToHttp1 = new BackGroundButton("Nmap->Http 1"){
+		JButton btnNmapResultToHttp1 = new BackGroundButton("Nmap->Http 1") {
 
 			@Override
 			protected void action() {
@@ -470,20 +530,19 @@ public class ToolPanel extends JPanel {
 
 					List<String> result = new ArrayList<String>();
 
-					List<String> iplist = GrepUtils.grepIP(content);
-					List<String> portlist = GrepUtils.grepPort(content);
+					List<String> iplist = IPAddressUtils.grepIPv4NoPort(content);
+					List<String> portlist = IPAddressUtils.grepPort(content);
 
-					for (String host:iplist) {
-						for (String port:portlist) {
-							result.add("http://"+host+":"+port);
-							result.add("https://"+host+":"+port);
+					for (String host : iplist) {
+						for (String port : portlist) {
+							result.add("http://" + host + ":" + port);
+							result.add("https://" + host + ":" + port);
 						}
 					}
 					outputTextArea.setText(String.join(System.lineSeparator(), result));
 				}
 			}
 		};
-
 
 
 		JButton btnFindSubnet = new BackGroundButton("Find Subnet") {
@@ -491,7 +550,7 @@ public class ToolPanel extends JPanel {
 			protected void action() {
 				String content = inputTextArea.getText();
 				if (null != content) {
-					List<String> subnets = GrepUtils.grepSubnet(content);
+					List<String> subnets = IPAddressUtils.grepSubnet(content);
 					outputTextArea.setText(String.join(System.lineSeparator(), subnets));
 				}
 			}
@@ -503,7 +562,7 @@ public class ToolPanel extends JPanel {
 			protected void action() {
 				String content = inputTextArea.getText();
 				if (null != content) {
-					Set<String> emails = GrepUtils.grepEmail(content);
+					List<String> emails = EmailUtils.grepEmail(content);
 					outputTextArea.setText(String.join(System.lineSeparator(), emails));
 					guiMain.getDomainPanel().getDomainResult().addIfValidEmail(emails);
 				}
@@ -511,7 +570,7 @@ public class ToolPanel extends JPanel {
 		};
 
 
-		JButton btnOpenurls = new BackGroundButton("OpenURLs"){
+		JButton btnOpenurls = new BackGroundButton("OpenURLs") {
 			List<String> urls = new ArrayList<>();
 			Iterator<String> it = urls.iterator();
 			private int totalNumber;
@@ -520,7 +579,7 @@ public class ToolPanel extends JPanel {
 			@Override
 			protected void action() {
 				if (inputTextAreaChanged) {//default is true
-					urls = Commons.getLinesFromTextArea(inputTextArea);
+					urls = SwingUtils.getLinesFromTextArea(inputTextArea);
 					totalNumber = urls.size();
 					left = urls.size();
 					it = urls.iterator();
@@ -536,15 +595,15 @@ public class ToolPanel extends JPanel {
 							url = "http://" + url;
 							URL tmpUrl = new URL(url);
 							if (tmpUrl.getPort() == -1) {
-								Commons.browserOpen(url, browserPath);
-								Commons.browserOpen(url.replaceFirst("http://", "https://"), browserPath);
+								SystemUtils.browserOpen(url, browserPath);
+								SystemUtils.browserOpen(url.replaceFirst("http://", "https://"), browserPath);
 							} else if (Integer.toString(tmpUrl.getPort()).endsWith("443")) {
-								Commons.browserOpen(url.replaceFirst("http://", "https://"), browserPath);
+								SystemUtils.browserOpen(url.replaceFirst("http://", "https://"), browserPath);
 							} else {
-								Commons.browserOpen(url, browserPath);
+								SystemUtils.browserOpen(url, browserPath);
 							}
 						} else {
-							Commons.browserOpen(url, browserPath);
+							SystemUtils.browserOpen(url, browserPath);
 						}
 						i--;
 						left--;
@@ -557,12 +616,11 @@ public class ToolPanel extends JPanel {
 		};
 
 
-
 		JButton btnCertDomains = new BackGroundButton("GetCertDomains") {
 			@Override
 			protected void action() {
 				ArrayList<String> result = new ArrayList<String>();
-				List<String> urls = Commons.getLinesFromTextArea(inputTextArea);
+				List<String> urls = SwingUtils.getLinesFromTextArea(inputTextArea);
 				Iterator<String> it = urls.iterator();
 				while (it.hasNext()) {
 					String url = it.next();
@@ -579,7 +637,7 @@ public class ToolPanel extends JPanel {
 			@Override
 			protected void action() {
 				ArrayList<String> result = new ArrayList<String>();
-				List<String> urls = Commons.getLinesFromTextArea(inputTextArea);
+				List<String> urls = SwingUtils.getLinesFromTextArea(inputTextArea);
 				Iterator<String> it = urls.iterator();
 				while (it.hasNext()) {
 					String url = it.next();
@@ -595,7 +653,7 @@ public class ToolPanel extends JPanel {
 			@Override
 			protected void action() {
 				ArrayList<String> result = new ArrayList<String>();
-				List<String> urls = Commons.getLinesFromTextArea(inputTextArea);
+				List<String> urls = SwingUtils.getLinesFromTextArea(inputTextArea);
 				Iterator<String> it = urls.iterator();
 				while (it.hasNext()) {
 					String url = it.next();
@@ -612,11 +670,11 @@ public class ToolPanel extends JPanel {
 			protected void action() {
 				try {
 					ArrayList<String> result = new ArrayList<String>();
-					List<String> urls = Commons.getLinesFromTextArea(inputTextArea);
+					List<String> urls = SwingUtils.getLinesFromTextArea(inputTextArea);
 					Iterator<String> it = urls.iterator();
 					while (it.hasNext()) {
 						String url = it.next();
-						String hash = WebIcon.getHash(url,null);
+						String hash = WebIcon.getHash(url, null);
 						result.add(hash);
 						System.out.println(url + " " + hash);
 					}
@@ -629,19 +687,19 @@ public class ToolPanel extends JPanel {
 		};
 
 
-		JButton getIPAddressButton = new BackGroundButton("GetIPAddress") {
+		JButton dnsQueryButton = new BackGroundButton("DNS Query") {
 			@Override
 			protected void action() {
 				try {
 					ArrayList<String> result = new ArrayList<String>();
-					List<String> domains = Commons.getLinesFromTextArea(inputTextArea);
+					List<String> domains = SwingUtils.getLinesFromTextArea(inputTextArea);
 					Iterator<String> it = domains.iterator();
 					while (it.hasNext()) {
 						String domain = it.next();
-						if (IPAddressUtils.isValidIP(domain)) {//目标是一个IP
+						if (IPAddressUtils.isValidIPv4NoPort(domain)) {//目标是一个IP
 							result.add(domain);
-						} else if (DomainNameUtils.isValidDomain(domain)) {//目标是域名
-							HashMap<String, Set<String>> temp = DomainNameUtils.dnsquery(domain,null);
+						} else if (DomainUtils.isValidDomainNoPort(domain)) {//目标是域名
+							HashMap<String, Set<String>> temp = DomainUtils.dnsQuery(domain, null);
 							Set<String> IPSet = temp.get("IP");
 							result.addAll(IPSet);
 						}
@@ -660,7 +718,7 @@ public class ToolPanel extends JPanel {
 			protected void action() {
 				try {
 					String content = inputTextArea.getText();
-					List<String> result = GrepUtils.grepChinese(content);
+					List<String> result = TextUtils.grepChinese(content);
 					outputTextArea.setText(String.join(System.lineSeparator(), result));
 				} catch (Exception e1) {
 					outputTextArea.setText(e1.getMessage());
@@ -670,12 +728,12 @@ public class ToolPanel extends JPanel {
 		};
 
 
-		JButton rows2List = new BackGroundButton("Rows To List"){
+		JButton rows2List = new BackGroundButton("Rows To List") {
 
 			@Override
 			protected void action() {
 				try {
-					List<String> content = Commons.getLinesFromTextArea(inputTextArea);
+					List<String> content = SwingUtils.getLinesFromTextArea(inputTextArea);
 					outputTextArea.setText(content.toString());
 				} catch (Exception e1) {
 					outputTextArea.setText(e1.getMessage());
@@ -685,12 +743,12 @@ public class ToolPanel extends JPanel {
 		};
 
 
-		JButton rows2Array = new BackGroundButton("Rows To Array"){
+		JButton rows2Array = new BackGroundButton("Rows To Array") {
 
 			@Override
 			protected void action() {
 				try {
-					List<String> content = Commons.getLinesFromTextArea(inputTextArea);
+					List<String> content = SwingUtils.getLinesFromTextArea(inputTextArea);
 					for (int i = 0; i < content.size(); i++) {
 						content.set(i, "\"" + content.get(i) + "\"");
 					}
@@ -704,18 +762,18 @@ public class ToolPanel extends JPanel {
 		};
 
 
-		JButton removeDuplicate = new BackGroundButton("Deduplicate"){
+		JButton removeDuplicate = new BackGroundButton("Deduplicate") {
 
 			@Override
 			protected void action() {
 				try {
-					List<String> content = Commons.getLinesFromTextArea(inputTextArea);
+					List<String> content = SwingUtils.getLinesFromTextArea(inputTextArea);
 					List<String> result = new ArrayList<String>();
 
-					for (String item:content) {
+					for (String item : content) {
 						if (result.contains(item)) {
 							continue;
-						}else {
+						} else {
 							result.add(item);
 						}
 					}//不在使用set方法去重，以便保持去重后的顺序！
@@ -729,12 +787,12 @@ public class ToolPanel extends JPanel {
 		};
 
 
-		JButton sort = new BackGroundButton("Sort"){
+		JButton sort = new BackGroundButton("Sort") {
 
 			@Override
 			protected void action() {
 				try {
-					List<String> content = Commons.getLinesFromTextArea(inputTextArea);
+					List<String> content = SwingUtils.getLinesFromTextArea(inputTextArea);
 					Set<String> contentSet = new HashSet<>(content);
 					List<String> tmplist = new ArrayList<>(contentSet);
 
@@ -749,16 +807,16 @@ public class ToolPanel extends JPanel {
 		};
 
 
-		JButton sortReverse = new BackGroundButton("Sort(Reverse Str)"){
+		JButton sortReverse = new BackGroundButton("Sort(Reverse Str)") {
 
 			@Override
 			protected void action() {
 				try {
-					List<String> content = Commons.getLinesFromTextArea(inputTextArea);
+					List<String> content = SwingUtils.getLinesFromTextArea(inputTextArea);
 					Set<String> contentSet = new HashSet<>(content);
 					List<String> tmplist = new ArrayList<>(contentSet);
 
-					Collections.sort(tmplist,new ReverseStrComparator());
+					Collections.sort(tmplist, new ReverseStrComparator());
 					String output = String.join(System.lineSeparator(), tmplist);
 					outputTextArea.setText(output);
 				} catch (Exception e1) {
@@ -769,12 +827,12 @@ public class ToolPanel extends JPanel {
 		};
 
 
-		JButton sortByLength = new BackGroundButton("Sort by Length"){
+		JButton sortByLength = new BackGroundButton("Sort by Length") {
 
 			@Override
 			protected void action() {
 				try {
-					List<String> content = Commons.getLinesFromTextArea(inputTextArea);
+					List<String> content = SwingUtils.getLinesFromTextArea(inputTextArea);
 					Set<String> contentSet = new HashSet<>(content);
 					List<String> tmplist = new ArrayList<>(contentSet);
 
@@ -819,7 +877,7 @@ public class ToolPanel extends JPanel {
 						return;
 					} else {
 						history = toFind;
-						List<String> content = Commons.getLinesFromTextArea(inputTextArea);
+						List<String> content = SwingUtils.getLinesFromTextArea(inputTextArea);
 						for (String item : content) {
 							if (item.toLowerCase().contains(toFind.toLowerCase().trim())) {
 								result.add(item);
@@ -851,7 +909,7 @@ public class ToolPanel extends JPanel {
 						return;
 					} else {
 						history = toFind;
-						List<String> content = Commons.getLinesFromTextArea(inputTextArea);
+						List<String> content = SwingUtils.getLinesFromTextArea(inputTextArea);
 						for (String item : content) {
 							if (!item.toLowerCase().contains(toFind.toLowerCase().trim())) {
 								result.add(item);
@@ -882,7 +940,15 @@ public class ToolPanel extends JPanel {
 						String content = inputTextArea.getText();
 						Matcher matcher = pRegex.matcher(content);
 						while (matcher.find()) {//多次查找
-							result.add(matcher.group());
+							// 判断是否有捕获组
+							if (matcher.groupCount() > 0) {
+								// 获取第一个捕获组的匹配结果
+								String group1 = matcher.group(1);
+								// 将匹配结果添加到列表中
+								result.add(group1);
+							}else {
+								result.add(matcher.group());
+							}
 						}
 						outputTextArea.setText(String.join(System.lineSeparator(), result));
 					}
@@ -912,7 +978,7 @@ public class ToolPanel extends JPanel {
 							toAddSuffix = "";
 						}
 
-						List<String> content = Commons.getLinesFromTextArea(inputTextArea);
+						List<String> content = SwingUtils.getLinesFromTextArea(inputTextArea);
 						for (String item : content) {
 							item = toAddPrefix + item + toAddSuffix;
 							result.add(item);
@@ -932,8 +998,8 @@ public class ToolPanel extends JPanel {
 				try {
 					String Prefix = JOptionPane.showInputDialog("prefix to remove", null);
 					String Suffix = JOptionPane.showInputDialog("suffix to remove", null);
-					List<String> content = Commons.getLinesFromTextArea(inputTextArea);
-					List<String> result = Commons.removePrefixAndSuffix(content, Prefix, Suffix);
+					List<String> content = SwingUtils.getLinesFromTextArea(inputTextArea);
+					List<String> result = TextUtils.removePrefixAndSuffix(content, Prefix, Suffix);
 					outputTextArea.setText(String.join(System.lineSeparator(), result));
 				} catch (Exception e1) {
 					outputTextArea.setText(e1.getMessage());
@@ -944,7 +1010,7 @@ public class ToolPanel extends JPanel {
 		};
 
 
-		JButton btnReplace = new BackGroundButton("ReplaceFirstStr"){
+		JButton btnReplaceFirstStr = new BackGroundButton("ReplaceFirst(Str)") {
 
 			@Override
 			protected void action() {
@@ -963,8 +1029,8 @@ public class ToolPanel extends JPanel {
 							to = "";
 						}
 
-						replace = Pattern.quote(replace);
-						List<String> content = Commons.getLinesFromTextArea(inputTextArea);
+						replace = Pattern.quote(replace);//输入的内容就完全是普通字符串，不再是正则表达式了
+						List<String> content = SwingUtils.getLinesFromTextArea(inputTextArea);
 						for (String item : content) {
 							item = item.replaceFirst(replace, to);
 							result.add(item);
@@ -976,16 +1042,116 @@ public class ToolPanel extends JPanel {
 					e1.printStackTrace(stderr);
 				}
 			}
-
 		};
 
-
-		JButton btnIPsToCIDR = new BackGroundButton("IPs To CIDR"){
+		JButton btnReplaceFirstRegex = new BackGroundButton("ReplaceFirst(Regex)") {
 
 			@Override
 			protected void action() {
 				try {
-					List<String> IPs = Commons.getLinesFromTextArea(inputTextArea);
+					String replace = JOptionPane.showInputDialog("regex (from)", null);
+					String to = JOptionPane.showInputDialog("replacement (to)", null);
+					ArrayList<String> result = new ArrayList<String>();
+					if (replace == null && to == null) {
+						return;
+					} else {
+						if (replace == null) {
+							replace = "";
+						}
+
+						if (to == null) {
+							to = "";
+						}
+
+						//replace = Pattern.quote(replace);
+						List<String> content = SwingUtils.getLinesFromTextArea(inputTextArea);
+						for (String item : content) {
+							item = item.replaceFirst(replace, to);
+							result.add(item);
+						}
+						outputTextArea.setText(String.join(System.lineSeparator(), result));
+					}
+				} catch (Exception e1) {
+					outputTextArea.setText(e1.getMessage());
+					e1.printStackTrace(stderr);
+				}
+			}
+		};
+
+		JButton btnReplaceAllStr = new BackGroundButton("ReplaceAll(Str)") {
+
+			@Override
+			protected void action() {
+				try {
+					String replace = JOptionPane.showInputDialog("string (from)", null);
+					String to = JOptionPane.showInputDialog("replacement (to)", null);
+					ArrayList<String> result = new ArrayList<String>();
+					if (replace == null && to == null) {
+						return;
+					} else {
+						if (replace == null) {
+							replace = "";
+						}
+
+						if (to == null) {
+							to = "";
+						}
+
+						List<String> content = SwingUtils.getLinesFromTextArea(inputTextArea);
+						for (String item : content) {
+							item = item.replace(replace, to);
+							result.add(item);
+						}
+						outputTextArea.setText(String.join(System.lineSeparator(), result));
+					}
+				} catch (Exception e1) {
+					outputTextArea.setText(e1.getMessage());
+					e1.printStackTrace(stderr);
+				}
+			}
+		};
+
+		JButton btnReplaceAllRegex = new BackGroundButton("ReplaceAll(Regex)") {
+
+			@Override
+			protected void action() {
+				try {
+					String replace = JOptionPane.showInputDialog("regex (from)", null);
+					String to = JOptionPane.showInputDialog("replacement (to)", null);
+					ArrayList<String> result = new ArrayList<String>();
+					if (replace == null && to == null) {
+						return;
+					} else {
+						if (replace == null) {
+							replace = "";
+						}
+
+						if (to == null) {
+							to = "";
+						}
+
+						List<String> content = SwingUtils.getLinesFromTextArea(inputTextArea);
+						for (String item : content) {
+							item = item.replaceAll(replace, to);
+							result.add(item);
+						}
+						outputTextArea.setText(String.join(System.lineSeparator(), result));
+					}
+				} catch (Exception e1) {
+					outputTextArea.setText(e1.getMessage());
+					e1.printStackTrace(stderr);
+				}
+			}
+		};
+
+
+
+		JButton btnIPsToCIDR = new BackGroundButton("IPs To CIDR") {
+
+			@Override
+			protected void action() {
+				try {
+					List<String> IPs = SwingUtils.getLinesFromTextArea(inputTextArea);
 					Set<String> subnets = IPAddressUtils.toSmallerSubNets(new HashSet<String>(IPs));
 
 					List<String> tmplist = new ArrayList<>(subnets);//排序
@@ -1000,12 +1166,12 @@ public class ToolPanel extends JPanel {
 
 		};
 
-		JButton btnCIDRToIPs = new BackGroundButton("CIDR To IPs"){
+		JButton btnCIDRToIPs = new BackGroundButton("CIDR To IPs") {
 
 			@Override
 			protected void action() {
 				try {
-					List<String> subnets = Commons.getLinesFromTextArea(inputTextArea);
+					List<String> subnets = SwingUtils.getLinesFromTextArea(inputTextArea);
 					List<String> IPs = IPAddressUtils.toIPList(subnets);// 当前所有title结果计算出的IP集合
 					outputTextArea.setText(String.join(System.lineSeparator(), IPs));
 				} catch (Exception e1) {
@@ -1017,7 +1183,7 @@ public class ToolPanel extends JPanel {
 		};
 
 
-		JButton unescapeJava = new BackGroundButton("UnescapeJava"){
+		JButton unescapeJava = new BackGroundButton("UnescapeJava") {
 
 			@Override
 			protected void action() {
@@ -1032,7 +1198,7 @@ public class ToolPanel extends JPanel {
 		};
 
 
-		JButton unescapeHTML = new BackGroundButton("UnescapeHTML"){
+		JButton unescapeHTML = new BackGroundButton("UnescapeHTML") {
 
 			@Override
 			protected void action() {
@@ -1047,7 +1213,7 @@ public class ToolPanel extends JPanel {
 		};
 
 
-		JButton ToUnicode = new BackGroundButton("To Unicode"){
+		JButton ToUnicode = new BackGroundButton("To Unicode") {
 
 			@Override
 			protected void action() {
@@ -1058,6 +1224,7 @@ public class ToolPanel extends JPanel {
 					e1.printStackTrace(stderr);
 				}
 			}
+
 			public String convertToUnicode(String text) {
 				StringBuilder unicodeStringBuilder = new StringBuilder();
 				for (char c : text.toCharArray()) {
@@ -1067,7 +1234,7 @@ public class ToolPanel extends JPanel {
 			}
 		};
 
-		JButton Base64ToFile = new BackGroundButton("Base64ToFile"){
+		JButton Base64ToFile = new BackGroundButton("Base64ToFile") {
 
 			@Override
 			protected void action() {
@@ -1110,7 +1277,7 @@ public class ToolPanel extends JPanel {
 		};
 
 
-		JButton splitButton = new BackGroundButton("Split"){
+		JButton splitButton = new BackGroundButton("Split") {
 
 			@Override
 			protected void action() {
@@ -1125,31 +1292,29 @@ public class ToolPanel extends JPanel {
 		};
 
 
-		JButton combineButton = new BackGroundButton("Combine"){
+		JButton combineButton = new BackGroundButton("Combine") {
 
 			@Override
 			protected void action() {
 				String separator = JOptionPane.showInputDialog("input connect char", null);
 				if (separator != null) {// && !separator.trim().equals("")
-					List<String> items = Commons.getLinesFromTextArea(inputTextArea);
+					List<String> items = SwingUtils.getLinesFromTextArea(inputTextArea);
 					outputTextArea.setText(String.join(separator, items));
 				}
 			}
-
 		};
 
 
-		JButton toLowerCaseButton = new BackGroundButton("toLowerCase"){
+		JButton toLowerCaseButton = new BackGroundButton("toLowerCase") {
 
 			@Override
 			protected void action() {
 				outputTextArea.setText(inputTextArea.getText().toLowerCase());
 			}
-
 		};
 
 
-		JButton OpenFileButton = new BackGroundButton("Open File"){
+		JButton OpenFileButton = new BackGroundButton("Open File") {
 
 			@Override
 			protected void action() {
@@ -1161,16 +1326,81 @@ public class ToolPanel extends JPanel {
 					statusLabel.setText("your input is not a valid path or file");
 				}
 			}
+		};
 
+		JButton setRemoveAllButton = new BackGroundButton("Remove All(diff)") {
+
+			@Override
+			protected void action() {
+				// 创建一个 JTextArea
+				JTextArea textArea = new JTextArea(10, 20); // 设置行数和列数
+				// 将 JTextArea 放入 JScrollPane 中，以便可以滚动查看
+				JScrollPane scrollPane = new JScrollPane(textArea);
+				// 显示包含 JTextArea 的对话框
+				int result = JOptionPane.showOptionDialog(
+						null, // parentComponent
+						scrollPane, // message
+						"items to remove", // title
+						JOptionPane.OK_CANCEL_OPTION, // optionType
+						JOptionPane.PLAIN_MESSAGE, // messageType
+						null, // icon
+						null, // options
+						null // initialValue
+						);
+
+				// 处理用户输入
+				if (result == JOptionPane.OK_OPTION) {
+					List<String> itemsToRemove = SwingUtils.getLinesFromTextArea(textArea);
+					List<String> items = SwingUtils.getLinesFromTextArea(inputTextArea);
+					items.removeAll(itemsToRemove);
+					outputTextArea.setText(String.join(System.lineSeparator(), items));
+				}
+			}
 		};
 
 
-		JButton testButton = new BackGroundButton("test"){
+		JButton cartesianProductButton = new BackGroundButton("Cartesian Product") {
+
+			@Override
+			protected void action() {
+				// 创建一个 JTextArea
+				JTextArea textArea = new JTextArea(10, 20); // 设置行数和列数
+				// 将 JTextArea 放入 JScrollPane 中，以便可以滚动查看
+				JScrollPane scrollPane = new JScrollPane(textArea);
+				// 显示包含 JTextArea 的对话框
+				int result = JOptionPane.showOptionDialog(
+						null, // parentComponent
+						scrollPane, // message
+						"item list", // title
+						JOptionPane.OK_CANCEL_OPTION, // optionType
+						JOptionPane.PLAIN_MESSAGE, // messageType
+						null, // icon
+						null, // options
+						null // initialValue
+						);
+
+				// 处理用户输入
+				if (result == JOptionPane.OK_OPTION) {
+					List<String> out = new ArrayList<>();
+					List<String> items2 = SwingUtils.getLinesFromTextArea(textArea);
+					List<String> items = SwingUtils.getLinesFromTextArea(inputTextArea);
+					for (String aa : items) {
+						for (String bb : items2) {
+							out.add(aa + bb);
+						}
+					}
+					outputTextArea.setText(String.join(System.lineSeparator(), out));
+				}
+			}
+		};
+
+
+		JButton testButton = new BackGroundButton("test") {
 
 			@Override
 			protected void action() {
 				try {
-					outputTextArea.setText(WebIcon.getHash(inputTextArea.getText(),null));
+					outputTextArea.setText(WebIcon.getHash(inputTextArea.getText(), null));
 				} catch (Exception e1) {
 					outputTextArea.setText(e1.getMessage());
 					e1.printStackTrace(stderr);
@@ -1179,14 +1409,14 @@ public class ToolPanel extends JPanel {
 
 		};
 
-		JButton trimButton = new BackGroundButton("Trim/Strip"){
+		JButton trimButton = new BackGroundButton("Trim/Strip") {
 
 			@Override
 			protected void action() {
 				try {
 					ArrayList<String> result = new ArrayList<String>();
-					List<String> items = Commons.getLinesFromTextArea(inputTextArea);
-					for (String item:items) {
+					List<String> items = SwingUtils.getLinesFromTextArea(inputTextArea);
+					for (String item : items) {
 						item = StringUtils.strip(item);
 						result.add(item);
 					}
@@ -1217,25 +1447,21 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		});
+		 */
 
 
-		JButton JsonBeautify = new BackGroundButton("Beautify Json");
-
-		JsonBeautify.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
+		JButton JsonBeautify = new BackGroundButton("Beautify Json") {
+			protected void action() {
 				String text = ((SuperJTextArea) inputTextArea).getTextAsDisplay();
 				try {
-					Gson gson = new GsonBuilder().setPrettyPrinting().create();
-					String json = gson.toJson(text);
-					outputTextArea.setText(json);
+					outputTextArea.setText(JsonUtils.pretty(text));
 				} catch (Exception e1) {
 					e1.printStackTrace(stderr);
 					statusLabel.setText("your input is not a valid json");
 				}
 			}
-		});
-		 */
+		};
+
 
 		//buttonPanel，里面放操作按钮
 		JPanel buttonPanel = new JPanel();
@@ -1260,7 +1486,12 @@ public class ToolPanel extends JPanel {
 
 		cloumnIndex = 0;
 		buttonPanel.add(btnFindUrls, new bagLayout(++rowIndex, ++cloumnIndex));
-		buttonPanel.add(btnFindUrls1, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnFindUrlsWithProtocol, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnFindUrlsInQuotes, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnFindUrlsNotStartWithSlash, new bagLayout(rowIndex, ++cloumnIndex));
+
+		cloumnIndex = 0;
+		buttonPanel.add(btnFindUrlsNotStartWithSlashInQuotes, new bagLayout(++rowIndex, ++cloumnIndex));
 		buttonPanel.add(btnCleanUrl, new bagLayout(rowIndex, ++cloumnIndex));
 
 		cloumnIndex = 0;
@@ -1275,10 +1506,10 @@ public class ToolPanel extends JPanel {
 		buttonPanel.add(btnFindEmail, new bagLayout(rowIndex, ++cloumnIndex));
 
 		cloumnIndex = 0;
-		buttonPanel.add(btnMasscanResultToNmap,new bagLayout(++rowIndex, ++cloumnIndex));
-		buttonPanel.add(btnMasscanResultToHttp,new bagLayout(rowIndex, ++cloumnIndex));
-		buttonPanel.add(btnNmapResultToHttp,new bagLayout(rowIndex, ++cloumnIndex));
-		buttonPanel.add(btnNmapResultToHttp1,new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnMasscanResultToNmap, new bagLayout(++rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnMasscanResultToHttp, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnNmapResultToHttp, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnNmapResultToHttp1, new bagLayout(rowIndex, ++cloumnIndex));
 
 		cloumnIndex = 0;
 		buttonPanel.add(btnGrepJson, new bagLayout(++rowIndex, ++cloumnIndex));
@@ -1289,8 +1520,8 @@ public class ToolPanel extends JPanel {
 		//网络请求类
 		cloumnIndex = 0;
 		buttonPanel.add(btnOpenurls, new bagLayout(++rowIndex, ++cloumnIndex));
-		buttonPanel.add(getIPAddressButton, new bagLayout(rowIndex, ++cloumnIndex));
-		buttonPanel.add(grepChineseButton,new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(dnsQueryButton, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(grepChineseButton, new bagLayout(rowIndex, ++cloumnIndex));
 
 		cloumnIndex = 0;
 		buttonPanel.add(btnCertDomains, new bagLayout(++rowIndex, ++cloumnIndex));
@@ -1308,25 +1539,31 @@ public class ToolPanel extends JPanel {
 
 		cloumnIndex = 0;
 		buttonPanel.add(removeDuplicate, new bagLayout(++rowIndex, ++cloumnIndex));
-		buttonPanel.add(btnReplace, new bagLayout(rowIndex, ++cloumnIndex));
 		buttonPanel.add(trimButton, new bagLayout(rowIndex, ++cloumnIndex));
 
+		cloumnIndex = 0;
+		buttonPanel.add(btnReplaceFirstStr, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnReplaceFirstRegex, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnReplaceAllStr, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnReplaceAllRegex, new bagLayout(rowIndex, ++cloumnIndex));
 
 		cloumnIndex = 0;
-		buttonPanel.add(sort,new bagLayout(++rowIndex, ++cloumnIndex));
-		buttonPanel.add(sortReverse,new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(sort, new bagLayout(++rowIndex, ++cloumnIndex));
+		buttonPanel.add(sortReverse, new bagLayout(rowIndex, ++cloumnIndex));
 		buttonPanel.add(sortByLength, new bagLayout(rowIndex, ++cloumnIndex));
 
 		cloumnIndex = 0;
 		buttonPanel.add(btnAddPrefix, new bagLayout(++rowIndex, ++cloumnIndex));
 		buttonPanel.add(btnRemovePrefix, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(setRemoveAllButton, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(cartesianProductButton, new bagLayout(rowIndex, ++cloumnIndex));
 
 		cloumnIndex = 0;
 		buttonPanel.add(unescapeJava, new bagLayout(++rowIndex, ++cloumnIndex));
 		buttonPanel.add(unescapeHTML, new bagLayout(rowIndex, ++cloumnIndex));
 		buttonPanel.add(ToUnicode, new bagLayout(rowIndex, ++cloumnIndex));
 		//buttonPanel.add(JsonSimplify, new bagLayout(rowIndex, ++cloumnIndex) );
-		//buttonPanel.add(JsonBeautify, new bagLayout(rowIndex, ++cloumnIndex) );
+		buttonPanel.add(JsonBeautify, new bagLayout(rowIndex, ++cloumnIndex) );
 
 		cloumnIndex = 0;
 		buttonPanel.add(toLowerCaseButton, new bagLayout(++rowIndex, ++cloumnIndex));
@@ -1338,15 +1575,7 @@ public class ToolPanel extends JPanel {
 		buttonPanel.add(OpenFileButton, new bagLayout(++rowIndex, ++cloumnIndex));
 		buttonPanel.add(testButton, new bagLayout(rowIndex, ++cloumnIndex));
 
-
 		return buttonPanel;
-	}
-
-	public static Set<String> getSetFromTextArea(JTextArea textarea) {
-		//user input maybe use "\n" in windows, so the System.lineSeparator() not always works fine!
-		Set<String> domainList = new HashSet<>(Arrays.asList(textarea.getText().replaceAll(" ", "").replaceAll("\r\n", "\n").split("\n")));
-		domainList.remove("");
-		return domainList;
 	}
 
 	public static String getContentFromFile(String filename) {

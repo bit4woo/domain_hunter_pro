@@ -5,14 +5,14 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import InternetSearch.SearchEngine;
-import InternetSearch.SearchType;
 import org.apache.commons.lang3.StringUtils;
 
+import com.bit4woo.utilbox.utils.UrlUtils;
+
 import InternetSearch.HttpClientOfBurp;
+import InternetSearch.SearchEngine;
 import InternetSearch.SearchResultEntry;
 import burp.BurpExtender;
-import utils.URLUtils;
 
 /**
  * 什么时候使用Interface，什么时候使用abstract class?
@@ -54,7 +54,7 @@ public abstract class BaseClient {
                 String searchDork = buildSearchDork(searchContent, searchType);
                 this.url = buildSearchUrl(searchDork, page);
                 this.raw = buildRawData(searchDork, page);
-                if (URLUtils.isVaildUrl(url)) {
+                if (UrlUtils.isVaildUrl(url)) {
                     String body = HttpClientOfBurp.doRequest(new URL(url), raw);
                     this.resp_body = body;
                     if (body.length() <= 0) {

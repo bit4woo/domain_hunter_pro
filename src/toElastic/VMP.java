@@ -7,7 +7,7 @@ import com.github.kevinsawicki.http.HttpRequest;
 
 import GUI.GUIMain;
 import title.LineEntry;
-import utils.IPAddressUtils;
+import com.bit4woo.utilbox.utils.IPAddressUtils;
 
 public class VMP {
 
@@ -31,7 +31,7 @@ public class VMP {
 			String title = entry.getTitle();
 			String IPStr = entry.getIPSet().toString();
 			String header = entry.getHeaderValueOf(false, "Server");
-			if (!IPAddressUtils.isValidIP(host)) {
+			if (!IPAddressUtils.isValidIPv4NoPort(host)) {
 				VMPEntry tmp = new VMPEntry(url,title,IPStr,header);
 				result.put(url,tmp);//去重
 			}

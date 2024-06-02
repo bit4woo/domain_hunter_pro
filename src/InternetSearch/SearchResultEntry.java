@@ -1,6 +1,5 @@
 package InternetSearch;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -8,12 +7,12 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.bit4woo.utilbox.utils.DomainUtils;
+import com.bit4woo.utilbox.utils.IPAddressUtils;
+import com.bit4woo.utilbox.utils.UrlUtils;
+
 import burp.BurpExtender;
-import burp.IPAddressUtils;
 import domain.DomainManager;
-import utils.DomainNameUtils;
-import utils.GrepUtils;
-import utils.URLUtils;
 
 public class SearchResultEntry {
 	private int port = -1;
@@ -56,18 +55,18 @@ public class SearchResultEntry {
 	}
 
 	public void setHost(String host) {
-		if (URLUtils.isVaildUrl(host)) {
+		if (UrlUtils.isVaildUrl(host)) {
 			this.uri = host;
-			this.host = URLUtils.getHost(host);
-		}else if(DomainNameUtils.isValidDomain(host)){//包含端口的
-			Set<String> hosts = GrepUtils.grepDomainNoPort(host);
+			this.host = UrlUtils.getHost(host);
+		}else if(DomainUtils.isValidDomainMayPort(host)){//包含端口的
+			List<String> hosts = DomainUtils.grepDomainNoPort(host);
 			if (hosts.size()>0) {
-				this.host = new ArrayList<>(hosts).get(0);
+				this.host = hosts.get(0);
 			}
 		}else {
-			List<String> hosts = GrepUtils.grepIP(host);
+			List<String> hosts = IPAddressUtils.grepIPv4NoPort(host);
 			if (hosts.size()>0) {
-				this.host = new ArrayList<>(hosts).get(0);
+				this.host = hosts.get(0);
 			}
 		}
 		if (StringUtils.isEmpty(this.host)) {
@@ -75,8 +74,8 @@ public class SearchResultEntry {
 		}
 
 		if (StringUtils.isEmpty(rootDomain)) {
-			if(DomainNameUtils.isValidDomain(host)) {
-				this.rootDomain = DomainNameUtils.getRootDomain(host);
+			if(DomainUtils.isValidDomainMayPort(host)) {
+				this.rootDomain = DomainUtils.getRootDomain(host);
 			}
 		}
 	}
@@ -94,8 +93,8 @@ public class SearchResultEntry {
 	}
 
 	public void setRootDomain(String rootDomain) {
-		if(DomainNameUtils.isValidDomain(rootDomain)) {
-			this.rootDomain = DomainNameUtils.getRootDomain(rootDomain);
+		if(DomainUtils.isValidDomainMayPort(rootDomain)) {
+			this.rootDomain = DomainUtils.getRootDomain(rootDomain);
 		}else{
 			this.rootDomain = rootDomain;
 		}
@@ -195,7 +194,7 @@ public class SearchResultEntry {
 			sb.append(":").append(port);
 		}
 		try {
-			uri = URLUtils.getUrlWithDefaultPort(sb.toString());
+			uri = UrlUtils.getFullUrlWithDefaultPort(sb.toString());
 		} catch (Exception e) {
 			uri = sb.toString();
 		}
@@ -224,14 +223,14 @@ public class SearchResultEntry {
 
 	public void AddToTarget() {
 		DomainManager domainResult = BurpExtender.getGui().getDomainPanel().getDomainResult();
-		if (IPAddressUtils.isValidIP(this.host)) {
+		if (IPAddressUtils.isValidIPv4NoPort(this.host)) {
 			domainResult.getSpecialPortTargets().add(this.host);
 			if (this.port >=0 && this.port <= 65535) {
 				domainResult.getSpecialPortTargets().add(this.host+":"+this.port);
 			}
 		}
 
-		if (DomainNameUtils.isValidDomain(this.host)) {
+		if (DomainUtils.isValidDomainMayPort(this.host)) {
 			domainResult.addToTargetAndSubDomain(this.host,true);
 			if (this.port >=0 && this.port <= 65535) {
 				domainResult.addToTargetAndSubDomain(this.host+":"+this.port,true);

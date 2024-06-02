@@ -33,6 +33,7 @@
 						<!-- 编译时排除Deprecated包及下面的资源 -->
 						<exclude>**/Deprecated/**</exclude>
 						<exclude>**/test/**</exclude>
+						<exclude>**/toElastic/**</exclude>
 					</excludes>
 				</configuration>
 			</plugin>
@@ -93,10 +94,11 @@
 			<artifactId>burp-extender-api</artifactId>
 			<version>[1.7.22,)</version>
 		</dependency>
+
 		<dependency>
 			<groupId>com.github.bit4woo</groupId>
-			<artifactId>burp-api-common</artifactId>
-			<version>master-SNAPSHOT</version>
+			<artifactId>java_utilbox</artifactId>
+			<version>main-SNAPSHOT</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/com.alibaba/fastjson -->
 		<dependency>
@@ -136,7 +138,7 @@
 		<dependency>
 			<groupId>org.xerial</groupId>
 			<artifactId>sqlite-jdbc</artifactId>
-			<version>3.36.0.1</version>
+			<version>3.41.2.2</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/commons-net/commons-net -->
 		<dependency>
@@ -176,35 +178,35 @@
 			<version>2.0b6</version>
 		</dependency>
 		<!-- Elasticsearch High-Level REST Client -->
-		<dependency>
+		<!--<dependency>
 			<groupId>org.elasticsearch.client</groupId>
 			<artifactId>elasticsearch-rest-high-level-client</artifactId>
 			<version>7.15.0</version>
-		</dependency>
+		</dependency>-->
 		<!-- Elasticsearch Low-Level REST Client -->
-		<dependency>
+		<!--<dependency>
 			<groupId>org.elasticsearch.client</groupId>
 			<artifactId>elasticsearch-rest-client</artifactId>
-			<version>7.15.0</version>
-		</dependency>
+			<version>7.17.14</version>
+		</dependency>-->
 		<!-- Elasticsearch Core -->
-		<dependency>
+		<!--<dependency>
 			<groupId>org.elasticsearch</groupId>
 			<artifactId>elasticsearch</artifactId>
-			<version>7.15.0</version>
+			<version>7.17.14</version>
 			<exclusions>
 				<exclusion>
 					<groupId>*</groupId>
 					<artifactId>*</artifactId>
 				</exclusion>
 			</exclusions>
-		</dependency>
+		</dependency>-->
 		<!-- Elasticsearch XContent -->
-		<dependency>
+		<!--<dependency>
 			<groupId>org.elasticsearch</groupId>
 			<artifactId>elasticsearch-x-content</artifactId>
-			<version>7.15.0</version>
-		</dependency>
+			<version>7.17.14</version>
+		</dependency>-->
 		<dependency>
 			<groupId>org.apache.lucene</groupId>
 			<artifactId>lucene-core</artifactId>
