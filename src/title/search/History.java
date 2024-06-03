@@ -69,7 +69,7 @@ public class History {
 				//就返回0,无需改动
 			}
 		}else {
-			currentPosition--;
+			currentPosition = currentPosition-1;
 		}
 		return historyVector.get(currentPosition);
 	}
@@ -79,13 +79,13 @@ public class History {
 			return null;
 		}else {
 			if (allowLoop) {
-				currentPosition++;
+				currentPosition = currentPosition+1;
 				currentPosition = currentPosition % (historyVector.size());
 			}else {
 				if (currentPosition == historyVector.size()-1) {
 					//do nothing
 				}else {
-					currentPosition++;
+					currentPosition = currentPosition+1;
 				}
 			}
 			return historyVector.get(currentPosition);
