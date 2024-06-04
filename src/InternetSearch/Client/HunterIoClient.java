@@ -2,7 +2,6 @@ package InternetSearch.Client;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,9 +11,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.bit4woo.utilbox.utils.JsonUtils;
+
 import InternetSearch.SearchEngine;
 import InternetSearch.SearchResultEntry;
-import Tools.JSONHandler;
 import config.ConfigManager;
 import config.ConfigName;
 
@@ -71,7 +71,7 @@ public class HunterIoClient extends BaseClient {
 	public boolean hasNextPage(String respbody,int currentPage) {
 		// "size":83,"page":1,
 		try {
-			ArrayList<String> tmp_result = JSONHandler.grepValueFromJson(respbody, "results");
+			ArrayList<String> tmp_result = JsonUtils.grepValueFromJson(respbody, "results");
 			if (tmp_result.size() >= 1) {
 				int total = Integer.parseInt(tmp_result.get(0));
 				if (total > currentPage * pageSize) {

@@ -13,9 +13,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import com.bit4woo.utilbox.utils.JsonUtils;
+
 import InternetSearch.SearchEngine;
 import InternetSearch.SearchResultEntry;
-import Tools.JSONHandler;
 import config.ConfigManager;
 import config.ConfigName;
 
@@ -91,7 +92,7 @@ public class ZoomEyeClient extends BaseClient {
 		// "size":83,"page":1,
 		try {
 			int pageSize = 10;
-			ArrayList<String> tmp_result = JSONHandler.grepValueFromJson(respbody, "total");
+			ArrayList<String> tmp_result = JsonUtils.grepValueFromJson(respbody, "total");
 			if (tmp_result.size() >= 1) {
 				int total = Integer.parseInt(tmp_result.get(0));
 				if (total > currentPage * pageSize) {

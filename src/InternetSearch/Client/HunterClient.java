@@ -9,9 +9,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.bit4woo.utilbox.utils.JsonUtils;
+
 import InternetSearch.SearchEngine;
 import InternetSearch.SearchResultEntry;
-import Tools.JSONHandler;
 import config.ConfigManager;
 import config.ConfigName;
 
@@ -55,7 +56,7 @@ public class HunterClient extends BaseClient {
 
 						String  component =entryitem.get("component").toString();
 						try {
-							ArrayList<String> names = JSONHandler.grepValueFromJson(component, "name");
+							ArrayList<String> names = JsonUtils.grepValueFromJson(component, "name");
 							entry.setWebcontainer(String.join(",",names));
 						} catch (JSONException e) {
 							entry.setWebcontainer(component);
@@ -78,7 +79,7 @@ public class HunterClient extends BaseClient {
 	@Override
 	public boolean hasNextPage(String respbody,int currentPage) {
 		try {
-			ArrayList<String> result = JSONHandler.grepValueFromJson(respbody, "total");
+			ArrayList<String> result = JsonUtils.grepValueFromJson(respbody, "total");
 			if (result.size() >= 1) {
 				int total = Integer.parseInt(result.get(0));
 				if (total > currentPage * 100) {

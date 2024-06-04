@@ -7,9 +7,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import com.bit4woo.utilbox.utils.JsonUtils;
+
 import InternetSearch.SearchEngine;
 import InternetSearch.SearchResultEntry;
-import Tools.JSONHandler;
 import config.ConfigManager;
 import config.ConfigName;
 
@@ -61,7 +62,7 @@ public class ShodanClient extends BaseClient {
 		// 使用“页面”访问第一页之后的结果。 对于第一页之后的每 100 个结果，将扣除 1 个查询积分。
 		try {
 			int size=100;
-			ArrayList<String> result = JSONHandler.grepValueFromJson(respbody, "total");
+			ArrayList<String> result = JsonUtils.grepValueFromJson(respbody, "total");
 			if (result.size() >= 1) {
 				int total = Integer.parseInt(result.get(0));
 				if (total > currentPage * size) {//size=100

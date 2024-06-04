@@ -857,7 +857,7 @@ public class ToolPanel extends JPanel {
 						return;
 					} else {
 						history = toFind;
-						ArrayList<String> result = JSONHandler.grepValueFromJson(content, toFind);
+						ArrayList<String> result = JsonUtils.grepValueFromJson(content, toFind);
 						outputTextArea.setText(String.join(System.lineSeparator(), result));
 					}
 

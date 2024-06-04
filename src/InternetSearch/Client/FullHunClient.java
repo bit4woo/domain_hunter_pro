@@ -7,9 +7,10 @@ import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import com.bit4woo.utilbox.utils.JsonUtils;
+
 import InternetSearch.SearchEngine;
 import InternetSearch.SearchResultEntry;
-import Tools.JSONHandler;
 import config.ConfigManager;
 import config.ConfigName;
 
@@ -60,7 +61,7 @@ public class FullHunClient extends BaseClient {
 	@Override
 	public boolean hasNextPage(String respbody,int currentPage) {
 		try {
-			ArrayList<String> result = JSONHandler.grepValueFromJson(respbody, "total");
+			ArrayList<String> result = JsonUtils.grepValueFromJson(respbody, "total");
 			if (result.size() >= 1) {
 				int total = Integer.parseInt(result.get(0));
 				if (total > currentPage * 100) {

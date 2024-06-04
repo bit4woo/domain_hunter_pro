@@ -8,9 +8,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import com.bit4woo.utilbox.utils.JsonUtils;
+
 import InternetSearch.SearchEngine;
 import InternetSearch.SearchResultEntry;
-import Tools.JSONHandler;
 import config.ConfigManager;
 import config.ConfigName;
 
@@ -63,7 +64,7 @@ public class FoFaClient extends BaseClient {
 	public boolean hasNextPage(String respbody,int currentPage) {
 		// "size":83,"page":1,
 		try {
-			ArrayList<String> result = JSONHandler.grepValueFromJson(respbody, "size");
+			ArrayList<String> result = JsonUtils.grepValueFromJson(respbody, "size");
 			if (result.size() >= 1) {
 				int total = Integer.parseInt(result.get(0));
 				if (total > currentPage * 2000) {//size=2000
