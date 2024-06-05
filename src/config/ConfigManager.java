@@ -8,16 +8,15 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import com.bit4woo.utilbox.utils.SystemUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 
+import com.bit4woo.utilbox.utils.SystemUtils;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import GUI.GUIMain;
-import base.Commons;
 import burp.BurpExtender;
-import org.apache.commons.lang3.StringUtils;
 import title.LineEntry;
 
 public class ConfigManager {

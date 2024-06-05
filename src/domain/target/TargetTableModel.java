@@ -1,25 +1,31 @@
 package domain.target;
 
-import GUI.GUIMain;
-import InternetSearch.InfoTuple;
-import InternetSearch.SearchType;
-import base.Commons;
-import base.IndexedHashMap;
-import base.IntArraySlice;
-import burp.BurpExtender;
-import com.bit4woo.utilbox.utils.TextUtils;
-import com.google.common.net.InternetDomainName;
-import com.google.gson.Gson;
-import domain.DomainManager;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.swing.table.AbstractTableModel;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import com.bit4woo.utilbox.utils.DomainUtils;
 import com.bit4woo.utilbox.utils.IPAddressUtils;
+import com.bit4woo.utilbox.utils.TextUtils;
+import com.google.common.net.InternetDomainName;
+import com.google.gson.Gson;
 
-import javax.swing.table.AbstractTableModel;
-import java.io.PrintWriter;
-import java.util.*;
+import GUI.GUIMain;
+import InternetSearch.InfoTuple;
+import InternetSearch.SearchType;
+import base.IndexedHashMap;
+import base.IntArraySlice;
+import burp.BurpExtender;
+import domain.DomainManager;
 
 public class TargetTableModel extends AbstractTableModel {
 

@@ -13,6 +13,8 @@ import javax.swing.JMenuItem;
 import javax.swing.SwingWorker;
 
 import base.Commons;
+import base.FileTypeAdapter;
+import com.google.gson.GsonBuilder;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -64,12 +66,18 @@ public class DataLoadManager {
 
 	//序列化和反序列化
 	public String toJson(){
-		return new Gson().toJson(this);
+		Gson gson = new GsonBuilder()
+				.registerTypeAdapter(File.class, new FileTypeAdapter())
+				.create();
+		return gson.toJson(this);
 	}
 
 
 	public static DataLoadManager fromJson(String modelStr){
-		return new Gson().fromJson(modelStr,DataLoadManager.class);
+		Gson gson = new GsonBuilder()
+				.registerTypeAdapter(File.class, new FileTypeAdapter())
+				.create();
+		return gson.fromJson(modelStr,DataLoadManager.class);
 	}
 
 

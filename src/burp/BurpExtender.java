@@ -127,8 +127,20 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 
 	@Override
 	public void extensionUnloaded() {
-		dataLoadManager.unloadDbfile(null);
-		gui.stopLiveCapture();
+		
+		try {
+			if (dataLoadManager != null) {
+				dataLoadManager.unloadDbfile(null);
+			}
+		} catch (Exception e) {
+			e.printStackTrace(stderr);
+		}
+		
+		try {
+			gui.stopLiveCapture();
+		} catch (Exception e) {
+			e.printStackTrace(stderr);
+		}
 
 		try {//避免这里错误导致保存逻辑的失效
 			gui.getProjectMenu().remove();
@@ -143,9 +155,11 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		}
 
 		try {
-			dataLoadManager.saveCurrentConfig(null);
+			if (dataLoadManager != null) {
+				dataLoadManager.saveCurrentConfig(null);
+			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			e.printStackTrace(stderr);
 		}
 	}
 
