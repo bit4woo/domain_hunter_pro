@@ -356,6 +356,25 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		};
+		
+		JButton btnGetBaseUrl = new BackGroundButton("Get Base URL") {
+			@Override
+			protected void action() {
+				String content = inputTextArea.getText();
+				if (null != content) {
+					List<String> lines = SwingUtils.getLinesFromTextArea(inputTextArea);
+					List<String> result = new ArrayList<>();
+
+					for (String item : lines) {
+						if (UrlUtils.isVaildUrl(item)) {
+							result.add(UrlUtils.getBaseUrl(item));
+						}
+					}//不在使用set方法去重，以便保持去重后的顺序！
+					String output = String.join(System.lineSeparator(), result);
+					outputTextArea.setText(output);
+				}
+			}
+		};
 
 
 		JButton btnFindIP = new BackGroundButton("Find IP") {
@@ -1493,7 +1512,8 @@ public class ToolPanel extends JPanel {
 		cloumnIndex = 0;
 		buttonPanel.add(btnFindUrlsNotStartWithSlashInQuotes, new bagLayout(++rowIndex, ++cloumnIndex));
 		buttonPanel.add(btnCleanUrl, new bagLayout(rowIndex, ++cloumnIndex));
-
+		buttonPanel.add(btnGetBaseUrl, new bagLayout(rowIndex, ++cloumnIndex));
+		
 		cloumnIndex = 0;
 		buttonPanel.add(btnFindIP, new bagLayout(++rowIndex, ++cloumnIndex));
 		buttonPanel.add(btnFindPublicIP, new bagLayout(rowIndex, ++cloumnIndex));
