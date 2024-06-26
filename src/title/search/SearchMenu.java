@@ -149,7 +149,7 @@ public class SearchMenu extends JPopupMenu {
 		JMenuItem Spring = new JMenuItem(new AbstractAction("Spring") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				searchField.setText("Whitelabel Error Page||116323821");
+				searchField.setText("Whitelabel Error Page||116323821||{\"timestamp\"");
 			}
 		});
 		
