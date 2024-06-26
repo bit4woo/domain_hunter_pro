@@ -33,7 +33,16 @@ public class SearchManager {
 				}
 			}
 			return true;
-		}else {
+		}else if (searchInput.contains("||")) {
+			String[] searchConditions = searchInput.split("\\|\\|");
+			for (String condition:searchConditions) {
+				if (oneCondition(condition,line,caseSensitive)) {
+					return true;
+				}
+			}
+			return false;
+		}
+		else {
 			return oneCondition(searchInput,line,caseSensitive);
 		}
 	}

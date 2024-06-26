@@ -146,6 +146,12 @@ public class SearchMenu extends JPopupMenu {
 			}
 		});
 		
+		JMenuItem Spring = new JMenuItem(new AbstractAction("Spring") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				searchField.setText("Whitelabel Error Page||116323821");
+			}
+		});
 		
 		JMenuItem caseSensitive = new JMenuItem(new AbstractAction("Case Sensitive") {
 			@Override
@@ -177,6 +183,7 @@ public class SearchMenu extends JPopupMenu {
 		this.add(AllJS);
 		this.addSeparator();//分割线
 		this.add(XXLJob);
+		this.add(Spring);
 		this.addSeparator();//分割线
 		this.add(ItemsWithResponse);
 		this.add(UrlRedirection);
