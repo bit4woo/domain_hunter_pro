@@ -13,6 +13,7 @@ import com.bit4woo.utilbox.utils.IPAddressUtils;
 import com.bit4woo.utilbox.utils.TextUtils;
 
 import GUI.GUIMain;
+import InternetSearch.SearchPanel;
 import burp.BurpExtender;
 import config.ConfigManager;
 import config.ConfigName;
@@ -115,7 +116,21 @@ public class TextAreaMenu extends JPopupMenu {
 			}
 		});
 
+		JMenuItem doOnlineSearch = new JMenuItem(new AbstractAction("Do Online Search") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				for (String item:selectedItems) {
+					try {
+						SearchPanel.searchAtBackground(item);
+					} catch (Exception e2) {
+						e2.printStackTrace(stderr);
+					}
+				}
+			}
+		});
+		
 		this.add(genPortScanCmd);
 		this.add(addToTarget);
+		this.add(doOnlineSearch);
 	}
 }

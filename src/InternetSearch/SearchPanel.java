@@ -262,6 +262,33 @@ public class SearchPanel extends JPanel {
 		}
 		return result;
 	}
+	
+	public static void searchAtBackground(String content) {
+		SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+			@Override
+			protected Void doInBackground() throws Exception {
+				String searchType = null;
+
+				if (DomainUtils.isValidDomainNoPort(content)) {
+					searchType = SearchType.SubDomain;
+				} else if (IPAddressUtils.isValidIPv4NoPort(content)) {
+					searchType = SearchType.IP;
+				} else {
+					searchType = SearchType.OriginalString;
+				}
+
+				APISearchAction.DoSearchAllInOn(searchType, content, SearchEngine.getAssetSearchEngineList());
+
+				return null;
+			}
+
+			@Override
+			protected void done() {
+
+			}
+		};
+		worker.execute();
+	}
 
 	public JPanel createButtonPanel() {
 		JPanel buttonPanel = new JPanel();
@@ -274,31 +301,8 @@ public class SearchPanel extends JPanel {
 		JButton buttonSearch = new JButton("Search");
 		buttonSearch.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
-					@Override
-					protected Void doInBackground() throws Exception {
-						String content = textFieldSearch.getText();
-						String searchType = null;
-
-						if (DomainUtils.isValidDomainNoPort(content)) {
-							searchType = SearchType.SubDomain;
-						} else if (IPAddressUtils.isValidIPv4NoPort(content)) {
-							searchType = SearchType.IP;
-						} else {
-							searchType = SearchType.OriginalString;
-						}
-
-						APISearchAction.DoSearchAllInOn(searchType, content, SearchEngine.getAssetSearchEngineList());
-
-						return null;
-					}
-
-					@Override
-					protected void done() {
-
-					}
-				};
-				worker.execute();
+				String content = textFieldSearch.getText();
+				searchAtBackground(content);
 			}
 		});
 		buttonPanel.add(buttonSearch);
