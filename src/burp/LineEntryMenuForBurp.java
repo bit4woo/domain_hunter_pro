@@ -140,7 +140,7 @@ public class LineEntryMenuForBurp{
 	private IHttpRequestResponse[] getSelectedMessages(IContextMenuInvocation invocation) {
 
 		IHttpRequestResponse[] messages = invocation.getSelectedMessages();
-		stdout.println("ToolFlag "+invocation.getToolFlag());
+		//stdout.println("ToolFlag "+invocation.getToolFlag());
 		//stdout.println("messages.length "+messages.length);
 		if (messages!=null){
 			return messages;

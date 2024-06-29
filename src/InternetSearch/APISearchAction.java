@@ -122,13 +122,22 @@ public class APISearchAction extends AbstractAction {
                     }
 
                     String tabname = String.format("%s(%s)", searchType, searchContent);
+                    
                     if (searchedContent.add(tabname)) {
                     	//保证单次操作，不对相同项进行重复搜索
                     	Set<String> already = BurpExtender.getGui().getSearchPanel().getAlreadySearchContent();
                     	if (!already.contains(tabname)) {
                     		//保证已经存在的搜索内容不再重复
                     		DoSearchAllInOn(searchType, searchContent, APISearchAction.this.engineList);
+                    		System.out.println("begin search "+tabname);
+                    		BurpExtender.getStdout().println("begin search "+tabname);
+                    	}else {
+                    		System.out.println("skip search "+tabname);
+                    		BurpExtender.getStdout().println("skip search "+tabname);
                     	}
+                    }else {
+                    	System.out.println("skip search "+tabname);
+                    	BurpExtender.getStdout().println("skip search "+tabname);
                     }
                 }
                 return null;
