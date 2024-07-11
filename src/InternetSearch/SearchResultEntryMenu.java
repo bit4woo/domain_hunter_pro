@@ -11,9 +11,9 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingWorker;
 
 import com.bit4woo.utilbox.utils.SystemUtils;
+import com.bit4woo.utilbox.utils.TextUtils;
 
 import GUI.GUIMain;
-import base.Commons;
 import burp.BurpExtender;
 import config.ConfigManager;
 import config.ConfigName;
@@ -92,6 +92,21 @@ public class SearchResultEntryMenu extends JPopupMenu {
 			}
 		});
 
+		JMenuItem copyRootDomainItem = new JMenuItem(new AbstractAction("Copy Root Domain") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				try{
+					java.util.List<String> rootDomains = searchTableModel.getMultipleValue(modelRows,SearchTableHead.RootDomain);
+					rootDomains = TextUtils.deduplicate(rootDomains);
+					String textUrls = String.join(System.lineSeparator(), rootDomains);
+					SystemUtils.writeToClipboard(textUrls);
+				}
+				catch (Exception e1)
+				{
+					e1.printStackTrace(stderr);
+				}
+			}
+		});
 
 		JMenuItem genPortScanCmd = new JMenuItem(new AbstractAction("Copy Port Scan Cmd") {
 
@@ -162,6 +177,7 @@ public class SearchResultEntryMenu extends JPopupMenu {
 		this.add(copyUrlItem);
 		this.add(copyHostItem);
 		this.add(copyIPItem);
+		this.add(copyRootDomainItem);
 		this.add(openURLwithBrowserItem);
 		this.add(genPortScanCmd);
 
