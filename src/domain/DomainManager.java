@@ -367,6 +367,18 @@ public class DomainManager {
 		}
 		return false;
 	}
+	/**
+	 * 添加到目标，并且设置资产可信度级别
+	 * @param enteredRootDomain
+	 * @param autoSub
+	 * @param trustLevel
+	 */
+	public void addToTargetAndSubDomain(String enteredRootDomain, boolean autoSub,String trustLevel) {
+		if (enteredRootDomain == null) return;
+		if (guiMain.getDomainPanel().fetchTargetModel().addRowIfValid(new TargetEntry(enteredRootDomain, autoSub,trustLevel))) {
+			subDomainSet.add(enteredRootDomain);
+		};
+	}
 
 	public void addToTargetAndSubDomain(String enteredRootDomain, boolean autoSub) {
 		if (enteredRootDomain == null) return;

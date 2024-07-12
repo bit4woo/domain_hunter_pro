@@ -220,8 +220,11 @@ public class SearchResultEntry {
 	public void setTitle(String title) {
 		this.title = title;
 	}
-
 	public void AddToTarget() {
+		AddToTarget(null);
+	}
+
+	public void AddToTarget(String trustLevel) {
 		DomainManager domainResult = BurpExtender.getGui().getDomainPanel().getDomainResult();
 		if (IPAddressUtils.isValidIPv4NoPort(this.host)) {
 			domainResult.getSpecialPortTargets().add(this.host);
@@ -233,12 +236,12 @@ public class SearchResultEntry {
 		if (DomainUtils.isValidDomainMayPort(this.host)) {
 			domainResult.addToTargetAndSubDomain(this.host,true);
 			if (this.port >=0 && this.port <= 65535) {
-				domainResult.addToTargetAndSubDomain(this.host+":"+this.port,true);
+				domainResult.addToTargetAndSubDomain(this.host+":"+this.port,true,trustLevel);
 			}
 		}
 
 		if (StringUtils.isEmpty(this.rootDomain)) {
-			domainResult.addToTargetAndSubDomain(this.rootDomain,true);
+			domainResult.addToTargetAndSubDomain(this.rootDomain,true,trustLevel);
 		}
 	}
 

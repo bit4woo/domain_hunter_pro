@@ -250,7 +250,10 @@ public class TargetTableModel extends AbstractTableModel {
 		TargetEntry oldentry = targetEntries.get(key);
 		if (oldentry != null) {//如果有旧的记录，就需要用旧的内容做修改
 			//entry.setBlack(oldentry.isBlack());
-			entry.setTrustLevel(oldentry.getTrustLevel());
+			if (entry.getTrustLevel().equals(AssetTrustLevel.Maybe)) {
+				//当新记录的类型是maybe，那么它是确信度最低的，使用旧值。否则使用新的值
+				entry.setTrustLevel(oldentry.getTrustLevel());
+			}
 			entry.setComments(oldentry.getComments());
 			entry.setKeyword(oldentry.getKeyword());
 		}

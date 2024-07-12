@@ -52,6 +52,15 @@ public class TargetEntry {
 	public TargetEntry(String input) {
 		this(input,true);
 	}
+	
+	public TargetEntry(String input,boolean autoSub,String trustLevel) {
+		this(input,autoSub);
+		if (AssetTrustLevel.getLevelList().contains(trustLevel)) {
+			this.setTrustLevel(trustLevel);
+		}else {
+			//已经有默认初始值了，无需再设置
+		}
+	}
 
 	public TargetEntry(String input,boolean autoSub) {
 
