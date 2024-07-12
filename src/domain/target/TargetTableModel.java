@@ -35,7 +35,7 @@ public class TargetTableModel extends AbstractTableModel {
 	private GUIMain guiMain;
 
 	private static final transient String[] standardTitles = new String[] {
-			"#","Domain/Subnet", "Keyword", "Comment","Black"};
+			"#","Domain/Subnet", "Keyword", "Comment","TrustLevel"};
 	private static transient List<String> titletList = new ArrayList<>(Arrays.asList(standardTitles));
 
 	private static final transient Logger log = LogManager.getLogger(TargetTableModel.class);
@@ -124,8 +124,8 @@ public class TargetTableModel extends AbstractTableModel {
 		if (columnIndex == titletList.indexOf("Comment")) {
 			return String.join(",", entry.getComments());
 		}
-		if (columnIndex == titletList.indexOf("Black")) {
-			return entry.isBlack();
+		if (columnIndex == titletList.indexOf("TrustLevel")) {
+			return entry.getTrustLevel();
 		}
 		return "";
 	}
@@ -165,9 +165,9 @@ public class TargetTableModel extends AbstractTableModel {
 			entry.setKeyword(valueStr);
 			fireTableCellUpdated(row, col);
 		}
-		if (col == titletList.indexOf("Black")){
-			boolean valueStr = ((boolean) value);
-			entry.setBlack(valueStr);
+		
+		if (col == titletList.indexOf("TrustLevel")){
+			entry.setTrustLevel((String) value);
 			fireTableCellUpdated(row, col);
 		}
 		guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(entry);
@@ -243,7 +243,8 @@ public class TargetTableModel extends AbstractTableModel {
 	private void addRow(String key,TargetEntry entry) {
 		TargetEntry oldentry = targetEntries.get(key);
 		if (oldentry != null) {//如果有旧的记录，就需要用旧的内容做修改
-			entry.setBlack(oldentry.isBlack());
+			//entry.setBlack(oldentry.isBlack());
+			entry.setTrustLevel(oldentry.getTrustLevel());
 			entry.setComments(oldentry.getComments());
 			entry.setKeyword(oldentry.getKeyword());
 		}
@@ -318,7 +319,7 @@ public class TargetTableModel extends AbstractTableModel {
 		Set<String> result = new HashSet<String>();
 		for (TargetEntry entry:targetEntries.values()) {
 			if (!ifValid(entry)) continue;
-			if (!entry.isBlack()) {
+			if (!entry.isNotTarget()) {
 				result.add(entry.getTarget());
 			}
 		}
@@ -335,7 +336,7 @@ public class TargetTableModel extends AbstractTableModel {
 		for (TargetEntry entry:targetEntries.values()) {
 			if (!ifValid(entry)) continue;
 			try {
-				if (!entry.isBlack() && entry.getType().equals(TargetEntry.Target_Type_Domain)) {
+				if (!entry.isNotTarget() && entry.getType().equals(TargetEntry.Target_Type_Domain)) {
 					result.add(entry.getTarget());
 				}
 			}catch (Exception e){
@@ -356,7 +357,7 @@ public class TargetTableModel extends AbstractTableModel {
 		for (TargetEntry entry:targetEntries.values()) {
 			if (!ifValid(entry)) continue;
 			try {
-				if (!entry.isBlack() && entry.getType().equals(TargetEntry.Target_Type_Wildcard_Domain)) {
+				if (!entry.isNotTarget() && entry.getType().equals(TargetEntry.Target_Type_Wildcard_Domain)) {
 					result.add(entry.getTarget());
 				}
 			}catch (Exception e){
@@ -376,7 +377,7 @@ public class TargetTableModel extends AbstractTableModel {
 		Set<String> result = new HashSet<String>();
 		for (TargetEntry entry:targetEntries.values()) {
 			if (ifValid(entry)) {
-				if (!entry.isBlack()) {
+				if (!entry.isNotTarget()) {
 					if (entry.getTarget() == null || entry.getType() == null) continue;
 					if (entry.getType().equals(TargetEntry.Target_Type_Subnet)) {
 						List<String> tmpIPs = IPAddressUtils.toIPList(entry.getTarget());
@@ -396,7 +397,7 @@ public class TargetTableModel extends AbstractTableModel {
 		Set<String> result = new HashSet<String>();
 		for (TargetEntry entry:targetEntries.values()) {
 			if (!ifValid(entry)) continue;
-			if (entry.isBlack() && entry.getType().equals(TargetEntry.Target_Type_Domain)) {
+			if (entry.isNotTarget() && entry.getType().equals(TargetEntry.Target_Type_Domain)) {
 				result.add(entry.getTarget());
 			}
 		}
@@ -411,7 +412,7 @@ public class TargetTableModel extends AbstractTableModel {
 		Set<String> result = new HashSet<String>();
 		for (TargetEntry entry:targetEntries.values()) {
 			if (!ifValid(entry)) continue;
-			if (entry.isBlack()) {
+			if (entry.isNotTarget()) {
 				if (entry.getType().equals(TargetEntry.Target_Type_Subnet)) {
 					List<String> tmpIPs = IPAddressUtils.toIPList(entry.getTarget());
 					result.addAll(tmpIPs);
@@ -425,7 +426,7 @@ public class TargetTableModel extends AbstractTableModel {
 		Set<String> result = new HashSet<String>();
 		for (TargetEntry entry:targetEntries.values()) {
 			if (!ifValid(entry)) continue;
-			if (!entry.isBlack() && !entry.getKeyword().trim().equals("")) {
+			if (!entry.isNotTarget() && !entry.getKeyword().trim().equals("")) {
 				result.add(entry.getKeyword());
 			}
 		}

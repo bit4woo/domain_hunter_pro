@@ -26,9 +26,10 @@ public class TargetEntry {
 	private String keyword = "";
 	private Set<String> AuthoritativeNameServers = new HashSet<>();//权威服务器
 	private boolean ZoneTransfer = false;//域名对应的权威服务器，是否存在域于传送漏洞
-	private boolean isBlack = false;//这个域名是否是黑名单根域名，需要排除的
+	private transient boolean isBlack = false;//这个域名是否是黑名单根域名，需要排除的。不再使用这个字段，由trustLevel代替
 	private Set<String> comments = new HashSet<>();
 	private boolean useTLD = true;//TLD= Top-Level Domain,比如 baidu.com为true，*.m.baidu.com为false
+	private String trustLevel = AssetTrustLevel.Maybe;
 
 	public static final String Target_Type_Domain = "Domain";
 	public static final String Target_Type_Wildcard_Domain = "WildcardDomain"; //
@@ -37,6 +38,7 @@ public class TargetEntry {
 
 	private static final String[]  TargetTypeArray = {Target_Type_Domain,Target_Type_Wildcard_Domain,Target_Type_Subnet};
 	public static List<String> TargetTypeList = new ArrayList<>(Arrays.asList(TargetTypeArray));
+	
 
 	public static void main(String[] args) {
 		TargetEntry aa = new TargetEntry("www.baidu.com");
@@ -132,12 +134,21 @@ public class TargetEntry {
 	public void setZoneTransfer(boolean zoneTransfer) {
 		ZoneTransfer = zoneTransfer;
 	}
+	
+	@Deprecated
 	public boolean isBlack() {
 		return isBlack;
 	}
+	
+	@Deprecated
 	public void setBlack(boolean isBlack) {
 		this.isBlack = isBlack;
 	}
+	
+	public boolean isNotTarget() {
+		return trustLevel.equalsIgnoreCase(AssetTrustLevel.NonTarget);
+	}
+	
 	public Set<String> getComments() {
 		return comments;
 	}
@@ -157,6 +168,22 @@ public class TargetEntry {
 
 	public void setUseTLD(boolean useTLD) {
 		this.useTLD = useTLD;
+	}
+
+	public String getTrustLevel() {
+		if (isBlack) {
+			//兼容旧版本
+			trustLevel = AssetTrustLevel.NonTarget;
+		}
+		return trustLevel;
+	}
+
+	public void setTrustLevel(String trustLevel) {
+		this.trustLevel = trustLevel;
+	}
+	
+	public String switchTrustLevel() {
+		return trustLevel =  AssetTrustLevel.getNextLevel(trustLevel);
 	}
 
 	public void zoneTransferCheck() {

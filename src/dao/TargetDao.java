@@ -21,8 +21,10 @@ public class TargetDao {
 	public TargetDao(String dbFilePath){
 		dataSource = DBUtils.getSqliteDataSource(dbFilePath);
 		jdbcTemplate = new JdbcTemplate(dataSource);
-		if (!testSelect()){
+		if (!tableExists("TargetTable")){
 			createTable();
+		}else {
+			alterTable();
 		}
 	}
 	
@@ -38,11 +40,13 @@ public class TargetDao {
 				" type        TEXT    NOT NULL,"+
 				" keyword        TEXT    NOT NULL,"+
 				" ZoneTransfer        BOOLEAN    NOT NULL,"+
-				" isBlack        BOOLEAN    NOT NULL,"+
+				//" isBlack        BOOLEAN    NOT NULL,"+
+				" trustLevel        TEXT    NOT NULL,"+
 				" comment        TEXT    NOT NULL,"+
 				" useTLD        BOOLEAN    NOT NULL)";
 		jdbcTemplate.execute(sqlTitle);
 		
+
 		//https://www.sqlitetutorial.net/sqlite-replace-statement/
 		//让target字段成为replace操作判断是否重复的判断条件。
 		String sqlcreateIndex = "CREATE UNIQUE INDEX IF NOT EXISTS idx_Target_target ON TargetTable (target)";
@@ -50,20 +54,98 @@ public class TargetDao {
 		return true;
 	}
 	
+	public void alterTable() {
+		removeColumnIsBlackIfPresent();
+	}
+	
 	/**
-	 * 
+	 * 实现：删除isBlack字段，新增trustLevel字段的逻辑。需要确保旧表有isBlack字段。
+	 * @return
+	 */
+	public boolean removeColumnIsBlackIfPresent() {
+	    if (!columnExists("TargetTable", "isBlack")) {
+	        // 如果 isBlack 列不存在，直接返回
+	        return true;
+	    }
+
+	    String createNewTableSql = "CREATE TABLE TargetTable_new (" +
+	            "ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+	            "target TEXT NOT NULL, " +
+	            "type TEXT NOT NULL, " +
+	            "keyword TEXT NOT NULL, " +
+	            "ZoneTransfer BOOLEAN NOT NULL, " +
+	            "comment TEXT NOT NULL, " +
+	            "useTLD BOOLEAN NOT NULL, " +
+	            "trustLevel TEXT NOT NULL)";
+	    
+	    String copyDataSql = "INSERT INTO TargetTable_new (ID, target, type, keyword, ZoneTransfer, comment, useTLD, trustLevel) " +
+	            "SELECT ID, target, type, keyword, ZoneTransfer, comment, useTLD, " +
+	            "CASE WHEN isBlack = 1 THEN 'NonTarget' ELSE 'Maybe' END as trustLevel " +
+	            "FROM TargetTable";
+	    
+	    String dropOldTableSql = "DROP TABLE TargetTable";
+	    
+	    String renameTableSql = "ALTER TABLE TargetTable_new RENAME TO TargetTable";
+	    
+	    try {
+	        jdbcTemplate.execute(createNewTableSql);
+	        jdbcTemplate.execute(copyDataSql);
+	        jdbcTemplate.execute(dropOldTableSql);
+	        jdbcTemplate.execute(renameTableSql);
+	        return true;
+	    } catch (DataAccessException e) {
+	        e.printStackTrace();
+	        return false;
+	    }
+	}
+
+	private boolean columnExists(String tableName, String columnName) {
+	    try {
+	        String sql = "PRAGMA table_info(" + tableName + ")";
+	        SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sql);
+	        while (rowSet.next()) {
+	            if (columnName.equals(rowSet.getString("name"))) {
+	                return true;
+	            }
+	        }
+	    } catch (DataAccessException e) {
+	        e.printStackTrace();
+	    }
+	    return false;
+	}
+
+	public boolean tableExists(String tableName){
+		try {
+			String sql = "SELECT count(*) FROM sqlite_master WHERE type='table' AND name = '"+tableName+"'";
+			SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
+			if (result.next() && result.getInt(1) > 0) {
+				return true;
+			} else {
+				return false;
+			}
+		} catch (DataAccessException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	
+	/**
+	 * 不再使用isBlack字段，由trustLevel字段代替
 	 * @param entry
 	 * @return
 	 */
-	public boolean addOrUpdateTarget(TargetEntry entry){
-		String sql = "insert or replace into TargetTable (target,type,keyword,ZoneTransfer,isBlack,comment,useTLD)"
-					+ " values(?,?,?,?,?,?,?)";
+	public boolean addOrUpdateTarget(TargetEntry entry) {
+	    String sql = "insert or replace into TargetTable (target, type, keyword, ZoneTransfer, comment, useTLD, trustLevel)"
+	            + " values(?, ?, ?, ?, ?, ?, ?)";
 
-		int result = jdbcTemplate.update(sql, entry.getTarget(),entry.getType(),entry.getKeyword(),entry.isZoneTransfer(),
-				entry.isBlack(),SetAndStr.toStr(entry.getComments()),entry.isUseTLD());
+	    int result = jdbcTemplate.update(sql, entry.getTarget(), entry.getType(), entry.getKeyword(), entry.isZoneTransfer(),
+	            SetAndStr.toStr(entry.getComments()), entry.isUseTLD(), 
+	            entry.getTrustLevel());
 
-		return result > 0;
+	    return result > 0;
 	}
+
 	
 	public boolean addOrUpdateTargets(List<TargetEntry> entries){
 		int num=0;
@@ -132,22 +214,9 @@ public class TargetDao {
 			return null;
 		}
 	}
-	
-	public boolean testSelect(){
-		try {
-			//String sql = "select * from TargetTable limit 1";
-			String sql = "SELECT count(*) FROM sqlite_master WHERE type='table' AND name = 'TargetTable'";
-			SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
-			if (result.getRow() > 0 && result.getInt(0) > 0) {
-				return true;
-			}else {
-				return false;
-			}
-		} catch (DataAccessException e) {
-			e.printStackTrace();
-			return false;
-		}
-	}
+
+
+
 	
 	/**
 	 * 

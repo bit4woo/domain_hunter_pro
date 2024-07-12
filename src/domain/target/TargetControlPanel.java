@@ -163,7 +163,7 @@ public class TargetControlPanel extends JPanel {
 			TargetTableModel domainTableModel = domainPanel.fetchTargetModel();
 			for (int i = rowindexs.length - 1; i >= 0; i--) {
 				TargetEntry entry = domainTableModel.getValueAt(rowindexs[i]);
-				entry.setBlack(true);
+				entry.setTrustLevel(AssetTrustLevel.NonTarget);
 				domainTableModel.updateRow(entry);
 			}
 		}

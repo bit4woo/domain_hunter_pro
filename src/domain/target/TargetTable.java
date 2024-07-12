@@ -96,8 +96,8 @@ public class TargetTable extends JTable {
 					int modelCol = TargetTable.this.convertColumnIndexToModel(col);
 
 					TargetEntry selecteEntry = getTargetModel().getTargetEntries().get(rows[0]);
-					if (modelCol == TargetTableModel.getTitleList().indexOf("Black")) {
-						selecteEntry.setBlack(!selecteEntry.isBlack());
+					if (modelCol == TargetTableModel.getTitleList().indexOf("TrustLevel")) {
+						selecteEntry.switchTrustLevel();
 						guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(selecteEntry);
 						getTargetModel().fireTableRowsUpdated(rows[0], rows[0]);
 					} else if (modelCol == TargetTableModel.getTitleList().indexOf("Domain/Subnet")) {//双击url在浏览器中打开

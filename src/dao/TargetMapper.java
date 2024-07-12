@@ -8,6 +8,7 @@ import java.util.HashSet;
 import org.springframework.jdbc.core.RowMapper;
 
 import base.SetAndStr;
+import domain.target.AssetTrustLevel;
 import domain.target.TargetEntry;
 
 public class TargetMapper implements RowMapper<TargetEntry> {
@@ -25,7 +26,14 @@ public class TargetMapper implements RowMapper<TargetEntry> {
 		entry.setType(rs.getString("type"));
 		entry.setKeyword(rs.getString("keyword"));
 		entry.setZoneTransfer(rs.getBoolean("ZoneTransfer"));
-		entry.setBlack(rs.getBoolean("isBlack"));
+		//entry.setBlack(rs.getBoolean("isBlack"));//反序列化时不再处理该字段。
+		if (rs.getString("trustLevel")!=null) {
+			entry.setTrustLevel(rs.getString("trustLevel"));
+		}else {
+			//兼容旧版本数据库
+			entry.setTrustLevel(AssetTrustLevel.Maybe);
+		}
+		
 		if (rs.getString("comment").startsWith("[") && rs.getString("comment").endsWith("]")) {
 			//新的代码，setToStr的存储格式
 			entry.setComments(SetAndStr.toSet(rs.getString("comment")));
