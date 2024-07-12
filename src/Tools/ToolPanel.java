@@ -278,6 +278,19 @@ public class ToolPanel extends JPanel {
 				}
 			}
 		};
+		
+		JButton btnGetRootDomain = new BackGroundButton("Get Root Domain") {
+			@Override
+			protected void action() {
+				List<String> lines = SwingUtils.getLinesFromTextArea(inputTextArea);
+				List<String> result = new ArrayList<>();
+				for (String line:lines) {
+					String rootDomain = DomainUtils.getRootDomain(line);
+					result.add(rootDomain);
+				}
+				outputTextArea.setText(String.join(System.lineSeparator(), result));
+			}
+		};
 
 
 		JButton btnFindUrls = new BackGroundButton("Find URL") {
@@ -1502,6 +1515,7 @@ public class ToolPanel extends JPanel {
 		cloumnIndex = 0;
 		buttonPanel.add(btnFindDomains, new bagLayout(++rowIndex, ++cloumnIndex));
 		buttonPanel.add(btnFindDomainsNoPort, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(btnGetRootDomain, new bagLayout(rowIndex, ++cloumnIndex));
 
 		cloumnIndex = 0;
 		buttonPanel.add(btnFindUrls, new bagLayout(++rowIndex, ++cloumnIndex));
