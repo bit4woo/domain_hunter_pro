@@ -4,28 +4,28 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import javax.swing.AbstractAction;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingWorker;
 
-import GUI.GUIMain;
-import InternetSearch.APISearchAction;
-import InternetSearch.BrowserSearchAction;
-import InternetSearch.SearchEngine;
-import base.Commons;
-import burp.BurpExtender;
-import config.ConfigManager;
-import config.ConfigName;
 import org.apache.commons.lang3.StringUtils;
 
 import com.bit4woo.utilbox.utils.SystemUtils;
+
+import GUI.GUIMain;
+import InternetSearch.SearchEngine;
+import burp.BurpExtender;
+import config.ConfigManager;
+import config.ConfigName;
 
 public class TargetEntryMenu extends JPopupMenu {
 
@@ -37,14 +37,14 @@ public class TargetEntryMenu extends JPopupMenu {
 	private int rootDomainColumnIndex;
 	private TargetTableModel targetTableModel;
 
-	public TargetEntryMenu(GUIMain guiMain,final TargetTable rootDomainTable, final int[] modelRows, final int columnIndex){
+	public TargetEntryMenu(GUIMain guiMain, final TargetTable rootDomainTable, final int[] modelRows, final int columnIndex) {
 		this.rootDomainTable = rootDomainTable;
 		this.targetTableModel = rootDomainTable.getTargetModel();
 		this.guiMain = guiMain;
-		this.rootDomainColumnIndex =1;//设定为rootDomain所在列
+		this.rootDomainColumnIndex = 1;//设定为rootDomain所在列
 
 
-		JMenuItem itemNumber = new JMenuItem(new AbstractAction(modelRows.length+" Items Selected") {
+		JMenuItem itemNumber = new JMenuItem(new AbstractAction(modelRows.length + " Items Selected") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 			}
@@ -54,8 +54,8 @@ public class TargetEntryMenu extends JPopupMenu {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				List<String> results = new ArrayList<String>();
-				for (int row:modelRows) {
-					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,rootDomainColumnIndex);
+				for (int row : modelRows) {
+					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row, rootDomainColumnIndex);
 					String line = guiMain.getDomainPanel().getDomainResult().fetchSubDomainsOf(rootDomain);
 					results.add(line);
 				}
@@ -70,8 +70,8 @@ public class TargetEntryMenu extends JPopupMenu {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				List<String> results = new ArrayList<String>();
-				for (int row:modelRows) {
-					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,rootDomainColumnIndex);
+				for (int row : modelRows) {
+					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row, rootDomainColumnIndex);
 					String line = guiMain.getDomainPanel().getDomainResult().fetchEmailsOf(rootDomain);
 					results.add(line);
 				}
@@ -88,12 +88,13 @@ public class TargetEntryMenu extends JPopupMenu {
 				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
 					@Override
 					protected Map doInBackground() throws Exception {
-						for (int row:modelRows) {
+						for (int row : modelRows) {
 							TargetEntry entry = rootDomainTable.getTargetModel().getTargetEntries().get(row);
 							entry.zoneTransferCheck();
 						}
 						return null;
 					}
+
 					@Override
 					protected void done() {
 					}
@@ -111,6 +112,7 @@ public class TargetEntryMenu extends JPopupMenu {
 						rootDomainTable.getTargetModel().ZoneTransferCheckAll();
 						return null;
 					}
+
 					@Override
 					protected void done() {
 					}
@@ -122,10 +124,10 @@ public class TargetEntryMenu extends JPopupMenu {
 		JMenuItem OpenWithBrowserItem = new JMenuItem(new AbstractAction("Open With Browser") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				for (int row:modelRows) {
-					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row,rootDomainColumnIndex);
+				for (int row : modelRows) {
+					String rootDomain = (String) rootDomainTable.getTargetModel().getValueAt(row, rootDomainColumnIndex);
 					try {
-						SystemUtils.browserOpen("https://"+rootDomain, ConfigManager.getStringConfigByKey(ConfigName.BrowserPath));
+						SystemUtils.browserOpen("https://" + rootDomain, ConfigManager.getStringConfigByKey(ConfigName.BrowserPath));
 					} catch (Exception e) {
 						e.printStackTrace(stderr);
 					}
@@ -137,10 +139,10 @@ public class TargetEntryMenu extends JPopupMenu {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				String Comments = JOptionPane.showInputDialog("Comments", null).trim();
-				while(StringUtils.isBlank(Comments)){
+				while (StringUtils.isBlank(Comments)) {
 					Comments = JOptionPane.showInputDialog("Comments", null).trim();
 				}
-				rootDomainTable.getTargetModel().updateComments(modelRows,Comments);
+				rootDomainTable.getTargetModel().updateComments(modelRows, Comments);
 			}
 		});
 
@@ -159,22 +161,43 @@ public class TargetEntryMenu extends JPopupMenu {
 		});
 
 
+		JMenu changeTrustLevelItem = new JMenu("Change TrustLevel To");
+		addSubItem(changeTrustLevelItem, modelRows);
+
+
 		this.add(itemNumber);
 		this.add(getSubDomainsOf);
 		this.add(copyEmails);
 		this.add(batchAddCommentsItem);
 		this.add(batchClearCommentsItem);
 		this.add(addToBlackItem);
+		this.add(changeTrustLevelItem);
 		this.addSeparator();
 
-		SearchEngine.AddSearchMenuItems(this,targetTableModel,modelRows,columnIndex);
-		
+		SearchEngine.AddSearchMenuItems(this, targetTableModel, modelRows, columnIndex);
+
 		this.addSeparator();
-		
+
 		this.add(OpenWithBrowserItem);
 		this.add(zoneTransferCheck);
 		this.add(zoneTransferCheckAll);
-		
+
 		this.addSeparator();
 	}
+
+	public void addSubItem(JMenu parent, int[] modelRows) {
+		List<String> levelList = AssetTrustLevel.getLevelList();
+		for (String level : levelList) {
+			JMenuItem item = new JMenuItem(level);
+			item.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					rootDomainTable.getTargetModel().batchAction(modelRows, "setTrustLevel", e.getActionCommand());
+				}
+			});
+			parent.add(item);
+		}
+	}
+
+	;
 }
