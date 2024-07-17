@@ -130,7 +130,7 @@ public class SearchResultEntryMenu extends JPopupMenu {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				try{
-					java.util.List<String> urls = searchTableModel.getMultipleValue(modelRows,"URL/Host");
+					java.util.List<String> urls = searchTableModel.getMultipleValue(modelRows,"URL");
 					if (urls.size() >= 50){//避免一次开太多网页导致系统卡死
 						return;
 					}
