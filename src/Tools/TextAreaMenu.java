@@ -18,6 +18,7 @@ import burp.BurpExtender;
 import config.ConfigManager;
 import config.ConfigName;
 import domain.DomainManager;
+import domain.target.AssetTrustLevel;
 import utils.PortScanUtils;
 
 public class TextAreaMenu extends JPopupMenu {
@@ -115,6 +116,26 @@ public class TextAreaMenu extends JPopupMenu {
 				guiMain.getDomainPanel().saveDomainDataToDB();
 			}
 		});
+		
+		
+		JMenuItem addToTargetConfirm = new JMenuItem(new AbstractAction("Add To Target(Confirm)") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				DomainManager domainResult = guiMain.getDomainPanel().getDomainResult();
+				for (String item:selectedItems) {
+					try {
+						if (IPAddressUtils.isValidIPv4MayPort(item)) {
+							domainResult.getSpecialPortTargets().add(item);
+						}else {
+							domainResult.addToTargetAndSubDomain(item,true,AssetTrustLevel.Confirm);
+						}
+					} catch (Exception e2) {
+						e2.printStackTrace(stderr);
+					}
+				}
+				guiMain.getDomainPanel().saveDomainDataToDB();
+			}
+		});
 
 		JMenuItem doOnlineSearch = new JMenuItem(new AbstractAction("Do Online Search") {
 			@Override
@@ -131,6 +152,7 @@ public class TextAreaMenu extends JPopupMenu {
 		
 		this.add(genPortScanCmd);
 		this.add(addToTarget);
+		this.add(addToTargetConfirm);
 		this.add(doOnlineSearch);
 	}
 }
