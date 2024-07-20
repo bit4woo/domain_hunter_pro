@@ -1,6 +1,7 @@
 package InternetSearch;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Insets;
@@ -48,6 +49,7 @@ public class SearchPanel extends JPanel {
 	GUIMain guiMain;
 	PrintWriter stdout;
 	PrintWriter stderr;
+	private Set<String> selectedTabs = new HashSet<>(); // 用于存储已选择过的Tab名称
 
 	public static void main(String[] args) {
 		test();
@@ -108,6 +110,20 @@ public class SearchPanel extends JPanel {
 		this.add(centerPanel, BorderLayout.CENTER);
 	}
 
+	// 外部函数用于改变指定Tab的颜色
+	public void changeTabColor(String tabName, Color color) {
+		for (int i = 0; i < centerPanel.getTabCount(); i++) {
+			Component tabComponent = centerPanel.getTabComponentAt(i);
+			if (tabComponent instanceof JPanel) {
+				JPanel tabPanel = (JPanel) tabComponent;
+				JLabel label = (JLabel) tabPanel.getComponent(0);
+				if (label.getText().equals(tabName)) {
+					tabPanel.setForeground(color);
+				}
+			}
+		}
+	}
+
 	public void addSearchTab(String tabName, List<SearchResultEntry> entries, List<String> engines) {
 		JPanel containerpanel = new JPanel();//Tab的最外层容器面板
 		containerpanel.setLayout(new BorderLayout(0, 0));
@@ -147,10 +163,24 @@ public class SearchPanel extends JPanel {
 			public void mouseReleased(MouseEvent e) {
 				if (SwingUtilities.isRightMouseButton(e)) {
 					showPopupMenu(centerPanel, e);
+				}else if (SwingUtilities.isLeftMouseButton(e)) {
+					int tabIndex = centerPanel.getSelectedIndex();
+					if (tabIndex != -1) {
+						Component selectedComponent = centerPanel.getTabComponentAt(tabIndex);
+						if (selectedComponent instanceof JPanel) {
+							JPanel selectedTabPanel = (JPanel) selectedComponent;
+							JLabel label = (JLabel) selectedTabPanel.getComponent(0);
+							if (label.getText().equals(tabName)) {
+								selectedTabs.add(tabName); // 将此Tab名称添加到已选择过的集合中
+								selectedTabPanel.setForeground(Color.GRAY); // 设置Tab颜色为灰色
+							}
+						}
+					}
 				}
 			}
 		});
 	}
+
 
 	public String getStatusInfo(List<SearchResultEntry> entries, List<String> engines) {
 		Map<String, Integer> status = new HashMap<>();
@@ -252,7 +282,7 @@ public class SearchPanel extends JPanel {
 		// 显示右键菜单
 		popupMenu.show(tabbedPane, e.getX(), e.getY());
 	}
-	
+
 	public Set<String> getAlreadySearchContent(){
 		HashSet<String> result = new HashSet<String>();
 		for (int i = centerPanel.getTabCount() - 1; i >= 0; i--) {
@@ -262,7 +292,7 @@ public class SearchPanel extends JPanel {
 		}
 		return result;
 	}
-	
+
 	public static void searchAtBackground(String content) {
 		SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
 			@Override
