@@ -118,7 +118,7 @@ public class SearchPanel extends JPanel {
 				JPanel tabPanel = (JPanel) tabComponent;
 				JLabel label = (JLabel) tabPanel.getComponent(0);
 				if (label.getText().equals(tabName)) {
-					tabPanel.setForeground(color);
+					tabPanel.setBackground(color);
 				}
 			}
 		}
@@ -172,7 +172,7 @@ public class SearchPanel extends JPanel {
 							JLabel label = (JLabel) selectedTabPanel.getComponent(0);
 							if (label.getText().equals(tabName)) {
 								selectedTabs.add(tabName); // 将此Tab名称添加到已选择过的集合中
-								selectedTabPanel.setForeground(Color.GRAY); // 设置Tab颜色为灰色
+								selectedTabPanel.setBackground(Color.GRAY); // 设置Tab颜色为灰色
 							}
 						}
 					}
