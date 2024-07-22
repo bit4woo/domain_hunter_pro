@@ -134,7 +134,7 @@
 		<dependency>
 			<groupId>dnsjava</groupId>
 			<artifactId>dnsjava</artifactId>
-			<version>2.1.9</version>
+			<version>3.6.0</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc -->
 		<dependency>
