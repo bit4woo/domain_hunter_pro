@@ -149,7 +149,8 @@ public class SearchEngine {
 				} else if(type.equals(SearchType.Subnet)) {
 					value = String.format("ip=\"%s\"", value);
 				} else if (type.equals(SearchType.Title)) {
-					value = String.format("title=\"%s\"", value);
+					//查询title时，使用=有大量误报，使用==进行更严格的匹配。大小写敏感的，字符串完全相同
+					value = String.format("title==\"%s\"", value);
 				} else if (type.equals(SearchType.IconHash)) {
 					value = String.format("icon_hash=\"%s\"", value);
 				}else if(type.equals(SearchType.Server)) {
