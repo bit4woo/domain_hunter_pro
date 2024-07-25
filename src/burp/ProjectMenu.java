@@ -18,6 +18,8 @@ import javax.swing.SwingWorker;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
+import org.apache.commons.lang3.StringUtils;
+
 import GUI.GUIMain;
 import base.DictFileReader;
 import base.dbFileChooser;
@@ -225,6 +227,7 @@ public class ProjectMenu extends JMenu{
 		if (null != file) {
 			BurpExtender.getDataLoadManager().loadDbfileToHunter(file.toString());
 		}
+		
 	}
 
 
@@ -259,6 +262,7 @@ public class ProjectMenu extends JMenu{
 		}
 	}
 
+
 	public void remove(){
 		JMenuBar menuBar = getBurpFrame().getJMenuBar();
 		if (menuBar != null){
@@ -266,12 +270,41 @@ public class ProjectMenu extends JMenu{
 			menuBar.repaint();
 		}
 	}
+	
+	
+	@Deprecated
+	public static String listLoadedExtensions() {
+        // 获取已加载的扩展列表。这个函数无法导出用户配置
+        String configJson = BurpExtender.getCallbacks().saveConfigAsJson("user_options.extender.extensions");
+        
+        System.out.println(configJson);
+        return configJson;
+    }
+	
+	
+	/**
+	 * 当换了db数据库时，重新加载
+	 * @param newName
+	 */
+	public void displayDBNameAtProjectMenu(String name){
+		remove();
+		String barName = "DomainHunter";
+		if (StringUtils.isNotBlank(name)) {
+			if (name.length() <=8) {
+				barName = barName+"("+name+")";
+			}else {
+				barName = barName+"("+name.substring(0,5)+"...)";
+			}
+		}
+		this.setText(barName);
+		Add();
+	}
 
 	/**
 	 * 最上面的项目菜单中显示项目名称
 	 * @param name
 	 */
-	public void AddDBNameMenuItem(String name){
+	public void displayDBNameAtProjectMenuItem(String name){
 		if (null==name) return;
 		String firstName = this.getItem(0).getName();
 		if (firstName != null && firstName.equals("JustDisplayDBFileName")){
@@ -287,50 +320,11 @@ public class ProjectMenu extends JMenu{
 	 * Domain Panel显示项目名称
 	 * @param name
 	 */
-	public void AddDBNameTab(String name){
+	public void displayDBNameAtDomainTab(String name){
 		if (null == name) return;
 		JTabbedPane panel = ((JTabbedPane)gui.getContentPane());
 		String newName = String.format("domain [%s]",name);
 		panel.setTitleAt(0,newName);
-	}
-
-	//修改之后不刷新，弃用
-	@Deprecated
-	public void changeTabName(String dbFileName){
-		Container ccc = getBurpFrame().getContentPane();
-		JTabbedPane ParentOfDomainHunter = (JTabbedPane) ccc.getComponent(0);//burpTabBar
-		int n = ParentOfDomainHunter.getComponentCount();
-
-		//find index of current DomainHunter
-		for (int i=n-1;i>=0;i--){
-			Component tmp = ParentOfDomainHunter.getComponent(i);
-			if (tmp.getName().equals("DomainHunterPro")){
-				ParentOfDomainHunter.setTitleAt(i,"xxxxx");//似乎burp不会刷新这个title的显示。
-
-				String tmpDbFile = BurpExtender.getDataLoadManager().getCurrentDBFile().getName();
-				if (tmpDbFile.equals(dbFileName)){
-					ParentOfDomainHunter.setTitleAt(i,tmpDbFile);
-				}
-			}//domain.DomainPanel
-		}
-	}
-
-	public int indexOfDomainHunter(String dbFileName){
-		Container ccc = getBurpFrame().getContentPane();
-		JTabbedPane ParentOfDomainHunter = (JTabbedPane) ccc.getComponent(0);//burpTabBar
-		int n = ParentOfDomainHunter.getComponentCount();
-
-		//find index of current DomainHunter
-		for (int i=n-1;i>=0;i--){//倒序查找更快
-			Component tmp = ParentOfDomainHunter.getComponent(i);
-			if (tmp.getName().equals("DomainHunterPro")){
-				String tmpDbFile = BurpExtender.getDataLoadManager().getCurrentDBFile().getName();
-				if (tmpDbFile.equals(dbFileName)){
-					return i;
-				}
-			}
-		}
-		return -1;
 	}
 
 	/**

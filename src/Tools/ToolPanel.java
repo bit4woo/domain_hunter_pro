@@ -57,6 +57,7 @@ import com.bit4woo.utilbox.utils.UrlUtils;
 import GUI.GUIMain;
 import base.BackGroundButton;
 import burp.BurpExtender;
+import burp.ProjectMenu;
 import config.ConfigManager;
 import config.ConfigName;
 import domain.CertInfo;
@@ -1432,7 +1433,7 @@ public class ToolPanel extends JPanel {
 			@Override
 			protected void action() {
 				try {
-					outputTextArea.setText(WebIcon.getHash(inputTextArea.getText(), null));
+					outputTextArea.setText(ProjectMenu.listLoadedExtensions());
 				} catch (Exception e1) {
 					outputTextArea.setText(e1.getMessage());
 					e1.printStackTrace(stderr);

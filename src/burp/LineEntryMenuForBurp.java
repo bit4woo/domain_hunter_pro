@@ -96,9 +96,7 @@ public class LineEntryMenuForBurp{
 
 		JMenuItem sendToToolPanel = new JMenuItem("^_^ Send To Tool Panel");
 		sendToToolPanel.addActionListener(new sendToToolPanel(invocation));
-
-
-
+		
 
 		JMenuItemList.add(setAsChecked);
 		JMenuItemList.add(setLevelAs2);
