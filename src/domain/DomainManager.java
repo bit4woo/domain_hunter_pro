@@ -367,6 +367,14 @@ public class DomainManager {
 		}
 		return false;
 	}
+	
+	public void addToTargetAndSubDomain(String enteredRootDomain, boolean autoSub,String trustLevel,String commentToAdd) {
+		if (enteredRootDomain == null) return;
+		if (guiMain.getDomainPanel().fetchTargetModel().addOrUpdateRowIfValid(new TargetEntry(enteredRootDomain, autoSub,trustLevel,commentToAdd))) {
+			subDomainSet.add(enteredRootDomain);
+		};
+	}
+	
 	/**
 	 * 添加到目标，并且设置资产可信度级别
 	 * @param enteredRootDomain
@@ -375,14 +383,14 @@ public class DomainManager {
 	 */
 	public void addToTargetAndSubDomain(String enteredRootDomain, boolean autoSub,String trustLevel) {
 		if (enteredRootDomain == null) return;
-		if (guiMain.getDomainPanel().fetchTargetModel().addRowIfValid(new TargetEntry(enteredRootDomain, autoSub,trustLevel))) {
+		if (guiMain.getDomainPanel().fetchTargetModel().addOrUpdateRowIfValid(new TargetEntry(enteredRootDomain, autoSub,trustLevel))) {
 			subDomainSet.add(enteredRootDomain);
 		};
 	}
 
 	public void addToTargetAndSubDomain(String enteredRootDomain, boolean autoSub) {
 		if (enteredRootDomain == null) return;
-		if (guiMain.getDomainPanel().fetchTargetModel().addRowIfValid(new TargetEntry(enteredRootDomain, autoSub))) {
+		if (guiMain.getDomainPanel().fetchTargetModel().addOrUpdateRowIfValid(new TargetEntry(enteredRootDomain, autoSub))) {
 			subDomainSet.add(enteredRootDomain);
 		};
 	}
@@ -391,8 +399,8 @@ public class DomainManager {
 		if (enteredRootDomain == null) return false;
 		String tldDomainToAdd  = guiMain.getDomainPanel().fetchTargetModel().getTLDDomainToAdd(enteredRootDomain);
 		TargetEntry tmp = new TargetEntry(tldDomainToAdd, false);
-		guiMain.getDomainPanel().fetchTargetModel().addRowIfValid(tmp);
-		if (guiMain.getDomainPanel().fetchTargetModel().addRowIfValid(tmp)) {
+		guiMain.getDomainPanel().fetchTargetModel().addOrUpdateRowIfValid(tmp);
+		if (guiMain.getDomainPanel().fetchTargetModel().addOrUpdateRowIfValid(tmp)) {
 			subDomainSet.add(enteredRootDomain);
 			return true;
 		};

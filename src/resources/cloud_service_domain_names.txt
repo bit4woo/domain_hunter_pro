@@ -1,0 +1,10 @@
+aliyun.com
+aliyuncs.com
+amazon.com
+amazonaws.com
+huaweicloud.com
+myhuaweicloud.com
+myqcloud.com
+tencent.com
+tencentcloudapi.com
+cloudfront.net

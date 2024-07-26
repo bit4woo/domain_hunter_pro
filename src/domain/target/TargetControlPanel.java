@@ -48,7 +48,7 @@ public class TargetControlPanel extends JPanel {
 				} else {
 					String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
 					TargetEntry entry = new TargetEntry(enteredRootDomain);
-					if(domainPanel.fetchTargetModel().addRowIfValid(entry)){
+					if(domainPanel.fetchTargetModel().addOrUpdateRowIfValid(entry)){
 						domainPanel.getDomainResult().addIfValid(enteredRootDomain);
 						btnFresh.doClick();
 					}
@@ -66,7 +66,7 @@ public class TargetControlPanel extends JPanel {
 				} else {
 					String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
 					TargetEntry entry = new TargetEntry(enteredRootDomain,false);
-					if(domainPanel.fetchTargetModel().addRowIfValid(entry)){
+					if(domainPanel.fetchTargetModel().addOrUpdateRowIfValid(entry)){
 						domainPanel.getDomainResult().addIfValid(enteredRootDomain);
 						btnFresh.doClick();
 					}
@@ -164,7 +164,7 @@ public class TargetControlPanel extends JPanel {
 			for (int i = rowindexs.length - 1; i >= 0; i--) {
 				TargetEntry entry = domainTableModel.getValueAt(rowindexs[i]);
 				entry.setTrustLevel(AssetTrustLevel.NonTarget);
-				domainTableModel.updateRow(entry);
+				domainTableModel.addOrUpdateRow(entry);
 			}
 		}
 	}

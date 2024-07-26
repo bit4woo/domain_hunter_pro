@@ -4,11 +4,15 @@ import java.awt.event.ActionEvent;
 import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingWorker;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.bit4woo.utilbox.utils.SystemUtils;
 import com.bit4woo.utilbox.utils.TextUtils;
@@ -154,7 +158,7 @@ public class SearchResultEntryMenu extends JPopupMenu {
 						try{
 							List<SearchResultEntry> entries = searchTableModel.getEntries(modelRows);
 							for (SearchResultEntry entry:entries) {
-								entry.AddToTarget();
+								entry.AddToTarget(null,null);
 							}
 							guiMain.getDomainPanel().saveDomainDataToDB();
 						}
@@ -177,8 +181,60 @@ public class SearchResultEntryMenu extends JPopupMenu {
 						try{
 							List<SearchResultEntry> entries = searchTableModel.getEntries(modelRows);
 							for (SearchResultEntry entry:entries) {
-								entry.AddToTarget(AssetTrustLevel.Confirm);
+								entry.AddToTarget(AssetTrustLevel.Confirm,null);
 							}
+							guiMain.getDomainPanel().saveDomainDataToDB();
+						}
+						catch (Exception e1)
+						{
+							e1.printStackTrace(stderr);
+						}
+						return null;
+					}
+				}.execute();
+			}
+		});
+		
+		JMenuItem addToTargetWithCommentItem = new JMenuItem(new AbstractAction("Add Host/Domain To Target With Comment") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				new SwingWorker(){
+					@Override
+					protected Object doInBackground() throws Exception {
+						try{
+							List<SearchResultEntry> entries = searchTableModel.getEntries(modelRows);
+							for (SearchResultEntry entry:entries) {
+								String comment = JOptionPane.showInputDialog("to find which value", "");
+								if (StringUtils.isNotBlank(comment)) {
+									entry.AddToTarget(null,null);
+								}
+							}
+							guiMain.getDomainPanel().saveDomainDataToDB();
+						}
+						catch (Exception e1)
+						{
+							e1.printStackTrace(stderr);
+						}
+						return null;
+					}
+				}.execute();
+			}
+		});
+		
+		
+		JMenuItem addIPToBlackListItem = new JMenuItem(new AbstractAction("Add IP To Black List") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				new SwingWorker(){
+					@Override
+					protected Object doInBackground() throws Exception {
+						try{
+							List<SearchResultEntry> entries = searchTableModel.getEntries(modelRows);
+							Set<String> blackIPSet = new HashSet<String>();
+							for (SearchResultEntry entry:entries) {
+								blackIPSet.addAll(entry.getIPSet());
+							}
+							guiMain.getDomainPanel().getDomainResult().getNotTargetIPSet().addAll(blackIPSet);
 							guiMain.getDomainPanel().saveDomainDataToDB();
 						}
 						catch (Exception e1)
@@ -198,6 +254,11 @@ public class SearchResultEntryMenu extends JPopupMenu {
 		//常用多选操作
 		this.add(addToTargetItem);
 		this.add(addToTargetConfirmItem);
+		this.add(addToTargetWithCommentItem);
+		this.add(addIPToBlackListItem);
+		
+		this.addSeparator();
+		
 		this.add(copyUrlItem);
 		this.add(copyHostItem);
 		this.add(copyIPItem);

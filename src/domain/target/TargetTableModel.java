@@ -60,7 +60,7 @@ public class TargetTableModel extends AbstractTableModel {
 	public TargetTableModel(GUIMain guiMain, List<TargetEntry> entries) {
 		this(guiMain);
 		for (TargetEntry entry : entries) {
-			if (ifValid(entry)) {
+			if (isValid(entry)) {
 				targetEntries.put(entry.getTarget(), entry);
 			}
 		}
@@ -215,7 +215,7 @@ public class TargetTableModel extends AbstractTableModel {
 	 * @param entry
 	 * @return
 	 */
-	public static boolean ifValid(TargetEntry entry) {
+	public static boolean isValid(TargetEntry entry) {
 		if (StringUtils.isEmpty(entry.getTarget())) {
 			return false;
 		}
@@ -230,10 +230,10 @@ public class TargetTableModel extends AbstractTableModel {
 	 *
 	 * @param entry
 	 */
-	public boolean addRowIfValid(TargetEntry entry) {
-		if (ifValid(entry)) {
+	public boolean addOrUpdateRowIfValid(TargetEntry entry) {
+		if (isValid(entry)) {
 			String key = entry.getTarget();
-			addRow(key, entry);
+			addOrUpdateRow(key, entry);
 			return true;
 		}
 		return false;
@@ -246,7 +246,7 @@ public class TargetTableModel extends AbstractTableModel {
 	 * @param key
 	 * @param entry
 	 */
-	private void addRow(String key, TargetEntry entry) {
+	private void addOrUpdateRow(String key, TargetEntry entry) {
 		TargetEntry oldentry = targetEntries.get(key);
 		if (oldentry != null) {//如果有旧的记录，就需要用旧的内容做修改
 			//entry.setBlack(oldentry.isBlack());
@@ -254,7 +254,7 @@ public class TargetTableModel extends AbstractTableModel {
 				//当新记录的类型是maybe，那么它是确信度最低的，使用旧值。否则使用新的值
 				entry.setTrustLevel(oldentry.getTrustLevel());
 			}
-			entry.setComments(oldentry.getComments());
+			entry.getComments().addAll(oldentry.getComments());
 			entry.setKeyword(oldentry.getKeyword());
 		}
 
@@ -303,9 +303,9 @@ public class TargetTableModel extends AbstractTableModel {
 	/**
 	 * 数据的增删查改：修改更新
 	 */
-	public void updateRow(TargetEntry entry) {
+	public void addOrUpdateRow(TargetEntry entry) {
 		String key = entry.getTarget();
-		addRow(key, entry);
+		addOrUpdateRow(key, entry);
 	}
 
 
@@ -330,7 +330,7 @@ public class TargetTableModel extends AbstractTableModel {
 	public Set<String> fetchTargetSet() {
 		Set<String> result = new HashSet<String>();
 		for (TargetEntry entry : targetEntries.values()) {
-			if (!ifValid(entry)) continue;
+			if (!isValid(entry)) continue;
 			if (!entry.isNotTarget()) {
 				result.add(entry.getTarget());
 			}
@@ -347,7 +347,7 @@ public class TargetTableModel extends AbstractTableModel {
 	public Set<String> fetchTargetDomainSet() {
 		Set<String> result = new HashSet<String>();
 		for (TargetEntry entry : targetEntries.values()) {
-			if (!ifValid(entry)) continue;
+			if (!isValid(entry)) continue;
 			try {
 				if (!entry.isNotTarget() && entry.getType().equals(TargetEntry.Target_Type_Domain)) {
 					result.add(entry.getTarget());
@@ -369,7 +369,7 @@ public class TargetTableModel extends AbstractTableModel {
 	public Set<String> fetchTargetWildCardDomainSet() {
 		Set<String> result = new HashSet<String>();
 		for (TargetEntry entry : targetEntries.values()) {
-			if (!ifValid(entry)) continue;
+			if (!isValid(entry)) continue;
 			try {
 				if (!entry.isNotTarget() && entry.getType().equals(TargetEntry.Target_Type_Wildcard_Domain)) {
 					result.add(entry.getTarget());
@@ -391,7 +391,7 @@ public class TargetTableModel extends AbstractTableModel {
 	public Set<String> fetchTargetIPSet() {
 		Set<String> result = new HashSet<String>();
 		for (TargetEntry entry : targetEntries.values()) {
-			if (ifValid(entry)) {
+			if (isValid(entry)) {
 				if (!entry.isNotTarget()) {
 					if (entry.getTarget() == null || entry.getType() == null) continue;
 					if (entry.getType().equals(TargetEntry.Target_Type_Subnet)) {
@@ -412,7 +412,7 @@ public class TargetTableModel extends AbstractTableModel {
 	private Set<String> fetchTargetBlackDomainSet() {
 		Set<String> result = new HashSet<String>();
 		for (TargetEntry entry : targetEntries.values()) {
-			if (!ifValid(entry)) continue;
+			if (!isValid(entry)) continue;
 			if (entry.isNotTarget() && entry.getType().equals(TargetEntry.Target_Type_Domain)) {
 				result.add(entry.getTarget());
 			}
@@ -428,7 +428,7 @@ public class TargetTableModel extends AbstractTableModel {
 	public Set<String> fetchBlackIPSet() {
 		Set<String> result = new HashSet<String>();
 		for (TargetEntry entry : targetEntries.values()) {
-			if (!ifValid(entry)) continue;
+			if (!isValid(entry)) continue;
 			if (entry.isNotTarget()) {
 				if (entry.getType().equals(TargetEntry.Target_Type_Subnet)) {
 					List<String> tmpIPs = IPAddressUtils.toIPList(entry.getTarget());
@@ -442,7 +442,7 @@ public class TargetTableModel extends AbstractTableModel {
 	public Set<String> fetchKeywordSet() {
 		Set<String> result = new HashSet<String>();
 		for (TargetEntry entry : targetEntries.values()) {
-			if (!ifValid(entry)) continue;
+			if (!isValid(entry)) continue;
 			if (!entry.isNotTarget() && !entry.getKeyword().trim().equals("")) {
 				result.add(entry.getKeyword());
 			}
@@ -734,7 +734,7 @@ public class TargetTableModel extends AbstractTableModel {
 
 	public static void test() {
 		TargetEntry aaa = new TargetEntry("103.125.112.0/23");
-		System.out.println(ifValid(aaa));
+		System.out.println(isValid(aaa));
 		System.out.println(IPAddressUtils.isValidSubnet("103.125.112.0/23"));
 	}
 

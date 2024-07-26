@@ -53,12 +53,42 @@ public class TargetEntry {
 		this(input,true);
 	}
 	
+	public TargetEntry(String input,boolean autoSub,String trustLevel,String comment) {
+		this(input,autoSub);
+		if (AssetTrustLevel.getLevelList().contains(trustLevel)) {
+			this.setTrustLevel(trustLevel);
+		}else {
+			//已经有默认初始值了，无需再设置
+		}
+		addComment(comment);
+	}
+	
 	public TargetEntry(String input,boolean autoSub,String trustLevel) {
 		this(input,autoSub);
 		if (AssetTrustLevel.getLevelList().contains(trustLevel)) {
 			this.setTrustLevel(trustLevel);
 		}else {
 			//已经有默认初始值了，无需再设置
+		}
+	}
+	
+	private void autoDetectTrustLevel() {
+		//resources/cloud_service_domain_names.txt
+		String domains = "aliyun.com\r\n"
+				+ "aliyuncs.com\r\n"
+				+ "amazon.com\r\n"
+				+ "amazonaws.com\r\n"
+				+ "huaweicloud.com\r\n"
+				+ "myhuaweicloud.com\r\n"
+				+ "myqcloud.com\r\n"
+				+ "tencent.com\r\n"
+				+ "tencentcloudapi.com\r\n"
+				+ "cloudfront.net";
+		for (String item:domains.split("\r\n")) {
+			if (target.toLowerCase().strip().endsWith(item)) {
+				this.setTrustLevel(AssetTrustLevel.Cloud);
+				break;
+			}
 		}
 	}
 
@@ -103,6 +133,7 @@ public class TargetEntry {
 				keyword = domainKeyword;
 			}
 		}
+		autoDetectTrustLevel();
 	}
 
 
@@ -167,7 +198,7 @@ public class TargetEntry {
 	}
 
 	public void addComment(String commentToAdd) {
-		if (StringUtils.isEmpty(commentToAdd)) return;
+		if (StringUtils.isBlank(commentToAdd)) return;
 		comments.addAll(Arrays.asList(commentToAdd.split(",")));
 	}
 
