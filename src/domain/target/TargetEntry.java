@@ -80,6 +80,7 @@ public class TargetEntry {
 				+ "amazonaws.com\r\n"
 				+ "huaweicloud.com\r\n"
 				+ "myhuaweicloud.com\r\n"
+				+ "hwclouds-dns.com\r\n"
 				+ "myqcloud.com\r\n"
 				+ "tencent.com\r\n"
 				+ "tencentcloudapi.com\r\n"
