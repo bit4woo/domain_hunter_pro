@@ -171,7 +171,7 @@ public class SearchResultEntryMenu extends JPopupMenu {
 				}.execute();
 			}
 		});
-		
+
 		JMenuItem addToTargetConfirmItem = new JMenuItem(new AbstractAction("Add Host/Domain To Target (Confirm Level)") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -194,7 +194,7 @@ public class SearchResultEntryMenu extends JPopupMenu {
 				}.execute();
 			}
 		});
-		
+
 		JMenuItem addToTargetWithCommentItem = new JMenuItem(new AbstractAction("Add Host/Domain To Target With Comment") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -202,12 +202,13 @@ public class SearchResultEntryMenu extends JPopupMenu {
 					@Override
 					protected Object doInBackground() throws Exception {
 						try{
+							String comment = JOptionPane.showInputDialog("Comment", "");
+							if (StringUtils.isBlank(comment)) {
+								return null;
+							}
 							List<SearchResultEntry> entries = searchTableModel.getEntries(modelRows);
 							for (SearchResultEntry entry:entries) {
-								String comment = JOptionPane.showInputDialog("to find which value", "");
-								if (StringUtils.isNotBlank(comment)) {
-									entry.AddToTarget(null,null);
-								}
+								entry.AddToTarget(null,comment);
 							}
 							guiMain.getDomainPanel().saveDomainDataToDB();
 						}
@@ -220,8 +221,8 @@ public class SearchResultEntryMenu extends JPopupMenu {
 				}.execute();
 			}
 		});
-		
-		
+
+
 		JMenuItem addIPToBlackListItem = new JMenuItem(new AbstractAction("Add IP To Black List") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -256,9 +257,9 @@ public class SearchResultEntryMenu extends JPopupMenu {
 		this.add(addToTargetConfirmItem);
 		this.add(addToTargetWithCommentItem);
 		this.add(addIPToBlackListItem);
-		
+
 		this.addSeparator();
-		
+
 		this.add(copyUrlItem);
 		this.add(copyHostItem);
 		this.add(copyIPItem);
