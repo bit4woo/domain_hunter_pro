@@ -25,7 +25,6 @@ public class TargetControlPanel extends JPanel {
 	
 	JRadioButton rdbtnAddRelatedToRoot;
 	GUIMain gui;
-	DomainPanel domainPanel;
 	private JButton btnFresh;
 
 	public JRadioButton getRdbtnAddRelatedToRoot() {
@@ -38,7 +37,6 @@ public class TargetControlPanel extends JPanel {
 
 	public TargetControlPanel(GUIMain gui) {
 		this.gui = gui;
-		domainPanel = gui.getDomainPanel();
 		
 		setBorder(new LineBorder(new Color(0, 0, 0)));
 
@@ -46,6 +44,7 @@ public class TargetControlPanel extends JPanel {
 		addButton.setToolTipText("add Top-Level domain");
 		addButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				DomainPanel domainPanel = gui.getDomainPanel();
 				if (domainPanel.getDomainResult() == null || BurpExtender.getDataLoadManager().getCurrentDBFile() == null) {
 					gui.getProjectMenu().createOrOpenDB();
 				} else {
@@ -64,6 +63,7 @@ public class TargetControlPanel extends JPanel {
 		addButton1.setToolTipText("add Multiple-Level domain");
 		addButton1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				DomainPanel domainPanel = gui.getDomainPanel();
 				if (domainPanel.getDomainResult() == null) {
 					gui.getProjectMenu().createOrOpenDB();
 				} else {
@@ -81,7 +81,7 @@ public class TargetControlPanel extends JPanel {
 		JButton removeButton = new JButton("Remove");
 		removeButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-
+				DomainPanel domainPanel = gui.getDomainPanel();
 				int[] rowindexes = domainPanel.getTargetTable().getSelectedRows();
 				for (int i = 0; i < rowindexes.length; i++) {
 					rowindexes[i] = domainPanel.getTargetTable().convertRowIndexToModel(rowindexes[i]);//转换为Model的索引，否则排序后索引不对应。
@@ -108,6 +108,7 @@ public class TargetControlPanel extends JPanel {
 					@Override
 					protected Map doInBackground() throws Exception {
 						btnFresh.setEnabled(false);
+						DomainPanel domainPanel = gui.getDomainPanel();
 						domainPanel.refreshShowSave();
 						return null;
 					}
@@ -127,6 +128,7 @@ public class TargetControlPanel extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				rdbtnAddRelatedToRoot.setEnabled(false);
 				try {
+					DomainPanel domainPanel = gui.getDomainPanel();
 					domainPanel.getDomainResult().autoAddRelatedToRoot = rdbtnAddRelatedToRoot.isSelected();
 					if (domainPanel.getDomainResult().autoAddRelatedToRoot) {
 						domainPanel.getDomainResult().relatedToRoot();
@@ -157,6 +159,7 @@ public class TargetControlPanel extends JPanel {
 	public void selectedToBalck(){
 		int option = JOptionPane.showConfirmDialog(null, "Are you sure set target to black?", "WARNING",JOptionPane.YES_NO_OPTION);
 		if (option == JOptionPane.YES_OPTION) {
+			DomainPanel domainPanel = gui.getDomainPanel();
 			int[] rowindexs = domainPanel.getTargetTable().getSelectedRows();
 			for (int i = 0; i < rowindexs.length; i++) {
 				rowindexs[i] = domainPanel.getTargetTable().convertRowIndexToModel(rowindexs[i]);//转换为Model的索引，否则排序后索引不对应。
