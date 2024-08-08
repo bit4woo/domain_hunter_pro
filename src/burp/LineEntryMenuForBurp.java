@@ -116,8 +116,9 @@ public class LineEntryMenuForBurp{
 			ArrayList<JMenuItem> result = new ArrayList<JMenuItem>();
 
 			JMenu domainHunterPro = new JMenu("^_^ Domain Hunter Pro");
-			if (!ProjectMenu.isAlone()) {
-				String fileName = BurpExtender.getDataLoadManager().getCurrentDBFile().getName();
+			
+			String fileName = BurpExtender.getDataLoadManager().getCurrentDBFile().getName();
+			if (StringUtils.isNoneBlank(fileName)) {
 				domainHunterPro.setText(String.format("^_^ Domain Hunter Pro [%s]",fileName));
 			}
 			result.add(domainHunterPro);

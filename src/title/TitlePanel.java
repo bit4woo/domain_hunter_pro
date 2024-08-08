@@ -342,7 +342,7 @@ public class TitlePanel extends JPanel {
 	 * 根据所有已知域名获取title
 	 */
 	public void getAllTitle(){
-		guiMain.getDomainPanel().backupDB("before-getTitle");
+		guiMain.getProjectMenu().backupDB("before-getTitle");
 		//backup to history
 		BackupLineEntries = titleTable.getLineTableModel().getLineEntries();
 		//clear tableModel
@@ -364,7 +364,7 @@ public class TitlePanel extends JPanel {
 	 * 需要跑的IP集合 = 网段汇算结果-黑名单-已请求域名的IP集合
 	 */
 	public void getExtendTitle(){
-		guiMain.getDomainPanel().backupDB("before-getExtendTitle");
+		guiMain.getProjectMenu().backupDB("before-getExtendTitle");
 
 		Set<String> extendIPSet = titleTable.getLineTableModel().GetExtendIPSet(true,false);//排除CDN,私有IP会在后续流程中进行过滤
 		Set<String> hostsInTitle = titleTable.getLineTableModel().GetHostsWithSpecialPort();
@@ -380,7 +380,7 @@ public class TitlePanel extends JPanel {
 	 * setToRun = 子域名+确定的网段+证书IP-黑名单IP-已请求域名的IP集合
 	 */
 	public void getTitleOfNewDomain(){
-		guiMain.getDomainPanel().backupDB("before-getTitleOfNewDomain");
+		guiMain.getProjectMenu().backupDB("before-getTitleOfNewDomain");
 
 		Set<String> hostsInTitle = titleTable.getLineTableModel().GetHostsWithSpecialPort();
 

@@ -143,7 +143,6 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		}
 
 		try {//避免这里错误导致保存逻辑的失效
-			gui.getProjectMenu().remove();
 			if (gui.getTitlePanel().getThreadGetTitle() != null) {
 				gui.getTitlePanel().getThreadGetTitle().interrupt();//maybe null
 				gui.getInputQueue().clear();

@@ -1,6 +1,11 @@
 package GUI;
 
 import java.awt.EventQueue;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.Set;
@@ -58,6 +63,9 @@ public class GUIMain extends JFrame {
 
 	private DomainProducer liveAnalysisTread;
 
+	// 记录是否需要显示右键菜单
+    final boolean[] showPopup = {false};
+    
 	public DomainPanel getDomainPanel() {
 		return domainPanel;
 	}
@@ -165,13 +173,46 @@ public class GUIMain extends JFrame {
 		tabbedWrapper.addTab("Tools", null,toolPanel,null);
 		tabbedWrapper.addTab("Config", null,configPanel,null);
 
-		setProjectMenu(new ProjectMenu(this));
-		getProjectMenu().Add();
+		projectMenu = new ProjectMenu(this);
+		
+		//mouseAction();
 	}
 	
 	public void renewConfigPanel() {
 		tabbedWrapper.remove(configPanel);
 		tabbedWrapper.addTab("Config", null,new ConfigPanel(this),null);
+	}
+	
+	public void mouseAction() {
+		// 添加右键菜单到 JTabbedPane
+		UnlockMenu unlockMenu = new UnlockMenu(this);
+		
+        tabbedWrapper.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (e.isPopupTrigger()) {
+                    if (showPopup[0]) {
+                    	unlockMenu.show(e.getComponent(), e.getX(), e.getY());
+                    }
+                }
+            }
+        });
+
+        tabbedWrapper.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                showPopup[0] = isTabArea(e);
+            }
+            
+            // 判断是否点击在选项卡区域
+            private boolean isTabArea(MouseEvent e) {
+                Point point = e.getPoint();
+                // 获取 JTabbedPane 的 UI 和面板的边界
+                JTabbedPane tabbedPane = (JTabbedPane) e.getComponent();
+                Rectangle tabArea = tabbedPane.getUI().getTabBounds(tabbedPane, tabbedPane.getSelectedIndex());
+                return tabArea.contains(point);
+            }
+        });
 	}
 
 	/**
@@ -179,20 +220,16 @@ public class GUIMain extends JFrame {
 	 */
 	public void lockUnlock() {
 		if (tabbedWrapper.isEnabled()) {
-			tabbedWrapper.addTab("Locked",null,new JPanel(),null);
+			tabbedWrapper.addTab("Locked",null,new LockPanel(this),null);
 			int size = tabbedWrapper.getTabCount();
 			tabbedWrapper.setSelectedIndex(size-1);
 			this.getContentPane().setEnabled(false);
-			projectMenu.setText("DomainHunter*");
-			projectMenu.lockMenu.setText("Unlock");
 			ConfigManager.setConfigValue(ConfigName.showBurpMenu,false);//不显示burp右键菜单
 		}else {
 			tabbedWrapper.setEnabled(true);
 			int size = tabbedWrapper.getTabCount();
 			tabbedWrapper.removeTabAt(size-1);
 			tabbedWrapper.setSelectedIndex(0);
-			projectMenu.lockMenu.setText("Lock");
-			projectMenu.setText("DomainHunter");
 			ConfigManager.setConfigValue(ConfigName.showBurpMenu,true);//显示右键菜单
 		}
 	}

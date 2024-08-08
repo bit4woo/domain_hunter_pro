@@ -217,8 +217,8 @@ public class DataLoadManager {
 
 			BurpExtender.getCallbacks().setExtensionName(newName); //新插件名称
 			
-			gui.getProjectMenu().displayDBNameAtProjectMenu(name);
-			gui.getProjectMenu().displayDBNameAtProjectMenuItem(name);
+			//gui.getProjectMenu().displayDBNameAtProjectMenu(name);
+			//gui.getProjectMenu().displayDBNameAtProjectMenuItem(name);
 			gui.getProjectMenu().displayDBNameAtDomainTab(name);
 		}
 	}

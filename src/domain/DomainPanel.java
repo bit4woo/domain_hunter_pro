@@ -52,6 +52,7 @@ import burp.IBurpExtenderCallbacks;
 import burp.IHttpRequestResponse;
 import burp.IHttpService;
 import burp.IScanIssue;
+import burp.ProjectMenu;
 import dao.DomainDao;
 import dao.TargetDao;
 import domain.target.TargetControlPanel;
@@ -59,6 +60,7 @@ import domain.target.TargetEntry;
 import domain.target.TargetTable;
 import domain.target.TargetTableModel;
 import thread.ThreadSearhDomain;
+import title.GetTitleMenu;
 
 /*
  *注意，所有直接对DomainObject中数据的修改，都不会触发该tableChanged监听器。
@@ -186,17 +188,7 @@ public class DomainPanel extends JPanel {
 		this.targetDao = targetDao;
 	}
 
-	public void createOrOpenDB() {
-		Object[] options = { "Create","Open"};
-		int user_input = JOptionPane.showOptionDialog(null, "You should Create or Open a DB file", "Chose Your Action",
-				JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null, options, options[0]);
-		if (user_input == 0) {
-			guiMain.getProjectMenu().createNewDb(guiMain);
-		}
-		if (user_input == 1) {
-			guiMain.getProjectMenu().openDb();
-		}
-	}
+
 
 
 	public DomainPanel(GUIMain guiMain) {//构造函数
@@ -220,77 +212,15 @@ public class DomainPanel extends JPanel {
 		FlowLayout fl_HeaderPanel = (FlowLayout) HeaderPanel.getLayout();
 		fl_HeaderPanel.setAlignment(FlowLayout.LEFT);
 		this.add(HeaderPanel, BorderLayout.NORTH);
-
-		JButton btnSaveDomainOnly = new JButton("SaveDomainOnly");
-		btnSaveDomainOnly.setToolTipText("Only save data in Domain Panel");
-		btnSaveDomainOnly.addActionListener(new ActionListener() {
+		
+		
+		JButton btnAction = new JButton("Project Action");
+		btnAction.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				saveDomainOnly();
+				guiMain.getProjectMenu().show(btnAction, btnAction.getX(), btnAction.getY());
 			}
 		});
-		HeaderPanel.add(btnSaveDomainOnly);
-
-
-		JButton rename = new JButton("Rename");
-		rename.setToolTipText("Rename DB File");
-		rename.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				renameDB();
-			}});
-		HeaderPanel.add(rename);
-
-
-
-		/*
-		btnBrute = new JButton("Brute");
-		btnBrute.setToolTipText("Do Brute for all root domains");
-		btnBrute.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
-					//using SwingWorker to prevent blocking burp main UI.
-
-					@Override
-					protected Map doInBackground() throws Exception {
-
-						Set<String> rootDomains = domainResult.fetchRootDomainSet();
-						Set<String> keywords= domainResult.fetchKeywordSet();
-
-						//stderr.print(keywords.size());
-						//System.out.println(rootDomains.toString());
-						//System.out.println("xxx"+keywords.toString());
-						btnBrute.setEnabled(false);
-						//						threadBruteDomain = new ThreadBruteDomain(rootDomains);
-						//						threadBruteDomain.Do();
-						for (String rootDomain: rootDomains){
-							threadBruteDomain2 = new ThreadBruteDomainWithDNSServer2(rootDomain);
-							threadBruteDomain2.Do();
-						}
-
-
-						return null;
-					}
-					@Override
-					protected void done() {
-						try {
-							get();
-							showToDomainUI();
-							autoSave();
-							btnBrute.setEnabled(true);
-							stdout.println("~~~~~~~~~~~~~brute Done~~~~~~~~~~~~~");
-						} catch (Exception e) {
-							btnBrute.setEnabled(true);
-							e.printStackTrace(stderr);
-						}
-					}
-				};
-				worker.execute();
-			}
-		});
-
-		Component verticalStrut = Box.createVerticalStrut(20);
-		HeaderPanel.add(verticalStrut);
-		//HeaderPanel.add(btnBrute);
-		 */
+		HeaderPanel.add(btnAction);
 
 
 		btnSearch = new JButton("Search");
@@ -367,61 +297,6 @@ public class DomainPanel extends JPanel {
 		btnCrawl.setToolTipText("Crawl all subdomains recursively,This may take a long time and large Memory Usage!!!");
 		HeaderPanel.add(btnCrawl);
 
-		JButton btnBuckupDB = new JButton("Backup DB");
-		btnBuckupDB.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				backupDB(null);
-			}
-		});
-		HeaderPanel.add(btnBuckupDB);
-
-
-		JButton btnRemoveDB = new JButton("remove DB");
-		btnRemoveDB.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				removeDB();
-			}
-		});
-		HeaderPanel.add(btnRemoveDB);
-
-		/*
-		JButton btnUpload = new JButton("Upload");
-		btnUpload.setToolTipText("upload data to Server");
-		btnUpload.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				SwingWorker<Boolean, Boolean> worker = new SwingWorker<Boolean, Boolean>() {
-					@Override
-					protected Boolean doInBackground() throws Exception {
-						btnUpload.setEnabled(false);
-						String url = ConfigManager.getStringConfigByKey(ConfigName.UploadApiURL);;
-						String host = new URL(url).getHost();
-						String token = ConfigManager.getStringConfigByKey(ConfigName.UploadApiToken).trim();
-						HashMap<String, String> headers = new HashMap<String, String>();
-						headers.put("Content-Type", "application/json;charset=UTF-8");
-						if (StringUtils.isNotEmpty(token)) {//vmp
-							headers.put("Authorization", "Token " + token);
-						}
-						if (host.startsWith("vmp.test.shopee.") ||
-								host.contains("burpcollaborator.net") ||
-								host.contains("vmp.sz.shopee")) {
-							return new VMP(guiMain).uploadAllVMPEntries(url, headers);
-						} else {//只上传域名信息
-							return VMP.upload(url, headers, domainResult.ToJson());
-						}
-					}
-
-					@Override
-					protected void done() {
-						//Do Nothing
-						btnUpload.setEnabled(true);
-					}
-				};
-				worker.execute();
-			}
-		});
-		HeaderPanel.add(btnUpload);
-		*/
-
 
 		////////////////////////////////////Body Panel area///////////////////////////////////////////////////////
 
@@ -443,7 +318,7 @@ public class DomainPanel extends JPanel {
 		targetTable = new TargetTable(guiMain);
 		PanelWest1.setViewportView(targetTable);
 
-		ControlPanel = new TargetControlPanel(this);
+		ControlPanel = new TargetControlPanel(guiMain);
 		TargetPane.setRightComponent(ControlPanel);
 
 
@@ -788,91 +663,6 @@ public class DomainPanel extends JPanel {
 		return search(null,rootdomains, keywords,false);
 	}
 
-
-	/*
-    单独保存域名信息到另外的文件
-	 */
-	public File saveDomainOnly() {
-		try {
-			File file = new dbFileChooser().dialog(false,".db");
-			if (file != null) {
-				DomainDao dao = new DomainDao(file.toString());
-				TargetDao dao1 = new TargetDao(file.toString());
-				if (dao.saveDomainManager(domainResult) && dao1.addOrUpdateTargets(fetchTargetModel().getTargetEntries())) {
-					stdout.println("Save Domain Only Success! " + Commons.getNowTimeString());
-					return file;
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace(stderr);
-		}
-		stdout.println("Save Domain Only failed! " + Commons.getNowTimeString());
-		return null;
-	}
-
-
-	/**
-	 * 从UI文本框到DomainManager的过程。
-	 * 由listener负责。
-	 */
-	@Deprecated
-	public void saveTextAreas() {		
-		domainResult.getSummary();
-	}
-
-	public void backupDB(String keyword) {
-		File file = BurpExtender.getDataLoadManager().getCurrentDBFile();
-		if (file == null) return;
-		String suffix = ".bak" + Commons.getNowTimeString();
-		if (!StringUtils.isEmpty(keyword)) {
-			keyword = keyword.replaceAll("\\s+", "-");
-			suffix += keyword;
-		}
-		File bakfile = new File(file.getAbsoluteFile().toString() + suffix);
-		try {
-			FileUtils.copyFile(file, bakfile);
-			BurpExtender.getStdout().println("DB File Backed Up:" + bakfile.getAbsolutePath());
-		} catch (IOException e1) {
-			e1.printStackTrace(BurpExtender.getStderr());
-		}
-	}
-	
-	public void removeDB() {
-		File file = BurpExtender.getDataLoadManager().getCurrentDBFile();
-		if (file == null) return;
-		try {
-			int result = JOptionPane.showConfirmDialog(null,"Are you sure to DELETE this DB file ?");
-			if (result == JOptionPane.YES_OPTION) {
-				FileUtils.delete(file);
-				BurpExtender.getStdout().println("DB File Removed:" + file.getAbsolutePath());
-			}
-		} catch (IOException e1) {
-			e1.printStackTrace(BurpExtender.getStderr());
-		}
-	}
-
-	public void renameDB() {
-		File file = BurpExtender.getDataLoadManager().getCurrentDBFile();
-		if (file == null) return;
-		
-		String currentName = file.getName();
-		String currentPath = file.getParent();
-
-		//File newFile = new dbFileChooser().dialog(false,".db");//通过保存对话指定文件，这会是一个空文件。
-		String newFilename = JOptionPane.showInputDialog("Enter New DB File Name", currentName);
-
-		if (null != newFilename) {
-			try {
-				File newFile = new File(currentPath+File.separator+newFilename);
-				FileUtils.moveFile(file, newFile);
-				if (newFile.exists()) {
-					BurpExtender.getDataLoadManager().loadDbfileToHunter(newFile.toString());
-				}
-			} catch (IOException e) {
-				e.printStackTrace(stderr);
-			}
-		}
-	}
 
 	public static void main(String[] args) {
 		String tmp = InternetDomainName.from("baidu.xxx.com.br").topPrivateDomain().toString();

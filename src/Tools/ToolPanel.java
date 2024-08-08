@@ -1433,7 +1433,7 @@ public class ToolPanel extends JPanel {
 			@Override
 			protected void action() {
 				try {
-					outputTextArea.setText(ProjectMenu.listLoadedExtensions());
+					//outputTextArea.setText(ProjectMenu.listLoadedExtensions());
 				} catch (Exception e1) {
 					outputTextArea.setText(e1.getMessage());
 					e1.printStackTrace(stderr);

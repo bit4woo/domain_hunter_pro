@@ -17,12 +17,14 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingWorker;
 import javax.swing.border.LineBorder;
 
+import GUI.GUIMain;
 import burp.BurpExtender;
 import domain.DomainPanel;
 
 public class TargetControlPanel extends JPanel {
 	
 	JRadioButton rdbtnAddRelatedToRoot;
+	GUIMain gui;
 	DomainPanel domainPanel;
 	private JButton btnFresh;
 
@@ -34,8 +36,9 @@ public class TargetControlPanel extends JPanel {
 		this.rdbtnAddRelatedToRoot = rdbtnAddRelatedToRoot;
 	}
 
-	public TargetControlPanel(DomainPanel domainPanel) {
-		this.domainPanel = domainPanel;
+	public TargetControlPanel(GUIMain gui) {
+		this.gui = gui;
+		domainPanel = gui.getDomainPanel();
 		
 		setBorder(new LineBorder(new Color(0, 0, 0)));
 
@@ -44,7 +47,7 @@ public class TargetControlPanel extends JPanel {
 		addButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (domainPanel.getDomainResult() == null || BurpExtender.getDataLoadManager().getCurrentDBFile() == null) {
-					domainPanel.createOrOpenDB();
+					gui.getProjectMenu().createOrOpenDB();
 				} else {
 					String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
 					TargetEntry entry = new TargetEntry(enteredRootDomain);
@@ -62,7 +65,7 @@ public class TargetControlPanel extends JPanel {
 		addButton1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (domainPanel.getDomainResult() == null) {
-					domainPanel.createOrOpenDB();
+					gui.getProjectMenu().createOrOpenDB();
 				} else {
 					String enteredRootDomain = JOptionPane.showInputDialog("Enter Root Domain", null);
 					TargetEntry entry = new TargetEntry(enteredRootDomain,false);
