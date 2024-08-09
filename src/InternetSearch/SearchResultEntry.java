@@ -13,6 +13,7 @@ import com.bit4woo.utilbox.utils.UrlUtils;
 
 import burp.BurpExtender;
 import domain.DomainManager;
+import domain.target.TargetTableModel;
 
 public class SearchResultEntry {
 	private int port = -1;
@@ -220,7 +221,7 @@ public class SearchResultEntry {
 	public void setTitle(String title) {
 		this.title = title;
 	}
-	
+
 	public void AddToTarget(String trustLevel,String commentToAdd) {
 		DomainManager domainResult = BurpExtender.getGui().getDomainPanel().getDomainResult();
 		if (IPAddressUtils.isValidIPv4NoPort(this.host)) {
@@ -231,14 +232,23 @@ public class SearchResultEntry {
 		}
 
 		if (DomainUtils.isValidDomainMayPort(this.host)) {
-			domainResult.addToTargetAndSubDomain(this.host,true,commentToAdd);
+			domainResult.addToTargetAndSubDomain(this.host,true,trustLevel,commentToAdd);
+		}
+	}
+
+	public void RemoveFromTarget() {
+		if (IPAddressUtils.isValidIPv4NoPort(this.host)) {
+			DomainManager domainResult = BurpExtender.getGui().getDomainPanel().getDomainResult();
+
+			domainResult.getSpecialPortTargets().remove(this.host);
 			if (this.port >=0 && this.port <= 65535) {
-				domainResult.addToTargetAndSubDomain(this.host+":"+this.port,true,trustLevel,commentToAdd);
+				domainResult.getSpecialPortTargets().remove(this.host+":"+this.port);
 			}
 		}
 
-		if (StringUtils.isEmpty(this.rootDomain)) {
-			domainResult.addToTargetAndSubDomain(this.rootDomain,true,trustLevel,commentToAdd);
+		if (DomainUtils.isValidDomainMayPort(this.rootDomain)) {
+			TargetTableModel targetModel = BurpExtender.getGui().getDomainPanel().fetchTargetModel();
+			targetModel.removeRow(this.host);
 		}
 	}
 
