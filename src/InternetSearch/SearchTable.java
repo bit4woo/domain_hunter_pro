@@ -19,6 +19,7 @@ import javax.swing.table.TableRowSorter;
 import org.apache.commons.lang3.StringUtils;
 
 import com.bit4woo.utilbox.utils.SystemUtils;
+import com.bit4woo.utilbox.utils.TextUtils;
 
 import GUI.GUIMain;
 import base.Commons;
@@ -150,7 +151,18 @@ public class SearchTable extends JTable
 							if (StringUtils.isEmpty(url)) {
 								return;
 							}
-							if (!url.toLowerCase().startsWith("http://") && !url.toLowerCase().startsWith("https://")) {
+							String lowerUrl = url.toLowerCase();
+							if (lowerUrl.contains("://")) {
+								String protocol = lowerUrl.substring(0,lowerUrl.indexOf("://"));
+								List<String> protocols = TextUtils.textToLines("http\r\n"
+										+ "https\r\n"
+										+ "ftp\r\n"
+										+ "sftp");
+								if (!protocols.contains(protocol)) {
+									url = url.substring(url.indexOf("://"));
+									url = "http://"+url;
+								}
+							}else {
 								url = "http://"+url;//针对DNS记录中URL字段是host的情况
 							}
 							SystemUtils.browserOpen(url,ConfigManager.getStringConfigByKey(ConfigName.BrowserPath));
