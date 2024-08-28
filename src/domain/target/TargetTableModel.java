@@ -4,6 +4,8 @@ import GUI.GUIMain;
 import burp.*;
 import com.google.common.net.InternetDomainName;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import domain.DomainManager;
 import domain.DomainPanel;
 import org.apache.commons.io.FileUtils;
@@ -76,7 +78,10 @@ public class TargetTableModel extends AbstractTableModel {
 	 * @return
 	 */
 	public String ToJson() {
-		return new Gson().toJson(this);
+		Gson gson = new GsonBuilder()
+				.registerTypeAdapter(File.class, new FileTypeAdapter())
+				.create();
+		return gson.toJson(this);
 	}
 
 	/**
@@ -85,7 +90,10 @@ public class TargetTableModel extends AbstractTableModel {
 	 * @return
 	 */
 	public static TargetTableModel FromJson(String instanceString) {
-		return new Gson().fromJson(instanceString, TargetTableModel.class);
+		Gson gson = new GsonBuilder()
+				.registerTypeAdapter(File.class, new FileTypeAdapter())
+				.create();
+		return gson.fromJson(instanceString, TargetTableModel.class);
 	}
 
 	public void saveTargetToDB() {
