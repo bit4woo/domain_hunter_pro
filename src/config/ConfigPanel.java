@@ -184,9 +184,18 @@ public class ConfigPanel extends JPanel{
 				}
 			}
 		});
+		
+		JButton restDefault = new JButton("Restore To Default");
+		restDefault.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				ConfigManager.initDefault();
+				gui.renewConfigPanel();
+			}
+		});
 
 		result.add(loadConfig);
 		result.add(saveConfig);
+		result.add(restDefault);
 		return result;
 	}
 }

@@ -98,7 +98,7 @@ public class ConfigManager {
 		return false;
 	}
 
-	private static boolean initDefault(){
+	public static boolean initDefault(){
 		try {
 			configList = getInitConfigs();
 			return true;

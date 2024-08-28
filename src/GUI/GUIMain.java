@@ -14,21 +14,17 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.swing.JFrame;
-import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
 import InternetSearch.SearchPanel;
 import Tools.ToolPanel;
 import base.Commons;
-import base.dbFileChooser;
 import burp.BurpExtender;
-import burp.IBurpExtender;
 import burp.IHttpRequestResponse;
 import burp.ProjectMenu;
 import config.ConfigManager;
 import config.ConfigName;
 import config.ConfigPanel;
-import config.DataLoadManager;
 import dao.DomainDao;
 import dao.TargetDao;
 import dao.TitleDao;
@@ -64,42 +60,52 @@ public class GUIMain extends JFrame {
 	private DomainProducer liveAnalysisTread;
 
 	// 记录是否需要显示右键菜单
-    final boolean[] showPopup = {false};
-    
+	final boolean[] showPopup = {false};
+
 	public DomainPanel getDomainPanel() {
 		return domainPanel;
 	}
+
 	public void setDomainPanel(DomainPanel domainPanel) {
 		this.domainPanel = domainPanel;
 	}
+
 	public TitlePanel getTitlePanel() {
 		return titlePanel;
 	}
+
 	public void setTitlePanel(TitlePanel titlePanel) {
 		this.titlePanel = titlePanel;
 	}
+
 	public ToolPanel getToolPanel() {
 		return toolPanel;
 	}
+
 	public void setToolPanel(ToolPanel toolPanel) {
 		this.toolPanel = toolPanel;
 	}
+
 	public ConfigPanel getConfigPanel() {
 		return configPanel;
 	}
+
 	public void setConfigPanel(ConfigPanel configPanel) {
 		this.configPanel = configPanel;
 	}
-	
+
 	public SearchPanel getSearchPanel() {
 		return searchPanel;
 	}
+
 	public void setSearchPanel(SearchPanel searchPanel) {
 		this.searchPanel = searchPanel;
 	}
+
 	public ProjectMenu getProjectMenu() {
 		return projectMenu;
 	}
+
 	public void setProjectMenu(ProjectMenu projectMenu) {
 		this.projectMenu = projectMenu;
 	}
@@ -149,10 +155,10 @@ public class GUIMain extends JFrame {
 	}
 
 	public GUIMain() {//构造函数
-		try{
+		try {
 			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
 			stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
-		}catch (Exception e){
+		} catch (Exception e) {
 			stdout = new PrintWriter(System.out, true);
 			stderr = new PrintWriter(System.out, true);
 		}
@@ -169,50 +175,55 @@ public class GUIMain extends JFrame {
 		searchPanel = new SearchPanel(this);
 		tabbedWrapper.addTab("Domains", null, domainPanel, null);
 		tabbedWrapper.addTab("Titles", null, titlePanel, null);
-		tabbedWrapper.addTab("Search", null,searchPanel,null);
-		tabbedWrapper.addTab("Tools", null,toolPanel,null);
-		tabbedWrapper.addTab("Config", null,configPanel,null);
+		tabbedWrapper.addTab("Search", null, searchPanel, null);
+		tabbedWrapper.addTab("Tools", null, toolPanel, null);
+		tabbedWrapper.addTab("Config", null, configPanel, null);
 
 		projectMenu = new ProjectMenu(this);
-		
+
 		//mouseAction();
 	}
-	
+
 	public void renewConfigPanel() {
-		tabbedWrapper.remove(configPanel);
-		tabbedWrapper.addTab("Config", null,new ConfigPanel(this),null);
+		int index = tabbedWrapper.indexOfTab("Config"); // 查找指定标题的标签页索引
+		if (index != -1) { // 如果找到了索引
+			tabbedWrapper.removeTabAt(index); // 移除该标签页
+		}
+		configPanel = new ConfigPanel(this);
+		tabbedWrapper.addTab("Config", null, configPanel, null);
+		tabbedWrapper.repaint();
 	}
-	
+
 	public void mouseAction() {
 		// 添加右键菜单到 JTabbedPane
 		UnlockMenu unlockMenu = new UnlockMenu(this);
-		
-        tabbedWrapper.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                if (e.isPopupTrigger()) {
-                    if (showPopup[0]) {
-                    	unlockMenu.show(e.getComponent(), e.getX(), e.getY());
-                    }
-                }
-            }
-        });
 
-        tabbedWrapper.addMouseMotionListener(new MouseMotionAdapter() {
-            @Override
-            public void mouseMoved(MouseEvent e) {
-                showPopup[0] = isTabArea(e);
-            }
-            
-            // 判断是否点击在选项卡区域
-            private boolean isTabArea(MouseEvent e) {
-                Point point = e.getPoint();
-                // 获取 JTabbedPane 的 UI 和面板的边界
-                JTabbedPane tabbedPane = (JTabbedPane) e.getComponent();
-                Rectangle tabArea = tabbedPane.getUI().getTabBounds(tabbedPane, tabbedPane.getSelectedIndex());
-                return tabArea.contains(point);
-            }
-        });
+		tabbedWrapper.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				if (e.isPopupTrigger()) {
+					if (showPopup[0]) {
+						unlockMenu.show(e.getComponent(), e.getX(), e.getY());
+					}
+				}
+			}
+		});
+
+		tabbedWrapper.addMouseMotionListener(new MouseMotionAdapter() {
+			@Override
+			public void mouseMoved(MouseEvent e) {
+				showPopup[0] = isTabArea(e);
+			}
+
+			// 判断是否点击在选项卡区域
+			private boolean isTabArea(MouseEvent e) {
+				Point point = e.getPoint();
+				// 获取 JTabbedPane 的 UI 和面板的边界
+				JTabbedPane tabbedPane = (JTabbedPane) e.getComponent();
+				Rectangle tabArea = tabbedPane.getUI().getTabBounds(tabbedPane, tabbedPane.getSelectedIndex());
+				return tabArea.contains(point);
+			}
+		});
 	}
 
 	/**
@@ -220,32 +231,29 @@ public class GUIMain extends JFrame {
 	 */
 	public void lockUnlock() {
 		if (tabbedWrapper.isEnabled()) {
-			tabbedWrapper.addTab("Locked",null,new LockPanel(this),null);
+			tabbedWrapper.addTab("Locked", null, new LockPanel(this), null);
 			int size = tabbedWrapper.getTabCount();
-			tabbedWrapper.setSelectedIndex(size-1);
+			tabbedWrapper.setSelectedIndex(size - 1);
 			this.getContentPane().setEnabled(false);
-			ConfigManager.setConfigValue(ConfigName.showBurpMenu,false);//不显示burp右键菜单
-		}else {
+			ConfigManager.setConfigValue(ConfigName.showBurpMenu, false);//不显示burp右键菜单
+		} else {
 			tabbedWrapper.setEnabled(true);
 			int size = tabbedWrapper.getTabCount();
-			tabbedWrapper.removeTabAt(size-1);
+			tabbedWrapper.removeTabAt(size - 1);
 			tabbedWrapper.setSelectedIndex(0);
-			ConfigManager.setConfigValue(ConfigName.showBurpMenu,true);//显示右键菜单
+			ConfigManager.setConfigValue(ConfigName.showBurpMenu, true);//显示右键菜单
 		}
 	}
 
 
-
-
-
 	/*
-	使用数据模型监听后，不需再自行单独保存当前项目了。
-	但是需要用于另存为，单独保存域名(和saveDomainOnly) 2个功能。
-	都需要文件选择对话框
+    使用数据模型监听后，不需再自行单独保存当前项目了。
+    但是需要用于另存为，单独保存域名(和saveDomainOnly) 2个功能。
+    都需要文件选择对话框
 	 */
-	public Boolean saveData(String dbFilePath,boolean domainOnly) {
-		try{
-			if (dbFilePath != null && new File(dbFilePath).exists()){
+	public Boolean saveData(String dbFilePath, boolean domainOnly) {
+		try {
+			if (dbFilePath != null && new File(dbFilePath).exists()) {
 				DomainDao domainDao = new DomainDao(dbFilePath.toString());
 				TargetDao targetDao = new TargetDao(dbFilePath.toString());
 
@@ -253,27 +261,26 @@ public class GUIMain extends JFrame {
 				boolean domainSaved = domainDao.saveDomainManager(domainPanel.getDomainResult());
 
 				if (domainOnly) {
-					if ( targetSaved && domainSaved	) {
+					if (targetSaved && domainSaved) {
 						stdout.println("Save Domain Only Success! " + Commons.getNowTimeString());
 						return true;
 					}
 					return false;
-				}else {
+				} else {
 					TitleDao titleDao = new TitleDao(dbFilePath);
-					boolean titleSaved  = titleDao.addOrUpdateTitles(getTitlePanel().getTitleTable().getLineTableModel().getLineEntries());
-					if (targetSaved && domainSaved && titleSaved){
-						stdout.println("Save Domain And Title Success! "+ Commons.getNowTimeString());
+					boolean titleSaved = titleDao.addOrUpdateTitles(getTitlePanel().getTitleTable().getLineTableModel().getLineEntries());
+					if (targetSaved && domainSaved && titleSaved) {
+						stdout.println("Save Domain And Title Success! " + Commons.getNowTimeString());
 						return true;
 					}
 				}
 			}
 			return false;
-		}catch(Exception e1){
+		} catch (Exception e1) {
 			e1.printStackTrace(stderr);
 			return false;
 		}
 	}
-
 
 
 	/**
