@@ -886,6 +886,7 @@ public class DomainPanel extends JPanel {
 		}
 		if (file != null) {
 			DBHelper dbHelper = new DBHelper(file.toString());
+			dbHelper.saveTargets(DomainPanel.getTargetTable().getTargetModel());
 			boolean success = dbHelper.saveDomainObject(domainResult);
 			if (success) {
 				log.info("domain data saved");

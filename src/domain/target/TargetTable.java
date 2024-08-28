@@ -120,23 +120,6 @@ public class TargetTable extends JTable{
 		return rows;
 	}
 
-
-	/**
-	 * setModel和getModel是JTable本来就实现了的函数。但是其中Model的类型是DefaultTableModel,
-	 * DefaultTableModel extends AbstractTableModel。而我们自己实现的model虽然也是继承于AbstractTableModel，
-	 * 但是其中有一些自己实现的方法，想要方便地进行其中方法的调用，就不能使用原本的setModel和getModel方法。
-	 */
-
-	/**
-	 * JTable已经实现的方法，会被已有逻辑调用。
-	 * 不对其进行修改，自己的项目代码中也不要调用这个方法！
-	 * 
-	 */
-	@Override
-	public void setModel(TableModel model) {
-		super.setModel(model);
-	}
-
 	public TargetTableModel getTargetModel() {
 		return (TargetTableModel) getModel();
 	}
