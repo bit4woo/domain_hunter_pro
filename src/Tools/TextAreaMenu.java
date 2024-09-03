@@ -6,8 +6,11 @@ import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextArea;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.bit4woo.utilbox.utils.IPAddressUtils;
 import com.bit4woo.utilbox.utils.TextUtils;
@@ -136,6 +139,32 @@ public class TextAreaMenu extends JPopupMenu {
 				guiMain.getDomainPanel().saveDomainDataToDB();
 			}
 		});
+		
+		
+		JMenuItem addToTargetWithComment = new JMenuItem(new AbstractAction("Add To Target With Comment") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+
+				String comment = JOptionPane.showInputDialog("Comment", "");
+				if (StringUtils.isBlank(comment)) {
+					return;
+				}
+
+				DomainManager domainResult = guiMain.getDomainPanel().getDomainResult();
+				for (String item:selectedItems) {
+					try {
+						if (IPAddressUtils.isValidIPv4MayPort(item)) {
+							domainResult.getSpecialPortTargets().add(item);
+						}else {
+							domainResult.addToTargetAndSubDomain(item,true,AssetTrustLevel.Confirm,comment);
+						}
+					} catch (Exception e2) {
+						e2.printStackTrace(stderr);
+					}
+				}
+				guiMain.getDomainPanel().saveDomainDataToDB();
+			}
+		});
 
 		JMenuItem doOnlineSearch = new JMenuItem(new AbstractAction("Do Online Search") {
 			@Override
@@ -153,6 +182,7 @@ public class TextAreaMenu extends JPopupMenu {
 		this.add(genPortScanCmd);
 		this.add(addToTarget);
 		this.add(addToTargetConfirm);
+		this.add(addToTargetWithComment);
 		this.add(doOnlineSearch);
 	}
 }
