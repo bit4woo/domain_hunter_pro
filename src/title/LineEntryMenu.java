@@ -865,7 +865,7 @@ public class LineEntryMenu extends JPopupMenu {
 		/**
 		 * 删除明显非目标的记录
 		 */
-		JMenuItem removeItemsNotInTargets = new JMenuItem(new AbstractAction("Delete Entries That Not in Targets") {//need to show dialog to confirm
+		JMenuItem removeItemsNotInTargets = new JMenuItem(new AbstractAction("Delete Non-Target Entries") {//need to show dialog to confirm
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				new SwingWorker<Map,Map>(){
@@ -882,16 +882,34 @@ public class LineEntryMenu extends JPopupMenu {
 				}.execute();
 			}
 		});
-
-
-		JMenuItem markDuplicateItems = new JMenuItem(new AbstractAction("Mark Duplicate Items") {//need to show dialog to confirm
+		
+		/**
+		 * 标记明显非目标的记录
+		 */
+		JMenuItem markItemsNotInTargets = new JMenuItem(new AbstractAction("Mark Non-Target Entries") {//need to show dialog to confirm
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				new SwingWorker<Map,Map>(){
 
 					@Override
 					protected Map doInBackground() throws Exception {
-						int result = JOptionPane.showConfirmDialog(null,"Are you sure to Mark duplicate items ?");
+						lineTable.getLineTableModel().MarkNotTargetRows();
+						titlepanel.digStatus();
+						return null;
+					}
+				}.execute();
+			}
+		});
+
+
+		JMenuItem markDuplicateItems = new JMenuItem(new AbstractAction("Mark Duplicate Entries") {//need to show dialog to confirm
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				new SwingWorker<Map,Map>(){
+
+					@Override
+					protected Map doInBackground() throws Exception {
+						int result = JOptionPane.showConfirmDialog(null,"Are you sure to Mark duplicate Entries ?");
 						if (result == JOptionPane.YES_OPTION) {
 							lineTable.getLineTableModel().findAndMarkDuplicateItems();
 						}
@@ -1081,6 +1099,7 @@ public class LineEntryMenu extends JPopupMenu {
 		//this.add(removeSubDomainItem);
 		//this.add(removeCustomAssetItem);
 		this.add(DeleteHostFromTargetItem);
+		this.add(markItemsNotInTargets);
 		this.add(markDuplicateItems);
 
 	}

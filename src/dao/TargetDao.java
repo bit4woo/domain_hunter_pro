@@ -87,11 +87,13 @@ public class TargetDao {
 	    
 	    String renameTableSql = "ALTER TABLE TargetTable_new RENAME TO TargetTable";
 	    
+	    String sqlcreateIndex = "CREATE UNIQUE INDEX IF NOT EXISTS idx_Target_target ON TargetTable (target)";
 	    try {
 	        jdbcTemplate.execute(createNewTableSql);
 	        jdbcTemplate.execute(copyDataSql);
 	        jdbcTemplate.execute(dropOldTableSql);
 	        jdbcTemplate.execute(renameTableSql);
+	        jdbcTemplate.execute(sqlcreateIndex);
 	        return true;
 	    } catch (DataAccessException e) {
 	        e.printStackTrace();
