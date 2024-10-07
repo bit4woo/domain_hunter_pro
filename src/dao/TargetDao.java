@@ -36,7 +36,7 @@ public class TargetDao {
 		//使用和旧版本不同的表名称,避免冲突
 		String sqlTitle = "CREATE TABLE IF NOT EXISTS TargetTable" +
 				"(ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +//自动增长 https://www.sqlite.org/autoinc.html
-				" target           TEXT    NOT NULL," +
+				" target           TEXT    NOT NULL UNIQUE," + // -- UNIQUE关键词 为 target 字段添加唯一约束，这样INSERT OR REPLACE语句才能根据这段进行
 				" type        TEXT    NOT NULL,"+
 				" keyword        TEXT    NOT NULL,"+
 				" ZoneTransfer        BOOLEAN    NOT NULL,"+
@@ -70,7 +70,7 @@ public class TargetDao {
 
 	    String createNewTableSql = "CREATE TABLE TargetTable_new (" +
 	            "ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
-	            "target TEXT NOT NULL, " +
+	            "target TEXT NOT NULL UNIQUE, " + // -- UNIQUE关键词 为 target 字段添加唯一约束，这样INSERT OR REPLACE语句才能根据这段进行
 	            "type TEXT NOT NULL, " +
 	            "keyword TEXT NOT NULL, " +
 	            "ZoneTransfer BOOLEAN NOT NULL, " +
