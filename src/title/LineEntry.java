@@ -313,7 +313,9 @@ public class LineEntry {
 
 		IHttpRequestResponse info = BurpExtender.getCallbacks().makeHttpRequest(service, request);
 		// BurpExtender.getStdout().println(new String(info.getResponse()));
-		parse(info);
+		if (info != null) {
+			parse(info);
+		}
 	}
 
 	public void DoRequestCertInfoAgain() throws MalformedURLException {
