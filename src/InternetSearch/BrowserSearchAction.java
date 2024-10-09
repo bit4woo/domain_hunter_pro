@@ -139,7 +139,11 @@ public class BrowserSearchAction extends AbstractAction{
 			}
 			if (DomainUtils.isValidDomainNoPort(searchContent)){
 				url = "https://bgp.he.net/dns/"+searchContent;
+			}else {
+				//直接搜索ASN号
+				url = "https://bgp.he.net/"+searchContent;
 			}
+			
 		}
 
 		//whois查询

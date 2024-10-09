@@ -45,8 +45,8 @@ public class APISearchAction extends AbstractAction {
 
 	private PrintWriter stdout;
 	private PrintWriter stderr;
-	
-	//记录搜索过并且没有关闭的tab
+
+	// 记录搜索过并且没有关闭的tab
 	public static Set<String> searchedContent = new HashSet<String>();
 
 	APISearchAction() {
@@ -79,8 +79,10 @@ public class APISearchAction extends AbstractAction {
 		}
 	}
 
-	public APISearchAction(AbstractTableModel lineModel, int[] modelRows, int columnIndex, String engine, boolean autoAddToTarget, boolean showInGUI) {
-		this(lineModel, modelRows, columnIndex, new ArrayList<>(Collections.singletonList(engine)), autoAddToTarget, showInGUI);
+	public APISearchAction(AbstractTableModel lineModel, int[] modelRows, int columnIndex, String engine,
+			boolean autoAddToTarget, boolean showInGUI) {
+		this(lineModel, modelRows, columnIndex, new ArrayList<>(Collections.singletonList(engine)), autoAddToTarget,
+				showInGUI);
 	}
 
 	public APISearchAction(AbstractTableModel lineModel, int[] modelRows, int columnIndex, String engine) {
@@ -96,11 +98,12 @@ public class APISearchAction extends AbstractAction {
 		SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
 			@Override
 			protected Map doInBackground() throws Exception {
-				
-				//多选的单次操作去重 
+
+				// 多选的单次操作去重
 				Set<String> already = new HashSet<String>();
 				if (modelRows.length >= 50) {
-					JOptionPane.showMessageDialog(null, "too many items selected!! should less than 50","Alert",JOptionPane.WARNING_MESSAGE);
+					JOptionPane.showMessageDialog(null, "too many items selected!! should less than 50", "Alert",
+							JOptionPane.WARNING_MESSAGE);
 					stderr.print("too many items selected!! should less than 50");
 					return null;
 				}
@@ -110,40 +113,43 @@ public class APISearchAction extends AbstractAction {
 					String searchContent = null;
 
 					if (lineModel.getClass().equals(LineTableModel.class)) {
-						InfoTuple<String, String> result = ((LineTableModel) lineModel).getSearchTypeAndValue(row, columnIndex);
+						InfoTuple<String, String> result = ((LineTableModel) lineModel).getSearchTypeAndValue(row,
+								columnIndex);
 						searchType = result.first;
 						searchContent = result.second;
 					}
 
 					if (lineModel.getClass().equals(SearchTableModel.class)) {
-						InfoTuple<String, String> result = ((SearchTableModel) lineModel).getSearchTypeAndValue(row, columnIndex);
+						InfoTuple<String, String> result = ((SearchTableModel) lineModel).getSearchTypeAndValue(row,
+								columnIndex);
 						searchType = result.first;
 						searchContent = result.second;
 					}
 
 					if (lineModel.getClass().equals(TargetTableModel.class)) {
-						InfoTuple<String, String> result = ((TargetTableModel) lineModel).getSearchTypeAndValue(row, columnIndex);
+						InfoTuple<String, String> result = ((TargetTableModel) lineModel).getSearchTypeAndValue(row,
+								columnIndex);
 						searchType = result.first;
 						searchContent = result.second;
 					}
 
 					String tabname = String.format("%s(%s)", searchType, searchContent);
-					
-					//多选的单次操作去重 
+
+					// 多选的单次操作去重
 					if (already.contains(tabname)) {
 						continue;
 					}
-					
-					//可能存在，一个搜索结果还未显示，又有另外一次相同内容搜索出现的情况。但是影响不大，就不管了
+
+					// 可能存在，一个搜索结果还未显示，又有另外一次相同内容搜索出现的情况。但是影响不大，就不管了
 					if (searchedContent.add(tabname)) {
-						//保证单次操作，不对相同项进行重复搜索
+						// 保证单次操作，不对相同项进行重复搜索
 						DoSearchAllInOn(searchType, searchContent, APISearchAction.this.engineList);
-						System.out.println("begin search "+tabname);
-						BurpExtender.getStdout().println("begin search "+tabname);
-					}else {
-						System.out.println("skip search "+tabname);
-						BurpExtender.getStdout().println("skip search "+tabname);
-						//skip后，重新将tab的颜色改回来，以便提示这个tab被再次搜索了
+						System.out.println("begin search " + tabname);
+						BurpExtender.getStdout().println("begin search " + tabname);
+					} else {
+						System.out.println("skip search " + tabname);
+						BurpExtender.getStdout().println("skip search " + tabname);
+						// skip后，重新将tab的颜色改回来，以便提示这个tab被再次搜索了
 						BurpExtender.getGui().getSearchPanel().changeTabColor(tabname, Color.WHITE);
 					}
 				}
@@ -173,17 +179,17 @@ public class APISearchAction extends AbstractAction {
 		} else if (engine.equals(SearchEngine.QIANXIN_HUNTER)) {
 			entries = new HunterClient().SearchToGetEntry(searchContent, searchType);
 		} else if (engine.equals(SearchEngine.QIANXIN_TI)) {
-			//entries = new Client().SearchToGetEntry(searchContent, searchType);
-			//TODO
+			// entries = new Client().SearchToGetEntry(searchContent, searchType);
+			// TODO
 		} else if (engine.equals(SearchEngine.QUAKE_360)) {
 			entries = new QuakeClient().SearchToGetEntry(searchContent, searchType);
 		} else if (engine.equals(SearchEngine.TI_360)) {
-			//entries = new Client().SearchToGetEntry(searchContent, searchType);
-			//TODO
+			// entries = new Client().SearchToGetEntry(searchContent, searchType);
+			// TODO
 		} else if (engine.equals(SearchEngine.HUNTER_IO)) {
 			entries = new HunterIoClient().SearchToGetEntry(searchContent, searchType);
 		}
-		//https://api.hunter.io/v2/domain-search?domain=intercom.com
+		// https://api.hunter.io/v2/domain-search?domain=intercom.com
 		return entries;
 	}
 
@@ -199,17 +205,17 @@ public class APISearchAction extends AbstractAction {
 		return DoSearchAllInOn(searchType, content, engineList, true, false);
 	}
 
-	public static List<SearchResultEntry> DoSearchAllInOn(String searchType, String content, List<String> engineList, boolean showInGUI, boolean autoAddToTarget) {
+	public static List<SearchResultEntry> DoSearchAllInOn(String searchType, String content, List<String> engineList,
+			boolean showInGUI, boolean autoAddToTarget) {
 		if (StringUtils.isEmpty(content) || StringUtils.isEmpty(searchType)) {
 			BurpExtender.getStderr().print("nothing to search...");
 			return null;
 		}
 		List<SearchResultEntry> entries = new ArrayList<>();
 
-
 		for (String engine : engineList) {
 			if (engine.equals(SearchEngine.HUNTER_IO)) {
-				//这个逻辑有点不严谨，目前看时没问题的，后续有重大变更时注意
+				// 这个逻辑有点不严谨，目前看时没问题的，后续有重大变更时注意
 				searchType = SearchType.Email;
 			}
 			entries.addAll(APISearchAction.DoSearch(searchType, content, engine));
@@ -220,7 +226,7 @@ public class APISearchAction extends AbstractAction {
 			BurpExtender.getGui().getSearchPanel().addSearchTab(tabname, entries, engineList);
 		}
 
-		//暂时不启用，之所以要设计图形界面，就是为了加入人为判断。
+		// 暂时不启用，之所以要设计图形界面，就是为了加入人为判断。
 		autoAddToTarget = false;
 		if (autoAddToTarget) {
 			DomainManager result = BurpExtender.getGui().getDomainPanel().getDomainResult();
