@@ -233,6 +233,7 @@ public class SearchPanel extends JPanel {
 		closeCurrentTabMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				tabbedPane.remove(tabIndex);
+				APISearchAction.searchedContent.remove(getTabTextByIndex(tabIndex));
 			}
 		});
 		popupMenu.add(closeCurrentTabMenuItem);
@@ -242,6 +243,7 @@ public class SearchPanel extends JPanel {
 		closeAllTabsMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				tabbedPane.removeAll();
+				APISearchAction.searchedContent.clear();
 			}
 		});
 		popupMenu.add(closeAllTabsMenuItem);
@@ -252,6 +254,7 @@ public class SearchPanel extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				for (int i = tabIndex - 1; i >= 0; i--) {
 					tabbedPane.remove(i);
+					APISearchAction.searchedContent.remove(getTabTextByIndex(i));
 				}
 			}
 		});
@@ -263,6 +266,7 @@ public class SearchPanel extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				for (int i = tabbedPane.getTabCount() - 1; i > tabIndex; i--) {
 					tabbedPane.remove(i);
+					APISearchAction.searchedContent.remove(getTabTextByIndex(i));
 				}
 			}
 		});
@@ -272,9 +276,7 @@ public class SearchPanel extends JPanel {
 		JMenuItem copyTabNameMenuItem = new JMenuItem("Copy Tab Name");
 		copyTabNameMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				JPanel panel = ((JPanel) tabbedPane.getTabComponentAt(tabIndex));
-				JLabel lab = (JLabel) panel.getComponent(0);
-				SystemUtils.writeToClipboard(lab.getText());
+				SystemUtils.writeToClipboard(getTabTextByIndex(tabIndex));
 			}
 		});
 		popupMenu.add(copyTabNameMenuItem);
@@ -282,13 +284,22 @@ public class SearchPanel extends JPanel {
 		// 显示右键菜单
 		popupMenu.show(tabbedPane, e.getX(), e.getY());
 	}
+	
+	public String getTabTextByIndex(int i){
+		try {
+			JPanel panel = ((JPanel) centerPanel.getTabComponentAt(i));
+			JLabel lab = (JLabel) panel.getComponent(0);
+			return lab.getText();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
 
 	public Set<String> getAlreadySearchContent(){
 		HashSet<String> result = new HashSet<String>();
 		for (int i = centerPanel.getTabCount() - 1; i >= 0; i--) {
-			JPanel panel = ((JPanel) centerPanel.getTabComponentAt(i));
-			JLabel lab = (JLabel) panel.getComponent(0);
-			result.add(lab.getText());
+			result.add(getTabTextByIndex(i));
 		}
 		return result;
 	}

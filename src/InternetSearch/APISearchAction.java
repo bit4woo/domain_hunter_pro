@@ -45,6 +45,9 @@ public class APISearchAction extends AbstractAction {
 
 	private PrintWriter stdout;
 	private PrintWriter stderr;
+	
+	//记录搜索过并且没有关闭的tab
+	public static Set<String> searchedContent = new HashSet<String>();
 
 	APISearchAction() {
 		try {
@@ -93,7 +96,9 @@ public class APISearchAction extends AbstractAction {
 		SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
 			@Override
 			protected Map doInBackground() throws Exception {
-				Set<String> searchedContent = new HashSet<String>();
+				
+				//多选的单次操作去重 
+				Set<String> already = new HashSet<String>();
 				if (modelRows.length >= 50) {
 					JOptionPane.showMessageDialog(null, "too many items selected!! should less than 50","Alert",JOptionPane.WARNING_MESSAGE);
 					stderr.print("too many items selected!! should less than 50");
@@ -123,10 +128,14 @@ public class APISearchAction extends AbstractAction {
 					}
 
 					String tabname = String.format("%s(%s)", searchType, searchContent);
-					Set<String> already = BurpExtender.getGui().getSearchPanel().getAlreadySearchContent();
+					
+					//多选的单次操作去重 
+					if (already.contains(tabname)) {
+						continue;
+					}
 					
 					//可能存在，一个搜索结果还未显示，又有另外一次相同内容搜索出现的情况。但是影响不大，就不管了
-					if (searchedContent.add(tabname) || !already.contains(tabname)) {
+					if (searchedContent.add(tabname)) {
 						//保证单次操作，不对相同项进行重复搜索
 						DoSearchAllInOn(searchType, searchContent, APISearchAction.this.engineList);
 						System.out.println("begin search "+tabname);

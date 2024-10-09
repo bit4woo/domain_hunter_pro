@@ -86,7 +86,7 @@ public class TargetEntry {
 				+ "tencentcloudapi.com\r\n"
 				+ "cloudfront.net";
 		for (String item:domains.split("\r\n")) {
-			if (target.toLowerCase().strip().endsWith(item)) {
+			if (target.toLowerCase().trim().endsWith(item)) {
 				this.setTrustLevel(AssetTrustLevel.Cloud);
 				break;
 			}
