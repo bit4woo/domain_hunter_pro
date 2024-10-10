@@ -101,12 +101,7 @@ public class APISearchAction extends AbstractAction {
 
 				// 多选的单次操作去重
 				Set<String> already = new HashSet<String>();
-				if (modelRows.length >= 50) {
-					JOptionPane.showMessageDialog(null, "too many items selected!! should less than 50", "Alert",
-							JOptionPane.WARNING_MESSAGE);
-					stderr.print("too many items selected!! should less than 50");
-					return null;
-				}
+				Set<ToSearchItem> toSearch = new HashSet<>();
 				for (int row : modelRows) {
 
 					String searchType = null;
@@ -132,18 +127,31 @@ public class APISearchAction extends AbstractAction {
 						searchType = result.first;
 						searchContent = result.second;
 					}
-
-					String tabname = String.format("%s(%s)", searchType, searchContent);
-
+					
+					ToSearchItem item  = new ToSearchItem(searchType,searchContent);
+					
 					// 多选的单次操作去重
-					if (already.contains(tabname)) {
+					if (already.contains(item.getTabName())) {
 						continue;
 					}
-
+					
+					toSearch.add(item);
+				}
+				
+				if (toSearch.size() >= 50) {
+					JOptionPane.showMessageDialog(null, "too many items selected!! should less than 50", "Alert",
+							JOptionPane.WARNING_MESSAGE);
+					stderr.print("too many items selected!! should less than 50");
+					return null;
+				}
+				
+				//把耗时操作放在最后。
+				for (ToSearchItem item:toSearch) {
 					// 可能存在，一个搜索结果还未显示，又有另外一次相同内容搜索出现的情况。但是影响不大，就不管了
+					String tabname = item.getTabName();
 					if (searchedContent.add(tabname)) {
 						// 保证单次操作，不对相同项进行重复搜索
-						DoSearchAllInOn(searchType, searchContent, APISearchAction.this.engineList);
+						DoSearchAllInOn(item.getSearchType(), item.getSearchContent(), APISearchAction.this.engineList);
 						System.out.println("begin search " + tabname);
 						BurpExtender.getStdout().println("begin search " + tabname);
 					} else {
@@ -153,6 +161,7 @@ public class APISearchAction extends AbstractAction {
 						BurpExtender.getGui().getSearchPanel().changeTabColor(tabname, Color.WHITE);
 					}
 				}
+				
 				return null;
 			}
 
@@ -253,4 +262,36 @@ public class APISearchAction extends AbstractAction {
 		}
 		return str.substring(0, 1).toUpperCase() + str.toLowerCase().substring(1);
 	}
+}
+
+class ToSearchItem{
+	String searchType = "";
+	String searchContent = "";
+	
+	ToSearchItem(String searchType, String searchContent){
+		this.searchType = searchType;
+		this.searchContent = searchContent;
+	}
+
+	public String getSearchType() {
+		return searchType;
+	}
+
+	public void setSearchType(String searchType) {
+		this.searchType = searchType;
+	}
+
+	public String getSearchContent() {
+		return searchContent;
+	}
+
+	public void setSearchContent(String searchContent) {
+		this.searchContent = searchContent;
+	}
+	
+	public String getTabName() {
+		String tabname = String.format("%s(%s)", searchType, searchContent);
+		return tabname;
+	}
+
 }
