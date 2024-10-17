@@ -19,6 +19,7 @@ import com.google.common.net.InternetDomainName;
 
 import base.Commons;
 import burp.BurpExtender;
+import domain.DomainManager;
 
 public class TargetEntry {
 	private String target = "";//根域名、网段、或者IP
@@ -30,6 +31,7 @@ public class TargetEntry {
 	private Set<String> comments = new HashSet<>();
 	private boolean useTLD = true;//TLD= Top-Level Domain,比如 baidu.com为true，*.m.baidu.com为false
 	private String trustLevel = AssetTrustLevel.Maybe;
+	private int subdomainCount = 0;
 
 	public static final String Target_Type_Domain = "Domain";
 	public static final String Target_Type_Wildcard_Domain = "WildcardDomain"; //
@@ -225,6 +227,39 @@ public class TargetEntry {
 	
 	public String switchTrustLevel() {
 		return trustLevel =  AssetTrustLevel.getNextLevel(trustLevel);
+	}
+	
+
+	public int getSubdomainCount() {
+		return subdomainCount;
+	}
+
+	public void setSubdomainCount(int subdomainCount) {
+		this.subdomainCount = subdomainCount;
+	}
+	
+	
+	public void countSubdomain(Set<String> domains) {
+		if (this.type.equals(Target_Type_Domain)) {
+			for (String domain:domains) {
+				if (domain.endsWith("." + this.target) || domain.equalsIgnoreCase(this.target)) {
+					this.subdomainCount++;
+				}
+			}
+		}
+		
+		if (this.type.equals(Target_Type_Wildcard_Domain)) {
+			for (String domain:domains) {
+				if (DomainUtils.isMatchWildCardDomain(this.target, domain)) {
+					this.subdomainCount++;
+				}
+			}
+		}
+
+		if (this.type.equals(Target_Type_Subnet)) {
+			this.subdomainCount =IPAddressUtils.toIPList(this.target).size();
+		}
+
 	}
 
 	public void zoneTransferCheck() {

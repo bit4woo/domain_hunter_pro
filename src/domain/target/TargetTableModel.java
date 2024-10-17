@@ -35,7 +35,7 @@ public class TargetTableModel extends AbstractTableModel {
 	private GUIMain guiMain;
 
 	private static final transient String[] standardTitles = new String[]{
-			"#", "Domain/Subnet", "Keyword", "Comment", "TrustLevel"};
+			"#", "Domain/Subnet", "Keyword", "Comment", "TrustLevel","Count"};
 	private static transient List<String> titletList = new ArrayList<>(Arrays.asList(standardTitles));
 
 	private static final transient Logger log = LogManager.getLogger(TargetTableModel.class);
@@ -130,6 +130,9 @@ public class TargetTableModel extends AbstractTableModel {
 		if (columnIndex == titletList.indexOf("TrustLevel")) {
 			return entry.getTrustLevel();
 		}
+		if (columnIndex == titletList.indexOf("Count")) {
+			return entry.getSubdomainCount();
+		}
 		return "";
 	}
 
@@ -190,7 +193,7 @@ public class TargetTableModel extends AbstractTableModel {
 	public Class<?> getColumnClass(int columnIndex) {
 		if (columnIndex == titletList.indexOf("Black")) {
 			return boolean.class;
-		} else if (columnIndex == titletList.indexOf("#")) {
+		} else if (columnIndex == titletList.indexOf("#") || columnIndex == titletList.indexOf("Count")) {
 			return Integer.class;//如果返回int.class排序会有问题，why？
 		} else {
 			return String.class;
@@ -540,6 +543,16 @@ public class TargetTableModel extends AbstractTableModel {
 			} catch (Exception e) {
 				e.printStackTrace(stderr);
 			}
+		}
+	}
+	
+	public void refreshSubdomainCount() {
+		for (TargetEntry entry:targetEntries.values()) {
+			entry.countSubdomain(guiMain.getDomainPanel().getDomainResult().getSubDomainSet());
+		}
+		int size = targetEntries.size();
+		if (size>=1) {
+			fireTableRowsUpdated(0,targetEntries.size()-1);
 		}
 	}
 

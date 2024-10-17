@@ -200,6 +200,10 @@ public class TargetTable extends JTable {
 			if (column.getIdentifier().equals("Keyword")) {
 				column.setPreferredWidth(width * "Keyword".length());
 			}
+			
+			if (column.getIdentifier().equals("Count")) {
+				column.setPreferredWidth(width * "100".length());
+			}
 		}
 		//this.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);//配合横向滚动条
 	}
