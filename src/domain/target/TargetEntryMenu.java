@@ -145,6 +145,17 @@ public class TargetEntryMenu extends JPopupMenu {
 				rootDomainTable.getTargetModel().updateComments(modelRows, Comments);
 			}
 		});
+		
+		JMenuItem batchRemoveCommentItem = new JMenuItem(new AbstractAction("Remove Comment") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				String Comment = JOptionPane.showInputDialog("Comment", null).trim();
+				while (StringUtils.isBlank(Comment)) {
+					Comment = JOptionPane.showInputDialog("Comment", null).trim();
+				}
+				rootDomainTable.getTargetModel().removeComments(modelRows, Comment);
+			}
+		});
 
 		JMenuItem batchClearCommentsItem = new JMenuItem(new AbstractAction("Clear Comments") {
 			@Override
@@ -169,6 +180,7 @@ public class TargetEntryMenu extends JPopupMenu {
 		this.add(getSubDomainsOf);
 		this.add(copyEmails);
 		this.add(batchAddCommentsItem);
+		this.add(batchRemoveCommentItem);
 		this.add(batchClearCommentsItem);
 		this.add(addToBlackItem);
 		this.add(changeTrustLevelItem);
