@@ -31,10 +31,10 @@ public class TargetDao {
 	public TargetDao(File dbFilePath){
 		this(dbFilePath.toString());
 	}
-
-	public boolean createTable() {
+	
+	public String genCreateTableSql(String tableName) {
 		//使用和旧版本不同的表名称,避免冲突
-		String sqlTitle = "CREATE TABLE IF NOT EXISTS TargetTable" +
+		String createTableSql = "CREATE TABLE IF NOT EXISTS " + tableName +" "+
 				"(ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +//自动增长 https://www.sqlite.org/autoinc.html
 				" target           TEXT    NOT NULL UNIQUE," + // -- UNIQUE关键词 为 target 字段添加唯一约束，这样INSERT OR REPLACE语句才能根据这段进行
 				" type        TEXT    NOT NULL,"+
@@ -43,10 +43,15 @@ public class TargetDao {
 				//" isBlack        BOOLEAN    NOT NULL,"+
 				" trustLevel        TEXT    NOT NULL,"+
 				" comment        TEXT    NOT NULL,"+
-				" useTLD        BOOLEAN    NOT NULL)";
-		jdbcTemplate.execute(sqlTitle);
-		
+				" useTLD        BOOLEAN    NOT NULL,"+ 
+				" subDomainCount	INTEGER)";
+		return createTableSql;
+	}
 
+	public boolean createTable() {
+
+		jdbcTemplate.execute(genCreateTableSql("TargetTable"));
+		
 		//https://www.sqlitetutorial.net/sqlite-replace-statement/
 		//让target字段成为replace操作判断是否重复的判断条件。
 		String sqlcreateIndex = "CREATE UNIQUE INDEX IF NOT EXISTS idx_Target_target ON TargetTable (target)";
@@ -56,6 +61,7 @@ public class TargetDao {
 	
 	public void alterTable() {
 		removeColumnIsBlackIfPresent();
+		AddSubDomainCount();
 	}
 	
 	/**
@@ -68,19 +74,45 @@ public class TargetDao {
 	        return true;
 	    }
 
-	    String createNewTableSql = "CREATE TABLE TargetTable_new (" +
-	            "ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
-	            "target TEXT NOT NULL UNIQUE, " + // -- UNIQUE关键词 为 target 字段添加唯一约束，这样INSERT OR REPLACE语句才能根据这段进行
-	            "type TEXT NOT NULL, " +
-	            "keyword TEXT NOT NULL, " +
-	            "ZoneTransfer BOOLEAN NOT NULL, " +
-	            "comment TEXT NOT NULL, " +
-	            "useTLD BOOLEAN NOT NULL, " +
-	            "trustLevel TEXT NOT NULL)";
+	    String createNewTableSql = genCreateTableSql("TargetTable_new");
 	    
 	    String copyDataSql = "INSERT INTO TargetTable_new (ID, target, type, keyword, ZoneTransfer, comment, useTLD, trustLevel) " +
 	            "SELECT ID, target, type, keyword, ZoneTransfer, comment, useTLD, " +
 	            "CASE WHEN isBlack = 1 THEN 'NonTarget' ELSE 'Maybe' END as trustLevel " +
+	            "FROM TargetTable";
+	    
+	    String dropOldTableSql = "DROP TABLE TargetTable";
+	    
+	    String renameTableSql = "ALTER TABLE TargetTable_new RENAME TO TargetTable";
+	    
+	    String sqlcreateIndex = "CREATE UNIQUE INDEX IF NOT EXISTS idx_Target_target ON TargetTable (target)";
+	    try {
+	        jdbcTemplate.execute(createNewTableSql);
+	        jdbcTemplate.execute(copyDataSql);
+	        jdbcTemplate.execute(dropOldTableSql);
+	        jdbcTemplate.execute(renameTableSql);
+	        jdbcTemplate.execute(sqlcreateIndex);
+	        return true;
+	    } catch (DataAccessException e) {
+	        e.printStackTrace();
+	        return false;
+	    }
+	}
+	
+	/**
+	 * 实现：删除isBlack字段，新增trustLevel字段的逻辑。需要确保旧表有isBlack字段。
+	 * @return
+	 */
+	public boolean AddSubDomainCount() {
+	    if (columnExists("TargetTable", "subDomainCount")) {
+	        // 如果 subDomainCount 列存在，表面是最新的表结构，直接返回
+	        return true;
+	    }
+
+	    String createNewTableSql = genCreateTableSql("TargetTable_new");
+	    
+	    String copyDataSql = "INSERT INTO TargetTable_new (ID, target, type, keyword, ZoneTransfer, comment, useTLD, trustLevel) " +
+	            "SELECT ID, target, type, keyword, ZoneTransfer, comment, useTLD, trustLevel" +
 	            "FROM TargetTable";
 	    
 	    String dropOldTableSql = "DROP TABLE TargetTable";
@@ -138,12 +170,12 @@ public class TargetDao {
 	 * @return
 	 */
 	public boolean addOrUpdateTarget(TargetEntry entry) {
-	    String sql = "insert or replace into TargetTable (target, type, keyword, ZoneTransfer, comment, useTLD, trustLevel)"
+	    String sql = "insert or replace into TargetTable (target, type, keyword, ZoneTransfer, comment, useTLD, trustLevel,subDomainCount)"
 	            + " values(?, ?, ?, ?, ?, ?, ?)";
 
 	    int result = jdbcTemplate.update(sql, entry.getTarget(), entry.getType(), entry.getKeyword(), entry.isZoneTransfer(),
 	            SetAndStr.toStr(entry.getComments()), entry.isUseTLD(), 
-	            entry.getTrustLevel());
+	            entry.getTrustLevel(),entry.getSubdomainCount());
 
 	    return result > 0;
 	}

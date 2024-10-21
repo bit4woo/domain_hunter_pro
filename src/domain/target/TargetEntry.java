@@ -240,6 +240,7 @@ public class TargetEntry {
 	
 	
 	public void countSubdomain(Set<String> domains) {
+		this.subdomainCount = 0;
 		if (this.type.equals(Target_Type_Domain)) {
 			for (String domain:domains) {
 				if (domain.endsWith("." + this.target) || domain.equalsIgnoreCase(this.target)) {
@@ -259,7 +260,6 @@ public class TargetEntry {
 		if (this.type.equals(Target_Type_Subnet)) {
 			this.subdomainCount =IPAddressUtils.toIPList(this.target).size();
 		}
-
 	}
 
 	public void zoneTransferCheck() {
