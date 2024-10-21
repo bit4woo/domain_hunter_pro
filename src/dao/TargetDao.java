@@ -112,7 +112,7 @@ public class TargetDao {
 	    String createNewTableSql = genCreateTableSql("TargetTable_new");
 	    
 	    String copyDataSql = "INSERT INTO TargetTable_new (ID, target, type, keyword, ZoneTransfer, comment, useTLD, trustLevel) " +
-	            "SELECT ID, target, type, keyword, ZoneTransfer, comment, useTLD, trustLevel" +
+	            "SELECT ID, target, type, keyword, ZoneTransfer, comment, useTLD, trustLevel " +
 	            "FROM TargetTable";
 	    
 	    String dropOldTableSql = "DROP TABLE TargetTable";
@@ -171,7 +171,7 @@ public class TargetDao {
 	 */
 	public boolean addOrUpdateTarget(TargetEntry entry) {
 	    String sql = "insert or replace into TargetTable (target, type, keyword, ZoneTransfer, comment, useTLD, trustLevel,subDomainCount)"
-	            + " values(?, ?, ?, ?, ?, ?, ?)";
+	            + " values(?, ?, ?, ?, ?, ?, ?,?)";
 
 	    int result = jdbcTemplate.update(sql, entry.getTarget(), entry.getType(), entry.getKeyword(), entry.isZoneTransfer(),
 	            SetAndStr.toStr(entry.getComments()), entry.isUseTLD(), 
