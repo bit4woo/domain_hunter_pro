@@ -269,7 +269,7 @@ public class DataLoadManager {
 		SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
 			@Override
 			protected Map doInBackground() throws Exception {
-				loadDbfileToHunter(null);
+				//loadDbfileToHunter(null);
 				loadConfigToHunter(null);
 				return null;
 			}
