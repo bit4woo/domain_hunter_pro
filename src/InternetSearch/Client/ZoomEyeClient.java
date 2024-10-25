@@ -55,9 +55,16 @@ public class ZoomEyeClient extends BaseClient {
 					String serviceName = entryitem.getJSONObject("portinfo").getString("service");
 					entry.setProtocol(serviceName);
 					
-					String title = entryitem.getJSONObject("portinfo").getString("title");
-					if (title != null) {
-						entry.setTitle(title);
+					try {
+						String title = entryitem.getJSONObject("portinfo").getString("title");
+						if (title != null) {
+							entry.setTitle(title);
+						}
+					} catch (Exception e) {
+						JSONArray titleArray = entryitem.getJSONObject("portinfo").getJSONArray("title");
+						if (titleArray != null) {
+							entry.setTitle(titleArray.getString(0));
+						}
 					}
 
 					entry.setSource(getEngineName());
