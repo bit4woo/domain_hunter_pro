@@ -32,7 +32,7 @@ public class HunterClient extends BaseClient {
 		try {
 			JSONObject obj = new JSONObject(respbody);
 			int code = obj.getInt("code");
-			if (code ==200) {
+			if (code ==200 || code ==40205) {
 				JSONObject data = obj.getJSONObject("data");
 				if (!data.get("arr").toString().equals("null")) {
 					//"arr":null 这里有点反直觉
