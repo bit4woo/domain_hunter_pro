@@ -46,13 +46,12 @@ public class QuakeClient extends BaseClient {
 					} catch (Exception e1) {
 						e1.printStackTrace();
 					}
-					
+
 					try {
 						entry.setRootDomain(entryitem.getString("domain"));
 					} catch (Exception e1) {
 						e1.printStackTrace();
 					}
-					
 
 					int port = entryitem.getInt("port");
 					entry.setPort(port);
@@ -142,16 +141,20 @@ public class QuakeClient extends BaseClient {
 		String body;
 		String raw;
 
-		body = "{\"query\": \"%s\",\"start\": %s, \"size\": %s}";
+		// 使用 JSONObject 构建 JSON
+		JSONObject jsonObject = new JSONObject();
+		jsonObject.put("query", searchContent);
+		jsonObject.put("start", start);
+		jsonObject.put("size", size);
+
+		body = jsonObject.toString();
 
 		raw = "POST /api/v3/search/quake_service HTTP/1.1\r\n" + "Host: quake.360.net\r\n"
 				+ "User-Agent: curl/7.81.0\r\n" + "Accept: */*\r\n" + "X-Quaketoken: %s\r\n"
 				+ "Content-Type: application/json\r\n" + "Connection: close\r\n" + "Content-Length: %s\r\n" + "\r\n"
 				+ "%s";
-		
-		// 必须包含Content-Length,否则服务端报错
 
-		body = String.format(body, searchContent, start, size);
+		// 必须包含Content-Length,否则服务端报错
 		raw = String.format(raw, key, body.length(), body);
 
 		return raw.getBytes();
@@ -161,5 +164,8 @@ public class QuakeClient extends BaseClient {
 		String aaa = FileUtils.readFileToString(
 				new File("G:/github/domain_hunter_pro/src/InternetSearch/Client/example_data_Quake.txt"), "UTF-8");
 		System.out.println(new QuakeClient().parseResp(aaa));
+
+		System.out
+				.println(new String(new QuakeClient().buildRawData("favicon:\"2b0106152xx369fb3a2daeff0018df2\"", 1)));
 	}
 }
