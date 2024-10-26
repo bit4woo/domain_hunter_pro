@@ -12,9 +12,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 import javax.imageio.ImageIO;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -98,7 +101,7 @@ public class WebIcon {
 		if (new String(imageData).toLowerCase().contains("<html>")) {
 			return "";
 		}
-		return calcHash(imageData) + "";
+		return calcHash(imageData) + "|"+calcMd5Hash(imageData);
 
 	}
 
@@ -249,6 +252,27 @@ public class WebIcon {
 				.asInt();
 		return hashvalue;
 	}
+	
+    public static String calcMd5Hash(byte[] content) {
+        try {
+            // 创建 MD5 哈希对象
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            
+            // 更新哈希内容
+            md.update(content);
+            
+            // 计算哈希值并转换为十六进制字符串
+            byte[] hashBytes = md.digest();
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hashBytes) {
+                hexString.append(String.format("%02x", b));
+            }
+            
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("MD5 algorithm not found", e);
+        }
+    }
 
 	public static byte[] imageToByteArray(String imagePath) throws IOException {
 		File file = new File(imagePath);
@@ -300,8 +324,11 @@ public class WebIcon {
 		return true;
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		// System.out.println(getHash("https://www.baidu.com"));
 		//System.out.print(FaviconExtractor("<link rel='icon' href='/xxx-favicon.ico' type='image/x-ico'/>"));
+		byte[] aaa = FileUtils.readFileToByteArray(
+				new File("G:/tmp/baidu.bea6c3bf.png"));
+		System.out.println(calcMd5Hash(aaa));
 	}
 }

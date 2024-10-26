@@ -152,7 +152,8 @@ public class SearchEngine {
 					//查询title时，使用=有大量误报，使用==进行更严格的匹配。大小写敏感的，字符串完全相同
 					value = String.format("title==\"%s\"", value);
 				} else if (type.equals(SearchType.IconHash)) {
-					value = String.format("icon_hash=\"%s\"", value);
+					//类似这样的值1772087922|bex6c3bff5x155c743bdae511b74f5a2
+					value = String.format("icon_hash=\"%s\"", value.split("\\|")[0]);
 				}else if(type.equals(SearchType.Server)) {
 
 				}else if(type.equals(SearchType.Asn)) {
@@ -178,7 +179,7 @@ public class SearchEngine {
 				}else if(type.equals(SearchType.Title)) {
 					value = String.format("title:\"%s\"", value);
 				}else if(type.equals(SearchType.IconHash)) {
-					value = String.format("iconhash:\"%s\"", value);
+					value = String.format("iconhash:\"%s\"", value.split("\\|")[0]);
 				}else if(type.equals(SearchType.Server)) {
 
 				}else if(type.equals(SearchType.Asn)) {
@@ -236,7 +237,7 @@ public class SearchEngine {
 					value = String.format("web.title=\"%s\"", value);
 				}else if(type.equals(SearchType.IconHash)) {
 					//这里的Hash及算法方法和fofa一致吗
-					value = String.format("web.icon=\"%s\"", value);
+					value = String.format("web.icon=\"%s\"", value.split("\\|")[1]);
 				}else if(type.equals(SearchType.Server)) {
 					value = String.format("header.server=\"%s\"", value);
 				}else if(type.equals(SearchType.Asn)) {
@@ -282,24 +283,26 @@ public class SearchEngine {
 				}
 			}
 			else if (engine.equalsIgnoreCase(QUAKE_360)) {
-				//https://quake.360.net/quake/#/help?id=5e774244cb9954d2f8a0165a&title=%E6%9C%8D%E5%8A%A1%E6%95%B0%E6%8D%AE%E6%8E%A5%E5%8F%A3
+				//https://quake.360.net/quake/#/help   检索关键词
 				if (type.equals(SearchType.Host)) {
 
 				}else if(type.equals(SearchType.IP)) {
-					value = "site:"+value;
+					value = String.format("ip:\"%s\"", value);
 				}else if(type.equals(SearchType.SubDomain)) {
-					value = "domain:"+value;
+					value = String.format("domain:\"%s\"", value);
 				}else if(type.equals(SearchType.Subnet)) {
-
+					value = String.format("ip:\"%s\"", value);
 				}else if(type.equals(SearchType.Title)) {
-
+					//value = "title:"+value;
+					value = String.format("title:\"%s\"", value);
 				}else if(type.equals(SearchType.IconHash)) {
-					value = SearchType.IconHash+value;
-					//语法上是不需要的，为了告诉请求构造逻辑，这是iconhash搜索。
+					value = String.format("favicon: \"%s\"", value.split("\\|")[1]);
+					//value = "favicon:"+value.split("\\|")[1];
+					//严格按照文档的话，应该带上双引号，但是测试没有引号也可以。
 				}else if(type.equals(SearchType.Server)) {
-
+					value = "server:"+value;
 				}else if(type.equals(SearchType.Asn)) {
-
+					value = String.format("asn:\"%s\"", value);
 				}
 			}
 		}else {
@@ -380,5 +383,10 @@ public class SearchEngine {
 		parentMenu.add(CommonSearchMenu);
 		parentMenu.add(EmailSearchMenu);
 		parentMenu.add(ExtendInfoSearchMenu);
+	}
+	
+	public static void main(String[] args) {
+		
+		System.out.println("1772087912|xss6c3bff5x155c743bdae511b74f5a2".split("\\|")[0]);
 	}
 }

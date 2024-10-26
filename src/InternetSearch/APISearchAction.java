@@ -220,7 +220,7 @@ public class APISearchAction extends AbstractAction {
 				// 这个逻辑有点不严谨，目前看时没问题的，后续有重大变更时注意
 				searchType = SearchType.Email;
 			}
-			entries.addAll(APISearchAction.DoSearch(searchType, content, engine));
+			entries.addAll(DoSearch(searchType, content, engine));
 		}
 
 		if (showInGUI) {

@@ -133,24 +133,13 @@ public class QuakeClient extends BaseClient {
 		String body;
 		String raw;
 
-		if (searchContent.startsWith(SearchType.IconHash)) {
-			searchContent = searchContent.substring(SearchType.IconHash.length());
+		body = "{\"query\": \"%s\",\"start\": %s, \"size\": %s}";
 
-			body = "{\"favicon_hash\": \"%s\",\"similar\": 0.9, \"start\": %s, \"size\": %s}";
-
-			raw = "POST /api/v3/query/similar_icon/aggregation HTTP/1.1\r\n" + "Host: quake.360.net\r\n"
-					+ "User-Agent: curl/7.81.0\r\n" + "Accept: */*\r\n" + "X-Quaketoken: %s\r\n"
-					+ "Content-Type: application/json\r\n" + "Connection: close\r\n" + "Content-Length: %s\r\n" + "\r\n"
-					+ "%s";
-
-		} else {
-			body = "{\"query\": \"%s\",\"start\": %s, \"size\": %s}";
-
-			raw = "POST /api/v3/search/quake_service HTTP/1.1\r\n" + "Host: quake.360.net\r\n"
-					+ "User-Agent: curl/7.81.0\r\n" + "Accept: */*\r\n" + "X-Quaketoken: %s\r\n"
-					+ "Content-Type: application/json\r\n" + "Connection: close\r\n" + "Content-Length: %s\r\n" + "\r\n"
-					+ "%s";
-		}
+		raw = "POST /api/v3/search/quake_service HTTP/1.1\r\n" + "Host: quake.360.net\r\n"
+				+ "User-Agent: curl/7.81.0\r\n" + "Accept: */*\r\n" + "X-Quaketoken: %s\r\n"
+				+ "Content-Type: application/json\r\n" + "Connection: close\r\n" + "Content-Length: %s\r\n" + "\r\n"
+				+ "%s";
+		
 		// 必须包含Content-Length,否则服务端报错
 
 		body = String.format(body, searchContent, start, size);

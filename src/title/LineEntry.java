@@ -102,6 +102,7 @@ public class LineEntry {
 	private String icon_url = "";
 	private byte[] icon_bytes = new byte[0];
 	private String icon_hash = "";
+	//关于icon_hash，fofa、zoomeye使用了同一种算法，hunter、quake使用了同一种算法（都是md5）
 	private String ASNInfo = "";
 	private int AsnNum =-1;
 	private String time = "";
