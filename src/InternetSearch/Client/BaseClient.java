@@ -109,10 +109,14 @@ public abstract class BaseClient {
         } else {
             reqRaw = new String(this.raw);
         }
+        
         stderr.println();
         stderr.println("====================>>");
+        stderr.println("URL:");
         stderr.println(this.url);
+        stderr.println("Request:");
         stderr.println(reqRaw);
+        stderr.println("Response Body:");
         stderr.println(content);
         stderr.println("<<====================");
         stderr.println();
