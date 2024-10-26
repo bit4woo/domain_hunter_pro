@@ -13,7 +13,6 @@ import com.bit4woo.utilbox.utils.JsonUtils;
 
 import InternetSearch.SearchEngine;
 import InternetSearch.SearchResultEntry;
-import InternetSearch.SearchType;
 import config.ConfigManager;
 import config.ConfigName;
 
@@ -42,8 +41,18 @@ public class QuakeClient extends BaseClient {
 
 					SearchResultEntry entry = new SearchResultEntry();
 
-					entry.getIPSet().add(entryitem.getString("ip"));
-					entry.setRootDomain(entryitem.getString("domain"));
+					try {
+						entry.getIPSet().add(entryitem.getString("ip"));
+					} catch (Exception e1) {
+						e1.printStackTrace();
+					}
+					
+					try {
+						entry.setRootDomain(entryitem.getString("domain"));
+					} catch (Exception e1) {
+						e1.printStackTrace();
+					}
+					
 
 					int port = entryitem.getInt("port");
 					entry.setPort(port);
