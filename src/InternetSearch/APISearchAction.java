@@ -99,8 +99,6 @@ public class APISearchAction extends AbstractAction {
 			@Override
 			protected Map doInBackground() throws Exception {
 
-				// 多选的单次操作去重
-				Set<String> already = new HashSet<String>();
 				Set<ToSearchItem> toSearch = new HashSet<>();
 				for (int row : modelRows) {
 
@@ -127,26 +125,21 @@ public class APISearchAction extends AbstractAction {
 						searchType = result.first;
 						searchContent = result.second;
 					}
-					
-					ToSearchItem item  = new ToSearchItem(searchType,searchContent);
-					
-					// 多选的单次操作去重
-					if (already.contains(item.getTabName())) {
-						continue;
-					}
-					
+
+					ToSearchItem item = new ToSearchItem(searchType, searchContent);
+
 					toSearch.add(item);
 				}
-				
+
 				if (toSearch.size() >= 50) {
 					JOptionPane.showMessageDialog(null, "too many items selected!! should less than 50", "Alert",
 							JOptionPane.WARNING_MESSAGE);
 					stderr.print("too many items selected!! should less than 50");
 					return null;
 				}
-				
-				//把耗时操作放在最后。
-				for (ToSearchItem item:toSearch) {
+
+				// 把耗时操作放在最后。
+				for (ToSearchItem item : toSearch) {
 					// 可能存在，一个搜索结果还未显示，又有另外一次相同内容搜索出现的情况。但是影响不大，就不管了
 					String tabname = item.getTabName();
 					if (searchedContent.add(tabname)) {
@@ -161,7 +154,7 @@ public class APISearchAction extends AbstractAction {
 						BurpExtender.getGui().getSearchPanel().changeTabColor(tabname, Color.WHITE);
 					}
 				}
-				
+
 				return null;
 			}
 
@@ -264,11 +257,11 @@ public class APISearchAction extends AbstractAction {
 	}
 }
 
-class ToSearchItem{
+class ToSearchItem {
 	String searchType = "";
 	String searchContent = "";
-	
-	ToSearchItem(String searchType, String searchContent){
+
+	ToSearchItem(String searchType, String searchContent) {
 		this.searchType = searchType;
 		this.searchContent = searchContent;
 	}
@@ -288,10 +281,14 @@ class ToSearchItem{
 	public void setSearchContent(String searchContent) {
 		this.searchContent = searchContent;
 	}
-	
+
 	public String getTabName() {
 		String tabname = String.format("%s(%s)", searchType, searchContent);
 		return tabname;
 	}
 
+	@Override
+	public int hashCode() {
+		return getTabName().hashCode();
+	}
 }
