@@ -36,83 +36,78 @@ public class ZoomEyeClient extends BaseClient {
 			if (status == 200) {
 				JSONArray results = obj.getJSONArray("matches");
 				for (Object item : results) {
-
 					SearchResultEntry entry = new SearchResultEntry();
-
-					// IP
 					JSONObject entryitem = (JSONObject) item;
-					Set<String> ipSet = getIPSet(entryitem);
-					entry.getIPSet().addAll(ipSet);
 
-					// Host
 					try {
-						entry.setHost(entryitem.getString("rdns"));
-					} catch (Exception e) {
-						try {
-							entry.setHost(entryitem.getString("site"));
-						} catch (Exception e1) {
-							entry.setHost((String) (ipSet.toArray())[0]);
-						}
-					}
+						// IP
+						Set<String> ipSet = getIPSet(entryitem);
+						entry.getIPSet().addAll(ipSet);
 
-					// port
-					int port = entryitem.getJSONObject("portinfo").getInt("port");
-					entry.setPort(port);
-					// protocol
-					String serviceName = entryitem.getJSONObject("portinfo").getString("service");
-					entry.setProtocol(serviceName);
-
-					// title
-					try {
-						String title = entryitem.getJSONObject("portinfo").getString("title");
-						if (title != null) {
-							entry.setTitle(title);
-						}
-					} catch (Exception e) {
+						// Host
 						try {
-							JSONArray titleArray = entryitem.getJSONObject("portinfo").getJSONArray("title");
-							if (titleArray != null) {
-								entry.setTitle(titleArray.getString(0));
-							}
-						} catch (Exception e1) {
+							entry.setHost(entryitem.getString("rdns"));
+						} catch (Exception e) {
 							try {
-								String title = entryitem.getString("title");
-								if (title != null) {
-									entry.setTitle(title);
+								entry.setHost(entryitem.getString("site"));
+							} catch (Exception e1) {
+								entry.setHost((String) (ipSet.toArray())[0]);
+							}
+						}
+
+						// port
+						int port = entryitem.getJSONObject("portinfo").getInt("port");
+						entry.setPort(port);
+						// protocol
+						String serviceName = entryitem.getJSONObject("portinfo").getString("service");
+						entry.setProtocol(serviceName);
+
+						// title
+						try {
+							String title = entryitem.getJSONObject("portinfo").getString("title");
+							if (title != null) {
+								entry.setTitle(title);
+							}
+						} catch (Exception e) {
+							try {
+								JSONArray titleArray = entryitem.getJSONObject("portinfo").getJSONArray("title");
+								if (titleArray != null) {
+									entry.setTitle(titleArray.getString(0));
 								}
-							} catch (Exception e2) {
+							} catch (Exception e1) {
 								try {
+									String title = entryitem.getString("title");
+									if (title != null) {
+										entry.setTitle(title);
+									}
+								} catch (Exception e2) {
 									JSONArray titleArray = entryitem.getJSONArray("title_list");
 									if (titleArray != null) {
 										entry.setTitle(titleArray.getString(0));
 									}
-								} catch (Exception e3) {
-
 								}
 							}
 						}
-					}
 
-					try {
-						String asn = entryitem.getJSONObject("geoinfo").getString("asn");
-						if (asn != null) {
-							entry.setAsnNum(Integer.parseInt(asn));
+						try {
+							String asn = entryitem.getJSONObject("geoinfo").getString("asn");
+							if (asn != null) {
+								entry.setAsnNum(Integer.parseInt(asn));
+							}
+							String asn_org = entryitem.getJSONObject("geoinfo").getString("organization");
+							if (asn_org != null) {
+								entry.setASNInfo(asn_org);
+							}
+						} catch (Exception e) {
+
 						}
+
+						entry.setSource(getEngineName());
+						result.add(entry);
 					} catch (Exception e) {
-
+						e.printStackTrace(stderr);
+						stderr.println(entryitem.toString());
 					}
-
-					try {
-						String asn_org = entryitem.getJSONObject("geoinfo").getString("organization");
-						if (asn_org != null) {
-							entry.setASNInfo(asn_org);
-						}
-					} catch (Exception e) {
-
-					}
-
-					entry.setSource(getEngineName());
-					result.add(entry);
 				}
 				return result;
 			}

@@ -18,7 +18,6 @@ import config.ConfigName;
 
 public class HunterClient extends BaseClient {
 
-
 	@Override
 	public String getEngineName() {
 		return SearchEngine.QIANXIN_HUNTER;
@@ -32,42 +31,47 @@ public class HunterClient extends BaseClient {
 		try {
 			JSONObject obj = new JSONObject(respbody);
 			int code = obj.getInt("code");
-			if (code ==200 || code ==40205) {
+			if (code == 200 || code == 40205) {
 				JSONObject data = obj.getJSONObject("data");
 				if (!data.get("arr").toString().equals("null")) {
-					//"arr":null 这里有点反直觉
+					// "arr":null 这里有点反直觉
 					JSONArray items = data.getJSONArray("arr");
 					for (Object item : items) {
 						JSONObject entryitem = (JSONObject) item;
 						SearchResultEntry entry = new SearchResultEntry();
 
-						String url = entryitem.getString("url");
-						String ip = entryitem.getString("ip");
-						if (StringUtils.isNotEmpty(url)) {
-							entry.setHost(url);
-						}else {
-							entry.setHost(ip);
-						}
-
-						entry.getIPSet().add(ip);
-						entry.setRootDomain(entryitem.getString("domain"));
-						entry.setPort(entryitem.getInt("port"));
-						entry.setProtocol(entryitem.getString("protocol"));
-
-						String  component =entryitem.get("component").toString();
 						try {
-							ArrayList<String> names = JsonUtils.grepValueFromJson(component, "name");
-							entry.setWebcontainer(String.join(",",names));
-						} catch (JSONException e) {
-							entry.setWebcontainer(component);
+							String url = entryitem.getString("url");
+							String ip = entryitem.getString("ip");
+							if (StringUtils.isNotEmpty(url)) {
+								entry.setHost(url);
+							} else {
+								entry.setHost(ip);
+							}
+
+							entry.getIPSet().add(ip);
+							entry.setRootDomain(entryitem.getString("domain"));
+							entry.setPort(entryitem.getInt("port"));
+							entry.setProtocol(entryitem.getString("protocol"));
+
+							String component = entryitem.get("component").toString();
+							try {
+								ArrayList<String> names = JsonUtils.grepValueFromJson(component, "name");
+								entry.setWebcontainer(String.join(",", names));
+							} catch (JSONException e) {
+								entry.setWebcontainer(component);
+							}
+							entry.setTitle(entryitem.getString("web_title"));
+							entry.setASNInfo(entryitem.getString("as_org"));
+							entry.setSource(getEngineName());
+							result.add(entry);
+						} catch (Exception e) {
+							e.printStackTrace(stderr);
+							stderr.println(entryitem.toString());
 						}
-						entry.setTitle(entryitem.getString("web_title"));
-						entry.setASNInfo(entryitem.getString("as_org"));
-						entry.setSource(getEngineName());
-						result.add(entry);
 					}
-					return result;
 				}
+				return result;
 			}
 		} catch (Exception e) {
 			e.printStackTrace(stderr);
@@ -77,14 +81,14 @@ public class HunterClient extends BaseClient {
 	}
 
 	@Override
-	public boolean hasNextPage(String respbody,int currentPage) {
+	public boolean hasNextPage(String respbody, int currentPage) {
 		try {
 			ArrayList<String> result = JsonUtils.grepValueFromJson(respbody, "total");
 			if (result.size() >= 1) {
 				int total = Integer.parseInt(result.get(0));
 				if (total > currentPage * 100) {
 					return true;
-				} 
+				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace(stderr);

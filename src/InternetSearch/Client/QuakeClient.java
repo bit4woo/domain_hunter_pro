@@ -36,68 +36,62 @@ public class QuakeClient extends BaseClient {
 			if (code.equals("0")) {
 				JSONArray results = obj.getJSONArray("data");
 				for (Object item : results) {
-
 					JSONObject entryitem = (JSONObject) item;
-
 					SearchResultEntry entry = new SearchResultEntry();
-
 					try {
 						entry.getIPSet().add(entryitem.getString("ip"));
-					} catch (Exception e1) {
-						e1.printStackTrace();
-					}
-
-					try {
 						entry.setRootDomain(entryitem.getString("domain"));
-					} catch (Exception e1) {
-						e1.printStackTrace();
-					}
 
-					int port = entryitem.getInt("port");
-					entry.setPort(port);
+						int port = entryitem.getInt("port");
+						entry.setPort(port);
 
-					String serviceName = entryitem.getJSONObject("service").getString("name");
-					String protocol;
-					if (serviceName.equalsIgnoreCase("http/ssl")) {
-						protocol = "https";
-					} else if (serviceName.equalsIgnoreCase("http")) {
-						protocol = "http";
-					} else {
-						protocol = serviceName;
-					}
-
-					entry.setProtocol(protocol);
-
-					if (serviceName.equalsIgnoreCase("http/ssl") || serviceName.equalsIgnoreCase("http")) {
-						String host = entryitem.getJSONObject("service").getJSONObject("http").getString("host");
-						String server = entryitem.getJSONObject("service").getJSONObject("http").getString("server");
-						String title = entryitem.getJSONObject("service").getJSONObject("http").getString("title");
-
-						entry.setHost(host);
-						entry.setWebcontainer(server);
-						entry.setTitle(title);
-					} else {
-						entry.setHost(entryitem.getString("domain"));
-					}
-
-					try {
-						int asn = entryitem.getInt("asn");
-						entry.setAsnNum(asn);
-					} catch (Exception e) {
-
-					}
-
-					try {
-						String asn_org = entryitem.getJSONObject("location").getString("asname");
-						if (asn_org != null) {
-							entry.setASNInfo(asn_org);
+						String serviceName = entryitem.getJSONObject("service").getString("name");
+						String protocol;
+						if (serviceName.equalsIgnoreCase("http/ssl")) {
+							protocol = "https";
+						} else if (serviceName.equalsIgnoreCase("http")) {
+							protocol = "http";
+						} else {
+							protocol = serviceName;
 						}
+
+						entry.setProtocol(protocol);
+
+						if (serviceName.equalsIgnoreCase("http/ssl") || serviceName.equalsIgnoreCase("http")) {
+							String host = entryitem.getJSONObject("service").getJSONObject("http").getString("host");
+							String server = entryitem.getJSONObject("service").getJSONObject("http")
+									.getString("server");
+							String title = entryitem.getJSONObject("service").getJSONObject("http").getString("title");
+
+							entry.setHost(host);
+							entry.setWebcontainer(server);
+							entry.setTitle(title);
+						} else {
+							entry.setHost(entryitem.getString("domain"));
+						}
+
+						try {
+							int asn = entryitem.getInt("asn");
+							entry.setAsnNum(asn);
+						} catch (Exception e) {
+
+						}
+
+						try {
+							String asn_org = entryitem.getJSONObject("location").getString("asname");
+							if (asn_org != null) {
+								entry.setASNInfo(asn_org);
+							}
+						} catch (Exception e) {
+
+						}
+
+						entry.setSource(getEngineName());
+						result.add(entry);
 					} catch (Exception e) {
-
+						e.printStackTrace(stderr);
+						stderr.println(entryitem.toString());
 					}
-
-					entry.setSource(getEngineName());
-					result.add(entry);
 				}
 				return result;
 			}

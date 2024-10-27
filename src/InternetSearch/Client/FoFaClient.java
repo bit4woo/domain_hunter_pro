@@ -35,21 +35,27 @@ public class FoFaClient extends BaseClient {
 					// host,ip,domain,port,protocol,server
 					// ["www.xxx.com","11.11.11.11","xxx.com","80","http","nginx/1.20.1"]
 					SearchResultEntry entry = new SearchResultEntry();
-					entry.setHost(parts.getString(0));
-					entry.getIPSet().add(parts.getString(1));
-					entry.setRootDomain(parts.getString(2));
-					entry.setPort(Integer.parseInt(parts.getString(3)));
-					entry.setProtocol(parts.getString(4));
-					entry.setWebcontainer(parts.getString(5));
-					entry.setTitle(parts.getString(6));
-					try {
-						entry.setAsnNum(Integer.parseInt(parts.getString(7)));
-					} catch (Exception e) {
 
+					try {
+						entry.setHost(parts.getString(0));
+						entry.getIPSet().add(parts.getString(1));
+						entry.setRootDomain(parts.getString(2));
+						entry.setPort(Integer.parseInt(parts.getString(3)));
+						entry.setProtocol(parts.getString(4));
+						entry.setWebcontainer(parts.getString(5));
+						entry.setTitle(parts.getString(6));
+						try {
+							entry.setAsnNum(Integer.parseInt(parts.getString(7)));
+						} catch (Exception e) {
+
+						}
+						entry.setASNInfo(parts.getString(8));
+						entry.setSource(getEngineName());
+						result.add(entry);
+					} catch (Exception e) {
+						e.printStackTrace(stderr);
+						stderr.println(parts.toString());
 					}
-					entry.setASNInfo(parts.getString(8));
-					entry.setSource(getEngineName());
-					result.add(entry);
 				}
 				return result;
 			}
@@ -61,15 +67,15 @@ public class FoFaClient extends BaseClient {
 	}
 
 	@Override
-	public boolean hasNextPage(String respbody,int currentPage) {
+	public boolean hasNextPage(String respbody, int currentPage) {
 		// "size":83,"page":1,
 		try {
 			ArrayList<String> result = JsonUtils.grepValueFromJson(respbody, "size");
 			if (result.size() >= 1) {
 				int total = Integer.parseInt(result.get(0));
-				if (total > currentPage * 2000) {//size=2000
+				if (total > currentPage * 2000) {// size=2000
 					return true;
-				} 
+				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace(stderr);
@@ -78,7 +84,7 @@ public class FoFaClient extends BaseClient {
 	}
 
 	/*
-	https://en.fofa.info/api
+	 * https://en.fofa.info/api
 	 */
 	@Override
 	public String buildSearchUrl(String searchContent, int page) {
@@ -89,7 +95,7 @@ public class FoFaClient extends BaseClient {
 			return null;
 		}
 		searchContent = new String(Base64.getEncoder().encode(searchContent.getBytes()));
-		//[820001] 没有权限搜索icon_hash字段
+		// [820001] 没有权限搜索icon_hash字段
 		String url = String.format(
 				"https://fofa.info/api/v1/search/all?email=%s&key=%s&page=1&size=2000&fields=host,ip,domain,port,protocol,server,title,as_number,as_organization&qbase64=%s",
 				email, key, searchContent);

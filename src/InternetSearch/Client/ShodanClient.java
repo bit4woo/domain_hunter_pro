@@ -21,7 +21,7 @@ public class ShodanClient extends BaseClient {
 		return SearchEngine.SHODAN;
 	}
 
-	//https://developer.shodan.io/api
+	// https://developer.shodan.io/api
 	@Override
 	public List<SearchResultEntry> parseResp(String respbody) {
 		List<SearchResultEntry> result = new ArrayList<SearchResultEntry>();
@@ -29,24 +29,29 @@ public class ShodanClient extends BaseClient {
 			JSONObject obj = new JSONObject(respbody);
 			JSONArray results = obj.getJSONArray("matches");
 			if (results != null) {
+
 				for (Object item : results) {
 					JSONObject entryitem = (JSONObject) item;
 					SearchResultEntry entry = new SearchResultEntry();
-					
-					entry.setHost(entryitem.getJSONArray("hostnames").getString(0));
-					entry.getIPSet().add(entryitem.getString("ip_str"));
-					entry.setRootDomain(entryitem.getJSONArray("domains").getString(0));
-					entry.setPort(entryitem.getInt("port"));
-					
-					entry.setASNInfo(entryitem.getString("asn"));
-					if (entryitem.getJSONObject("http")!=null) {
-						entry.setWebcontainer(entryitem.getJSONObject("http").getString("server"));
-						entry.setWebcontainer(entryitem.getJSONObject("http").getString("title"));
-					}
-					entry.setProtocol(entryitem.getJSONObject("_shodan").getString("module"));
+					try {
+						entry.setHost(entryitem.getJSONArray("hostnames").getString(0));
+						entry.getIPSet().add(entryitem.getString("ip_str"));
+						entry.setRootDomain(entryitem.getJSONArray("domains").getString(0));
+						entry.setPort(entryitem.getInt("port"));
 
-					entry.setSource(getEngineName());
-					result.add(entry);
+						entry.setASNInfo(entryitem.getString("asn"));
+						if (entryitem.getJSONObject("http") != null) {
+							entry.setWebcontainer(entryitem.getJSONObject("http").getString("server"));
+							entry.setWebcontainer(entryitem.getJSONObject("http").getString("title"));
+						}
+						entry.setProtocol(entryitem.getJSONObject("_shodan").getString("module"));
+
+						entry.setSource(getEngineName());
+						result.add(entry);
+					} catch (Exception e) {
+						e.printStackTrace(stderr);
+						stderr.println(entryitem.toString());
+					}
 				}
 				return result;
 			}
@@ -58,14 +63,14 @@ public class ShodanClient extends BaseClient {
 	}
 
 	@Override
-	public boolean hasNextPage(String respbody,int currentPage) {
+	public boolean hasNextPage(String respbody, int currentPage) {
 		// 使用“页面”访问第一页之后的结果。 对于第一页之后的每 100 个结果，将扣除 1 个查询积分。
 		try {
-			int size=100;
+			int size = 100;
 			ArrayList<String> result = JsonUtils.grepValueFromJson(respbody, "total");
 			if (result.size() >= 1) {
 				int total = Integer.parseInt(result.get(0));
-				if (total > currentPage * size) {//size=100
+				if (total > currentPage * size) {// size=100
 					return true;
 				}
 			}
@@ -82,9 +87,10 @@ public class ShodanClient extends BaseClient {
 			stderr.println("shodan key not configurated!");
 			return null;
 		}
-		//curl -X GET "https://api.shodan.io/shodan/host/search?key=xxxxx&query=product:nginx&facets=country"
-		String url = String.format(
-				"https://api.shodan.io/shodan/host/search?key=%s&query=%s&page=%s",key,searchContent,page);
+		// curl -X GET
+		// "https://api.shodan.io/shodan/host/search?key=xxxxx&query=product:nginx&facets=country"
+		String url = String.format("https://api.shodan.io/shodan/host/search?key=%s&query=%s&page=%s", key,
+				searchContent, page);
 		return url;
 	}
 
