@@ -81,9 +81,13 @@ public class ZoomEyeClient extends BaseClient {
 										entry.setTitle(title);
 									}
 								} catch (Exception e2) {
-									JSONArray titleArray = entryitem.getJSONArray("title_list");
-									if (titleArray != null) {
-										entry.setTitle(titleArray.getString(0));
+									try {
+										JSONArray titleArray = entryitem.getJSONArray("title_list");
+										if (titleArray != null) {
+											entry.setTitle(titleArray.getString(0));
+										}
+									} catch (Exception e3) {
+										e3.printStackTrace();
 									}
 								}
 							}

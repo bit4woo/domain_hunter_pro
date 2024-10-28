@@ -40,7 +40,12 @@ public class QuakeClient extends BaseClient {
 					SearchResultEntry entry = new SearchResultEntry();
 					try {
 						entry.getIPSet().add(entryitem.getString("ip"));
-						entry.setRootDomain(entryitem.getString("domain"));
+						try {
+							//IP的搜索结果可能没有这个字段
+							entry.setRootDomain(entryitem.getString("domain"));
+						} catch (Exception e1) {
+							entry.setRootDomain(entryitem.getString("hostname"));
+						}
 
 						int port = entryitem.getInt("port");
 						entry.setPort(port);
@@ -67,7 +72,12 @@ public class QuakeClient extends BaseClient {
 							entry.setWebcontainer(server);
 							entry.setTitle(title);
 						} else {
-							entry.setHost(entryitem.getString("domain"));
+							try {
+								//IP的搜索结果可能没有这个字段
+								entry.setRootDomain(entryitem.getString("domain"));
+							} catch (Exception e1) {
+								entry.setRootDomain(entryitem.getString("hostname"));
+							}
 						}
 
 						try {
