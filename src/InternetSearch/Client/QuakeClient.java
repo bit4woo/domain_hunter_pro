@@ -74,9 +74,9 @@ public class QuakeClient extends BaseClient {
 						} else {
 							try {
 								//IP的搜索结果可能没有这个字段
-								entry.setRootDomain(entryitem.getString("domain"));
+								entry.setHost(entryitem.getString("domain"));
 							} catch (Exception e1) {
-								entry.setRootDomain(entryitem.getString("hostname"));
+								entry.setHost(entryitem.getString("hostname"));
 							}
 						}
 
