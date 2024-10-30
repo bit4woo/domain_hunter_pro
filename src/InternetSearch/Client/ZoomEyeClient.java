@@ -55,12 +55,17 @@ public class ZoomEyeClient extends BaseClient {
 							}
 						}
 
-						// port
-						int port = entryitem.getJSONObject("portinfo").getInt("port");
-						entry.setPort(port);
-						// protocol
-						String serviceName = entryitem.getJSONObject("portinfo").getString("service");
-						entry.setProtocol(serviceName);
+						try {
+							// port
+							int port = entryitem.getJSONObject("portinfo").getInt("port");
+							entry.setPort(port);
+							// protocol
+							String serviceName = entryitem.getJSONObject("portinfo").getString("service");
+							entry.setProtocol(serviceName);
+						} catch (Exception e4) {
+							//org.json.JSONException: JSONObject["portinfo"] not found.
+							//e4.printStackTrace();
+						}
 
 						// title
 						try {
