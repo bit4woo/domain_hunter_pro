@@ -55,45 +55,60 @@ public class ZoomEyeClient extends BaseClient {
 							}
 						}
 
+						JSONObject portinfo = null;
 						try {
-							// port
-							int port = entryitem.getJSONObject("portinfo").getInt("port");
-							entry.setPort(port);
-							// protocol
-							String serviceName = entryitem.getJSONObject("portinfo").getString("service");
-							entry.setProtocol(serviceName);
-						} catch (Exception e4) {
-							//org.json.JSONException: JSONObject["portinfo"] not found.
-							//e4.printStackTrace();
+							portinfo = entryitem.getJSONObject("portinfo");
+						} catch (Exception e) {
+
+						}
+
+						if (portinfo != null) {
+							try {
+								// port
+								int port = entryitem.getJSONObject("portinfo").getInt("port");
+								entry.setPort(port);
+								// protocol
+								String serviceName = entryitem.getJSONObject("portinfo").getString("service");
+								entry.setProtocol(serviceName);
+							} catch (Exception e4) {
+								// org.json.JSONException: JSONObject["portinfo"] not found.
+								// e4.printStackTrace();
+							}
+
+							// title
+							try {
+								String title = entryitem.getJSONObject("portinfo").getString("title");
+								if (title != null) {
+									entry.setTitle(title);
+								}
+							} catch (Exception e) {
+								try {
+									JSONArray titleArray = entryitem.getJSONObject("portinfo").getJSONArray("title");
+									if (titleArray != null) {
+										entry.setTitle(titleArray.getString(0));
+									}
+								} catch (Exception e1) {
+
+								}
+							}
 						}
 
 						// title
-						try {
-							String title = entryitem.getJSONObject("portinfo").getString("title");
-							if (title != null) {
-								entry.setTitle(title);
-							}
-						} catch (Exception e) {
+						if (StringUtils.isEmpty(entry.getTitle())) {
+
 							try {
-								JSONArray titleArray = entryitem.getJSONObject("portinfo").getJSONArray("title");
-								if (titleArray != null) {
-									entry.setTitle(titleArray.getString(0));
+								String title = entryitem.getString("title");
+								if (title != null) {
+									entry.setTitle(title);
 								}
-							} catch (Exception e1) {
+							} catch (Exception e2) {
 								try {
-									String title = entryitem.getString("title");
-									if (title != null) {
-										entry.setTitle(title);
+									JSONArray titleArray = entryitem.getJSONArray("title_list");
+									if (titleArray != null) {
+										entry.setTitle(titleArray.getString(0));
 									}
-								} catch (Exception e2) {
-									try {
-										JSONArray titleArray = entryitem.getJSONArray("title_list");
-										if (titleArray != null) {
-											entry.setTitle(titleArray.getString(0));
-										}
-									} catch (Exception e3) {
-										e3.printStackTrace();
-									}
+								} catch (Exception e3) {
+									// e3.printStackTrace();
 								}
 							}
 						}
@@ -120,11 +135,15 @@ public class ZoomEyeClient extends BaseClient {
 				}
 				return result;
 			}
-		} catch (Exception e) {
+		} catch (
+
+		Exception e) {
 			e.printStackTrace(stderr);
 		}
+
 		printDebugInfo();
 		return result;
+
 	}
 
 	public static Set<String> getIPSet(JSONObject entryitem) {
