@@ -347,9 +347,9 @@ public class ConfigManager {
 
 				if (item.getProtocol().equalsIgnoreCase("http") && item.getStatuscode()>0) {
 					httpOk = item;
-					if (isRedirectToHttps(item)) {
-						httpOk = null;
-					}
+//					if (isRedirectToHttps(item)) {
+//						httpOk = null;
+//					}
 				}
 			}else {
 				if (item.getProtocol().equalsIgnoreCase("https") && item.getStatuscode()>0) {
@@ -358,9 +358,9 @@ public class ConfigManager {
 
 				if (item.getProtocol().equalsIgnoreCase("http") && item.getStatuscode()>0) {
 					otherPorthttpOk = item;
-					if (isRedirectToHttps(item)) {
-						otherPorthttpOk = null;
-					}
+//					if (isRedirectToHttps(item)) {
+//						otherPorthttpOk = null;
+//					}
 				}
 			}
 		}
