@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -76,7 +77,12 @@ public class QuakeClient extends BaseClient {
 								//IP的搜索结果可能没有这个字段
 								entry.setHost(entryitem.getString("domain"));
 							} catch (Exception e1) {
+								//"hostname": "", 这个字段的值可能为空字符串
 								entry.setHost(entryitem.getString("hostname"));
+							}
+							
+							if (StringUtils.isEmpty(entry.getHost())) {
+								entry.setHost(entryitem.getString("ip"));
 							}
 						}
 
