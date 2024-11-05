@@ -729,6 +729,12 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 				int port = entry.getPort();
 
 				int type = model.assetType(host);
+				
+				if (type == DomainManager.IP_ADDRESS) {
+					//避免网段内IP、内网IP被删除，应该通过网段信息判断
+					continue;
+				}
+				
 				//规则1
 				if (DomainUtils.isValidDomainNoPort(host)) {
 					if ((type == DomainManager.USELESS || type==DomainManager.SIMILAR_DOMAIN)
