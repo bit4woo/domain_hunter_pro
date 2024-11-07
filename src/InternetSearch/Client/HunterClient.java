@@ -31,6 +31,11 @@ public class HunterClient extends BaseClient {
 		try {
 			JSONObject obj = new JSONObject(respbody);
 			int code = obj.getInt("code");
+			if (code == 429) {
+				//{"code":429,"data":null,"message":"请求太多啦，稍后再试试"}
+				return result;
+			}
+			
 			if (code == 200 || code == 40205) {
 				JSONObject data = obj.getJSONObject("data");
 				if (!data.get("arr").toString().equals("null")) {

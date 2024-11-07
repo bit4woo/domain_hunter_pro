@@ -34,6 +34,11 @@ public class QuakeClient extends BaseClient {
 			JSONObject obj = new JSONObject(respbody);
 			// q5000 或者 0
 			String code = obj.get("code") + "";
+			if (code.equals("q3005")) {
+				//{"code":"q3005","message":"调用API过于频繁","data":{},"meta":{}}
+				return result;
+			}
+			
 			if (code.equals("0")) {
 				JSONArray results = obj.getJSONArray("data");
 				for (Object item : results) {
