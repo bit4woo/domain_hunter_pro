@@ -76,7 +76,8 @@ public class TargetDao {
 
 	    String createNewTableSql = genCreateTableSql("TargetTable_new");
 	    
-	    String copyDataSql = "INSERT INTO TargetTable_new (ID, target, type, keyword, ZoneTransfer, comment, useTLD, trustLevel) " +
+	    //org.sqlite.SQLiteException: [SQLITE_CONSTRAINT_UNIQUE] A UNIQUE constraint failed (UNIQUE constraint failed: TargetTable_new.target)
+	    String copyDataSql = "INSERT OR IGNORE INTO TargetTable_new (ID, target, type, keyword, ZoneTransfer, comment, useTLD, trustLevel) " +
 	            "SELECT ID, target, type, keyword, ZoneTransfer, comment, useTLD, " +
 	            "CASE WHEN isBlack = 1 THEN 'NonTarget' ELSE 'Maybe' END as trustLevel " +
 	            "FROM TargetTable";
@@ -111,7 +112,7 @@ public class TargetDao {
 
 	    String createNewTableSql = genCreateTableSql("TargetTable_new");
 	    
-	    String copyDataSql = "INSERT INTO TargetTable_new (ID, target, type, keyword, ZoneTransfer, comment, useTLD, trustLevel) " +
+	    String copyDataSql = "INSERT OR IGNORE INTO TargetTable_new (ID, target, type, keyword, ZoneTransfer, comment, useTLD, trustLevel) " +
 	            "SELECT ID, target, type, keyword, ZoneTransfer, comment, useTLD, trustLevel " +
 	            "FROM TargetTable";
 	    
