@@ -1,6 +1,5 @@
 package dao;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -49,7 +48,7 @@ public class TitleMapper implements RowMapper<LineEntry> {
 				entry.setEntryTags(SetAndStr.toSet(rs.getString("EntryTags")));
 				entry.setIcon_bytes(rs.getBytes("icon_bytes"));
 				entry.setIcon_url(rs.getString("icon_url"));
-			} catch (MalformedURLException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
