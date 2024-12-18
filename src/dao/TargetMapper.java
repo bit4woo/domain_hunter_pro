@@ -43,6 +43,7 @@ public class TargetMapper implements RowMapper<TargetEntry> {
 		}
 		
 		entry.setUseTLD(rs.getBoolean("useTLD"));
+		entry.setSubdomainCount(rs.getInt("subDomainCount"));
 		return entry;
 	}
 }

@@ -92,7 +92,6 @@ public class DomainManager {
 	}
 
 	/**
-	 * 
 	 * @return
 	 */
 	public Set<String> getSubDomainSet() {
@@ -137,10 +136,11 @@ public class DomainManager {
 
 	/**
 	 * 上面没有提供setter函数，由此代替
+	 *
 	 * @param type
 	 * @param content
 	 */
-	public void fillContentByType(TextAreaType type,Set<String> content) {
+	public void fillContentByType(TextAreaType type, Set<String> content) {
 		switch (type) {
 		case SubDomain:
 			//dao.createOrUpdateByType(content, type);
@@ -204,7 +204,7 @@ public class DomainManager {
 		String tmpsummary = String.format("  FileName:%s  Root-domain:%s  Related-domain:%s  Sub-domain:%s  Similar-domain:%s  Email:%s "
 				+ "IPOfSubnet:%s IPOfCert:%s ^_^",
 				filename, targetSum, relatedDomainSet.size(), subDomainSet.size(), similarDomainSet.size(), EmailSet.size(),
-				IPSetOfSubnet.size(),IPSetOfCert.size());
+				IPSetOfSubnet.size(), IPSetOfCert.size());
 		return tmpsummary;
 	}
 
@@ -234,15 +234,16 @@ public class DomainManager {
 
 	/**
 	 * 判断对象是否有变化，作为写入数据库的依据
+	 *
 	 * @return
 	 */
-	public boolean isChanged(){
+	public boolean isChanged() {
 		String status = getSummary();
-		if (!status.equals(summary) && !StringUtils.isEmpty(summary)){
+		if (!status.equals(summary) && !StringUtils.isEmpty(summary)) {
 			summary = getSummary();
 			guiMain.getDomainPanel().getLblSummary().setText(summary);
 			return true;
-		}else {
+		} else {
 			return false;
 		}
 	}
@@ -306,7 +307,7 @@ public class DomainManager {
 		List<String> tmplist = new ArrayList<>();
 		if (fetchTargetModel().assetType(rootDomain) == DomainManager.SUB_DOMAIN) {//判断是否有效rootDomain
 			for (String item : EmailSet) {
-				if (item.endsWith("@"+rootDomain)) {
+				if (item.endsWith("@" + rootDomain)) {
 					tmplist.add(item);
 				}
 			}
@@ -351,7 +352,6 @@ public class DomainManager {
 	}
 
 	/**
-	 *
 	 * 用于判断站点是否是我们的目标范围，原理是根据证书的所有域名中，是否有域名包含了关键词。
 	 * 为了避免漏掉有效目标，只有完全确定非目标的才排除！！！
 	 */
@@ -367,54 +367,59 @@ public class DomainManager {
 		}
 		return false;
 	}
-	
-	public void addToTargetAndSubDomain(String enteredRootDomain, boolean autoSub,String trustLevel,String commentToAdd) {
+
+	public void addToTargetAndSubDomain(String enteredRootDomain, boolean autoSub, String trustLevel, String commentToAdd) {
 		if (enteredRootDomain == null) return;
-		if (guiMain.getDomainPanel().fetchTargetModel().addOrUpdateRowIfValid(new TargetEntry(enteredRootDomain, autoSub,trustLevel,commentToAdd))) {
+		if (guiMain.getDomainPanel().fetchTargetModel().addOrUpdateRowIfValid(new TargetEntry(enteredRootDomain, autoSub, trustLevel, commentToAdd))) {
 			subDomainSet.add(enteredRootDomain);
-		};
+		}
+		;
 	}
-	
+
 	/**
 	 * 添加到目标，并且设置资产可信度级别
+	 *
 	 * @param enteredRootDomain
 	 * @param autoSub
 	 * @param trustLevel
 	 */
-	public void addToTargetAndSubDomain(String enteredRootDomain, boolean autoSub,String trustLevel) {
+	public void addToTargetAndSubDomain(String enteredRootDomain, boolean autoSub, String trustLevel) {
 		if (enteredRootDomain == null) return;
-		if (guiMain.getDomainPanel().fetchTargetModel().addOrUpdateRowIfValid(new TargetEntry(enteredRootDomain, autoSub,trustLevel))) {
+		if (guiMain.getDomainPanel().fetchTargetModel().addOrUpdateRowIfValid(new TargetEntry(enteredRootDomain, autoSub, trustLevel))) {
 			subDomainSet.add(enteredRootDomain);
-		};
+		}
+		;
 	}
 
 	public void addToTargetAndSubDomain(String enteredRootDomain, boolean autoSub) {
 		if (enteredRootDomain == null) return;
 		if (guiMain.getDomainPanel().fetchTargetModel().addOrUpdateRowIfValid(new TargetEntry(enteredRootDomain, autoSub))) {
 			subDomainSet.add(enteredRootDomain);
-		};
+		}
+		;
 	}
 
 	public boolean addTLDToTargetAndSubDomain(String enteredRootDomain) {
 		if (enteredRootDomain == null) return false;
-		String tldDomainToAdd  = guiMain.getDomainPanel().fetchTargetModel().getTLDDomainToAdd(enteredRootDomain);
+		String tldDomainToAdd = guiMain.getDomainPanel().fetchTargetModel().getTLDDomainToAdd(enteredRootDomain);
 		TargetEntry tmp = new TargetEntry(tldDomainToAdd, false);
 		guiMain.getDomainPanel().fetchTargetModel().addOrUpdateRowIfValid(tmp);
 		if (guiMain.getDomainPanel().fetchTargetModel().addOrUpdateRowIfValid(tmp)) {
 			subDomainSet.add(enteredRootDomain);
 			return true;
-		};
+		}
+		;
 		return false;
 	}
 
 	public void addIfValid(Set<String> domains) {
-		for (String domain:domains) {
+		for (String domain : domains) {
 			addIfValid(domain);
 		}
 	}
-	
+
 	public void addIfValid(List<String> domains) {
-		for (String domain:domains) {
+		for (String domain : domains) {
 			addIfValid(domain);
 		}
 	}
@@ -424,9 +429,9 @@ public class DomainManager {
 		List<String> ips = IPAddressUtils.grepIPv4MayPort(domain_or_url);
 		domains.addAll(ips);
 
-		boolean result =false;
+		boolean result = false;
 		for (String item : domains) {
-			if (addIfValidWithRealDomain(item)){
+			if (addIfValidWithRealDomain(item)) {
 				result = true;
 			}
 		}
@@ -443,10 +448,10 @@ public class DomainManager {
 	private boolean addIfValidWithRealDomain(String domain) {
 		int type = fetchTargetModel().assetType(domain);
 
-		if (type !=DomainManager.USELESS && type!= DomainManager.NEED_CONFIRM_IP){
+		if (type != DomainManager.USELESS && type != DomainManager.NEED_CONFIRM_IP) {
 			//BurpExtender.getStdout().println("Target Asset Found: "+domain);
 			//use when debug
-		}else {
+		} else {
 			return false;
 		}
 
@@ -455,30 +460,34 @@ public class DomainManager {
 			//这里的rootDomain不一定是topPrivate。比如 shopeepay.shopee.sg 和shopeepay.shopee.io
 			//这个时候就不能自动取topPrivate。
 			if (addTLDToTargetAndSubDomain(domain)) {
-				BurpExtender.getStdout().println("Target Asset Found: "+domain);
+				BurpExtender.getStdout().println("Target Asset Found: " + domain);
 				return true;
-			};
+			}
+			;
 		} else if (type == DomainManager.SUB_DOMAIN) {//包含手动添加的IP
 			if (subDomainSet.add(domain)) {
-				BurpExtender.getStdout().println("Target Asset Found: "+domain);
+				BurpExtender.getStdout().println("Target Asset Found: " + domain);
 				return true;
 			}//子域名可能来自相关域名和相似域名。
 			//gettitle的逻辑中默认会请求80、443，所以无需再添加不包含端口的记录
 		} else if (type == DomainManager.SIMILAR_DOMAIN) {
 			if (similarDomainSet.add(domain)) {
-				BurpExtender.getStdout().println("Target Asset Found: "+domain);
+				BurpExtender.getStdout().println("Target Asset Found: " + domain);
 				return true;
-			};
+			}
+			;
 		} else if (type == DomainManager.PACKAGE_NAME) {
 			if (PackageNameSet.add(domain)) {
-				BurpExtender.getStdout().println("Target Asset Found: "+domain);
+				BurpExtender.getStdout().println("Target Asset Found: " + domain);
 				return true;
-			};
-		} else if (type == DomainManager.IP_ADDRESS){
+			}
+			;
+		} else if (type == DomainManager.IP_ADDRESS) {
 			if (IPSetOfSubnet.add(domain)) {
-				BurpExtender.getStdout().println("Target Asset Found: "+domain);
+				BurpExtender.getStdout().println("Target Asset Found: " + domain);
 				return true;
-			};
+			}
+			;
 			//不再直接添加收集到但是无法确认所属关系的IP，误报太高
 			//		} else if (type == DomainManager.NEED_CONFIRM_IP){
 			//			SpecialPortTargets.add(domain);
@@ -490,13 +499,13 @@ public class DomainManager {
 
 
 	public void addIfValidEmail(Set<String> emails) {
-		for (String email:emails) {
+		for (String email : emails) {
 			addIfValidEmail(email);
 		}
 	}
 
 	public void addIfValidEmail(List<String> emails) {
-		for (String email:emails) {
+		for (String email : emails) {
 			addIfValidEmail(email);
 		}
 	}
@@ -518,22 +527,22 @@ public class DomainManager {
 		} else if (type == DomainManager.SIMILAR_EMAIL) {//包含手动添加的IP
 			similarEmailSet.add(email);//子域名可能来自相关域名和相似域名。
 			return true;
-		}else{
+		} else {
 			return false;
 		}
 	}
 
 	/**
 	 * 根据规则重新过一遍所有的数据
-	 * 
+	 * <p>
 	 * 1、子域名、相似域名、子网IP、邮箱、相似邮箱、package name 都很好处理。与目标有明确的关联关系
 	 * 2、相关域名、IPofCert都是根据证书信息进行关联的，有点不好处理。
 	 * 相关域名只能在原始数据的基础上做排除，已在子域名中的，就无需存储在相关域名中了
 	 * IPofCert就只能先不做处理，除非能记录器证书信息，或者从title中查询其信息进行判断。
 	 * IPofCert也可以排除已在IPSetOfSubnet中的部分
-	 *
+	 * <p>
 	 * 假如用户手动编辑了target。那么就需要依靠刷新的操作来更新数据。所以单纯靠添加时的处理逻辑是不够的。
-	 * 
+	 * <p>
 	 * 新增的刷新逻辑还可以简化，子域名等无需再次分析。
 	 */
 	public void freshBaseRule() {
@@ -561,7 +570,7 @@ public class DomainManager {
 		IPSetOfCert.removeAll(IPSetOfSubnet);
 
 		//处理Email
-		HashSet<String > tmpEmalis = new HashSet<>();
+		HashSet<String> tmpEmalis = new HashSet<>();
 
 		guiMain.getDomainPanel().collectEmailFromIssue();
 		tmpEmalis.addAll(EmailSet);
@@ -570,8 +579,9 @@ public class DomainManager {
 		EmailSet.clear();
 		similarEmailSet.clear();
 		guiMain.getDomainPanel().getDomainResult().addIfValidEmail(tmpEmalis);
-
-		BurpExtender.getStdout().println("after refresh--> "+getSummary());
+		//刷新子域名数量
+		guiMain.getDomainPanel().getTargetTable().getTargetModel().refreshSubdomainCount();
+		BurpExtender.getStdout().println("after refresh--> " + getSummary());
 	}
 
 	/**
@@ -580,10 +590,10 @@ public class DomainManager {
 	 */
 	public void relatedToRoot() {
 		if (this.autoAddRelatedToRoot) {
-			if (relatedDomainSet.size() >0){
+			if (relatedDomainSet.size() > 0) {
 				HashSet<String> tmpSet = new HashSet<String>(relatedDomainSet);
 				for (String relatedDomain : tmpSet) {
-					try{
+					try {
 						//避免直接引用relatedDomainSet进行循环，由于TargetEntry中有删除操作，会导致'java.util.ConcurrentModificationException'异常
 						if (relatedDomain != null && relatedDomain.contains(".")) {
 							if (fetchTargetModel().isBlack(relatedDomain)) {
@@ -594,7 +604,7 @@ public class DomainManager {
 						} else {
 							System.out.println("error related domain : " + relatedDomain);
 						}
-					}catch (Exception e){
+					} catch (Exception e) {
 						BurpExtender.getStderr().println(relatedDomain);
 						e.printStackTrace(BurpExtender.getStderr());
 					}
@@ -608,7 +618,7 @@ public class DomainManager {
 	 * CopyOnWriteArraySet 用iterator的remove反而会出错
 	 */
 	public void removeMd5Domain() {
-		for (String item:subDomainSet) {
+		for (String item : subDomainSet) {
 			String md5 = isMd5Domain(item);//md5的值加上一个点
 			if (md5.length() == 33) {
 				subDomainSet.remove(item);
@@ -616,7 +626,7 @@ public class DomainManager {
 			}
 		}
 
-		for (String item:similarDomainSet) {
+		for (String item : similarDomainSet) {
 			String md5 = isMd5Domain(item);//md5的值加上一个点
 			if (md5.length() == 33) {
 				similarDomainSet.remove(item);
@@ -641,13 +651,13 @@ public class DomainManager {
 	}
 
 	/**
-	 *  CopyOnWriteArraySet 用iterator的remove反而会出错
+	 * CopyOnWriteArraySet 用iterator的remove反而会出错
 	 */
 	public static void test2() {
 		CopyOnWriteArraySet<String> subDomainSet = new CopyOnWriteArraySet<String>();
 		subDomainSet.add("e53cf27d3dad22ae36aff189d90f0fbf.aaa.com");
 
-		for (String item:subDomainSet) {
+		for (String item : subDomainSet) {
 			String md5 = isMd5Domain(item);//md5的值加上一个点
 			if (md5.length() == 33) {
 				subDomainSet.remove(item);

@@ -450,7 +450,7 @@ public class DomainPanel extends JPanel {
 		stdout.println("Load Domain Panel Data Done, " + domainResult.getSummary());
 
 		listenerIsOn = true;
-		targetTable.getTargetModel().refreshSubdomainCount();
+		//targetTable.getTargetModel().refreshSubdomainCount();
 	}
 
 	/**

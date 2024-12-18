@@ -549,6 +549,7 @@ public class TargetTableModel extends AbstractTableModel {
 	public void refreshSubdomainCount() {
 		for (TargetEntry entry:targetEntries.values()) {
 			entry.countSubdomain(guiMain.getDomainPanel().getDomainResult().getSubDomainSet());
+			guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(entry);
 		}
 		int size = targetEntries.size();
 		if (size>=1) {
