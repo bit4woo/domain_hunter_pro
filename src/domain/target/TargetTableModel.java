@@ -548,8 +548,13 @@ public class TargetTableModel extends AbstractTableModel {
 	
 	public void refreshSubdomainCount() {
 		for (TargetEntry entry:targetEntries.values()) {
+			int oldCount = entry.getSubdomainCount();
 			entry.countSubdomain(guiMain.getDomainPanel().getDomainResult().getSubDomainSet());
-			guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(entry);
+			int newCount = entry.getSubdomainCount();
+			if (oldCount!= newCount) {
+				//减少数据库操作
+				guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(entry);
+			}
 		}
 		int size = targetEntries.size();
 		if (size>=1) {
