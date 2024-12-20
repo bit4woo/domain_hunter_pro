@@ -169,10 +169,18 @@ public class TargetDao {
 	 * 不再使用isBlack字段，由trustLevel字段代替
 	 * @param entry
 	 * @return
+	 * 
+	 * insert or replace 的工作机制:
+		查找匹配主键 或者 唯一约束列 的记录。
+		如果找到匹配记录，则删除这条记录，然后插入新的记录。
+		如果没有匹配记录，则直接插入新的记录。
+		由于删除后再插入的过程会生成新的记录，因此数据实际上是“创建了新的记录”，而不是直接修改现有记录。
 	 */
-	public boolean addOrUpdateTarget(TargetEntry entry) {
+	@Deprecated
+	public boolean addOrUpdateTarget_old(TargetEntry entry) {
 	    String sql = "insert or replace into TargetTable (target, type, keyword, ZoneTransfer, comment, useTLD, trustLevel,subDomainCount)"
-	            + " values(?, ?, ?, ?, ?, ?, ?,?)";
+	            + " values(?, ?, ?, ?, ?, ?, ?,?)" ;
+	   
 
 	    int result = jdbcTemplate.update(sql, entry.getTarget(), entry.getType(), entry.getKeyword(), entry.isZoneTransfer(),
 	            SetAndStr.toStr(entry.getComments()), entry.isUseTLD(), 
@@ -180,6 +188,20 @@ public class TargetDao {
 
 	    return result > 0;
 	}
+	
+	public boolean addOrUpdateTarget(TargetEntry entry) {
+		String sql = "INSERT INTO TargetTable (target, type, keyword, ZoneTransfer, comment, useTLD, trustLevel, subDomainCount)"
+		        + " VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+		        + " ON CONFLICT(target) DO UPDATE SET type = excluded.type, keyword = excluded.keyword, "
+		        + " ZoneTransfer = excluded.ZoneTransfer, comment = excluded.comment, "
+		        + " useTLD = excluded.useTLD, trustLevel = excluded.trustLevel, subDomainCount = excluded.subDomainCount";
+	
+		int result = jdbcTemplate.update(sql, entry.getTarget(), entry.getType(), entry.getKeyword(), entry.isZoneTransfer(),
+		        SetAndStr.toStr(entry.getComments()), entry.isUseTLD(), entry.getTrustLevel(), entry.getSubdomainCount());
+	
+		return result > 0;
+	}
+
 
 	
 	public boolean addOrUpdateTargets(List<TargetEntry> entries){

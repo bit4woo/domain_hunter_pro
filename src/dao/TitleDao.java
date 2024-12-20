@@ -116,8 +116,11 @@ public class TitleDao {
 	 * 写入记录，如果URL存在相同的URL，则覆盖
 	 * @param entry
 	 * @return
+	 * 
+	 * replace 的逻辑不是在原始记录上修改，而是删除旧数据，添加新数据，导致ID变化。即修改后的数据会排到最后。
 	 */
-	public boolean addOrUpdateTitle(LineEntry entry){
+	@Deprecated
+	public boolean addOrUpdateTitle_old(LineEntry entry){
 		String sql = "insert or replace into TitleTable (url,statuscode,contentLength,title,webcontainer,"
 				+ "IPSet,CNAMESet,CertDomainSet,icon_url,icon_bytes,icon_hash,ASNInfo,time,"
 				+ "protocol,host,port,request,response,"
@@ -137,6 +140,54 @@ public class TitleDao {
 		return result > 0;
 	}
 
+	
+	public boolean addOrUpdateTitle(LineEntry entry) {
+	    String sql = "INSERT INTO TitleTable (url, statuscode, contentLength, title, webcontainer, "
+	            + "IPSet, CNAMESet, CertDomainSet, icon_url, icon_bytes, icon_hash, ASNInfo, time, "
+	            + "protocol, host, port, request, response, "
+	            + "CheckStatus, AssetType, EntryType, EntrySource, comments, EntryTags) "
+	            + "VALUES (?, ?, ?, ?, ?, "
+	            + "?, ?, ?, ?, ?, ?, ?, ?, "
+	            + "?, ?, ?, ?, ?, "
+	            + "?, ?, ?, ?, ?, ?) "
+	            + "ON CONFLICT(url) DO UPDATE SET "
+	            + "statuscode = excluded.statuscode, "
+	            + "contentLength = excluded.contentLength, "
+	            + "title = excluded.title, "
+	            + "webcontainer = excluded.webcontainer, "
+	            + "IPSet = excluded.IPSet, "
+	            + "CNAMESet = excluded.CNAMESet, "
+	            + "CertDomainSet = excluded.CertDomainSet, "
+	            + "icon_url = excluded.icon_url, "
+	            + "icon_bytes = excluded.icon_bytes, "
+	            + "icon_hash = excluded.icon_hash, "
+	            + "ASNInfo = excluded.ASNInfo, "
+	            + "time = excluded.time, "
+	            + "protocol = excluded.protocol, "
+	            + "host = excluded.host, "
+	            + "port = excluded.port, "
+	            + "request = excluded.request, "
+	            + "response = excluded.response, "
+	            + "CheckStatus = excluded.CheckStatus, "
+	            + "AssetType = excluded.AssetType, "
+	            + "EntryType = excluded.EntryType, "
+	            + "EntrySource = excluded.EntrySource, "
+	            + "comments = excluded.comments, "
+	            + "EntryTags = excluded.EntryTags";
+
+	    int result = jdbcTemplate.update(sql,
+	            entry.getUrl(), entry.getStatuscode(), entry.getContentLength(), entry.getTitle(), entry.getWebcontainer(),
+	            SetAndStr.toStr(entry.getIPSet()), SetAndStr.toStr(entry.getCNAMESet()),
+	            SetAndStr.toStr(entry.getCertDomainSet()), entry.getIcon_url(), entry.getIcon_bytes(), entry.getIcon_hash(),
+	            entry.getASNInfo(), entry.getTime(),
+	            entry.getProtocol(), entry.getHost(), entry.getPort(), entry.getRequest(), entry.getResponse(),
+	            entry.getCheckStatus(), entry.getAssetType(), entry.getEntryType(), entry.getEntrySource(),
+	            SetAndStr.toStr(entry.getComments()), SetAndStr.toStr(entry.getEntryTags()));
+
+	    return result > 0;
+	}
+
+	
 
 	public boolean addOrUpdateTitles(List<LineEntry> lineEntries){
 		int num = 0;
