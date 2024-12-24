@@ -16,7 +16,8 @@ import com.bit4woo.utilbox.utils.IPAddressUtils;
 import com.bit4woo.utilbox.utils.TextUtils;
 
 import GUI.GUIMain;
-import InternetSearch.SearchPanel;
+import InternetSearch.APISearchAction;
+import InternetSearch.SearchEngine;
 import burp.BurpExtender;
 import config.ConfigManager;
 import config.ConfigName;
@@ -171,7 +172,10 @@ public class TextAreaMenu extends JPopupMenu {
 			public void actionPerformed(ActionEvent actionEvent) {
 				for (String item:selectedItems) {
 					try {
-						SearchPanel.searchAtBackground(item);
+						//逻辑和search按钮一样 InternetSearch.SearchPanel.createButtonPanel()
+
+						APISearchAction.DoSearchAllInOnAtBackGround(null, item, SearchEngine.getAssetSearchEngineList());
+						
 					} catch (Exception e2) {
 						e2.printStackTrace(stderr);
 					}

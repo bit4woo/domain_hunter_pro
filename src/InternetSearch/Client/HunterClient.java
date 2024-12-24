@@ -104,6 +104,10 @@ public class HunterClient extends BaseClient {
 	@Override
 	public String buildSearchUrl(String searchContent, int page) {
 		String key = ConfigManager.getStringConfigByKey(ConfigName.QianxinHunterAPIKey);
+		if (StringUtils.isEmpty(key)) {
+			stderr.println(ConfigName.QianxinHunterAPIKey+" not configurated!");
+			return null;
+		}
 		String domainBase64 = new String(Base64.getEncoder().encode(searchContent.getBytes()));
 		String url = String.format(
 				"https://hunter.qianxin.com/openApi/search?&api-key=%s&search=%s&page=%s&page_size=100", key,

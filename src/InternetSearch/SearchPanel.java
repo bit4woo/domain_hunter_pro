@@ -300,33 +300,6 @@ public class SearchPanel extends JPanel {
 		return result;
 	}
 
-	public static void searchAtBackground(String content) {
-		SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
-			@Override
-			protected Void doInBackground() throws Exception {
-				String searchType = null;
-
-				if (DomainUtils.isValidDomainNoPort(content)) {
-					searchType = SearchType.SubDomain;
-				} else if (IPAddressUtils.isValidIPv4NoPort(content)) {
-					searchType = SearchType.IP;
-				} else {
-					searchType = SearchType.OriginalString;
-				}
-
-				APISearchAction.DoSearchAllInOn(searchType, content, SearchEngine.getAssetSearchEngineList());
-
-				return null;
-			}
-
-			@Override
-			protected void done() {
-
-			}
-		};
-		worker.execute();
-	}
-
 	public JPanel createButtonPanel() {
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
@@ -339,7 +312,7 @@ public class SearchPanel extends JPanel {
 		buttonSearch.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String content = textFieldSearch.getText();
-				searchAtBackground(content);
+				APISearchAction.DoSearchAllInOnAtBackGround(null, content, SearchEngine.getAssetSearchEngineList());
 			}
 		});
 		buttonPanel.add(buttonSearch);
@@ -347,37 +320,25 @@ public class SearchPanel extends JPanel {
 		JButton buttonSearchAs = new JButton("Search As");
 		buttonSearchAs.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
-					@Override
-					protected Void doInBackground() throws Exception {
-						String content = textFieldSearch.getText();
+				String content = textFieldSearch.getText();
 
-						String searchType = SearchType.choseSearchType();
-						switch (searchType) {
-						case SearchType.Email:
-							APISearchAction.DoSearchAllInOn(searchType, content,
-									SearchEngine.getEmailSearchEngineList());
-							break;
-						case SearchType.IconHash:
-							if (UrlUtils.isVaildUrl(content)) {
-								byte[] imageData = WebIcon.getFavicon(content);
-								if (imageData.length > 0) {
-									content = WebIcon.getHash(imageData);
-								}
-							}
-						default:
-							APISearchAction.DoSearchAllInOn(searchType, content,
-									SearchEngine.getAssetSearchEngineList());
+				String searchType = SearchType.choseSearchType();
+				switch (searchType) {
+				case SearchType.Email:
+					APISearchAction.DoSearchAllInOnAtBackGround(searchType, content,
+							SearchEngine.getEmailSearchEngineList());
+					break;
+				case SearchType.IconHash:
+					if (UrlUtils.isVaildUrl(content)) {
+						byte[] imageData = WebIcon.getFavicon(content);
+						if (imageData.length > 0) {
+							content = WebIcon.getHash(imageData);
 						}
-						return null;
 					}
-
-					@Override
-					protected void done() {
-
-					}
-				};
-				worker.execute();
+				default:
+					APISearchAction.DoSearchAllInOnAtBackGround(searchType, content,
+							SearchEngine.getAssetSearchEngineList());
+				}
 			}
 		});
 		buttonPanel.add(buttonSearchAs);

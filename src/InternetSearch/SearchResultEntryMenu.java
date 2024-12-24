@@ -294,7 +294,7 @@ public class SearchResultEntryMenu extends JPopupMenu {
 		this.add(openURLwithBrowserItem);
 		this.add(genPortScanCmd);
 
-
+		//搜索
 		this.addSeparator();
 		SearchEngine.AddSearchMenuItems(this, searchTableModel, modelRows, columnIndex);
 		this.addSeparator();
