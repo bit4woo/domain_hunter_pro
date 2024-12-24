@@ -11,7 +11,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -23,24 +22,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 
-import com.bit4woo.utilbox.utils.SystemUtils;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.bit4woo.utilbox.utils.EmailUtils;
+import com.bit4woo.utilbox.utils.SystemUtils;
 import com.google.common.net.InternetDomainName;
 
 import GUI.GUIMain;
@@ -52,7 +51,6 @@ import burp.IBurpExtenderCallbacks;
 import burp.IHttpRequestResponse;
 import burp.IHttpService;
 import burp.IScanIssue;
-import burp.ProjectMenu;
 import dao.DomainDao;
 import dao.TargetDao;
 import domain.target.TargetControlPanel;
@@ -60,7 +58,6 @@ import domain.target.TargetEntry;
 import domain.target.TargetTable;
 import domain.target.TargetTableModel;
 import thread.ThreadSearhDomain;
-import title.GetTitleMenu;
 
 /*
  *注意，所有直接对DomainObject中数据的修改，都不会触发该tableChanged监听器。
@@ -402,6 +399,23 @@ public class DomainPanel extends JPanel {
 				}
 				if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 1) {//左键双击
 					lblSummary.setText(domainResult.getSummary());
+				}
+				
+				if (SwingUtilities.isRightMouseButton(e) && e.getClickCount() == 1) {//右键双击，复制路径
+					JPopupMenu tmp = new JPopupMenu();
+					JMenuItem copy = new JMenuItem(new AbstractAction("Copy database file path")
+					{
+						@Override
+						public void actionPerformed(ActionEvent actionEvent) {//实质就是save一个空的项目
+							SystemUtils.writeToClipboard(BurpExtender.getDataLoadManager().getCurrentDBFile().toString());
+						}
+					});
+					tmp.add(copy);
+					tmp.show(lblSummary, e.getX(), e.getY());
+				}
+				
+				if (SwingUtilities.isRightMouseButton(e) && e.getClickCount() == 2) {//右键双击，复制路径
+					SystemUtils.writeToClipboard(BurpExtender.getDataLoadManager().getCurrentDBFile().toString());
 				}
 			}
 
