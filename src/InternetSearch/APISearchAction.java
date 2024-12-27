@@ -138,6 +138,7 @@ public class APISearchAction extends AbstractAction {
 		for (ToSearchItem item : toSearch) {
 			// 可能存在，一个搜索结果还未显示，又有另外一次相同内容搜索出现的情况。但是影响不大，就不管了
 			DoSearchAllInOnAtBackGround(item.getSearchType(), item.getSearchContent(), APISearchAction.this.engineList);
+
 		}
 	}
 
@@ -213,6 +214,13 @@ public class APISearchAction extends AbstractAction {
 			}
 		};
 		worker.execute();
+		//"errmsg":"[45012] 请求速度过快"
+		try {
+			Thread.sleep(200);
+		} catch (InterruptedException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 	}
 
 	
