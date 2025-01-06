@@ -69,10 +69,14 @@ public class FoFaClient extends BaseClient {
 	@Override
 	public boolean hasNextPage(String respbody, int currentPage) {
 		// "size":83,"page":1,
+		int maxTotal = 10000;
 		try {
 			ArrayList<String> result = JsonUtils.grepValueFromJson(respbody, "size");
 			if (result.size() >= 1) {
 				int total = Integer.parseInt(result.get(0));
+				if (total >= maxTotal) {
+					total = maxTotal;
+				}
 				if (total > currentPage * 2000) {// size=2000
 					return true;
 				}
