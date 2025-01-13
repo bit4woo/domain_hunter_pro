@@ -38,6 +38,8 @@ public class ConfigManager {
 	public static final String defaultMasscan = "masscan -p0-65535 --rate=5000 {host}";
 	public static final String defaultDirSearch = "python3 dirsearch.py -t 8 --proxy=127.0.0.1:8080 "
 			+ "--random-agent -e * -f -x 400,404,500,502,503,514,550,564 -u {url}";
+	
+	public static final String defaultWhoisQueryCmd = "python3 whois_query.py ";
 	public static final String macDefaultBrowserPath = "/Applications/Firefox.app/Contents/MacOS/firefox";
 	public static final String defaultDirDictPath ="D:\\github\\webdirscan\\dict\\dict.txt";
 
@@ -139,6 +141,7 @@ public class ConfigManager {
 			configList.add(new ConfigEntry(ConfigName.BrowserPath,getBrowserPath(),"",true,true));
 			configList.add(new ConfigEntry(ConfigName.PortScanCmd,defaultNmap,"",true,true));
 			configList.add(new ConfigEntry(ConfigName.DirBruteCmd,defaultDirSearch,"",true,true));
+			configList.add(new ConfigEntry(ConfigName.WhoisQueryCmd,defaultWhoisQueryCmd,"",true,true));
 			configList.add(new ConfigEntry(ConfigName.DirDictPath,defaultDirDictPath,"",true,true));
 			configList.add(new ConfigEntry(ConfigName.ElasticURL,"http://10.12.72.55:9200/","",true,true));
 			configList.add(new ConfigEntry(ConfigName.ElasticUserPass,"elastic:changeme","username and password of elastic API",true,true));

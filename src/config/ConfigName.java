@@ -23,6 +23,7 @@ public class ConfigName {
 	public static final String BrowserPath = "Browser Path";
 	public static final String PortScanCmd = "Port Scan Command";
 	public static final String DirBruteCmd = "Dir Brute Command";
+	public static final String WhoisQueryCmd = "Whois Query Command";
 	public static final String DirDictPath = "Dir Dict Path";
 	public static final String ElasticURL = "Elastic URL";
 	public static final String ElasticUserPass = "Elastic Username Password";
