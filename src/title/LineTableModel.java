@@ -83,6 +83,9 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	public LineTableModel(GUIMain guiMain,List<LineEntry> entries){
 		this(guiMain);
 		for (LineEntry entry:entries) {
+			if (entry == null || entry.getUrl() == null){
+				continue;
+			}
 			lineEntries.put(entry.getUrl(), entry);
 		}
 	}
