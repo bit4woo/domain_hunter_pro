@@ -34,17 +34,16 @@ public class TargetTableModel extends AbstractTableModel {
 	transient PrintWriter stderr;
 	private GUIMain guiMain;
 
-	private static final transient String[] standardTitles = new String[]{
-			"#", "Domain/Subnet", "Keyword", "Comment", "TrustLevel","Count"};
+	private static final transient String[] standardTitles = new String[] { "#", "Domain/Subnet", "Keyword", "Comment",
+			"TrustLevel", "Count" };
 	private static transient List<String> titletList = new ArrayList<>(Arrays.asList(standardTitles));
 
 	private static final transient Logger log = LogManager.getLogger(TargetTableModel.class);
 
-	//为了实现动态表结构
+	// 为了实现动态表结构
 	public static List<String> getTitleList() {
 		return titletList;
 	}
-
 
 	private TargetTableModel(GUIMain guiMain) {
 		this.guiMain = guiMain;
@@ -66,12 +65,12 @@ public class TargetTableModel extends AbstractTableModel {
 		}
 	}
 
-	//getter setter是为了序列化和反序列化
+	// getter setter是为了序列化和反序列化
 	public IndexedHashMap<String, TargetEntry> getTargetEntries() {
 		return targetEntries;
 	}
 
-	//getter setter是为了序列化和反序列化
+	// getter setter是为了序列化和反序列化
 	public void setTargetEntries(IndexedHashMap<String, TargetEntry> targetEntries) {
 		this.targetEntries = targetEntries;
 	}
@@ -95,7 +94,7 @@ public class TargetTableModel extends AbstractTableModel {
 		return new Gson().fromJson(instanceString, TargetTableModel.class);
 	}
 
-	/////////////AbstractTableModel的实现函数////////////////////
+	///////////// AbstractTableModel的实现函数////////////////////
 
 	@Override
 	public int getRowCount() {
@@ -110,10 +109,11 @@ public class TargetTableModel extends AbstractTableModel {
 	@Override
 	public Object getValueAt(int rowIndex, int columnIndex) {
 		if (rowIndex >= targetEntries.size()) {
-			return "xxxxx";//TODO test
+			return "xxxxx";// TODO test
 		}
 		TargetEntry entry = targetEntries.get(rowIndex);
-		if (entry == null) return "";
+		if (entry == null)
+			return "";
 
 		if (columnIndex == titletList.indexOf("#")) {
 			return rowIndex;
@@ -136,7 +136,6 @@ public class TargetTableModel extends AbstractTableModel {
 		return "";
 	}
 
-
 	/**
 	 * 返回可以用于网络搜索引擎进行搜索地字段
 	 *
@@ -157,7 +156,6 @@ public class TargetTableModel extends AbstractTableModel {
 			return new InfoTuple<>(SearchType.SubDomain, value);
 		}
 	}
-
 
 	@Override
 	public void setValueAt(Object value, int row, int col) {
@@ -194,7 +192,7 @@ public class TargetTableModel extends AbstractTableModel {
 		if (columnIndex == titletList.indexOf("Black")) {
 			return boolean.class;
 		} else if (columnIndex == titletList.indexOf("#") || columnIndex == titletList.indexOf("Count")) {
-			return Integer.class;//如果返回int.class排序会有问题，why？
+			return Integer.class;// 如果返回int.class排序会有问题，why？
 		} else {
 			return String.class;
 		}
@@ -202,15 +200,13 @@ public class TargetTableModel extends AbstractTableModel {
 
 	@Override
 	public boolean isCellEditable(int rowIndex, int columnIndex) {
-		if (titletList.get(columnIndex).equals("Comment")
-				|| titletList.get(columnIndex).equals("Keyword")) {//可以编辑comment
+		if (titletList.get(columnIndex).equals("Comment") || titletList.get(columnIndex).equals("Keyword")) {// 可以编辑comment
 			return true;
 		} else {
 			return false;
 		}
 	}
-	/////////////^^^^^AbstractTableModel的实现函数^^^^^////////////////////
-
+	///////////// ^^^^^AbstractTableModel的实现函数^^^^^////////////////////
 
 	/**
 	 * TargetEntry的有效性检查
@@ -243,31 +239,31 @@ public class TargetTableModel extends AbstractTableModel {
 	}
 
 	/**
-	 * 数据的增删查改：新增
-	 * TODO 应该操作数据库
+	 * 数据的增删查改：新增 TODO 应该操作数据库
 	 *
 	 * @param key
 	 * @param entry
 	 */
 	private void addOrUpdateRow(String key, TargetEntry entry) {
 		TargetEntry oldentry = targetEntries.get(key);
-		if (oldentry != null) {//如果有旧的记录，就需要用旧的内容做修改
-			//entry.setBlack(oldentry.isBlack());
+		if (oldentry != null) {// 如果有旧的记录，就需要用旧的内容做修改
+			// entry.setBlack(oldentry.isBlack());
 			if (entry.getTrustLevel().equals(AssetTrustLevel.Maybe)) {
-				//当新记录的类型是maybe，那么它是确信度最低的，使用旧值。否则使用新的值
+				// 当新记录的类型是maybe，那么它是确信度最低的，使用旧值。否则使用新的值
 				entry.setTrustLevel(oldentry.getTrustLevel());
 			}
 			entry.getComments().addAll(oldentry.getComments());
 			entry.setKeyword(oldentry.getKeyword());
+			entry.setSubdomainCount(oldentry.getSubdomainCount());
 		}
 
 		int oldsize = targetEntries.size();
 		targetEntries.put(key, entry);
 		int rowIndex = targetEntries.IndexOfKey(key);
 		int newsize = targetEntries.size();
-		if (oldsize == newsize) {//覆盖修改
+		if (oldsize == newsize) {// 覆盖修改
 			fireTableRowsUpdated(rowIndex, rowIndex);
-		} else {//新增
+		} else {// 新增
 			fireTableRowsInserted(rowIndex, rowIndex);
 		}
 		guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(entry);
@@ -311,7 +307,6 @@ public class TargetTableModel extends AbstractTableModel {
 		addOrUpdateRow(key, entry);
 	}
 
-
 	/**
 	 * 获取数据集的方法
 	 *
@@ -321,19 +316,16 @@ public class TargetTableModel extends AbstractTableModel {
 		return String.join(System.lineSeparator(), targetEntries.keySet());
 	}
 
-
 	/**
-	 * 返回目标集合，包含域名、IP、网段。
-	 * 8.8.6.0/25
-	 * example.com
-	 * 8.8.8.8
+	 * 返回目标集合，包含域名、IP、网段。 8.8.6.0/25 example.com 8.8.8.8
 	 *
 	 * @return
 	 */
 	public Set<String> fetchTargetSet() {
 		Set<String> result = new HashSet<String>();
 		for (TargetEntry entry : targetEntries.values()) {
-			if (!isValid(entry)) continue;
+			if (!isValid(entry))
+				continue;
 			if (!entry.isNotTarget()) {
 				result.add(entry.getTarget());
 			}
@@ -342,15 +334,15 @@ public class TargetTableModel extends AbstractTableModel {
 	}
 
 	/**
-	 * 返回目标集合，只返回域名；不包含IP、网段。
-	 * example.com
+	 * 返回目标集合，只返回域名；不包含IP、网段。 example.com
 	 *
 	 * @return
 	 */
 	public Set<String> fetchTargetDomainSet() {
 		Set<String> result = new HashSet<String>();
 		for (TargetEntry entry : targetEntries.values()) {
-			if (!isValid(entry)) continue;
+			if (!isValid(entry))
+				continue;
 			try {
 				if (!entry.isNotTarget() && entry.getType().equals(TargetEntry.Target_Type_Domain)) {
 					result.add(entry.getTarget());
@@ -362,17 +354,16 @@ public class TargetTableModel extends AbstractTableModel {
 		return result;
 	}
 
-
 	/**
-	 * 返回目标集合，只返回正则格式的域名；不包含IP、网段、和纯文本的域名。
-	 * seller.*.example.*
+	 * 返回目标集合，只返回正则格式的域名；不包含IP、网段、和纯文本的域名。 seller.*.example.*
 	 *
 	 * @return
 	 */
 	public Set<String> fetchTargetWildCardDomainSet() {
 		Set<String> result = new HashSet<String>();
 		for (TargetEntry entry : targetEntries.values()) {
-			if (!isValid(entry)) continue;
+			if (!isValid(entry))
+				continue;
 			try {
 				if (!entry.isNotTarget() && entry.getType().equals(TargetEntry.Target_Type_Wildcard_Domain)) {
 					result.add(entry.getTarget());
@@ -385,9 +376,7 @@ public class TargetTableModel extends AbstractTableModel {
 	}
 
 	/**
-	 * 返回目标中的IP 和 网段 目标。可选择是否将网段转换为IP列表；不包含域名。
-	 * 8.8.6.0/25 ---默认均转换为IP列表
-	 * 8.8.8.8
+	 * 返回目标中的IP 和 网段 目标。可选择是否将网段转换为IP列表；不包含域名。 8.8.6.0/25 ---默认均转换为IP列表 8.8.8.8
 	 *
 	 * @return
 	 */
@@ -396,7 +385,8 @@ public class TargetTableModel extends AbstractTableModel {
 		for (TargetEntry entry : targetEntries.values()) {
 			if (isValid(entry)) {
 				if (!entry.isNotTarget()) {
-					if (entry.getTarget() == null || entry.getType() == null) continue;
+					if (entry.getTarget() == null || entry.getType() == null)
+						continue;
 					if (entry.getType().equals(TargetEntry.Target_Type_Subnet)) {
 						List<String> tmpIPs = IPAddressUtils.toIPList(entry.getTarget());
 						result.addAll(tmpIPs);
@@ -415,7 +405,8 @@ public class TargetTableModel extends AbstractTableModel {
 	private Set<String> fetchTargetBlackDomainSet() {
 		Set<String> result = new HashSet<String>();
 		for (TargetEntry entry : targetEntries.values()) {
-			if (!isValid(entry)) continue;
+			if (!isValid(entry))
+				continue;
 			if (entry.isNotTarget() && entry.getType().equals(TargetEntry.Target_Type_Domain)) {
 				result.add(entry.getTarget());
 			}
@@ -431,7 +422,8 @@ public class TargetTableModel extends AbstractTableModel {
 	public Set<String> fetchBlackIPSet() {
 		Set<String> result = new HashSet<String>();
 		for (TargetEntry entry : targetEntries.values()) {
-			if (!isValid(entry)) continue;
+			if (!isValid(entry))
+				continue;
 			if (entry.isNotTarget()) {
 				if (entry.getType().equals(TargetEntry.Target_Type_Subnet)) {
 					List<String> tmpIPs = IPAddressUtils.toIPList(entry.getTarget());
@@ -445,7 +437,8 @@ public class TargetTableModel extends AbstractTableModel {
 	public Set<String> fetchKeywordSet() {
 		Set<String> result = new HashSet<String>();
 		for (TargetEntry entry : targetEntries.values()) {
-			if (!isValid(entry)) continue;
+			if (!isValid(entry))
+				continue;
 			if (!entry.isNotTarget() && !entry.getKeyword().trim().equals("")) {
 				result.add(entry.getKeyword());
 			}
@@ -463,10 +456,10 @@ public class TargetTableModel extends AbstractTableModel {
 		for (String key : targetEntries.keySet()) {
 			String suffix;
 			try {
-				//InternetDomainName.from(key).publicSuffix() //当不是com、cn等公共的域名结尾时，将返回空。
+				// InternetDomainName.from(key).publicSuffix() //当不是com、cn等公共的域名结尾时，将返回空。
 				suffix = InternetDomainName.from(key).publicSuffix().toString();
 			} catch (Exception e) {
-				suffix = key.split("\\.", 2)[1];//分割成2份
+				suffix = key.split("\\.", 2)[1];// 分割成2份
 			}
 			result.add(suffix);
 		}
@@ -480,19 +473,16 @@ public class TargetTableModel extends AbstractTableModel {
 	}
 
 	/**
-	 * 是否处于黑名单当中;
-	 * 1、target中的域名黑名单、网段黑名单、IP黑名单
-	 * 2、domainResult中的NotTargetIPSet
+	 * 是否处于黑名单当中; 1、target中的域名黑名单、网段黑名单、IP黑名单 2、domainResult中的NotTargetIPSet
 	 *
 	 * @param domain
 	 * @return
 	 */
 	public boolean isBlack(String domain) {
-		if (domain.contains(":")) {//处理带有端口号的域名
+		if (domain.contains(":")) {// 处理带有端口号的域名
 			domain = domain.substring(0, domain.indexOf(":"));
 		}
-		if (!(DomainUtils.isValidDomainNoPort(domain) ||
-				IPAddressUtils.isValidIPv4NoPort(domain))) {
+		if (!(DomainUtils.isValidDomainNoPort(domain) || IPAddressUtils.isValidIPv4NoPort(domain))) {
 			return false;
 		}
 		for (String rootdomain : fetchTargetBlackDomainSet()) {
@@ -545,20 +535,20 @@ public class TargetTableModel extends AbstractTableModel {
 			}
 		}
 	}
-	
+
 	public void refreshSubdomainCount() {
-		for (TargetEntry entry:targetEntries.values()) {
+		for (TargetEntry entry : targetEntries.values()) {
 			int oldCount = entry.getSubdomainCount();
 			entry.countSubdomain(guiMain.getDomainPanel().getDomainResult().getSubDomainSet());
 			int newCount = entry.getSubdomainCount();
-			if (oldCount!= newCount) {
-				//减少数据库操作
+			if (oldCount != newCount) {
+				// 减少数据库操作
 				guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(entry);
 			}
 		}
 		int size = targetEntries.size();
-		if (size>=1) {
-			fireTableRowsUpdated(0,targetEntries.size()-1);
+		if (size >= 1) {
+			fireTableRowsUpdated(0, targetEntries.size() - 1);
 		}
 	}
 
@@ -574,7 +564,7 @@ public class TargetTableModel extends AbstractTableModel {
 		try {
 			domainOrIP = DomainUtils.clearDomainWithoutPort(domainOrIP);
 
-			//格式校验，package那么也是符合域名的正则格式的。
+			// 格式校验，package那么也是符合域名的正则格式的。
 			if (!DomainUtils.isValidDomainNoPort(domainOrIP) && !IPAddressUtils.isValidIPv4NoPort(domainOrIP)) {
 				debugPrint(domainOrIP, DomainManager.USELESS, "Not a valid domain or IP address");
 				return DomainManager.USELESS;
@@ -618,7 +608,8 @@ public class TargetTableModel extends AbstractTableModel {
 
 			for (String keyword : fetchKeywordSet()) {
 				if (!keyword.equals("") && domainOrIP.contains(keyword)) {
-					if (InternetDomainName.from(domainOrIP).hasPublicSuffix()) {//是否是以公开的 .com .cn等结尾的域名。//如果是以比如local结尾的域名，就不会被认可
+					if (InternetDomainName.from(domainOrIP).hasPublicSuffix()) {// 是否是以公开的 .com
+																				// .cn等结尾的域名。//如果是以比如local结尾的域名，就不会被认可
 						debugPrint(domainOrIP, DomainManager.SIMILAR_DOMAIN, "contains keyword " + keyword);
 						return DomainManager.SIMILAR_DOMAIN;
 					}
@@ -631,13 +622,15 @@ public class TargetTableModel extends AbstractTableModel {
 			}
 
 			if (IPAddressUtils.isValidIPv4NoPort(domainOrIP)) {
-				debugPrint(domainOrIP, DomainManager.NEED_CONFIRM_IP, "is a valid IP address, but not in target IP Set");
+				debugPrint(domainOrIP, DomainManager.NEED_CONFIRM_IP,
+						"is a valid IP address, but not in target IP Set");
 				return DomainManager.NEED_CONFIRM_IP;
 			}
 			debugPrint(domainOrIP, DomainManager.USELESS, "not match any rule of targets ");
 			return DomainManager.USELESS;
 		} catch (java.lang.IllegalArgumentException e) {
-			//java.lang.IllegalArgumentException: Not a valid domain name: '-this.state.scroll'
+			// java.lang.IllegalArgumentException: Not a valid domain name:
+			// '-this.state.scroll'
 			BurpExtender.getStderr().println(e.getMessage());
 			debugPrint(domainOrIP, DomainManager.USELESS, "IllegalArgumentException encountered");
 			return DomainManager.USELESS;
@@ -647,7 +640,6 @@ public class TargetTableModel extends AbstractTableModel {
 			return DomainManager.USELESS;
 		}
 	}
-
 
 	public int emailType(String email) {
 
@@ -663,7 +655,6 @@ public class TargetTableModel extends AbstractTableModel {
 		}
 		return DomainManager.USELESS;
 	}
-
 
 	public String getTLDDomainToAdd(String domain) {
 		domain = DomainUtils.clearDomainWithoutPort(domain);
@@ -694,8 +685,8 @@ public class TargetTableModel extends AbstractTableModel {
 	 */
 	public void batchAction(int[] rows, String functionName, Object... params) {
 		List<TargetEntry> result = new ArrayList<>();
-		Arrays.sort(rows); //升序
-		for (int i = rows.length - 1; i >= 0; i--) {//降序删除才能正确删除每个元素
+		Arrays.sort(rows); // 升序
+		for (int i = rows.length - 1; i >= 0; i--) {// 降序删除才能正确删除每个元素
 			TargetEntry entry = targetEntries.get(rows[i]);
 			MethodInvoker.invokeMethod(entry, functionName, params);
 			guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(entry);
@@ -704,23 +695,24 @@ public class TargetTableModel extends AbstractTableModel {
 	}
 
 	public void updateComments(int[] rows, String commentAdd) {
-		//because thread let the delete action not in order, so we must loop in here.
-		//list length and index changed after every remove.the origin index not point to right item any more.
-		Arrays.sort(rows); //升序
-		for (int i = rows.length - 1; i >= 0; i--) {//降序删除才能正确删除每个元素
+		// because thread let the delete action not in order, so we must loop in here.
+		// list length and index changed after every remove.the origin index not point
+		// to right item any more.
+		Arrays.sort(rows); // 升序
+		for (int i = rows.length - 1; i >= 0; i--) {// 降序删除才能正确删除每个元素
 			TargetEntry checked = targetEntries.get(rows[i]);
 			checked.addComment(commentAdd);
 			guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(checked);
 		}
 		fireUpdated(rows);
 	}
-	
-	
+
 	public void removeComments(int[] rows, String commentToRemove) {
-		//because thread let the delete action not in order, so we must loop in here.
-		//list length and index changed after every remove.the origin index not point to right item any more.
-		Arrays.sort(rows); //升序
-		for (int i = rows.length - 1; i >= 0; i--) {//降序删除才能正确删除每个元素
+		// because thread let the delete action not in order, so we must loop in here.
+		// list length and index changed after every remove.the origin index not point
+		// to right item any more.
+		Arrays.sort(rows); // 升序
+		for (int i = rows.length - 1; i >= 0; i--) {// 降序删除才能正确删除每个元素
 			TargetEntry checked = targetEntries.get(rows[i]);
 			checked.getComments().remove(commentToRemove);
 			guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(checked);
@@ -729,8 +721,8 @@ public class TargetTableModel extends AbstractTableModel {
 	}
 
 	public void clearComments(int[] rows) {
-		Arrays.sort(rows); //升序
-		for (int i = rows.length - 1; i >= 0; i--) {//降序删除才能正确删除每个元素
+		Arrays.sort(rows); // 升序
+		for (int i = rows.length - 1; i >= 0; i--) {// 降序删除才能正确删除每个元素
 			TargetEntry checked = targetEntries.get(rows[i]);
 			checked.getComments().clear();
 			guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(checked);
@@ -742,13 +734,13 @@ public class TargetTableModel extends AbstractTableModel {
 		List<int[]> slice = IntArraySlice.slice(rows);
 		for (int[] sli : slice) {
 			System.out.println(Arrays.toString(sli));
-			this.fireTableRowsUpdated(sli[sli.length - 1], sli[0]);//同上，修复更新多个记录时的错误
+			this.fireTableRowsUpdated(sli[sli.length - 1], sli[0]);// 同上，修复更新多个记录时的错误
 		}
 	}
 
 	public void removeRows(int[] rows) {
-		Arrays.sort(rows); //升序
-		for (int i = rows.length - 1; i >= 0; i--) {//降序删除才能正确删除每个元素
+		Arrays.sort(rows); // 升序
+		for (int i = rows.length - 1; i >= 0; i--) {// 降序删除才能正确删除每个元素
 			try {
 				int index = rows[i];
 				TargetEntry checked = targetEntries.get(index);

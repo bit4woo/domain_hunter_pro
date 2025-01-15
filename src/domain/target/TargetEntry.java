@@ -22,25 +22,26 @@ import burp.BurpExtender;
 import domain.DomainManager;
 
 public class TargetEntry {
-	private String target = "";//根域名、网段、或者IP
+	private String target = "";// 根域名、网段、或者IP
 	private String type = "";
 	private String keyword = "";
-	private Set<String> AuthoritativeNameServers = new HashSet<>();//权威服务器
-	private boolean ZoneTransfer = false;//域名对应的权威服务器，是否存在域于传送漏洞
-	private transient boolean isBlack = false;//这个域名是否是黑名单根域名，需要排除的。不再使用这个字段，由trustLevel代替
+	private Set<String> AuthoritativeNameServers = new HashSet<>();// 权威服务器
+	private boolean ZoneTransfer = false;// 域名对应的权威服务器，是否存在域于传送漏洞
+	private transient boolean isBlack = false;// 这个域名是否是黑名单根域名，需要排除的。不再使用这个字段，由trustLevel代替
 	private Set<String> comments = new HashSet<>();
-	private boolean useTLD = true;//TLD= Top-Level Domain,比如 baidu.com为true，*.m.baidu.com为false
+	private boolean useTLD = true;// TLD= Top-Level Domain,比如 baidu.com为true，*.m.baidu.com为false
 	private String trustLevel = AssetTrustLevel.Maybe;
 	private int subdomainCount = 0;
 
 	public static final String Target_Type_Domain = "Domain";
 	public static final String Target_Type_Wildcard_Domain = "WildcardDomain"; //
 	public static final String Target_Type_Subnet = "Subnet";
-	//public static final String Target_Type_IPaddress = "IP";//弃用，target应该是一个范围控制记录，单个IP不适合，直接放入Certain IP集合
+	// public static final String Target_Type_IPaddress =
+	// "IP";//弃用，target应该是一个范围控制记录，单个IP不适合，直接放入Certain IP集合
 
-	private static final String[]  TargetTypeArray = {Target_Type_Domain,Target_Type_Wildcard_Domain,Target_Type_Subnet};
+	private static final String[] TargetTypeArray = { Target_Type_Domain, Target_Type_Wildcard_Domain,
+			Target_Type_Subnet };
 	public static List<String> TargetTypeList = new ArrayList<>(Arrays.asList(TargetTypeArray));
-	
 
 	public static void main(String[] args) {
 		TargetEntry aa = new TargetEntry("www.baidu.com");
@@ -51,43 +52,12 @@ public class TargetEntry {
 
 	}
 
-	public TargetEntry(String input) {
-		this(input,true);
-	}
-	
-	public TargetEntry(String input,boolean autoSub,String trustLevel,String comment) {
-		this(input,autoSub);
-		if (AssetTrustLevel.getLevelList().contains(trustLevel) && !this.trustLevel.equals(AssetTrustLevel.Cloud)) {
-			this.setTrustLevel(trustLevel);
-		}else {
-			//已经有默认初始值了，无需再设置
-		}
-		addComment(comment);
-	}
-	
-	public TargetEntry(String input,boolean autoSub,String trustLevel) {
-		this(input,autoSub);
-		if (AssetTrustLevel.getLevelList().contains(trustLevel)) {
-			this.setTrustLevel(trustLevel);
-		}else {
-			//已经有默认初始值了，无需再设置
-		}
-	}
-	
 	private void autoDetectTrustLevel() {
-		//resources/cloud_service_domain_names.txt
-		String domains = "aliyun.com\r\n"
-				+ "aliyuncs.com\r\n"
-				+ "amazon.com\r\n"
-				+ "amazonaws.com\r\n"
-				+ "huaweicloud.com\r\n"
-				+ "myhuaweicloud.com\r\n"
-				+ "hwclouds-dns.com\r\n"
-				+ "myqcloud.com\r\n"
-				+ "tencent.com\r\n"
-				+ "tencentcloudapi.com\r\n"
-				+ "cloudfront.net";
-		for (String item:domains.split("\r\n")) {
+		// resources/cloud_service_domain_names.txt
+		String domains = "aliyun.com\r\n" + "aliyuncs.com\r\n" + "amazon.com\r\n" + "amazonaws.com\r\n"
+				+ "huaweicloud.com\r\n" + "myhuaweicloud.com\r\n" + "hwclouds-dns.com\r\n" + "myqcloud.com\r\n"
+				+ "tencent.com\r\n" + "tencentcloudapi.com\r\n" + "cloudfront.net";
+		for (String item : domains.split("\r\n")) {
 			if (target.toLowerCase().trim().endsWith(item)) {
 				this.setTrustLevel(AssetTrustLevel.Cloud);
 				break;
@@ -95,12 +65,18 @@ public class TargetEntry {
 		}
 	}
 
-	public TargetEntry(String input,boolean autoSub) {
+	/**
+	 * 默认基础构造函数
+	 * 
+	 * @param input
+	 * @param autoSub
+	 */
+	public TargetEntry(String input, boolean autoSub, String trustLevel, String comment) {
 
 		String domain = DomainUtils.clearDomainWithoutPort(input);
 
-		if (EmailValidator.getInstance().isValid(domain)){
-			domain = domain.substring(domain.indexOf("@")+1);
+		if (EmailValidator.getInstance().isValid(domain)) {
+			domain = domain.substring(domain.indexOf("@") + 1);
 		}
 
 		if (DomainUtils.isValidDomainNoPort(domain)) {
@@ -109,7 +85,7 @@ public class TargetEntry {
 			useTLD = autoSub;
 			if (autoSub) {
 				target = DomainUtils.getRootDomain(domain);
-			}else{
+			} else {
 				target = domain;
 			}
 			keyword = target.substring(0, target.indexOf("."));
@@ -117,28 +93,45 @@ public class TargetEntry {
 			type = Target_Type_Subnet;
 			target = domain;
 		} else if (DomainUtils.isValidWildCardDomain(domain)) {
-			/**需要将它改造为正则表达式，去匹配域名
-			 * seller.*.example.*
-			 * seller.*.example.*
+			/**
+			 * 需要将它改造为正则表达式，去匹配域名 seller.*.example.* seller.*.example.*
 			 */
 			type = Target_Type_Wildcard_Domain;
 			target = domain;
 
-			//先替换*.如果末尾有*自然会被剩下。
+			// 先替换*.如果末尾有*自然会被剩下。
 
-			//final String DOMAIN_NAME_PATTERN = "^((?!-)[A-Za-z0-9-]{1,63}(?<!-)\\.)+[A-Za-z]{2,6}$";
+			// final String DOMAIN_NAME_PATTERN =
+			// "^((?!-)[A-Za-z0-9-]{1,63}(?<!-)\\.)+[A-Za-z]{2,6}$";
 			String domainKeyword = domain;
-			domainKeyword = domainKeyword.replaceAll("\\*","");
-			domainKeyword = domainKeyword.replaceAll("\\.\\.","\\.");
-			if (domainKeyword.indexOf(".") > 0){
+			domainKeyword = domainKeyword.replaceAll("\\*", "");
+			domainKeyword = domainKeyword.replaceAll("\\.\\.", "\\.");
+			if (domainKeyword.indexOf(".") > 0) {
 				keyword = domainKeyword.substring(0, domainKeyword.indexOf("."));
-			}else {
+			} else {
 				keyword = domainKeyword;
 			}
 		}
-		autoDetectTrustLevel();
+
+		if (AssetTrustLevel.getLevelList().contains(trustLevel) && !this.trustLevel.equals(AssetTrustLevel.Cloud)) {
+			this.setTrustLevel(trustLevel);
+		} else {
+			autoDetectTrustLevel();
+		}
+		addComment(comment);
 	}
 
+	public TargetEntry(String input) {
+		this(input, true, "", "");
+	}
+
+	public TargetEntry(String input, boolean autoSub) {
+		this(input, autoSub, "", "");
+	}
+
+	public TargetEntry(String input, boolean autoSub, String trustLevel) {
+		this(input, autoSub, trustLevel, "");
+	}
 
 	public String getTarget() {
 		return target;
@@ -159,6 +152,7 @@ public class TargetEntry {
 	public String getKeyword() {
 		return keyword;
 	}
+
 	public void setKeyword(String keyword) {
 		this.keyword = keyword;
 	}
@@ -174,24 +168,25 @@ public class TargetEntry {
 	public boolean isZoneTransfer() {
 		return ZoneTransfer;
 	}
+
 	public void setZoneTransfer(boolean zoneTransfer) {
 		ZoneTransfer = zoneTransfer;
 	}
-	
+
 	@Deprecated
 	public boolean isBlack() {
 		return isBlack;
 	}
-	
+
 	@Deprecated
 	public void setBlack(boolean isBlack) {
 		this.isBlack = isBlack;
 	}
-	
+
 	public boolean isNotTarget() {
 		return trustLevel.equalsIgnoreCase(AssetTrustLevel.NonTarget);
 	}
-	
+
 	public Set<String> getComments() {
 		return comments;
 	}
@@ -201,7 +196,8 @@ public class TargetEntry {
 	}
 
 	public void addComment(String commentToAdd) {
-		if (StringUtils.isBlank(commentToAdd)) return;
+		if (StringUtils.isBlank(commentToAdd))
+			return;
 		comments.addAll(Arrays.asList(commentToAdd.split(",")));
 	}
 
@@ -215,7 +211,7 @@ public class TargetEntry {
 
 	public String getTrustLevel() {
 		if (isBlack) {
-			//兼容旧版本
+			// 兼容旧版本
 			trustLevel = AssetTrustLevel.NonTarget;
 		}
 		return trustLevel;
@@ -224,11 +220,10 @@ public class TargetEntry {
 	public void setTrustLevel(String trustLevel) {
 		this.trustLevel = trustLevel;
 	}
-	
+
 	public String switchTrustLevel() {
-		return trustLevel =  AssetTrustLevel.getNextLevel(trustLevel);
+		return trustLevel = AssetTrustLevel.getNextLevel(trustLevel);
 	}
-	
 
 	public int getSubdomainCount() {
 		return subdomainCount;
@@ -237,20 +232,19 @@ public class TargetEntry {
 	public void setSubdomainCount(int subdomainCount) {
 		this.subdomainCount = subdomainCount;
 	}
-	
-	
+
 	public void countSubdomain(Set<String> domains) {
 		this.subdomainCount = 0;
 		if (this.type.equals(Target_Type_Domain)) {
-			for (String domain:domains) {
+			for (String domain : domains) {
 				if (domain.endsWith("." + this.target) || domain.equalsIgnoreCase(this.target)) {
 					this.subdomainCount++;
 				}
 			}
 		}
-		
+
 		if (this.type.equals(Target_Type_Wildcard_Domain)) {
-			for (String domain:domains) {
+			for (String domain : domains) {
 				if (DomainUtils.isMatchWildCardDomain(this.target, domain)) {
 					this.subdomainCount++;
 				}
@@ -258,20 +252,21 @@ public class TargetEntry {
 		}
 
 		if (this.type.equals(Target_Type_Subnet)) {
-			this.subdomainCount =IPAddressUtils.toIPList(this.target).size();
+			this.subdomainCount = IPAddressUtils.toIPList(this.target).size();
 		}
 	}
 
 	public void zoneTransferCheck() {
 		String rootDomain = InternetDomainName.from(target).topPrivateDomain().toString();
-		AuthoritativeNameServers = new HashSet<>(DomainUtils.GetAuthServer(rootDomain,null));
-		
+		AuthoritativeNameServers = new HashSet<>(DomainUtils.GetAuthServer(rootDomain, null));
+
 		for (String Server : AuthoritativeNameServers) {
-			//stdout.println("checking [Server: "+Server+" Domain: "+rootDomain+"]");
+			// stdout.println("checking [Server: "+Server+" Domain: "+rootDomain+"]");
 			List<String> Records = DomainUtils.ZoneTransferCheck(rootDomain, Server);
 			if (Records.size() > 0) {
 				try {
-					//stdout.println("!!! "+Server+" is zoneTransfer vulnerable for domain "+rootDomain+" !");
+					// stdout.println("!!! "+Server+" is zoneTransfer vulnerable for domain
+					// "+rootDomain+" !");
 					File file = new File(Server + "-ZoneTransfer-" + Commons.getNowTimeString() + ".txt");
 					file.createNewFile();
 					FileUtils.writeLines(file, Records);
