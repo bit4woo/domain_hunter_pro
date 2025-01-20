@@ -330,7 +330,7 @@ public class SearchPanel extends JPanel {
 					break;
 				case SearchType.IconHash:
 					if (UrlUtils.isVaildUrl(content)) {
-						byte[] imageData = WebIcon.getFavicon(content);
+						byte[] imageData = WebIcon.downloadFavicon(content);
 						if (imageData.length > 0) {
 							content = WebIcon.getHash(imageData);
 						}

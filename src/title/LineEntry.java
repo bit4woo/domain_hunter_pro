@@ -87,7 +87,6 @@ public class LineEntry {
 
 	/**
 	 * 如下是显示界面使用到的字段，部分来自数据包本身，部分需要额外的请求
-	 *
 	 */
 	private String url = "";
 	private int statuscode = -1;
@@ -102,9 +101,9 @@ public class LineEntry {
 	private String icon_url = "";
 	private byte[] icon_bytes = new byte[0];
 	private String icon_hash = "";
-	//关于icon_hash，fofa、zoomeye使用了同一种算法，hunter、quake使用了同一种算法（都是md5）
+	// 关于icon_hash，fofa、zoomeye使用了同一种算法，hunter、quake使用了同一种算法（都是md5）
 	private String ASNInfo = "";
-	private int AsnNum =-1;
+	private int AsnNum = -1;
 	private String time = "";
 	// 如上几个字段需要网络请求或查询
 
@@ -135,7 +134,7 @@ public class LineEntry {
 
 	/**
 	 * 这个构造函数用于发送请求前，LineEntry的构建。 传递一个URL,请求URL，解析数据包。
-	 * 
+	 *
 	 * @param url
 	 */
 	public LineEntry(URL url) {
@@ -144,7 +143,7 @@ public class LineEntry {
 
 	/**
 	 * 用于构造DNS记录
-	 * 
+	 *
 	 * @param host
 	 * @param IPset
 	 * @return
@@ -194,7 +193,7 @@ public class LineEntry {
 
 	/**
 	 * 可以用于从数据库中恢复对象
-	 * 
+	 *
 	 * @param url
 	 * @param request
 	 * @param response
@@ -337,7 +336,7 @@ public class LineEntry {
 
 	/**
 	 * 获取到的URL是包含了默认端口的，因为burp方法的原因
-	 * 
+	 *
 	 * @return
 	 */
 	public String getUrl() {// 为了格式统一，和查找匹配更精确，都包含了默认端口
@@ -350,7 +349,7 @@ public class LineEntry {
 	/**
 	 * 返回通常意义上的URL格式，不包含默认端口。用于搜索
 	 * 不要修改原始url的格式！即都包含默认端口。因为数据库中更新对应记录是以URL为依据的，否则不能成功更新记录。
-	 * 
+	 *
 	 * @return
 	 */
 	public String fetchUrlWithCommonFormate() {
@@ -500,7 +499,8 @@ public class LineEntry {
 
 		if (originalCharSet != null && !originalCharSet.equalsIgnoreCase(systemCharSet)) {
 			try {
-				//System.out.println("正将编码从" + originalCharSet + "转换为" + systemCharSet + "[windows系统编码]");
+				// System.out.println("正将编码从" + originalCharSet + "转换为" + systemCharSet +
+				// "[windows系统编码]");
 				byte[] newResponse = new String(response, originalCharSet).getBytes(systemCharSet);
 				return new String(newResponse, systemCharSet);
 			} catch (UnsupportedEncodingException e) {
@@ -508,14 +508,13 @@ public class LineEntry {
 			} catch (Exception e) {
 				e.printStackTrace(BurpExtender.getStderr());
 				log.error(e);
-				//BurpExtender.getStderr().print("title 编码转换失败");
+				// BurpExtender.getStderr().print("title 编码转换失败");
 			}
 		}
 		return new String(response);
 	}
 
 	/**
-	 * 
 	 * @param response
 	 * @return
 	 */
@@ -540,20 +539,18 @@ public class LineEntry {
 	}
 
 	/**
-	 * 
+	 *
 	 */
 	public void handleFavicon() {
-		if (response == null || statuscode != 200) {
-			icon_url = WebIcon.getFaviconUrl(url, null);
-		} else {
-			String bodyText = covertCharSet(response);
-			icon_url = WebIcon.getFaviconUrl(url, bodyText);
+		String bodyText = null;
+		if (response != null) {
+			bodyText = covertCharSet(response);
 		}
-		if (statuscode>0 && statuscode <500){
-			//只有 web有正常的响应时才考虑请求favicon
-			icon_bytes = WebIcon.getFavicon(icon_url);
+		icon_bytes = WebIcon.getFaviconContent(url, statuscode, bodyText);
+
+		if (icon_bytes != null) {
 			icon_hash = WebIcon.getHash(icon_bytes);
-			icon_bytes = WebIcon.convertIcoToPng(icon_bytes);//存储的是PNG格式的数据，不是原始格式了
+			icon_bytes = WebIcon.convertIcoToPng(icon_bytes);// 存储的是PNG格式的数据，不是原始格式了
 		}
 	}
 
@@ -571,16 +568,16 @@ public class LineEntry {
 	 * 从响应包中提取title <title>Kênh Quản Lý Shop - Phần Mềm Quản Lý Bán Hàng Miễn
 	 * Phí</title> <title ng-bind="service.title">The Evolution of the
 	 * Producer-Consumer Problem in Java - DZone Java</title>
-	 * 
+	 * <p>
 	 * 正则要求： 1、title名称不能区分大小写 TITLE
-	 * 
+	 *
 	 * @param bodyText
 	 * @return
 	 */
 	private static String grepTitle(String bodyText) {
 		String title = "";
 
-		if (!isHtml(bodyText)){
+		if (!isHtml(bodyText)) {
 			return title;
 		}
 
@@ -606,8 +603,8 @@ public class LineEntry {
 		return title;
 	}
 
-	private static boolean isHtml(String bodyText){
-		if (StringUtils.isEmpty(bodyText)){
+	private static boolean isHtml(String bodyText) {
+		if (StringUtils.isEmpty(bodyText)) {
 			return false;
 		}
 

@@ -9,11 +9,12 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
 import javax.imageio.ImageIO;
 
@@ -39,11 +40,11 @@ public class WebIcon {
 
 	/**
 	 * 使用burp的HTTP请求方法
-	 * 
-	 * @param urlStr
+	 *
+	 * @param faviconUrl
 	 * @return
 	 */
-	public static byte[] getFavicon(String faviconUrl) {
+	public static byte[] downloadFavicon(String faviconUrl) {
 		try {
 			URL url = new URL(faviconUrl);
 			// https://www.baidu.com/favicon.ico
@@ -55,8 +56,8 @@ public class WebIcon {
 			HelperPlus getter = BurpExtender.getHelperPlus();
 			int status = getter.getStatusCode(info);
 			String ContentType = getter.getHeaderValueOf(false, info, "Content-Type");
-			if (status == 200 && ContentType != null &&
-					(ContentType.toLowerCase().startsWith("image/") || ContentType.toLowerCase().contains("octet-stream"))) {
+			if (status == 200 && ContentType != null && (ContentType.toLowerCase().startsWith("image/")
+					|| ContentType.toLowerCase().contains("octet-stream"))) {
 				// Content-Type: image/x-icon
 				// Content-Type: binary/octet-stream 有的图片存储在OSS上的
 				byte[] body = HelperPlus.getBody(false, info);// 这里不能使用静态方法。
@@ -68,15 +69,42 @@ public class WebIcon {
 		return new byte[0];
 	}
 
-	public static String getFaviconUrl(String urlStr, String html) {
-		String iconUrl = FaviconExtractor(html);
+	/**
+	 * 给定url和对应的响应包，获得favicon的内容。 可能需要之前网络请求，也可能从body中提取base64内容解码
+	 *
+	 * @return
+	 */
+	public static byte[] getFaviconContent(String url, int statuscode, String resp_body) {
 
+		String extracted = FaviconExtractor(resp_body);
+
+		byte[] icon_bytes = null;
+		if (extracted.startsWith("data:image/x-icon;base64,")) {
+			extracted = extracted.replace("data:image/x-icon;base64,", "");
+			icon_bytes = Base64.getDecoder().decode(extracted);
+		} else {
+			String icon_url = buildFaviconUrl(url, extracted);
+			if (statuscode > 0 && statuscode < 500) {
+				// 只有 web有正常的响应时才考虑请求favicon
+				icon_bytes = WebIcon.downloadFavicon(icon_url);
+			}
+		}
+
+		return icon_bytes;
+	}
+
+	/**
+	 * @param urlStr  原始请求的url
+	 * @param iconUrl 从html中提取的结果
+	 * @return
+	 */
+	public static String buildFaviconUrl(String urlStr, String iconUrl) {
 		String baseUrl = getBaseUrl(urlStr);
 		String parentUrl = urlStr.substring(0, urlStr.lastIndexOf('/') + 1);
 		String protocol = urlStr.substring(0, urlStr.indexOf("//"));
 
 		try {
-			new URL(iconUrl); //本来就是一个单独的URL
+			new URL(iconUrl); // 本来就是一个单独的URL
 			return iconUrl;
 		} catch (MalformedURLException e) {
 
@@ -84,9 +112,9 @@ public class WebIcon {
 
 		if (iconUrl.startsWith("//")) {
 			return protocol + iconUrl;
-		}else if (iconUrl.startsWith("/")) {
+		} else if (iconUrl.startsWith("/")) {
 			return baseUrl + iconUrl;
-		}else {
+		} else {
 			return parentUrl + iconUrl;
 		}
 	}
@@ -95,28 +123,28 @@ public class WebIcon {
 		if (imageData == null) {
 			return "";
 		}
-		if (imageData.length ==0) {
+		if (imageData.length == 0) {
 			return "";
 		}
 		if (new String(imageData).toLowerCase().contains("<html>")) {
 			return "";
 		}
-		return calcHash(imageData) + "|"+calcMd5Hash(imageData);
+		return calcHash(imageData) + "|" + calcMd5Hash(imageData);
 
 	}
 
 	public static String getHash(String urlStr, String html) {
-		String url = getFaviconUrl(urlStr, html);
-		byte[] imageData = getFavicon(url);
+		byte[] imageData = getFaviconContent(urlStr, 200, html);
 		return getHash(imageData);
 	}
 
-	//	<link rel="icon" href="./logo.png">
-	//	<link rel="icon" href="logo.png">
-	//	<link rel="shortcut icon" href="//p3-x.xx.com/obj/xxx/favicon.ico">
-	//	<link rel='icon' href='/favicon.ico' type='image/x-ico'/>
-	//	<link href="/resources/admin-favicon.ico" rel="shortcut icon" type="image/x-ico"/>
-	//	<link href="/resources/admin-favicon.ico" rel="icon" type="image/x-ico"/>
+	// <link rel="icon" href="./logo.png">
+	// <link rel="icon" href="logo.png">
+	// <link rel="shortcut icon" href="//p3-x.xx.com/obj/xxx/favicon.ico">
+	// <link rel='icon' href='/favicon.ico' type='image/x-ico'/>
+	// <link href="/resources/admin-favicon.ico" rel="shortcut icon"
+	// type="image/x-ico"/>
+	// <link href="/resources/admin-favicon.ico" rel="icon" type="image/x-ico"/>
 	public static String FaviconExtractor_old(String html) {
 		String faviconPath = "/favicon.ico"; // 默认值
 
@@ -124,7 +152,7 @@ public class WebIcon {
 			return faviconPath;
 		}
 		String regex = "<link\\s+rel=[\"|\'][shortcut\\s+]*icon[\"|\']\\s+href=[\"|\'](.*?)[\"|\']";
-		//String regex = "icon\"\\s+href=\"(.*?)\">";
+		// String regex = "icon\"\\s+href=\"(.*?)\">";
 		Pattern pattern = Pattern.compile(regex);
 		Matcher matcher = pattern.matcher(html);
 
@@ -135,12 +163,16 @@ public class WebIcon {
 	}
 
 	/**
-		<link rel="icon" href="./logo.png">
-		<link rel="icon" href="logo.png">
-		<link rel="shortcut icon" href="//p3-x.xx.com/obj/xxx/favicon.ico">
-		<link rel='icon' href='/favicon.ico' type='image/x-ico'/>
-		<link href="/resources/admin-favicon.ico" rel="shortcut icon" type="image/x-ico"/>
-		<link href="/resources/admin-favicon.ico" rel="icon" type="image/x-ico"/>
+	 * <link rel="icon" href="./logo.png"> <link rel="icon" href="logo.png">
+	 * <link rel="shortcut icon" href="//p3-x.xx.com/obj/xxx/favicon.ico">
+	 * <link rel='icon' href='/favicon.ico' type='image/x-ico'/>
+	 * <link href="/resources/admin-favicon.ico" rel="shortcut icon" type=
+	 * "image/x-ico"/>
+	 * <link href="/resources/admin-favicon.ico" rel="icon" type="image/x-ico"/>
+	 * 存在一个标签占用多行的情况，也存在href是base64的情况。
+	 * <link rel="icon" href="data:image/x-icon;base64,iVBORw0KGgoAAAANSUhEUgAAAC"
+	 * />
+	 *
 	 * @param html
 	 * @return
 	 */
@@ -152,9 +184,9 @@ public class WebIcon {
 		}
 
 		html = formatHtmlAndGetHead(html);
-		for (String line:html.split("\n|>")){
+		for (String line : html.split("\n|>")) {
 			String line_lower = line.toLowerCase();
-			//System.out.println(line);
+			// System.out.println(line);
 			if (line_lower.contains("<link") && line_lower.contains("rel=") && line_lower.contains("icon")) {
 				String regex = "href=[\"|\'](.*?)[\"|\']";
 				Pattern pattern = Pattern.compile(regex);
@@ -170,7 +202,6 @@ public class WebIcon {
 		}
 		return faviconPath;
 	}
-
 
 	public static String formatHtmlAndGetHead(String unformattedHtml) {
 		String head = "";
@@ -189,7 +220,7 @@ public class WebIcon {
 
 			// 返回<head>元素的内容
 			head = headElement.html();
-			if (head.contains("icon")){
+			if (head.contains("icon")) {
 				return head;
 			}
 		} catch (Exception e) {
@@ -199,7 +230,7 @@ public class WebIcon {
 
 		try {
 			List<String> heads = TextUtils.grepBetween("<head", "</head", unformattedHtml);
-			if (heads.size()>0){
+			if (heads.size() > 0) {
 				head = heads.get(0);
 			}
 		} catch (Exception e) {
@@ -210,7 +241,7 @@ public class WebIcon {
 
 	/**
 	 * 使用非burp方法，这个方法没有的计算结果不对。应该是byte[]和string的转换导致的！
-	 * 
+	 *
 	 * @param urlStr
 	 * @return
 	 */
@@ -252,27 +283,27 @@ public class WebIcon {
 				.asInt();
 		return hashvalue;
 	}
-	
-    public static String calcMd5Hash(byte[] content) {
-        try {
-            // 创建 MD5 哈希对象
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            
-            // 更新哈希内容
-            md.update(content);
-            
-            // 计算哈希值并转换为十六进制字符串
-            byte[] hashBytes = md.digest();
-            StringBuilder hexString = new StringBuilder();
-            for (byte b : hashBytes) {
-                hexString.append(String.format("%02x", b));
-            }
-            
-            return hexString.toString();
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("MD5 algorithm not found", e);
-        }
-    }
+
+	public static String calcMd5Hash(byte[] content) {
+		try {
+			// 创建 MD5 哈希对象
+			MessageDigest md = MessageDigest.getInstance("MD5");
+
+			// 更新哈希内容
+			md.update(content);
+
+			// 计算哈希值并转换为十六进制字符串
+			byte[] hashBytes = md.digest();
+			StringBuilder hexString = new StringBuilder();
+			for (byte b : hashBytes) {
+				hexString.append(String.format("%02x", b));
+			}
+
+			return hexString.toString();
+		} catch (NoSuchAlgorithmException e) {
+			throw new RuntimeException("MD5 algorithm not found", e);
+		}
+	}
 
 	public static byte[] imageToByteArray(String imagePath) throws IOException {
 		File file = new File(imagePath);
@@ -285,7 +316,7 @@ public class WebIcon {
 	}
 
 	public static byte[] convertIcoToPng(byte[] icoBytes) {
-		if (icoBytes == null || icoBytes.length==0) {
+		if (icoBytes == null || icoBytes.length == 0) {
 			return new byte[0];
 		}
 		if (isPNG(icoBytes)) {
@@ -312,7 +343,7 @@ public class WebIcon {
 		byte[] pngSignature = { (byte) 137, 80, 78, 71, 13, 10, 26, 10 };
 
 		if (data.length < 8) {
-			return false;  // 数据长度不足八个字节，无法检测
+			return false; // 数据长度不足八个字节，无法检测
 		}
 
 		for (int i = 0; i < pngSignature.length; i++) {
@@ -326,9 +357,11 @@ public class WebIcon {
 
 	public static void main(String[] args) throws IOException {
 		// System.out.println(getHash("https://www.baidu.com"));
-		//System.out.print(FaviconExtractor("<link rel='icon' href='/xxx-favicon.ico' type='image/x-ico'/>"));
-		byte[] aaa = FileUtils.readFileToByteArray(
-				new File("G:/tmp/baidu.bea6c3bf.png"));
-		System.out.println(calcMd5Hash(aaa));
+//		System.out.print(formatHtmlAndGetHead(FileUtils.readFileToString(new File("G:/tmp/tmp-html.txt"))));
+		System.out.print(FaviconExtractor(FileUtils.readFileToString(new File("G:/tmp/tmp-html.txt"))));
+//		System.out.print(FaviconExtractor("<link rel='icon' href='/xxx-favicon.ico' type='image/x-ico'/>"));
+//		byte[] aaa = FileUtils.readFileToByteArray(
+//				new File("G:/tmp/baidu.bea6c3bf.png"));
+//		System.out.println(calcMd5Hash(aaa));
 	}
 }
