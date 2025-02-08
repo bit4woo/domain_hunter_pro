@@ -719,6 +719,28 @@ public class ToolPanel extends JPanel {
 			}
 		};
 
+		
+		JButton jsHashButton = new BackGroundButton("GetJsHash") {
+			@Override
+			protected void action() {
+				try {
+					ArrayList<String> result = new ArrayList<String>();
+					List<String> urls = SwingUtils.getLinesFromTextArea(inputTextArea);
+					Iterator<String> it = urls.iterator();
+					while (it.hasNext()) {
+						String url = it.next();
+						byte[] body = WebIcon.request(url);
+						String hash = WebIcon.getHash(body);
+						result.add(hash);
+						System.out.println(url + " " + hash);
+					}
+					outputTextArea.setText(String.join(System.lineSeparator(), result));
+				} catch (Exception e1) {
+					outputTextArea.setText(e1.getMessage());
+					e1.printStackTrace(stderr);
+				}
+			}
+		};
 
 		JButton dnsQueryButton = new BackGroundButton("DNS Query") {
 			@Override
@@ -1557,6 +1579,7 @@ public class ToolPanel extends JPanel {
 		buttonPanel.add(btnOpenurls, new bagLayout(++rowIndex, ++cloumnIndex));
 		buttonPanel.add(dnsQueryButton, new bagLayout(rowIndex, ++cloumnIndex));
 		buttonPanel.add(grepChineseButton, new bagLayout(rowIndex, ++cloumnIndex));
+		buttonPanel.add(jsHashButton, new bagLayout(rowIndex, ++cloumnIndex));
 
 		cloumnIndex = 0;
 		buttonPanel.add(btnCertDomains, new bagLayout(++rowIndex, ++cloumnIndex));

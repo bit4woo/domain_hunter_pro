@@ -98,7 +98,8 @@
 		<dependency>
 			<groupId>com.github.bit4woo</groupId>
 			<artifactId>java_utilbox</artifactId>
-			<version>main-SNAPSHOT</version>
+			<!--<version>main-SNAPSHOT</version>-->
+			<version>main-aac44a4f59-1</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/com.alibaba/fastjson -->
 		<dependency>

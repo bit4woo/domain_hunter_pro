@@ -37,6 +37,28 @@ import burp.IHttpService;
 import net.sf.image4j.codec.ico.ICODecoder;
 
 public class WebIcon {
+	
+	
+	public static byte[] request(String faviconUrl) {
+		try {
+			URL url = new URL(faviconUrl);
+			// https://www.baidu.com/favicon.ico
+			IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
+			byte[] requsetbyte = helpers.buildHttpRequest(url);
+			int port = url.getPort() == -1 ? url.getDefaultPort() : url.getPort();
+			IHttpService service = helpers.buildHttpService(url.getHost(), port, url.getProtocol());
+			IHttpRequestResponse info = BurpExtender.getCallbacks().makeHttpRequest(service, requsetbyte);
+			HelperPlus getter = BurpExtender.getHelperPlus();
+			int status = getter.getStatusCode(info);
+			if (status == 200) {
+				byte[] body = HelperPlus.getBody(false, info);// 这里不能使用静态方法。
+				return body;
+			}
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+		return new byte[0];
+	}
 
 	/**
 	 * 使用burp的HTTP请求方法
