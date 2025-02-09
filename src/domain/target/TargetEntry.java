@@ -54,9 +54,17 @@ public class TargetEntry {
 
 	private void autoDetectTrustLevel() {
 		// resources/cloud_service_domain_names.txt
-		String domains = "aliyun.com\r\n" + "aliyuncs.com\r\n" + "amazon.com\r\n" + "amazonaws.com\r\n"
-				+ "huaweicloud.com\r\n" + "myhuaweicloud.com\r\n" + "hwclouds-dns.com\r\n" + "myqcloud.com\r\n"
-				+ "tencent.com\r\n" + "tencentcloudapi.com\r\n" + "cloudfront.net";
+		String domains = "aliyun.com\r\n"
+				+ "aliyuncs.com\r\n"
+				+ "amazon.com\r\n"
+				+ "amazonaws.com\r\n"
+				+ "huaweicloud.com\r\n"
+				+ "myhuaweicloud.com\r\n"
+				+ "hwclouds-dns.com\r\n"
+				+ "myqcloud.com\r\n"
+				+ "tencent.com\r\n"
+				+ "tencentcloudapi.com\r\n"
+				+ "cloudfront.net";
 		for (String item : domains.split("\r\n")) {
 			if (target.toLowerCase().trim().endsWith(item)) {
 				this.setTrustLevel(AssetTrustLevel.Cloud);
