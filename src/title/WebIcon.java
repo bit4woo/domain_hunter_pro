@@ -100,7 +100,7 @@ public class WebIcon {
 
 		String extracted = FaviconExtractor(resp_body);
 
-		byte[] icon_bytes = null;
+		byte[] icon_bytes = new byte[0];
 		if (extracted.startsWith("data:image/x-icon;base64,")) {
 			extracted = extracted.replace("data:image/x-icon;base64,", "");
 			icon_bytes = Base64.getDecoder().decode(extracted);

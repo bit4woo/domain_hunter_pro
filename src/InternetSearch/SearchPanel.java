@@ -31,6 +31,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.bit4woo.utilbox.utils.DomainUtils;
 import com.bit4woo.utilbox.utils.IPAddressUtils;
 import com.bit4woo.utilbox.utils.SystemUtils;
@@ -69,7 +71,7 @@ public class SearchPanel extends JPanel {
 
 			SearchTableModel searchTableModel = new SearchTableModel(null,
 					new ArrayList<SearchResultEntry>(Collections.singletonList(test)));
-			SearchTable searchTable = new SearchTable(null, searchTableModel);
+			SearchTable searchTable = new SearchTable(null, searchTableModel,"searchContent");
 
 			frame.getContentPane().add(searchTable);
 		});
@@ -88,7 +90,7 @@ public class SearchPanel extends JPanel {
 			test.setPort(88);
 			test.setProtocol("https");
 			spanel.addSearchTab("111", new ArrayList<SearchResultEntry>(Collections.singletonList(test)),
-					new ArrayList<String>(Collections.singletonList("xxx")));
+					new ArrayList<String>(Collections.singletonList("xxx")),"SourceTabName");
 		});
 	}
 
@@ -125,20 +127,35 @@ public class SearchPanel extends JPanel {
 		}
 	}
 
-	public void addSearchTab(String tabName, List<SearchResultEntry> entries, List<String> engines) {
+	/**
+	 * 
+	 * @param tabName
+	 * @param entries
+	 * @param engines
+	 * @param sourceTabName 当searchTable中右键搜索时，当前tab就是新建tab的source tab.
+	 */
+	public void addSearchTab(String tabName, List<SearchResultEntry> entries, List<String> engines,String sourceTabName) {
 		JPanel containerpanel = new JPanel();// Tab的最外层容器面板
 		containerpanel.setLayout(new BorderLayout(0, 0));
 
 		SearchTableModel searchTableModel = new SearchTableModel(this.guiMain, entries);
-		SearchTable searchTable = new SearchTable(this.guiMain, searchTableModel);
+		
+		//注意，传递当前搜索结果、和对应的搜索内容（即tabName）
+		SearchTable searchTable = new SearchTable(this.guiMain, searchTableModel,tabName);
 		JScrollPane scrollPane = new JScrollPane(searchTable, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
 				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);// table area
 
 		JLabel status = new JLabel("^_^");
-		status.setText(getStatusInfo(entries, engines));
+		status.setText(getStatusInfo(entries, engines,sourceTabName));
 
 		containerpanel.add(scrollPane, BorderLayout.CENTER);
 		containerpanel.add(status, BorderLayout.SOUTH);
+		
+		//用于存储 当前搜索的来源tab名称
+		if (StringUtils.isEmpty(sourceTabName)) {
+			sourceTabName = "";
+		}
+		containerpanel.putClientProperty("sourceTabName", sourceTabName);
 
 		// 用一个panel实现tab那个小块
 		JPanel tabPanel = new JPanel(new BorderLayout());
@@ -152,6 +169,7 @@ public class SearchPanel extends JPanel {
 		closeButton.addActionListener(new CloseTabListener(centerPanel, containerpanel));
 		tabPanel.add(closeButton, BorderLayout.EAST);
 
+		//centerPanel 是存储多个Tab的外层容器
 		centerPanel.addTab(null, containerpanel);
 		int index = centerPanel.getTabCount() - 1;
 		centerPanel.setTabComponentAt(index, tabPanel);
@@ -179,23 +197,26 @@ public class SearchPanel extends JPanel {
 		});
 	}
 
-	public String getStatusInfo(List<SearchResultEntry> entries, List<String> engines) {
-		Map<String, Integer> status = new HashMap<>();
+	public String getStatusInfo(List<SearchResultEntry> entries, List<String> engines, String sourceTab) {
+		Map<String, String> status = new HashMap<>();
+		
+		status.put("Source",sourceTab);
 		for (String engine : engines) {
-			status.put(engine, 0);
+			status.put(engine, 0+"");
 		}
 		int unknown = 0;
 		for (SearchResultEntry entry : entries) {
 			String source = entry.getSource();
 			if (engines.contains(source)) {
-				int num = status.get(source);
-				status.put(source, num + 1);
+				int num = Integer.parseInt(status.get(source));
+				status.put(source, (num + 1)+"");
 			} else {
 				unknown++;
 			}
 		}
+		
 		if (unknown > 0) {
-			status.put("unknown", unknown);
+			status.put("unknown", unknown+"");
 		}
 
 		return new Gson().toJson(status);
@@ -216,7 +237,11 @@ public class SearchPanel extends JPanel {
 		}
 	}
 
-	// 显示右键菜单
+	/**
+	 *  显示右键菜单
+	 * @param tabbedPane 是存储多个Tab的外层容器
+	 * @param e
+	 */
 	private void showPopupMenu(JTabbedPane tabbedPane, MouseEvent e) {
 		JPopupMenu popupMenu = new JPopupMenu();
 
@@ -229,7 +254,7 @@ public class SearchPanel extends JPanel {
 		closeCurrentTabMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				// 需要先获取tabText，再移除tab，否则会获取失败
-				APISearchAction.searchedContent.remove(getTabTextByIndex(tabIndex));
+				// APISearchAction.searchedContent.remove(getTabTextByIndex(tabIndex));
 				tabbedPane.remove(tabIndex);
 			}
 		});
@@ -239,7 +264,7 @@ public class SearchPanel extends JPanel {
 		JMenuItem closeAllTabsMenuItem = new JMenuItem("Close All Tabs");
 		closeAllTabsMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				APISearchAction.searchedContent.clear();
+				// APISearchAction.searchedContent.clear();
 				tabbedPane.removeAll();
 			}
 		});
@@ -250,7 +275,7 @@ public class SearchPanel extends JPanel {
 		closeTabsToLeftMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				for (int i = tabIndex - 1; i >= 0; i--) {
-					APISearchAction.searchedContent.remove(getTabTextByIndex(i));
+					// APISearchAction.searchedContent.remove(getTabTextByIndex(i));
 					tabbedPane.remove(i);
 				}
 			}
@@ -262,7 +287,7 @@ public class SearchPanel extends JPanel {
 		closeTabsToRightMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				for (int i = tabbedPane.getTabCount() - 1; i > tabIndex; i--) {
-					APISearchAction.searchedContent.remove(getTabTextByIndex(i));
+					// APISearchAction.searchedContent.remove(getTabTextByIndex(i));
 					tabbedPane.remove(i);
 				}
 			}
@@ -273,6 +298,20 @@ public class SearchPanel extends JPanel {
 		copyTabNameMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				SystemUtils.writeToClipboard(getTabTextByIndex(tabIndex));
+			}
+		});
+		popupMenu.add(copyTabNameMenuItem);
+		
+		
+		JMenuItem gotoSourceTabMenuItem = new JMenuItem("Goto Source Tab");
+		copyTabNameMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				//tabbedPane 是存储多个Tab的外层容器，实例就是centerPanel
+				JPanel currentTabPanel = (JPanel)tabbedPane.getTabComponentAt(tabIndex);
+				String soureTabName = (String)currentTabPanel.getClientProperty("sourceTabName");
+				if (StringUtils.isNotEmpty(soureTabName)) {
+					setSelectedTabTitle(tabbedPane,soureTabName);
+				}
 			}
 		});
 		popupMenu.add(copyTabNameMenuItem);
@@ -299,6 +338,16 @@ public class SearchPanel extends JPanel {
 		}
 		return result;
 	}
+	
+	public void setSelectedTabTitle(JTabbedPane tabbedPane, String title) {
+	    for (int i = 0; i < tabbedPane.getTabCount(); i++) {
+	        if (tabbedPane.getTitleAt(i).equals(title)) {
+	            tabbedPane.setSelectedIndex(i);
+	            return;
+	        }
+	    }
+	}
+
 
 	public JPanel createButtonPanel() {
 		JPanel buttonPanel = new JPanel();
@@ -312,7 +361,7 @@ public class SearchPanel extends JPanel {
 		buttonSearch.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String content = textFieldSearch.getText();
-				APISearchAction.DoSearchAllInOnAtBackGround(null, content, SearchEngine.getAssetSearchEngineList());
+				APISearchAction.DoSearchAllInOnAtBackGround(null, content, SearchEngine.getAssetSearchEngineList(),"buttonSearch");
 			}
 		});
 		buttonPanel.add(buttonSearch);
@@ -326,7 +375,7 @@ public class SearchPanel extends JPanel {
 				switch (searchType) {
 				case SearchType.Email:
 					APISearchAction.DoSearchAllInOnAtBackGround(searchType, content,
-							SearchEngine.getEmailSearchEngineList());
+							SearchEngine.getEmailSearchEngineList(),"buttonSearchAs");
 					break;
 				case SearchType.IconHash:
 					if (UrlUtils.isVaildUrl(content)) {
@@ -337,7 +386,7 @@ public class SearchPanel extends JPanel {
 					}
 				default:
 					APISearchAction.DoSearchAllInOnAtBackGround(searchType, content,
-							SearchEngine.getAssetSearchEngineList());
+							SearchEngine.getAssetSearchEngineList(),"buttonSearchAs");
 				}
 			}
 		});

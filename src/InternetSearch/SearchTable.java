@@ -37,6 +37,7 @@ public class SearchTable extends JTable
 	PrintWriter stdout;
 	PrintWriter stderr;
 	GUIMain guiMain;
+	private String searchContent; //当前表是搜索结果，这个表记录对应的搜索内容，即当前表所在tab的tab name
 	public static final List<String> HeadList = SearchTableHead.getTableHeadList();
 
 	public SearchTable(GUIMain guiMain)
@@ -53,10 +54,11 @@ public class SearchTable extends JTable
 		this.guiMain = guiMain;
 	}
 
-	public SearchTable(GUIMain guiMain,SearchTableModel model)
+	public SearchTable(GUIMain guiMain,SearchTableModel model,String searchContent)
 	{
 		this(guiMain);
 		
+		this.setSearchContent(searchContent);
 		//实现点击排序
 		TableRowSorter<SearchTableModel> tableRowSorter = new TableRowSorter<SearchTableModel>(model);
 		setRowSorter(tableRowSorter);
@@ -70,6 +72,14 @@ public class SearchTable extends JTable
 		return (SearchTableModel)getModel();
 	}
 
+
+	public String getSearchContent() {
+		return searchContent;
+	}
+
+	public void setSearchContent(String searchContent) {
+		this.searchContent = searchContent;
+	}
 
 	/**
 	 * 必须在model设置过后调用才有效
@@ -194,7 +204,8 @@ public class SearchTable extends JTable
 						int modelCol = convertColumnIndexToModel(col);
 						if (rows.length>0){
 							int[] modelRows = SelectedRowsToModelRows(rows);
-							new SearchResultEntryMenu(guiMain,SearchTable.this, modelRows, modelCol).show(e.getComponent(), e.getX(), e.getY());
+							String sourceTabName = getSearchContent();
+							new SearchResultEntryMenu(guiMain,SearchTable.this, modelRows, modelCol,sourceTabName).show(e.getComponent(), e.getX(), e.getY());
 						}else{//在table的空白处显示右键菜单
 							//https://stackoverflow.com/questions/8903040/right-click-mouselistener-on-whole-jtable-component
 							//new LineEntryMenu(_this).show(e.getComponent(), e.getX(), e.getY());

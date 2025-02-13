@@ -223,7 +223,7 @@ public class TargetEntryMenu extends JPopupMenu {
 		this.add(changeTrustLevelItem);
 		this.addSeparator();
 
-		SearchEngine.AddSearchMenuItems(this, targetTableModel, modelRows, columnIndex);
+		SearchEngine.AddSearchMenuItems(this, targetTableModel, modelRows, columnIndex,"DomainPanel-TargetEntry");
 
 		this.addSeparator();
 

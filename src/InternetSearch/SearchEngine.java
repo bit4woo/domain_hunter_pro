@@ -312,7 +312,7 @@ public class SearchEngine {
 	}
 
 
-	public static void AddSearchMenuItems(JPopupMenu parentMenu,AbstractTableModel tableModel,int[] modelRows,int columnIndex) {
+	public static void AddSearchMenuItems(JPopupMenu parentMenu,AbstractTableModel tableModel,int[] modelRows,int columnIndex,String sourceTabName) {
 		JMenu BrowserAssetSearchMenu = new JMenu("Asset Search");
 		List<JMenuItem> BrowserAssetSearchItems = new ArrayList<>();
 		for (String engine:SearchEngine.getAssetSearchEngineList()) {//浏览器资产搜索
@@ -332,7 +332,7 @@ public class SearchEngine {
 		JMenu APIAssetSearchMenu = new JMenu("API Asset Search");
 		List<JMenuItem> APIAssetSearchItems = new ArrayList<>();
 		for (String engine:SearchEngine.getAssetSearchEngineList()) {
-			JMenuItem Item = new JMenuItem(new APISearchAction(tableModel,modelRows,columnIndex,engine));
+			JMenuItem Item = new JMenuItem(new APISearchAction(tableModel,modelRows,columnIndex,engine,sourceTabName));
 			APIAssetSearchMenu.add(Item);
 			APIAssetSearchItems.add(Item);
 		}
@@ -343,7 +343,7 @@ public class SearchEngine {
 			JMenuItem item = new JMenuItem(new BrowserSearchAction(tableModel,modelRows,columnIndex,engine));
 			EmailSearchMenu.add(item);
 
-			JMenuItem itemAPI = new JMenuItem(new APISearchAction(tableModel,modelRows,columnIndex,engine));
+			JMenuItem itemAPI = new JMenuItem(new APISearchAction(tableModel,modelRows,columnIndex,engine,sourceTabName));
 			EmailSearchMenu.add(itemAPI);
 		}
 
@@ -367,7 +367,7 @@ public class SearchEngine {
 		JMenuItem APISearchAllItem = new JMenuItem(new AbstractAction("API Asset Search All In One") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				APISearchAction action = new APISearchAction(tableModel, modelRows, columnIndex, SearchEngine.getAssetSearchEngineList());
+				APISearchAction action = new APISearchAction(tableModel, modelRows, columnIndex, SearchEngine.getAssetSearchEngineList(),sourceTabName);
 				action.actionPerformed(actionEvent);
 			}
 		});

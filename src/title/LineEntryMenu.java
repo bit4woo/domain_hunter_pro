@@ -1088,7 +1088,7 @@ public class LineEntryMenu extends JPopupMenu {
 		CopyMenu.add(copyIconhashItem);
 		
 		this.addSeparator();
-		SearchEngine.AddSearchMenuItems(this,lineTableModel,modelRows,columnIndex);
+		SearchEngine.AddSearchMenuItems(this,lineTableModel,modelRows,columnIndex,"TitlePanel-LineEntry");
 		this.add(SearchOnHunterItem);//在插件内搜索
 
 		this.addSeparator();

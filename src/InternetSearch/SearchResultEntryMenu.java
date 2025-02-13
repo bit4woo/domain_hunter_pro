@@ -41,7 +41,7 @@ public class SearchResultEntryMenu extends JPopupMenu {
 	 * @param modelRows
 	 * @param columnIndex
 	 */
-	SearchResultEntryMenu(final GUIMain guiMain, SearchTable searchTable, final int[] modelRows, final int columnIndex) {
+	SearchResultEntryMenu(final GUIMain guiMain, SearchTable searchTable, final int[] modelRows, final int columnIndex,String sourceTabName) {
 		this.guiMain = guiMain;
 		this.searchTable = searchTable;
 		this.searchTableModel = searchTable.getSearchTableModel();
@@ -296,7 +296,7 @@ public class SearchResultEntryMenu extends JPopupMenu {
 
 		//搜索
 		this.addSeparator();
-		SearchEngine.AddSearchMenuItems(this, searchTableModel, modelRows, columnIndex);
+		SearchEngine.AddSearchMenuItems(this, searchTableModel, modelRows, columnIndex,sourceTabName);
 		this.addSeparator();
 
 	}

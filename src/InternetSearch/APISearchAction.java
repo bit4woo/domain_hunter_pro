@@ -45,9 +45,11 @@ public class APISearchAction extends AbstractAction {
 
 	private PrintWriter stdout;
 	private PrintWriter stderr;
+	
+	String sourceTabName;
 
-	// 记录搜索过并且没有关闭的tab
-	public static Set<String> searchedContent = new HashSet<String>();
+	//记录搜索过并且没有关闭的tab。每次从GUI中获取，不再使用这个变量
+	//public static Set<String> searchedContent = new HashSet<String>();
 
 	APISearchAction() {
 		try {
@@ -60,7 +62,7 @@ public class APISearchAction extends AbstractAction {
 	}
 
 	public APISearchAction(AbstractTableModel lineModel, int[] modelRows, int columnIndex, List<String> engineList,
-			boolean autoAddToTarget, boolean showInGUI) {
+			String sourceTabName,boolean autoAddToTarget, boolean showInGUI) {
 		super();
 
 		if (!lineModel.getClass().equals(LineTableModel.class) && !lineModel.getClass().equals(SearchTableModel.class)
@@ -72,6 +74,7 @@ public class APISearchAction extends AbstractAction {
 		this.modelRows = modelRows;
 		this.columnIndex = columnIndex;
 		this.engineList = engineList;
+		this.sourceTabName = sourceTabName;
 		if (engineList.size() == 1) {
 			putValue(Action.NAME, "API Search On " + engineList.get(0).trim());
 		} else {
@@ -80,17 +83,17 @@ public class APISearchAction extends AbstractAction {
 	}
 
 	public APISearchAction(AbstractTableModel lineModel, int[] modelRows, int columnIndex, String engine,
-			boolean autoAddToTarget, boolean showInGUI) {
-		this(lineModel, modelRows, columnIndex, new ArrayList<>(Collections.singletonList(engine)), autoAddToTarget,
+			String sourceTabName,boolean autoAddToTarget, boolean showInGUI) {
+		this(lineModel, modelRows, columnIndex, new ArrayList<>(Collections.singletonList(engine)), sourceTabName,autoAddToTarget,
 				showInGUI);
 	}
 
-	public APISearchAction(AbstractTableModel lineModel, int[] modelRows, int columnIndex, String engine) {
-		this(lineModel, modelRows, columnIndex, engine, false, true);
+	public APISearchAction(AbstractTableModel lineModel, int[] modelRows, int columnIndex, String engine,String sourceTabName) {
+		this(lineModel, modelRows, columnIndex, engine, sourceTabName,false, true);
 	}
 
-	public APISearchAction(AbstractTableModel lineModel, int[] modelRows, int columnIndex, List<String> engineList) {
-		this(lineModel, modelRows, columnIndex, engineList, false, true);
+	public APISearchAction(AbstractTableModel lineModel, int[] modelRows, int columnIndex, List<String> engineList,String sourceTabName) {
+		this(lineModel, modelRows, columnIndex, engineList, sourceTabName, false, true);
 	}
 
 	@Override
@@ -137,7 +140,7 @@ public class APISearchAction extends AbstractAction {
 		// 把耗时操作放在最后。
 		for (ToSearchItem item : toSearch) {
 			// 可能存在，一个搜索结果还未显示，又有另外一次相同内容搜索出现的情况。但是影响不大，就不管了
-			DoSearchAllInOnAtBackGround(item.getSearchType(), item.getSearchContent(), APISearchAction.this.engineList);
+			DoSearchAllInOnAtBackGround(item.getSearchType(), item.getSearchContent(), APISearchAction.this.engineList,this.sourceTabName);
 
 		}
 	}
@@ -172,7 +175,7 @@ public class APISearchAction extends AbstractAction {
 	}
 	
 	
-	public static void DoSearchAllInOnAtBackGround(String search_Type, String content, List<String> engineList) {
+	public static void DoSearchAllInOnAtBackGround(String search_Type, String content, List<String> engineList,String sourceTabName) {
 		
 		String searchType;
 		if (search_Type == null) {
@@ -189,7 +192,11 @@ public class APISearchAction extends AbstractAction {
 		
 		//避免重复搜索的逻辑
 		String tabname = String.format("%s(%s)", searchType, content);
-		if (searchedContent.add(tabname)) {
+		
+		//searchedContent 
+		Set<String> searchedContent = BurpExtender.getGui().getSearchPanel().getAlreadySearchContent();
+		
+		if (searchedContent.contains(tabname)) {
 			// 保证单次操作，不对相同项进行重复搜索
 			System.out.println("begin search " + tabname);
 			BurpExtender.getStdout().println("begin search " + tabname);
@@ -204,7 +211,7 @@ public class APISearchAction extends AbstractAction {
 		SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
 			@Override
 			protected Void doInBackground() throws Exception {
-				DoSearchAllInOn(searchType, content, engineList, true, false);
+				DoSearchAllInOn(searchType, content, engineList, sourceTabName,true, false);
 				return null;
 			}
 
@@ -233,13 +240,13 @@ public class APISearchAction extends AbstractAction {
 	 * @return
 	 */
 	@Deprecated //使用 DoSearchAllInOnAtBackGround() 方法,不要直接调用这个方法
-	private static List<SearchResultEntry> DoSearchAllInOn(String searchType, String content, List<String> engineList) {
-		return DoSearchAllInOn(searchType, content, engineList, true, false);
+	private static List<SearchResultEntry> DoSearchAllInOn(String searchType, String content, List<String> engineList,String sourceTabName) {
+		return DoSearchAllInOn(searchType, content, engineList, sourceTabName, true, false);
 	}
 
 	@Deprecated //使用 DoSearchAllInOnAtBackGround() 方法,不要直接调用这个方法
 	private static List<SearchResultEntry> DoSearchAllInOn(String searchType, String content, List<String> engineList,
-			boolean showInGUI, boolean autoAddToTarget) {
+			String sourceTabName,boolean showInGUI, boolean autoAddToTarget) {
 		if (StringUtils.isEmpty(content) || StringUtils.isEmpty(searchType)) {
 			BurpExtender.getStderr().print("nothing to search...");
 			return null;
@@ -257,7 +264,7 @@ public class APISearchAction extends AbstractAction {
 
 		if (showInGUI) {
 			String tabname = String.format("%s(%s)", searchType, content);
-			BurpExtender.getGui().getSearchPanel().addSearchTab(tabname, entries, engineList);
+			BurpExtender.getGui().getSearchPanel().addSearchTab(tabname, entries, engineList,sourceTabName);
 		}
 
 		// 暂时不启用，之所以要设计图形界面，就是为了加入人为判断。

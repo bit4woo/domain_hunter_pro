@@ -174,7 +174,7 @@ public class TextAreaMenu extends JPopupMenu {
 					try {
 						//逻辑和search按钮一样 InternetSearch.SearchPanel.createButtonPanel()
 
-						APISearchAction.DoSearchAllInOnAtBackGround(null, item, SearchEngine.getAssetSearchEngineList());
+						APISearchAction.DoSearchAllInOnAtBackGround(null, item, SearchEngine.getAssetSearchEngineList(),"ToolPanel-TextArea");
 						
 					} catch (Exception e2) {
 						e2.printStackTrace(stderr);
