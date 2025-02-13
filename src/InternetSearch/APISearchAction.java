@@ -45,11 +45,11 @@ public class APISearchAction extends AbstractAction {
 
 	private PrintWriter stdout;
 	private PrintWriter stderr;
-	
+
 	String sourceTabName;
 
-	//记录搜索过并且没有关闭的tab。每次从GUI中获取，不再使用这个变量
-	//public static Set<String> searchedContent = new HashSet<String>();
+	// 记录搜索过并且没有关闭的tab
+	public static Set<String> searchedContent = new HashSet<String>();
 
 	APISearchAction() {
 		try {
@@ -62,7 +62,7 @@ public class APISearchAction extends AbstractAction {
 	}
 
 	public APISearchAction(AbstractTableModel lineModel, int[] modelRows, int columnIndex, List<String> engineList,
-			String sourceTabName,boolean autoAddToTarget, boolean showInGUI) {
+			String sourceTabName, boolean autoAddToTarget, boolean showInGUI) {
 		super();
 
 		if (!lineModel.getClass().equals(LineTableModel.class) && !lineModel.getClass().equals(SearchTableModel.class)
@@ -83,16 +83,18 @@ public class APISearchAction extends AbstractAction {
 	}
 
 	public APISearchAction(AbstractTableModel lineModel, int[] modelRows, int columnIndex, String engine,
-			String sourceTabName,boolean autoAddToTarget, boolean showInGUI) {
-		this(lineModel, modelRows, columnIndex, new ArrayList<>(Collections.singletonList(engine)), sourceTabName,autoAddToTarget,
-				showInGUI);
+			String sourceTabName, boolean autoAddToTarget, boolean showInGUI) {
+		this(lineModel, modelRows, columnIndex, new ArrayList<>(Collections.singletonList(engine)), sourceTabName,
+				autoAddToTarget, showInGUI);
 	}
 
-	public APISearchAction(AbstractTableModel lineModel, int[] modelRows, int columnIndex, String engine,String sourceTabName) {
-		this(lineModel, modelRows, columnIndex, engine, sourceTabName,false, true);
+	public APISearchAction(AbstractTableModel lineModel, int[] modelRows, int columnIndex, String engine,
+			String sourceTabName) {
+		this(lineModel, modelRows, columnIndex, engine, sourceTabName, false, true);
 	}
 
-	public APISearchAction(AbstractTableModel lineModel, int[] modelRows, int columnIndex, List<String> engineList,String sourceTabName) {
+	public APISearchAction(AbstractTableModel lineModel, int[] modelRows, int columnIndex, List<String> engineList,
+			String sourceTabName) {
 		this(lineModel, modelRows, columnIndex, engineList, sourceTabName, false, true);
 	}
 
@@ -105,8 +107,7 @@ public class APISearchAction extends AbstractAction {
 			String searchContent = null;
 
 			if (lineModel.getClass().equals(LineTableModel.class)) {
-				InfoTuple<String, String> result = ((LineTableModel) lineModel).getSearchTypeAndValue(row,
-						columnIndex);
+				InfoTuple<String, String> result = ((LineTableModel) lineModel).getSearchTypeAndValue(row, columnIndex);
 				searchType = result.first;
 				searchContent = result.second;
 			}
@@ -140,7 +141,8 @@ public class APISearchAction extends AbstractAction {
 		// 把耗时操作放在最后。
 		for (ToSearchItem item : toSearch) {
 			// 可能存在，一个搜索结果还未显示，又有另外一次相同内容搜索出现的情况。但是影响不大，就不管了
-			DoSearchAllInOnAtBackGround(item.getSearchType(), item.getSearchContent(), APISearchAction.this.engineList,this.sourceTabName);
+			DoSearchAllInOnAtBackGround(item.getSearchType(), item.getSearchContent(), APISearchAction.this.engineList,
+					this.sourceTabName);
 
 		}
 	}
@@ -173,10 +175,10 @@ public class APISearchAction extends AbstractAction {
 		// https://api.hunter.io/v2/domain-search?domain=intercom.com
 		return entries;
 	}
-	
-	
-	public static void DoSearchAllInOnAtBackGround(String search_Type, String content, List<String> engineList,String sourceTabName) {
-		
+
+	public static void DoSearchAllInOnAtBackGround(String search_Type, String content, List<String> engineList,
+			String sourceTabName) {
+
 		String searchType;
 		if (search_Type == null) {
 			if (DomainUtils.isValidDomainNoPort(content)) {
@@ -186,32 +188,35 @@ public class APISearchAction extends AbstractAction {
 			} else {
 				searchType = SearchType.OriginalString;
 			}
-		}else {
+		} else {
 			searchType = search_Type;
 		}
-		
-		//避免重复搜索的逻辑
+
+		// 避免重复搜索的逻辑
 		String tabname = String.format("%s(%s)", searchType, content);
-		
-		//searchedContent 
-		Set<String> searchedContent = BurpExtender.getGui().getSearchPanel().getAlreadySearchContent();
-		
+
+		// 这个方法在多线程中不行
+		// Set<String> searchedContent =
+		// BurpExtender.getGui().getSearchPanel().getAlreadySearchContent();
+		BurpExtender.getStdout().println(searchedContent);
+
 		if (searchedContent.contains(tabname)) {
-			// 保证单次操作，不对相同项进行重复搜索
-			System.out.println("begin search " + tabname);
-			BurpExtender.getStdout().println("begin search " + tabname);
-		} else {
 			System.out.println("skip search " + tabname);
 			BurpExtender.getStdout().println("skip search " + tabname);
 			// skip后，重新将tab的颜色改回来，以便提示这个tab被再次搜索了
 			BurpExtender.getGui().getSearchPanel().changeTabColor(tabname, Color.WHITE);
 			return;
+		} else {
+			// 保证单次操作，不对相同项进行重复搜索
+			System.out.println("begin search " + tabname);
+			searchedContent.add(tabname);
+			BurpExtender.getStdout().println("begin search " + tabname);
 		}
-		
+
 		SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
 			@Override
 			protected Void doInBackground() throws Exception {
-				DoSearchAllInOn(searchType, content, engineList, sourceTabName,true, false);
+				DoSearchAllInOn(searchType, content, engineList, sourceTabName, true, false);
 				return null;
 			}
 
@@ -221,7 +226,7 @@ public class APISearchAction extends AbstractAction {
 			}
 		};
 		worker.execute();
-		//"errmsg":"[45012] 请求速度过快"
+		// "errmsg":"[45012] 请求速度过快"
 		try {
 			Thread.sleep(200);
 		} catch (InterruptedException e1) {
@@ -230,7 +235,6 @@ public class APISearchAction extends AbstractAction {
 		}
 	}
 
-	
 	/**
 	 * 多个搜索引擎 进行同类型搜索时使用，比如都搜索子域名
 	 *
@@ -239,19 +243,20 @@ public class APISearchAction extends AbstractAction {
 	 * @param engineList
 	 * @return
 	 */
-	@Deprecated //使用 DoSearchAllInOnAtBackGround() 方法,不要直接调用这个方法
-	private static List<SearchResultEntry> DoSearchAllInOn(String searchType, String content, List<String> engineList,String sourceTabName) {
+	@Deprecated // 使用 DoSearchAllInOnAtBackGround() 方法,不要直接调用这个方法
+	private static List<SearchResultEntry> DoSearchAllInOn(String searchType, String content, List<String> engineList,
+			String sourceTabName) {
 		return DoSearchAllInOn(searchType, content, engineList, sourceTabName, true, false);
 	}
 
-	@Deprecated //使用 DoSearchAllInOnAtBackGround() 方法,不要直接调用这个方法
+	@Deprecated // 使用 DoSearchAllInOnAtBackGround() 方法,不要直接调用这个方法
 	private static List<SearchResultEntry> DoSearchAllInOn(String searchType, String content, List<String> engineList,
-			String sourceTabName,boolean showInGUI, boolean autoAddToTarget) {
+			String sourceTabName, boolean showInGUI, boolean autoAddToTarget) {
 		if (StringUtils.isEmpty(content) || StringUtils.isEmpty(searchType)) {
 			BurpExtender.getStderr().print("nothing to search...");
 			return null;
 		}
-		
+
 		List<SearchResultEntry> entries = new ArrayList<>();
 
 		for (String engine : engineList) {
@@ -264,7 +269,7 @@ public class APISearchAction extends AbstractAction {
 
 		if (showInGUI) {
 			String tabname = String.format("%s(%s)", searchType, content);
-			BurpExtender.getGui().getSearchPanel().addSearchTab(tabname, entries, engineList,sourceTabName);
+			BurpExtender.getGui().getSearchPanel().addSearchTab(tabname, entries, engineList, sourceTabName);
 		}
 
 		// 暂时不启用，之所以要设计图形界面，就是为了加入人为判断。
