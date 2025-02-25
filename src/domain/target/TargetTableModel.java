@@ -35,7 +35,7 @@ public class TargetTableModel extends AbstractTableModel {
 	private GUIMain guiMain;
 
 	private static final transient String[] standardTitles = new String[] { "#", "Domain/Subnet", "Keyword", "Comment",
-			"TrustLevel", "Count" };
+			"TrustLevel", "Count","DigDone" };
 	private static transient List<String> titletList = new ArrayList<>(Arrays.asList(standardTitles));
 
 	private static final transient Logger log = LogManager.getLogger(TargetTableModel.class);
@@ -133,6 +133,9 @@ public class TargetTableModel extends AbstractTableModel {
 		if (columnIndex == titletList.indexOf("Count")) {
 			return entry.getSubdomainCount();
 		}
+		if (columnIndex == titletList.indexOf("DigDone")) {
+			return entry.isDigDone();
+		}
 		return "";
 	}
 
@@ -175,6 +178,12 @@ public class TargetTableModel extends AbstractTableModel {
 			entry.setTrustLevel((String) value);
 			fireTableCellUpdated(row, col);
 		}
+		
+		if (col == titletList.indexOf("DigDone")) {
+			entry.setDigDone((Boolean) value);
+			fireTableCellUpdated(row, col);
+		}
+		
 		guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(entry);
 	}
 
@@ -189,7 +198,7 @@ public class TargetTableModel extends AbstractTableModel {
 
 	@Override
 	public Class<?> getColumnClass(int columnIndex) {
-		if (columnIndex == titletList.indexOf("Black")) {
+		if (columnIndex == titletList.indexOf("Black") || columnIndex == titletList.indexOf("DigDone")) {
 			return boolean.class;
 		} else if (columnIndex == titletList.indexOf("#") || columnIndex == titletList.indexOf("Count")) {
 			return Integer.class;// 如果返回int.class排序会有问题，why？

@@ -32,6 +32,7 @@ public class TargetEntry {
 	private boolean useTLD = true;// TLD= Top-Level Domain,比如 baidu.com为true，*.m.baidu.com为false
 	private String trustLevel = AssetTrustLevel.Maybe;
 	private int subdomainCount = 0;
+	private boolean digDone = false;
 
 	public static final String Target_Type_Domain = "Domain";
 	public static final String Target_Type_Wildcard_Domain = "WildcardDomain"; //
@@ -207,6 +208,7 @@ public class TargetEntry {
 		if (StringUtils.isBlank(commentToAdd))
 			return;
 		comments.addAll(Arrays.asList(commentToAdd.split(",")));
+		comments.remove("");
 	}
 
 	public boolean isUseTLD() {
@@ -239,6 +241,14 @@ public class TargetEntry {
 
 	public void setSubdomainCount(int subdomainCount) {
 		this.subdomainCount = subdomainCount;
+	}
+
+	public boolean isDigDone() {
+		return digDone;
+	}
+
+	public void setDigDone(boolean digDone) {
+		this.digDone = digDone;
 	}
 
 	public void countSubdomain(Set<String> domains) {

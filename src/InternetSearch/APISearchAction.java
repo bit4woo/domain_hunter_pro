@@ -198,7 +198,7 @@ public class APISearchAction extends AbstractAction {
 		// 这个方法在多线程中不行
 		// Set<String> searchedContent =
 		// BurpExtender.getGui().getSearchPanel().getAlreadySearchContent();
-		BurpExtender.getStdout().println(searchedContent);
+		// BurpExtender.getStdout().println(searchedContent);
 
 		if (searchedContent.contains(tabname)) {
 			System.out.println("skip search " + tabname);

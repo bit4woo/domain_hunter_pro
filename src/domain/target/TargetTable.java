@@ -112,6 +112,9 @@ public class TargetTable extends JTable {
 						} catch (Exception e1) {
 							e1.printStackTrace(stderr);
 						}
+					}else if (modelCol == TargetTableModel.getTitleList().indexOf("DigDone")) {
+						selecteEntry.setDigDone(!selecteEntry.isDigDone());
+						getTargetModel().fireTableRowsUpdated(rows[0], rows[0]);
 					}
 				}
 

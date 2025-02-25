@@ -307,7 +307,7 @@ public class DomainPanel extends JPanel {
 		////////////////Body的左边部分，对应sitemap的位置，存放目标规则//////////////
 		JSplitPane TargetPane = new JSplitPane();//中间的大模块，一分为二
 		TargetPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
-		TargetPane.setResizeWeight(1);
+		TargetPane.setResizeWeight(1); //这调整的是table 和下面按钮的占比
 		this.add(TargetPane, BorderLayout.WEST);
 
 		JScrollPane PanelWest1 = new JScrollPane();
