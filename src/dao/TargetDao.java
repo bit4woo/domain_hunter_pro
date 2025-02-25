@@ -1,7 +1,6 @@
 package dao;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,7 +9,6 @@ import javax.sql.DataSource;
 
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
 
 import base.IndexedHashMap;
 import base.SetAndStr;
@@ -160,15 +158,15 @@ public class TargetDao {
 	}
 
 	public boolean addOrUpdateTarget(TargetEntry entry) {
-		String sql = "INSERT INTO TargetTable (target, type, keyword, ZoneTransfer, comment, useTLD, trustLevel, subDomainCount)"
-				+ " VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+		String sql = "INSERT INTO TargetTable (target, type, keyword, ZoneTransfer, comment, useTLD, trustLevel, subDomainCount,digDone)"
+				+ " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
 				+ " ON CONFLICT(target) DO UPDATE SET type = excluded.type, keyword = excluded.keyword, "
 				+ " ZoneTransfer = excluded.ZoneTransfer, comment = excluded.comment, "
-				+ " useTLD = excluded.useTLD, trustLevel = excluded.trustLevel, subDomainCount = excluded.subDomainCount";
+				+ " useTLD = excluded.useTLD, trustLevel = excluded.trustLevel, subDomainCount = excluded.subDomainCount, digDone=excluded.digDone";
 
 		int result = jdbcTemplate.update(sql, entry.getTarget(), entry.getType(), entry.getKeyword(),
 				entry.isZoneTransfer(), SetAndStr.toStr(entry.getComments()), entry.isUseTLD(), entry.getTrustLevel(),
-				entry.getSubdomainCount());
+				entry.getSubdomainCount(),entry.isDigDone());
 
 		return result > 0;
 	}
