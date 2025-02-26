@@ -693,15 +693,32 @@ public class TargetTableModel extends AbstractTableModel {
 	 * @param params
 	 */
 	public void batchAction(int[] rows, String functionName, Object... params) {
-		List<TargetEntry> result = new ArrayList<>();
 		Arrays.sort(rows); // 升序
+
+		// 解决 Boolean 变成 boolean.class 没有成功
+		Object[] fixedParams = Arrays.stream(params)
+				.map(param -> (param instanceof Boolean) ? ((Boolean) param).booleanValue() : param)
+				.toArray();
+
+
 		for (int i = rows.length - 1; i >= 0; i--) {// 降序删除才能正确删除每个元素
 			TargetEntry entry = targetEntries.get(rows[i]);
-			MethodInvoker.invokeMethod(entry, functionName, params);
+			MethodInvoker.invokeMethod(entry, functionName, fixedParams);
 			guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(entry);
 		}
 		fireUpdated(rows);
 	}
+	
+	public void updateDigDone(int[] rows, boolean digDone) {
+		Arrays.sort(rows); // 升序
+		for (int i = rows.length - 1; i >= 0; i--) {// 降序删除才能正确删除每个元素
+			TargetEntry checked = targetEntries.get(rows[i]);
+			checked.setDigDone(digDone);
+			guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(checked);
+		}
+		fireUpdated(rows);
+	}
+	
 
 	public void updateComments(int[] rows, String commentAdd) {
 		// because thread let the delete action not in order, so we must loop in here.

@@ -151,6 +151,11 @@ public class QuakeClient extends BaseClient {
 	@Override
 	public byte[] buildRawData(String searchContent, int page) {
 		String key = ConfigManager.getStringConfigByKey(ConfigName.Quake360APIKey);
+		if (StringUtils.isEmpty(key)) {
+			stderr.println("quake.360.net API key not configurated!");
+			return null;
+		}
+		
 		int size = 500;
 		int start = size * (page - 1);
 		String body;

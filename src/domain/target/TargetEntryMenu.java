@@ -210,6 +210,8 @@ public class TargetEntryMenu extends JPopupMenu {
 		JMenu changeTrustLevelItem = new JMenu("Change TrustLevel To");
 		addSubItem(changeTrustLevelItem, modelRows);
 
+		JMenu changeDigStatusItem = new JMenu("Change DigDone Status To");
+		addBooleanSubItem(changeDigStatusItem, modelRows);
 
 		this.add(itemNumber);
 		this.add(getSubDomainsOf);
@@ -221,6 +223,7 @@ public class TargetEntryMenu extends JPopupMenu {
 		this.add(batchClearCommentsItem);
 		this.add(addToBlackItem);
 		this.add(changeTrustLevelItem);
+		this.add(changeDigStatusItem);
 		this.addSeparator();
 
 		SearchEngine.AddSearchMenuItems(this, targetTableModel, modelRows, columnIndex,"DomainPanel-TargetEntry");
@@ -248,5 +251,17 @@ public class TargetEntryMenu extends JPopupMenu {
 		}
 	}
 
-	;
+	public void addBooleanSubItem(JMenu parent, int[] modelRows) {
+	    boolean[] levelList = {true, false};
+	    for (boolean level : levelList) {
+	        JMenuItem item = new JMenuItem(level+"");
+	        item.addActionListener(e -> {
+	            boolean value = e.getActionCommand().equalsIgnoreCase("true");
+	            rootDomainTable.getTargetModel().updateDigDone(modelRows,  value);
+	        });
+
+	        parent.add(item);
+	    }
+	}
+
 }

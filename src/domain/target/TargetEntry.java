@@ -197,18 +197,25 @@ public class TargetEntry {
 	}
 
 	public Set<String> getComments() {
+		comments = Commons.removeAllEmpty(comments);
 		return comments;
 	}
 
 	public void setComments(Set<String> comments) {
+		comments = Commons.removeAllEmpty(comments);
 		this.comments = comments;
 	}
 
 	public void addComment(String commentToAdd) {
 		if (StringUtils.isBlank(commentToAdd))
 			return;
-		comments.addAll(Arrays.asList(commentToAdd.split(",")));
-		comments.remove("");
+		for (String item:commentToAdd.split(",")) {
+			if (StringUtils.isBlank(item)) {
+				continue;
+			}else {
+				comments.add(item);
+			}
+		}
 	}
 
 	public boolean isUseTLD() {
