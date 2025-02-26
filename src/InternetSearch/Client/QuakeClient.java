@@ -144,6 +144,12 @@ public class QuakeClient extends BaseClient {
 
 	@Override
 	public String buildSearchUrl(String searchContent, int page) {
+		String key = ConfigManager.getStringConfigByKey(ConfigName.Quake360APIKey);
+		if (StringUtils.isEmpty(key)) {
+			stderr.println("quake.360.net API key not configurated!");
+			return null;
+		}
+		
 		// https://quake.360.net/quake/#/help?id=5e774244cb9954d2f8a0165a&title=%E6%9C%8D%E5%8A%A1%E6%95%B0%E6%8D%AE%E6%8E%A5%E5%8F%A3
 		return "https://quake.360.net/api/v3/search/quake_service";
 	}
@@ -151,10 +157,6 @@ public class QuakeClient extends BaseClient {
 	@Override
 	public byte[] buildRawData(String searchContent, int page) {
 		String key = ConfigManager.getStringConfigByKey(ConfigName.Quake360APIKey);
-		if (StringUtils.isEmpty(key)) {
-			stderr.println("quake.360.net API key not configurated!");
-			return null;
-		}
 		
 		int size = 500;
 		int start = size * (page - 1);
