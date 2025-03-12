@@ -9,6 +9,7 @@ import java.net.URI;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 import javax.swing.AbstractAction;
@@ -333,11 +334,30 @@ public class TextAreaMenu extends JPopupMenu {
 				}
 			}
 		});
+		
+		JMenuItem genPortScanAllCmd = new JMenuItem(new AbstractAction("Copy Port Scan Cmd(All IP Domain)") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try{
+					
+					List<String> items = domainPanel.getDomainResult().fetchAllItemsToScan();
+					
+					String nmapPath = ConfigManager.getStringConfigByKey(ConfigName.PortScanCmd);
+					PortScanUtils.genCmdAndCopy(nmapPath, items);
+				}
+				catch (Exception e1)
+				{
+					e1.printStackTrace(stderr);
+				}
+			}
+		});
 
 		this.add(addTosubdomain);
 		this.addSeparator();
 		//对选中内容起作用的菜单
 		this.add(genPortScanCmd);
+		this.add(genPortScanAllCmd);
+		
 		this.add(whoisItem);
 		this.add(ASNInfoItem);
 		this.add(googleSearchItem);

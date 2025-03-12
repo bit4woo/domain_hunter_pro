@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.alibaba.fastjson.JSON;
 import com.bit4woo.utilbox.utils.DomainUtils;
 import com.bit4woo.utilbox.utils.IPAddressUtils;
+import com.bit4woo.utilbox.utils.TextUtils;
 import com.google.common.net.InternetDomainName;
 
 import GUI.GUIMain;
@@ -352,6 +353,28 @@ public class DomainManager {
 		Collections.sort(tmplist);
 		return String.join(System.lineSeparator(), tmplist);
 	}
+	
+	public List<String> fetchAllItemsToScan() {
+		List<String> tmplist = new ArrayList<>();
+		
+		List<String> domains = DomainUtils.grepDomainNoPort(String.join("\n", subDomainSet));
+		
+		List<String> ip_set1 = IPAddressUtils.grepIPv4NoPort(String.join("\n", SpecialPortTargets));
+		
+		List<String> ip_set2 = IPAddressUtils.grepIPv4NoPort(String.join("\n", IPSetOfCert));
+		
+		List<String> ip_set3 = IPAddressUtils.toIPList(new ArrayList<>(IPSetOfSubnet));
+		
+		tmplist.addAll(domains);
+		tmplist.addAll(ip_set1);
+		tmplist.addAll(ip_set2);
+		tmplist.addAll(ip_set3);
+		
+		Collections.sort(tmplist);
+		tmplist = TextUtils.deduplicate(tmplist);
+		return tmplist;
+	}
+	
 
 	/**
 	 * 用于判断站点是否是我们的目标范围，原理是根据证书的所有域名中，是否有域名包含了关键词。 为了避免漏掉有效目标，只有完全确定非目标的才排除！！！
