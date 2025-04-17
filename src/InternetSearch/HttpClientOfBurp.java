@@ -37,7 +37,7 @@ public class HttpClientOfBurp {
 	}
 
 	public static String doRequest(URL url) {
-		return doRequest(url,null);
+		return doRequest(url,null,"");
 	}
 
 	/**
@@ -46,7 +46,7 @@ public class HttpClientOfBurp {
 	 * @param byteRequest
 	 * @return response body
 	 */
-	public static String doRequest(URL url,byte[] byteRequest) {
+	public static String doRequest(URL url,byte[] byteRequest,String comment) {
 		IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
 		IExtensionHelpers helpers = callbacks.getHelpers();
 		if (byteRequest == null) {
@@ -65,7 +65,8 @@ public class HttpClientOfBurp {
 			try {
 				//将debug请求存储到title中
 				LineEntry entry = new LineEntry(message);
-				entry.addComment("AssetInfo:"+Commons.TimeToString(new Date().getTime()));
+				entry.addComment(comment);
+				//entry.addComment("AssetInfo:"+Commons.TimeToString(new Date().getTime()));
 				BurpExtender.getGui().getTitlePanel().getTitleTable().getLineTableModel().addNewLineEntryWithTime(entry);
 			} catch (Exception e) {
 				e.printStackTrace();
