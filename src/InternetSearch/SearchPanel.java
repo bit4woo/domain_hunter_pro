@@ -328,12 +328,14 @@ public class SearchPanel extends JPanel {
 				String soureTabName = (String) currentTabHeaderPanel.getClientProperty("sourceTabName");
 				
 				String tabName = getTabTextByIndex(tabIndex);
+				//移除当前tab
+				tabbedPane.remove(tabIndex);
+				
 				String searchType = tabName.split("(")[0];
 				String searchContent = tabName.split("(")[1].split(")")[0];
 				APISearchAction.DoSearchAllInOnAtBackGround(searchType, searchContent, SearchEngine.getAssetSearchEngineList(),
 						soureTabName);
-				//移除当前tab
-				tabbedPane.remove(tabIndex);
+				
 			}
 		});
 		popupMenu.add(searchAgainMenuItem);
