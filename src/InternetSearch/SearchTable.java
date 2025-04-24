@@ -167,10 +167,11 @@ public class SearchTable extends JTable
 								List<String> protocols = TextUtils.textToLines("http\r\n"
 										+ "https\r\n"
 										+ "ftp\r\n"
+										+ "ssh\r\n"
 										+ "sftp");
 								if (!protocols.contains(protocol)) {
 									url = url.substring(url.indexOf("://"));
-									url = "http://"+url;
+									url = "http"+url;
 								}
 							}else {
 								url = "http://"+url;//针对DNS记录中URL字段是host的情况
