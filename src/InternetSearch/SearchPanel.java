@@ -318,24 +318,23 @@ public class SearchPanel extends JPanel {
 			}
 		});
 		popupMenu.add(gotoSourceTabMenuItem);
-		
-		
+
 		JMenuItem searchAgainMenuItem = new JMenuItem("Search Again");
 		searchAgainMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				// tabbedPane 是存储多个Tab的外层容器，实例就是centerPanel
 				JPanel currentTabHeaderPanel = (JPanel) tabbedPane.getTabComponentAt(tabIndex);
 				String soureTabName = (String) currentTabHeaderPanel.getClientProperty("sourceTabName");
-				
+
 				String tabName = getTabTextByIndex(tabIndex);
-				//移除当前tab
+				// 移除当前tab
 				tabbedPane.remove(tabIndex);
-				
-				String searchType = tabName.split("(")[0];
-				String searchContent = tabName.split("(")[1].split(")")[0];
-				APISearchAction.DoSearchAllInOnAtBackGround(searchType, searchContent, SearchEngine.getAssetSearchEngineList(),
-						soureTabName);
-				
+
+				String searchType = tabName.split("\\(")[0];
+				String searchContent = tabName.split("\\(")[1].split("\\)")[0];
+				APISearchAction.DoSearchAllInOnAtBackGround(searchType, searchContent,
+						SearchEngine.getAssetSearchEngineList(), soureTabName);
+
 			}
 		});
 		popupMenu.add(searchAgainMenuItem);
