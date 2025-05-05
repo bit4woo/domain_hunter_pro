@@ -328,6 +328,7 @@ public class SearchPanel extends JPanel {
 
 				String tabName = getTabTextByIndex(tabIndex);
 				// 移除当前tab
+				APISearchAction.searchedContent.remove(getTabTextByIndex(tabIndex));
 				tabbedPane.remove(tabIndex);
 
 				String searchType = tabName.split("\\(")[0];
