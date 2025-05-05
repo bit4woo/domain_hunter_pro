@@ -264,6 +264,7 @@ public class TargetTableModel extends AbstractTableModel {
 			entry.getComments().addAll(oldentry.getComments());
 			entry.setKeyword(oldentry.getKeyword());
 			entry.setSubdomainCount(oldentry.getSubdomainCount());
+			entry.setDigDone(oldentry.isDigDone());
 		}
 
 		int oldsize = targetEntries.size();
