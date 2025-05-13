@@ -592,19 +592,16 @@ public class TargetTableModel extends AbstractTableModel {
 					debugPrint(domainOrIP, DomainManager.SUB_DOMAIN, "sub-domain of " + rootdomain);
 					return DomainManager.SUB_DOMAIN;
 				}
+				
+				if (DomainUtils.isWhiteListTLD(domainOrIP, rootdomain)) {
+					debugPrint(domainOrIP, DomainManager.TLD_DOMAIN, "TLD-domain of " + rootdomain);
+					return DomainManager.TLD_DOMAIN;
+				}
 			}
 
 			if (fetchTargetIPSet().contains(domainOrIP)) {
 				debugPrint(domainOrIP, DomainManager.IP_ADDRESS, "target IP set contains it");
 				return DomainManager.IP_ADDRESS;
-			}
-
-			for (String rootdomain : targetDomains) {
-				rootdomain = DomainUtils.clearDomainWithoutPort(rootdomain);
-				if (DomainUtils.isWhiteListTLD(domainOrIP, rootdomain)) {
-					debugPrint(domainOrIP, DomainManager.TLD_DOMAIN, "TLD-domain of " + rootdomain);
-					return DomainManager.TLD_DOMAIN;
-				}
 			}
 
 			Set<String> targetWildCardDomains = fetchTargetWildCardDomainSet();

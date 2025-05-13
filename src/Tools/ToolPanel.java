@@ -62,6 +62,7 @@ import config.ConfigManager;
 import config.ConfigName;
 import domain.CertInfo;
 import title.WebIcon;
+import utils.DecoderUtil;
 
 /**
  * 所有配置的修改，界面的操作，都立即写入LineConfig对象，如有必要保存到磁盘，再调用一次SaveConfig函数，思路要清晰
@@ -258,6 +259,8 @@ public class ToolPanel extends JPanel {
 				String content = inputTextArea.getText();
 				//stdout.println(content);
 				if (null != content) {
+					content = DecoderUtil.decodeHtmlAndUrl(content);
+					content = DecoderUtil.decodeJava(content);
 					List<String> domains = DomainUtils.grepDomainAndPort(content);
 					Collections.sort(domains, new DomainComparator());
 					outputTextArea.setText(String.join(System.lineSeparator(), domains));
