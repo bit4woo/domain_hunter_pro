@@ -173,7 +173,8 @@ public class ConfigManager {
 			configList.add(new ConfigEntry(ConfigName.removeItemIfIgnored,"true","",true,true));
 			configList.add(new ConfigEntry(ConfigName.SaveTrafficToElastic,"false","",true,true));
 			configList.add(new ConfigEntry(ConfigName.ApiReqToTitle,"true","",true,true));
-
+			
+			configList.add(new ConfigEntry(ConfigName.SkipSearchWafCdnIP,"true","",true,true));
 		} catch (Exception e) {
 			throw e;
 		}

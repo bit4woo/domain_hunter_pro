@@ -128,7 +128,7 @@ public class ConfigPanel extends JPanel{
 		loadConfig.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				JFileChooser fc=new JFileChooser(ConfigManager.localdir);
-				MyFileFilter filter = new MyFileFilter("config"); //文件后缀过滤器  
+				MyFileFilter filter = new MyFileFilter("json"); //文件后缀过滤器  
 				fc.addChoosableFileFilter(filter);
 				fc.setFileFilter(filter);
 				fc.setDialogTitle("Chose Config File");

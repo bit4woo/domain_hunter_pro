@@ -22,6 +22,7 @@ import base.Commons;
 import burp.BurpExtender;
 import burp.IHttpRequestResponse;
 import burp.ProjectMenu;
+import config.ConfigJScrollPane;
 import config.ConfigManager;
 import config.ConfigName;
 import config.ConfigPanel;
@@ -39,8 +40,10 @@ public class GUIMain extends JFrame {
 	private DomainPanel domainPanel;
 	private TitlePanel titlePanel;
 	private ToolPanel toolPanel;
-	private ConfigPanel configPanel;
+	//private ConfigPanel configPanel;
+	private ConfigJScrollPane configJScrollPane;
 	private SearchPanel searchPanel;
+	
 
 	private final JTabbedPane tabbedWrapper;
 
@@ -61,6 +64,7 @@ public class GUIMain extends JFrame {
 
 	// 记录是否需要显示右键菜单
 	final boolean[] showPopup = {false};
+	
 
 	public DomainPanel getDomainPanel() {
 		return domainPanel;
@@ -86,13 +90,13 @@ public class GUIMain extends JFrame {
 		this.toolPanel = toolPanel;
 	}
 
-	public ConfigPanel getConfigPanel() {
-		return configPanel;
-	}
-
-	public void setConfigPanel(ConfigPanel configPanel) {
-		this.configPanel = configPanel;
-	}
+//	public ConfigPanel getConfigPanel() {
+//		return configPanel;
+//	}
+//
+//	public void setConfigPanel(ConfigPanel configPanel) {
+//		this.configPanel = configPanel;
+//	}
 
 	public SearchPanel getSearchPanel() {
 		return searchPanel;
@@ -171,13 +175,13 @@ public class GUIMain extends JFrame {
 		domainPanel = new DomainPanel(this);
 		titlePanel = new TitlePanel(this);
 		toolPanel = new ToolPanel(this);
-		configPanel = new ConfigPanel(this);
+		configJScrollPane = new ConfigJScrollPane(this);
 		searchPanel = new SearchPanel(this);
 		tabbedWrapper.addTab("Domains", null, domainPanel, null);
 		tabbedWrapper.addTab("Titles", null, titlePanel, null);
 		tabbedWrapper.addTab("Search", null, searchPanel, null);
 		tabbedWrapper.addTab("Tools", null, toolPanel, null);
-		tabbedWrapper.addTab("Config", null, configPanel, null);
+		tabbedWrapper.addTab("Config", null, configJScrollPane, null);
 
 		projectMenu = new ProjectMenu(this);
 
@@ -189,8 +193,8 @@ public class GUIMain extends JFrame {
 		if (index != -1) { // 如果找到了索引
 			tabbedWrapper.removeTabAt(index); // 移除该标签页
 		}
-		configPanel = new ConfigPanel(this);
-		tabbedWrapper.addTab("Config", null, configPanel, null);
+		configJScrollPane = new ConfigJScrollPane(this);
+		tabbedWrapper.addTab("Config", null, configJScrollPane, null);
 		tabbedWrapper.repaint();
 	}
 

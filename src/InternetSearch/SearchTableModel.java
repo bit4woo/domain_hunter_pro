@@ -13,6 +13,9 @@ import com.bit4woo.utilbox.utils.IPAddressUtils;
 import GUI.GUIMain;
 import base.IndexedHashMap;
 import burp.BurpExtender;
+import config.ConfigManager;
+import config.ConfigName;
+import utils.WafCdnUtil;
 
 
 public class SearchTableModel extends AbstractTableModel {
@@ -240,6 +243,12 @@ public class SearchTableModel extends AbstractTableModel {
 			if (entry.getIPSet().iterator().hasNext()) {
 				String value = entry.getIPSet().iterator().next();
 				if (IPAddressUtils.isPublicIPv4NoPort(value)) {
+					boolean skipWafCdn = ConfigManager.getBooleanConfigByKey(ConfigName.SkipSearchWafCdnIP);
+					String server =  entry.getWebcontainer();
+					if (skipWafCdn && WafCdnUtil.isWafCdnByServer(server)) {
+						stdout.println("skip "+value+",it's WAF or CDN IP");
+						return new InfoTuple<>(null, null); 
+					}
 					return new InfoTuple<>(SearchType.IP, value);
 				}
 			}

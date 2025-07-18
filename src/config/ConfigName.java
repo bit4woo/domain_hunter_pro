@@ -18,6 +18,8 @@ public class ConfigName {
 
 	public static final String SaveTrafficToElastic = "Save traffic to Elastic";
 	public static final String ApiReqToTitle = "Save all API search request to title";
+	
+	public static final String SkipSearchWafCdnIP = "API search skip WAF or CDN IP";
 
 	//String config
 	public static final String BrowserPath = "Browser Path";

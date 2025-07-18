@@ -131,12 +131,12 @@ public class APISearchAction extends AbstractAction {
 			toSearch.add(item);
 		}
 
-		if (toSearch.size() >= 50) {
-			JOptionPane.showMessageDialog(null, "too many items selected!! should less than 50", "Alert",
-					JOptionPane.WARNING_MESSAGE);
-			stderr.print("too many items selected!! should less than 50");
-			return;
-		}
+//		if (toSearch.size() >= 50) {
+//			JOptionPane.showMessageDialog(null, "too many items selected!! should less than 50", "Alert",
+//					JOptionPane.WARNING_MESSAGE);
+//			stderr.print("too many items selected!! should less than 50");
+//			return;
+//		}
 
 		// 把耗时操作放在最后。
 		for (ToSearchItem item : toSearch) {
@@ -178,7 +178,10 @@ public class APISearchAction extends AbstractAction {
 
 	public static void DoSearchAllInOnAtBackGround(String search_Type, String content, List<String> engineList,
 			String sourceTabName) {
-
+		
+		if (StringUtils.isEmpty(content)) {
+			return;
+		}
 		String searchType;
 		if (search_Type == null) {
 			if (DomainUtils.isValidDomainNoPort(content)) {

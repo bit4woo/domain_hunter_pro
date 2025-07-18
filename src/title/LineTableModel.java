@@ -34,9 +34,12 @@ import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
 import burp.IHttpService;
 import burp.IMessageEditorController;
+import config.ConfigManager;
+import config.ConfigName;
 import dao.TitleDao;
 import domain.DomainManager;
 import domain.target.TargetTableModel;
+import utils.WafCdnUtil;
 
 /**
  * 关于firexxx，目的是通知各个modelListener。默认的listener中，有一种的目的是：当数据发生变化时，更新GUI的显示。
@@ -265,6 +268,12 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			if (entry.getIPSet().iterator().hasNext()) {
 				String value = entry.getIPSet().iterator().next();
 				if (IPAddressUtils.isPublicIPv4NoPort(value)) {
+					boolean skipWafCdn = ConfigManager.getBooleanConfigByKey(ConfigName.SkipSearchWafCdnIP);
+					String server =  entry.getWebcontainer();
+					if (skipWafCdn && WafCdnUtil.isWafCdnByServer(server)) {
+						stdout.println("skip "+value+",it's WAF or CDN IP");
+						return new InfoTuple<>(null, null); 
+					}
 					return new InfoTuple<>(SearchType.IP, value);
 				}
 			}
