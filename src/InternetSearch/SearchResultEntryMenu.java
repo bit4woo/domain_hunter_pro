@@ -1,9 +1,12 @@
 package InternetSearch;
 
+import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.io.PrintWriter;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.swing.AbstractAction;
@@ -106,6 +109,38 @@ public class SearchResultEntryMenu extends JPopupMenu {
 			}
 		});
 
+		
+		JMenuItem copyRootDomainWithIpItem = new JMenuItem(new AbstractAction("Copy Root Domain With IP") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				try {
+					java.util.List<java.util.List<String>> lines = searchTableModel.getMultipleValueOfMultipleColumn(modelRows,SearchTableHead.IP, SearchTableHead.RootDomain);
+					
+					Map<String, HashSet<String>> result = new HashMap<>();
+					for (List<String> line : lines) {
+					    String ip = line.get(0);
+					    String rootDomain = line.get(1);
+
+					    // 如果这个 IP 不存在，就初始化一个新集合
+					    result.computeIfAbsent(ip, k -> new HashSet<>()).add(rootDomain);
+					}
+					
+					String text ="";
+					for (Map.Entry<String, HashSet<String>> entry : result.entrySet()) {
+					    String ip = entry.getKey() + " --->"+System.lineSeparator();
+					    HashSet<String> domains = entry.getValue();
+					    
+					    text = text + ip;
+					    text = text + String.join(System.lineSeparator(), domains);
+					}
+
+					SystemUtils.writeToClipboard(text);
+				} catch (Exception e1) {
+					e1.printStackTrace(stderr);
+				}
+			}
+		});
+		
 		JMenuItem genPortScanCmd = new JMenuItem(new AbstractAction("Copy Port Scan Cmd") {
 
 			@Override
@@ -270,6 +305,27 @@ public class SearchResultEntryMenu extends JPopupMenu {
 				}.execute();
 			}
 		});
+		
+		
+		/**
+		 * 单纯从title记录中删除,不做其他修改
+		 */
+		JMenuItem removeItem = new JMenuItem(new AbstractAction("Delete Entry") {//need to show dialog to confirm
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				new SwingWorker<Map,Map>(){
+					@Override
+					protected Map doInBackground() throws Exception {
+						int result = JOptionPane.showConfirmDialog(null,"Are you sure to DELETE these items ?");
+						if (result == JOptionPane.YES_OPTION) {
+							searchTableModel.removeRows(modelRows);
+						}
+						return null;
+					}
+				}.execute();
+			}
+		});
+		removeItem.setToolTipText("Just Delete Entry In Title Panel");
 
 		this.add(itemNumber);
 
@@ -284,6 +340,7 @@ public class SearchResultEntryMenu extends JPopupMenu {
 		this.add(addToTargetnotTargetItem);
 		this.add(deleteFromTarget);
 		this.add(addIPToBlackListItem);
+		this.add(removeItem);
 
 		this.addSeparator();
 
@@ -291,6 +348,7 @@ public class SearchResultEntryMenu extends JPopupMenu {
 		this.add(copyHostItem);
 		this.add(copyIPItem);
 		this.add(copyRootDomainItem);
+		this.add(copyRootDomainWithIpItem);
 		this.add(openURLwithBrowserItem);
 		this.add(genPortScanCmd);
 

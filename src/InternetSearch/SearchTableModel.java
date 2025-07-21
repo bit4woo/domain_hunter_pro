@@ -2,6 +2,7 @@ package InternetSearch;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.TreeSet;
 
@@ -15,6 +16,7 @@ import base.IndexedHashMap;
 import burp.BurpExtender;
 import config.ConfigManager;
 import config.ConfigName;
+import title.LineEntry;
 import utils.WafCdnUtil;
 
 
@@ -142,6 +144,32 @@ public class SearchTableModel extends AbstractTableModel {
 			result.add((String)getValueAt(rowIndex,columnIndex));
 		}
 		return result;
+	}
+
+	public List<List<String>> getMultipleValueOfMultipleColumn(int[] rowIndexes, String... columnNames) {
+	    List<List<String>> result = new ArrayList<>();
+
+	    // 获取所有列索引
+	    int[] columnIndexes = new int[columnNames.length];
+	    for (int i = 0; i < columnNames.length; i++) {
+	        int colIndex = getColumnIndexByName(columnNames[i]);
+	        if (colIndex < 0) {
+	            throw new IllegalArgumentException("Invalid column name: " + columnNames[i]);
+	        }
+	        columnIndexes[i] = colIndex;
+	    }
+
+	    // 遍历每一行，构造每行的值列表
+	    for (int rowIndex : rowIndexes) {
+	        List<String> rowValues = new ArrayList<>();
+	        for (int colIndex : columnIndexes) {
+	            Object value = getValueAt(rowIndex, colIndex);
+	            rowValues.add(value != null ? value.toString() : null);
+	        }
+	        result.add(rowValues);
+	    }
+
+	    return result;
 	}
 
 
@@ -309,6 +337,24 @@ public class SearchTableModel extends AbstractTableModel {
 			// 但是debug发现javax.swing.DefaultRowSorter.checkAgainstModel在条件为false时(即未越界)抛出了异常，奇怪！
 		}else {
 			fireTableRowsUpdated(index, index);
+		}
+	}
+	
+	public void removeRows(int[] rows) {
+		Arrays.sort(rows); //升序
+
+		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
+			try {
+				int index = rows[i];
+				SearchResultEntry entry = lineEntries.get(index);
+				if (entry == null) {
+					throw new ArrayIndexOutOfBoundsException("can't find item with index "+index);
+				}
+				lineEntries.remove(index);
+				this.fireTableRowsDeleted(index,index);
+			} catch (Exception e) {
+				e.printStackTrace(stderr);
+			}
 		}
 	}
 
