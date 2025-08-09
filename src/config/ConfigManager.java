@@ -220,6 +220,9 @@ public class ConfigManager {
 
 		// 使用fromJson方法将JSON字符串反序列化为List<ConfigEntry>对象
 		List<ConfigEntry> configList = gson.fromJson(json, listType);
+		if (configList == null) {
+			return new ArrayList<ConfigEntry>();
+		}
 		return configList;
 	}
 
