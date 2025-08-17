@@ -20,6 +20,7 @@ import com.google.common.net.InternetDomainName;
 import base.Commons;
 import burp.BurpExtender;
 import domain.DomainManager;
+import utils.ResourcesUtil;
 
 public class TargetEntry {
 	private String target = "";// 根域名、网段、或者IP
@@ -55,18 +56,8 @@ public class TargetEntry {
 
 	private void autoDetectTrustLevel() {
 		// resources/cloud_service_domain_names.txt
-		String domains = "aliyun.com\r\n"
-				+ "aliyuncs.com\r\n"
-				+ "amazon.com\r\n"
-				+ "amazonaws.com\r\n"
-				+ "huaweicloud.com\r\n"
-				+ "myhuaweicloud.com\r\n"
-				+ "hwclouds-dns.com\r\n"
-				+ "myqcloud.com\r\n"
-				+ "tencent.com\r\n"
-				+ "tencentcloudapi.com\r\n"
-				+ "cloudfront.net";
-		for (String item : domains.split("\r\n")) {
+		List<String> domains = ResourcesUtil.readFileLines("cloud_service_domain_names.txt");
+		for (String item : domains) {
 			if (target.toLowerCase().trim().endsWith(item)) {
 				this.setTrustLevel(AssetTrustLevel.Cloud);
 				break;

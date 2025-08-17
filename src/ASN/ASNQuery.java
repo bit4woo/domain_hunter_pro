@@ -3,9 +3,7 @@ package ASN;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -14,10 +12,10 @@ import org.apache.commons.io.FileUtils;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.TypeReference;
+import com.bit4woo.utilbox.utils.IPAddressUtils;
 import com.github.kevinsawicki.http.HttpRequest;
 
-import burp.BurpExtender;
-import com.bit4woo.utilbox.utils.IPAddressUtils;
+import utils.ResourcesUtil;
 
 public class ASNQuery {
 	public static final String localdir =
@@ -122,7 +120,7 @@ public class ASNQuery {
 	private static void loadTsvFile(){
 		if (entriesFromTSV.size() == 0){//无需重复加载
 			System.out.println("loading ip2asn-v4.tsv");
-			List<String> lines = readFile("ip2asn-v4.tsv");
+			List<String> lines = ResourcesUtil.readFileLines("ip2asn-v4.tsv");
 			for (String line:lines){
 				ASNEntry tmp = new ASNEntry(line);
 				if (tmp.isValid()){
@@ -130,23 +128,6 @@ public class ASNQuery {
 				}
 			}
 			System.out.println("ip2asn-v4.tsv loaded");
-		}
-	}
-
-	private static List<String> readFile(String filename) {
-		try {
-			URL url = BurpExtender.class.getClassLoader().getResource(filename);
-			File copyFile = new File(FileUtils.getTempDirectory()+File.pathSeparator+"."+filename);
-			copyFile.deleteOnExit();
-			if (copyFile.exists()) {
-				copyFile.delete();
-			}
-			FileUtils.copyURLToFile(url,copyFile);
-			List<String> dictList = FileUtils.readLines(copyFile, StandardCharsets.UTF_8);
-			return dictList;
-		} catch (IOException e) {
-			e.printStackTrace();
-			return new ArrayList<String>();
 		}
 	}
 
