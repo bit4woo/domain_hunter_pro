@@ -9,3 +9,5 @@ myqcloud.com
 tencent.com
 tencentcloudapi.com
 cloudfront.net
+qiniudns.net
+qiniudns.com
