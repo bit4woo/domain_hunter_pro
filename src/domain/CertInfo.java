@@ -19,6 +19,8 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+import org.apache.commons.lang3.StringUtils;
+
 import base.Commons;
 import config.ConfigManager;
 import config.ConfigName;
@@ -60,6 +62,11 @@ public class CertInfo {
 	 * @throws Exception
 	 */
 	private static Certificate[] getCertificates(String url, String proxyHost, Integer proxyPort) throws Exception {
+		
+		if (StringUtils.isEmpty(url)|| !url.toLowerCase().startsWith("https://")) {
+			 return new Certificate[0]; // 返回空数组，表示没有证书
+		}
+		
 		// 全局忽略主机验证
 		HostnameVerifier allHostsValid = (hostname, session) -> true;
 
