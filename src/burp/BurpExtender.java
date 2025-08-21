@@ -1,24 +1,17 @@
 package burp;
 
-import java.awt.Component;
+import GUI.GUIMain;
+import bsh.This;
+import com.bit4woo.utilbox.burp.HelperPlus;
+import config.ConfigManager;
+import config.ConfigName;
+import config.DataLoadManager;
+
+import javax.swing.*;
+import java.awt.*;
 import java.io.PrintWriter;
 import java.util.Date;
 import java.util.List;
-
-import javax.swing.JMenuItem;
-import javax.swing.SwingUtilities;
-
-import config.DataLoadManager;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import com.bit4woo.utilbox.burp.HelperPlus;
-
-import GUI.GUIMain;
-import bsh.This;
-import config.ConfigManager;
-import config.ConfigName;
-import config.ConfigPanel;
 
 public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListener, IContextMenuFactory, IHttpListener {
 	/**
@@ -44,7 +37,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	// 后续解决方案：创建一个context对象，各个对象构造函数都传递这个context对象。当要访问某个对象时，就通过context对象进行访问。
 
 	public static PrintWriter getStdout() {
-		//不同的时候调用这个参数，可能得到不同的值
+		// 不同的时候调用这个参数，可能得到不同的值
 		try {
 			stdout = new PrintWriter(callbacks.getStdout(), true);
 		} catch (Exception e) {
@@ -82,20 +75,20 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		return gui;
 	}
 
-	public static DataLoadManager getDataLoadManager(){
+	public static DataLoadManager getDataLoadManager() {
 		return dataLoadManager;
 	}
+
 	public static String getExtenderName() {
 		return ExtenderName;
 	}
 
-	//name+version+author
+	// name+version+author
 	public static String getFullExtenderName() {
 		return ExtenderName + " " + Version + " " + Author;
 	}
 
-
-	//插件加载过程中需要做的事
+	// 插件加载过程中需要做的事
 	@Override
 	public void registerExtenderCallbacks(IBurpExtenderCallbacks callbacks) {
 		BurpExtender.callbacks = callbacks;
@@ -107,18 +100,19 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		stdout.println(getFullExtenderName());
 		stdout.println(github);
 
-		callbacks.setExtensionName(getFullExtenderName()); //插件名称
+		callbacks.setExtensionName(getFullExtenderName()); // 插件名称
 		callbacks.registerExtensionStateListener(this);
 		callbacks.registerContextMenuFactory(this);
-		callbacks.registerHttpListener(this);//主动根据流量收集信息
+		callbacks.registerHttpListener(this);// 主动根据流量收集信息
 
-		SwingUtilities.invokeLater(new Runnable() {//create GUI
+		SwingUtilities.invokeLater(new Runnable() {// create GUI
 			public void run() {
 				gui = new GUIMain();
 				dataLoadManager = DataLoadManager.loadFromDisk(gui);
 				callbacks.addSuiteTab(BurpExtender.this);
-				//这里的BurpExtender.this实质是指ITab对象，也就是getUiComponent()中的contentPane.这个参数由GUI()函数初始化。
-				//如果这里报java.lang.NullPointerException: Component cannot be null 错误，需要排查contentPane的初始化是否正确。
+				// 这里的BurpExtender.this实质是指ITab对象，也就是getUiComponent()中的contentPane.这个参数由GUI()函数初始化。
+				// 如果这里报java.lang.NullPointerException: Component cannot be null
+				// 错误，需要排查contentPane的初始化是否正确。
 				dataLoadManager.loadDbAndConfig();
 				gui.startLiveCapture();
 			}
@@ -127,7 +121,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 
 	@Override
 	public void extensionUnloaded() {
-		
+
 		try {
 			if (dataLoadManager != null) {
 				dataLoadManager.unloadDbfile(null);
@@ -135,20 +129,20 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		} catch (Exception e) {
 			e.printStackTrace(stderr);
 		}
-		
+
 		try {
 			gui.stopLiveCapture();
 		} catch (Exception e) {
 			e.printStackTrace(stderr);
 		}
 
-		try {//避免这里错误导致保存逻辑的失效
+		try {// 避免这里错误导致保存逻辑的失效
 			if (gui.getTitlePanel().getThreadGetTitle() != null) {
-				gui.getTitlePanel().getThreadGetTitle().interrupt();//maybe null
+				gui.getTitlePanel().getThreadGetTitle().interrupt();// maybe null
 				gui.getInputQueue().clear();
 				gui.getLiveinputQueue().clear();
 				gui.getHttpsChecked().clear();
-			}//必须要先结束线程，否则获取数据的操作根本无法结束，因为线程一直通过sync占用资源
+			} // 必须要先结束线程，否则获取数据的操作根本无法结束，因为线程一直通过sync占用资源
 		} catch (Exception e) {
 			e.printStackTrace(stderr);
 		}
@@ -162,7 +156,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 		}
 	}
 
-	//ITab必须实现的两个方法
+	// ITab必须实现的两个方法
 	@Override
 	public String getTabCaption() {
 		return (ExtenderName.replaceAll(" ", ""));
@@ -188,10 +182,8 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 	 */
 	@Override
 	public void processHttpMessage(int toolFlag, boolean messageIsRequest, IHttpRequestResponse messageInfo) {
-		if ((toolFlag == IBurpExtenderCallbacks.TOOL_PROXY ||
-				toolFlag == IBurpExtenderCallbacks.TOOL_INTRUDER ||
-				toolFlag == IBurpExtenderCallbacks.TOOL_REPEATER)
-				&& !messageIsRequest && gui != null) {
+		if ((toolFlag == IBurpExtenderCallbacks.TOOL_PROXY || toolFlag == IBurpExtenderCallbacks.TOOL_INTRUDER
+				|| toolFlag == IBurpExtenderCallbacks.TOOL_REPEATER) && !messageIsRequest && gui != null) {
 			gui.getLiveinputQueue().add(messageInfo);
 		}
 	}

@@ -1,25 +1,18 @@
 package domain;
 
+import GUI.GUIMain;
+import base.Commons;
+import burp.*;
+import com.bit4woo.utilbox.burp.HelperPlus;
+import com.bit4woo.utilbox.utils.DomainUtils;
+import com.bit4woo.utilbox.utils.EmailUtils;
+import com.bit4woo.utilbox.utils.UrlUtils;
+import utils.DecoderUtil;
+
 import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
-
-import com.bit4woo.utilbox.utils.DomainUtils;
-import com.bit4woo.utilbox.utils.EmailUtils;
-
-import GUI.GUIMain;
-import base.Commons;
-import burp.BurpExtender;
-import burp.IBurpExtenderCallbacks;
-import burp.IExtensionHelpers;
-import burp.IHttpRequestResponse;
-import burp.IHttpService;
-import com.bit4woo.utilbox.utils.UrlUtils;
-import config.ConfigManager;
-import config.ConfigName;
-import title.LineEntry;
-import utils.DecoderUtil;
 
 public class DomainProducer extends Thread {// Producer do
 	private final BlockingQueue<IHttpRequestResponse> inputQueue;// use to store messageInfo
@@ -100,8 +93,9 @@ public class DomainProducer extends Thread {// Producer do
 
 				IHttpService httpservice = messageinfo.getHttpService();
 				String urlString = helpers.analyzeRequest(messageinfo).getUrl().toString();
-
-				String shortURL = httpservice.toString();
+				
+				//以前直接 toString的方法不行了
+				String shortURL = HelperPlus.getBaseURL(httpservice);
 				String protocol = httpservice.getProtocol();
 				String Host = httpservice.getHost();
 				int port = httpservice.getPort();
