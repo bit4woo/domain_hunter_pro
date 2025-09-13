@@ -48,7 +48,6 @@ public class SearchPanel extends JPanel {
 	GUIMain guiMain;
 	PrintWriter stdout;
 	PrintWriter stderr;
-	private Set<String> selectedTabs = new HashSet<>(); // 用于存储已选择过的Tab名称
 
 	public static void main(String[] args) {
 		test();
@@ -105,7 +104,40 @@ public class SearchPanel extends JPanel {
 		this.setBorder(new EmptyBorder(5, 5, 5, 5));
 		this.setLayout(new BorderLayout(0, 0));
 		this.add(createButtonPanel(), BorderLayout.NORTH);
+		
 		centerTabbedPanel = new JTabbedPane();
+		// 1. 全局只添加一次右键菜单监听
+		centerTabbedPanel.addMouseListener(new MouseAdapter() {
+		    @Override
+		    public void mousePressed(MouseEvent e) {
+		        if (e.isPopupTrigger()) {
+		            showPopupMenu(centerTabbedPanel, e);
+		        }
+		    }
+
+		    @Override
+		    public void mouseReleased(MouseEvent e) {
+		        if (e.isPopupTrigger()) {
+		            showPopupMenu(centerTabbedPanel, e);
+		        }
+		    }
+		});
+
+		// 2. 使用 ChangeListener 来处理左键 Tab 切换
+		centerTabbedPanel.addChangeListener(e -> {
+		    int tabIndex = centerTabbedPanel.getSelectedIndex();
+		    if (tabIndex != -1) {
+		        Component header = centerTabbedPanel.getTabComponentAt(tabIndex);
+		        if (header instanceof JPanel) {
+		            JPanel headerPanel = (JPanel) header;
+		            Component comp = headerPanel.getComponent(0);
+		            if (comp instanceof JLabel) {
+		                headerPanel.setBackground(Color.GRAY);
+		            }
+		        }
+		    }
+		});
+
 
 		this.add(centerTabbedPanel, BorderLayout.CENTER);
 	}
@@ -173,27 +205,6 @@ public class SearchPanel extends JPanel {
 		int index = centerTabbedPanel.getTabCount() - 1;
 		centerTabbedPanel.setTabComponentAt(index, tabPanelHeader);
 
-		centerTabbedPanel.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseReleased(MouseEvent e) {
-				if (SwingUtilities.isRightMouseButton(e)) {
-					showPopupMenu(centerTabbedPanel, e);
-				} else if (SwingUtilities.isLeftMouseButton(e)) {
-					int tabIndex = centerTabbedPanel.getSelectedIndex();
-					if (tabIndex != -1) {
-						Component selectedComponent = centerTabbedPanel.getTabComponentAt(tabIndex);
-						if (selectedComponent instanceof JPanel) {
-							JPanel selectedTabPanel = (JPanel) selectedComponent;
-							JLabel label = (JLabel) selectedTabPanel.getComponent(0);
-							if (label.getText().equals(tabName)) {
-								selectedTabs.add(tabName); // 将此Tab名称添加到已选择过的集合中
-								selectedTabPanel.setBackground(Color.GRAY); // 设置Tab颜色为灰色
-							}
-						}
-					}
-				}
-			}
-		});
 	}
 
 	public String getStatusInfo(List<SearchResultEntry> entries, List<String> engines, String sourceTab) {
