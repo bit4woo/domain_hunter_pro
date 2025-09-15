@@ -26,7 +26,9 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 
@@ -155,7 +157,32 @@ public class SearchPanel extends JPanel {
 			}
 		}
 	}
-
+	
+	/**
+	 * 获取对应tab中表数据的行数
+	 * @param tabIndex
+	 * @return
+	 */
+	public int getRowCount(int tabIndex) {
+		Component tabComponent = centerTabbedPanel.getComponentAt(tabIndex);
+		if (tabComponent instanceof JPanel) {
+		    JPanel tabPanelBody = (JPanel) tabComponent;
+		    for (Component comp : tabPanelBody.getComponents()) {
+		        if (comp instanceof JScrollPane) {
+		            JScrollPane scrollPane = (JScrollPane) comp;
+		            JViewport viewport = scrollPane.getViewport();
+		            Component view = viewport.getView();
+		            if (view instanceof JTable) {
+		                JTable table = (JTable) view;
+		                int rowCount = table.getRowCount();
+		                //System.out.println("当前Tab表格行数: " + rowCount);
+		                return rowCount;
+		            }
+		        }
+		    }
+		}
+		return -1;
+	}
 	/**
 	 * @param tabName
 	 * @param entries
@@ -284,6 +311,21 @@ public class SearchPanel extends JPanel {
 			}
 		});
 		popupMenu.add(closeAllTabsMenuItem);
+		
+		// 添加菜单项：关闭所有内容为空的 tab
+		JMenuItem closeAllEmptyTabsMenuItem = new JMenuItem("Close All Empty Tabs");
+		closeAllTabsMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				APISearchAction.searchedContent.clear();
+				for (int i = tabIndex - 1; i >= 0; i--) {
+					int row_num = getRowCount(tabIndex);
+					if (row_num == 0) {
+						tabbedPane.remove(i);
+					}
+				}
+			}
+		});
+		popupMenu.add(closeAllEmptyTabsMenuItem);
 
 		// 添加菜单项：关闭至左边
 		JMenuItem closeTabsToLeftMenuItem = new JMenuItem("Close Tabs to Left");
