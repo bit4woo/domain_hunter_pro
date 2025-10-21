@@ -236,10 +236,15 @@ public class LineEntry {
 	}
 
 	private void parseURL(URL url) {
-		this.url = UrlUtils.getFullUrlWithDefaultPort(url.toString());// 统一格式，包含默认端口
-		port = url.getPort() == -1 ? url.getDefaultPort() : url.getPort();
-		host = url.getHost();
-		protocol = url.getProtocol();
+		try {
+			new URL(url.toString());
+			this.url = UrlUtils.getFullUrlWithDefaultPort(url.toString());// 统一格式，包含默认端口
+			port = url.getPort() == -1 ? url.getDefaultPort() : url.getPort();
+			host = url.getHost();
+			protocol = url.getProtocol();
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public void DoDirBrute() {
