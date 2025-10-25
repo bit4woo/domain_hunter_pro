@@ -16,6 +16,7 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import javax.swing.ImageIcon;
+import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 
 import com.bit4woo.utilbox.burp.HelperPlus;
@@ -1051,9 +1052,13 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		String key = lineEntry.getUrl()+"#"+System.currentTimeMillis();
 		lineEntry.setUrl(key);
 		lineEntries.put(key,lineEntry);
+		
 		int index = lineEntries.IndexOfKey(key);
-		fireTableRowsInserted(index, index);//有毫秒级时间戳，只会是新增
-		titleDao.addOrUpdateTitle(lineEntry);//写入数据库
+		
+	    SwingUtilities.invokeLater(() -> {
+	    	fireTableRowsInserted(index, index);//有毫秒级时间戳，只会是新增
+	    });
+		new Thread(() -> titleDao.addOrUpdateTitle(lineEntry)).start();//写入数据库
 	}
 
 	public void addNewLineEntry(LineEntry lineEntry){
@@ -1064,26 +1069,31 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		LineEntry ret = lineEntries.put(key,lineEntry);
 		//以前的做法是，put之后再次统计size来判断是新增还是替换，这种方法在多线程时可能不准确，
 		//concurrentHashMap的put方法会在替换时返回原来的值，可用于判断是替换还是新增
-		titleDao.addOrUpdateTitle(lineEntry);//写入数据库
+		
+	    // 异步写数据库
+	    new Thread(() -> titleDao.addOrUpdateTitle(lineEntry)).start();
 
 		int index = lineEntries.IndexOfKey(key);
-		try {
-			if (ret == null) {
-				fireTableRowsInserted(index, index);
-				//出错只会暂时影响显示，不影响数据内容，不再打印
-				//这里偶尔出现IndexOutOfBoundsException错误，但是debug发现javax.swing.DefaultRowSorter.checkAgainstModel在条件为false时(即未越界)抛出了异常，奇怪！
-				//大概率是因为排序器和数据模型不同步导致的，但是每次同步排序器会导致界面数据不停刷新，这个过程中难以操作数据表。
-			}else {
-				fireTableRowsUpdated(index, index);
-			}
-		} catch (Exception e) {
-			//e.printStackTrace(stderr);
-		}
+		
+	    // 所有 UI 通知在 EDT 执行,避免 IndexOutOfBoundsException错误
+		//大概率是因为排序器和数据模型不同步导致的，但是每次同步排序器会导致界面数据不停刷新，这个过程中难以操作数据表。
+	    SwingUtilities.invokeLater(() -> {
+	        try {
+	            if (ret == null) {
+	                fireTableRowsInserted(index, index);
+	            } else {
+	                fireTableRowsUpdated(index, index);
+	            }
+	        } catch (Exception e) {
+	            // 可以安全忽略或记录日志
+	        }
+	    });
 
 		//need to use row-1 when add setRowSorter to table. why??
 		//https://stackoverflow.com/questions/6165060/after-adding-a-tablerowsorter-adding-values-to-model-cause-java-lang-indexoutofb
 		//fireTableRowsInserted(newsize-1, newsize-1);
 	}
+
 
 	/**
 	 *
