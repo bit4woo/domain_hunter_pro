@@ -231,7 +231,7 @@ public class APISearchAction extends AbstractAction {
 		worker.execute();
 		// "errmsg":"[45012] 请求速度过快"
 		try {
-			Thread.sleep(200);
+			Thread.sleep(1000);
 		} catch (InterruptedException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
