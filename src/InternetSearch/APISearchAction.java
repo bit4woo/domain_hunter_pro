@@ -249,13 +249,7 @@ public class APISearchAction extends AbstractAction {
 	 */
 	private static List<SearchResultEntry> DoSearchOneWithXEngines(String searchType, String content, List<String> engineList,
 			String sourceTabName, boolean showInGUI, boolean autoAddToTarget) {
-		if (StringUtils.isEmpty(content) || StringUtils.isEmpty(searchType)) {
-			BurpExtender.getStderr().print("nothing to search...");
-			return null;
-		}
 
-		List<SearchResultEntry> entries = new ArrayList<>();
-		
 		if (searchType == null) {
 			if (DomainUtils.isValidDomainNoPort(content)) {
 				searchType = SearchType.SubDomain;
@@ -265,7 +259,13 @@ public class APISearchAction extends AbstractAction {
 				searchType = SearchType.OriginalString;
 			}
 		}
-		
+
+		if (StringUtils.isEmpty(content)) {
+			BurpExtender.getStderr().print("nothing to search...");
+			return null;
+		}
+
+		List<SearchResultEntry> entries = new ArrayList<>();
 		
 		// 避免重复搜索的逻辑
 		String tabname = String.format("%s(%s)", searchType, content);
