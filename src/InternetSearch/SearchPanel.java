@@ -386,7 +386,7 @@ public class SearchPanel extends JPanel {
 
 				String searchType = tabName.split("\\(")[0];
 				String searchContent = tabName.split("\\(")[1].split("\\)")[0];
-				APISearchAction.DoSearchAllInOnAtBackGround(searchType, searchContent,
+				APISearchAction.DoSearchOneWithXEnginesAtBG(searchType, searchContent,
 						SearchEngine.getAssetSearchEngineList(), soureTabName);
 
 			}
@@ -444,7 +444,7 @@ public class SearchPanel extends JPanel {
 		buttonSearch.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String content = textFieldSearch.getText();
-				APISearchAction.DoSearchAllInOnAtBackGround(null, content, SearchEngine.getAssetSearchEngineList(),
+				APISearchAction.DoSearchOneWithXEnginesAtBG(null, content, SearchEngine.getAssetSearchEngineList(),
 						"buttonSearch");
 			}
 		});
@@ -458,7 +458,7 @@ public class SearchPanel extends JPanel {
 				String searchType = SearchType.choseSearchType();
 				switch (searchType) {
 				case SearchType.Email:
-					APISearchAction.DoSearchAllInOnAtBackGround(searchType, content,
+					APISearchAction.DoSearchOneWithXEnginesAtBG(searchType, content,
 							SearchEngine.getEmailSearchEngineList(), "buttonSearchAs");
 					break;
 				case SearchType.IconHash:
@@ -469,7 +469,7 @@ public class SearchPanel extends JPanel {
 						}
 					}
 				default:
-					APISearchAction.DoSearchAllInOnAtBackGround(searchType, content,
+					APISearchAction.DoSearchOneWithXEnginesAtBG(searchType, content,
 							SearchEngine.getAssetSearchEngineList(), "buttonSearchAs");
 				}
 			}

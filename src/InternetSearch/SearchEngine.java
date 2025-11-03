@@ -296,9 +296,11 @@ public class SearchEngine {
 					//value = "title:"+value;
 					value = String.format("title:\"%s\"", value);
 				}else if(type.equals(SearchType.IconHash)) {
-					value = String.format("favicon: \"%s\"", value.split("\\|")[1]);
-					//value = "favicon:"+value.split("\\|")[1];
-					//严格按照文档的话，应该带上双引号，但是测试没有引号也可以。
+					if (value.split("\\|")[1].length()>=2) {
+						value = String.format("favicon: \"%s\"", value.split("\\|")[1]);
+						//value = "favicon:"+value.split("\\|")[1];
+						//严格按照文档的话，应该带上双引号，但是测试没有引号也可以。
+					}
 				}else if(type.equals(SearchType.Server)) {
 					value = "server:"+value;
 				}else if(type.equals(SearchType.Asn)) {

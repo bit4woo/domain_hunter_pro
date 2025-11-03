@@ -2,7 +2,9 @@ package Tools;
 
 import java.awt.event.ActionEvent;
 import java.io.PrintWriter;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;
@@ -18,6 +20,7 @@ import com.bit4woo.utilbox.utils.TextUtils;
 import GUI.GUIMain;
 import InternetSearch.APISearchAction;
 import InternetSearch.SearchEngine;
+import InternetSearch.ToSearchItem;
 import burp.BurpExtender;
 import config.ConfigManager;
 import config.ConfigName;
@@ -170,16 +173,12 @@ public class TextAreaMenu extends JPopupMenu {
 		JMenuItem doOnlineSearch = new JMenuItem(new AbstractAction("Do Online Search") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
+				Set<ToSearchItem> toSearch = new HashSet<>();
 				for (String item:selectedItems) {
-					try {
-						//逻辑和search按钮一样 InternetSearch.SearchPanel.createButtonPanel()
-
-						APISearchAction.DoSearchAllInOnAtBackGround(null, item, SearchEngine.getAssetSearchEngineList(),"ToolPanel-TextArea");
-						
-					} catch (Exception e2) {
-						e2.printStackTrace(stderr);
-					}
+					toSearch.add(new ToSearchItem(null, item));
 				}
+				
+				APISearchAction.DoSearchAllWithXEnginesAtBG(toSearch,SearchEngine.getAssetSearchEngineList(),"ToolPanel-TextArea");
 			}
 		});
 		
