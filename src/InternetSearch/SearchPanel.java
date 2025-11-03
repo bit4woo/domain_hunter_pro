@@ -30,6 +30,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 
 import org.apache.commons.lang3.StringUtils;
@@ -106,40 +107,39 @@ public class SearchPanel extends JPanel {
 		this.setBorder(new EmptyBorder(5, 5, 5, 5));
 		this.setLayout(new BorderLayout(0, 0));
 		this.add(createButtonPanel(), BorderLayout.NORTH);
-		
+
 		centerTabbedPanel = new JTabbedPane();
 		// 1. 全局只添加一次右键菜单监听
 		centerTabbedPanel.addMouseListener(new MouseAdapter() {
-		    @Override
-		    public void mousePressed(MouseEvent e) {
-		        if (e.isPopupTrigger()) {
-		            showPopupMenu(centerTabbedPanel, e);
-		        }
-		    }
+			@Override
+			public void mousePressed(MouseEvent e) {
+				if (e.isPopupTrigger()) {
+					showPopupMenu(centerTabbedPanel, e);
+				}
+			}
 
-		    @Override
-		    public void mouseReleased(MouseEvent e) {
-		        if (e.isPopupTrigger()) {
-		            showPopupMenu(centerTabbedPanel, e);
-		        }
-		    }
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				if (e.isPopupTrigger()) {
+					showPopupMenu(centerTabbedPanel, e);
+				}
+			}
 		});
 
 		// 2. 使用 ChangeListener 来处理左键 Tab 切换
 		centerTabbedPanel.addChangeListener(e -> {
-		    int tabIndex = centerTabbedPanel.getSelectedIndex();
-		    if (tabIndex != -1) {
-		        Component header = centerTabbedPanel.getTabComponentAt(tabIndex);
-		        if (header instanceof JPanel) {
-		            JPanel headerPanel = (JPanel) header;
-		            Component comp = headerPanel.getComponent(0);
-		            if (comp instanceof JLabel) {
-		                headerPanel.setBackground(Color.GRAY);
-		            }
-		        }
-		    }
+			int tabIndex = centerTabbedPanel.getSelectedIndex();
+			if (tabIndex != -1) {
+				Component header = centerTabbedPanel.getTabComponentAt(tabIndex);
+				if (header instanceof JPanel) {
+					JPanel headerPanel = (JPanel) header;
+					Component comp = headerPanel.getComponent(0);
+					if (comp instanceof JLabel) {
+						headerPanel.setBackground(Color.GRAY);
+					}
+				}
+			}
 		});
-
 
 		this.add(centerTabbedPanel, BorderLayout.CENTER);
 	}
@@ -157,32 +157,34 @@ public class SearchPanel extends JPanel {
 			}
 		}
 	}
-	
+
 	/**
 	 * 获取对应tab中表数据的行数
+	 * 
 	 * @param tabIndex
 	 * @return
 	 */
 	public int getRowCount(int tabIndex) {
 		Component tabComponent = centerTabbedPanel.getComponentAt(tabIndex);
 		if (tabComponent instanceof JPanel) {
-		    JPanel tabPanelBody = (JPanel) tabComponent;
-		    for (Component comp : tabPanelBody.getComponents()) {
-		        if (comp instanceof JScrollPane) {
-		            JScrollPane scrollPane = (JScrollPane) comp;
-		            JViewport viewport = scrollPane.getViewport();
-		            Component view = viewport.getView();
-		            if (view instanceof JTable) {
-		                JTable table = (JTable) view;
-		                int rowCount = table.getRowCount();
-		                //System.out.println("当前Tab表格行数: " + rowCount);
-		                return rowCount;
-		            }
-		        }
-		    }
+			JPanel tabPanelBody = (JPanel) tabComponent;
+			for (Component comp : tabPanelBody.getComponents()) {
+				if (comp instanceof JScrollPane) {
+					JScrollPane scrollPane = (JScrollPane) comp;
+					JViewport viewport = scrollPane.getViewport();
+					Component view = viewport.getView();
+					if (view instanceof JTable) {
+						JTable table = (JTable) view;
+						int rowCount = table.getRowCount();
+						// System.out.println("当前Tab表格行数: " + rowCount);
+						return rowCount;
+					}
+				}
+			}
 		}
 		return -1;
 	}
+
 	/**
 	 * @param tabName
 	 * @param entries
@@ -311,7 +313,7 @@ public class SearchPanel extends JPanel {
 			}
 		});
 		popupMenu.add(closeAllTabsMenuItem);
-		
+
 		// 添加菜单项：关闭所有内容为空的 tab
 		JMenuItem closeAllEmptyTabsMenuItem = new JMenuItem("Close All Empty Tabs");
 		closeAllTabsMenuItem.addActionListener(new ActionListener() {
@@ -462,12 +464,27 @@ public class SearchPanel extends JPanel {
 							SearchEngine.getEmailSearchEngineList(), "buttonSearchAs");
 					break;
 				case SearchType.IconHash:
-					if (UrlUtils.isVaildUrl(content)) {
-						byte[] imageData = WebIcon.downloadFavicon(content);
-						if (imageData.length > 0) {
-							content = WebIcon.getHash(imageData);
+					SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+						@Override
+						protected Void doInBackground() throws Exception {
+							if (UrlUtils.isVaildUrl(content)) {
+								byte[] imageData = WebIcon.downloadFavicon(content);
+								if (imageData.length > 0) {
+									String content = WebIcon.getHash(imageData);
+									APISearchAction.DoSearchOneWithXEnginesAtBG(searchType, content,
+											SearchEngine.getAssetSearchEngineList(), "buttonSearchAs");
+								}
+							}
+							return null;
 						}
-					}
+
+						@Override
+						protected void done() {
+
+						}
+					};
+					worker.execute();
+
 				default:
 					APISearchAction.DoSearchOneWithXEnginesAtBG(searchType, content,
 							SearchEngine.getAssetSearchEngineList(), "buttonSearchAs");
