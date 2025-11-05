@@ -638,7 +638,7 @@ public class TargetTableModel extends AbstractTableModel {
 		} catch (java.lang.IllegalArgumentException e) {
 			// java.lang.IllegalArgumentException: Not a valid domain name:
 			// '-this.state.scroll'
-			BurpExtender.getStderr().println(e.getMessage());
+			e.printStackTrace(BurpExtender.getStderr());
 			debugPrint(domainOrIP, DomainManager.USELESS, "IllegalArgumentException encountered");
 			return DomainManager.USELESS;
 		} catch (Exception e) {
