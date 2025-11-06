@@ -12,15 +12,15 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.SwingWorker;
 
-import base.Commons;
-import base.FileTypeAdapter;
-import com.google.gson.GsonBuilder;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import GUI.GUIMain;
+import base.Commons;
+import base.FileTypeAdapter;
 import base.Stack;
 import burp.BurpExtender;
 
@@ -77,7 +77,13 @@ public class DataLoadManager {
         Gson gson = new GsonBuilder()
                 .registerTypeAdapter(File.class, new FileTypeAdapter())
                 .create();
-        return gson.fromJson(modelStr, DataLoadManager.class);
+        try {
+        	return gson.fromJson(modelStr, DataLoadManager.class);
+        }catch (Exception e) {
+        	e.printStackTrace();
+        	return new DataLoadManager();
+        }
+        
     }
 
 
