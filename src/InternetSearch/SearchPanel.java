@@ -303,6 +303,23 @@ public class SearchPanel extends JPanel {
 			}
 		});
 		popupMenu.add(closeCurrentTabMenuItem);
+		
+		
+		// 添加菜单项：关闭非当前 tab
+		JMenuItem closeOtherTabMenuItem = new JMenuItem("Close Other Tab");
+		closeCurrentTabMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				for (int i = tabbedPane.getTabCount() - 1; i >= 0; i--) {
+					if (i==tabIndex) {
+						continue;
+					}
+					APISearchAction.searchedContent.remove(getTabTextByIndex(i));
+					tabbedPane.remove(i);
+				}
+			}
+		});
+		popupMenu.add(closeOtherTabMenuItem);
+		
 
 		// 添加菜单项：关闭所有 tab
 		JMenuItem closeAllTabsMenuItem = new JMenuItem("Close All Tabs");
@@ -484,7 +501,7 @@ public class SearchPanel extends JPanel {
 						}
 					};
 					worker.execute();
-
+					break; // ✅ 必须加上这个
 				default:
 					APISearchAction.DoSearchOneWithXEnginesAtBG(searchType, content,
 							SearchEngine.getAssetSearchEngineList(), "buttonSearchAs");
