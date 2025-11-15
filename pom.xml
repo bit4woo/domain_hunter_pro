@@ -12,6 +12,9 @@
 		<repository>
 			<id>jitpack.io</id>
 			<url>https://jitpack.io</url>
+			<snapshots>
+            	<enabled>true</enabled>
+        	</snapshots>
 		</repository>
 		<repository>
 			<id>mulesoft</id>
@@ -96,11 +99,12 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.github.bit4woo</groupId>
-			<artifactId>java_utilbox</artifactId>
-			<!--<version>main-SNAPSHOT</version>-->
-			<version>main-aac44a4f59-1</version>
+		    <groupId>com.github.bit4woo</groupId>
+		    <artifactId>java_utilbox</artifactId>
+		    <version>main-SNAPSHOT</version>
+		    <!-- use "mvn clean install -U" to force update -->
 		</dependency>
+		
 		<!-- https://mvnrepository.com/artifact/com.alibaba/fastjson -->
 		<dependency>
 			<groupId>com.alibaba</groupId>
