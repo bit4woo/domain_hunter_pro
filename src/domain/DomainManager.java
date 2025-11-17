@@ -366,10 +366,13 @@ public class DomainManager {
 		
 		List<String> ip_set3 = IPAddressUtils.toIPList(new ArrayList<>(IPSetOfSubnet));
 		
+		List<String> ip_set4 = IPAddressUtils.grepIPv4NoPort(String.join("\n", NotTargetIPSet));
+		
 		tmplist.addAll(domains);
 		tmplist.addAll(ip_set1);
 		tmplist.addAll(ip_set2);
 		tmplist.addAll(ip_set3);
+		tmplist.removeAll(ip_set4);
 		
 		Collections.sort(tmplist);
 		tmplist = TextUtils.deduplicate(tmplist);
