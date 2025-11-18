@@ -279,7 +279,7 @@ public class APISearchAction extends AbstractAction {
 			System.out.println("skip search " + tabname);
 			BurpExtender.getStdout().println("skip search " + tabname);
 			// skip后，重新将tab的颜色改回来，以便提示这个tab被再次搜索了
-			BurpExtender.getGui().getSearchPanel().changeTabColor(tabname, Color.WHITE);
+			BurpExtender.getGui().getSearchPanel().changeTabColor(tabname, Color.RED);
 			return null;
 		} else {
 			// 保证单次操作，不对相同项进行重复搜索
