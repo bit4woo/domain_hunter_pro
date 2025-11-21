@@ -323,7 +323,9 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			String valueStr = ((String) value).trim();
 			entry.setComments(new HashSet<>(Arrays.asList(valueStr.split(","))));
 			titleDao.addOrUpdateTitle(entry);//写入数据库
-			fireTableCellUpdated(row, col);
+		    SwingUtilities.invokeLater(() -> {
+		    	fireTableRowsUpdated(row, col);
+		    });
 		}
 	}
 	//////////////////////^^^extend AbstractTableModel^^^////////////////////////////////
@@ -660,7 +662,10 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		for (int i=rows.length-1;i>=0 ;i-- ) {//降序删除才能正确删除每个元素
 			LineEntry entry = lineEntries.get(rows[i]);
 			entry.DoGetIconHash();
-			this.fireTableRowsUpdated(rows[i], rows[i]);
+			int index = rows[i];
+		    SwingUtilities.invokeLater(() -> {
+		    	fireTableRowsUpdated(index, index);
+		    });
 			titleDao.addOrUpdateTitle(entry);//写入数据库
 		}
 	}
@@ -693,7 +698,9 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 				lineEntries.remove(index);
 				titleDao.deleteTitleByUrl(url);//写入数据库
 				stdout.println("!!! "+url+" deleted");
-				this.fireTableRowsDeleted(index,index);
+			    SwingUtilities.invokeLater(() -> {
+			    	fireTableRowsDeleted(index, index);
+			    });
 			} catch (Exception e) {
 				e.printStackTrace(stderr);
 			}
@@ -710,7 +717,10 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			lineEntries.remove(row);
 			titleDao.deleteTitleByUrl(url);//写入数据库
 			stdout.println("!!! "+url+" deleted");
-			this.fireTableRowsDeleted(row,row);
+
+		    SwingUtilities.invokeLater(() -> {
+		    	fireTableRowsDeleted(row, row);
+		    });
 		} catch (Exception e) {
 			e.printStackTrace(stderr);
 		}
@@ -755,7 +765,10 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 						
 						entry.addComment("Non-Target[host is not target]");
 						titleDao.addOrUpdateTitle(entry);//写入数据库
-						this.fireTableRowsUpdated(i, i);
+						int index = i;
+					    SwingUtilities.invokeLater(() -> {
+					    	fireTableRowsUpdated(index, index);
+					    });
 						
 						continue;
 					}
@@ -781,7 +794,10 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 							
 							entry.addComment("Non-Target[cert domain is not target]");
 							titleDao.addOrUpdateTitle(entry);//写入数据库
-							this.fireTableRowsUpdated(i, i);
+							int index = i;
+						    SwingUtilities.invokeLater(() -> {
+						    	fireTableRowsUpdated(index, index);
+						    });
 							
 							continue;
 						}
@@ -793,7 +809,11 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 							
 							entry.addComment("Non-Target[host IP not in custom assets]");
 							titleDao.addOrUpdateTitle(entry);//写入数据库
-							this.fireTableRowsUpdated(i, i);
+							
+							int index = i;
+						    SwingUtilities.invokeLater(() -> {
+						    	fireTableRowsUpdated(index, index);
+						    });
 							
 							continue;
 						}
@@ -822,7 +842,10 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 					lineEntries.remove(i);
 					titleDao.deleteTitleByUrl(url);//写入数据库
 					stdout.println("!!! "+url+" deleted, due to : "+entry.getComments().toString());
-					this.fireTableRowsDeleted(i,i);
+					int index = i;
+				    SwingUtilities.invokeLater(() -> {
+				    	fireTableRowsDeleted(index, index);
+				    });
 				}
 				
 			} catch (Exception e) {
@@ -863,7 +886,9 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 				}
 				titleDao.addOrUpdateTitle(entry);//写入数据库
 				stdout.println("$$$ "+entry.getUrl()+" updated");
-				this.fireTableRowsUpdated(index, index);
+			    SwingUtilities.invokeLater(() -> {
+			    	fireTableRowsUpdated(index, index);
+			    });
 			} catch (Exception e) {
 				e.printStackTrace(stderr);
 			}
@@ -884,7 +909,9 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 				entry.setAssetType(assetType);
 				titleDao.addOrUpdateTitle(entry);//写入数据库
 				stdout.println(String.format("$$$ %s updated [AssetType-->%s]",entry.getUrl(),assetType));
-				this.fireTableRowsUpdated(index, index);
+			    SwingUtilities.invokeLater(() -> {
+			    	fireTableRowsUpdated(index, index);
+			    });
 			} catch (Exception e) {
 				e.printStackTrace(stderr);
 			}
@@ -906,7 +933,9 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 				entry.addComment(commentAdd);
 				titleDao.addOrUpdateTitle(entry);//写入数据库
 				stdout.println("$$$ "+entry.getUrl()+" updated");
-				this.fireTableRowsUpdated(index, index);
+			    SwingUtilities.invokeLater(() -> {
+			    	fireTableRowsUpdated(index, index);
+			    });
 			} catch (Exception e) {
 				e.printStackTrace(stderr);
 			}
@@ -928,7 +957,9 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 				entry.getComments().clear();
 				titleDao.addOrUpdateTitle(entry);//写入数据库
 				stdout.println("$$$ "+entry.getUrl()+" updated");
-				this.fireTableRowsUpdated(index, index);
+			    SwingUtilities.invokeLater(() -> {
+			    	fireTableRowsUpdated(index, index);
+			    });
 			} catch (Exception e) {
 				e.printStackTrace(stderr);
 			}
@@ -949,7 +980,9 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 				entry.freshASNInfo();
 				titleDao.addOrUpdateTitle(entry);//写入数据库
 				stdout.println("$$$ "+entry.getUrl()+"ASN Info updated");
-				this.fireTableRowsUpdated(index, index);
+			    SwingUtilities.invokeLater(() -> {
+			    	fireTableRowsUpdated(index, index);
+			    });
 			} catch (Exception e) {
 				e.printStackTrace(stderr);
 			}
@@ -1015,27 +1048,6 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			}
 		}
 		return tmp;
-	}
-
-	//为了同时fire多个不连续的行，自行实现这个方法。
-	@Deprecated
-	private void fireDeleted(int[] rows) {
-		List<int[]> slice = IntArraySlice.slice(rows);
-		//必须逆序，从高位index开始删除，否则删除的对象和预期不一致！！！
-		//上面得到的顺序就是从高位开始的
-		for(int[] sli:slice) {
-			System.out.println(Arrays.toString(sli));
-			this.fireTableRowsDeleted(sli[sli.length-1],sli[0]);//这里传入的值必须是低位数在前面，高位数在后面
-		}
-	}
-
-	@Deprecated
-	private void fireUpdated(int[] rows) {
-		List<int[]> slice = IntArraySlice.slice(rows);
-		for(int[] sli:slice) {
-			System.out.println(Arrays.toString(sli));
-			this.fireTableRowsUpdated(sli[sli.length-1],sli[0]);//同上，修复更新多个记录时的错误
-		}
 	}
 
 
@@ -1177,7 +1189,9 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		for (LineEntry entry : lineEntries.values()) {
 			entry.freshASNInfo();
 		}
-		fireTableRowsUpdated(0,lineEntries.size()-1);
+	    SwingUtilities.invokeLater(() -> {
+	    	fireTableRowsUpdated(0,lineEntries.size()-1);//有毫秒级时间戳，只会是新增
+	    });
 	}
 
 
@@ -1226,7 +1240,11 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 
 			value.addComment("duplicateItem");
 			value.setCheckStatus(LineEntry.CheckStatus_Checked);
-			fireTableRowsUpdated(i,i);//主动通知更新，否则不会写入数据库!!!
+			
+			int index = i;
+		    SwingUtilities.invokeLater(() -> {
+		    	fireTableRowsUpdated(index,index);//主动通知更新，否则不会写入数据库!!!
+		    });
 		}
 	}
 }
