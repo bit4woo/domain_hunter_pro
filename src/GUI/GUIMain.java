@@ -21,7 +21,6 @@ import Tools.ToolPanel;
 import base.Commons;
 import burp.BurpExtender;
 import burp.IHttpRequestResponse;
-import burp.ProjectMenu;
 import config.ConfigJScrollPane;
 import config.ConfigManager;
 import config.ConfigName;
@@ -31,6 +30,7 @@ import dao.TargetDao;
 import dao.TitleDao;
 import domain.DomainPanel;
 import domain.DomainProducer;
+import domain.ProjectMenu;
 import title.TitlePanel;
 
 

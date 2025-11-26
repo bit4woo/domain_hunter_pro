@@ -1,4 +1,4 @@
-package burp;
+package domain;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
@@ -20,14 +20,17 @@ import javax.swing.event.MenuListener;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import com.bit4woo.utilbox.utils.SwingUtils;
+
 import GUI.GUIMain;
 import base.Commons;
 import base.DictFileReader;
 import base.dbFileChooser;
+import burp.BurpExtender;
 import dao.DomainDao;
 import dao.TargetDao;
 import dao.TitleDao;
-import domain.DomainManager;
+import domain.target.TargetEntry;
 import title.LineEntry;
 
 /**
@@ -153,35 +156,8 @@ public class ProjectMenu extends JPopupMenu{
 		JMenuItem ImportMenu = new JMenuItem(new AbstractAction("Import DB") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				backupDB("before import");//导入前的备份。
-
 				File file = new dbFileChooser().dialog(true,".db");
-				if (null ==file) {
-					return;
-				}
-				if (file.toString().equals(BurpExtender.getDataLoadManager().getCurrentDBFile().toString())) {
-					return;
-				}
-
-				DomainDao dao = new DomainDao(file.getAbsolutePath());
-				DomainManager NewManager = dao.getDomainManager();
-
-				gui.getDomainPanel().getDomainResult().getRelatedDomainSet().addAll(NewManager.getRelatedDomainSet());
-				gui.getDomainPanel().getDomainResult().getSubDomainSet().addAll(NewManager.getSubDomainSet());
-				gui.getDomainPanel().getDomainResult().getSimilarDomainSet().addAll(NewManager.getSimilarDomainSet());
-				gui.getDomainPanel().getDomainResult().getEmailSet().addAll(NewManager.getEmailSet());
-				gui.getDomainPanel().getDomainResult().getPackageNameSet().addAll(NewManager.getPackageNameSet());
-
-				gui.getDomainPanel().showDataToDomainGUI();
-				gui.getDomainPanel().saveDomainDataToDB();
-
-				TitleDao titledao = new TitleDao(file.getAbsolutePath());
-				List<LineEntry> titles = titledao.selectAllTitle();
-				for (LineEntry entry:titles) {
-					gui.getTitlePanel().getTitleTable().getLineTableModel().addNewLineEntry(entry);
-				}
-				System.out.println("Import finished");
-				BurpExtender.getStdout().println("Import finished");
+				importFromDB(file,true);
 			}
 		});
 		ImportMenu.setToolTipText("Import Project File(DB File)");
@@ -241,7 +217,6 @@ public class ProjectMenu extends JPopupMenu{
 		});
 
 
-
 		this.add(newMenu);
 		this.add(openMenu);
 		this.add(openRecentMenu);
@@ -249,7 +224,7 @@ public class ProjectMenu extends JPopupMenu{
 		this.add(saveDomainOnly);
 		this.add(buckupDB);
 		this.add(removeDB);
-		//this.add(ImportMenu);
+		this.add(ImportMenu);
 		//this.add(ImportFromTextFileMenu);
 		this.addSeparator();
 		this.add(lockMenu);
@@ -363,6 +338,51 @@ public class ProjectMenu extends JPopupMenu{
 		if (user_input == 1) {
 			openDb();
 		}
+	}
+	
+	/**
+	 * 如果mergeRootDomain为true。先合并TargetEntry，它是控制资产范围的。
+	 * 否则，不合并TargetEntry.
+	 * @param file
+	 */
+	public void importFromDB(File file,boolean mergeRootDomain) {
+		if (null ==file) {
+			return;
+		}
+		if (file.toString().equals(BurpExtender.getDataLoadManager().getCurrentDBFile().toString())) {
+			return;
+		}
+		if (!file.exists()) {
+			return;
+		}
+		backupDB("before import");//导入前的备份。
+		DomainDao dao = new DomainDao(file.getAbsolutePath());
+		DomainManager NewManager = dao.getDomainManager();
+		
+		if (mergeRootDomain) {
+			TargetDao targetDao = new TargetDao(file.getAbsolutePath());
+			List<TargetEntry> targets = targetDao.selectAll();
+			for (TargetEntry target:targets) {
+				gui.getDomainPanel().getTargetTable().getTargetModel().addOrUpdateRowIfValid(target);
+			}
+		}
+
+		gui.getDomainPanel().getDomainResult().getRelatedDomainSet().addAll(NewManager.getRelatedDomainSet());
+		gui.getDomainPanel().getDomainResult().getSubDomainSet().addAll(NewManager.getSubDomainSet());
+		gui.getDomainPanel().getDomainResult().getSimilarDomainSet().addAll(NewManager.getSimilarDomainSet());
+		gui.getDomainPanel().getDomainResult().getEmailSet().addAll(NewManager.getEmailSet());
+		gui.getDomainPanel().getDomainResult().getPackageNameSet().addAll(NewManager.getPackageNameSet());
+
+		gui.getDomainPanel().showDataToDomainGUI();
+		gui.getDomainPanel().saveDomainDataToDB();
+
+		TitleDao titledao = new TitleDao(file.getAbsolutePath());
+		List<LineEntry> titles = titledao.selectAllTitle();
+		for (LineEntry entry:titles) {
+			gui.getTitlePanel().getTitleTable().getLineTableModel().addNewLineEntry(entry);
+		}
+		System.out.println("Import finished");
+		BurpExtender.getStdout().println("Import finished");
 	}
 
 	/**

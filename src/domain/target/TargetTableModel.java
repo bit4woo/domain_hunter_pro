@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 
 import org.apache.commons.lang3.StringUtils;
@@ -35,7 +36,7 @@ public class TargetTableModel extends AbstractTableModel {
 	private GUIMain guiMain;
 
 	private static final transient String[] standardTitles = new String[] { "#", "Domain/Subnet", "Keyword", "Comment",
-			"TrustLevel", "Count","DigDone" };
+			"TrustLevel", "Count", "DigDone" };
 	private static transient List<String> titletList = new ArrayList<>(Arrays.asList(standardTitles));
 
 	private static final transient Logger log = LogManager.getLogger(TargetTableModel.class);
@@ -178,12 +179,12 @@ public class TargetTableModel extends AbstractTableModel {
 			entry.setTrustLevel((String) value);
 			fireTableCellUpdated(row, col);
 		}
-		
+
 		if (col == titletList.indexOf("DigDone")) {
 			entry.setDigDone((Boolean) value);
 			fireTableCellUpdated(row, col);
 		}
-		
+
 		guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(entry);
 	}
 
@@ -248,35 +249,37 @@ public class TargetTableModel extends AbstractTableModel {
 	}
 
 	/**
-	 * 数据的增删查改：新增 TODO 应该操作数据库
+	 * 数据的增删查改
 	 *
 	 * @param key
 	 * @param entry
 	 */
 	private void addOrUpdateRow(String key, TargetEntry entry) {
-		TargetEntry oldentry = targetEntries.get(key);
-		if (oldentry != null) {// 如果有旧的记录，就需要用旧的内容做修改
-			// entry.setBlack(oldentry.isBlack());
-			if (entry.getTrustLevel().equals(AssetTrustLevel.Maybe)) {
-				// 当新记录的类型是maybe，那么它是确信度最低的，使用旧值。否则使用新的值
-				entry.setTrustLevel(oldentry.getTrustLevel());
+		SwingUtilities.invokeLater(() -> {
+			TargetEntry oldentry = targetEntries.get(key);
+			if (oldentry != null) {// 如果有旧的记录，就需要用旧的内容做修改
+				// entry.setBlack(oldentry.isBlack());
+				if (entry.getTrustLevel().equals(AssetTrustLevel.Maybe)) {
+					// 当新记录的类型是maybe，那么它是确信度最低的，使用旧值。否则使用新的值
+					entry.setTrustLevel(oldentry.getTrustLevel());
+				}
+				entry.getComments().addAll(oldentry.getComments());
+				entry.setKeyword(oldentry.getKeyword());
+				entry.setSubdomainCount(oldentry.getSubdomainCount());
+				entry.setDigDone(oldentry.isDigDone());
 			}
-			entry.getComments().addAll(oldentry.getComments());
-			entry.setKeyword(oldentry.getKeyword());
-			entry.setSubdomainCount(oldentry.getSubdomainCount());
-			entry.setDigDone(oldentry.isDigDone());
-		}
 
-		int oldsize = targetEntries.size();
-		targetEntries.put(key, entry);
-		int rowIndex = targetEntries.IndexOfKey(key);
-		int newsize = targetEntries.size();
-		if (oldsize == newsize) {// 覆盖修改
-			fireTableRowsUpdated(rowIndex, rowIndex);
-		} else {// 新增
-			fireTableRowsInserted(rowIndex, rowIndex);
-		}
-		guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(entry);
+			int oldsize = targetEntries.size();
+			targetEntries.put(key, entry);
+			int rowIndex = targetEntries.IndexOfKey(key);
+			int newsize = targetEntries.size();
+			if (oldsize == newsize) {// 覆盖修改
+				fireTableRowsUpdated(rowIndex, rowIndex);
+			} else {// 新增
+				fireTableRowsInserted(rowIndex, rowIndex);
+			}
+			guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(entry);
+		});
 	}
 
 	/**
@@ -285,20 +288,24 @@ public class TargetTableModel extends AbstractTableModel {
 	 * @param rowIndex
 	 */
 	public void removeRow(int rowIndex) {
-		String key = targetEntries.get(rowIndex).getTarget();
-		targetEntries.remove(rowIndex);
-		fireTableRowsDeleted(rowIndex, rowIndex);
-		guiMain.getDomainPanel().getTargetDao().deleteByTarget(key);
+		SwingUtilities.invokeLater(() -> {
+			String key = targetEntries.get(rowIndex).getTarget();
+			targetEntries.remove(rowIndex);
+			fireTableRowsDeleted(rowIndex, rowIndex);
+			guiMain.getDomainPanel().getTargetDao().deleteByTarget(key);
+		});
 	}
 
 	/**
 	 * 数据的增删查改：删除
 	 */
 	public void removeRow(String key) {
-		int rowIndex = targetEntries.IndexOfKey(key);
-		targetEntries.remove(key);
-		fireTableRowsDeleted(rowIndex, rowIndex);
-		guiMain.getDomainPanel().getTargetDao().deleteByTarget(key);
+		SwingUtilities.invokeLater(() -> {
+			int rowIndex = targetEntries.IndexOfKey(key);
+			targetEntries.remove(key);
+			fireTableRowsDeleted(rowIndex, rowIndex);
+			guiMain.getDomainPanel().getTargetDao().deleteByTarget(key);
+		});
 	}
 
 	/**
@@ -547,19 +554,22 @@ public class TargetTableModel extends AbstractTableModel {
 	}
 
 	public void refreshSubdomainCount() {
-		for (TargetEntry entry : targetEntries.values()) {
-			int oldCount = entry.getSubdomainCount();
-			entry.countSubdomain(guiMain.getDomainPanel().getDomainResult().getSubDomainSet());
-			int newCount = entry.getSubdomainCount();
-			if (oldCount != newCount) {
-				// 减少数据库操作
-				guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(entry);
+		SwingUtilities.invokeLater(() -> {
+			for (TargetEntry entry : targetEntries.values()) {
+				int oldCount = entry.getSubdomainCount();
+				entry.countSubdomain(guiMain.getDomainPanel().getDomainResult().getSubDomainSet());
+				int newCount = entry.getSubdomainCount();
+				if (oldCount != newCount) {
+					// 减少数据库操作
+					guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(entry);
+				}
 			}
-		}
-		int size = targetEntries.size();
-		if (size >= 1) {
-			fireTableRowsUpdated(0, targetEntries.size() - 1);
-		}
+			int size = targetEntries.size();
+			if (size >= 1) {
+				fireTableRowsUpdated(0, targetEntries.size() - 1);
+			}
+		});
+
 	}
 
 	/**
@@ -592,7 +602,7 @@ public class TargetTableModel extends AbstractTableModel {
 					debugPrint(domainOrIP, DomainManager.SUB_DOMAIN, "sub-domain of " + rootdomain);
 					return DomainManager.SUB_DOMAIN;
 				}
-				
+
 				if (DomainUtils.isWhiteListTLD(domainOrIP, rootdomain)) {
 					debugPrint(domainOrIP, DomainManager.TLD_DOMAIN, "TLD-domain of " + rootdomain);
 					return DomainManager.TLD_DOMAIN;
@@ -691,67 +701,80 @@ public class TargetTableModel extends AbstractTableModel {
 	 * @param params
 	 */
 	public void batchAction(int[] rows, String functionName, Object... params) {
-		Arrays.sort(rows); // 升序
 
-		// 解决 Boolean 变成 boolean.class 没有成功
-		Object[] fixedParams = Arrays.stream(params)
-				.map(param -> (param instanceof Boolean) ? ((Boolean) param).booleanValue() : param)
-				.toArray();
+		SwingUtilities.invokeLater(() -> {
+			Arrays.sort(rows); // 升序
 
+			// 解决 Boolean 变成 boolean.class 没有成功
+			Object[] fixedParams = Arrays.stream(params)
+					.map(param -> (param instanceof Boolean) ? ((Boolean) param).booleanValue() : param).toArray();
 
-		for (int i = rows.length - 1; i >= 0; i--) {// 降序删除才能正确删除每个元素
-			TargetEntry entry = targetEntries.get(rows[i]);
-			MethodInvoker.invokeMethod(entry, functionName, fixedParams);
-			guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(entry);
-		}
-		fireUpdated(rows);
+			for (int i = rows.length - 1; i >= 0; i--) {// 降序删除才能正确删除每个元素
+				TargetEntry entry = targetEntries.get(rows[i]);
+				MethodInvoker.invokeMethod(entry, functionName, fixedParams);
+				guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(entry);
+			}
+			fireUpdated(rows);
+		});
+
 	}
-	
+
 	public void updateDigDone(int[] rows, boolean digDone) {
-		Arrays.sort(rows); // 升序
-		for (int i = rows.length - 1; i >= 0; i--) {// 降序删除才能正确删除每个元素
-			TargetEntry checked = targetEntries.get(rows[i]);
-			checked.setDigDone(digDone);
-			guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(checked);
-		}
-		fireUpdated(rows);
+		SwingUtilities.invokeLater(() -> {
+			Arrays.sort(rows); // 升序
+			for (int i = rows.length - 1; i >= 0; i--) {// 降序删除才能正确删除每个元素
+				TargetEntry checked = targetEntries.get(rows[i]);
+				checked.setDigDone(digDone);
+				guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(checked);
+			}
+			fireUpdated(rows);
+		});
+
 	}
-	
 
 	public void updateComments(int[] rows, String commentAdd) {
 		// because thread let the delete action not in order, so we must loop in here.
 		// list length and index changed after every remove.the origin index not point
 		// to right item any more.
-		Arrays.sort(rows); // 升序
-		for (int i = rows.length - 1; i >= 0; i--) {// 降序删除才能正确删除每个元素
-			TargetEntry checked = targetEntries.get(rows[i]);
-			checked.addComment(commentAdd);
-			guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(checked);
-		}
-		fireUpdated(rows);
+		SwingUtilities.invokeLater(() -> {
+			Arrays.sort(rows); // 升序
+			for (int i = rows.length - 1; i >= 0; i--) {// 降序删除才能正确删除每个元素
+				TargetEntry checked = targetEntries.get(rows[i]);
+				checked.addComment(commentAdd);
+				guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(checked);
+			}
+			fireUpdated(rows);
+		});
+
 	}
 
 	public void removeComments(int[] rows, String commentToRemove) {
 		// because thread let the delete action not in order, so we must loop in here.
 		// list length and index changed after every remove.the origin index not point
 		// to right item any more.
-		Arrays.sort(rows); // 升序
-		for (int i = rows.length - 1; i >= 0; i--) {// 降序删除才能正确删除每个元素
-			TargetEntry checked = targetEntries.get(rows[i]);
-			checked.getComments().remove(commentToRemove);
-			guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(checked);
-		}
-		fireUpdated(rows);
+		SwingUtilities.invokeLater(() -> {
+			Arrays.sort(rows); // 升序
+			for (int i = rows.length - 1; i >= 0; i--) {// 降序删除才能正确删除每个元素
+				TargetEntry checked = targetEntries.get(rows[i]);
+				checked.getComments().remove(commentToRemove);
+				guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(checked);
+			}
+			fireUpdated(rows);
+		});
+
 	}
 
 	public void clearComments(int[] rows) {
-		Arrays.sort(rows); // 升序
-		for (int i = rows.length - 1; i >= 0; i--) {// 降序删除才能正确删除每个元素
-			TargetEntry checked = targetEntries.get(rows[i]);
-			checked.getComments().clear();
-			guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(checked);
-		}
-		fireUpdated(rows);
+		SwingUtilities.invokeLater(() -> {
+			Arrays.sort(rows); // 升序
+			for (int i = rows.length - 1; i >= 0; i--) {// 降序删除才能正确删除每个元素
+				TargetEntry checked = targetEntries.get(rows[i]);
+				checked.getComments().clear();
+				guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(checked);
+			}
+			fireUpdated(rows);
+		});
+
 	}
 
 	private void fireUpdated(int[] rows) {
@@ -763,21 +786,24 @@ public class TargetTableModel extends AbstractTableModel {
 	}
 
 	public void removeRows(int[] rows) {
-		Arrays.sort(rows); // 升序
-		for (int i = rows.length - 1; i >= 0; i--) {// 降序删除才能正确删除每个元素
-			try {
-				int index = rows[i];
-				TargetEntry checked = targetEntries.get(index);
-				if (checked == null) {
-					throw new ArrayIndexOutOfBoundsException("can't find item with index " + index);
+		SwingUtilities.invokeLater(() -> {
+			Arrays.sort(rows); // 升序
+			for (int i = rows.length - 1; i >= 0; i--) {// 降序删除才能正确删除每个元素
+				try {
+					int index = rows[i];
+					TargetEntry checked = targetEntries.get(index);
+					if (checked == null) {
+						throw new ArrayIndexOutOfBoundsException("can't find item with index " + index);
+					}
+					targetEntries.remove(index);
+					guiMain.getDomainPanel().getTargetDao().deleteTarget(checked);
+					fireTableRowsDeleted(index, index);
+				} catch (Exception e) {
+					e.printStackTrace(stderr);
 				}
-				targetEntries.remove(index);
-				guiMain.getDomainPanel().getTargetDao().deleteTarget(checked);
-				fireTableRowsDeleted(index, index);
-			} catch (Exception e) {
-				e.printStackTrace(stderr);
 			}
-		}
+		});
+
 	}
 
 	public static void test() {

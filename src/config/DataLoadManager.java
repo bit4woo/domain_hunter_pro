@@ -278,7 +278,7 @@ public class DataLoadManager {
         }
     }
 
-    public void loadDbAndConfig() {
+    public void loadConfig() {
         SwingWorker<Map, Map> worker = new SwingWorker<Map, Map>() {
             @Override
             protected Map doInBackground() throws Exception {

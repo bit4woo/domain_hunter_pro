@@ -113,7 +113,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 				// 这里的BurpExtender.this实质是指ITab对象，也就是getUiComponent()中的contentPane.这个参数由GUI()函数初始化。
 				// 如果这里报java.lang.NullPointerException: Component cannot be null
 				// 错误，需要排查contentPane的初始化是否正确。
-				dataLoadManager.loadDbAndConfig();
+				dataLoadManager.loadConfig();
 				gui.startLiveCapture();
 			}
 		});

@@ -57,10 +57,10 @@ import com.bit4woo.utilbox.utils.UrlUtils;
 import GUI.GUIMain;
 import base.BackGroundButton;
 import burp.BurpExtender;
-import burp.ProjectMenu;
 import config.ConfigManager;
 import config.ConfigName;
 import domain.CertInfo;
+import domain.ProjectMenu;
 import title.WebIcon;
 import utils.DecoderUtil;
 
