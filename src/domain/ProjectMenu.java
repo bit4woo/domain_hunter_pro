@@ -381,8 +381,9 @@ public class ProjectMenu extends JPopupMenu{
 		for (LineEntry entry:titles) {
 			gui.getTitlePanel().getTitleTable().getLineTableModel().addNewLineEntry(entry);
 		}
-		System.out.println("Import finished");
-		BurpExtender.getStdout().println("Import finished");
+		
+		System.out.println("Import finished, " + gui.getDomainPanel().getDomainResult().getSummary());
+		stdout.println("Import finished, " + gui.getDomainPanel().getDomainResult().getSummary());
 	}
 
 	/**
