@@ -1072,23 +1072,23 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	}
 
 	public void addNewLineEntry(LineEntry lineEntry) {
-
-		if (lineEntry == null) {
-			return;
-		}
-		String key = lineEntry.getUrl();
-		LineEntry ret = lineEntries.put(key, lineEntry);
-		// 以前的做法是，put之后再次统计size来判断是新增还是替换，这种方法在多线程时可能不准确，
-		// concurrentHashMap的put方法会在替换时返回原来的值，可用于判断是替换还是新增
-
-		// 异步写数据库
-		new Thread(() -> titleDao.addOrUpdateTitle(lineEntry)).start();
-
-		int index = lineEntries.IndexOfKey(key);
-
-		// 所有 UI 通知在 EDT 执行,避免 IndexOutOfBoundsException错误
-		// 大概率是因为排序器和数据模型不同步导致的，但是每次同步排序器会导致界面数据不停刷新，这个过程中难以操作数据表。
 		SwingUtilities.invokeLater(() -> {
+			if (lineEntry == null) {
+				return;
+			}
+			String key = lineEntry.getUrl();
+			LineEntry ret = lineEntries.put(key, lineEntry);
+			// 以前的做法是，put之后再次统计size来判断是新增还是替换，这种方法在多线程时可能不准确，
+			// concurrentHashMap的put方法会在替换时返回原来的值，可用于判断是替换还是新增
+	
+			// 异步写数据库
+			new Thread(() -> titleDao.addOrUpdateTitle(lineEntry)).start();
+	
+			int index = lineEntries.IndexOfKey(key);
+	
+			// 所有 UI 通知在 EDT 执行,避免 IndexOutOfBoundsException错误
+			// 大概率是因为排序器和数据模型不同步导致的，但是每次同步排序器会导致界面数据不停刷新，这个过程中难以操作数据表。
+		
 			try {
 				if (ret == null) {
 					fireTableRowsInserted(index, index);

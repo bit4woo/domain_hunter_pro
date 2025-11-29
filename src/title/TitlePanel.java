@@ -34,7 +34,7 @@ import burp.BurpExtender;
 import burp.IMessageEditor;
 import dao.TitleDao;
 import thread.ThreadGetSubnet;
-import thread.ThreadGetTitleWithForceStop;
+import thread.ThreadGetTitle;
 import title.search.SearchTextField;
 
 public class TitlePanel extends JPanel {
@@ -60,7 +60,7 @@ public class TitlePanel extends JPanel {
 	private TitleDao titleDao;
 	PrintWriter stdout;
 	PrintWriter stderr;
-	private ThreadGetTitleWithForceStop threadGetTitle;
+	private ThreadGetTitle threadGetTitle;
 	private GetTitleTempConfig tempConfig; //每次获取title过程中的配置。
 	private IndexedHashMap<String,LineEntry> BackupLineEntries;
 	private GUIMain guiMain;
@@ -141,11 +141,11 @@ public class TitlePanel extends JPanel {
 		return responseViewer;
 	}
 
-	public ThreadGetTitleWithForceStop getThreadGetTitle() {
+	public ThreadGetTitle getThreadGetTitle() {
 		return threadGetTitle;
 	}
 
-	public void setThreadGetTitle(ThreadGetTitleWithForceStop threadGetTitle) {
+	public void setThreadGetTitle(ThreadGetTitle threadGetTitle) {
 		this.threadGetTitle = threadGetTitle;
 	}
 
@@ -308,7 +308,7 @@ public class TitlePanel extends JPanel {
 			return;
 		}
 
-		setThreadGetTitle(new ThreadGetTitleWithForceStop(guiMain,domainsWithSource,tempConfig.getThreadNumber()));
+		setThreadGetTitle(new ThreadGetTitle(guiMain,domainsWithSource,tempConfig.getThreadNumber()));
 		getThreadGetTitle().start();
 	}
 
