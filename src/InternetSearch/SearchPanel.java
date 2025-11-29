@@ -307,7 +307,7 @@ public class SearchPanel extends JPanel {
 		
 		// 添加菜单项：关闭非当前 tab
 		JMenuItem closeOtherTabMenuItem = new JMenuItem("Close Other Tab");
-		closeCurrentTabMenuItem.addActionListener(new ActionListener() {
+		closeOtherTabMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				for (int i = tabbedPane.getTabCount() - 1; i >= 0; i--) {
 					if (i==tabIndex) {
