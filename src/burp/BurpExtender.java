@@ -138,7 +138,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 
 		try {// 避免这里错误导致保存逻辑的失效
 			if (gui.getTitlePanel().getThreadGetTitle() != null) {
-				gui.getTitlePanel().getThreadGetTitle().interrupt();// maybe null
+				gui.getTitlePanel().getThreadGetTitle().stopAll();// maybe null
 				gui.getInputQueue().clear();
 				gui.getLiveinputQueue().clear();
 				gui.getHttpsChecked().clear();

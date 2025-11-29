@@ -29,8 +29,8 @@ import dao.DomainDao;
 import dao.TargetDao;
 import dao.TitleDao;
 import domain.DomainPanel;
-import domain.DomainProducer;
 import domain.ProjectMenu;
+import thread.DomainProducer;
 import title.TitlePanel;
 
 
