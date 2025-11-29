@@ -182,6 +182,18 @@ public class DataLoadManager {
         saveToDisk();
     }
 
+	public void cleanOldThreads() {
+		try {// 避免这里错误导致保存逻辑的失效
+			if (gui.getTitlePanel().getThreadGetTitle() != null) {
+				gui.getTitlePanel().getThreadGetTitle().stopAll();// maybe null
+				gui.getInputQueue().clear();
+				gui.getLiveinputQueue().clear();
+				gui.getHttpsChecked().clear();
+			} // 必须要先结束线程，否则获取数据的操作根本无法结束，因为线程一直通过sync占用资源
+		} catch (Exception e) {
+			e.printStackTrace(BurpExtender.getStderr());
+		}
+	}
 
     /**
      * 加载数据库文件：
@@ -192,6 +204,7 @@ public class DataLoadManager {
      * @param dbFilePath
      */
     private boolean loadDataBase(String dbFilePath) {
+    	cleanOldThreads();
         try {//这其中的异常会导致burp退出
             System.out.println("=================================");
             System.out.println("==Start Loading Data From: " + dbFilePath + " " + Commons.getNowTimeString() + "==");

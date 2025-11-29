@@ -20,8 +20,6 @@ import javax.swing.event.MenuListener;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import com.bit4woo.utilbox.utils.SwingUtils;
-
 import GUI.GUIMain;
 import base.Commons;
 import base.DictFileReader;
@@ -229,6 +227,7 @@ public class ProjectMenu extends JPopupMenu{
 		this.addSeparator();
 		this.add(lockMenu);
 	}
+	
 
 	public void createNewDb(GUIMain gui) {
 		File file = new dbFileChooser().dialog(false,".db");//通过保存对话指定文件，这会是一个空文件。
