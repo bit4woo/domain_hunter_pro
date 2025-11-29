@@ -411,6 +411,20 @@ public class SearchPanel extends JPanel {
 			}
 		});
 		popupMenu.add(searchAgainMenuItem);
+		
+		
+		// 添加菜单项：关闭非当前 tab
+		JMenuItem markAllReaded = new JMenuItem("Mark All As Readed");
+		markAllReaded.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				for (int i = tabbedPane.getTabCount() - 1; i >= 0; i--) {
+					// 获得tab header那个小方块中的组件面包
+					JPanel panel = ((JPanel) centerTabbedPanel.getTabComponentAt(i));
+					panel.setBackground(Color.GRAY);
+				}
+			}
+		});
+		popupMenu.add(markAllReaded);
 
 		// 显示右键菜单
 		popupMenu.show(tabbedPane, e.getX(), e.getY());
