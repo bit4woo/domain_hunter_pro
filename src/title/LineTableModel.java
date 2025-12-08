@@ -1095,6 +1095,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			fireTableDataChanged();
 			
 			new Thread(() -> titleDao.addOrUpdateTitle(lineEntry)).start();// 写入数据库
+			System.out.println(key+" added");
 		});
 
 	}
