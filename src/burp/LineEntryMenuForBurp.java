@@ -403,7 +403,7 @@ public class LineEntryMenuForBurp{
 					for (LineEntry entry:entries) {
 						entry.setCheckStatus(LineEntry.CheckStatus_Checked);
 						entry.setTime(Commons.getNowTimeString());
-						int index = titlepanel.getTitleTable().getLineTableModel().getLineEntries().IndexOfKey(entry.getUrl());
+						int index = titlepanel.getTitleTable().getLineTableModel().getLineEntries().indexOfKey(entry.getUrl());
 						stdout.println("$$$ "+entry.getUrl()+"status has been set to "+LineEntry.CheckStatus_Checked);
 						titlepanel.getTitleTable().getLineTableModel().fireTableRowsUpdated(index,index);//主动通知更新，否则不会写入数据库!!!
 						//这里不用一次fire多个行，否则还得去查找index,会花费更多时间。
@@ -473,7 +473,7 @@ public class LineEntryMenuForBurp{
 					}
 
 					if (entry != null) {
-						int index = titlepanel.getTitleTable().getLineTableModel().getLineEntries().IndexOfKey(entry.getUrl());
+						int index = titlepanel.getTitleTable().getLineTableModel().getLineEntries().indexOfKey(entry.getUrl());
 
 						addLevelABC(topMenu,titlepanel.getTitleTable(),new int[] {index});
 						System.out.println("111");
@@ -514,7 +514,7 @@ public class LineEntryMenuForBurp{
 	 * @param entry
 	 */
 	public void addCommentForLine(LineEntry entry,String comment) {
-		int index = titlepanel.getTitleTable().getLineTableModel().getLineEntries().IndexOfKey(entry.getUrl());
+		int index = titlepanel.getTitleTable().getLineTableModel().getLineEntries().indexOfKey(entry.getUrl());
 		if (comment != null) {
 			entry.addComment(comment);
 			titlepanel.getTitleTable().getLineTableModel().fireTableRowsUpdated(index,index);//主动通知更新，否则不会写入数据库!!!
@@ -527,7 +527,7 @@ public class LineEntryMenuForBurp{
 	 */
 	public void addCommentForLines(List<LineEntry> entries,String comment) {
 		for (LineEntry entry:entries){
-			int index = titlepanel.getTitleTable().getLineTableModel().getLineEntries().IndexOfKey(entry.getUrl());
+			int index = titlepanel.getTitleTable().getLineTableModel().getLineEntries().indexOfKey(entry.getUrl());
 			if (comment != null) {
 				entry.addComment(comment);
 				titlepanel.getTitleTable().getLineTableModel().fireTableRowsUpdated(index,index);//主动通知更新，否则不会写入数据库!!!

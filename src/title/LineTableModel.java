@@ -16,8 +16,10 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import javax.swing.ImageIcon;
+import javax.swing.RowSorter;
 import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableModel;
 
 import com.bit4woo.utilbox.burp.HelperPlus;
 import com.bit4woo.utilbox.utils.DomainUtils;
@@ -656,7 +658,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		int i = 0;
 
 		for (LineEntry entry : entries) {// 降序删除才能正确删除每个元素
-			int index = lineEntries.IndexOfKey(entry.getUrl());
+			int index = lineEntries.indexOfKey(entry.getUrl());
 			indexes[i] = index;
 			i++;
 		}
@@ -1058,14 +1060,40 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			if (lineEntry == null) {
 				return;
 			}
-			String key = lineEntry.getUrl() + "#" + System.currentTimeMillis();
+			String key = lineEntry.getUrl() + "#" + System.nanoTime();
 			lineEntry.setUrl(key);
 			lineEntries.put(key, lineEntry);
-
-			int index = lineEntries.IndexOfKey(key);
-
-			fireTableRowsInserted(index, index);// 有毫秒级时间戳，只会是新增
-
+			
+			// compute index from size - 1: this avoids reliance on indexOfKey correctness
+	        int index;
+	        try {
+	            index = lineEntries.size() - 1;
+	            if (index < 0) {
+	                index = 0;
+	            }
+	        } catch (Exception e) {
+	            index = lineEntries.indexOfKey(key); // fallback
+	        }
+	        
+//			System.out.println("rowCount=" + getRowCount() + ", lineEntries.size=" + lineEntries.size());
+//			System.out.println("index=" + index + ", size=" + lineEntries.size());
+			
+			/**
+			 * java.lang.ArrayIndexOutOfBoundsException: Index 1847 out of bounds for length 1847 
+			 * at java.desktop/javax.swing.DefaultRowSorter.setModelToViewFromViewToModel(DefaultRowSorter.java:745)
+			 */
+			//方案1：
+//			LineTable table = guiMain.getTitlePanel().getTitleTable();
+//			RowSorter<? extends TableModel> sorter = table.getRowSorter();
+//			table.setRowSorter(null);  // temporarily disable sorter
+//
+//			fireTableRowsInserted(index, index);// 有毫秒级时间戳，只会是新增
+//
+//			table.setRowSorter(sorter);  // enable again
+			
+			//方案2：
+			fireTableDataChanged();
+			
 			new Thread(() -> titleDao.addOrUpdateTitle(lineEntry)).start();// 写入数据库
 		});
 
@@ -1080,15 +1108,15 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			LineEntry ret = lineEntries.put(key, lineEntry);
 			// 以前的做法是，put之后再次统计size来判断是新增还是替换，这种方法在多线程时可能不准确，
 			// concurrentHashMap的put方法会在替换时返回原来的值，可用于判断是替换还是新增
-	
+
 			// 异步写数据库
 			new Thread(() -> titleDao.addOrUpdateTitle(lineEntry)).start();
-	
-			int index = lineEntries.IndexOfKey(key);
-	
+
+			int index = lineEntries.indexOfKey(key);
+
 			// 所有 UI 通知在 EDT 执行,避免 IndexOutOfBoundsException错误
 			// 大概率是因为排序器和数据模型不同步导致的，但是每次同步排序器会导致界面数据不停刷新，这个过程中难以操作数据表。
-		
+
 			try {
 				if (ret == null) {
 					fireTableRowsInserted(index, index);

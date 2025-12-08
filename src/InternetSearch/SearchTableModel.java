@@ -324,7 +324,7 @@ public class SearchTableModel extends AbstractTableModel {
 		SearchResultEntry ret = lineEntries.put(key,entry);
 		//以前的做法是，put之后再次统计size来判断是新增还是替换，这种方法在多线程时可能不准确，
 		//concurrentHashMap的put方法会在替换时返回原来的值，可用于判断是替换还是新增
-		int index = lineEntries.IndexOfKey(key);
+		int index = lineEntries.indexOfKey(key);
 		if (ret == null) {
 			try {
 				fireTableRowsInserted(index, index);

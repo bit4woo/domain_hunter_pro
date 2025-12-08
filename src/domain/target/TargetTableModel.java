@@ -271,7 +271,7 @@ public class TargetTableModel extends AbstractTableModel {
 
 			int oldsize = targetEntries.size();
 			targetEntries.put(key, entry);
-			int rowIndex = targetEntries.IndexOfKey(key);
+			int rowIndex = targetEntries.indexOfKey(key);
 			int newsize = targetEntries.size();
 			if (oldsize == newsize) {// 覆盖修改
 				fireTableRowsUpdated(rowIndex, rowIndex);
@@ -301,7 +301,7 @@ public class TargetTableModel extends AbstractTableModel {
 	 */
 	public void removeRow(String key) {
 		SwingUtilities.invokeLater(() -> {
-			int rowIndex = targetEntries.IndexOfKey(key);
+			int rowIndex = targetEntries.indexOfKey(key);
 			targetEntries.remove(key);
 			fireTableRowsDeleted(rowIndex, rowIndex);
 			guiMain.getDomainPanel().getTargetDao().deleteByTarget(key);
