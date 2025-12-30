@@ -25,8 +25,11 @@ public class NetworkUtils {
             }
             byteRequest = new HelperPlus(helpers).addOrUpdateHeader(true, byteRequest, "Cookie", cookie);
         }
-
-        IHttpService service = helpers.buildHttpService(url.getHost(), url.getPort(), url.getProtocol());
+        int port = url.getPort();
+        if (port == -1) {
+            port = url.getDefaultPort();
+        }
+        IHttpService service = helpers.buildHttpService(url.getHost(), port, url.getProtocol());
         return BurpExtender.getCallbacks().makeHttpRequest(service, byteRequest);
     }
 
