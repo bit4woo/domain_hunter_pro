@@ -139,7 +139,7 @@ public class SearchMenu extends JPopupMenu {
 		});
 
 		
-		JMenuItem XXLJob = new JMenuItem(new AbstractAction("XXLJob") {
+		JMenuItem XXLJob = new JMenuItem(new AbstractAction("XXLJob/nacos/Tomcat") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				searchField.setText("color:white;background-color:#525D76;");
@@ -150,6 +150,13 @@ public class SearchMenu extends JPopupMenu {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				searchField.setText("Whitelabel Error Page||116323821||{\"timestamp\"");
+			}
+		});
+		
+		JMenuItem openconnect = new JMenuItem(new AbstractAction("openconnect") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				searchField.setText("<config-auth||openconnect||");
 			}
 		});
 		
@@ -184,6 +191,7 @@ public class SearchMenu extends JPopupMenu {
 		this.addSeparator();//分割线
 		this.add(XXLJob);
 		this.add(Spring);
+		this.add(openconnect);
 		this.addSeparator();//分割线
 		this.add(ItemsWithResponse);
 		this.add(UrlRedirection);
