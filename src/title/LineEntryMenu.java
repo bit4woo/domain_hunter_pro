@@ -863,6 +863,27 @@ public class LineEntryMenu extends JPopupMenu {
 
 
 		/**
+		 * 删除明显无效的记录，以便再次请求，可能发现新的有效资产
+		 */
+		JMenuItem removeInvalidItems = new JMenuItem(new AbstractAction("Delete Invalid Entries") {//need to show dialog to confirm
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				new SwingWorker<Map,Map>(){
+
+					@Override
+					protected Map doInBackground() throws Exception {
+						int result = JOptionPane.showConfirmDialog(null,"Are you sure to DELETE invalid items(eg. stauts=-1,status=503) ?");
+						if (result == JOptionPane.YES_OPTION) {
+							lineTable.getLineTableModel().removeInvalidRows();
+							titlepanel.digStatus();
+						}
+						return null;
+					}
+				}.execute();
+			}
+		});
+		
+		/**
 		 * 删除明显非目标的记录
 		 */
 		JMenuItem removeItemsNotInTargets = new JMenuItem(new AbstractAction("Delete Non-Target Entries") {//need to show dialog to confirm
@@ -1096,6 +1117,7 @@ public class LineEntryMenu extends JPopupMenu {
 		this.add(addToblackListAndDeleteItem);//加入黑名单并删除
 		this.add(removeItem);//单纯删除记录
 		this.add(removeItemsNotInTargets);
+		this.add(removeInvalidItems);
 		//this.add(removeSubDomainItem);
 		//this.add(removeCustomAssetItem);
 		this.add(DeleteHostFromTargetItem);

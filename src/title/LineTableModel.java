@@ -836,6 +836,45 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		});
 
 	}
+	
+	public void removeInvalidRows() {
+
+		SwingUtilities.invokeLater(() -> {
+			for (int i = lineEntries.size() - 1; i >= 0; i--) {// 降序删除才能正确删除每个元素
+				try {
+					LineEntry entry = lineEntries.get(i);
+					if (entry == null) {
+						continue;
+					}
+					int status = entry.getStatuscode();
+					/**
+					 * -1 No DNS Record,or just DNS Record
+					 * 0 No Response
+					 * 400 Bad Request
+					 * 502 Bad Gateway
+					 * 503 Service Unavailable
+					 * 504 Gateway Time-out
+					 * 521 Web Server Is Down
+					 * 522 Connection Timed Out
+					 * 
+					 */
+					if (status == -1 || status == 0 || status == 400 || status >= 502) {
+						String url = entry.getUrl();
+						lineEntries.remove(i);
+						titleDao.deleteTitleByUrl(url);// 写入数据库
+						stdout.println("!!! " + url + " deleted, due to status : " + status);
+						int index = i;
+
+						fireTableRowsDeleted(index, index);
+					}
+
+				} catch (Exception e) {
+					e.printStackTrace(stderr);
+				}
+			}
+		});
+
+	}
 
 	/**
 	 * 暂时只是标记重复项目，然后用户可以手动标记，不直接执行删除操作
@@ -1063,26 +1102,27 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			String key = lineEntry.getUrl() + "#" + System.nanoTime();
 			lineEntry.setUrl(key);
 			lineEntries.put(key, lineEntry);
-			
+
 			// compute index from size - 1: this avoids reliance on indexOfKey correctness
-	        int index;
-	        try {
-	            index = lineEntries.size() - 1;
-	            if (index < 0) {
-	                index = 0;
-	            }
-	        } catch (Exception e) {
-	            index = lineEntries.indexOfKey(key); // fallback
-	        }
-	        
+			int index;
+			try {
+				index = lineEntries.size() - 1;
+				if (index < 0) {
+					index = 0;
+				}
+			} catch (Exception e) {
+				index = lineEntries.indexOfKey(key); // fallback
+			}
+
 //			System.out.println("rowCount=" + getRowCount() + ", lineEntries.size=" + lineEntries.size());
 //			System.out.println("index=" + index + ", size=" + lineEntries.size());
-			
+
 			/**
-			 * java.lang.ArrayIndexOutOfBoundsException: Index 1847 out of bounds for length 1847 
-			 * at java.desktop/javax.swing.DefaultRowSorter.setModelToViewFromViewToModel(DefaultRowSorter.java:745)
+			 * java.lang.ArrayIndexOutOfBoundsException: Index 1847 out of bounds for length
+			 * 1847 at
+			 * java.desktop/javax.swing.DefaultRowSorter.setModelToViewFromViewToModel(DefaultRowSorter.java:745)
 			 */
-			//方案1：
+			// 方案1：
 //			LineTable table = guiMain.getTitlePanel().getTitleTable();
 //			RowSorter<? extends TableModel> sorter = table.getRowSorter();
 //			table.setRowSorter(null);  // temporarily disable sorter
@@ -1090,12 +1130,12 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 //			fireTableRowsInserted(index, index);// 有毫秒级时间戳，只会是新增
 //
 //			table.setRowSorter(sorter);  // enable again
-			
-			//方案2：
+
+			// 方案2：
 			fireTableDataChanged();
-			
+
 			new Thread(() -> titleDao.addOrUpdateTitle(lineEntry)).start();// 写入数据库
-			System.out.println(key+" added");
+			System.out.println(key + " added");
 		});
 
 	}
