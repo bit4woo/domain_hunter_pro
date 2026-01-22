@@ -175,7 +175,7 @@ public class SearchResultEntry {
 
 	public String getIdentify() {
 		//不同搜索引擎的结果，是否要去重？
-		return getUri()+"#"+System.currentTimeMillis();
+		return getUri()+"#"+System.nanoTime();
 	}
 
 	/**

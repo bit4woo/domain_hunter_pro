@@ -34,6 +34,7 @@ public class FoFaClient extends BaseClient {
 					JSONArray parts = (JSONArray) item;
 					// host,ip,domain,port,protocol,server
 					// ["www.xxx.com","11.11.11.11","xxx.com","80","http","nginx/1.20.1"]
+					//["47.xx.xxx.60:91","47.xx.xx.60","","91","http","nginx/1.20.1","","37963","Hangzhou Alibaba Advertising Co.,Ltd."],
 					SearchResultEntry entry = new SearchResultEntry();
 
 					try {
@@ -109,6 +110,11 @@ public class FoFaClient extends BaseClient {
 	@Override
 	public byte[] buildRawData(String searchContent, int page) {
 		return null;
+	}
+	
+	public static void main(String[] args) {
+		List<SearchResultEntry> result = new FoFaClient().parseResp("");
+		System.out.println(result.size());
 	}
 
 }
