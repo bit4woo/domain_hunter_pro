@@ -9,13 +9,13 @@
 	<artifactId>domain_hunter_pro</artifactId>
 	<version>v2.0</version>
 	<repositories>
-		<repository>
+<!--		<repository>
 			<id>jitpack.io</id>
 			<url>https://jitpack.io</url>
 			<snapshots>
             	<enabled>true</enabled>
         	</snapshots>
-		</repository>
+		</repository>-->
 		<repository>
 			<id>mulesoft</id>
 			<url>https://repository.mulesoft.org/nexus/content/repositories/public/</url>
@@ -99,9 +99,9 @@
 		</dependency>
 
 		<dependency>
-		    <groupId>com.github.bit4woo</groupId>
+		    <groupId>com.bit4woo.utilbox</groupId>
 		    <artifactId>java_utilbox</artifactId>
-		    <version>main-SNAPSHOT</version>
+		    <version>0.1</version>
 		    <!-- use "mvn clean install -U" to force update -->
 		</dependency>
 		
@@ -235,11 +235,12 @@
 			<artifactId>spring-jdbc</artifactId>
 			<version>5.3.26</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/com.github.imcdonagh/image4j -->
+		<!-- Source: https://mvnrepository.com/artifact/org.jclarion/image4j -->
 		<dependency>
-			<groupId>com.github.imcdonagh</groupId>
-			<artifactId>image4j</artifactId>
-			<version>0.7.2</version>
+		    <groupId>org.jclarion</groupId>
+		    <artifactId>image4j</artifactId>
+		    <version>0.7</version>
+		    <scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jsoup</groupId>
