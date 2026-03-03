@@ -613,7 +613,7 @@ public class LineEntry {
 			return false;
 		}
 
-		return bodyText.contains("<!DOCTYPE html>") || bodyText.contains("<html>");
+		return bodyText.toLowerCase().contains("<!doctype html>") || bodyText.contains("<html");
 	}
 
 	public int getPort() {
@@ -766,11 +766,7 @@ public class LineEntry {
 	}
 
 	public static void testGrepTitle() {
-		String aa = " <title>Kênh Quản Lý Shop - Phần Mềm Quản Lý Bán Hàng Miễn Phí</title>";
-		String bb = "<title ng-bind=\"service.title\">The Evolution of the Producer-Consumer Problem in Java - DZone Java</title>";
-		String cc = " <TITLE>Kênh Quản Lý Shop - Phần Mềm Quản Lý Bán Hàng Miễn Phí</title>";
 		String dd = " <h1aaa>h1</h1>";
-
 		System.out.println(grepTitle(dd));
 	}
 
