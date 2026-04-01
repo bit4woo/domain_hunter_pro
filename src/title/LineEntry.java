@@ -318,6 +318,7 @@ public class LineEntry {
 
 		IHttpRequestResponse info = BurpExtender.getCallbacks().makeHttpRequest(service, request);
 		// BurpExtender.getStdout().println(new String(info.getResponse()));
+		BurpExtender.getStdout().println("request "+HelperPlus.getBaseURL(service)+" done");
 		if (info != null) {
 			parse(info);
 		}
