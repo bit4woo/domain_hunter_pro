@@ -1,7 +1,10 @@
 package InternetSearch;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 import com.bit4woo.utilbox.burp.HelperPlus;
 
@@ -11,6 +14,7 @@ import burp.IBurpExtenderCallbacks;
 import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
 import burp.IHttpService;
+import burp.IRequestInfo;
 import config.ConfigManager;
 import config.ConfigName;
 import title.LineEntry;
@@ -78,6 +82,55 @@ public class HttpClientOfBurp {
 		}
 		byte[] byteBody = getter.getBody(false, message);
 		return new String(byteBody);
+	}
+	
+	/**
+	 * 仅针对GET
+	 * @param url
+	 * @param headersToAdd
+	 * @return
+	 */
+	public static byte[] buildHttpRequest(URL url,List<String> headersToAdd) {
+		IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
+		IExtensionHelpers helpers = callbacks.getHelpers();
+		
+	    List<String> headers = new ArrayList<>();
+
+	    headers.add("GET " + url.getPath() + " HTTP/1.1");
+	    headers.add("Host: " + url.getHost());
+	    headers.add("User-Agent: Mozilla/5.0");
+	    headers.add("Accept: */*");
+
+	    // 👇 你要加的 header
+	    headers.addAll(headersToAdd);
+
+	    byte[] body = null; // GET一般无body
+
+	    byte[] byteRequest = helpers.buildHttpMessage(headers, body);
+		
+	    return byteRequest;
+	}
+	
+	public static byte[] addHeader(byte[] byteRequest,List<String> headersToAdd) {
+		IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
+		IExtensionHelpers helpers = callbacks.getHelpers();
+		IRequestInfo requestInfo = helpers.analyzeRequest(byteRequest);
+
+		List<String> headers = new ArrayList<>(requestInfo.getHeaders());
+
+		// 添加新 header
+		headers.addAll(headersToAdd);
+
+		// 取 body
+		byte[] body = Arrays.copyOfRange(
+		    byteRequest,
+		    requestInfo.getBodyOffset(),
+		    byteRequest.length
+		);
+
+		// 重新构造
+		byteRequest = helpers.buildHttpMessage(headers, body);
+		return byteRequest;
 	}
 	
 	

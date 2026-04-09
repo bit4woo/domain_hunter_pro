@@ -1,5 +1,7 @@
 package InternetSearch.Client;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -11,8 +13,12 @@ import org.json.JSONObject;
 
 import com.bit4woo.utilbox.utils.JsonUtils;
 
+import InternetSearch.HttpClientOfBurp;
 import InternetSearch.SearchEngine;
 import InternetSearch.SearchResultEntry;
+import burp.BurpExtender;
+import burp.IBurpExtenderCallbacks;
+import burp.IExtensionHelpers;
 import config.ConfigManager;
 import config.ConfigName;
 
@@ -32,10 +38,10 @@ public class HunterClient extends BaseClient {
 			JSONObject obj = new JSONObject(respbody);
 			int code = obj.getInt("code");
 			if (code == 429) {
-				//{"code":429,"data":null,"message":"请求太多啦，稍后再试试"}
+				// {"code":429,"data":null,"message":"请求太多啦，稍后再试试"}
 				return result;
 			}
-			
+
 			if (code == 200 || code == 40205) {
 				JSONObject data = obj.getJSONObject("data");
 				if (!data.get("arr").toString().equals("null")) {
@@ -105,7 +111,7 @@ public class HunterClient extends BaseClient {
 	public String buildSearchUrl(String searchContent, int page) {
 		String key = ConfigManager.getStringConfigByKey(ConfigName.QianxinHunterAPIKey);
 		if (StringUtils.isEmpty(key)) {
-			stderr.println(ConfigName.QianxinHunterAPIKey+" not configurated!");
+			stderr.println(ConfigName.QianxinHunterAPIKey + " not configurated!");
 			return null;
 		}
 		String domainBase64 = new String(Base64.getEncoder().encode(searchContent.getBytes()));
@@ -117,7 +123,25 @@ public class HunterClient extends BaseClient {
 
 	@Override
 	public byte[] buildRawData(String searchContent, int page) {
-		return null;
+
+		String url = buildSearchUrl(searchContent, page);
+		IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
+		IExtensionHelpers helpers = callbacks.getHelpers();
+
+		try {
+			byte[] byteRequest = helpers.buildHttpRequest(new URL(url));
+
+			List<String> headers = new ArrayList<>();
+
+			headers.add("X-Forwarded-For：127.0.0.1");
+
+			byteRequest = HttpClientOfBurp.addHeader(byteRequest, headers);
+
+			return byteRequest;
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+			return null;
+		} 
 	}
 
 	public static void main(String[] args) {
