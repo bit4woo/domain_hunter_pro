@@ -31,6 +31,7 @@ public class SearchEngine {
 
 	public static final String QUAKE_360 = "quake.360.net";
 	public static final String TI_360 = "ti.360.net";
+	public static final String ZERO_ZONE = "0.zone";
 
 	//https://search.censys.io/api
 	//https://api-docs.fullhunt.io/#introduction

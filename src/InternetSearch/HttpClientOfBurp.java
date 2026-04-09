@@ -85,26 +85,36 @@ public class HttpClientOfBurp {
 	}
 	
 	/**
-	 * 仅针对GET
+	 * 
 	 * @param url
 	 * @param headersToAdd
 	 * @return
 	 */
-	public static byte[] buildHttpRequest(URL url,List<String> headersToAdd) {
+	public static byte[] buildHttpRequest(URL url,List<String> headersToAdd,String method,String bodyStr) {
 		IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
 		IExtensionHelpers helpers = callbacks.getHelpers();
 		
-	    List<String> headers = new ArrayList<>();
+	    
+	    
+	    if (method ==null || method.equals("")) {
+	    	method = "GET";
+	    }else {
+	    	method = method.toUpperCase();
+	    }
 
-	    headers.add("GET " + url.getPath() + " HTTP/1.1");
+	    List<String> headers = new ArrayList<>();
+	    headers.add(method+" " + url.getPath() + " HTTP/1.1");
 	    headers.add("Host: " + url.getHost());
 	    headers.add("User-Agent: Mozilla/5.0");
 	    headers.add("Accept: */*");
 
 	    // 👇 你要加的 header
 	    headers.addAll(headersToAdd);
-
-	    byte[] body = null; // GET一般无body
+	    if (bodyStr == null) {
+	    	bodyStr = "";
+	    }
+	    
+	    byte[] body = bodyStr.getBytes(); // GET一般无body
 
 	    byte[] byteRequest = helpers.buildHttpMessage(headers, body);
 		
