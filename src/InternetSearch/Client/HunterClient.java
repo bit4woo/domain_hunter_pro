@@ -30,6 +30,7 @@ public class HunterClient extends BaseClient {
 	}
 
 	/**
+	 *
 	 */
 	@Override
 	public List<SearchResultEntry> parseResp(String respbody) {
@@ -65,15 +66,20 @@ public class HunterClient extends BaseClient {
 							entry.setPort(entryitem.getInt("port"));
 							entry.setProtocol(entryitem.getString("protocol"));
 
-							String component = entryitem.get("component").toString();
 							try {
-								ArrayList<String> names = JsonUtils.grepValueFromJson(component, "name");
-								entry.setWebcontainer(String.join(",", names));
-							} catch (JSONException e) {
+								String component = entryitem.get("component").toString();
 								entry.setWebcontainer(component);
+								try {
+									ArrayList<String> names = JsonUtils.grepValueFromJson(component, "name");
+									entry.setWebcontainer(String.join(",", names));
+								} catch (JSONException ignored) {
+								}
+							} catch (JSONException ignored) {
+
 							}
+
 							entry.setTitle(entryitem.getString("web_title"));
-							entry.setASNInfo(entryitem.getString("as_org"));
+
 							entry.setSource(getEngineName());
 							result.add(entry);
 						} catch (Exception e) {
@@ -133,7 +139,7 @@ public class HunterClient extends BaseClient {
 
 			List<String> headers = new ArrayList<>();
 
-			headers.add("X-Forwarded-For：127.0.0.1");
+			headers.add("X-Forwarded-For: 127.0.0.1");
 
 			byteRequest = HttpClientOfBurp.addHeader(byteRequest, headers);
 
@@ -141,7 +147,7 @@ public class HunterClient extends BaseClient {
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 			return null;
-		} 
+		}
 	}
 
 	public static void main(String[] args) {
