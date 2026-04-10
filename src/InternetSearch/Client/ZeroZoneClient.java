@@ -5,13 +5,11 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.bit4woo.utilbox.utils.JsonUtils;
@@ -56,8 +54,10 @@ public class ZeroZoneClient extends BaseClient {
 						String hostname = entryitem.getString("hostname");
 						if (StringUtils.isNotEmpty(url)) {
 							entry.setHost(url);
-						} else {
+						} else if (StringUtils.isNotEmpty(hostname)) {
 							entry.setHost(hostname);
+						} else {
+							entry.setHost(ip);
 						}
 
 						entry.getIPSet().add(ip);
