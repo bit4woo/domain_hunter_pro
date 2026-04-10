@@ -1,11 +1,14 @@
 package InternetSearch.Client;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -58,13 +61,14 @@ public class ZeroZoneClient extends BaseClient {
 						}
 
 						entry.getIPSet().add(ip);
-						entry.setRootDomain(entryitem.getString("domain"));
+						//entry.setRootDomain(entryitem.getString("domain"));
+						entry.setRootDomain(hostname);
 						entry.setPort(entryitem.getInt("port"));
 						entry.setProtocol(entryitem.getString("service"));
 						entry.setWebcontainer(entryitem.getString("server_name"));
 						
 						entry.setTitle(entryitem.getString("title"));
-						entry.setASNInfo(entryitem.getString("as_org"));
+						entry.setASNInfo(entryitem.getString("asn_org"));
 						entry.setSource(getEngineName());
 						result.add(entry);
 					} catch (Exception e) {
@@ -86,13 +90,13 @@ public class ZeroZoneClient extends BaseClient {
 	public boolean hasNextPage(String respbody, int currentPage) {
 		int maxTotal = 10000;
 		try {
-			ArrayList<String> result = JsonUtils.grepValueFromJson(respbody, "next");
+			ArrayList<String> result = JsonUtils.grepValueFromJson(respbody, "total");
 			if (result.size() >= 1) {
 				int total = Integer.parseInt(result.get(0));
 				if (total >= maxTotal) {
 					total = maxTotal;
 				}
-				if (total > currentPage * 1000) {// size=2000
+				if (total > currentPage * 100) {// size=100
 					return true;
 				}
 			}
@@ -135,7 +139,7 @@ public class ZeroZoneClient extends BaseClient {
 		}
 		
 		String body = String.format(
-				"{\"query\":\"%s\", \"query_type\":\"site\", \"page\":%s, \"pagesize\":1000, \"zone_key_id\":\"%s\"}",
+				"{\"query\":\"%s\", \"query_type\":\"site\", \"page\":%s, \"pagesize\":100, \"zone_key_id\":\"%s\"}",
 				searchContent,page,key);
 		
 		byte[] raw = HttpClientOfBurp.buildHttpRequest(url,headers,"POST",body);
@@ -143,8 +147,11 @@ public class ZeroZoneClient extends BaseClient {
 		return raw;
 	}
 	
-	public static void main(String[] args) {
-		List<SearchResultEntry> result = new ZeroZoneClient().parseResp("");
+	public static void main(String[] args) throws IOException {
+		String aaa = FileUtils.readFileToString(
+				new File("G:/github/domain_hunter_pro/src/InternetSearch/Client/example_data_ZeroZone.txt"), "UTF-8");
+		
+		List<SearchResultEntry> result = new ZeroZoneClient().parseResp(aaa);
 		System.out.println(result.size());
 	}
 

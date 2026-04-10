@@ -25,6 +25,7 @@ import InternetSearch.Client.HunterClient;
 import InternetSearch.Client.HunterIoClient;
 import InternetSearch.Client.QuakeClient;
 import InternetSearch.Client.ShodanClient;
+import InternetSearch.Client.ZeroZoneClient;
 import InternetSearch.Client.ZoomEyeClient;
 import burp.BurpExtender;
 import domain.DomainManager;
@@ -165,6 +166,8 @@ public class APISearchAction extends AbstractAction {
 		} else if (engine.equals(SearchEngine.TI_360)) {
 			// entries = new Client().SearchToGetEntry(searchContent, searchType);
 			// TODO
+		} else if (engine.equals(SearchEngine.ZERO_ZONE)) {
+			entries = new ZeroZoneClient().SearchToGetEntry(searchContent, searchType);
 		} else if (engine.equals(SearchEngine.HUNTER_IO)) {
 			entries = new HunterIoClient().SearchToGetEntry(searchContent, searchType);
 		}
