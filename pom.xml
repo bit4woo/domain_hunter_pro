@@ -9,13 +9,10 @@
 	<artifactId>domain_hunter_pro</artifactId>
 	<version>v2.0</version>
 	<repositories>
-<!--		<repository>
-			<id>jitpack.io</id>
-			<url>https://jitpack.io</url>
-			<snapshots>
-            	<enabled>true</enabled>
-        	</snapshots>
-		</repository>-->
+		<repository>
+		    <id>jitpack.io</id>
+		    <url>https://jitpack.io</url>
+		</repository>
 		<repository>
 			<id>mulesoft</id>
 			<url>https://repository.mulesoft.org/nexus/content/repositories/public/</url>
@@ -99,9 +96,9 @@
 		</dependency>
 
 		<dependency>
-		    <groupId>com.bit4woo.utilbox</groupId>
+		    <groupId>com.github.bit4woo</groupId>
 		    <artifactId>java_utilbox</artifactId>
-		    <version>0.1</version>
+		    <version>-SNAPSHOT</version>
 		    <!-- use "mvn clean install -U" to force update -->
 		</dependency>
 		
