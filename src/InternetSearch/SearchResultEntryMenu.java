@@ -3,6 +3,7 @@ package InternetSearch;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -29,7 +30,6 @@ import utils.PortScanUtils;
 
 public class SearchResultEntryMenu extends JPopupMenu {
 
-
 	private static final long serialVersionUID = 1L;
 	PrintWriter stdout = BurpExtender.getStdout();
 	PrintWriter stderr = BurpExtender.getStderr();
@@ -44,7 +44,8 @@ public class SearchResultEntryMenu extends JPopupMenu {
 	 * @param modelRows
 	 * @param columnIndex
 	 */
-	SearchResultEntryMenu(final GUIMain guiMain, SearchTable searchTable, final int[] modelRows, final int columnIndex,String sourceTabName) {
+	SearchResultEntryMenu(final GUIMain guiMain, SearchTable searchTable, final int[] modelRows, final int columnIndex,
+			String sourceTabName) {
 		this.guiMain = guiMain;
 		this.searchTable = searchTable;
 		this.searchTableModel = searchTable.getSearchTableModel();
@@ -55,7 +56,6 @@ public class SearchResultEntryMenu extends JPopupMenu {
 			}
 		});
 
-
 		JMenuItem copyUrlItem = new JMenuItem(new AbstractAction("Copy URL") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -63,6 +63,28 @@ public class SearchResultEntryMenu extends JPopupMenu {
 					java.util.List<String> urls = searchTableModel.getMultipleValue(modelRows, "URL");
 					String textUrls = String.join(System.lineSeparator(), urls);
 					SystemUtils.writeToClipboard(textUrls);
+				} catch (Exception e1) {
+					e1.printStackTrace(stderr);
+				}
+			}
+		});
+
+		JMenuItem copyUrlWithTitleItem = new JMenuItem(new AbstractAction("Copy URL With Title") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				try {
+					java.util.List<java.util.List<String>> lines = searchTableModel
+							.getMultipleValueOfMultipleColumn(modelRows, SearchTableHead.URL, SearchTableHead.Title);
+
+					List<String> result = new ArrayList<>();
+					for (List<String> line : lines) {
+						String url = line.get(0);
+						String title = line.get(1);
+						result.add(url + "\t" + title);
+					}
+
+					String text = String.join(System.lineSeparator(), result);
+					SystemUtils.writeToClipboard(text);
 				} catch (Exception e1) {
 					e1.printStackTrace(stderr);
 				}
@@ -99,7 +121,8 @@ public class SearchResultEntryMenu extends JPopupMenu {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				try {
-					java.util.List<String> rootDomains = searchTableModel.getMultipleValue(modelRows, SearchTableHead.RootDomain);
+					java.util.List<String> rootDomains = searchTableModel.getMultipleValue(modelRows,
+							SearchTableHead.RootDomain);
 					rootDomains = TextUtils.deduplicate(rootDomains);
 					String textUrls = String.join(System.lineSeparator(), rootDomains);
 					SystemUtils.writeToClipboard(textUrls);
@@ -109,29 +132,29 @@ public class SearchResultEntryMenu extends JPopupMenu {
 			}
 		});
 
-		
 		JMenuItem copyRootDomainWithIpItem = new JMenuItem(new AbstractAction("Copy Root Domain With IP") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				try {
-					java.util.List<java.util.List<String>> lines = searchTableModel.getMultipleValueOfMultipleColumn(modelRows,SearchTableHead.IP, SearchTableHead.RootDomain);
-					
+					java.util.List<java.util.List<String>> lines = searchTableModel.getMultipleValueOfMultipleColumn(
+							modelRows, SearchTableHead.IP, SearchTableHead.RootDomain);
+
 					Map<String, HashSet<String>> result = new HashMap<>();
 					for (List<String> line : lines) {
-					    String ip = line.get(0);
-					    String rootDomain = line.get(1);
+						String ip = line.get(0);
+						String rootDomain = line.get(1);
 
-					    // 如果这个 IP 不存在，就初始化一个新集合
-					    result.computeIfAbsent(ip, k -> new HashSet<>()).add(rootDomain);
+						// 如果这个 IP 不存在，就初始化一个新集合
+						result.computeIfAbsent(ip, k -> new HashSet<>()).add(rootDomain);
 					}
-					
-					String text ="";
+
+					String text = "";
 					for (Map.Entry<String, HashSet<String>> entry : result.entrySet()) {
-					    String ip = entry.getKey() + " --->"+System.lineSeparator();
-					    HashSet<String> domains = entry.getValue();
-					    
-					    text = text + ip;
-					    text = text + String.join(System.lineSeparator(), domains);
+						String ip = entry.getKey() + " --->" + System.lineSeparator();
+						HashSet<String> domains = entry.getValue();
+
+						text = text + ip;
+						text = text + String.join(System.lineSeparator(), domains);
 					}
 
 					SystemUtils.writeToClipboard(text);
@@ -140,7 +163,7 @@ public class SearchResultEntryMenu extends JPopupMenu {
 				}
 			}
 		});
-		
+
 		JMenuItem genPortScanCmd = new JMenuItem(new AbstractAction("Copy Port Scan Cmd") {
 
 			@Override
@@ -155,13 +178,12 @@ public class SearchResultEntryMenu extends JPopupMenu {
 			}
 		});
 
-
 		JMenuItem openURLwithBrowserItem = new JMenuItem(new AbstractAction("Open With Browser(double click url)") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				try {
 					java.util.List<String> urls = searchTableModel.getMultipleValue(modelRows, "URL");
-					if (urls.size() >= 50) {//避免一次开太多网页导致系统卡死
+					if (urls.size() >= 50) {// 避免一次开太多网页导致系统卡死
 						return;
 					}
 					for (String url : urls) {
@@ -194,72 +216,75 @@ public class SearchResultEntryMenu extends JPopupMenu {
 			}
 		});
 
-		JMenuItem addToTargetConfirmItem = new JMenuItem(new AbstractAction("Add Host/Domain To Target (Confirm Level)") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-				new SwingWorker() {
+		JMenuItem addToTargetConfirmItem = new JMenuItem(
+				new AbstractAction("Add Host/Domain To Target (Confirm Level)") {
 					@Override
-					protected Object doInBackground() throws Exception {
-						try {
-							List<SearchResultEntry> entries = searchTableModel.getEntries(modelRows);
-							for (SearchResultEntry entry : entries) {
-								entry.AddToTarget(AssetTrustLevel.Confirm, null);
-							}
-							guiMain.getDomainPanel().saveDomainDataToDB();
-						} catch (Exception e1) {
-							e1.printStackTrace(stderr);
-						}
-						return null;
-					}
-				}.execute();
-			}
-		});
-
-		JMenuItem addToTargetWithCommentItem = new JMenuItem(new AbstractAction("Add Host/Domain To Target With Comment") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-				new SwingWorker() {
-					@Override
-					protected Object doInBackground() throws Exception {
-						try {
-							String comment = JOptionPane.showInputDialog("Comment", "");
-							if (StringUtils.isBlank(comment)) {
+					public void actionPerformed(ActionEvent actionEvent) {
+						new SwingWorker() {
+							@Override
+							protected Object doInBackground() throws Exception {
+								try {
+									List<SearchResultEntry> entries = searchTableModel.getEntries(modelRows);
+									for (SearchResultEntry entry : entries) {
+										entry.AddToTarget(AssetTrustLevel.Confirm, null);
+									}
+									guiMain.getDomainPanel().saveDomainDataToDB();
+								} catch (Exception e1) {
+									e1.printStackTrace(stderr);
+								}
 								return null;
 							}
-							List<SearchResultEntry> entries = searchTableModel.getEntries(modelRows);
-							for (SearchResultEntry entry : entries) {
-								entry.AddToTarget(null, comment);
-							}
-							guiMain.getDomainPanel().saveDomainDataToDB();
-						} catch (Exception e1) {
-							e1.printStackTrace(stderr);
-						}
-						return null;
+						}.execute();
 					}
-				}.execute();
-			}
-		});
+				});
 
-		JMenuItem addToTargetnotTargetItem = new JMenuItem(new AbstractAction("Add Host/Domain To Target (Not Target)") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-				new SwingWorker() {
+		JMenuItem addToTargetWithCommentItem = new JMenuItem(
+				new AbstractAction("Add Host/Domain To Target With Comment") {
 					@Override
-					protected Object doInBackground() throws Exception {
-						try {
-							List<SearchResultEntry> entries = searchTableModel.getEntries(modelRows);
-							for (SearchResultEntry entry : entries) {
-								entry.AddToTarget(AssetTrustLevel.NonTarget, null);
+					public void actionPerformed(ActionEvent actionEvent) {
+						new SwingWorker() {
+							@Override
+							protected Object doInBackground() throws Exception {
+								try {
+									String comment = JOptionPane.showInputDialog("Comment", "");
+									if (StringUtils.isBlank(comment)) {
+										return null;
+									}
+									List<SearchResultEntry> entries = searchTableModel.getEntries(modelRows);
+									for (SearchResultEntry entry : entries) {
+										entry.AddToTarget(null, comment);
+									}
+									guiMain.getDomainPanel().saveDomainDataToDB();
+								} catch (Exception e1) {
+									e1.printStackTrace(stderr);
+								}
+								return null;
 							}
-							guiMain.getDomainPanel().saveDomainDataToDB();
-						} catch (Exception e1) {
-							e1.printStackTrace(stderr);
-						}
-						return null;
+						}.execute();
 					}
-				}.execute();
-			}
-		});
+				});
+
+		JMenuItem addToTargetnotTargetItem = new JMenuItem(
+				new AbstractAction("Add Host/Domain To Target (Not Target)") {
+					@Override
+					public void actionPerformed(ActionEvent actionEvent) {
+						new SwingWorker() {
+							@Override
+							protected Object doInBackground() throws Exception {
+								try {
+									List<SearchResultEntry> entries = searchTableModel.getEntries(modelRows);
+									for (SearchResultEntry entry : entries) {
+										entry.AddToTarget(AssetTrustLevel.NonTarget, null);
+									}
+									guiMain.getDomainPanel().saveDomainDataToDB();
+								} catch (Exception e1) {
+									e1.printStackTrace(stderr);
+								}
+								return null;
+							}
+						}.execute();
+					}
+				});
 
 		JMenuItem deleteFromTarget = new JMenuItem(new AbstractAction("Delete From Target") {
 			@Override
@@ -281,7 +306,6 @@ public class SearchResultEntryMenu extends JPopupMenu {
 				}.execute();
 			}
 		});
-
 
 		JMenuItem addIPToBlackListItem = new JMenuItem(new AbstractAction("Add IP To Black List") {
 			@Override
@@ -305,18 +329,17 @@ public class SearchResultEntryMenu extends JPopupMenu {
 				}.execute();
 			}
 		});
-		
-		
+
 		/**
 		 * 单纯从title记录中删除,不做其他修改
 		 */
-		JMenuItem removeItem = new JMenuItem(new AbstractAction("Delete Entry") {//need to show dialog to confirm
+		JMenuItem removeItem = new JMenuItem(new AbstractAction("Delete Entry") {// need to show dialog to confirm
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				new SwingWorker<Map,Map>(){
+				new SwingWorker<Map, Map>() {
 					@Override
 					protected Map doInBackground() throws Exception {
-						int result = JOptionPane.showConfirmDialog(null,"Are you sure to DELETE these items ?");
+						int result = JOptionPane.showConfirmDialog(null, "Are you sure to DELETE these items ?");
 						if (result == JOptionPane.YES_OPTION) {
 							searchTableModel.removeRows(modelRows);
 						}
@@ -331,7 +354,7 @@ public class SearchResultEntryMenu extends JPopupMenu {
 
 		this.addSeparator();
 
-		//常用多选操作
+		// 常用多选操作
 		this.add(addToTargetItem);
 		this.add(addToTargetConfirmItem);
 		this.add(addToTargetWithCommentItem);
@@ -345,6 +368,7 @@ public class SearchResultEntryMenu extends JPopupMenu {
 		this.addSeparator();
 
 		this.add(copyUrlItem);
+		this.add(copyUrlWithTitleItem);
 		this.add(copyHostItem);
 		this.add(copyIPItem);
 		this.add(copyRootDomainItem);
@@ -352,9 +376,9 @@ public class SearchResultEntryMenu extends JPopupMenu {
 		this.add(openURLwithBrowserItem);
 		this.add(genPortScanCmd);
 
-		//搜索
+		// 搜索
 		this.addSeparator();
-		SearchEngine.AddSearchMenuItems(this, searchTableModel, modelRows, columnIndex,sourceTabName);
+		SearchEngine.AddSearchMenuItems(this, searchTableModel, modelRows, columnIndex, sourceTabName);
 		this.addSeparator();
 
 	}
