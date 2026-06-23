@@ -62,7 +62,8 @@ public class TextAreaMenu extends JPopupMenu {
 			public void actionPerformed(ActionEvent e) {
 				try{
 					String nmapPath = ConfigManager.getStringConfigByKey(ConfigName.PortScanCmd);
-					PortScanUtils.genCmdAndCopy(nmapPath, TextUtils.deduplicate(selectedItems));
+					List<String> items = TextUtils.deduplicate(selectedItems);
+					PortScanUtils.genCmdAndCopy(nmapPath, new HashSet<String>(items),null);
 				}
 				catch (Exception e1)
 				{

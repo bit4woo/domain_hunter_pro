@@ -342,7 +342,7 @@ public class LineEntryMenu extends JPopupMenu {
 					Set<String> IPs = lineTable.getLineTableModel().getIPs(modelRows);
 					String nmapPath = ConfigManager.getStringConfigByKey(ConfigName.PortScanCmd);
 
-					String command = PortScanUtils.genCmd(nmapPath, IPs);
+					String command = PortScanUtils.genCmd(nmapPath, IPs, null);
 
 					String filepath = SystemUtils.genBatchFile(command, "Nmap-latest-command.bat");
 					SystemUtils.runBatchFile(filepath);
@@ -367,7 +367,7 @@ public class LineEntryMenu extends JPopupMenu {
 					List<String> IPs = lineTable.getLineTableModel().getHosts(modelRows);
 
 					String nmapPath = ConfigManager.getStringConfigByKey(ConfigName.PortScanCmd);
-					PortScanUtils.genCmdAndCopy(nmapPath, new HashSet<>(IPs));
+					PortScanUtils.genCmdAndCopy(nmapPath, new HashSet<>(IPs), null);
 				}
 				catch (Exception e1)
 				{
