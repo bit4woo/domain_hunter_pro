@@ -171,7 +171,7 @@ public class SearchResultEntryMenu extends JPopupMenu {
 				try {
 					java.util.List<String> ip_list = searchTableModel.getMultipleValue(modelRows, "IP");
 					String nmapPath = ConfigManager.getStringConfigByKey(ConfigName.PortScanCmd);
-					PortScanUtils.genCmdAndCopy(nmapPath, new HashSet<>(ip_list));
+					PortScanUtils.genCmdAndCopy(nmapPath, new HashSet<>(ip_list),null);
 				} catch (Exception e1) {
 					e1.printStackTrace(stderr);
 				}
