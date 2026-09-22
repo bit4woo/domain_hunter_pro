@@ -75,8 +75,9 @@ public class Producer extends Thread {// Producer do
 					if (item.getEntryType().equals(LineEntry.EntryType_Web)) {
 						LineEntry linefound = findHistory(url.toString());
 						if (null != linefound) {
-							linefound.getEntryTags().remove(LineEntry.Tag_NotTargetBaseOnCertInfo);
-							linefound.getEntryTags().remove(LineEntry.Tag_NotTargetBaseOnBlackList);
+							// 只继承旧记录的人工状态（comments/assetType/checkStatus/time）；
+							// 不再去改 linefound 的 EntryTags，因为 linefound 可能是已脱离的快照（getAllTitle）
+							// 或是当前表格里的另一条活跃记录（增量场景），修改它都属于无意义或有副作用的操作。
 							item.getComments().addAll(linefound.getComments());
 							item.setAssetType(linefound.getAssetType());
 							try {
@@ -120,28 +121,34 @@ public class Producer extends Thread {// Producer do
 		IndexedHashMap<String, LineEntry> HistoryLines = guiMain.getTitlePanel().getBackupLineEntries();
 		if (HistoryLines == null)
 			return null;
+
+		// 1) 优先按完整URL精确查找（O(1)），URL格式统一包含默认端口，故重跑场景通常能精确命中。
 		LineEntry found = HistoryLines.get(url);
 		if (found != null) {
-			// HistoryLines.remove(url,null);
-			// 当对象是HashMap时不使用remove和put操作，避免ConcurrentModificationException问题，因为这2个操作都会让map的长度发生变化，从而导致问题
-			// 但是当线程对象是ConcurrentHashMap时，可以直接remove。
-			// 但是为了效率考虑不进行删除操，以前为什么要替换成null？？？忘记了
 			return found;
 		}
 
-		// 根据host进行查找的逻辑，不会导致手动保存的条目被替换为null，因为手动保存的条目IP列表为空
+		// 2) 按host/IP回退查找：用于“不同域名/URL解析到同一IP”的host碰撞场景，把旧记录的状态继承过来。
+		// 注意：URL的host解析与循环无关，提前解析一次，避免在循环内反复 new URL。
+		String host;
+		try {
+			host = new URL(url).getHost();// 可能是域名、也可能是IP
+		} catch (Exception e) {
+			return null;// url非法，无法回退查找
+		}
+
 		for (LineEntry line : HistoryLines.values()) {
 			if (line == null) {
 				continue;
 			}
 			try {// 根据host查找
-				String host = new URL(url).getHost();// 可能是域名、也可能是IP
-
-				Set<String> lineHost = new HashSet<>(line.getIPSet());// 解析得到的IP集合
+				Set<String> ipset = line.getIPSet();// 解析得到的IP集合
+				if (ipset == null) {
+					continue;// 手动保存等记录可能没有IP，跳过
+				}
+				Set<String> lineHost = new HashSet<>(ipset);
 				lineHost.add(line.getHost());
 				if (lineHost.contains(host)) {
-					// HistoryLines.remove(line.getUrl());//如果有相同URL的记录，就删除这个记录。//ConcurrentModificationException
-					// HistoryLines.replace(url,null);
 					return line;
 				}
 			} catch (Exception e) {

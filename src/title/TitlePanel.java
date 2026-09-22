@@ -370,6 +370,9 @@ public class TitlePanel extends JPanel {
 	public void getExtendTitle(){
 		guiMain.getProjectMenu().backupDB("before-getExtendTitle");
 
+		// 增量场景：本次新增的是“附近资产”，历史状态要从当前表格里继承（而非上次全量跑的备份）。
+		BackupLineEntries = titleTable.getLineTableModel().getLineEntries();
+
 		Set<String> extendIPSet = titleTable.getLineTableModel().GetExtendIPSet(true,false);//排除CDN,私有IP会在后续流程中进行过滤
 		Set<String> hostsInTitle = titleTable.getLineTableModel().GetHostsWithSpecialPort();
 		extendIPSet.removeAll(guiMain.getDomainPanel().getDomainResult().getNotTargetIPSet());
@@ -385,6 +388,9 @@ public class TitlePanel extends JPanel {
 	 */
 	public void getTitleOfNewDomain(){
 		guiMain.getProjectMenu().backupDB("before-getTitleOfNewDomain");
+
+		// 增量场景：本次新增的是“新发现的域名”，历史状态要从当前表格里继承。
+		BackupLineEntries = titleTable.getLineTableModel().getLineEntries();
 
 		Set<String> hostsInTitle = titleTable.getLineTableModel().GetHostsWithSpecialPort();
 
