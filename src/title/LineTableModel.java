@@ -39,6 +39,7 @@ import burp.IMessageEditorController;
 import config.ConfigManager;
 import config.ConfigName;
 import dao.TitleDao;
+import dao.TitleWriteService;
 import domain.DomainManager;
 import domain.target.TargetTableModel;
 import utils.WafCdnUtil;
@@ -100,6 +101,8 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	 * @return
 	 */
 	public boolean clearDataInDBFile() {
+		// 先冲刷排队的写任务，再同步清空，保证清空动作排在所有已提交写之后。
+		TitleWriteService.getInstance().flush(30_000);
 		return titleDao.clearData();
 	}
 
@@ -306,7 +309,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 		if (col == HeadList.indexOf(LineTableHead.Comments)) {
 			String valueStr = ((String) value).trim();
 			entry.setComments(new HashSet<>(Arrays.asList(valueStr.split(","))));
-			titleDao.addOrUpdateTitle(entry);// 写入数据库
+			enqueueDbWrite(entry);// 写入数据库（走单线程池，避免在EDT上阻塞）
 			SwingUtilities.invokeLater(() -> {
 				fireTableRowsUpdated(row, col);
 			});
@@ -649,7 +652,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			SwingUtilities.invokeLater(() -> {
 				fireTableRowsUpdated(index, index);
 			});
-			titleDao.addOrUpdateTitle(entry);// 写入数据库
+			enqueueDbWrite(entry);// 写入数据库
 		}
 	}
 
@@ -680,7 +683,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 					}
 					String url = entry.getUrl();
 					lineEntries.remove(index);
-					titleDao.deleteTitleByUrl(url);// 写入数据库
+					enqueueDbDelete(url);// 写入数据库
 					stdout.println("!!! " + url + " deleted");
 					fireTableRowsDeleted(index, index);
 				} catch (Exception e) {
@@ -699,7 +702,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 				}
 				String url = entry.getUrl();
 				lineEntries.remove(row);
-				titleDao.deleteTitleByUrl(url);// 写入数据库
+				enqueueDbDelete(url);// 写入数据库
 				stdout.println("!!! " + url + " deleted");
 
 				fireTableRowsDeleted(row, row);
@@ -747,7 +750,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 								&& entry.getEntrySource().equals(LineEntry.Source_Certain)) {
 
 							entry.addComment("Non-Target[host is not target]");
-							titleDao.addOrUpdateTitle(entry);// 写入数据库
+							enqueueDbWrite(entry);// 写入数据库
 							int index = i;
 
 							fireTableRowsUpdated(index, index);
@@ -774,7 +777,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 								guiMain.getDomainPanel().getDomainResult().getNotTargetIPSet().add(host);
 
 								entry.addComment("Non-Target[cert domain is not target]");
-								titleDao.addOrUpdateTitle(entry);// 写入数据库
+								enqueueDbWrite(entry);// 写入数据库
 								int index = i;
 								fireTableRowsUpdated(index, index);
 
@@ -787,7 +790,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 							if (!customIP.contains(host) && !customIP.contains(host + ":" + port)) {
 
 								entry.addComment("Non-Target[host IP not in custom assets]");
-								titleDao.addOrUpdateTitle(entry);// 写入数据库
+								enqueueDbWrite(entry);// 写入数据库
 
 								int index = i;
 								fireTableRowsUpdated(index, index);
@@ -821,7 +824,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 					if (entry.getComments().toString().contains("Non-Target[")) {
 						String url = entry.getUrl();
 						lineEntries.remove(i);
-						titleDao.deleteTitleByUrl(url);// 写入数据库
+						enqueueDbDelete(url);// 写入数据库
 						stdout.println("!!! " + url + " deleted, due to : " + entry.getComments().toString());
 						int index = i;
 
@@ -861,7 +864,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 					if (status == -1 || status == 0 || status == 400 || status >= 502) {
 						String url = entry.getUrl();
 						lineEntries.remove(i);
-						titleDao.deleteTitleByUrl(url);// 写入数据库
+						enqueueDbDelete(url);// 写入数据库
 						stdout.println("!!! " + url + " deleted, due to status : " + status);
 						int index = i;
 
@@ -906,7 +909,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 					if (status.equalsIgnoreCase(LineEntry.CheckStatus_Checked)) {
 						entry.setTime(Commons.getNowTimeString());
 					}
-					titleDao.addOrUpdateTitle(entry);// 写入数据库
+					enqueueDbWrite(entry);// 写入数据库
 					stdout.println("$$$ " + entry.getUrl() + " updated");
 
 					fireTableRowsUpdated(index, index);
@@ -932,7 +935,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 					if (assetType.equalsIgnoreCase(entry.getAssetType()))
 						continue;
 					entry.setAssetType(assetType);
-					titleDao.addOrUpdateTitle(entry);// 写入数据库
+					enqueueDbWrite(entry);// 写入数据库
 					stdout.println(String.format("$$$ %s updated [AssetType-->%s]", entry.getUrl(), assetType));
 
 					fireTableRowsUpdated(index, index);
@@ -959,7 +962,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 						throw new ArrayIndexOutOfBoundsException("can't find item with index " + index);
 					}
 					entry.addComment(commentAdd);
-					titleDao.addOrUpdateTitle(entry);// 写入数据库
+					enqueueDbWrite(entry);// 写入数据库
 					stdout.println("$$$ " + entry.getUrl() + " updated");
 
 					fireTableRowsUpdated(index, index);
@@ -986,7 +989,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 						throw new ArrayIndexOutOfBoundsException("can't find item with index " + index);
 					}
 					entry.getComments().clear();
-					titleDao.addOrUpdateTitle(entry);// 写入数据库
+					enqueueDbWrite(entry);// 写入数据库
 					stdout.println("$$$ " + entry.getUrl() + " updated");
 
 					fireTableRowsUpdated(index, index);
@@ -1013,7 +1016,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 						throw new ArrayIndexOutOfBoundsException("can't find item with index " + index);
 					}
 					entry.freshASNInfo();
-					titleDao.addOrUpdateTitle(entry);// 写入数据库
+					enqueueDbWrite(entry);// 写入数据库
 					stdout.println("$$$ " + entry.getUrl() + "ASN Info updated");
 
 					fireTableRowsUpdated(index, index);
@@ -1090,6 +1093,20 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	/////////////////// ^^^多个行内容的增删查改^^^/////////////////////////////////
 
 	/**
+	 * 统一走单线程池写库，避免线程爆炸与SQLite锁竞争。
+	 */
+	private void enqueueDbWrite(LineEntry entry) {
+		TitleWriteService.getInstance().upsert(titleDao, entry);
+	}
+
+	/**
+	 * 统一走单线程池删除，避免线程爆炸与SQLite锁竞争。
+	 */
+	private void enqueueDbDelete(String url) {
+		TitleWriteService.getInstance().deleteByUrl(titleDao, url);
+	}
+
+	/**
 	 * 仅用于runner中，某个特殊场景:URL相同host不同的情况
 	 * 
 	 * @param lineEntry
@@ -1134,7 +1151,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			// 方案2：
 			fireTableDataChanged();
 
-			new Thread(() -> titleDao.addOrUpdateTitle(lineEntry)).start();// 写入数据库
+			enqueueDbWrite(lineEntry);// 写入数据库（单线程池串行化）
 			System.out.println(key + " added");
 		});
 
@@ -1150,8 +1167,8 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 			// 以前的做法是，put之后再次统计size来判断是新增还是替换，这种方法在多线程时可能不准确，
 			// concurrentHashMap的put方法会在替换时返回原来的值，可用于判断是替换还是新增
 
-			// 异步写数据库
-			new Thread(() -> titleDao.addOrUpdateTitle(lineEntry)).start();
+			// 异步写数据库（单线程池串行化，避免并发写SQLite锁竞争）
+			enqueueDbWrite(lineEntry);
 
 			int index = lineEntries.indexOfKey(key);
 

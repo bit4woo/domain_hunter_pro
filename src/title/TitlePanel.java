@@ -343,6 +343,10 @@ public class TitlePanel extends JPanel {
 	 */
 	public void getAllTitle(){
 		guiMain.getProjectMenu().backupDB("before-getTitle");
+		// 必须在清空数据库之前停止旧的get-title线程并冲刷其排队的写任务，
+		// 否则旧线程后续写回的数据会在clear之后再次出现，污染新结果。
+		stopGetTitleThread(true);
+		dao.TitleWriteService.getInstance().flush(30_000);
 		//backup to history
 		BackupLineEntries = titleTable.getLineTableModel().getLineEntries();
 		//clear tableModel
@@ -517,7 +521,9 @@ public class TitlePanel extends JPanel {
 					return false;
 				}
 			}
-			getThreadGetTitle().interrupt();
+			// interrupt()只会打断协调线程，并不会停止真正的worker(Producer)线程；
+			// 必须调用stopAll()去中断所有Producer，否则旧批次会继续运行并与新批次重叠写入。
+			getThreadGetTitle().stopAll();
 			return true;
 		}
 		return true;
