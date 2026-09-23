@@ -313,7 +313,9 @@ public class LineEntry {
 		IHttpService service = helpers.buildHttpService(host, port, protocol);
 
 		if (EntryType.equals(EntryType_DNS)) {
-			request = helpers.buildHttpRequest(new URL(service.toString()));
+			// service.toString() 在新版 Burp 中返回 "burp.xxx@hash" 而非 URL，会导致 new URL 抛 MalformedURLException；
+			// 用 getUrl() 构建（DNS 记录的 url 为空时，getUrl() 会返回 protocol://host:port/）。
+			request = helpers.buildHttpRequest(new URL(getUrl()));
 		}
 
 		IHttpRequestResponse info = BurpExtender.getCallbacks().makeHttpRequest(service, request);
@@ -321,6 +323,10 @@ public class LineEntry {
 		BurpExtender.getStdout().println("request "+HelperPlus.getBaseURL(service)+" done");
 		if (info != null) {
 			parse(info);
+			// 判断并修改记录类型：重新请求拿到有效HTTP响应(statuscode>=0)则升级为Web记录，否则保持DNS记录
+			if (EntryType.equals(EntryType_DNS) && getStatuscode() >= 0) {
+				EntryType = EntryType_Web;
+			}
 		}
 	}
 
@@ -349,7 +355,13 @@ public class LineEntry {
 		if (StringUtils.isEmpty(url)) {
 			return protocol + "://" + host + ":" + port + "/";
 		}
-		return UrlUtils.getFullUrlWithDefaultPort(url);
+		String full = UrlUtils.getFullUrlWithDefaultPort(url);
+		// 兜底：url 字段可能是历史正则bug留下的损坏值(无scheme等)，getFullUrlWithDefaultPort 会原样返回损坏串，
+		// 此时退化为用 protocol/host/port 重建，确保返回合法URL。
+		if (full == null || (!full.startsWith("http://") && !full.startsWith("https://"))) {
+			return protocol + "://" + host + ":" + port + "/";
+		}
+		return full;
 	}
 
 	/**
@@ -359,11 +371,13 @@ public class LineEntry {
 	 * @return
 	 */
 	public String fetchUrlWithCommonFormate() {
-		if (StringUtils.isEmpty(url)) {
-			url = protocol + "://" + host + ":" + port + "/";
+		String tmpUrl = url;
+		if (StringUtils.isEmpty(tmpUrl)) {
+			tmpUrl = protocol + "://" + host + ":" + port + "/";
 		}
 		// 不要修改原始url的格式！即都包含默认端口。因为数据库中更新对应记录是以URL为依据的，否则不能成功更新记录。
-		String usualUrl = HelperPlus.removeUrlDefaultPort(url);
+		// 用临时变量，避免副作用：原实现会把 this.url 从空串改成默认URL，污染原始记录。
+		String usualUrl = HelperPlus.removeUrlDefaultPort(tmpUrl);
 		return usualUrl;
 	}
 

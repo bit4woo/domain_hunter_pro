@@ -155,7 +155,8 @@ public class LineEntryMenuForBurp{
 		}else if (invocation.getToolFlag() == IContextMenuInvocation.CONTEXT_MESSAGE_VIEWER_REQUEST) {//sitemap中的数据包
 			IHttpRequestResponse[] siteMapMessage = invocation.getSelectedMessages();
 			for (IHttpRequestResponse message:siteMapMessage) {
-				String prefix = message.getHttpService().toString();
+				// getSiteMap 的入参是 URL 前缀；service.toString() 在新版 Burp 返回 "burp.xxx@hash" 而非URL，需手动拼 protocol://host:port/
+				String prefix = message.getHttpService().getProtocol() + "://" + message.getHttpService().getHost() + ":" + message.getHttpService().getPort() + "/";
 				tmp.addAll(Arrays.asList(BurpExtender.getCallbacks().getSiteMap(prefix)));
 			}
 		}

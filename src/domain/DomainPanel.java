@@ -636,7 +636,8 @@ public class DomainPanel extends JPanel {
 					for (IHttpRequestResponse x : items) {// 经过验证每次都需要从头开始遍历，按一定offset获取的数据每次都可能不同
 
 						IHttpService httpservice = x.getHttpService();
-						String shortUrlString = httpservice.toString();
+						// httpservice.toString() 在新版 Burp 返回 "burp.xxx@hash" 而非URL，需手动拼 protocol://host:port/
+						String shortUrlString = httpservice.getProtocol() + "://" + httpservice.getHost() + ":" + httpservice.getPort() + "/";
 						String Host = httpservice.getHost();
 
 						try {
