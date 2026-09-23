@@ -1216,10 +1216,15 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	public LineEntry findLineEntryByMessage(IHttpRequestResponse message) {
 		HelperPlus getter = BurpExtender.getHelperPlus();
 		URL fullurl = getter.getFullURL(message);
+		if (fullurl == null) {
+			// getFullURL可能因URL无scheme(如Collaborator回调)解析失败返回null，退化为baseURL查找
+			URL shortUrl = HelperPlus.getBaseURL(message);
+			return shortUrl == null ? null : findLineEntry(shortUrl.toString());
+		}
 		LineEntry entry = findLineEntry(fullurl.toString());
 		if (entry == null) {
 			URL shortUrl = HelperPlus.getBaseURL(message);
-			if (!fullurl.equals(shortUrl)) {
+			if (shortUrl != null && !fullurl.equals(shortUrl)) {
 				entry = findLineEntry(shortUrl.toString());
 			}
 		}

@@ -319,10 +319,16 @@ public class LineEntryMenuForBurp{
 						addCommentForLine(entries.get(0),comment);
 					}else {
 						URL fullurl = getter.getFullURL(message);
-						List<LineEntry> query_list = findLineEntryByFullUrl(entries,fullurl.toString());
-						if (query_list.size() >= 1){//不对所有记录添加备注，只对最新的添加
-							LineEntry item = query_list.get(query_list.size() - 1);
-							addCommentForLine(item,comment);
+						if (fullurl == null) {
+							// getFullURL可能因URL无scheme返回null，退化为baseURL
+							fullurl = HelperPlus.getBaseURL(message);
+						}
+						if (fullurl != null) {
+							List<LineEntry> query_list = findLineEntryByFullUrl(entries,fullurl.toString());
+							if (query_list.size() >= 1){//不对所有记录添加备注，只对最新的添加
+								LineEntry item = query_list.get(query_list.size() - 1);
+								addCommentForLine(item,comment);
+							}
 						}
 					}
 				}
@@ -464,10 +470,15 @@ public class LineEntryMenuForBurp{
 					IHttpRequestResponse[] messages = getSelectedMessages(invocation);
 					HelperPlus getter = BurpExtender.getHelperPlus();
 					URL fullurl = getter.getFullURL(messages[0]);
-					LineEntry entry = titlepanel.getTitleTable().getLineTableModel().findLineEntry(fullurl.toString());
+					if (fullurl == null) {
+						// getFullURL可能因URL无scheme返回null，退化为baseURL
+						fullurl = HelperPlus.getBaseURL(messages[0]);
+					}
+					LineEntry entry = (fullurl == null) ? null
+							: titlepanel.getTitleTable().getLineTableModel().findLineEntry(fullurl.toString());
 					if (entry == null) {
 						URL shortUrl = HelperPlus.getBaseURL(messages[0]);
-						if(!fullurl.equals(shortUrl)) {
+						if (shortUrl != null && fullurl != null && !fullurl.equals(shortUrl)) {
 							entry = titlepanel.getTitleTable().getLineTableModel().findLineEntry(shortUrl.toString());
 						}
 					}
@@ -575,7 +586,12 @@ public class LineEntryMenuForBurp{
 
 			HelperPlus getter = BurpExtender.getHelperPlus();
 			URL fullurl = getter.getFullURL(message);
-			LineEntry entry = titlepanel.getTitleTable().getLineTableModel().findLineEntry(fullurl.toString());
+			if (fullurl == null) {
+				// getFullURL可能因URL无scheme返回null，退化为baseURL
+				fullurl = HelperPlus.getBaseURL(message);
+			}
+			LineEntry entry = (fullurl == null) ? null
+					: titlepanel.getTitleTable().getLineTableModel().findLineEntry(fullurl.toString());
 
 			LineEntry newEntry = new LineEntry(message);
 			newEntry.setEntrySource(LineEntry.Source_Manual_Saved);
