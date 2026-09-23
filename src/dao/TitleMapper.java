@@ -1,5 +1,6 @@
 package dao;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -28,8 +29,9 @@ public class TitleMapper implements RowMapper<LineEntry> {
 			String IPStr = rs.getString("IPSet");
 			entry = new LineEntry(host,SetAndStr.toSet(IPStr));//Set和String之间的互相转换
 		}else {
+			String urlStr = rs.getString("url");
 			try {
-				URL url = new URL(rs.getString("url"));
+				URL url = new URL(urlStr);
 				byte[] request = rs.getBytes("request");
 				byte[] response = rs.getBytes("response");
 				entry = new LineEntry(url,request,response);
@@ -48,6 +50,9 @@ public class TitleMapper implements RowMapper<LineEntry> {
 				entry.setEntryTags(SetAndStr.toSet(rs.getString("EntryTags")));
 				entry.setIcon_bytes(rs.getBytes("icon_bytes"));
 				entry.setIcon_url(rs.getString("icon_url"));
+			} catch (MalformedURLException e) {
+				// 兼容：数据库里可能存在被旧版正则bug损坏的URL(无scheme等)，无法解析时跳过该行，避免刷屏
+				System.err.println("skip corrupted url: " + urlStr);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
