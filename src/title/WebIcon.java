@@ -344,6 +344,10 @@ public class WebIcon {
 		if (isPNG(icoBytes)) {
 			return icoBytes;
 		}
+		// ICO 魔数是 00 00 01 00；非 ICO 数据(如 GIF/JPEG/HTML错误页)直接原样返回，避免 ICODecoder 抛 EOFException
+		if (!isICO(icoBytes)) {
+			return icoBytes;
+		}
 		try {
 			List<BufferedImage> images = ICODecoder.read(new ByteArrayInputStream(icoBytes));
 
@@ -354,8 +358,7 @@ public class WebIcon {
 				return pngOutputStream.toByteArray();
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
-			return icoBytes;
+			// 截断/损坏的 ICO(魔数正确但数据不完整)解码失败，静默返回空，避免刷屏
 		}
 		return new byte[0];
 	}
@@ -375,6 +378,13 @@ public class WebIcon {
 		}
 
 		return true;
+	}
+
+	public static boolean isICO(byte[] data) {
+		// ICO 文件魔数：reserved(0x00,0x00) + type(0x01,0x00)
+		return data != null && data.length >= 4
+				&& data[0] == 0x00 && data[1] == 0x00
+				&& data[2] == 0x01 && data[3] == 0x00;
 	}
 
 	public static void main(String[] args) throws IOException {
