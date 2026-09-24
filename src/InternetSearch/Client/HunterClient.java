@@ -131,6 +131,10 @@ public class HunterClient extends BaseClient {
 	public byte[] buildRawData(String searchContent, int page) {
 
 		String url = buildSearchUrl(searchContent, page);
+		if (url == null) {
+			// buildSearchUrl 已打印错误(如API key未配置)，返回null避免 new URL(null) 抛异常
+			return null;
+		}
 		IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
 		IExtensionHelpers helpers = callbacks.getHelpers();
 

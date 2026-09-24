@@ -53,8 +53,8 @@ public abstract class BaseClient {
             try {
                 String searchDork = buildSearchDork(searchContent, searchType);
                 this.url = buildSearchUrl(searchDork, page);
-                this.raw = buildRawData(searchDork, page);
                 if (UrlUtils.isVaildUrl(url)) {
+                    this.raw = buildRawData(searchDork, page);
                     String body = HttpClientOfBurp.doRequest(new URL(url), raw,searchDork);
                     this.resp_body = body;
                     if (body.length() <= 0) {
