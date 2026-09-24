@@ -1,5 +1,6 @@
 package domain;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.URL;
@@ -96,10 +97,15 @@ public class CertInfo {
             } else {
                 conn = (HttpsURLConnection) urlObject.openConnection();
             }
+			conn.setConnectTimeout(10000);
+			conn.setReadTimeout(10000);
 			conn.connect();
 
 			// 获取证书信息
 			return conn.getServerCertificates();//Certificate[]
+		} catch (IOException e) {
+			// 目标不是真正的HTTPS服务/握手被重置/连接失败/超时等，静默返回空证书，避免刷屏
+			return new Certificate[0];
 		} finally {
 			if (conn != null) {
 				conn.disconnect();
