@@ -255,8 +255,7 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 				String value = entry.getIPSet().iterator().next();
 				if (IPAddressUtils.isPublicIPv4NoPort(value)) {
 					boolean skipWafCdn = ConfigManager.getBooleanConfigByKey(ConfigName.SkipSearchWafCdnIP);
-					String server = entry.getWebcontainer();
-					if (skipWafCdn && WafCdnUtil.isWafCdnByServer(server)) {
+					if (skipWafCdn && WafCdnUtil.isWafCdn(entry.getWebcontainer(), entry.getCNAMESet(), entry.getResponse())) {
 						stdout.println("skip " + value + ",it's WAF or CDN IP");
 						return new InfoTuple<>(null, null);
 					}

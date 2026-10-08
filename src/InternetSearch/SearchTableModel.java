@@ -272,8 +272,7 @@ public class SearchTableModel extends AbstractTableModel {
 				String value = entry.getIPSet().iterator().next();
 				if (IPAddressUtils.isPublicIPv4NoPort(value)) {
 					boolean skipWafCdn = ConfigManager.getBooleanConfigByKey(ConfigName.SkipSearchWafCdnIP);
-					String server =  entry.getWebcontainer();
-					if (skipWafCdn && WafCdnUtil.isWafCdnByServer(server)) {
+					if (skipWafCdn && WafCdnUtil.isWafCdn(entry.getWebcontainer(), null, null)) {
 						stdout.println("skip "+value+",it's WAF or CDN IP");
 						return new InfoTuple<>(null, null); 
 					}

@@ -1,0 +1,33 @@
+# CDN 厂商专属的 CNAME 目标域名后缀（endsWith 匹配，忽略大小写与末尾的点）
+# 只收录"专属 CDN 域名"，不收 amazonaws.com/aliyun.com 等过宽后缀，避免误伤真实源站
+cdn.cloudflare.net
+cloudflare.com
+cloudfront.net
+akamaiedge.net
+akamai.net
+akamaitechnologies.com
+edgekey.net
+edgesuite.net
+edgecastcdn.net
+edgecastdns.net
+fastly.net
+fastlylb.net
+kxcdn.com
+cachefly.net
+stackpathdns.com
+myqcloud.com
+alicdn.com
+kunlunar.com
+kunlun.com
+qiniucdn.com
+qiniudns.com
+aicdn.com
+wscdns.com
+wsglb0.com
+dnsv1.com
+lxdns.com
+ccgslb.com
+chinacache.com
+jcloud-cdn.com
+hwcdn.net
+myhuaweicloud.com
