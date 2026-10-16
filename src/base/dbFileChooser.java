@@ -4,6 +4,7 @@ import java.io.File;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.UIManager;
 import javax.swing.filechooser.FileFilter;
 
 import org.apache.logging.log4j.LogManager;
@@ -22,12 +23,30 @@ public class dbFileChooser extends JFileChooser {
 	}
 
 	/**
+	 * 确保当前 LookAndFeel 提供 FileChooserUI。
+	 * Burp 的自定义 LookAndFeel 不注册 FileChooserUI，导致 new JFileChooser() 时 ui 字段为 null，
+	 * 之后 showDialog() 抛 NullPointerException（Cannot invoke FileChooserUI.getDialogTitle because ui is null）。
+	 * 这里检测到缺失时兜底切到跨平台(Metal) L&F，它一定带 FileChooserUI。
+	 */
+	private static void ensureFileChooserUI() {
+		try {
+			javax.swing.LookAndFeel laf = UIManager.getLookAndFeel();
+			if (laf == null || laf.getDefaults().get("FileChooserUI") == null) {
+				UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+			}
+		} catch (Exception e) {
+			// 切换失败时忽略，仍按默认 L&F 尝试创建
+		}
+	}
+
+	/**
 	使用数据模型监听后，不需再自行单独保存当前项目了。
 	但是需要用于另存为，单独保存域名(和saveDomainOnly) 2个功能。
 	都需要文件选择对话框
 	 */
 	public File dialog(boolean isOpen,String fileExtension) {
 		try {
+			ensureFileChooserUI();
 			File curr_db = BurpExtender.getDataLoadManager().getCurrentDBFile();
 			if (curr_db != null && curr_db.exists()) {
 				fc = new JFileChooser(curr_db.getParentFile());
@@ -78,6 +97,7 @@ public class dbFileChooser extends JFileChooser {
 
 	public File saveDialog() {
 		try {
+			ensureFileChooserUI();
 			if (fc.getCurrentDirectory() != null) {
 				fc = new JFileChooser(fc.getCurrentDirectory());
 			}else {
