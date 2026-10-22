@@ -449,8 +449,10 @@ public class TitlePanel extends JPanel {
 	 * 这种加载方式没有改变tableModel，所以tableModelListener也还在。
 	 */
 	public void loadData(String currentDBFile) {
-		titleDao = new TitleDao(currentDBFile);
-		List<LineEntry> lines = titleDao.selectAllTitle();
+		titleDao = (currentDBFile == null) ? null : dao.DaoFactory.of(currentDBFile).titleDao();
+		// 列表加载不读 request/response（几十万条报文会吃穿堆内存），
+		// 选中某行时再由 LineTableModel 按 url 单条补齐
+		List<LineEntry> lines = (titleDao == null) ? new java.util.ArrayList<LineEntry>() : titleDao.selectAllTitle();
 		LineTableModel titleTableModel = new LineTableModel(guiMain, lines);
 		loadData(titleTableModel);
 	}

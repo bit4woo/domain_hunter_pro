@@ -25,9 +25,10 @@ import base.Commons;
 import base.DictFileReader;
 import base.dbFileChooser;
 import burp.BurpExtender;
-import dao.DomainDao;
-import dao.TargetDao;
-import dao.TitleDao;
+import dao.DBUtils;
+import dao.DaoFactory;
+import dao.DbWriter;
+import dao.ProjectDaos;
 import domain.target.TargetEntry;
 import title.LineEntry;
 
@@ -259,12 +260,22 @@ public class ProjectMenu extends JPopupMenu{
 		try {
 			File file = new dbFileChooser().dialog(false,".db");
 			if (file != null) {
-				DomainDao dao = new DomainDao(file.toString());
-				TargetDao dao1 = new TargetDao(file.toString());
-				if (dao.saveDomainManager(gui.getDomainPanel().getDomainResult()) && dao1.addOrUpdateTargets(gui.getDomainPanel().fetchTargetModel().getTargetEntries())) {
+				// 目标是新文件：先确保表结构存在，再把内存里的完整快照一次性写入
+				ProjectDaos daos = DaoFactory.of(file);
+				daos.domainDao();
+				daos.targetDao();
+
+				DbWriter writer = DbWriter.getInstance();
+				writer.saveAllDomains(daos.getDbFilePath(), gui.getDomainPanel().getDomainResult());
+				writer.saveAllTargets(daos.getDbFilePath(),
+						gui.getDomainPanel().fetchTargetModel().getTargetEntries().values());
+				// 同步等待落盘：返回的 File 必须是"已经写好"的文件
+				if (writer.flush(120_000)) {
 					stdout.println("Save Domain Only Success! " + Commons.getNowTimeString());
 					return file;
 				}
+				stdout.println("Save Domain Only failed (flush timeout): " + Commons.getNowTimeString());
+				return null;
 			}
 		} catch (Exception e) {
 			e.printStackTrace(stderr);
@@ -283,6 +294,11 @@ public class ProjectMenu extends JPopupMenu{
 		}
 		File bakfile = new File(file.getAbsoluteFile().toString() + suffix);
 		try {
+			// 备份前必须做两件事，否则备份出来的文件会缺最新数据：
+			// 1) flush：把还在写队列里的任务落盘；
+			// 2) wal_checkpoint：把 WAL 里的内容合并回主数据库文件（WAL 模式下主文件本身可能不完整）
+			DbWriter.getInstance().flush(30_000);
+			DBUtils.checkpoint(file.getPath());
 			FileUtils.copyFile(file, bakfile);
 			BurpExtender.getStdout().println("DB File Backed Up:" + bakfile.getAbsolutePath());
 		} catch (IOException e1) {
@@ -296,6 +312,11 @@ public class ProjectMenu extends JPopupMenu{
 		try {
 			int result = JOptionPane.showConfirmDialog(null,"Are you sure to DELETE this DB file ?");
 			if (result == JOptionPane.YES_OPTION) {
+				// 先落盘并 checkpoint，再清掉缓存，最后删文件：
+				// 反过来做会让 "db-writer" 线程在建表时报 "file not found"，也会丢掉 WAL 里的数据
+				DbWriter.getInstance().flush(30_000);
+				DBUtils.checkpoint(file.getPath());
+				DaoFactory.evict(file);
 				FileUtils.delete(file);
 				BurpExtender.getStdout().println("DB File Removed:" + file.getAbsolutePath());
 			}
@@ -317,6 +338,10 @@ public class ProjectMenu extends JPopupMenu{
 		if (null != newFilename) {
 			try {
 				File newFile = new File(currentPath+File.separator+newFilename);
+				// 同 removeDB：先落盘 + checkpoint + 清缓存，再移动文件
+				DbWriter.getInstance().flush(30_000);
+				DBUtils.checkpoint(file.getPath());
+				DaoFactory.evict(file);
 				FileUtils.moveFile(file, newFile);
 				if (newFile.exists()) {
 					BurpExtender.getDataLoadManager().loadDbfileToHunter(newFile.toString());
@@ -355,12 +380,13 @@ public class ProjectMenu extends JPopupMenu{
 			return;
 		}
 		backupDB("before import");//导入前的备份。
-		DomainDao dao = new DomainDao(file.getAbsolutePath());
-		DomainManager NewManager = dao.getDomainManager();
-		
+		// 源项目文件同样通过 DaoFactory 打开：它与当前项目是两个不同的文件，
+		// 各自有独立的 DataSource，互不影响
+		ProjectDaos sourceDaos = DaoFactory.of(file);
+		DomainManager NewManager = sourceDaos.domainDao().getDomainManager();
+
 		if (mergeRootDomain) {
-			TargetDao targetDao = new TargetDao(file.getAbsolutePath());
-			List<TargetEntry> targets = targetDao.selectAll();
+			List<TargetEntry> targets = sourceDaos.targetDao().selectAll();
 			for (TargetEntry target:targets) {
 				gui.getDomainPanel().getTargetTable().getTargetModel().addOrUpdateRowIfValid(target);
 			}
@@ -375,8 +401,7 @@ public class ProjectMenu extends JPopupMenu{
 		gui.getDomainPanel().showDataToDomainGUI();
 		gui.getDomainPanel().saveDomainDataToDB();
 
-		TitleDao titledao = new TitleDao(file.getAbsolutePath());
-		List<LineEntry> titles = titledao.selectAllTitle();
+		List<LineEntry> titles = sourceDaos.titleDao().selectAllTitle();
 		for (LineEntry entry:titles) {
 			gui.getTitlePanel().getTitleTable().getLineTableModel().addNewLineEntry(entry);
 		}

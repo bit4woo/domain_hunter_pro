@@ -51,6 +51,8 @@ import burp.IBurpExtenderCallbacks;
 import burp.IHttpRequestResponse;
 import burp.IHttpService;
 import burp.IScanIssue;
+import dao.DaoFactory;
+import dao.DbWriter;
 import dao.DomainDao;
 import dao.TargetDao;
 import domain.target.TargetControlPanel;
@@ -476,15 +478,28 @@ public class DomainPanel extends JPanel {
 	 * DB---> DomainManager ---> UI
 	 */
 	public void LoadDomainData(String dbFilePath) {
-		domainDao = new DomainDao(dbFilePath);
+		// 通过 DaoFactory 取 DAO：同一个项目文件全项目共用一个 DataSource，
+		// 避免"每处 new 一次"导致的 PRAGMA 不一致与重复建表检查
+		domainDao = DaoFactory.of(dbFilePath).domainDao();
 		domainResult = domainDao.getDomainManager();
 		domainResult.setGuiMain(guiMain);
+		// 刚从数据库读出来的内容就是"已保存"状态，作为后续 isChanged() 的基线
+		domainResult.markContentSaved();
 		setDomainResult(domainResult);
 		showDataToDomainGUI();
 	}
 
 	/**
 	 * DomainManager ---> DB
+	 * <p>
+	 * 改造点：
+	 * </p>
+	 * <ul>
+	 *   <li>走 {@link DbWriter} 而不是直接调 DAO：写入在后台写线程执行，十个 type 进同一个事务；</li>
+	 *   <li>方法<b>保持同步语义</b>（内部 flush 等待落盘）：调用方（切换项目、备份、导入）
+	 *       依赖"这个函数返回时数据已经在文件里"，不能改成纯异步；</li>
+	 *   <li>落盘成功后才标记内容已保存，避免写失败还被当成"已保存"而跳过下次自动保存。</li>
+	 * </ul>
 	 */
 	public void saveDomainDataToDB() {
 		try {
@@ -493,9 +508,24 @@ public class DomainPanel extends JPanel {
 				file = new dbFileChooser().dialog(false,".db");
 				BurpExtender.getDataLoadManager().setCurrentDBFile(file);
 			}
-			DomainDao dao = new DomainDao(file.toString());
-			dao.saveDomainManager(domainResult);
-			log.info("domain data saved");
+			if (file == null) {// 用户取消了文件选择
+				log.info("domain data not saved: no db file selected");
+				return;
+			}
+			DomainManager domainManager = domainResult;
+			if (domainManager == null) {
+				return;
+			}
+
+			DbWriter writer = DbWriter.getInstance();
+			writer.saveAllDomains(file.getPath(), domainManager);
+			boolean flushed = writer.flush(60_000);
+			if (flushed) {
+				domainManager.markContentSaved();
+				log.info("domain data saved");
+			} else {
+				log.error("domain data save timeout, writer queue may be blocked; pending=" + writer.getPendingCount());
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			e.printStackTrace(BurpExtender.getStderr());
@@ -507,7 +537,7 @@ public class DomainPanel extends JPanel {
 	 * @param dbFilePath
 	 */
 	public void LoadTargetsData(String dbFilePath) {
-		targetDao = new TargetDao(dbFilePath);
+		targetDao = DaoFactory.of(dbFilePath).targetDao();
 		List<TargetEntry> targets = targetDao.selectAll();
 		TargetTableModel targetModel = new TargetTableModel(guiMain,targets);
 		targetTable.setModel(targetModel);
@@ -523,6 +553,10 @@ public class DomainPanel extends JPanel {
 			getDomainResult().freshBaseRule();
 			showDataToDomainGUI();
 			saveDomainDataToDB();
+			// freshBaseRule 里的 refreshSubdomainCount 是通过 invokeLater 把计数写回队列表的，
+			// 这里补一次 flush（同样排在 EDT 队列末尾，也就是那些写任务之后）：
+			// 保证"点一次 Refresh"结束时，子域名计数也真的落盘了，而不是留在写队列里
+			SwingUtilities.invokeLater(() -> DbWriter.getInstance().flush(30_000));
 		} catch (Exception exception) {
 			exception.printStackTrace();
 		}

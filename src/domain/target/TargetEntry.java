@@ -249,25 +249,66 @@ public class TargetEntry {
 		this.digDone = digDone;
 	}
 
+	/**
+	 * 生成一份"用于写库"的快照。
+	 * <p>
+	 * 为什么需要它：写库改成了异步队列，任务入队之后 UI 线程还会继续修改同一个
+	 * TargetEntry（用户改备注、双击切 TrustLevel、批量操作）。如果把对象引用直接交给
+	 * 写线程，写进数据库的可能是"改到一半"的状态，甚至出现写线程读取时对象正被修改。
+	 * 入队时拍一份快照，写线程只读快照：入队那一刻是什么值，落库就是什么值。
+	 * </p>
+	 * <p>
+	 * 只复制会被 upsert 语句写入的字段，避免复制不需要的大对象。
+	 * </p>
+	 */
+	public TargetEntry snapshotForPersist() {
+		TargetEntry copy = new TargetEntry();
+		copy.setTarget(this.target);
+		copy.setType(this.type);
+		copy.setKeyword(this.keyword);
+		copy.setZoneTransfer(this.ZoneTransfer);
+		copy.setComments(new HashSet<String>(getComments()));
+		copy.setUseTLD(this.useTLD);
+		copy.setTrustLevel(this.trustLevel);
+		copy.setSubdomainCount(this.subdomainCount);
+		copy.setDigDone(this.digDone);
+		return copy;
+	}
+
+	/**
+	 * 判断给定的域名是否会被计入当前 target 的 subdomainCount。
+	 * <p>
+	 * 注意：只有 Domain / WildcardDomain 类型的计数与单个域名相关；Subnet 类型的计数来自网段
+	 * 包含的 IP 数量，与传入的域名无关，因此这里返回 false。
+	 * </p>
+	 *
+	 * @param domain 单个域名（不带端口）
+	 * @return 该域名属于当前 target 时返回 true
+	 */
+	public boolean matchesSubdomain(String domain) {
+		if (domain == null || StringUtils.isEmpty(this.target)) {
+			return false;
+		}
+		if (Target_Type_Domain.equals(this.type)) {
+			return domain.endsWith("." + this.target) || domain.equalsIgnoreCase(this.target);
+		}
+		if (Target_Type_Wildcard_Domain.equals(this.type)) {
+			return DomainUtils.isMatchWildCardDomain(this.target, domain);
+		}
+		return false;
+	}
+
 	public void countSubdomain(Set<String> domains) {
 		this.subdomainCount = 0;
-		if (this.type.equals(Target_Type_Domain)) {
+		if (Target_Type_Domain.equals(this.type) || Target_Type_Wildcard_Domain.equals(this.type)) {
 			for (String domain : domains) {
-				if (domain.endsWith("." + this.target) || domain.equalsIgnoreCase(this.target)) {
+				if (matchesSubdomain(domain)) {
 					this.subdomainCount++;
 				}
 			}
 		}
 
-		if (this.type.equals(Target_Type_Wildcard_Domain)) {
-			for (String domain : domains) {
-				if (DomainUtils.isMatchWildCardDomain(this.target, domain)) {
-					this.subdomainCount++;
-				}
-			}
-		}
-
-		if (this.type.equals(Target_Type_Subnet)) {
+		if (Target_Type_Subnet.equals(this.type)) {
 			this.subdomainCount = IPAddressUtils.toIPList(this.target).size();
 		}
 	}

@@ -1,6 +1,9 @@
 package dao;
 
 import java.io.File;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,10 +19,29 @@ import domain.target.TargetEntry;
 
 public class TargetDao {
 
+	/**
+	 * 单行 upsert 的 SQL。
+	 * <p>
+	 * 用 INSERT ... ON CONFLICT(target) DO UPDATE 而不是 insert or replace：
+	 * replace 的语义是"删掉旧行再插新行"，会换掉主键 ID、改变行序，
+	 * 而行序是界面表格"#"列的隐含依赖。ON CONFLICT 是原地更新，行序稳定。
+	 * </p>
+	 */
+	private static final String UPSERT_SQL = "INSERT INTO TargetTable (target, type, keyword, ZoneTransfer, comment, useTLD, trustLevel, subDomainCount,digDone)"
+			+ " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+			+ " ON CONFLICT(target) DO UPDATE SET type = excluded.type, keyword = excluded.keyword, "
+			+ " ZoneTransfer = excluded.ZoneTransfer, comment = excluded.comment, "
+			+ " useTLD = excluded.useTLD, trustLevel = excluded.trustLevel, subDomainCount = excluded.subDomainCount, digDone=excluded.digDone";
+
+	private static final String DELETE_SQL = "delete from TargetTable where target=?";
+
 	private DataSource dataSource;
 	private JdbcTemplate jdbcTemplate;
+	/** 本 DAO 对应的数据库文件路径，供批量写入/日志使用 */
+	private final String dbFilePath;
 
 	public TargetDao(String dbFilePath) {
+		this.dbFilePath = dbFilePath;
 		dataSource = DBUtils.getSqliteDataSource(dbFilePath);
 		jdbcTemplate = new JdbcTemplate(dataSource);
 		if (!TableUpdater.tableExists(jdbcTemplate, "TargetTable")) {
@@ -27,6 +49,10 @@ public class TargetDao {
 		} else {
 			alterTable();
 		}
+	}
+
+	public String getDbFilePath() {
+		return dbFilePath;
 	}
 
 	public TargetDao(File dbFilePath) {
@@ -158,17 +184,70 @@ public class TargetDao {
 	}
 
 	public boolean addOrUpdateTarget(TargetEntry entry) {
-		String sql = "INSERT INTO TargetTable (target, type, keyword, ZoneTransfer, comment, useTLD, trustLevel, subDomainCount,digDone)"
-				+ " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
-				+ " ON CONFLICT(target) DO UPDATE SET type = excluded.type, keyword = excluded.keyword, "
-				+ " ZoneTransfer = excluded.ZoneTransfer, comment = excluded.comment, "
-				+ " useTLD = excluded.useTLD, trustLevel = excluded.trustLevel, subDomainCount = excluded.subDomainCount, digDone=excluded.digDone";
-
-		int result = jdbcTemplate.update(sql, entry.getTarget(), entry.getType(), entry.getKeyword(),
+		int result = jdbcTemplate.update(UPSERT_SQL, entry.getTarget(), entry.getType(), entry.getKeyword(),
 				entry.isZoneTransfer(), SetAndStr.toStr(entry.getComments()), entry.isUseTLD(), entry.getTrustLevel(),
 				entry.getSubdomainCount(),entry.isDigDone());
 
 		return result > 0;
+	}
+
+	/**
+	 * 批量 upsert，由调用方负责事务。
+	 * <p>
+	 * 为什么需要它：原实现 {@link #addOrUpdateTargets} 是"循环调用单行 upsert"，
+	 * 每行都是一次独立事务（SQLite 默认每条语句一次隐式提交），几千个 target 就是几千次提交。
+	 * 这里用 PreparedStatement.addBatch 把整批塞进一个事务，提交次数从 O(n) 降到 O(1)。
+	 * </p>
+	 *
+	 * @param conn    外部管理的连接，本方法不 commit、不 close
+	 * @param entries 待写入的 target 快照
+	 * @return 写入行数
+	 */
+	public int upsertBatch(Connection conn, List<TargetEntry> entries) throws SQLException {
+		if (entries == null || entries.isEmpty()) {
+			return 0;
+		}
+		int count = 0;
+		try (PreparedStatement ps = conn.prepareStatement(UPSERT_SQL)) {
+			for (TargetEntry entry : entries) {
+				ps.setString(1, entry.getTarget());
+				ps.setString(2, entry.getType());
+				ps.setString(3, entry.getKeyword());
+				ps.setBoolean(4, entry.isZoneTransfer());
+				ps.setString(5, SetAndStr.toStr(entry.getComments()));
+				ps.setBoolean(6, entry.isUseTLD());
+				ps.setString(7, entry.getTrustLevel());
+				ps.setInt(8, entry.getSubdomainCount());
+				ps.setBoolean(9, entry.isDigDone());
+				ps.addBatch();
+				count++;
+			}
+			ps.executeBatch();
+		}
+		return count;
+	}
+
+	/**
+	 * 批量删除，由调用方负责事务。
+	 *
+	 * @param conn    外部管理的连接，本方法不 commit、不 close
+	 * @param targets 待删除的 target 值
+	 * @return 提交的删除语句条数
+	 */
+	public int deleteBatch(Connection conn, List<String> targets) throws SQLException {
+		if (targets == null || targets.isEmpty()) {
+			return 0;
+		}
+		int count = 0;
+		try (PreparedStatement ps = conn.prepareStatement(DELETE_SQL)) {
+			for (String target : targets) {
+				ps.setString(1, target);
+				ps.addBatch();
+				count++;
+			}
+			ps.executeBatch();
+		}
+		return count;
 	}
 
 	public boolean addOrUpdateTargets(List<TargetEntry> entries) {

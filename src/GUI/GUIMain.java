@@ -25,9 +25,9 @@ import config.ConfigJScrollPane;
 import config.ConfigManager;
 import config.ConfigName;
 import config.ConfigPanel;
-import dao.DomainDao;
-import dao.TargetDao;
-import dao.TitleDao;
+import dao.DaoFactory;
+import dao.DbWriter;
+import dao.ProjectDaos;
 import domain.DomainPanel;
 import domain.ProjectMenu;
 import thread.DomainProducer;
@@ -250,35 +250,55 @@ public class GUIMain extends JFrame {
 	}
 
 
-	/*
-    使用数据模型监听后，不需再自行单独保存当前项目了。
-    但是需要用于另存为，单独保存域名(和saveDomainOnly) 2个功能。
-    都需要文件选择对话框
+	/**
+	 * 保存项目数据到指定数据库文件（另存为 / 手动保存 / 只保存域名）。
+	 * <p>
+	 * 日常写入已经由各处的增量写入口（{@link dao.DbWriter}）负责，
+	 * 这里只用于"把整个项目写到另一个文件"这类需要完整快照的动作。
+	 * </p>
+	 * <p>
+	 * 改造前后行为一致，但内部实现换了：
+	 * </p>
+	 * <ul>
+	 *   <li>原来：new 三个 DAO，三张表各自循环逐条写，没有事务，失败会留下半个文件；</li>
+	 *   <li>现在：全部写操作入 {@link DbWriter} 队列 → 后台写线程按批次、单事务执行 →
+	 *       {@code flush} 等落盘。三张表在同一事务里，"保存成功"意味着三张表都成功。</li>
+	 * </ul>
+	 * <p>
+	 * 注意这里<b>显式</b>把内存里的全部数据入队：另存为的目标是一个新文件，
+	 * 之前的增量写入都写到了旧文件，新文件必须拿到完整快照。
+	 * </p>
 	 */
 	public Boolean saveData(String dbFilePath, boolean domainOnly) {
 		try {
-			if (dbFilePath != null && new File(dbFilePath).exists()) {
-				DomainDao domainDao = new DomainDao(dbFilePath.toString());
-				TargetDao targetDao = new TargetDao(dbFilePath.toString());
-
-				boolean targetSaved = targetDao.addOrUpdateTargets(domainPanel.fetchTargetModel().getTargetEntries());
-				boolean domainSaved = domainDao.saveDomainManager(domainPanel.getDomainResult());
-
-				if (domainOnly) {
-					if (targetSaved && domainSaved) {
-						stdout.println("Save Domain Only Success! " + Commons.getNowTimeString());
-						return true;
-					}
-					return false;
-				} else {
-					TitleDao titleDao = new TitleDao(dbFilePath);
-					boolean titleSaved = titleDao.addOrUpdateTitles(getTitlePanel().getTitleTable().getLineTableModel().getLineEntries());
-					if (targetSaved && domainSaved && titleSaved) {
-						stdout.println("Save Domain And Title Success! " + Commons.getNowTimeString());
-						return true;
-					}
-				}
+			if (dbFilePath == null || !new File(dbFilePath).exists()) {
+				return false;
 			}
+
+			// 取 DAO 包：构造过程会确保目标文件里的三张表都已存在（另存为到新文件时需要）
+			ProjectDaos daos = DaoFactory.of(dbFilePath);
+			daos.domainDao();
+			daos.targetDao();
+			if (!domainOnly) {
+				daos.titleDao();
+			}
+
+			DbWriter writer = DbWriter.getInstance();
+			writer.saveAllDomains(daos.getDbFilePath(), domainPanel.getDomainResult());
+			writer.saveAllTargets(daos.getDbFilePath(), domainPanel.fetchTargetModel().getTargetEntries().values());
+			if (!domainOnly) {
+				writer.saveAllTitles(daos.getDbFilePath(),
+						getTitlePanel().getTitleTable().getLineTableModel().getLineEntries().values());
+			}
+
+			// 同步等待：调用方拿到的返回值必须代表"已经写进文件"，而不是"已经入队"
+			boolean saved = writer.flush(120_000);
+			if (saved) {
+				stdout.println((domainOnly ? "Save Domain Only Success! " : "Save Domain And Title Success! ")
+						+ Commons.getNowTimeString());
+				return true;
+			}
+			stdout.println("Save failed: writer flush timeout, pending=" + writer.getPendingCount());
 			return false;
 		} catch (Exception e1) {
 			e1.printStackTrace(stderr);

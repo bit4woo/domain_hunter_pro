@@ -98,7 +98,8 @@ public class TargetTable extends JTable {
 					TargetEntry selecteEntry = getTargetModel().getTargetEntries().get(rows[0]);
 					if (modelCol == TargetTableModel.getTitleList().indexOf("TrustLevel")) {
 						selecteEntry.switchTrustLevel();
-						guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(selecteEntry);
+						// 与表格单元格编辑共用同一个写入口：进写队列，不在 EDT 上直接执行 SQL
+						getTargetModel().saveTarget(selecteEntry);
 						getTargetModel().fireTableRowsUpdated(rows[0], rows[0]);
 					} else if (modelCol == TargetTableModel.getTitleList().indexOf("Domain/Subnet")) {//双击url在浏览器中打开
 						try {

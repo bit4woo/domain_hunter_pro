@@ -1,5 +1,6 @@
 package domain.target;
 
+import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,6 +23,8 @@ import com.google.gson.Gson;
 
 import GUI.GUIMain;
 import InternetSearch.InfoTuple;
+import dao.DbWriter;
+import dao.TargetDao;
 import InternetSearch.SearchType;
 import base.IndexedHashMap;
 import base.IntArraySlice;
@@ -161,6 +164,54 @@ public class TargetTableModel extends AbstractTableModel {
 		}
 	}
 
+	/**
+	 * 当前项目数据库文件路径。
+	 * <p>
+	 * 优先用 DAO 上记录的文件：读写必须指向同一个文件，否则会出现"读到新项目、写到旧项目"。
+	 * 项目尚未打开时返回 null，此时所有写操作静默跳过（原来会直接 NPE）。
+	 * </p>
+	 */
+	private String currentDbFilePath() {
+		if (guiMain != null && guiMain.getDomainPanel() != null) {
+			TargetDao dao = guiMain.getDomainPanel().getTargetDao();
+			if (dao != null) {
+				return dao.getDbFilePath();
+			}
+		}
+		File file = BurpExtender.getDataLoadManager().getCurrentDBFile();
+		return file == null ? null : file.getPath();
+	}
+
+	/**
+	 * target 写入的统一出口。
+	 * <p>
+	 * 为什么所有写操作都必须走这里：原来是"谁改谁直接 addOrUpdateTarget"，
+	 * 于是 EDT（单元格编辑、双击切状态）上直接有 SQL，收集过程中也同步写库。
+	 * 现在统一进 {@link DbWriter} 的单写线程队列：EDT 不再等 IO，
+	 * 同一个 target 在 300ms 内的多次修改会被合并成一次写入。
+	 * </p>
+	 * <p>
+	 * 注意：入队不等于落库。需要确定性落盘的地方（保存项目、另存为）
+	 * 由调用方执行 {@code DbWriter.flush()}。
+	 * </p>
+	 */
+	public void saveTarget(TargetEntry entry) {
+		String dbFilePath = currentDbFilePath();
+		if (dbFilePath == null || entry == null) {
+			return;
+		}
+		DbWriter.getInstance().upsertTarget(dbFilePath, entry);
+	}
+
+	/** target 删除的统一出口，同 {@link #saveTarget(TargetEntry)} */
+	private void enqueueDelete(String target) {
+		String dbFilePath = currentDbFilePath();
+		if (dbFilePath == null || target == null) {
+			return;
+		}
+		DbWriter.getInstance().deleteTarget(dbFilePath, target);
+	}
+
 	@Override
 	public void setValueAt(Object value, int row, int col) {
 		TargetEntry entry = targetEntries.get(row);
@@ -185,7 +236,7 @@ public class TargetTableModel extends AbstractTableModel {
 			fireTableCellUpdated(row, col);
 		}
 
-		guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(entry);
+		saveTarget(entry);
 	}
 
 	@Override
@@ -278,7 +329,7 @@ public class TargetTableModel extends AbstractTableModel {
 			} else {// 新增
 				fireTableRowsInserted(rowIndex, rowIndex);
 			}
-			guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(entry);
+			saveTarget(entry);
 		});
 	}
 
@@ -292,7 +343,7 @@ public class TargetTableModel extends AbstractTableModel {
 			String key = targetEntries.get(rowIndex).getTarget();
 			targetEntries.remove(rowIndex);
 			fireTableRowsDeleted(rowIndex, rowIndex);
-			guiMain.getDomainPanel().getTargetDao().deleteByTarget(key);
+			enqueueDelete(key);
 		});
 	}
 
@@ -304,7 +355,7 @@ public class TargetTableModel extends AbstractTableModel {
 			int rowIndex = targetEntries.indexOfKey(key);
 			targetEntries.remove(key);
 			fireTableRowsDeleted(rowIndex, rowIndex);
-			guiMain.getDomainPanel().getTargetDao().deleteByTarget(key);
+			enqueueDelete(key);
 		});
 	}
 
@@ -553,16 +604,22 @@ public class TargetTableModel extends AbstractTableModel {
 		}
 	}
 
+	/**
+	 * 全量刷新：把所有 target 的 subdomainCount 按当前的 subDomainSet 重新计算一遍。
+	 * <p>
+	 * 只在手动 Refresh（DomainManager.freshBaseRule）时调用。逐个 target 做一次全集合遍历，
+	 * 复杂度是 target 数 × 子域名数，因此不适合在收集过程中频繁调用。
+	 * </p>
+	 */
 	public void refreshSubdomainCount() {
 		SwingUtilities.invokeLater(() -> {
+			Set<String> subDomains = fetchSubDomainSet();
+			if (subDomains == null) {
+				return;
+			}
 			for (TargetEntry entry : targetEntries.values()) {
-				int oldCount = entry.getSubdomainCount();
-				entry.countSubdomain(guiMain.getDomainPanel().getDomainResult().getSubDomainSet());
-				int newCount = entry.getSubdomainCount();
-				if (oldCount != newCount) {
-					// 减少数据库操作
-					guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(entry);
-				}
+				// 减少数据库操作：计数没变就不写库
+				countSubdomainAndSave(entry, subDomains);
 			}
 			int size = targetEntries.size();
 			if (size >= 1) {
@@ -570,6 +627,142 @@ public class TargetTableModel extends AbstractTableModel {
 			}
 		});
 
+	}
+
+	/**
+	 * 单个 target 的版本：只重新计算并写入一个 target 的 subdomainCount。
+	 * <p>
+	 * 与全量版本的区别：不再遍历整张表格，只对目标行做一次计算和（必要时）一次 upsert，
+	 * 可用于单个 target 被新增、编辑之后，或者用户手动修改了某一行之后立即校正计数。
+	 * </p>
+	 * <p>
+	 * 线程说明：计数与写库在调用线程完成（写库是一次小事务，不建议在 EDT 上批量调用），
+	 * 只有 UI 通知 {@link #fireTableRowsUpdated} 通过 {@link SwingUtilities#invokeLater} 切回 EDT。
+	 * </p>
+	 *
+	 * @param target TargetEntry.target，即表格 Domain/Subnet 列的值
+	 * @return 计数发生变化并已提交写入时返回 true；target 不存在、未加载项目或计数未变时返回 false
+	 */
+	public boolean refreshSubdomainCount(String target) {
+		if (StringUtils.isEmpty(target)) {
+			return false;
+		}
+		TargetEntry entry = findTargetEntry(target);
+		if (entry == null) {
+			return false;
+		}
+		Set<String> subDomains = fetchSubDomainSet();
+		if (subDomains == null) {
+			return false;
+		}
+
+		boolean changed = countSubdomainAndSave(entry, subDomains);
+		if (changed) {
+			int rowIndex = targetEntries.indexOfKey(entry.getTarget());
+			if (rowIndex >= 0) {
+				SwingUtilities.invokeLater(() -> {
+					if (rowIndex < targetEntries.size()) {
+						fireTableRowsUpdated(rowIndex, rowIndex);
+					}
+				});
+			}
+		}
+		return changed;
+	}
+
+	/**
+	 * 单个域名的增量版本：当有一个新的域名被加入 subDomainSet 时调用，
+	 * 只更新那些计数会因此发生变化的 target 行（通常只有 1 行，通配符场景可能多行）。
+	 * <p>
+	 * 与全量版本的区别：先用 {@link TargetEntry#matchesSubdomain(String)} 过滤，只对归属的 target
+	 * 重新计数，避免对无关 target 反复遍历整个子域名集合。
+	 * </p>
+	 * <p>
+	 * 注意：这里每变化一行就写一次库。收集流量时如果逐条调用，会产生大量小事务，
+	 * 需要配合批量/异步写队列使用，否则会明显拖慢收集速度。
+	 * </p>
+	 *
+	 * @param domain 单个域名，可带端口（内部会去掉端口）
+	 * @return 受影响的 target 行数
+	 */
+	public int refreshSubdomainCountForDomain(String domain) {
+		if (StringUtils.isEmpty(domain)) {
+			return 0;
+		}
+		String host = DomainUtils.clearDomainWithoutPort(domain);
+		Set<String> subDomains = fetchSubDomainSet();
+		if (subDomains == null) {
+			return 0;
+		}
+
+		List<Integer> changedRows = new ArrayList<>();
+		for (TargetEntry entry : targetEntries.values()) {
+			if (!entry.matchesSubdomain(host)) {
+				continue;
+			}
+			if (countSubdomainAndSave(entry, subDomains)) {
+				int rowIndex = targetEntries.indexOfKey(entry.getTarget());
+				if (rowIndex >= 0) {
+					changedRows.add(rowIndex);
+				}
+			}
+		}
+
+		if (!changedRows.isEmpty()) {
+			SwingUtilities.invokeLater(() -> {
+				for (int rowIndex : changedRows) {
+					if (rowIndex < targetEntries.size()) {
+						fireTableRowsUpdated(rowIndex, rowIndex);
+					}
+				}
+			});
+		}
+		return changedRows.size();
+	}
+
+	/**
+	 * 重新计算单个 target 的计数，只有计数发生变化时才提交写入。
+	 *
+	 * @return 计数发生变化（已入队，稍后由写线程落盘）返回 true
+	 */
+	private boolean countSubdomainAndSave(TargetEntry entry, Set<String> subDomains) {
+		if (entry == null) {
+			return false;
+		}
+		int oldCount = entry.getSubdomainCount();
+		entry.countSubdomain(subDomains);
+		if (oldCount == entry.getSubdomainCount()) {
+			return false;
+		}
+		saveTarget(entry);
+		return true;
+	}
+
+	/**
+	 * 取出当前的子域名集合，未加载项目时返回 null。
+	 */
+	private Set<String> fetchSubDomainSet() {
+		DomainManager domainResult = guiMain.getDomainPanel().getDomainResult();
+		if (domainResult == null) {
+			return null;
+		}
+		return domainResult.getSubDomainSet();
+	}
+
+	/**
+	 * 按 target 字符串查找对应的 TargetEntry，先精确匹配，再忽略大小写匹配。
+	 */
+	private TargetEntry findTargetEntry(String target) {
+		TargetEntry entry = targetEntries.get(target);
+		if (entry != null) {
+			return entry;
+		}
+		for (TargetEntry item : targetEntries.values()) {
+			if (target.equalsIgnoreCase(item.getTarget())) {
+				return item;
+			}
+		}
+		return null;
 	}
 
 	/**
@@ -712,7 +905,7 @@ public class TargetTableModel extends AbstractTableModel {
 			for (int i = rows.length - 1; i >= 0; i--) {// 降序删除才能正确删除每个元素
 				TargetEntry entry = targetEntries.get(rows[i]);
 				MethodInvoker.invokeMethod(entry, functionName, fixedParams);
-				guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(entry);
+				saveTarget(entry);
 			}
 			fireUpdated(rows);
 		});
@@ -725,7 +918,7 @@ public class TargetTableModel extends AbstractTableModel {
 			for (int i = rows.length - 1; i >= 0; i--) {// 降序删除才能正确删除每个元素
 				TargetEntry checked = targetEntries.get(rows[i]);
 				checked.setDigDone(digDone);
-				guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(checked);
+				saveTarget(checked);
 			}
 			fireUpdated(rows);
 		});
@@ -741,7 +934,7 @@ public class TargetTableModel extends AbstractTableModel {
 			for (int i = rows.length - 1; i >= 0; i--) {// 降序删除才能正确删除每个元素
 				TargetEntry checked = targetEntries.get(rows[i]);
 				checked.addComment(commentAdd);
-				guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(checked);
+				saveTarget(checked);
 			}
 			fireUpdated(rows);
 		});
@@ -757,7 +950,7 @@ public class TargetTableModel extends AbstractTableModel {
 			for (int i = rows.length - 1; i >= 0; i--) {// 降序删除才能正确删除每个元素
 				TargetEntry checked = targetEntries.get(rows[i]);
 				checked.getComments().remove(commentToRemove);
-				guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(checked);
+				saveTarget(checked);
 			}
 			fireUpdated(rows);
 		});
@@ -770,7 +963,7 @@ public class TargetTableModel extends AbstractTableModel {
 			for (int i = rows.length - 1; i >= 0; i--) {// 降序删除才能正确删除每个元素
 				TargetEntry checked = targetEntries.get(rows[i]);
 				checked.getComments().clear();
-				guiMain.getDomainPanel().getTargetDao().addOrUpdateTarget(checked);
+				saveTarget(checked);
 			}
 			fireUpdated(rows);
 		});
@@ -796,7 +989,7 @@ public class TargetTableModel extends AbstractTableModel {
 						throw new ArrayIndexOutOfBoundsException("can't find item with index " + index);
 					}
 					targetEntries.remove(index);
-					guiMain.getDomainPanel().getTargetDao().deleteTarget(checked);
+					enqueueDelete(checked.getTarget());
 					fireTableRowsDeleted(index, index);
 				} catch (Exception e) {
 					e.printStackTrace(stderr);

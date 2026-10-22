@@ -33,6 +33,11 @@ import utils.DecoderUtil;
  */
 public class DomainManager {
 	public String summary = "";
+	/**
+	 * 上次确认"已落盘"时的内容签名，用于判断是否需要自动保存。
+	 * transient：这是运行期状态，不参与序列化。
+	 */
+	private transient long savedContentSignature = 0;
 	public boolean autoAddRelatedToRoot = false;
 
 	private CopyOnWriteArraySet<String> subDomainSet = new CopyOnWriteArraySet<String>();
@@ -238,19 +243,84 @@ public class DomainManager {
 	}
 
 	/**
-	 * 判断对象是否有变化，作为写入数据库的依据
+	 * 判断内容是否有变化，作为"是否要自动保存"的依据。
+	 * <p>
+	 * <b>为什么不再比较 summary 字符串</b>：summary 里只有各集合的<b>数量</b>。
+	 * 把 a.example.com 换成 b.example.com，数量不变、summary 相同，
+	 * 但内容是变的 —— 这种情况会被判成"没变化"从而漏保存。
+	 * 这里改成比较"内容签名"：对每个集合里的每个元素取哈希后求和（与顺序无关），
+	 * 元素有任何增删改都会让签名变化。
+	 * </p>
+	 * <p>
+	 * 签名不是密码学哈希，只用于判断"是否与上次保存时一致"，碰撞概率可以忽略。
+	 * 计算成本是 O(元素总数)，每 2 分钟一次，相对于一次全量写库可以忽略不计。
+	 * </p>
 	 *
-	 * @return
+	 * @return true 表示内容和上次保存时不一样
 	 */
 	public boolean isChanged() {
-		String status = getSummary();
-		if (!status.equals(summary) && !StringUtils.isEmpty(summary)) {
-			summary = getSummary();
-			guiMain.getDomainPanel().getLblSummary().setText(summary);
-			return true;
-		} else {
+		long current = computeContentSignature();
+		if (current == savedContentSignature) {
 			return false;
 		}
+		// 注意：这里<b>不</b>更新 savedContentSignature。
+		// 基线只能由 markContentSaved() 在"确实写成功后"推进；
+		// 如果在这里推进，一旦后面的保存失败/超时，下一次自动保存就会误以为"已保存"而跳过。
+		// 顺带刷新界面上的汇总信息（原来就是在这里更新的，调用方依赖这个副作用）
+		try {
+			summary = getSummary();
+			if (guiMain != null && guiMain.getDomainPanel() != null && guiMain.getDomainPanel().getLblSummary() != null) {
+				guiMain.getDomainPanel().getLblSummary().setText(summary);
+			}
+		} catch (Exception e) {
+			// 界面尚未初始化完成时忽略，不能因为刷标签失败而影响"是否需要保存"的判断
+		}
+		return true;
+	}
+
+	/**
+	 * 把当前内容记为"已保存"。加载项目后、以及写入成功之后调用。
+	 */
+	public void markContentSaved() {
+		savedContentSignature = computeContentSignature();
+	}
+
+	/**
+	 * 计算内容签名（与元素顺序无关）。
+	 */
+	public long computeContentSignature() {
+		long acc = 0x9E3779B97F4A7C15L;
+		acc = mix(acc + signatureOf(subDomainSet));
+		acc = mix(acc + signatureOf(similarDomainSet));
+		acc = mix(acc + signatureOf(relatedDomainSet));
+		acc = mix(acc + signatureOf(EmailSet));
+		acc = mix(acc + signatureOf(similarEmailSet));
+		acc = mix(acc + signatureOf(PackageNameSet));
+		acc = mix(acc + signatureOf(SpecialPortTargets));
+		acc = mix(acc + signatureOf(IPSetOfSubnet));
+		acc = mix(acc + signatureOf(IPSetOfCert));
+		acc = mix(acc + signatureOf(NotTargetIPSet));
+		return acc;
+	}
+
+	/** 集合内元素哈希求和：交换元素顺序不改变结果，增删元素一定改变结果 */
+	private static long signatureOf(Set<String> set) {
+		long acc = 0xCBF29CE484222325L ^ set.size();
+		for (String item : set) {
+			acc += mix(item == null ? 0 : item.hashCode());
+		}
+		return acc;
+	}
+
+	/** murmur3 的 finalizer，把哈希打散，避免相似输入产生相似签名 */
+	private static long mix(long value) {
+		long v = value;
+		v ^= (v >>> 33);
+		v *= 0xff51afd7ed558ccdL;
+		v ^= (v >>> 33);
+		v *= 0xc4ceb9fe1a85ec53L;
+		v ^= (v >>> 33);
+		return v;
 	}
 
 	//////////////// ser and deser///////////

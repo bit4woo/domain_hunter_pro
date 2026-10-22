@@ -38,6 +38,7 @@ import burp.IHttpService;
 import burp.IMessageEditorController;
 import config.ConfigManager;
 import config.ConfigName;
+import dao.DaoFactory;
 import dao.TitleDao;
 import dao.TitleWriteService;
 import domain.DomainManager;
@@ -68,7 +69,11 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 
 	public LineTableModel(GUIMain guiMain) {
 		this.guiMain = guiMain;
-		titleDao = new TitleDao(BurpExtender.getDataLoadManager().getCurrentDBFile());
+		// 通过 DaoFactory 复用同一个 DataSource 与 DAO 实例。
+		// 未打开项目时为 null：写操作会被 TitleWriteService 的 null 检查跳过，
+		// clearDataInDBFile 也做了空判断。
+		java.io.File currentDbFile = BurpExtender.getDataLoadManager().getCurrentDBFile();
+		titleDao = (currentDbFile == null) ? null : DaoFactory.of(currentDbFile).titleDao();
 		try {
 			stdout = new PrintWriter(BurpExtender.getCallbacks().getStdout(), true);
 			stderr = new PrintWriter(BurpExtender.getCallbacks().getStderr(), true);
@@ -101,7 +106,11 @@ public class LineTableModel extends AbstractTableModel implements IMessageEditor
 	 * @return
 	 */
 	public boolean clearDataInDBFile() {
+		if (titleDao == null) {// 未打开项目
+			return false;
+		}
 		// 先冲刷排队的写任务，再同步清空，保证清空动作排在所有已提交写之后。
+		// 顺序反过来会出现"清空后又被队列里的旧写补充回来"的污染。
 		TitleWriteService.getInstance().flush(30_000);
 		return titleDao.clearData();
 	}

@@ -1,6 +1,12 @@
 package dao;
 
 import java.io.File;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -20,6 +26,8 @@ public class DomainDao {
 
 	private DataSource dataSource;
 	private JdbcTemplate jdbcTemplate;
+	/** 本 DAO 对应的数据库文件路径，供批量写入/日志使用 */
+	private final String dbFilePath;
 
 	public static void main(String[] args) {
 		System.out.println("111");
@@ -27,11 +35,16 @@ public class DomainDao {
 	}
 
 	public DomainDao(String dbFilePath){
+		this.dbFilePath = dbFilePath;
 		dataSource = DBUtils.getSqliteDataSource(dbFilePath);
 		jdbcTemplate = new JdbcTemplate(dataSource);
 		if (!testSelect()){
 			createTable();
 		}
+	}
+
+	public String getDbFilePath() {
+		return dbFilePath;
 	}
 
 	public DomainDao(File dbFile){
@@ -116,51 +129,94 @@ public class DomainDao {
 		return result;
 	}
 
+	/**
+	 * 保存全部 type。
+	 * <p>
+	 * 只拍一次快照再逐 type 写入：如果按 type 循环调用
+	 * {@link #saveDomainManagerByType}，每个 type 都会重新拍一次快照，
+	 * 十个 type 就是十次全量拷贝（子域名多的时候是十次几万条的复制）。
+	 * </p>
+	 */
 	public boolean saveDomainManager(DomainManager domainResult){
-		for (TextAreaType type:TextAreaType.values()) {
-			saveDomainManagerByType(domainResult,type);
+		boolean allOk = true;
+		for (Map.Entry<TextAreaType, Set<String>> entry : snapshotOf(domainResult).entrySet()) {
+			if (!createOrUpdateByType(entry.getValue(), entry.getKey())) {
+				allOk = false;
+			}
 		}
-		return true;
+		return allOk;
+	}
+
+	/**
+	 * 把 DomainManager 的十个集合拍成 type -> 内容 的快照。
+	 * <p>
+	 * 为什么集中在这里：type 与集合的对应关系原来只存在于 saveDomainManagerByType 的
+	 * switch 里，而现在"单条保存""整块保存""异步批量保存"三条路径都需要这份映射，
+	 * 分散写迟早会漂移（比如新增一个 type 只改了两处）。统一到这里，改一处即可。
+	 * </p>
+	 * <p>
+	 * 返回的是<b>新集合</b>：调用方可以安全地把它交给后台写线程，
+	 * 不必担心 UI 线程随后修改 DomainManager 里的集合导致并发问题。
+	 * </p>
+	 */
+	public static Map<TextAreaType, Set<String>> snapshotOf(DomainManager domainResult) {
+		Map<TextAreaType, Set<String>> snapshot = new LinkedHashMap<TextAreaType, Set<String>>();
+		snapshot.put(TextAreaType.SubDomain, new HashSet<String>(domainResult.getSubDomainSet()));
+		snapshot.put(TextAreaType.RelatedDomain, new HashSet<String>(domainResult.getRelatedDomainSet()));
+		snapshot.put(TextAreaType.SimilarDomain, new HashSet<String>(domainResult.getSimilarDomainSet()));
+		snapshot.put(TextAreaType.Email, new HashSet<String>(domainResult.getEmailSet()));
+		snapshot.put(TextAreaType.SimilarEmail, new HashSet<String>(domainResult.getSimilarEmailSet()));
+		snapshot.put(TextAreaType.IPSetOfSubnet, new HashSet<String>(domainResult.getIPSetOfSubnet()));
+		snapshot.put(TextAreaType.IPSetOfCert, new HashSet<String>(domainResult.getIPSetOfCert()));
+		snapshot.put(TextAreaType.SpecialPortTarget, new HashSet<String>(domainResult.getSpecialPortTargets()));
+		snapshot.put(TextAreaType.PackageName, new HashSet<String>(domainResult.getPackageNameSet()));
+		snapshot.put(TextAreaType.BlackIP, new HashSet<String>(domainResult.getNotTargetIPSet()));
+		return snapshot;
 	}
 
 	public boolean saveDomainManagerByType(DomainManager domainResult,TextAreaType type){
 		try {
-			switch (type) {
-				case SubDomain:
-					createOrUpdateByType(domainResult.getSubDomainSet(),type);
-					break;
-				case RelatedDomain:
-					createOrUpdateByType(domainResult.getRelatedDomainSet(),type);
-					break;
-				case SimilarDomain:
-					createOrUpdateByType(domainResult.getSimilarDomainSet(),type);
-					break;
-				case Email:
-					createOrUpdateByType(domainResult.getEmailSet(),type);
-					break;
-				case SimilarEmail:
-					createOrUpdateByType(domainResult.getSimilarEmailSet(),type);
-					break;
-				case IPSetOfSubnet:
-					createOrUpdateByType(domainResult.getIPSetOfSubnet(),type);
-					break;
-				case IPSetOfCert:
-					createOrUpdateByType(domainResult.getIPSetOfCert(),type);
-					break;
-				case SpecialPortTarget:
-					createOrUpdateByType(domainResult.getSpecialPortTargets(),type);
-					break;
-				case PackageName:
-					createOrUpdateByType(domainResult.getPackageNameSet(),type);
-					break;
-				case BlackIP:
-					createOrUpdateByType(domainResult.getNotTargetIPSet(),type);
-					break;
+			Set<String> content = snapshotOf(domainResult).get(type);
+			if (content == null) {
+				return false;
 			}
-			return true;
+			return createOrUpdateByType(content, type);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
 		}
+	}
+
+	/**
+	 * 批量写入多个 type 的内容，由调用方负责事务（commit / rollback）。
+	 * <p>
+	 * 为什么需要这个方法：DomainTable 的存储粒度是"一个 type 一行（整块 JSON）"，
+	 * 每次保存都要重写整行。如果一次操作要同时刷新多个 type（保存项目、刷新后保存），
+	 * 用 {@link #createOrUpdateByType} 会走多次独立事务，每个事务都要 fsync 一次；
+	 * 而这里把它们塞进同一个事务、一次 executeBatch，写放大和延迟都低一个数量级。
+	 * </p>
+	 *
+	 * @param conn           外部管理的连接，本方法不负责关闭，也不会 commit
+	 * @param contentByType  type -> 该 type 的完整内容快照
+	 * @return 实际写入的行数
+	 */
+	public int saveTypes(Connection conn, Map<TextAreaType, Set<String>> contentByType) throws SQLException {
+		if (contentByType == null || contentByType.isEmpty()) {
+			return 0;
+		}
+		String sql = "insert or replace into DomainTable (Type,Content) values(?,?)";
+		int count = 0;
+		try (PreparedStatement ps = conn.prepareStatement(sql)) {
+			for (Map.Entry<TextAreaType, Set<String>> entry : contentByType.entrySet()) {
+				ps.setString(1, entry.getKey().toString());
+				ps.setString(2, JSON.toJSONString(entry.getValue()));
+				ps.addBatch();
+				count++;
+			}
+			if (count > 0) {
+				ps.executeBatch();
+			}
+		}
+		return count;
 	}
 }
